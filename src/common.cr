@@ -1,0 +1,3 @@
+require "colorize"
+
+require "./common/*"
