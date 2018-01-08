@@ -12,8 +12,6 @@ module ::Garnet::Core
                    merkle_tree_root: String,
                  })
 
-    getter index
-
     def initialize(
           @index : UInt32,
           @transactions : Array(Transaction),

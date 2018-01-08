@@ -11,9 +11,7 @@ module ::Garnet::Core
       sign_s: String,
     )
 
-    getter id : String
-
-    property prev_hash : String
+    setter prev_hash : String
 
     def initialize(
           @id : String,
