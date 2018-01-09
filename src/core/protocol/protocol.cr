@@ -18,7 +18,18 @@ module ::Garnet::Core::Protocol
 
   ##########
 
-  M_TYPE_HANDSHAKE_NODE  = 1
+  M_TYPE_HANDSHAKE_MINER_ACCEPTED = 1
+
+  struct M_CONTENT_HANDSHAKE_MINER_ACCEPTED
+    JSON.mapping({
+                   difficulty: Int32,
+                   block: Block,
+                 })
+  end
+
+  ##########
+
+  M_TYPE_HANDSHAKE_NODE  = 2
 
   struct M_CONTENT_HANDSHAKE_NODE
     JSON.mapping({
@@ -41,11 +52,21 @@ module ::Garnet::Core::Protocol
 
   ##########
 
-  M_TYPE_FOUND_NONCE = 2
+  M_TYPE_FOUND_NONCE = 4
 
   struct M_CONTENT_FOUND_NONCE
     JSON.mapping({
                    nonce: UInt64,
+                 })
+  end
+
+  ##########
+
+  M_TYPE_BLOCK_UPDATE = 5
+
+  struct M_CONTENT_BLOCK_UPDATE
+    JSON.mapping({
+                   block: Block,
                  })
   end
 

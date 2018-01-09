@@ -166,7 +166,8 @@ module ::Garnet::Core
 
       info "New miner: #{light_green(miner[:address])} (#{@miners.size})"
 
-      miner[:socket].send(@blockchain.last_block.to_json)
+      # miner[:socket].send(@blockchain.last_block.to_json)
+      send(socket, M_TYPE_HANDSHAKE_MINER_ACCEPTED, { difficulty: 2, block: @blockchain.last_block })
     end
 
     private def _handshake_node(socket, _content)
@@ -348,7 +349,7 @@ module ::Garnet::Core
 
     private def broadcast_to_miners
       @miners.each do |miner|
-        miner[:socket].send(@blockchain.last_block.to_json)
+        send(miner[:socket], M_TYPE_BLOCK_UPDATE, { block: @blockchain.last_block })
       end
     end
 

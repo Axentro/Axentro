@@ -6,7 +6,6 @@ module ::Garnet::Core
       senders: Models::Senders,
       recipients: Models::Recipients,
       prev_hash: String,
-      content_hash: String,
       sign_r: String,
       sign_s: String,
     )
@@ -19,7 +18,6 @@ module ::Garnet::Core
           @senders : Models::Senders,
           @recipients : Models::Recipients,
           @prev_hash : String,
-          @content_hash : String,
           @sign_r : String,
           @sign_s : String,
         )
@@ -73,7 +71,6 @@ module ::Garnet::Core
         return false if @action != "head"
         return false if @senders.size != 0
         return false if @prev_hash != "0"
-        return false if @content_hash != "0"
         return false if @sign_r != "0"
         return false if @sign_s != "0"
 
@@ -90,7 +87,6 @@ module ::Garnet::Core
         self.senders,
         self.recipients,
         self.prev_hash,
-        self.content_hash,
         sign_r,
         sign_s,
       )
@@ -103,7 +99,6 @@ module ::Garnet::Core
         self.senders,
         self.recipients,
         "0",
-        self.content_hash,
         "0",
         "0",
       )

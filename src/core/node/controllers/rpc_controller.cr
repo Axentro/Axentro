@@ -40,13 +40,11 @@ module ::Garnet::Core::Controllers
       action = json["action"].to_s
       senders = Models::Senders.from_json(json["senders"].to_s)
       recipients = Models::Recipients.from_json(json["recipients"].to_s)
-      content_hash = json["content_hash"].to_s
 
       transaction = @blockchain.create_unsigned_transaction(
         action,
         senders,
         recipients,
-        content_hash,
       )
 
       fee = transaction.calculate_fee

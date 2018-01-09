@@ -47,10 +47,10 @@ module ::Garnet::Core
       ripemd160(current_hashes[0])
     end
 
-    def self.valid_nonce?(block_hash : String, nonce : UInt64) : Bool
+    def self.valid_nonce?(block_hash : String, nonce : UInt64, difficulty = DIFFICULTY) : Bool
       guess_nonce = "#{block_hash}#{nonce}"
       guess_hash = sha256(guess_nonce)
-      guess_hash[0, DIFFICULTY] == "0" * DIFFICULTY
+      guess_hash[0, DIFFICULTY] == "0" * difficulty
     end
 
     def valid_nonce?(nonce : UInt64) : Bool

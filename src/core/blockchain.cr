@@ -125,20 +125,18 @@ module ::Garnet::Core
                 },
               ],
               "0", # prev_hash
-              "0", # content_hash
               "0", # sign_r
               "0", # sign_s
       )
     end
 
-    def create_unsigned_transaction(action, senders, recipients, content_hash) : Transaction
+    def create_unsigned_transaction(action, senders, recipients) : Transaction
       Transaction.new(
         Transaction.create_id,
         action,
         senders,
         recipients,
         "0", # prev_hash
-        content_hash,
         "0", # sign_r
         "0", # sign_s
       )
