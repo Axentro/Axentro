@@ -100,6 +100,9 @@ module ::Garnet::Core
         when M_TYPE_RECIEVE_CHAIN
           _recieve_chain(socket, message_content)
         end
+      rescue e : Exception
+        p message
+        handle_exception(socket, e)
       end
 
       socket.on_close do |_|
@@ -221,7 +224,7 @@ module ::Garnet::Core
 
       nonce = _m_content.nonce
 
-      return unless block = @blockchain.push_block?(nonce)
+      return error "Recieved nonce is invalid" unless block = @blockchain.push_block?(nonce)
 
       info "Found new nonce: #{light_green(nonce)}"
 
@@ -315,6 +318,7 @@ module ::Garnet::Core
       if @blockchain.replace_chain(chain)
         info "Chain updated: #{current_last_index} -> #{@blockchain.last_index}"
         @phase = PHASE_NODE_RUNNING
+        broadcast_to_miners
       else
         error "Error while syncing chain, retrying..."
         sync_chain(socket)
