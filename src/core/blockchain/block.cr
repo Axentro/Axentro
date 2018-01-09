@@ -2,7 +2,7 @@ module ::Garnet::Core
   class Block
     extend Hashes
 
-    DIFFICULTY = 5
+    DIFFICULTY = 6
 
     JSON.mapping({
                    index: UInt32,
@@ -47,29 +47,29 @@ module ::Garnet::Core
       ripemd160(current_hashes[0])
     end
 
-    def self.valid_nonce?(block_hash : String, nonce : UInt64) : Bool
+    def self.valid_nonce?(block_hash : String, nonce : UInt64, difficulty = DIFFICULTY) : Bool
       guess_nonce = "#{block_hash}#{nonce}"
       guess_hash = sha256(guess_nonce)
-      guess_hash[0, DIFFICULTY] == "0" * DIFFICULTY
+      guess_hash[0, difficulty] == "0" * difficulty
     end
 
-    def valid_nonce?(nonce : UInt64) : Bool
-      Block.valid_nonce?(self.to_hash, nonce)
+    def valid_nonce?(nonce : UInt64, difficulty = DIFFICULTY) : Bool
+      Block.valid_nonce?(self.to_hash, nonce, difficulty)
     end
 
     def valid_as_last?(blockchain : Blockchain) : Bool
       is_genesis = (@index == 0)
 
       unless is_genesis
-        return false if @index != blockchain.chain.size
+        raise "Invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
 
         prev_block = blockchain.chain[-1]
         return valid_for?(prev_block)
       else
-        return false if @index != 0
-        return false if !@transactions.empty?
-        return false if @nonce != 0
-        return false if @prev_hash != "genesis"
+        raise "Index have to be '0' for genesis block: #{@index}" if @index != 0
+        raise "Transaction have to be empty for genesis block: #{@transactions}" if !@transactions.empty?
+        raise "nonce have to be '0' for genesis block: #{@nonce}" if @nonce != 0
+        raise "prev_hash should be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
       end
 
       transactions.each_with_index do |transaction, idx|
@@ -80,12 +80,12 @@ module ::Garnet::Core
     end
 
     def valid_for?(prev_block : Block) : Bool
-      return false if prev_block.index + 1 != @index
-      return false if prev_block.to_hash != @prev_hash
-      return false if !prev_block.valid_nonce?(@nonce)
+      raise "Mismatch index for the prev block(#{prev_block.index}): #{@index}" if prev_block.index + 1 != @index
+      raise "prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
+      raise "The nonce is invalid: #{@nonce}" if !prev_block.valid_nonce?(@nonce)
 
       merkle_tree_root = calcluate_merkle_tree_root
-      return false if merkle_tree_root != @merkle_tree_root
+      raise "Invalid merkle tree root: #{merkle_tree_root} != #{@merkle_tree_root}" if merkle_tree_root != @merkle_tree_root
 
       true
     end

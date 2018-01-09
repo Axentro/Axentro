@@ -11,10 +11,10 @@ module ::Garnet::Core
       @utxo = UTXO.new
       @chain.push(genesis_block)
 
-      add_transaction(create_first_transaction)
+      add_transaction(create_first_transaction([] of Models::Miner))
     end
 
-    def push_block?(nonce : UInt64) : Block?
+    def push_block?(nonce : UInt64, miners : Models::Miners) : Block?
       return nil unless last_block.valid_nonce?(nonce)
 
       index = @chain.size.to_u32
@@ -27,17 +27,17 @@ module ::Garnet::Core
         last_block.to_hash,
       )
 
-      push_block?(block)
+      push_block?(block, miners)
     end
 
-    def push_block?(block : Block) : Block?
+    def push_block?(block : Block, miners : Models::Miners) : Block?
       return nil unless block.valid_as_last?(self)
 
       @chain.push(block)
       record_utxo
 
       @current_transactions.clear
-      add_transaction(create_first_transaction)
+      add_transaction(create_first_transaction(miners))
 
       block
     end
@@ -74,7 +74,7 @@ module ::Garnet::Core
     end
 
     def get_amount_unconfirmed(address : String) : Float64
-      @utxo.get_unconfirmed(address)
+      @utxo.get_unconfirmed(address, current_transactions)
     end
 
     def get_amount(address : String) : Float64
@@ -113,41 +113,52 @@ module ::Garnet::Core
       )
     end
 
-    def create_first_transaction : Transaction
+    def create_first_transaction(miners : Models::Miners) : Transaction
+
+      rewards_total = Blockchain.served_amount(last_index)
+
+      miners_nonces_size = miners.reduce(0) { |sum, m| sum + m[:nonces].size }.to_f
+      miners_rewards_total = prec((rewards_total * 3.0) / 4.0)
+      miners_recipients = miners.map { |m|
+        amount = miners_rewards_total * (m[:nonces].size.to_f / miners_nonces_size)
+        { address: m[:address], amount: amount}
+      }
+
+      node_reccipient = {
+        address: @wallet.address,
+        amount: prec(rewards_total - miners_recipients.reduce(0.0) { |sum, m| sum + m[:amount] }),
+      }
+
+      senders = [] of Models::Sender # No senders
+
       Transaction.new(
         Transaction.create_id,
         "head",
-        [] of Models::Sender, # No senders
-              [
-                {
-                  address: @wallet.address,
-                  amount: Blockchain.served_amount(last_index),
-                },
-              ],
-              "0", # prev_hash
-              "0", # content_hash
-              "0", # sign_r
-              "0", # sign_s
+        senders,
+        miners_recipients.push(node_reccipient),
+        "0", # prev_hash
+        "0", # sign_r
+        "0", # sign_s
       )
     end
 
-    def create_unsigned_transaction(action, senders, recipients, content_hash) : Transaction
+    def create_unsigned_transaction(action, senders, recipients) : Transaction
       Transaction.new(
         Transaction.create_id,
         action,
         senders,
         recipients,
         "0", # prev_hash
-        content_hash,
         "0", # sign_r
         "0", # sign_s
       )
     end
 
-    def self.served_amount(index)
+    def self.served_amount(index) : Float64
       10.0
     end
 
     include Hashes
+    include Common::Num
   end
 end

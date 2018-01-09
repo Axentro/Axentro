@@ -6,7 +6,6 @@ module ::Garnet::Core
       senders: Models::Senders,
       recipients: Models::Recipients,
       prev_hash: String,
-      content_hash: String,
       sign_r: String,
       sign_s: String,
     )
@@ -19,7 +18,6 @@ module ::Garnet::Core
           @senders : Models::Senders,
           @recipients : Models::Recipients,
           @prev_hash : String,
-          @content_hash : String,
           @sign_r : String,
           @sign_s : String,
         )
@@ -37,18 +35,18 @@ module ::Garnet::Core
     end
 
     def valid?(blockchain : Blockchain, block_index : UInt32, is_coinbase : Bool) : Bool
-      return false if @id.size != 64
+      raise "Length of transaction id have to be 64: #{@id}" if @id.size != 64
 
       @senders.each do |sender|
-        return false unless Wallet.valid_checksum?(sender[:address])
+        raise "Invalid checksum for sender's address: #{sender[:address]}" unless Wallet.valid_checksum?(sender[:address])
       end
 
       @recipients.each do |recipient|
-        return false unless Wallet.valid_checksum?(recipient[:address])
+        raise "Invalid checksum for recipient's address: #{recipient[:address]}" unless Wallet.valid_checksum?(recipient[:address])
       end
 
       if !is_coinbase
-        return false if @senders.size != 1
+        raise "Sender have to be only one currently" if @senders.size != 1
 
         secp256k1  = ECDSA::Secp256k1.new
         public_key = ECDSA::Point.new(
@@ -57,28 +55,30 @@ module ::Garnet::Core
           BigInt.new(Base64.decode_string(@senders[0][:py]), base: 10),
         )
 
-        return false if !secp256k1.verify(
-                          public_key,
-                          self.as_unsigned.to_hash,
-                          BigInt.new(@sign_r, base: 16),
-                          BigInt.new(@sign_s, base: 16),
-                        )
+        raise "Invalid signing" if !secp256k1.verify(
+                                     public_key,
+                                     self.as_unsigned.to_hash,
+                                     BigInt.new(@sign_r, base: 16),
+                                     BigInt.new(@sign_s, base: 16),
+                                   )
 
-        return false if calculate_fee < min_fee_of_action(@action)
-        return false if prec(
-                          blockchain.get_amount_unconfirmed(@senders[0][:address]) -
-                          @senders[0][:amount]
-                        ) < 0.0
+        if calculate_fee < min_fee_of_action(@action)
+          raise "Not enough fee, should be  #{calculate_fee} >= #{min_fee_of_action(@action)}"
+        end
+
+        senders_amount_unconfirmed = blockchain.get_amount_unconfirmed(@senders[0][:address])
+        if prec(senders_amount_unconfirmed - @senders[0][:amount]) < 0.0
+          raise "Sender has not enough coins: #{@senders[0][:address]} (#{senders_amount_unconfirmed})"
+        end
       else
-        return false if @action != "head"
-        return false if @senders.size != 0
-        return false if @prev_hash != "0"
-        return false if @content_hash != "0"
-        return false if @sign_r != "0"
-        return false if @sign_s != "0"
+        raise "actions have to be 'head' for coinbase transaction " if @action != "head"
+        raise "Sender have to be only one currently" if @senders.size != 0
+        raise "prev_hash of coinbase transaction have to be '0'" if @prev_hash != "0"
+        raise "sign_r of coinbase transaction have to be '0'" if @sign_r != "0"
+        raise "sign_s of coinbase transaction have to be '0'" if @sign_s != "0"
 
         served_sum = @recipients.reduce(0.0) { |sum, recipient| prec(sum + recipient[:amount]) }
-        return false if served_sum != Blockchain.served_amount(block_index)
+        raise "Invalid served amounts for coinbase transaction: #{served_sum}" if served_sum != Blockchain.served_amount(block_index)
       end
 
       true
@@ -90,7 +90,6 @@ module ::Garnet::Core
         self.senders,
         self.recipients,
         self.prev_hash,
-        self.content_hash,
         sign_r,
         sign_s,
       )
@@ -103,7 +102,6 @@ module ::Garnet::Core
         self.senders,
         self.recipients,
         "0",
-        self.content_hash,
         "0",
         "0",
       )
