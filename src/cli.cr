@@ -19,15 +19,21 @@ module ::Garnet::Interface
     end
 
     def puts_help(message = "Showing help message.", exit_code = -1)
+      available_sub_actions =
+        sub_actions.map { |a| " - #{light_green("%-10s" % a[:name])} | #{"%-40s" % a[:desc]}"}.join("\n")
+      available_sub_actions = "Nothing" if available_sub_actions == ""
+
       puts "\n" +
            "#{light_magenta("<Garnet>")}   #{@action[:desc]}\n\n" +
-           "#{yellow(message)}\n\n" +
+           "#{light_gray_bg(red(" " + "-" * message.size + " "))}\n" +
+           "#{light_gray_bg(red(" " + message + " "))}\n" +
+           "#{light_gray_bg(red(" " + "-" * message.size + " "))}\n\n" +
            "This is a help message for\n" +
            "> #{light_cyan(command_line)}\n" +
            "\n" +
            "Available sub actions\n" +
-           sub_actions.map { |a| " - #{light_green("%-10s" % a[:name])} | #{"%-40s" % a[:desc]}"}.join("\n") +
-           "\n" +
+           available_sub_actions +
+           "\n\n" +
            "Available options\n" +
            (option_parser.nil? ? "Nothing" : option_parser.to_s) + 
            "\n\n"
