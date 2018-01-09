@@ -243,6 +243,10 @@ module ::Garnet::Core
         send(n[:socket], M_TYPE_BROADCAST_BLOCK, { block: block })
       end
 
+      @miners.each do |m|
+        m[:nonces].clear
+      end
+
       broadcast_to_miners
     end
 
