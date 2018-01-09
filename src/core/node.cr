@@ -2,6 +2,9 @@ require "./node/*"
 
 module ::Garnet::Core
   class Node
+
+    MINER_DIFFICULTY = 5
+
     @blockchain        : Blockchain
     @id                : String
     @nodes             : Models::Nodes
@@ -101,7 +104,6 @@ module ::Garnet::Core
           _recieve_chain(socket, message_content)
         end
       rescue e : Exception
-        p message
         handle_exception(socket, e)
       end
 
@@ -126,16 +128,14 @@ module ::Garnet::Core
     end
 
     private def handle_exception(socket, e : Exception)
-      node = @nodes.find { |n| n[:socket] == socket }
-
       if error_message = e.message
         error error_message
       else
         error "Unknown error occured"
       end
 
-      if n = node
-        error "On: #{n[:context][:host]}:#{n[:context][:port]}"
+      if node = get_node(socket)
+        error "On: #{node[:context][:host]}:#{node[:context][:port]}"
       end
 
       @phase = PHASE_NODE_RUNNING
@@ -163,14 +163,16 @@ module ::Garnet::Core
       _m_content = M_CONTENT_HANDSHAKE_MINER.from_json(_content)
       address = _m_content.address
 
-      miner = { socket: socket, address: address }
+      miner = { socket: socket, address: address, nonces: [] of UInt64 }
 
       @miners << miner
 
       info "New miner: #{light_green(miner[:address])} (#{@miners.size})"
 
-      # miner[:socket].send(@blockchain.last_block.to_json)
-      send(socket, M_TYPE_HANDSHAKE_MINER_ACCEPTED, { difficulty: 2, block: @blockchain.last_block })
+      send(socket, M_TYPE_HANDSHAKE_MINER_ACCEPTED, {
+             difficulty: MINER_DIFFICULTY,
+             block: @blockchain.last_block
+           })
     end
 
     private def _handshake_node(socket, _content)
@@ -181,7 +183,7 @@ module ::Garnet::Core
       node_context = _m_content.context
       known_nodes = _m_content.known_nodes
 
-      return if @nodes.find { |n| n[:context][:id] == node_context[:id] }
+      return if get_node(node_context[:id])
 
       node_list = @nodes.map { |n|
         (n[:context][:id] == @id || known_nodes.includes?(n[:context])) ? nil : n[:context]
@@ -210,7 +212,7 @@ module ::Garnet::Core
       info "Successfully connected to #{node_context[:id]} (#{@nodes.size})"
 
       node_list
-        .reject { |nc| @nodes.find { |n| n[:context][:id] == nc[:id]} }
+        .reject { |nc| get_node(nc[:id]) }
         .each { |nc| connect(nc[:host], nc[:port]) }
 
       return if last_index <= @blockchain.last_index || @phase == PHASE_NODE_SYNCING
@@ -225,7 +227,15 @@ module ::Garnet::Core
 
       nonce = _m_content.nonce
 
-      return error "Recieved nonce is invalid" unless block = @blockchain.push_block?(nonce)
+      if miner = get_miner(socket)
+
+        if !miner[:nonces].includes?(nonce) && @blockchain.last_block.valid_nonce?(nonce, MINER_DIFFICULTY)
+          info "Miner #{miner[:address]} will get reward!"
+          miner[:nonces].push(nonce)
+        end
+      end
+
+      return unless block = @blockchain.push_block?(nonce, @miners)
 
       info "Found new nonce: #{light_green(nonce)}"
 
@@ -262,9 +272,11 @@ module ::Garnet::Core
       if @blockchain.last_index + 1 == block.index
         @c0 += 1
 
-        unless @blockchain.push_block?(block)
-          node = @nodes.find { |n| n[:socket] == socket }.not_nil!
-          error "Pushed block is invalid coming from #{node[:context][:host]}:#{node[:context][:port]}"
+        unless @blockchain.push_block?(block, @miners)
+          if node = get_node(socket)
+            error "Pushed block is invalid coming from #{node[:context][:host]}:#{node[:context][:port]}"
+          end
+
           return analytics
         end
 
@@ -275,12 +287,12 @@ module ::Garnet::Core
       elsif @blockchain.last_index == block.index
         @c1 += 1
 
-        node = @nodes.find { |n| n[:socket] == socket }.not_nil!
+        if node = get_node(socket)
+          warning "Blockchain conflicted with #{node[:context][:host]}:#{node[:context][:port]}"
+          warning "ignore the block. (HEIGHT: #{light_cyan(@blockchain.chain.size)})"
 
-        warning "Blockchain conflicted with #{node[:context][:host]}:#{node[:context][:port]}"
-        warning "ignore the block. (HEIGHT: #{light_cyan(@blockchain.chain.size)})"
-
-        @last_conflicted ||= block.index
+          @last_conflicted ||= block.index
+        end
 
       elsif @blockchain.last_index + 1 < block.index
         @c2 += 1
@@ -355,6 +367,18 @@ module ::Garnet::Core
       @miners.each do |miner|
         send(miner[:socket], M_TYPE_BLOCK_UPDATE, { block: @blockchain.last_block })
       end
+    end
+
+    private def get_node(socket : HTTP::WebSocket) : Models::Node?
+      node = @nodes.find { |n| n[:socket] == socket }
+    end
+
+    private def get_node(id : String) : Models::Node?
+      node = @nodes.find { |n| n[:context][:id] == id }
+    end
+
+    private def get_miner(socket) : Models::Miner?
+      miner = @miners.find { |m| m[:socket] == socket }
     end
 
     private def handlers

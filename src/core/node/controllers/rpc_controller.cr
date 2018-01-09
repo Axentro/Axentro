@@ -24,15 +24,19 @@ module ::Garnet::Core::Controllers
     def create_transaction(json, context, params)
       transaction = Transaction.from_json(json["transaction"].to_s)
 
-      unless transaction.valid?(@blockchain, @blockchain.last_index, false)
-        context.response.status_code = 403
-        context.response.print "Invalid transaction"
+      if transaction.valid?(@blockchain, @blockchain.last_index, false)
+        node.broadcast_transaction(transaction)
+        context.response.print transaction.to_json
         return context
       end
 
-      node.broadcast_transaction(transaction)
+      context.response.status_code = 403
+      context.response.print "Invalid transaction"
+      context
 
-      context.response.print transaction.to_json
+    rescue e : Exception
+      context.response.status_code = 403
+      context.response.print e.message.not_nil!
       context
     end
 
