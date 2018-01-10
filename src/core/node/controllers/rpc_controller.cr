@@ -10,8 +10,18 @@ module ::Garnet::Core::Controllers
         return create_unsigned_transaction(json, context, params)
       when "create_transaction"
         return create_transaction(json, context, params)
-      when "remaining_amounts"
-        return remaining_amounts(json, context, params)
+      when "amount"
+        return amount(json, context, params)
+      when "blockchain_size"
+        return blockchain_size(json, context, params)
+      when "blockchain"
+        return blockchain(json, context, params)
+      when "block"
+        return block(json, context, params)
+      when "transactions"
+        return transactions(json, context, params)
+      when "transaction"
+        return transaction(json, context, params)
       end
 
       unpermitted_call(call, context)
@@ -33,7 +43,6 @@ module ::Garnet::Core::Controllers
       context.response.status_code = 403
       context.response.print "Invalid transaction"
       context
-
     rescue e : Exception
       context.response.status_code = 403
       context.response.print e.message.not_nil!
@@ -59,7 +68,7 @@ module ::Garnet::Core::Controllers
       context
     end
 
-    def remaining_amounts(json, context, params)
+    def amount(json, context, params)
       address = json["address"].to_s
       unconfirmed = json["unconfirmed"].as_bool
 
@@ -68,6 +77,75 @@ module ::Garnet::Core::Controllers
                  @blockchain.get_amount(address)
 
       context.response.print amount.to_s
+      context
+    end
+
+    def blockchain_size(json, context, params)
+      size = @blockchain.chain.size
+
+      context.response.print size.to_s
+      context
+    end
+
+    def blockchain(json, context, params)
+      if json["header"].as_bool
+        context.response.print @blockchain.headers.to_json
+      else
+        context.response.print @blockchain.chain.to_json
+      end
+
+      context
+    end
+
+    def block(json, context, params)
+      block = if index = json["index"]?
+                if index.as_i > @blockchain.chain.size - 1
+                  raise "Invalid index #{index} (Blockchain size is #{@blockchain.chain.size})"
+                end
+
+                @blockchain.chain[index.as_i]
+              elsif transaction_id = json["transaction_id"]?
+                unless block_index = @blockchain.block_index(transaction_id.to_s)
+                  raise "Failed to find a block for the transaction #{transaction_id}"
+                end
+
+                @blockchain.chain[block_index]
+              else
+                raise "Please specify block index or transaction id"
+              end
+
+      if json["header"].as_bool
+        context.response.print block.to_header.to_json
+      else
+        context.response.print block.to_json
+      end
+
+      context
+    end
+
+    def transactions(json, context, params)
+      index = json["index"].as_i
+
+      if index > @blockchain.chain.size - 1
+        raise "Invalid index #{index} (Blockchain size is #{@blockchain.chain.size})"
+      end
+
+      context.response.print @blockchain.chain[index].transactions.to_json
+      context
+    end
+
+    def transaction(json, context, params)
+      transaction_id = json["transaction_id"].to_s
+
+      unless block_index = @blockchain.block_index(transaction_id)
+        raise "Failed to find a block for the transaction #{transaction_id}"
+      end
+
+      unless transaction = @blockchain.chain[block_index].find_transaction(transaction_id)
+        raise "Failed to find a transaction for #{transaction_id}"
+      end
+
+      context.response.print transaction.to_json
       context
     end
 

@@ -158,6 +158,14 @@ module ::Garnet::Core
       10.0
     end
 
+    def headers
+      @chain.map { |block| block.to_header }
+    end
+
+    def block_index(transaction_id : String) : UInt32?
+      @utxo.index(transaction_id)
+    end
+
     include Hashes
     include Common::Num
   end

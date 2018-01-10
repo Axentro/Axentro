@@ -4,7 +4,6 @@ module ::Garnet::Interface::Garnet
     @wallet_path : String?
     @address : String?
     @node : String?
-    @unconfirmed = false
 
     def sub_actions
       [
@@ -16,10 +15,10 @@ module ::Garnet::Interface::Garnet
           name: "verify",
           desc: "Verify your wallet. Specify a path to your wallet.json.",
         },
-        {
-          name: "amount",
-          desc: "Show remaining amount for the wallet.",
-        },
+        # {
+        #   name: "amount",
+        #   desc: "Show remaining amount for the wallet.",
+        # },
       ]
     end
 
@@ -34,9 +33,6 @@ module ::Garnet::Interface::Garnet
         parser.on("-n NODE", "--node=NODE", "Connecting node") { |node|
           @node = node
         }
-        parser.on("-u", "--unconfirmed", "Showing UNCONFIRMED amounts") {
-          @unconfirmed = true
-        }
       end
     end
 
@@ -46,8 +42,8 @@ module ::Garnet::Interface::Garnet
         create
       when "verify"
         verify
-      when "amount"
-        amount
+      # when "amount"
+      #   amount
       end
     end
 
@@ -89,33 +85,33 @@ module ::Garnet::Interface::Garnet
       exit 0
     end
 
-    def amount
-      if @wallet_path.nil? && @address.nil?
-        puts_help("Please specify a wallet path or an public address")
-      end
-
-      address = if @wallet_path.nil?
-                  @address.not_nil!
-                else
-                  Core::Wallet.from_path(@wallet_path.not_nil!).address
-                end
-
-      unless node = @node
-        puts_help("Please specify a connecting node")
-      end
-
-      puts_info("Showing remaining amounts on #{address}")
-
-      payload = {
-        call: "remaining_amounts",
-        address: address,
-        unconfirmed: @unconfirmed,
-      }.to_json
-
-      body = rpc(node, payload)
-
-      puts_success "Amount: #{body}"
-    end
+    # def amount
+    #   if @wallet_path.nil? && @address.nil?
+    #     puts_help("Please specify a wallet path or a public address")
+    #   end
+    #  
+    #   address = if @wallet_path.nil?
+    #               @address.not_nil!
+    #             else
+    #               Core::Wallet.from_path(@wallet_path.not_nil!).address
+    #             end
+    #  
+    #   unless node = @node
+    #     puts_help("Please specify a connecting node")
+    #   end
+    #  
+    #   puts_info("Showing remaining amounts on #{address}")
+    #  
+    #   payload = {
+    #     call: "remaining_amounts",
+    #     address: address,
+    #     unconfirmed: @unconfirmed,
+    #   }.to_json
+    #  
+    #   body = rpc(node, payload)
+    #  
+    #   puts_success "Amount: #{body}"
+    # end
 
     private def verify_internal!(wallet_path : String) : Bool
       wallet = Core::Wallet.from_path(wallet_path)

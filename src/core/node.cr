@@ -284,7 +284,7 @@ module ::Garnet::Core
           return analytics
         end
 
-        info "New block coming! (HEIGHT: #{light_cyan(@blockchain.chain.size)})"
+        info "New block coming! (Size: #{light_cyan(@blockchain.chain.size)})"
 
         broadcast_to_miners
 
@@ -293,7 +293,7 @@ module ::Garnet::Core
 
         if node = get_node(socket)
           warning "Blockchain conflicted with #{node[:context][:host]}:#{node[:context][:port]}"
-          warning "ignore the block. (HEIGHT: #{light_cyan(@blockchain.chain.size)})"
+          warning "ignore the block. (Size: #{light_cyan(@blockchain.chain.size)})"
 
           @last_conflicted ||= block.index
         end

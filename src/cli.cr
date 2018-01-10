@@ -100,7 +100,7 @@ module ::Garnet::Interface
 
     def verify_response!(res) : String
       unless res.status_code == 200
-        puts_error "Failed to create a new transaction."
+        puts_error "Failed to call an API."
         puts_error res.body
         exit -1
       end

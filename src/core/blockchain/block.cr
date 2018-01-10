@@ -26,6 +26,15 @@ module ::Garnet::Core
       sha256(string)
     end
 
+    def to_header : Models::Header
+      {
+        index: @index,
+        nonce: @nonce,
+        prev_hash: @prev_hash,
+        merkle_tree_root: @merkle_tree_root,
+      }
+    end
+
     def calcluate_merkle_tree_root : String
       return "" if @transactions.size == 0
 
@@ -90,11 +99,13 @@ module ::Garnet::Core
       true
     end
 
-    def calculate_utxo : Hash(String, Float64)
+    def calculate_utxo : NamedTuple(utxo: Hash(String, Float64), indices: Hash(String, UInt32))
       coinbase_address = @transactions.size > 0 ? @transactions[0].recipients[0][:address] : ""
 
       utxo = Hash(String, Float64).new
       utxo[coinbase_address] ||= 0.0 if coinbase_address.size > 0
+
+      indices = Hash(String, UInt32).new
 
       @transactions.each_with_index do |transaction, i|
         transaction.calculate_utxo.each do |address, amount|
@@ -105,9 +116,15 @@ module ::Garnet::Core
         if coinbase_address.size > 0 && i > 0
           utxo[coinbase_address] = prec(utxo[coinbase_address] + transaction.calculate_fee)
         end
+
+        indices[transaction.id] = @index
       end
 
-      utxo
+      { utxo: utxo, indices: indices }
+    end
+
+    def find_transaction(transaction_id : String) : Transaction?
+      @transactions.find { |t| t.id == transaction_id }
     end
 
     include Hashes
