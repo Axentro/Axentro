@@ -3,10 +3,10 @@ module ::Garnet::Core
 
     CONFIRMATION = 2
 
-    @utxo_internal : Array(Hash(String, Float64))
+    @utxo_internal : Array(Hash(String, Float64)) = Array(Hash(String, Float64)).new
+    @transaction_indices : Hash(String, UInt32) = Hash(String, UInt32).new
 
     def initialize
-      @utxo_internal = Array(Hash(String, Float64)).new
     end
 
     def get(address : String) : Float64
@@ -53,17 +53,24 @@ module ::Garnet::Core
         @utxo_internal.push(Hash(String, Float64).new)
 
         block_utxo = block.calculate_utxo
-        block_utxo.each do |address, amount|
+        block_utxo[:utxo].each do |address, amount|
           @utxo_internal[-1][address] ||= get_unconfirmed_recorded(address)
           @utxo_internal[-1][address] = prec(@utxo_internal[-1][address] + amount)
         end
+
+        @transaction_indices = @transaction_indices.merge(block_utxo[:indices])
       end
 
       # show
     end
 
-    def cut(index)
-      @utxo_internal = @utxo_internal[0..index]
+    def index(transaction_id : String) : UInt32?
+      @transaction_indices[transaction_id]?
+    end
+
+    def clear
+      @utxo_internal.clear
+      @transaction_indices.clear
     end
 
     def show

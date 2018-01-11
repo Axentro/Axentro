@@ -55,8 +55,10 @@ module ::Garnet::Core
         prev_block = block
       end
 
-      @utxo.cut(first_index)
       @chain = @chain[0..first_index].concat(subchain)
+
+      @utxo.clear
+      @utxo.record(@chain)
 
       record_utxo
 
@@ -156,6 +158,14 @@ module ::Garnet::Core
 
     def self.served_amount(index) : Float64
       10.0
+    end
+
+    def headers
+      @chain.map { |block| block.to_header }
+    end
+
+    def block_index(transaction_id : String) : UInt32?
+      @utxo.index(transaction_id)
     end
 
     include Hashes

@@ -20,21 +20,21 @@ module ::Garnet::Interface
 
     def run_impl(action_name)
       unless wallet_path = @wallet_path
-        puts_help("Please specify your wallet")
+        puts_help(HELP_WALLET_PATH)
       end
 
       unless node = @node
-        puts_help("Please specify a connecting node")
+        puts_help(HELP_CONNECTING_NODE)
       end
 
       node_uri = URI.parse(node)
 
       unless host = node_uri.host
-        puts_help("Please specify a connecting node list -node='http[s]://<host>:<port>'")
+        puts_help(HELP_CONNECTING_NODE)
       end
 
       unless port = node_uri.port
-        puts_help("Please specify a connecting node list -node='http[s]://<host>:<port>'")
+        puts_help(HELP_CONNECTING_NODE)
       end
 
       miner = Core::Miner.new(host, port, wallet_path)

@@ -19,9 +19,13 @@ module ::Garnet::Core
     @c2 : Int32 = 0
     @c3 : Int32 = 0
 
+    @last_nonces : Array(UInt64)
+
     def initialize(
-          @host : String,
-          @port : Int32,
+          @bind_host : String,
+          @bind_port : Int32,
+          @public_host : String,
+          @public_port : Int32,
           connect_host : String?,
           connect_port : Int32?,
           @wallet : Wallet)
@@ -32,10 +36,16 @@ module ::Garnet::Core
       @miners         = Models::Miners.new
       @rpc_controller = Controllers::RPCController.new(@blockchain)
       @phase          = PHASE_NODE_RUNNING
+      @last_nonces    = Array(UInt64).new
 
       info "The node id is #{light_green(@id)}"
 
-      connect(connect_host.not_nil!, connect_port.not_nil!) if connect_host && connect_port
+      if connect_host && connect_port
+        connect(connect_host.not_nil!, connect_port.not_nil!)
+      else
+        warning "No connecting node has been specified"
+        warning "So this node is standalone from other network"
+      end
     end
 
     private def connect(connect_host : String, connect_port : Int32)
@@ -68,9 +78,9 @@ module ::Garnet::Core
 
       draw_routes!
 
-      info "Start running Garnet's node on #{light_green(@host)}:#{light_green(@port)}"
+      info "Start running Garnet's node on #{light_green(@bind_host)}:#{light_green(@bind_port)}"
 
-      node = HTTP::Server.new(@host, @port, handlers)
+      node = HTTP::Server.new(@bind_host, @bind_port, handlers)
       node.listen
     end
 
@@ -229,9 +239,13 @@ module ::Garnet::Core
 
       if miner = get_miner(socket)
 
-        if !miner[:nonces].includes?(nonce) && @blockchain.last_block.valid_nonce?(nonce, MINER_DIFFICULTY)
+        if !@last_nonces.includes?(nonce) && @blockchain.last_block.valid_nonce?(nonce, MINER_DIFFICULTY)
           info "Miner #{miner[:address]} will get reward!"
           miner[:nonces].push(nonce)
+          @last_nonces.push(nonce)
+        else
+          warning "Nonce #{nonce} has been already discoverd" if @last_nonces.includes?(nonce)
+          warning "Recieved nonce is invalid" if !@blockchain.last_block.valid_nonce?(nonce, MINER_DIFFICULTY)
         end
       end
 
@@ -246,6 +260,8 @@ module ::Garnet::Core
       @miners.each do |m|
         m[:nonces].clear
       end
+
+      @last_nonces.clear
 
       broadcast_to_miners
     end
@@ -284,7 +300,7 @@ module ::Garnet::Core
           return analytics
         end
 
-        info "New block coming! (HEIGHT: #{light_cyan(@blockchain.chain.size)})"
+        info "New block coming! (Size: #{light_cyan(@blockchain.chain.size)})"
 
         broadcast_to_miners
 
@@ -293,7 +309,7 @@ module ::Garnet::Core
 
         if node = get_node(socket)
           warning "Blockchain conflicted with #{node[:context][:host]}:#{node[:context][:port]}"
-          warning "ignore the block. (HEIGHT: #{light_cyan(@blockchain.chain.size)})"
+          warning "ignore the block. (Size: #{light_cyan(@blockchain.chain.size)})"
 
           @last_conflicted ||= block.index
         end
@@ -395,8 +411,8 @@ module ::Garnet::Core
     private def context : Models::NodeContext
       {
         id: @id,
-        host: @host,
-        port: @port,
+        host: @public_host,
+        port: @public_port,
       }
     end
 
