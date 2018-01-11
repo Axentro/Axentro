@@ -19,6 +19,8 @@ module ::Garnet::Core
     @c2 : Int32 = 0
     @c3 : Int32 = 0
 
+    @last_nonces : Array(UInt64)
+
     def initialize(
           @bind_host : String,
           @bind_port : Int32,
@@ -34,6 +36,7 @@ module ::Garnet::Core
       @miners         = Models::Miners.new
       @rpc_controller = Controllers::RPCController.new(@blockchain)
       @phase          = PHASE_NODE_RUNNING
+      @last_nonces    = Array(UInt64).new
 
       info "The node id is #{light_green(@id)}"
 
@@ -236,9 +239,12 @@ module ::Garnet::Core
 
       if miner = get_miner(socket)
 
-        if !miner[:nonces].includes?(nonce) && @blockchain.last_block.valid_nonce?(nonce, MINER_DIFFICULTY)
+        if !@last_nonces.includes?(nonce) && @blockchain.last_block.valid_nonce?(nonce, MINER_DIFFICULTY)
           info "Miner #{miner[:address]} will get reward!"
           miner[:nonces].push(nonce)
+          @last_nonces.push(nonce)
+        else
+          warning "Nonce #{nonce} has been already discoverd or invalid"
         end
       end
 
@@ -253,6 +259,8 @@ module ::Garnet::Core
       @miners.each do |m|
         m[:nonces].clear
       end
+
+      @last_nonces.clear
 
       broadcast_to_miners
     end
