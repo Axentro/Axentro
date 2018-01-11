@@ -4,6 +4,7 @@ require "colorize"
 require "uri"
 
 require "./core"
+require "./cli/helps"
 require "./cli/modules"
 
 module ::Garnet::Interface
@@ -25,9 +26,9 @@ module ::Garnet::Interface
 
       puts "\n" +
            "#{light_magenta("<Garnet>")}   #{@action[:desc]}\n\n" +
-           "#{light_gray_bg(red(" " + "-" * message.size + " "))}\n" +
-           "#{light_gray_bg(red(" " + message + " "))}\n" +
-           "#{light_gray_bg(red(" " + "-" * message.size + " "))}\n\n" +
+           "#{white_bg(black(" " + "-" * message.size + " "))}\n" +
+           "#{white_bg(black(" " + message + " "))}\n" +
+           "#{white_bg(black(" " + "-" * message.size + " "))}\n\n" +
            "This is a help message for\n" +
            "> #{light_cyan(command_line)}\n" +
            "\n" +
@@ -117,6 +118,7 @@ module ::Garnet::Interface
     abstract def option_parser : OptionParser?
     abstract def run_impl(action_name : String?) : OptionParser?
 
+    include Helps
     include Logger
     include Common::Num
   end

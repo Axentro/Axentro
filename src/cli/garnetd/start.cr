@@ -1,6 +1,9 @@
 module ::Garnet::Interface
   class Start < CLI
-    @node : String?
+    @bind_host : String = "0.0.0.0"
+    @bind_port : Int32  = 3000
+
+    @public_url : String?
     @connect_node : String?
     @wallet_path  : String?
 
@@ -10,10 +13,17 @@ module ::Garnet::Interface
 
     def option_parser
       OptionParser.new do |parser|
-        parser.on("-n NODE", "--node=NODE", "Running node") { |node|
-          @node = node
+        parser.on("-h BIND_HOST", "--bind_host=BIND_HOST", "Bind host; '0.0.0.0' by default") { |bind_host|
+          raise "Invalid host: #{bind_host}" unless bind_host.count('.') == 3
+          @bind_host = bind_host
         }
-        parser.on("-c CONNECT_NODE", "--connect-node=CONNECT_NODE", "Connecting node") { |connect_node|
+        parser.on("-p BIND_PORT", "--bind_port=BIND_PORT", "Bind port; 3000 by default") { |bind_port|
+          @bind_port = bind_port.to_i
+        }
+        parser.on("-u PUBLIC_URL", "--public_url=PUBLIC_URL", "Public url that can be accessed from internet") { |public_url|
+          @public_url = public_url
+        }
+        parser.on("-n NODE", "--node=NODE", "Connecting node") { |connect_node|
           @connect_node = connect_node
         }
         parser.on(
@@ -26,21 +36,21 @@ module ::Garnet::Interface
 
     def run_impl(action_name)
       unless wallet_path = @wallet_path
-        puts_help("Please specify a wallet.json")
+        puts_help(HELP_WALLET_PATH)
       end
 
-      unless node = @node
-        puts_help("Please specify a running node")
+      unless public_url = @public_url
+        puts_help(HELP_PUBLIC_URL)
       end
 
-      node_uri = URI.parse(node)
+      public_uri = URI.parse(public_url)
 
-      unless host = node_uri.host
-        puts_help("Please specify a running node like -node='http[s]://<host>:<port>'")
+      unless public_host = public_uri.host
+        puts_help(HELP_PUBLIC_URL)
       end
 
-      unless port = node_uri.port
-        puts_help("Please specify a running node like -node='http[s]://<host>:<port>'")
+      unless public_port = public_uri.port
+        puts_help(HELP_PUBLIC_URL)
       end
 
       has_first_connection = false
@@ -53,8 +63,12 @@ module ::Garnet::Interface
       wallet = Core::Wallet.from_path(wallet_path)
 
       node = has_first_connection ?
-               Core::Node.new(host, port, connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet) :
-               Core::Node.new(host, port, nil, nil, wallet)
+               Core::Node.new(@bind_host, @bind_port,
+                              public_host, public_port,
+                              connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet) :
+               Core::Node.new(@bind_host, @bind_port,
+                              public_host, public_port,
+                              nil, nil, wallet)
       node.run!
     end
 

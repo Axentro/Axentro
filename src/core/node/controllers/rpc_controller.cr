@@ -76,14 +76,17 @@ module ::Garnet::Core::Controllers
                  @blockchain.get_amount_unconfirmed(address) :
                  @blockchain.get_amount(address)
 
-      context.response.print amount.to_s
+      json = { amount: amount, address: address, unconfirmed: unconfirmed }.to_json
+
+      context.response.print json
       context
     end
 
     def blockchain_size(json, context, params)
       size = @blockchain.chain.size
 
-      context.response.print size.to_s
+      json = { size: size }.to_json
+      context.response.print json
       context
     end
 

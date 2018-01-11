@@ -20,8 +20,10 @@ module ::Garnet::Core
     @c3 : Int32 = 0
 
     def initialize(
-          @host : String,
-          @port : Int32,
+          @bind_host : String,
+          @bind_port : Int32,
+          @public_host : String,
+          @public_port : Int32,
           connect_host : String?,
           connect_port : Int32?,
           @wallet : Wallet)
@@ -35,7 +37,12 @@ module ::Garnet::Core
 
       info "The node id is #{light_green(@id)}"
 
-      connect(connect_host.not_nil!, connect_port.not_nil!) if connect_host && connect_port
+      if connect_host && connect_port
+        connect(connect_host.not_nil!, connect_port.not_nil!)
+      else
+        warning "No connecting node has been specified"
+        warning "So this node is standalone from other network"
+      end
     end
 
     private def connect(connect_host : String, connect_port : Int32)
@@ -68,9 +75,9 @@ module ::Garnet::Core
 
       draw_routes!
 
-      info "Start running Garnet's node on #{light_green(@host)}:#{light_green(@port)}"
+      info "Start running Garnet's node on #{light_green(@bind_host)}:#{light_green(@bind_port)}"
 
-      node = HTTP::Server.new(@host, @port, handlers)
+      node = HTTP::Server.new(@bind_host, @bind_port, handlers)
       node.listen
     end
 
@@ -395,8 +402,8 @@ module ::Garnet::Core
     private def context : Models::NodeContext
       {
         id: @id,
-        host: @host,
-        port: @port,
+        host: @public_host,
+        port: @public_port,
       }
     end
 
