@@ -9,6 +9,6 @@ module ::Garnet::Interface
     HELP_BLOCK_INDEX = "Please specify a block index: -i [block index]"
     HELP_BLOCK_INDEX_OR_TRANSACTION_ID = "Please specify a block index or transaction id: -i [block index] or -t [transaction id]"
     HELP_TRANSACTION_ID = "Please specify a transaction id: -t [transaction id]"
-    HELP_PUBLIC_URL = "Please specify a public url that can be accessed from internet: -p http://[host]:[port]"
+    HELP_PUBLIC_URL = "Please specify a public url that can be accessed from internet: -u http://[host]:[port]"
   end
 end
