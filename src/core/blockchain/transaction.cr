@@ -68,7 +68,7 @@ module ::Garnet::Core
 
         senders_amount_unconfirmed = blockchain.get_amount_unconfirmed(@senders[0][:address])
         if prec(senders_amount_unconfirmed - @senders[0][:amount]) < 0.0
-          raise "Sender has not enough coins: #{@senders[0][:address]} (#{senders_amount_unconfirmed})"
+          raise "Sender has not enough token: #{@senders[0][:address]} (#{senders_amount_unconfirmed})"
         end
       else
         raise "actions have to be 'head' for coinbase transaction " if @action != "head"

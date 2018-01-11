@@ -244,7 +244,8 @@ module ::Garnet::Core
           miner[:nonces].push(nonce)
           @last_nonces.push(nonce)
         else
-          warning "Nonce #{nonce} has been already discoverd or invalid"
+          warning "Nonce #{nonce} has been already discoverd" if @last_nonces.includes?(nonce)
+          warning "Recieved nonce is invalid" if !@blockchain.last_block.valid_nonce?(nonce, MINER_DIFFICULTY)
         end
       end
 

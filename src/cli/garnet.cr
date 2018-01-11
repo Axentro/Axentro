@@ -24,7 +24,7 @@ module ::Garnet::Interface::Garnet
         },
         {
           name: "send",
-          desc: "Send garnet coins to a specified address",
+          desc: "Send Garnet token to a specified address",
         },
         {
           name: "fees",
