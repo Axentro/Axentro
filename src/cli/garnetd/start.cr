@@ -3,9 +3,10 @@ module ::Garnet::Interface
     @bind_host : String = "0.0.0.0"
     @bind_port : Int32  = 3000
 
-    @public_url : String?
+    @public_url   : String?
     @connect_node : String?
     @wallet_path  : String?
+    @is_testnet      : Bool = false
 
     def sub_actions
       [] of GarnetAction
@@ -31,6 +32,9 @@ module ::Garnet::Interface
           "--wallet-path=WALLET_PATH",
           "wallet json's path",
         ) { |wallet_path| @wallet_path = wallet_path }
+        parser.on("--testnet", "Set network type as testnet (default is mainnet)") {
+          @is_testnet = true
+        }
       end
     end
 
@@ -63,10 +67,10 @@ module ::Garnet::Interface
       wallet = Core::Wallet.from_path(wallet_path)
 
       node = has_first_connection ?
-               Core::Node.new(@bind_host, @bind_port,
+               Core::Node.new(@is_testnet, @bind_host, @bind_port,
                               public_host, public_port,
                               connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet) :
-               Core::Node.new(@bind_host, @bind_port,
+               Core::Node.new(@is_testnet, @bind_host, @bind_port,
                               public_host, public_port,
                               nil, nil, wallet)
       node.run!

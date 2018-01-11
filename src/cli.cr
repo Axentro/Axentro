@@ -21,7 +21,7 @@ module ::Garnet::Interface
 
     def puts_help(message = "Showing help message.", exit_code = -1)
       available_sub_actions =
-        sub_actions.map { |a| " - #{light_green("%-10s" % a[:name])} | #{"%-40s" % a[:desc]}"}.join("\n")
+        sub_actions.map { |a| " - #{light_green("%-20s" % a[:name])} | #{"%-40s" % a[:desc]}"}.join("\n")
       available_sub_actions = "Nothing" if available_sub_actions == ""
 
       puts "\n" +
@@ -63,7 +63,7 @@ module ::Garnet::Interface
       if ARGV.size > 0 &&
          !ARGV[0].starts_with?('-') &&
          !sub_action_names.includes?(ARGV[0])
-        puts_help("Invalid action '#{red(ARGV[0])}' for '#{light_cyan(command_line)}'")
+        puts_help("Invalid action '#{ARGV[0]}' for '#{command_line}'")
         exit -1
       end
 

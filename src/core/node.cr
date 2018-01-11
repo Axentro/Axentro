@@ -5,6 +5,7 @@ module ::Garnet::Core
 
     MINER_DIFFICULTY = 5
 
+    @network_type      : String
     @blockchain        : Blockchain
     @id                : String
     @nodes             : Models::Nodes
@@ -22,14 +23,16 @@ module ::Garnet::Core
     @last_nonces : Array(UInt64)
 
     def initialize(
-          @bind_host : String,
-          @bind_port : Int32,
-          @public_host : String,
-          @public_port : Int32,
-          connect_host : String?,
-          connect_port : Int32?,
-          @wallet : Wallet)
-
+          @is_testnet   : Bool,
+          @bind_host    : String,
+          @bind_port    : Int32,
+          @public_host  : String,
+          @public_port  : Int32,
+          connect_host  : String?,
+          connect_port  : Int32?,
+          @wallet       : Wallet
+        )
+      @network_type   = @is_testnet ? "testnet" : "mainnet"
       @blockchain     = Blockchain.new(@wallet)
       @id             = Random::Secure.hex(16)
       @nodes          = Models::Nodes.new
@@ -39,6 +42,15 @@ module ::Garnet::Core
       @last_nonces    = Array(UInt64).new
 
       info "The node id is #{light_green(@id)}"
+
+      wallet_network = Wallet.address_network_type(@wallet.address)
+
+      unless wallet_network[:name] == @network_type
+        error "Wallet type mismatch"
+        error "Node's   network: #{@network_type}"
+        error "Wallet's network: #{wallet_network[:name]}"
+        exit -1
+      end
 
       if connect_host && connect_port
         connect(connect_host.not_nil!, connect_port.not_nil!)
@@ -79,6 +91,7 @@ module ::Garnet::Core
       draw_routes!
 
       info "Start running Garnet's node on #{light_green(@bind_host)}:#{light_green(@bind_port)}"
+      info "Network type is #{light_red(@network_type)}"
 
       node = HTTP::Server.new(@bind_host, @bind_port, handlers)
       node.listen
@@ -413,6 +426,7 @@ module ::Garnet::Core
         id: @id,
         host: @public_host,
         port: @public_port,
+        type: @network_type,
       }
     end
 

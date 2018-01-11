@@ -2,7 +2,8 @@ module ::Garnet::Core
   class Wallet
     extend Hashes
 
-    WALLET_VERSION = "00"
+    MAINNET = { prefix: "M0", name: "mainnet" }
+    TESTNET = { prefix: "T0", name: "testnet" }
 
     JSON.mapping({
                    secret_key: String,
@@ -29,9 +30,9 @@ module ::Garnet::Core
       self.from_json(File.read(wallet_path))
     end
 
-    def self.create
+    def self.create(testnet = false)
       key_pair = create_key_pair
-      address = public_key_to_address(key_pair[:public_key])
+      address = public_key_to_address(key_pair[:public_key], testnet)
 
       {
         secret_key: Base64.strict_encode(key_pair[:secret_key].to_s(base: 10)),
@@ -72,10 +73,11 @@ module ::Garnet::Core
       true
     end
 
-    def self.public_key_to_address(public_key : ECDSA::Point) : String
+    def self.public_key_to_address(public_key : ECDSA::Point, testnet = false) : String
+      prefix = testnet ? TESTNET[:prefix] : MAINNET[:prefix]
       raw_address = (public_key.x + public_key.y).to_s(base: 16)
       hashed_address = ripemd160(sha256(raw_address))
-      version_address = WALLET_VERSION + hashed_address
+      version_address = prefix + hashed_address
       hashed_address_again = sha256(sha256(version_address))
       checksum = hashed_address_again[0..5]
       Base64.strict_encode(version_address + checksum)
@@ -90,10 +92,19 @@ module ::Garnet::Core
       checksum == hashed_address[0..5]
     end
 
-    def self.address_version(address : String) : String
-      return "" unless valid_checksum?(address)
+    def self.address_network_type(address : String) : Models::Network
+      raise "Invalid network" unless valid_checksum?(address)
+
       decoded_address = Base64.decode_string(address)
-      decoded_address[0..1]
+
+      case decoded_address[0..1]
+      when MAINNET[:prefix]
+        MAINNET
+      when TESTNET[:prefix]
+        TESTNET
+      else
+        raise "Invalid network: #{decoded_address[0..1]}"
+      end
     end
 
     include Hashes

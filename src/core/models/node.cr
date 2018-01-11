@@ -3,6 +3,7 @@ module ::Garnet::Core::Models
           id: String,
           host: String,
           port: Int32,
+          type: String,
         )
 
   alias NodeContexts = Array(NodeContext)

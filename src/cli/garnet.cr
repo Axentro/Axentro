@@ -11,12 +11,17 @@ module ::Garnet::Interface::Garnet
     @transaction_id    : String?
     @unconfirmed       : Bool = false
     @json              : Bool = false
+    @is_testnet        : Bool = false
 
     def sub_actions
       [
         {
           name: "create",
           desc: "Create a wallet file",
+        },
+        {
+          name: "verify",
+          desc: "Verify a wallet file",
         },
         {
           name: "amount",
@@ -86,6 +91,9 @@ module ::Garnet::Interface::Garnet
         parser.on("-j", "--json", "Print results as json") {
           @json = true
         }
+        parser.on("--testnet", "Set network type as testnet (default is mainnet)") {
+          @is_testnet = true
+        }
       end
     end
 
@@ -93,6 +101,8 @@ module ::Garnet::Interface::Garnet
       case action_name
       when "create"
         create
+      when "verify"
+        verify
       when "amount"
         amount
       when "send"
@@ -123,7 +133,7 @@ module ::Garnet::Interface::Garnet
         puts_help(HELP_WALLET_ALREADY_EXISTS % wallet_path)
       end
 
-      wallet_json = Core::Wallet.create.to_json
+      wallet_json = Core::Wallet.create(@is_testnet).to_json
 
       File.write(wallet_path, wallet_json)
 
@@ -133,6 +143,18 @@ module ::Garnet::Interface::Garnet
       else
         puts wallet_json
       end
+    end
+
+    def verify
+      unless wallet_path = @wallet_path
+        puts_help(HELP_WALLET_PATH)
+      end
+
+      wallet = Core::Wallet.from_path(wallet_path)
+      puts_success "#{wallet_path} is perfect!" if wallet.verify!
+
+      network = Core::Wallet.address_network_type(wallet.address)
+      puts_success "Network (#{network[:prefix]}): #{network[:name]}"
     end
 
     def amount
@@ -211,9 +233,13 @@ module ::Garnet::Interface::Garnet
     end
 
     def fees
-      puts_success("Showing fees for each action.")
-      puts_info("send     : #{FEE_SEND}")
-      exit 0
+      unless @json
+        puts_success("Showing fees for each action.")
+        puts_info("send     : #{FEE_SEND}")
+      else
+        json = { send: FEE_SEND }.to_json
+        puts json
+      end
     end
 
     def size
