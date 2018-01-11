@@ -3,11 +3,10 @@ module ::Garnet::Core
 
     CONFIRMATION = 2
 
-    @utxo_internal : Array(Hash(String, Float64))
+    @utxo_internal : Array(Hash(String, Float64)) = Array(Hash(String, Float64)).new
     @transaction_indices : Hash(String, UInt32) = Hash(String, UInt32).new
 
     def initialize
-      @utxo_internal = Array(Hash(String, Float64)).new
     end
 
     def get(address : String) : Float64
@@ -69,8 +68,9 @@ module ::Garnet::Core
       @transaction_indices[transaction_id]?
     end
 
-    def cut(index)
-      @utxo_internal = @utxo_internal[0..index]
+    def clear
+      @utxo_internal.clear
+      @transaction_indices.clear
     end
 
     def show

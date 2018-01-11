@@ -55,8 +55,10 @@ module ::Garnet::Core
         prev_block = block
       end
 
-      @utxo.cut(first_index)
       @chain = @chain[0..first_index].concat(subchain)
+
+      @utxo.clear
+      @utxo.record(@chain)
 
       record_utxo
 
