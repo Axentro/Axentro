@@ -1,13 +1,13 @@
 require "../cli"
-require "./garnetm/*"
+require "./sushid/*"
 
-module ::Garnet::Interface::GarnetM
+module ::Sushi::Interface::SushiD
   class Root < CLI
     def sub_actions
       [
         {
           name: "start",
-          desc: "Start a mining process",
+          desc: "Start a node",
         },
       ]
     end
@@ -26,8 +26,8 @@ module ::Garnet::Interface::GarnetM
   end
 end
 
-include ::Garnet::Interface
+include ::Sushi::Interface
 
-::Garnet::Interface::GarnetM::Root.new(
-  { name: "garnetm", desc: "Garnet's mining process" }, [] of GarnetAction
+::Sushi::Interface::SushiD::Root.new(
+  { name: "sushid", desc: "Sushi's node" }, [] of SushiAction
 ).run

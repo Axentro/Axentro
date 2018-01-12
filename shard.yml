@@ -1,16 +1,16 @@
-name: garnet
+name: SushiBlockchain
 version: 0.1.0
 
 authors:
   - tbrand <taichiro0709@gmail.com>
 
 targets:
-  garnet:
-    main: src/cli/garnet.cr
-  garnetd:
-    main: src/cli/garnetd.cr
-  garnetm:
-    main: src/cli/garnetm.cr
+  sushi:
+    main: src/cli/sushi.cr
+  sushid:
+    main: src/cli/sushid.cr
+  sushim:
+    main: src/cli/sushim.cr
 
 dependencies:
   router:

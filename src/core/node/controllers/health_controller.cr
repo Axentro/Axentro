@@ -1,4 +1,4 @@
-module ::Garnet::Core::Controllers
+module ::Sushi::Core::Controllers
   class HealthController < Controller
 
     def exec_internal_get(context, params) : HTTP::Server::Context

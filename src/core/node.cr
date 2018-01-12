@@ -1,6 +1,6 @@
 require "./node/*"
 
-module ::Garnet::Core
+module ::Sushi::Core
   class Node
 
     MINER_DIFFICULTY = 5
@@ -90,7 +90,7 @@ module ::Garnet::Core
 
       draw_routes!
 
-      info "Start running Garnet's node on #{light_green(@bind_host)}:#{light_green(@bind_port)}"
+      info "Start running Sushi's node on #{light_green(@bind_host)}:#{light_green(@bind_port)}"
       info "Network type is #{light_green(@network_type)}"
 
       node = HTTP::Server.new(@bind_host, @bind_port, handlers)

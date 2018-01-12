@@ -1,4 +1,4 @@
-module ::Garnet::Core
+module ::Sushi::Core
   class WebSocketHandler < HTTP::WebSocketHandler
     def initialize(@path : String, &@proc : HTTP::WebSocket, HTTP::Server::Context -> Void)
     end

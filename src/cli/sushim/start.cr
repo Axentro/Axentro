@@ -1,11 +1,11 @@
-module ::Garnet::Interface
+module ::Sushi::Interface
   class Start < CLI
     @wallet_path : String?
     @node        : String?
     @is_testnet  : Bool = false
 
     def sub_actions
-      [] of GarnetAction
+      [] of SushiAction
     end
 
     def option_parser

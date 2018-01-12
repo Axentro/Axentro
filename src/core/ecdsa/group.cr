@@ -1,4 +1,4 @@
-module ::Garnet::Core::ECDSA
+module ::Sushi::Core::ECDSA
   abstract class Group
     abstract def _gx : BigInt
     abstract def _gy : BigInt

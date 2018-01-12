@@ -1,6 +1,6 @@
 require "./blockchain/*"
 
-module ::Garnet::Core
+module ::Sushi::Core
   class Blockchain
     getter chain : Models::Chain = Models::Chain.new
     getter current_transactions = [] of Transaction

@@ -1,4 +1,4 @@
-module ::Garnet::Core::Models
+module ::Sushi::Core::Models
   alias Header = NamedTuple(
           index: UInt32,
           nonce: UInt64,

@@ -1,4 +1,4 @@
-module ::Garnet::Interface
+module ::Sushi::Interface
   class Start < CLI
     @bind_host : String = "0.0.0.0"
     @bind_port : Int32  = 3000
@@ -9,7 +9,7 @@ module ::Garnet::Interface
     @is_testnet      : Bool = false
 
     def sub_actions
-      [] of GarnetAction
+      [] of SushiAction
     end
 
     def option_parser

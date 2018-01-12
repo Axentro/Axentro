@@ -1,4 +1,4 @@
-module ::Garnet::Core
+module ::Sushi::Core
   class Block
     extend Hashes
 

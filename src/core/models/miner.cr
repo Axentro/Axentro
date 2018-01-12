@@ -1,4 +1,4 @@
-module ::Garnet::Core::Models
+module ::Sushi::Core::Models
   alias Miner = NamedTuple(
           address: String,
           socket: HTTP::WebSocket,

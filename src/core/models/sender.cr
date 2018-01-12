@@ -1,4 +1,4 @@
-module ::Garnet::Core::Models
+module ::Sushi::Core::Models
   alias Sender = NamedTuple(
           address: String,
           px: String,
