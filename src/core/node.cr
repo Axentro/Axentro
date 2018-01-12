@@ -187,6 +187,15 @@ module ::Garnet::Core
 
       _m_content = M_CONTENT_HANDSHAKE_MINER.from_json(_content)
       address = _m_content.address
+      miner_network = Wallet.address_network_type(address)[:name]
+
+      if miner_network != @network_type
+        warning "Mismatch network type with miner #{address}"
+
+        return send(socket, M_TYPE_HANDSHAKE_MINER_REJECTED, {
+                      reason: "Network type mismatch",
+                    })
+      end
 
       miner = { socket: socket, address: address, nonces: [] of UInt64 }
 
@@ -215,7 +224,7 @@ module ::Garnet::Core
 
         return send(socket, M_TYPE_HANDSHAKE_NODE_REJECTED, {
                       context: context,
-                      reason: "Network work type mismatch: #{context[:type]}",
+                      reason: "Network type mismatch",
                     })
       end
 

@@ -1,11 +1,10 @@
 module ::Garnet::Core
   class Miner
-    @wallet : Wallet
-    @last_hash : String?
+    @wallet     : Wallet
+    @last_hash  : String?
     @difficulty : Int32 = 0
 
-    def initialize(@host : String, @port : Int32, wallet_path : String)
-      @wallet = Wallet.from_path(wallet_path)
+    def initialize(@is_testnet : Bool, @host : String, @port : Int32, @wallet : Wallet)
     end
 
     def pow : UInt64
@@ -55,6 +54,8 @@ module ::Garnet::Core
         case message_type
         when M_TYPE_HANDSHAKE_MINER_ACCEPTED
           _handshake_miner_accepted(socket, message_content)
+        when M_TYPE_HANDSHAKE_MINER_REJECTED
+          _handshake_miner_rejected(socket, message_content)
         when M_TYPE_BLOCK_UPDATE
           _block_update(socket, message_content)
         end
@@ -71,7 +72,7 @@ module ::Garnet::Core
       socket.run
     end
 
-    def _handshake_miner_accepted(socket, _content)
+    private def _handshake_miner_accepted(socket, _content)
       _m_content = M_CONTENT_HANDSHAKE_MINER_ACCEPTED.from_json(_content)
 
       @difficulty = _m_content.difficulty
@@ -82,7 +83,16 @@ module ::Garnet::Core
       info "Set last_hash == #{light_green(@last_hash)}"
     end
 
-    def _block_update(socket, _content)
+    private def _handshake_miner_rejected(socket, _content)
+      _m_content = M_CONTENT_HANDSHAKE_MINER_REJECTED.from_json(_content)
+
+      reason = _m_content.reason
+
+      error "Handshake failed for the reason;"
+      error reason
+    end
+
+    private def _block_update(socket, _content)
       _m_content = M_CONTENT_BLOCK_UPDATE.from_json(_content)
 
       @last_hash = _m_content.block.to_hash

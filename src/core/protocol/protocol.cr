@@ -29,7 +29,17 @@ module ::Garnet::Core::Protocol
 
   ##########
 
-  M_TYPE_FOUND_NONCE = 0x0003
+  M_TYPE_HANDSHAKE_MINER_REJECTED = 0x0003
+
+  struct M_CONTENT_HANDSHAKE_MINER_REJECTED
+    JSON.mapping({
+                   reason: String,
+                 })
+  end
+
+  ##########
+
+  M_TYPE_FOUND_NONCE = 0x0004
 
   struct M_CONTENT_FOUND_NONCE
     JSON.mapping({
@@ -39,7 +49,7 @@ module ::Garnet::Core::Protocol
 
   ##########
 
-  M_TYPE_BLOCK_UPDATE = 0x0004
+  M_TYPE_BLOCK_UPDATE = 0x0005
 
   struct M_CONTENT_BLOCK_UPDATE
     JSON.mapping({
