@@ -72,7 +72,18 @@ module ::Garnet::Core::Protocol
 
   ##########
 
-  M_TYPE_ADD_TRANSACTION = 0x0013
+  M_TYPE_HANDSHAKE_NODE_REJECTED = 0x0013
+
+  struct M_CONTENT_HANDSHAKE_NODE_REJECTED
+    JSON.mapping({
+                   context: Models::NodeContext,
+                   reason: String,
+                 })
+  end
+
+  ##########
+
+  M_TYPE_ADD_TRANSACTION = 0x0014
 
   struct M_CONTENT_ADD_TRANSACTION
     JSON.mapping({
@@ -82,7 +93,7 @@ module ::Garnet::Core::Protocol
 
   ##########
 
-  M_TYPE_BROADCAST_BLOCK = 0x0014
+  M_TYPE_BROADCAST_BLOCK = 0x0015
 
   struct M_CONTENT_BROADCAST_BLOCK
     JSON.mapping({
@@ -92,7 +103,7 @@ module ::Garnet::Core::Protocol
 
   ##########
 
-  M_TYPE_REQUEST_CHAIN = 0x0015
+  M_TYPE_REQUEST_CHAIN = 0x0016
 
   struct M_CONTENT_REQUEST_CHAIN
     JSON.mapping({
@@ -102,7 +113,7 @@ module ::Garnet::Core::Protocol
 
   ##########
 
-  M_TYPE_RECIEVE_CHAIN = 0x0016
+  M_TYPE_RECIEVE_CHAIN = 0x0017
 
   struct M_CONTENT_RECIEVE_CHAIN
     JSON.mapping({

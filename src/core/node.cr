@@ -91,7 +91,7 @@ module ::Garnet::Core
       draw_routes!
 
       info "Start running Garnet's node on #{light_green(@bind_host)}:#{light_green(@bind_port)}"
-      info "Network type is #{light_red(@network_type)}"
+      info "Network type is #{light_green(@network_type)}"
 
       node = HTTP::Server.new(@bind_host, @bind_port, handlers)
       node.listen
@@ -115,6 +115,8 @@ module ::Garnet::Core
           _handshake_node(socket, message_content)
         when M_TYPE_HANDSHAKE_NODE_ACCEPTED
           _handshake_node_accepted(socket, message_content)
+        when M_TYPE_HANDSHAKE_NODE_REJECTED
+          _handshake_node_rejected(socket, message_content)
         when M_TYPE_FOUND_NONCE
           _found_nonce(socket, message_content)
         when M_TYPE_ADD_TRANSACTION
@@ -206,7 +208,16 @@ module ::Garnet::Core
       node_context = _m_content.context
       known_nodes = _m_content.known_nodes
 
-      return if get_node(node_context[:id])
+      return warning "Node #{node_context[:id]} is already connected" if get_node(node_context[:id])
+
+      if node_context[:type] != @network_type
+        warning "Mismatch network type with node #{node_context[:id]}"
+
+        return send(socket, M_TYPE_HANDSHAKE_NODE_REJECTED, {
+                      context: context,
+                      reason: "Network work type mismatch: #{context[:type]}",
+                    })
+      end
 
       node_list = @nodes.map { |n|
         (n[:context][:id] == @id || known_nodes.includes?(n[:context])) ? nil : n[:context]
@@ -241,6 +252,17 @@ module ::Garnet::Core
       return if last_index <= @blockchain.last_index || @phase == PHASE_NODE_SYNCING
 
       sync_chain(socket)
+    end
+
+    private def _handshake_node_rejected(socket, _content)
+      _m_content = M_CONTENT_HANDSHAKE_NODE_REJECTED.from_json(_content)
+
+      node_context = _m_content.context
+      reason = _m_content.reason
+
+      error "Handshake with #{node_context[:id]} was rejected for the readson;"
+      error reason
+      error "Please check your network type and restart node"
     end
 
     private def _found_nonce(socket, _content)
