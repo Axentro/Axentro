@@ -1,4 +1,4 @@
-module ::Garnet::Core::Logger
+module ::Sushi::Core::Logger
 
   def debug(msg : String)
     log_out("Debug", msg, :light_gray)

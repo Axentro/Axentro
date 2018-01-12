@@ -7,14 +7,14 @@ require "./core"
 require "./cli/helps"
 require "./cli/modules"
 
-module ::Garnet::Interface
-  alias GarnetAction = NamedTuple(name: String, desc: String)
+module ::Sushi::Interface
+  alias SushiAction = NamedTuple(name: String, desc: String)
 
   abstract class CLI
 
     def initialize(
-          @action : GarnetAction,
-          @parents : Array(GarnetAction),
+          @action : SushiAction,
+          @parents : Array(SushiAction),
           @has_default_action : Bool = false,
         )
     end
@@ -25,7 +25,7 @@ module ::Garnet::Interface
       available_sub_actions = "Nothing" if available_sub_actions == ""
 
       puts "\n" +
-           "#{light_magenta("<Garnet>")}   #{@action[:desc]}\n\n" +
+           "#{light_magenta("Sushi")} #{@action[:desc]}\n\n" +
            "#{white_bg(black(" " + "-" * message.size + " "))}\n" +
            "#{white_bg(black(" " + message + " "))}\n" +
            "#{white_bg(black(" " + "-" * message.size + " "))}\n\n" +
@@ -47,7 +47,7 @@ module ::Garnet::Interface
       @parents.map { |a| a[:name] }.join(" ") + " " + @action[:name]
     end
 
-    def next_parents : Array(GarnetAction)
+    def next_parents : Array(SushiAction)
       @parents.concat([@action])
     end
 
@@ -114,7 +114,7 @@ module ::Garnet::Interface
       body
     end
 
-    abstract def sub_actions : Array(GarnetAction)
+    abstract def sub_actions : Array(SushiAction)
     abstract def option_parser : OptionParser?
     abstract def run_impl(action_name : String?) : OptionParser?
 

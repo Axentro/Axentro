@@ -1,4 +1,4 @@
-module ::Garnet::Core::Models
+module ::Sushi::Core::Models
   alias Recipient = NamedTuple(
           address: String,
           amount: Float64,

@@ -1,4 +1,4 @@
-module ::Garnet::Core
+module ::Sushi::Core
   class Miner
     @wallet     : Wallet
     @last_hash  : String?

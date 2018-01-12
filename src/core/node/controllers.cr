@@ -1,4 +1,4 @@
-module ::Garnet::Core::Controllers
+module ::Sushi::Core::Controllers
   abstract class Controller
 
     def initialize(@blockchain : Blockchain)

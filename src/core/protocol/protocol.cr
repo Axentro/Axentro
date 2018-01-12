@@ -1,4 +1,4 @@
-module ::Garnet::Core::Protocol
+module ::Sushi::Core::Protocol
 
   def send(socket, t, content)
     socket.send({ type: t, content: content.to_json }.to_json)

@@ -1,3 +1,3 @@
-module ::Garnet::Core::Models
+module ::Sushi::Core::Models
   alias Chain = Array(Block)
 end

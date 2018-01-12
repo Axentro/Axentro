@@ -1,6 +1,6 @@
 require "../cli"
 
-module ::Garnet::Interface::Garnet
+module ::Sushi::Interface::Sushi
   class Root < CLI
     @wallet_path       : String?
     @address           : String?
@@ -25,11 +25,11 @@ module ::Garnet::Interface::Garnet
         },
         {
           name: "amount",
-          desc: "Show remaining amount of Garnet token for specified address",
+          desc: "Show remaining amount of Sushi token for specified address",
         },
         {
           name: "send",
-          desc: "Send Garnet token to a specified address",
+          desc: "Send Sushi token to a specified address",
         },
         {
           name: "fees",
@@ -70,7 +70,7 @@ module ::Garnet::Interface::Garnet
         parser.on("-a ADDRESS", "--address=ADDRESS", "Public address") { |address|
           @address = address
         }
-        parser.on("-m AMOUNT", "--amount=AMOUNT", "The amount of Garnet token") { |amount|
+        parser.on("-m AMOUNT", "--amount=AMOUNT", "The amount of Sushi token") { |amount|
           @amount = amount.to_f
         }
         parser.on("-n NODE", "--node=NODE", "Connecting node") { |node|
@@ -181,7 +181,7 @@ module ::Garnet::Interface::Garnet
 
       unless @json
         json = JSON.parse(body)
-        puts_success("Show Garnet token amount of #{address}")
+        puts_success("Show Sushi token amount of #{address}")
         puts_info(json["amount"].to_s)
       else
         puts body
@@ -393,8 +393,8 @@ module ::Garnet::Interface::Garnet
   end
 end
 
-include ::Garnet::Interface
+include ::Sushi::Interface
 
-::Garnet::Interface::Garnet::Root.new(
-  { name: "garnet", desc: "Garnet's command line client" }, [] of GarnetAction
+::Sushi::Interface::Sushi::Root.new(
+  { name: "sushi", desc: "Sushi's command line client" }, [] of SushiAction
 ).run

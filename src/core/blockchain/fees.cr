@@ -1,4 +1,4 @@
-module ::Garnet::Core::Fees
+module ::Sushi::Core::Fees
   FEE_SEND = 0.1
 
   def min_fee_of_action(action : String) : Float64
