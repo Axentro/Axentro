@@ -71,13 +71,15 @@ module ::Sushi::Core
       send(socket, M_TYPE_HANDSHAKE_NODE, { context: context, known_nodes: known_nodes })
 
       connect_async(socket)
+    rescue e : Exception
+      handle_exception(socket.not_nil!, e, true) if socket
     end
 
     private def connect_async(socket)
       spawn do
         socket.run
       rescue e : Exception
-        handle_exception(socket, e)
+        handle_exception(socket, e, true)
       end
     end
 
@@ -152,16 +154,18 @@ module ::Sushi::Core
       end
     end
 
-    private def handle_exception(socket, e : Exception)
+    private def handle_exception(socket : HTTP::WebSocket, e : Exception, reject_node : Bool = false)
       if error_message = e.message
         error error_message
       else
         error "Unknown error occured"
       end
 
-      if node = get_node(socket)
+      if node = get_node?(socket)
         error "On: #{node[:context][:host]}:#{node[:context][:port]}"
       end
+
+      reject!(socket, nil) if reject_node
 
       @phase = PHASE_NODE_RUNNING
     end
@@ -217,7 +221,7 @@ module ::Sushi::Core
       node_context = _m_content.context
       known_nodes = _m_content.known_nodes
 
-      return warning "Node #{node_context[:id]} is already connected" if get_node(node_context[:id])
+      return warning "Node #{node_context[:id]} is already connected" if get_node?(node_context[:id])
 
       if node_context[:type] != @network_type
         warning "Mismatch network type with node #{node_context[:id]}"
@@ -255,7 +259,7 @@ module ::Sushi::Core
       info "Successfully connected to #{node_context[:id]} (#{@nodes.size})"
 
       node_list
-        .reject { |nc| get_node(nc[:id]) }
+        .reject { |nc| get_node?(nc[:id]) }
         .each { |nc| connect(nc[:host], nc[:port]) }
 
       return if last_index <= @blockchain.last_index || @phase == PHASE_NODE_SYNCING
@@ -281,7 +285,7 @@ module ::Sushi::Core
 
       nonce = _m_content.nonce
 
-      if miner = get_miner(socket)
+      if miner = get_miner?(socket)
 
         if !@last_nonces.includes?(nonce) && @blockchain.last_block.valid_nonce?(nonce, MINER_DIFFICULTY)
           info "Miner #{miner[:address]} will get reward!"
@@ -337,7 +341,7 @@ module ::Sushi::Core
         @c0 += 1
 
         unless @blockchain.push_block?(block, @miners)
-          if node = get_node(socket)
+          if node = get_node?(socket)
             error "Pushed block is invalid coming from #{node[:context][:host]}:#{node[:context][:port]}"
           end
 
@@ -351,7 +355,7 @@ module ::Sushi::Core
       elsif @blockchain.last_index == block.index
         @c1 += 1
 
-        if node = get_node(socket)
+        if node = get_node?(socket)
           warning "Blockchain conflicted with #{node[:context][:host]}:#{node[:context][:port]}"
           warning "ignore the block. (Size: #{light_cyan(@blockchain.chain.size)})"
 
@@ -433,15 +437,15 @@ module ::Sushi::Core
       end
     end
 
-    private def get_node(socket : HTTP::WebSocket) : Models::Node?
+    private def get_node?(socket : HTTP::WebSocket) : Models::Node?
       node = @nodes.find { |n| n[:socket] == socket }
     end
 
-    private def get_node(id : String) : Models::Node?
+    private def get_node?(id : String) : Models::Node?
       node = @nodes.find { |n| n[:context][:id] == id }
     end
 
-    private def get_miner(socket) : Models::Miner?
+    private def get_miner?(socket) : Models::Miner?
       miner = @miners.find { |m| m[:socket] == socket }
     end
 
