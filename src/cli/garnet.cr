@@ -85,7 +85,7 @@ module ::Garnet::Interface::Garnet
         ) { |transaction_id|
           @transaction_id = transaction_id
         }
-        parser.on("-u", "--unconfirmed", "Showing UNCONFIRMED amounts") {
+        parser.on("-u", "--unconfirmed", "Showing UNCONFIRMED amount") {
           @unconfirmed = true
         }
         parser.on("-j", "--json", "Print results as json") {

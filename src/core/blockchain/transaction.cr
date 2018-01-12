@@ -78,7 +78,7 @@ module ::Garnet::Core
         raise "sign_s of coinbase transaction have to be '0'" if @sign_s != "0"
 
         served_sum = @recipients.reduce(0.0) { |sum, recipient| prec(sum + recipient[:amount]) }
-        raise "Invalid served amounts for coinbase transaction: #{served_sum}" if served_sum != Blockchain.served_amount(block_index)
+        raise "Invalid served amount for coinbase transaction: #{served_sum}" if served_sum != Blockchain.served_amount(block_index)
       end
 
       true
@@ -107,16 +107,16 @@ module ::Garnet::Core
       )
     end
 
-    def sender_total_amounts : Float64
+    def sender_total_amount : Float64
       senders.reduce(0.0) { |sum, sender| prec(sum + sender[:amount]) }
     end
 
-    def recipient_total_amounts : Float64
+    def recipient_total_amount : Float64
       recipients.reduce(0.0) { |sum, recipient| prec(sum + recipient[:amount]) }
     end
 
     def calculate_fee : Float64
-      prec(sender_total_amounts - recipient_total_amounts)
+      prec(sender_total_amount - recipient_total_amount)
     end
 
     def calculate_utxo : Hash(String, Float64)
