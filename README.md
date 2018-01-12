@@ -1,6 +1,6 @@
-# SushiBlockchain
+# SushiCoin
 
-Blockchain implementation witten in Crystal.
+An awesome blockchain implementation.
 
 - Still under **Super Work In Progress**.
 - NOT safety and NOT stable.
