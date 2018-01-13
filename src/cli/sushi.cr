@@ -25,11 +25,11 @@ module ::Sushi::Interface::Sushi
         },
         {
           name: "amount",
-          desc: "Show remaining amount of Sushi token for specified address",
+          desc: "Show remaining amount of Sushi coins for specified address",
         },
         {
           name: "send",
-          desc: "Send Sushi token to a specified address",
+          desc: "Send Sushi coins to a specified address",
         },
         {
           name: "fees",
@@ -70,7 +70,7 @@ module ::Sushi::Interface::Sushi
         parser.on("-a ADDRESS", "--address=ADDRESS", "Public address") { |address|
           @address = address
         }
-        parser.on("-m AMOUNT", "--amount=AMOUNT", "The amount of Sushi token") { |amount|
+        parser.on("-m AMOUNT", "--amount=AMOUNT", "The amount of Sushi coins") { |amount|
           @amount = amount.to_f
         }
         parser.on("-n NODE", "--node=NODE", "Connecting node") { |node|
@@ -181,7 +181,7 @@ module ::Sushi::Interface::Sushi
 
       unless @json
         json = JSON.parse(body)
-        puts_success("Show Sushi token amount of #{address}")
+        puts_success("Show Sushi coins amount of #{address}")
         puts_info(json["amount"].to_s)
       else
         puts body
