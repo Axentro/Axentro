@@ -1,10 +1,10 @@
-# SushiCoin
-
 <h1 alian="center">
   <img src="https://raw.githubusercontent.com/tbrand/SushiCoin/master/imgs/sushicoin.png" width="200" height="200"/>
 </h1>
 
-An awesome blockchain implementation.
+# SushiCoin
+
+SushiCoin is an awesome  blockchain implementation :sushi:
 
 - Still under **Super Work In Progress**.
 - NOT safety and NOT stable.
