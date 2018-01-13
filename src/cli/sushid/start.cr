@@ -1,12 +1,13 @@
 module ::Sushi::Interface
   class Start < CLI
-    @bind_host     : String = "0.0.0.0"
-    @bind_port     : Int32  = 3000
-    @public_url    : String?
-    @connect_node  : String?
-    @wallet_path   : String?
-    @database_path : String?
-    @is_testnet    : Bool = false
+    @bind_host      : String = "0.0.0.0"
+    @bind_port      : Int32  = 3000
+    @public_url     : String?
+    @connect_node   : String?
+    @wallet_path    : String?
+    @database_path  : String?
+    @is_testnet     : Bool = false
+    @max_connection : Int32 = 5
 
     def sub_actions
       [] of SushiAction
@@ -32,11 +33,14 @@ module ::Sushi::Interface
         }
         parser.on(
           "-w WALLET_PATH",
-          "--wallet-path=WALLET_PATH",
+          "--wallet_path=WALLET_PATH",
           "wallet json's path",
         ) { |wallet_path| @wallet_path = wallet_path }
         parser.on("--testnet", "Set network type as testnet (default is mainnet)") {
           @is_testnet = true
+        }
+        parser.on("--conn_max=CONN_MAX", "Max # of connections when launch a node") { |conn_max|
+          @max_connection = conn_max.to_i
         }
       end
     end
@@ -78,10 +82,10 @@ module ::Sushi::Interface
       node = has_first_connection ?
                Core::Node.new(@is_testnet, @bind_host, @bind_port,
                               public_host, public_port,
-                              connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database) :
+                              connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, @max_connection) :
                Core::Node.new(@is_testnet, @bind_host, @bind_port,
                               public_host, public_port,
-                              nil, nil, wallet, database)
+                              nil, nil, wallet, database, @max_connection)
       node.run!
     end
 

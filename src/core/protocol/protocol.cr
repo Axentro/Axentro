@@ -63,6 +63,7 @@ module ::Sushi::Core::Protocol
     JSON.mapping({
                    context: Models::NodeContext,
                    known_nodes: Models::NodeContexts,
+                   request_nodes_num: Int32,
                  })
   end
 
