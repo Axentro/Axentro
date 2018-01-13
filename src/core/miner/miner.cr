@@ -29,9 +29,9 @@ module ::Sushi::Core
 
           next if time_diff == 0
 
-          hash_rate = ((nonce - last_nonce)/time_diff).to_i
+          hash_rate = (nonce - last_nonce)/time_diff
 
-          info "Hash Rate: #{hash_rate} [H/s]"
+          info "HashRate: #{hash_rate_with_unit(hash_rate)}"
 
           last_nonce = nonce
           last_time = time_now
@@ -79,8 +79,8 @@ module ::Sushi::Core
       @last_hash = _m_content.block.to_hash
 
       info "Handshake has been accepted"
-      info "Set difficulty == #{light_cyan(@difficulty)}"
-      info "Set last_hash == #{light_green(@last_hash)}"
+      info "Set difficulty: #{light_cyan(@difficulty)}"
+      info "Set last hash: #{light_green(@last_hash)}"
     end
 
     private def _handshake_miner_rejected(socket, _content)
@@ -99,6 +99,13 @@ module ::Sushi::Core
 
       info "Last block has been updated"
       info "Set last_hash == #{light_green(@last_hash)}"
+    end
+
+    private def hash_rate_with_unit(hash_rate : Float64) : String
+      return "#{hash_rate.to_i} [H/s]" if hash_rate / 1000.0 <= 1.0
+      return "#{(hash_rate/1000.0).to_i} [KH/s]" if hash_rate / 1000000.0 <= 1.0
+      return "#{(hash_rate/1000000.0).to_i} [MH/s]" if hash_rate / 1000000000.0 <= 1.0
+      "#{(hash_rate/1000000000.0).to_i} [GH/s]"
     end
 
     include Logger

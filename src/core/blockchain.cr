@@ -156,7 +156,9 @@ module ::Sushi::Core
     end
 
     def self.served_amount(index) : Float64
-      10.0
+      div = (index / 10000).to_i
+      return 10000.0 if div == 0
+      (10000 / div).to_f
     end
 
     def headers

@@ -2,8 +2,6 @@ module ::Sushi::Core::Protocol
 
   def send(socket, t, content)
     socket.send({ type: t, content: content.to_json }.to_json)
-  rescue e : Exception
-    p e
   end
 
   ##########
