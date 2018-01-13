@@ -2,16 +2,15 @@ require "./node/*"
 
 module ::Sushi::Core
   class Node
-
     MINER_DIFFICULTY = 5
 
-    @network_type      : String
     @blockchain        : Blockchain
+    @network_type      : String
     @id                : String
+    @phase             : Int32
     @nodes             : Models::Nodes
     @miners            : Models::Miners
     @rpc_controller    : Controllers::RPCController
-    @phase             : Int32
 
     @latest_nonces  : Array(UInt64)
     @latest_unknown : Int64? = nil
@@ -23,15 +22,16 @@ module ::Sushi::Core
     @c3 : Int32 = 0
 
     def initialize(
-          @is_testnet   : Bool,
-          @bind_host    : String,
-          @bind_port    : Int32,
-          @public_host  : String,
-          @public_port  : Int32,
-          connect_host  : String?,
-          connect_port  : Int32?,
-          @wallet       : Wallet,
-          @database     : Database?,
+          @is_testnet     : Bool,
+          @bind_host      : String,
+          @bind_port      : Int32,
+          @public_host    : String,
+          @public_port    : Int32,
+          connect_host    : String?,
+          connect_port    : Int32?,
+          @wallet         : Wallet,
+          @database       : Database?,
+          @max_connection : Int32,
         )
       @id = Random::Secure.hex(16)
 
@@ -64,14 +64,14 @@ module ::Sushi::Core
       end
 
       if connect_host && connect_port
-        connect(connect_host.not_nil!, connect_port.not_nil!)
+        connect(connect_host.not_nil!, connect_port.not_nil!,  @max_connection - 1)
       else
         warning "no connecting node has been specified"
         warning "so this node is standalone from other network"
       end
     end
 
-    private def connect(connect_host : String, connect_port : Int32)
+    private def connect(connect_host : String, connect_port : Int32, request_nodes_num : Int32 = 0)
       info "connecting to #{light_green(connect_host)}:#{light_green(connect_port)}"
 
       known_nodes = @nodes.map { |n| n[:context] }
@@ -79,7 +79,7 @@ module ::Sushi::Core
       socket = HTTP::WebSocket.new(connect_host, "/peer", connect_port)
       peer(socket)
 
-      send(socket, M_TYPE_HANDSHAKE_NODE, { context: context, known_nodes: known_nodes })
+      send(socket, M_TYPE_HANDSHAKE_NODE, { context: context, known_nodes: known_nodes, request_nodes_num: request_nodes_num })
 
       connect_async(socket)
     rescue e : Exception
@@ -231,6 +231,7 @@ module ::Sushi::Core
 
       node_context = _m_content.context
       known_nodes = _m_content.known_nodes
+      request_nodes_num = _m_content.request_nodes_num
 
       return warning "node #{node_context[:id]} is already connected" if get_node?(node_context[:id])
 
@@ -245,7 +246,7 @@ module ::Sushi::Core
 
       node_list = @nodes.map { |n|
         (n[:context][:id] == @id || known_nodes.includes?(n[:context])) ? nil : n[:context]
-      }.compact
+      }.compact.sample(request_nodes_num)
 
       send(socket, M_TYPE_HANDSHAKE_NODE_ACCEPTED, {
              context: context,
@@ -269,9 +270,7 @@ module ::Sushi::Core
 
       info "successfully connected: #{node_context[:id]} (#{@nodes.size})"
 
-      node_list
-        .reject { |nc| get_node?(nc[:id]) }
-        .each { |nc| connect(nc[:host], nc[:port]) }
+      node_list.each { |nc| connect(nc[:host], nc[:port]) }
 
       return if latest_index <= @blockchain.latest_index || @phase == PHASE_NODE_SYNCING
 
@@ -302,7 +301,7 @@ module ::Sushi::Core
           miner[:nonces].push(nonce)
           @latest_nonces.push(nonce)
 
-          info "miner #{miner[:address]} founds nonce (#{miner[:nonces]})"
+          info "miner #{miner[:address]} founds nonce (#{miner[:nonces].size})"
         else
           warning "nonce #{nonce} has been already discoverd" if @latest_nonces.includes?(nonce)
 

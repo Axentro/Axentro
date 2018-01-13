@@ -1,17 +1,18 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/tbrand/SushiCoin/master/imgs/sushicoin.png" width="200" height="200" />
+</p1>
+
+<p align="center">🍣 <i>An awesome developable blockchain implementation.</i> 🍣</p>
+
 # SushiCoin
+- Developer friendly APIs
+- Written in Crystal language
+- I love SUSHI🍣
 
-<h1 align="center">
-  <img src="https://raw.githubusercontent.com/tbrand/SushiCoin/master/imgs/sushicoin.png" width="200" height="200"/>
-</h1>
+## Milestone
+- Basic implementation
+- Publish testnet (**Current status**)
+- Publish mainnet
 
-SushiCoin is an awesome  blockchain implementation :sushi:
-
-- Still under **Super Work In Progress**.
-- NOT safety and NOT stable.
-- Has no compatible with Bitcoin.
-
-Ticker: SUSHI
-Total amount: 1036680000.0
-
-## Licenses
-- Icons made by [Freepik](http://www.freepik.com) from [www.flaticon.com](https://www.flaticon.com/) is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/)
+## Document
+All documents are written on [wiki](https://github.com/tbrand/SushiCoin/wiki). If you have any questions, feel free to ask me on [Twitter](https://twitter.com/taichiro_dev).
