@@ -1,7 +1,7 @@
 module ::Sushi::Core
   class UTXO
 
-    CONFIRMATION = 2
+    CONFIRMATION = 10
 
     @utxo_internal : Array(Hash(String, Float64)) = Array(Hash(String, Float64)).new
     @transaction_indices : Hash(String, Int64) = Hash(String, Int64).new
