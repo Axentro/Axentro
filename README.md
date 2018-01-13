@@ -1,5 +1,9 @@
 # SushiCoin
 
+<h1 alian="center">
+  <img src="https://raw.githubusercontent.com/tbrand/SushiCoin/master/imgs/sushicoin.png" width="200" height="200"/>
+</h1>
+
 An awesome blockchain implementation.
 
 - Still under **Super Work In Progress**.
@@ -8,3 +12,6 @@ An awesome blockchain implementation.
 
 Ticker: SUSHI
 Total amount: 1036680000.0
+
+## Licenses
+- Icons made by [Freepik](http://www.freepik.com) from [www.flaticon.com](https://www.flaticon.com/) is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/)
