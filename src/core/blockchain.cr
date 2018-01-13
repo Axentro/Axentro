@@ -7,34 +7,71 @@ module ::Sushi::Core
     getter wallet : Wallet
     getter utxo : UTXO
 
-    def initialize(@wallet : Wallet)
+    def initialize(@wallet : Wallet, @database : Database? = nil)
       @utxo = UTXO.new
-      @chain.push(genesis_block)
+
+      if database = @database
+        restore_from_database(database)
+      else
+        set_genesis
+      end
 
       add_transaction(create_first_transaction([] of Models::Miner))
     end
 
-    def push_block?(nonce : UInt64, miners : Models::Miners) : Block?
-      return nil unless last_block.valid_nonce?(nonce)
+    def set_genesis
+      @chain.push(genesis_block)
 
-      index = @chain.size.to_u32
+      if database = @database
+        database.push_block(genesis_block)
+      end
+    end
+
+    def restore_from_database(database : Database)
+      current_index = 0_i64
+
+      loop do
+        _block = database.get_block(current_index)
+
+        break unless block = _block
+        break unless block.valid_as_latest?(self)
+
+        @chain.push(block)
+
+        current_index += 1
+      end
+    rescue e : Exception
+    # Database stores invalid chain
+    # Ignore the error, will sync chain from other nodes
+    ensure
+      set_genesis if @chain.size == 0
+    end
+
+    def push_block?(nonce : UInt64, miners : Models::Miners) : Block?
+      return nil unless latest_block.valid_nonce?(nonce)
+
+      index = @chain.size.to_i64
       transactions = @current_transactions.dup
 
       block = Block.new(
         index,
         transactions,
         nonce,
-        last_block.to_hash,
+        latest_block.to_hash,
       )
 
       push_block?(block, miners)
     end
 
     def push_block?(block : Block, miners : Models::Miners) : Block?
-      return nil unless block.valid_as_last?(self)
+      return nil unless block.valid_as_latest?(self)
 
       @chain.push(block)
       record_utxo
+
+      if database = @database
+        database.push_block(block)
+      end
 
       @current_transactions.clear
       add_transaction(create_first_transaction(miners))
@@ -51,7 +88,6 @@ module ::Sushi::Core
 
       subchain.each do |block|
         return false unless block.valid_for?(prev_block)
-
         prev_block = block
       end
 
@@ -61,6 +97,10 @@ module ::Sushi::Core
       @utxo.record(@chain)
 
       record_utxo
+
+      if database = @database
+        database.replace_chain(@chain)
+      end
 
       true
     end
@@ -83,15 +123,15 @@ module ::Sushi::Core
       @utxo.get(address)
     end
 
-    def last_block : Block
+    def latest_block : Block
       @chain[-1]
     end
 
-    def last_index : UInt32
-      last_block.index
+    def latest_index : Int64
+      latest_block.index
     end
 
-    def subchain(from : UInt32)
+    def subchain(from : Int64)
       return nil if @chain.size < from
 
       @chain[from..-1]
@@ -102,7 +142,7 @@ module ::Sushi::Core
     end
 
     def genesis_block : Block
-      genesis_index = 0_u32
+      genesis_index = 0_i64
       genesis_transactions = [] of Transaction
       genesis_nonce = 0_u64
       genesis_prev_hash = "genesis"
@@ -116,7 +156,7 @@ module ::Sushi::Core
     end
 
     def create_first_transaction(miners : Models::Miners) : Transaction
-      rewards_total = Blockchain.served_amount(last_index)
+      rewards_total = Blockchain.served_amount(latest_index)
 
       miners_nonces_size = miners.reduce(0) { |sum, m| sum + m[:nonces].size }.to_f
       miners_rewards_total = prec((rewards_total * 3.0) / 4.0)
@@ -137,18 +177,20 @@ module ::Sushi::Core
         "head",
         senders,
         miners_recipients.push(node_reccipient),
+        "0", # message
         "0", # prev_hash
         "0", # sign_r
         "0", # sign_s
       )
     end
 
-    def create_unsigned_transaction(action, senders, recipients) : Transaction
+    def create_unsigned_transaction(action, senders, recipients, message) : Transaction
       Transaction.new(
         Transaction.create_id,
         action,
         senders,
         recipients,
+        message,
         "0", # prev_hash
         "0", # sign_r
         "0", # sign_s
@@ -165,7 +207,7 @@ module ::Sushi::Core
       @chain.map { |block| block.to_header }
     end
 
-    def block_index(transaction_id : String) : UInt32?
+    def block_index(transaction_id : String) : Int64?
       @utxo.index(transaction_id)
     end
 

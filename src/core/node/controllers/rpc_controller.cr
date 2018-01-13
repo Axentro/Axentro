@@ -34,7 +34,7 @@ module ::Sushi::Core::Controllers
     def create_transaction(json, context, params)
       transaction = Transaction.from_json(json["transaction"].to_s)
 
-      if transaction.valid?(@blockchain, @blockchain.last_index, false)
+      if transaction.valid?(@blockchain, @blockchain.latest_index, false)
         node.broadcast_transaction(transaction)
         context.response.print transaction.to_json
         return context
@@ -53,11 +53,13 @@ module ::Sushi::Core::Controllers
       action = json["action"].to_s
       senders = Models::Senders.from_json(json["senders"].to_s)
       recipients = Models::Recipients.from_json(json["recipients"].to_s)
+      message = json["message"].to_s
 
       transaction = @blockchain.create_unsigned_transaction(
         action,
         senders,
         recipients,
+        message,
       )
 
       fee = transaction.calculate_fee
