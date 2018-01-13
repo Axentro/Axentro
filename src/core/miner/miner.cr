@@ -10,7 +10,7 @@ module ::Sushi::Core
     def pow : UInt64
       nonce : UInt64 = Random.rand(UInt64::MAX)
 
-      info "Starting nonce from #{light_cyan(nonce)}"
+      info "starting nonce from #{light_cyan(nonce)}"
 
       latest_nonce = nonce
       latest_time = Time.now
@@ -31,14 +31,14 @@ module ::Sushi::Core
 
           hash_rate = (nonce - latest_nonce)/time_diff
 
-          info "HashRate: #{hash_rate_with_unit(hash_rate)}"
+          info "#{nonce - latest_nonce} hashed, #{hash_rate_with_unit(hash_rate)}"
 
           latest_nonce = nonce
           latest_time = time_now
         end
       end
 
-      info "Found new nonce! #{light_cyan(nonce)}"
+      info "found new nonce: #{light_cyan(nonce)}"
 
       nonce
     end
@@ -78,9 +78,9 @@ module ::Sushi::Core
       @difficulty = _m_content.difficulty
       @latest_hash = _m_content.block.to_hash
 
-      info "Handshake has been accepted"
-      info "Set difficulty: #{light_cyan(@difficulty)}"
-      info "Set latest hash: #{light_green(@latest_hash)}"
+      info "handshake has been accepted"
+      info "set difficulty: #{light_cyan(@difficulty)}"
+      info "set latest hash: #{light_green(@latest_hash)}"
     end
 
     private def _handshake_miner_rejected(socket, _content)
@@ -88,7 +88,7 @@ module ::Sushi::Core
 
       reason = _m_content.reason
 
-      error "Handshake failed for the reason;"
+      error "handshake failed for the reason;"
       error reason
     end
 
@@ -98,8 +98,8 @@ module ::Sushi::Core
       latest_block = _m_content.block
       @latest_hash = latest_block.to_hash
 
-      info "Latest block has been updated"
-      info "Set latest_hash: #{light_green(@latest_hash)}"
+      info "latest block has been updated"
+      info "set latest_hash: #{light_green(@latest_hash)}"
     end
 
     private def hash_rate_with_unit(hash_rate : Float64) : String
