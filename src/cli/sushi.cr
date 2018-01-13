@@ -12,6 +12,7 @@ module ::Sushi::Interface::Sushi
     @unconfirmed       : Bool = false
     @json              : Bool = false
     @is_testnet        : Bool = false
+    @message           : String = ""
 
     def sub_actions
       [
@@ -72,6 +73,9 @@ module ::Sushi::Interface::Sushi
         }
         parser.on("-m AMOUNT", "--amount=AMOUNT", "The amount of Sushi coins") { |amount|
           @amount = amount.to_f
+        }
+        parser.on("--message=MESSAGE", "Add message into transaction") { |message|
+          @message = message
         }
         parser.on("-n NODE", "--node=NODE", "Connecting node") { |node|
           @node = node
@@ -229,7 +233,7 @@ module ::Sushi::Interface::Sushi
         }
       )
 
-      add_transaction(node, wallet, "send", senders, recipients, "0")
+      add_transaction(node, wallet, "send", senders, recipients, @message)
     end
 
     def fees
@@ -282,10 +286,10 @@ module ::Sushi::Interface::Sushi
       end
 
       payload = if index = @index
-                  @message = "Show a block for index: #{@index}"
+                  success_message = "Show a block for index: #{@index}"
                   { call: "block", index: index, header: @header }.to_json
                 elsif transaction_id = @transaction_id
-                  @message = "Show a block for transaction: #{@transaction_id}"
+                  success_message = "Show a block for transaction: #{@transaction_id}"
                   { call: "block", transaction_id: transaction_id, header: @header }.to_json
                 else
                   puts_help(HELP_BLOCK_INDEX_OR_TRANSACTION_ID)
@@ -293,7 +297,7 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
-      puts_success(@message)
+      puts_success(success_message)
       puts_info(body)
     end
 
@@ -336,9 +340,9 @@ module ::Sushi::Interface::Sushi
                         action : String,
                         senders : Core::Models::Senders,
                         recipients : Core::Models::Recipients,
-                        content_hash : String)
+                        message : String)
       unsigned_transaction =
-        create_unsigned_transaction(node, action, senders, recipients, content_hash)
+        create_unsigned_transaction(node, action, senders, recipients, message)
 
       signed_transaction = sign(wallet, unsigned_transaction)
 
@@ -361,13 +365,13 @@ module ::Sushi::Interface::Sushi
                                     action : String,
                                     senders : Core::Models::Senders,
                                     recipients : Core::Models::Recipients,
-                                    content_hash : String)
+                                    message : String)
       payload = {
         call: "create_unsigned_transaction",
         action: action,
         senders: senders.to_json,
         recipients: recipients.to_json,
-        content_hash: content_hash,
+        message: message,
       }.to_json
 
       body = rpc(node, payload)

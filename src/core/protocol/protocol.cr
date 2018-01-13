@@ -2,8 +2,6 @@ module ::Sushi::Core::Protocol
 
   def send(socket, t, content)
     socket.send({ type: t, content: content.to_json }.to_json)
-  rescue e : Exception
-    p e
   end
 
   ##########
@@ -76,7 +74,7 @@ module ::Sushi::Core::Protocol
     JSON.mapping({
                    context: Models::NodeContext,
                    node_list: Models::NodeContexts,
-                   last_index: UInt32,
+                   latest_index: Int64,
                  })
   end
 
@@ -117,7 +115,7 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_REQUEST_CHAIN
     JSON.mapping({
-                   last_index: UInt32,
+                   latest_index: Int64,
                  })
   end
 

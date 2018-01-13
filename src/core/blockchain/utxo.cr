@@ -4,7 +4,7 @@ module ::Sushi::Core
     CONFIRMATION = 2
 
     @utxo_internal : Array(Hash(String, Float64)) = Array(Hash(String, Float64)).new
-    @transaction_indices : Hash(String, UInt32) = Hash(String, UInt32).new
+    @transaction_indices : Hash(String, Int64) = Hash(String, Int64).new
 
     def initialize
     end
@@ -64,7 +64,7 @@ module ::Sushi::Core
       # show
     end
 
-    def index(transaction_id : String) : UInt32?
+    def index(transaction_id : String) : Int64?
       @transaction_indices[transaction_id]?
     end
 

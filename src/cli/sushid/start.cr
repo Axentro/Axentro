@@ -1,12 +1,12 @@
 module ::Sushi::Interface
   class Start < CLI
-    @bind_host : String = "0.0.0.0"
-    @bind_port : Int32  = 3000
-
-    @public_url   : String?
-    @connect_node : String?
-    @wallet_path  : String?
-    @is_testnet      : Bool = false
+    @bind_host     : String = "0.0.0.0"
+    @bind_port     : Int32  = 3000
+    @public_url    : String?
+    @connect_node  : String?
+    @wallet_path   : String?
+    @database_path : String?
+    @is_testnet    : Bool = false
 
     def sub_actions
       [] of SushiAction
@@ -26,6 +26,9 @@ module ::Sushi::Interface
         }
         parser.on("-n NODE", "--node=NODE", "Connecting node") { |connect_node|
           @connect_node = connect_node
+        }
+        parser.on("-d DATABASE", "--database=DATABASE", "Path to a database (SQLite3)") { |database_path|
+          @database_path = database_path
         }
         parser.on(
           "-w WALLET_PATH",
@@ -66,13 +69,19 @@ module ::Sushi::Interface
 
       wallet = Core::Wallet.from_path(wallet_path)
 
+      database = if database_path = @database_path
+                   Core::Database.new(database_path)
+                 else
+                   nil
+                 end
+
       node = has_first_connection ?
                Core::Node.new(@is_testnet, @bind_host, @bind_port,
                               public_host, public_port,
-                              connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet) :
+                              connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database) :
                Core::Node.new(@is_testnet, @bind_host, @bind_port,
                               public_host, public_port,
-                              nil, nil, wallet)
+                              nil, nil, wallet, database)
       node.run!
     end
 

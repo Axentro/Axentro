@@ -1,10 +1,14 @@
 module ::Sushi::Core
   class Transaction
+    MESSAGE_SIZE_LIMIT = 512
+    ACTIONS = %(send)
+
     JSON.mapping(
       id: String,
       action: String,
       senders: Models::Senders,
       recipients: Models::Recipients,
+      message: String,
       prev_hash: String,
       sign_r: String,
       sign_s: String,
@@ -17,6 +21,7 @@ module ::Sushi::Core
           @action : String,
           @senders : Models::Senders,
           @recipients : Models::Recipients,
+          @message : String,
           @prev_hash : String,
           @sign_r : String,
           @sign_s : String,
@@ -34,8 +39,10 @@ module ::Sushi::Core
       sha256(string)
     end
 
-    def valid?(blockchain : Blockchain, block_index : UInt32, is_coinbase : Bool) : Bool
+    def valid?(blockchain : Blockchain, block_index : Int64, is_coinbase : Bool) : Bool
       raise "Length of transaction id have to be 64: #{@id}" if @id.size != 64
+      raise "Message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
+      raise "Unknown action: #{@action}" unless ACTIONS.includes?(@action)
 
       @senders.each do |sender|
         raise "Invalid checksum for sender's address: #{sender[:address]}" unless Wallet.valid_checksum?(sender[:address])
@@ -72,6 +79,7 @@ module ::Sushi::Core
         end
       else
         raise "actions have to be 'head' for coinbase transaction " if @action != "head"
+        raise "message have to be '0' for coinbase transaction" if @message != "0"
         raise "Sender have to be only one currently" if @senders.size != 0
         raise "prev_hash of coinbase transaction have to be '0'" if @prev_hash != "0"
         raise "sign_r of coinbase transaction have to be '0'" if @sign_r != "0"
@@ -89,6 +97,7 @@ module ::Sushi::Core
         self.action,
         self.senders,
         self.recipients,
+        self.message,
         self.prev_hash,
         sign_r,
         sign_s,
@@ -101,6 +110,7 @@ module ::Sushi::Core
         self.action,
         self.senders,
         self.recipients,
+        self.message,
         "0",
         "0",
         "0",
