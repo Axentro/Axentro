@@ -1,4 +1,4 @@
-module ::Garnet::Core::Controllers
+module ::Sushi::Core::Controllers
 
   class RPCController < Controller
 

@@ -1,4 +1,4 @@
-module ::Garnet::Core::ECDSA
+module ::Sushi::Core::ECDSA
   class Point
     getter x : BigInt
     getter y : BigInt

@@ -1,8 +1,9 @@
-module ::Garnet::Core::Models
+module ::Sushi::Core::Models
   alias NodeContext = NamedTuple(
           id: String,
           host: String,
           port: Int32,
+          type: String,
         )
 
   alias NodeContexts = Array(NodeContext)

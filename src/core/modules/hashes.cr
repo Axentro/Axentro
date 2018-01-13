@@ -1,4 +1,4 @@
-module ::Garnet::Core::Hashes
+module ::Sushi::Core::Hashes
   ALGORITHMS = %w( sha256 ripemd160 )
 
   {% for a in ALGORITHMS %}

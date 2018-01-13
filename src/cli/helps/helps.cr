@@ -1,4 +1,4 @@
-module ::Garnet::Interface
+module ::Sushi::Interface
   module Helps
     HELP_WALLET_PATH = "Please specify your wallet: -w [your_wallet.json]"
     HELP_WALLET_PATH_OR_ADDRESS = "Please specify a wallet or an address: -w [your_wallet.json] or -a [public_address]"

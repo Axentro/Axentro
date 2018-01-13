@@ -1,4 +1,4 @@
-module ::Garnet::Core::ECDSA
+module ::Sushi::Core::ECDSA
   def mod_inv(a : BigInt, mod : BigInt)
     lim, him = BigInt.new(1), BigInt.new(0)
     low, high = a % mod, mod

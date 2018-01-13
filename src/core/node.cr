@@ -1,10 +1,11 @@
 require "./node/*"
 
-module ::Garnet::Core
+module ::Sushi::Core
   class Node
 
     MINER_DIFFICULTY = 5
 
+    @network_type      : String
     @blockchain        : Blockchain
     @id                : String
     @nodes             : Models::Nodes
@@ -22,14 +23,16 @@ module ::Garnet::Core
     @last_nonces : Array(UInt64)
 
     def initialize(
-          @bind_host : String,
-          @bind_port : Int32,
-          @public_host : String,
-          @public_port : Int32,
-          connect_host : String?,
-          connect_port : Int32?,
-          @wallet : Wallet)
-
+          @is_testnet   : Bool,
+          @bind_host    : String,
+          @bind_port    : Int32,
+          @public_host  : String,
+          @public_port  : Int32,
+          connect_host  : String?,
+          connect_port  : Int32?,
+          @wallet       : Wallet
+        )
+      @network_type   = @is_testnet ? "testnet" : "mainnet"
       @blockchain     = Blockchain.new(@wallet)
       @id             = Random::Secure.hex(16)
       @nodes          = Models::Nodes.new
@@ -39,6 +42,15 @@ module ::Garnet::Core
       @last_nonces    = Array(UInt64).new
 
       info "The node id is #{light_green(@id)}"
+
+      wallet_network = Wallet.address_network_type(@wallet.address)
+
+      unless wallet_network[:name] == @network_type
+        error "Wallet type mismatch"
+        error "Node's   network: #{@network_type}"
+        error "Wallet's network: #{wallet_network[:name]}"
+        exit -1
+      end
 
       if connect_host && connect_port
         connect(connect_host.not_nil!, connect_port.not_nil!)
@@ -59,13 +71,15 @@ module ::Garnet::Core
       send(socket, M_TYPE_HANDSHAKE_NODE, { context: context, known_nodes: known_nodes })
 
       connect_async(socket)
+    rescue e : Exception
+      handle_exception(socket.not_nil!, e, true) if socket
     end
 
     private def connect_async(socket)
       spawn do
         socket.run
       rescue e : Exception
-        handle_exception(socket, e)
+        handle_exception(socket, e, true)
       end
     end
 
@@ -78,7 +92,8 @@ module ::Garnet::Core
 
       draw_routes!
 
-      info "Start running Garnet's node on #{light_green(@bind_host)}:#{light_green(@bind_port)}"
+      info "Start running Sushi's node on #{light_green(@bind_host)}:#{light_green(@bind_port)}"
+      info "Network type is #{light_green(@network_type)}"
 
       node = HTTP::Server.new(@bind_host, @bind_port, handlers)
       node.listen
@@ -102,6 +117,8 @@ module ::Garnet::Core
           _handshake_node(socket, message_content)
         when M_TYPE_HANDSHAKE_NODE_ACCEPTED
           _handshake_node_accepted(socket, message_content)
+        when M_TYPE_HANDSHAKE_NODE_REJECTED
+          _handshake_node_rejected(socket, message_content)
         when M_TYPE_FOUND_NONCE
           _found_nonce(socket, message_content)
         when M_TYPE_ADD_TRANSACTION
@@ -137,16 +154,18 @@ module ::Garnet::Core
       end
     end
 
-    private def handle_exception(socket, e : Exception)
+    private def handle_exception(socket : HTTP::WebSocket, e : Exception, reject_node : Bool = false)
       if error_message = e.message
         error error_message
       else
         error "Unknown error occured"
       end
 
-      if node = get_node(socket)
+      if node = get_node?(socket)
         error "On: #{node[:context][:host]}:#{node[:context][:port]}"
       end
+
+      reject!(socket, nil) if reject_node
 
       @phase = PHASE_NODE_RUNNING
     end
@@ -172,6 +191,15 @@ module ::Garnet::Core
 
       _m_content = M_CONTENT_HANDSHAKE_MINER.from_json(_content)
       address = _m_content.address
+      miner_network = Wallet.address_network_type(address)[:name]
+
+      if miner_network != @network_type
+        warning "Mismatch network type with miner #{address}"
+
+        return send(socket, M_TYPE_HANDSHAKE_MINER_REJECTED, {
+                      reason: "Network type mismatch",
+                    })
+      end
 
       miner = { socket: socket, address: address, nonces: [] of UInt64 }
 
@@ -193,7 +221,16 @@ module ::Garnet::Core
       node_context = _m_content.context
       known_nodes = _m_content.known_nodes
 
-      return if get_node(node_context[:id])
+      return warning "Node #{node_context[:id]} is already connected" if get_node?(node_context[:id])
+
+      if node_context[:type] != @network_type
+        warning "Mismatch network type with node #{node_context[:id]}"
+
+        return send(socket, M_TYPE_HANDSHAKE_NODE_REJECTED, {
+                      context: context,
+                      reason: "Network type mismatch",
+                    })
+      end
 
       node_list = @nodes.map { |n|
         (n[:context][:id] == @id || known_nodes.includes?(n[:context])) ? nil : n[:context]
@@ -222,12 +259,23 @@ module ::Garnet::Core
       info "Successfully connected to #{node_context[:id]} (#{@nodes.size})"
 
       node_list
-        .reject { |nc| get_node(nc[:id]) }
+        .reject { |nc| get_node?(nc[:id]) }
         .each { |nc| connect(nc[:host], nc[:port]) }
 
       return if last_index <= @blockchain.last_index || @phase == PHASE_NODE_SYNCING
 
       sync_chain(socket)
+    end
+
+    private def _handshake_node_rejected(socket, _content)
+      _m_content = M_CONTENT_HANDSHAKE_NODE_REJECTED.from_json(_content)
+
+      node_context = _m_content.context
+      reason = _m_content.reason
+
+      error "Handshake with #{node_context[:id]} was rejected for the readson;"
+      error reason
+      error "Please check your network type and restart node"
     end
 
     private def _found_nonce(socket, _content)
@@ -237,7 +285,7 @@ module ::Garnet::Core
 
       nonce = _m_content.nonce
 
-      if miner = get_miner(socket)
+      if miner = get_miner?(socket)
 
         if !@last_nonces.includes?(nonce) && @blockchain.last_block.valid_nonce?(nonce, MINER_DIFFICULTY)
           info "Miner #{miner[:address]} will get reward!"
@@ -293,7 +341,7 @@ module ::Garnet::Core
         @c0 += 1
 
         unless @blockchain.push_block?(block, @miners)
-          if node = get_node(socket)
+          if node = get_node?(socket)
             error "Pushed block is invalid coming from #{node[:context][:host]}:#{node[:context][:port]}"
           end
 
@@ -307,7 +355,7 @@ module ::Garnet::Core
       elsif @blockchain.last_index == block.index
         @c1 += 1
 
-        if node = get_node(socket)
+        if node = get_node?(socket)
           warning "Blockchain conflicted with #{node[:context][:host]}:#{node[:context][:port]}"
           warning "ignore the block. (Size: #{light_cyan(@blockchain.chain.size)})"
 
@@ -389,15 +437,15 @@ module ::Garnet::Core
       end
     end
 
-    private def get_node(socket : HTTP::WebSocket) : Models::Node?
+    private def get_node?(socket : HTTP::WebSocket) : Models::Node?
       node = @nodes.find { |n| n[:socket] == socket }
     end
 
-    private def get_node(id : String) : Models::Node?
+    private def get_node?(id : String) : Models::Node?
       node = @nodes.find { |n| n[:context][:id] == id }
     end
 
-    private def get_miner(socket) : Models::Miner?
+    private def get_miner?(socket) : Models::Miner?
       miner = @miners.find { |m| m[:socket] == socket }
     end
 
@@ -413,6 +461,7 @@ module ::Garnet::Core
         id: @id,
         host: @public_host,
         port: @public_port,
+        type: @network_type,
       }
     end
 

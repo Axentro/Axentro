@@ -1,6 +1,6 @@
 require "./blockchain/*"
 
-module ::Garnet::Core
+module ::Sushi::Core
   class Blockchain
     getter chain : Models::Chain = Models::Chain.new
     getter current_transactions = [] of Transaction
@@ -116,7 +116,6 @@ module ::Garnet::Core
     end
 
     def create_first_transaction(miners : Models::Miners) : Transaction
-
       rewards_total = Blockchain.served_amount(last_index)
 
       miners_nonces_size = miners.reduce(0) { |sum, m| sum + m[:nonces].size }.to_f

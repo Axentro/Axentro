@@ -1,4 +1,4 @@
-module ::Garnet::Interface::Logger
+module ::Sushi::Interface::Logger
 
   def puts_info(_msg : String?)
     return unless msg = _msg

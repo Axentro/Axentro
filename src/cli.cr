@@ -7,25 +7,25 @@ require "./core"
 require "./cli/helps"
 require "./cli/modules"
 
-module ::Garnet::Interface
-  alias GarnetAction = NamedTuple(name: String, desc: String)
+module ::Sushi::Interface
+  alias SushiAction = NamedTuple(name: String, desc: String)
 
   abstract class CLI
 
     def initialize(
-          @action : GarnetAction,
-          @parents : Array(GarnetAction),
+          @action : SushiAction,
+          @parents : Array(SushiAction),
           @has_default_action : Bool = false,
         )
     end
 
     def puts_help(message = "Showing help message.", exit_code = -1)
       available_sub_actions =
-        sub_actions.map { |a| " - #{light_green("%-10s" % a[:name])} | #{"%-40s" % a[:desc]}"}.join("\n")
+        sub_actions.map { |a| " - #{light_green("%-20s" % a[:name])} | #{"%-40s" % a[:desc]}"}.join("\n")
       available_sub_actions = "Nothing" if available_sub_actions == ""
 
       puts "\n" +
-           "#{light_magenta("<Garnet>")}   #{@action[:desc]}\n\n" +
+           "#{light_magenta("Sushi")} #{@action[:desc]}\n\n" +
            "#{white_bg(black(" " + "-" * message.size + " "))}\n" +
            "#{white_bg(black(" " + message + " "))}\n" +
            "#{white_bg(black(" " + "-" * message.size + " "))}\n\n" +
@@ -47,7 +47,7 @@ module ::Garnet::Interface
       @parents.map { |a| a[:name] }.join(" ") + " " + @action[:name]
     end
 
-    def next_parents : Array(GarnetAction)
+    def next_parents : Array(SushiAction)
       @parents.concat([@action])
     end
 
@@ -63,7 +63,7 @@ module ::Garnet::Interface
       if ARGV.size > 0 &&
          !ARGV[0].starts_with?('-') &&
          !sub_action_names.includes?(ARGV[0])
-        puts_help("Invalid action '#{red(ARGV[0])}' for '#{light_cyan(command_line)}'")
+        puts_help("Invalid action '#{ARGV[0]}' for '#{command_line}'")
         exit -1
       end
 
@@ -114,7 +114,7 @@ module ::Garnet::Interface
       body
     end
 
-    abstract def sub_actions : Array(GarnetAction)
+    abstract def sub_actions : Array(SushiAction)
     abstract def option_parser : OptionParser?
     abstract def run_impl(action_name : String?) : OptionParser?
 

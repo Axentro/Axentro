@@ -1,4 +1,4 @@
-module ::Garnet::Core
+module ::Sushi::Core
   class Transaction
     JSON.mapping(
       id: String,
@@ -68,7 +68,7 @@ module ::Garnet::Core
 
         senders_amount_unconfirmed = blockchain.get_amount_unconfirmed(@senders[0][:address])
         if prec(senders_amount_unconfirmed - @senders[0][:amount]) < 0.0
-          raise "Sender has not enough token: #{@senders[0][:address]} (#{senders_amount_unconfirmed})"
+          raise "Sender has not enough coins: #{@senders[0][:address]} (#{senders_amount_unconfirmed})"
         end
       else
         raise "actions have to be 'head' for coinbase transaction " if @action != "head"
@@ -78,7 +78,7 @@ module ::Garnet::Core
         raise "sign_s of coinbase transaction have to be '0'" if @sign_s != "0"
 
         served_sum = @recipients.reduce(0.0) { |sum, recipient| prec(sum + recipient[:amount]) }
-        raise "Invalid served amounts for coinbase transaction: #{served_sum}" if served_sum != Blockchain.served_amount(block_index)
+        raise "Invalid served amount for coinbase transaction: #{served_sum}" if served_sum != Blockchain.served_amount(block_index)
       end
 
       true
@@ -107,16 +107,16 @@ module ::Garnet::Core
       )
     end
 
-    def sender_total_amounts : Float64
+    def sender_total_amount : Float64
       senders.reduce(0.0) { |sum, sender| prec(sum + sender[:amount]) }
     end
 
-    def recipient_total_amounts : Float64
+    def recipient_total_amount : Float64
       recipients.reduce(0.0) { |sum, recipient| prec(sum + recipient[:amount]) }
     end
 
     def calculate_fee : Float64
-      prec(sender_total_amounts - recipient_total_amounts)
+      prec(sender_total_amount - recipient_total_amount)
     end
 
     def calculate_utxo : Hash(String, Float64)
