@@ -2,7 +2,7 @@ require "./node/*"
 
 module ::Sushi::Core
   class Node
-    MINER_DIFFICULTY = 5
+    MINER_DIFFICULTY = 2
 
     @blockchain        : Blockchain
     @network_type      : String

@@ -1,3 +1,4 @@
+require "./blockchain/consensus"
 require "./blockchain/*"
 
 module ::Sushi::Core

@@ -31,7 +31,7 @@ module ::Sushi::Core
 
           hash_rate = (nonce - latest_nonce)/time_diff
 
-          info "#{nonce - latest_nonce} hashed, #{hash_rate_with_unit(hash_rate)}"
+          info "#{nonce - latest_nonce} hashes, #{hash_rate_with_unit(hash_rate)}"
 
           latest_nonce = nonce
           latest_time = time_now

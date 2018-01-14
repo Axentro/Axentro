@@ -1,8 +1,7 @@
 module ::Sushi::Core
   class Block
     extend Hashes
-
-    DIFFICULTY = 6
+    extend Consensus
 
     JSON.mapping({
                    index: Int64,
@@ -56,13 +55,14 @@ module ::Sushi::Core
       ripemd160(current_hashes[0])
     end
 
-    def self.valid_nonce?(block_hash : String, nonce : UInt64, difficulty = DIFFICULTY) : Bool
-      guess_nonce = "#{block_hash}#{nonce}"
-      guess_hash = sha256(guess_nonce)
-      guess_hash[0, difficulty] == "0" * difficulty
+    def self.valid_nonce?(block_hash : String, nonce : UInt64, difficulty = Coresensus::DIFFICULTY) : Bool
+      # guess_nonce = "#{block_hash}#{nonce}"
+      # guess_hash = sha256(guess_nonce)
+      # guess_hash[0, difficulty] == "0" * difficulty
+      valid?(block_hash, nonce, difficulty)
     end
 
-    def valid_nonce?(nonce : UInt64, difficulty = DIFFICULTY) : Bool
+    def valid_nonce?(nonce : UInt64, difficulty = Consensus::DIFFICULTY) : Bool
       Block.valid_nonce?(self.to_hash, nonce, difficulty)
     end
 
