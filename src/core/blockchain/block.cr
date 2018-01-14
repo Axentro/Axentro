@@ -56,9 +56,6 @@ module ::Sushi::Core
     end
 
     def self.valid_nonce?(block_hash : String, nonce : UInt64, difficulty = Coresensus::DIFFICULTY) : Bool
-      # guess_nonce = "#{block_hash}#{nonce}"
-      # guess_hash = sha256(guess_nonce)
-      # guess_hash[0, difficulty] == "0" * difficulty
       valid?(block_hash, nonce, difficulty)
     end
 
@@ -78,7 +75,7 @@ module ::Sushi::Core
         raise "Index have to be '0' for genesis block: #{@index}" if @index != 0
         raise "Transaction have to be empty for genesis block: #{@transactions}" if !@transactions.empty?
         raise "nonce have to be '0' for genesis block: #{@nonce}" if @nonce != 0
-        raise "prev_hash should be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
+        raise "prev_hash have to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
       end
 
       transactions.each_with_index do |transaction, idx|
