@@ -19,7 +19,7 @@ module ::Sushi::Core
         next if @difficulty == 0
         next unless latest_hash = @latest_hash
 
-        break if Core::Block.valid_nonce?(latest_hash, nonce, @difficulty)
+        break if valid?(latest_hash, nonce, @difficulty)
 
         nonce += 1
 
@@ -111,6 +111,7 @@ module ::Sushi::Core
 
     include Logger
     include Protocol
+    include Consensus
     include Common::Color
   end
 end

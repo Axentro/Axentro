@@ -42,8 +42,7 @@ module ::Sushi::Core
         current_index += 1
       end
     rescue e : Exception
-    # Database stores invalid chain
-    # Ignore the error, will sync chain from other nodes
+      database.delete_blocks(current_index.not_nil!)
     ensure
       set_genesis if @chain.size == 0
     end

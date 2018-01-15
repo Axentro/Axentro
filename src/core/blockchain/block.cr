@@ -1,7 +1,6 @@
 module ::Sushi::Core
   class Block
     extend Hashes
-    extend Consensus
 
     JSON.mapping({
                    index: Int64,
@@ -55,12 +54,8 @@ module ::Sushi::Core
       ripemd160(current_hashes[0])
     end
 
-    def self.valid_nonce?(block_hash : String, nonce : UInt64, difficulty = Coresensus::DIFFICULTY) : Bool
-      valid?(block_hash, nonce, difficulty)
-    end
-
-    def valid_nonce?(nonce : UInt64, difficulty = Consensus::DIFFICULTY) : Bool
-      Block.valid_nonce?(self.to_hash, nonce, difficulty)
+    def valid_nonce?(nonce : UInt64, difficulty = DIFFICULTY) : Bool
+      valid?(self.to_hash, nonce, difficulty)
     end
 
     def valid_as_latest?(blockchain : Blockchain) : Bool
@@ -125,6 +120,7 @@ module ::Sushi::Core
     end
 
     include Hashes
+    include Consensus
     include Common::Num
   end
 end
