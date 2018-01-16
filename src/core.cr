@@ -9,6 +9,7 @@ require "random"
 require "openssl"
 require "colorize"
 require "http/server"
+require "openssl/pkcs5"
 require "openssl/digest"
 
 require "./common"

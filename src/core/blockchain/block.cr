@@ -21,7 +21,7 @@ module ::Sushi::Core
 
     def to_hash : String
       string = self.to_json
-      sha256(string)
+      sha256(string).hexstring
     end
 
     def to_header : Models::Header
@@ -42,7 +42,7 @@ module ::Sushi::Core
         tmp_hashes = [] of String
 
         (current_hashes.size / 2).times do |i|
-          tmp_hashes.push(sha256(current_hashes[i*2] + current_hashes[i*2 + 1]))
+          tmp_hashes.push(sha256(current_hashes[i*2] + current_hashes[i*2 + 1]).hexstring)
         end
 
         tmp_hashes.push(current_hashes[-1]) if current_hashes.size % 2 == 1
@@ -51,7 +51,7 @@ module ::Sushi::Core
         break if current_hashes.size == 1
       end
 
-      ripemd160(current_hashes[0])
+      ripemd160(current_hashes[0]).hexstring
     end
 
     def valid_nonce?(nonce : UInt64, difficulty = DIFFICULTY) : Bool

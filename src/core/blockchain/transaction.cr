@@ -36,7 +36,7 @@ module ::Sushi::Core
 
     def to_hash : String
       string = self.to_json
-      sha256(string)
+      sha256(string).hexstring
     end
 
     def valid?(blockchain : Blockchain, block_index : Int64, is_coinbase : Bool) : Bool
