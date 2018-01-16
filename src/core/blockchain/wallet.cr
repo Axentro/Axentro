@@ -93,7 +93,7 @@ module ::Sushi::Core
     end
 
     def self.address_network_type(address : String) : Models::Network
-      raise "Invalid network" unless valid_checksum?(address)
+      raise "Invalid checksum for the address: #{address}" unless valid_checksum?(address)
 
       decoded_address = Base64.decode_string(address)
 
