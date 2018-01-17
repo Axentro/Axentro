@@ -17,6 +17,8 @@ dependencies:
     github: tbrand/router.cr
   sqlite3:
     github: crystal-lang/crystal-sqlite3
+  scrypt:
+    github: ysbaddaden/scrypt-crystal
 
 crystal: 0.24.1
 

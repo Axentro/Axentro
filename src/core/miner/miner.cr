@@ -3,6 +3,7 @@ module ::Sushi::Core
     @wallet      : Wallet
     @latest_hash : String?
     @difficulty  : Int32 = 0
+    @latest_nonce : UInt64 = 0_u64 # for debug
 
     def initialize(@is_testnet : Bool, @host : String, @port : Int32, @wallet : Wallet, @threads : Int32)
       info "Launching #{@threads} threads..."
@@ -15,6 +16,7 @@ module ::Sushi::Core
 
       latest_nonce = nonce
       latest_time = Time.now
+      @latest_nonce = nonce # for debug
 
       loop do
         next if @difficulty == 0
@@ -37,6 +39,14 @@ module ::Sushi::Core
           latest_nonce = nonce
           latest_time = time_now
         end
+
+      rescue e : Exception
+        puts e.message
+        puts e.backtrace
+        puts @latest_hash
+        puts @latest_nonce
+
+        nonce = Random.rand(UInt64::MAX)
       end
 
       info "found new nonce: #{light_cyan(nonce)} (thread: #{thread+1})"
