@@ -44,10 +44,8 @@ module ::Sushi::Core::Scrypt
       end
 
       v.push(b)
-    end
 
-    (N-1).times do |i|
-      x = block_mix(x[0], x[1])
+      x = block_mix(x[0], x[1]) unless i == 0
     end
 
     N.times do |i|
@@ -58,7 +56,7 @@ module ::Sushi::Core::Scrypt
     x
   end
 
-  def scrypt(data : String, salt : UInt64)
+  def scrypt(data : String, salt : UInt64) : Bytes
     b = OpenSSL::PKCS5.pbkdf2_hmac_sha1(data, integer_to_bytes(salt))
     x = ro_mix(b[0, 32], b[32, 32])
 
