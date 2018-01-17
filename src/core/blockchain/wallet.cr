@@ -87,7 +87,7 @@ module ::Sushi::Core
       decoded_address = Base64.decode_string(address)
       return false unless decoded_address.size == 48
       version_address = decoded_address[0..-7]
-      hashed_address = sha256(sha256(version_address)).hexstring
+      hashed_address = sha256(sha256(version_address).hexstring).hexstring
       checksum = decoded_address[-6..-1]
       checksum == hashed_address[0..5]
     end

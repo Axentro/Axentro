@@ -1,7 +1,7 @@
 module ::Sushi::Core::Scrypt
   N = 16
 
-  def bytes_to_integer(bytes : Bytes)
+  def bytes_to_integer(bytes : Bytes) : BigInt
     BigInt.new(bytes.hexstring, base: 16)
   end
 
