@@ -1,3 +1,12 @@
+# Simple Scrypt-N implementation
+# I's not compatible with other implementation, but it has that feature.
+# Parameters are following:
+# ```
+# N = 16
+# r = 1
+# p = 1
+# k = 256[bit]
+# ```
 module ::Sushi::Core::Scrypt
   N = 16
 
