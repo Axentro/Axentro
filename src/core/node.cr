@@ -140,7 +140,7 @@ module ::Sushi::Core
           _recieve_chain(socket, message_content)
         end
       rescue e : Exception
-        handle_exception(socket, e)
+        handle_exception(socket, e, true)
       end
 
       socket.on_close do |_|
@@ -174,7 +174,10 @@ module ::Sushi::Core
         error "on: #{node[:context][:host]}:#{node[:context][:port]}"
       end
 
-      reject!(socket, nil) if reject_node
+      if reject_node
+        error "remove the connection from the pool"
+        reject!(socket, nil)
+      end
 
       @phase = PHASE_NODE_RUNNING
     end
