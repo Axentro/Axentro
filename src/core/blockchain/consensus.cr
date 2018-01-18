@@ -20,19 +20,20 @@ module ::Sushi::Core::Consensus
     nonce_salt = nonce.to_s(16)
     nonce_salt = "0" + nonce_salt if nonce_salt.bytesize%2 != 0
 
-    # todo: use libscrypt directory
-    # slice = Slice(UInt8).new(3)
-    # slice[0] = 0_u8
-    # slice[1] = 0_u8
-    # slice[2] = 0_u8
-    #  
-    # buffer = Slice(UInt8).new(K)
-    #  
-    # res = LibScrypt.crypto_scrypt("abc", 3, slice, 3, N, R, P, buffer, K)
-    # p res
+    nonce_slice = Slice(UInt8).new(nonce_salt.bytesize / 2)
+    nonce_slice.size.times do |i|
+      nonce_slice[i] = nonce_salt[i*2 .. i*2+1].to_u8(16)
+    end
 
-    hash = ::Scrypt::Engine.crypto_scrypt(block_hash, nonce.to_s(16), N, R, P, K)
-    hash[0, difficulty] == "0" * difficulty
+    buffer = Slice(UInt8).new(K)
+
+    res = LibScrypt.crypto_scrypt(block_hash, block_hash.bytesize,
+                                  nonce_slice, nonce_slice.size,
+                                  N, R, P, buffer, K)
+
+    raise "LibScrypt throws an error: #{res}" unless res == 0
+
+    buffer.hexstring[0, difficulty] == "0" * difficulty
   end
 
   include Hashes
