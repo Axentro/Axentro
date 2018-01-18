@@ -26,7 +26,7 @@ module ::Sushi::Core
 
         nonce += 1
 
-        if nonce%10 == 0
+        if nonce%100 == 0
           time_now = Time.now
           time_diff = (time_now - latest_time).total_seconds
 
@@ -41,12 +41,9 @@ module ::Sushi::Core
         end
 
       rescue e : Exception
-        puts e.message
-        puts e.backtrace
-        puts @latest_hash
-        puts @latest_nonce
-
-        nonce = Random.rand(UInt64::MAX)
+        error e.message.not_nil!
+        error e.backtrace.join("\n")
+        exit -1
       end
 
       info "found new nonce: #{light_cyan(nonce)} (thread: #{thread+1})"

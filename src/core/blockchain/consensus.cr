@@ -1,7 +1,7 @@
 module ::Sushi::Core::Consensus
 
-  DIFFICULTY = 3
-  MINER_DIFFICULTY = 2
+  DIFFICULTY = 5
+  MINER_DIFFICULTY = 4
 
   # SHA256 Implementation
   def _valid?(block_hash : String, nonce : UInt64, difficulty : Int32 = DIFFICULTY) : Bool
@@ -17,7 +17,7 @@ module ::Sushi::Core::Consensus
 
   # Scrypt Implementation
   def valid?(block_hash : String, nonce : UInt64, difficulty : Int32 = DIFFICULTY) : Bool
-    hash = ::Scrypt::Engine.crypto_scrypt(block_hash, nonce.to_s, N, R, P, K)
+    hash = ::Scrypt::Engine.crypto_scrypt(block_hash, nonce.to_s(16), N, R, P, K)
     hash[0, difficulty] == "0" * difficulty
   end
 
