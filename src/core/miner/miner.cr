@@ -43,7 +43,7 @@ module ::Sushi::Core
       rescue e : Exception
         error e.message.not_nil!
         error e.backtrace.join("\n")
-        error "For nonce: #{@latest_nonce} (#{@latest_nonce.to_s(16)})"
+        error "For nonce: #{@latest_nonce} (#{@latest_nonce.to_s(16)}, #{@latest_nonce.to_s(16).bytesize})"
         error "For hash: #{@latest_hash}"
       end
 
