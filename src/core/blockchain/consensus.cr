@@ -1,7 +1,7 @@
 module ::Sushi::Core::Consensus
 
-  DIFFICULTY = 5
-  MINER_DIFFICULTY = 4
+  DIFFICULTY = 4
+  MINER_DIFFICULTY = 3
 
   # SHA256 Implementation
   def _valid?(block_hash : String, nonce : UInt64, difficulty : Int32 = DIFFICULTY) : Bool
