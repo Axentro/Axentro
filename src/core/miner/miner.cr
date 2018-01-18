@@ -43,7 +43,8 @@ module ::Sushi::Core
       rescue e : Exception
         error e.message.not_nil!
         error e.backtrace.join("\n")
-        exit -1
+        error "For nonce: #{@latest_nonce} (#{@latest_nonce.to_s(16)})"
+        error "For hash: #{@latest_hash}"
       end
 
       info "found new nonce: #{light_cyan(nonce)} (thread: #{thread+1})"
