@@ -16,8 +16,12 @@ module ::Sushi::Core
       @db.exec "insert into blocks values (?, ?)", [index.to_i64, json]
     end
 
+    def delete_blocks(from : Int64)
+      @db.exec "delete from blocks where idx >= ?", [from]
+    end
+
     def replace_chain(chain : Models::Chain)
-      @db.exec "delete from blocks where idx >= ?", [chain[0].index]
+      delete_blocks(chain[0].index)
 
       chain.each do |block|
         index = block.index

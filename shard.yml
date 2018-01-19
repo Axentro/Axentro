@@ -4,6 +4,9 @@ version: 0.1.0
 authors:
   - tbrand <taichiro0709@gmail.com>
 
+scripts:
+  postinstall: cd ext && make
+
 targets:
   sushi:
     main: src/cli/sushi.cr
@@ -17,6 +20,8 @@ dependencies:
     github: tbrand/router.cr
   sqlite3:
     github: crystal-lang/crystal-sqlite3
+  scrypt:
+    github: ysbaddaden/scrypt-crystal
 
 crystal: 0.24.1
 

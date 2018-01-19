@@ -2,8 +2,6 @@ module ::Sushi::Core
   class Block
     extend Hashes
 
-    DIFFICULTY = 6
-
     JSON.mapping({
                    index: Int64,
                    transactions: Array(Transaction),
@@ -23,7 +21,7 @@ module ::Sushi::Core
 
     def to_hash : String
       string = self.to_json
-      sha256(string)
+      sha256(string).hexstring
     end
 
     def to_header : Models::Header
@@ -44,7 +42,7 @@ module ::Sushi::Core
         tmp_hashes = [] of String
 
         (current_hashes.size / 2).times do |i|
-          tmp_hashes.push(sha256(current_hashes[i*2] + current_hashes[i*2 + 1]))
+          tmp_hashes.push(sha256(current_hashes[i*2] + current_hashes[i*2 + 1]).hexstring)
         end
 
         tmp_hashes.push(current_hashes[-1]) if current_hashes.size % 2 == 1
@@ -53,17 +51,11 @@ module ::Sushi::Core
         break if current_hashes.size == 1
       end
 
-      ripemd160(current_hashes[0])
-    end
-
-    def self.valid_nonce?(block_hash : String, nonce : UInt64, difficulty = DIFFICULTY) : Bool
-      guess_nonce = "#{block_hash}#{nonce}"
-      guess_hash = sha256(guess_nonce)
-      guess_hash[0, difficulty] == "0" * difficulty
+      ripemd160(current_hashes[0]).hexstring
     end
 
     def valid_nonce?(nonce : UInt64, difficulty = DIFFICULTY) : Bool
-      Block.valid_nonce?(self.to_hash, nonce, difficulty)
+      valid?(self.to_hash, nonce, difficulty)
     end
 
     def valid_as_latest?(blockchain : Blockchain) : Bool
@@ -78,7 +70,7 @@ module ::Sushi::Core
         raise "Index have to be '0' for genesis block: #{@index}" if @index != 0
         raise "Transaction have to be empty for genesis block: #{@transactions}" if !@transactions.empty?
         raise "nonce have to be '0' for genesis block: #{@nonce}" if @nonce != 0
-        raise "prev_hash should be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
+        raise "prev_hash have to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
       end
 
       transactions.each_with_index do |transaction, idx|
@@ -128,6 +120,7 @@ module ::Sushi::Core
     end
 
     include Hashes
+    include Consensus
     include Common::Num
   end
 end

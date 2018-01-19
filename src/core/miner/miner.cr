@@ -3,42 +3,51 @@ module ::Sushi::Core
     @wallet      : Wallet
     @latest_hash : String?
     @difficulty  : Int32 = 0
+    @latest_nonce : UInt64 = 0_u64 # for debug
 
-    def initialize(@is_testnet : Bool, @host : String, @port : Int32, @wallet : Wallet)
+    def initialize(@is_testnet : Bool, @host : String, @port : Int32, @wallet : Wallet, @threads : Int32)
+      info "Launching #{@threads} threads..."
     end
 
-    def pow : UInt64
+    def pow(thread : Int32) : UInt64
       nonce : UInt64 = Random.rand(UInt64::MAX)
 
-      info "starting nonce from #{light_cyan(nonce)}"
+      info "starting nonce from #{light_cyan(nonce)} (thread: #{thread+1})"
 
       latest_nonce = nonce
       latest_time = Time.now
+      @latest_nonce = nonce # for debug
 
       loop do
         next if @difficulty == 0
         next unless latest_hash = @latest_hash
 
-        break if Core::Block.valid_nonce?(latest_hash, nonce, @difficulty)
+        break if valid?(latest_hash, nonce, @difficulty)
 
         nonce += 1
 
-        if nonce%100000 == 0
+        if nonce%100 == 0
           time_now = Time.now
           time_diff = (time_now - latest_time).total_seconds
 
           next if time_diff == 0
 
-          hash_rate = (nonce - latest_nonce)/time_diff
+          work_rate = (nonce - latest_nonce)/time_diff
 
-          info "#{nonce - latest_nonce} hashed, #{hash_rate_with_unit(hash_rate)}"
+          info "#{nonce-latest_nonce} works, #{work_rate_with_unit(work_rate)} (thread: #{thread+1})"
 
           latest_nonce = nonce
           latest_time = time_now
         end
+
+      rescue e : Exception
+        error e.message.not_nil!
+        error e.backtrace.join("\n")
+        error "For nonce: #{@latest_nonce} (#{@latest_nonce.to_s(16)}, #{@latest_nonce.to_s(16).bytesize})"
+        error "For hash: #{@latest_hash}"
       end
 
-      info "found new nonce: #{light_cyan(nonce)}"
+      info "found new nonce: #{light_cyan(nonce)} (thread: #{thread+1})"
 
       nonce
     end
@@ -63,9 +72,12 @@ module ::Sushi::Core
 
       send(socket, M_TYPE_HANDSHAKE_MINER, { address: @wallet.address })
 
-      Thread.new do
-        while nonce = pow
-          send(socket, M_TYPE_FOUND_NONCE, { nonce: nonce }) unless socket.closed?
+      @threads.times do |thread|
+
+        Thread.new do
+          while nonce = pow(thread)
+            send(socket, M_TYPE_FOUND_NONCE, { nonce: nonce }) unless socket.closed?
+          end
         end
       end
 
@@ -102,15 +114,16 @@ module ::Sushi::Core
       info "set latest_hash: #{light_green(@latest_hash)}"
     end
 
-    private def hash_rate_with_unit(hash_rate : Float64) : String
-      return "#{hash_rate.to_i} [H/s]" if hash_rate / 1000.0 <= 1.0
-      return "#{(hash_rate/1000.0).to_i} [KH/s]" if hash_rate / 1000000.0 <= 1.0
-      return "#{(hash_rate/1000000.0).to_i} [MH/s]" if hash_rate / 1000000000.0 <= 1.0
-      "#{(hash_rate/1000000000.0).to_i} [GH/s]"
+    private def work_rate_with_unit(work_rate : Float64) : String
+      return "#{work_rate.to_i} [Work/s]" if work_rate / 1000.0 <= 1.0
+      return "#{(work_rate/1000.0).to_i} [KWork/s]" if work_rate / 1000000.0 <= 1.0
+      return "#{(work_rate/1000000.0).to_i} [MWork/s]" if work_rate / 1000000000.0 <= 1.0
+      "#{(work_rate/1000000000.0).to_i} [GWork/s]"
     end
 
     include Logger
     include Protocol
+    include Consensus
     include Common::Color
   end
 end

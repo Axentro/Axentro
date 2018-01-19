@@ -3,6 +3,7 @@ module ::Sushi::Interface
     @wallet_path : String?
     @node        : String?
     @is_testnet  : Bool = false
+    @threads     : Int32 = 1
 
     def sub_actions
       [] of SushiAction
@@ -18,6 +19,9 @@ module ::Sushi::Interface
         }
         parser.on("--testnet", "Set network type as testnet (default is mainnet)") {
           @is_testnet = true
+        }
+        parser.on("--threads=THREADS", "# of the work threads (default is 1)") { |threads|
+          @threads = threads.to_i
         }
       end
     end
@@ -46,7 +50,7 @@ module ::Sushi::Interface
 
       raise "Wallet type mismatch" if @is_testnet != wallet_is_testnet
 
-      miner = Core::Miner.new(@is_testnet, host, port, wallet)
+      miner = Core::Miner.new(@is_testnet, host, port, wallet, @threads)
       miner.run
     end
   end

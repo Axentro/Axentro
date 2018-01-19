@@ -2,8 +2,6 @@ require "./node/*"
 
 module ::Sushi::Core
   class Node
-    MINER_DIFFICULTY = 5
-
     @blockchain        : Blockchain
     @network_type      : String
     @id                : String
@@ -142,7 +140,7 @@ module ::Sushi::Core
           _recieve_chain(socket, message_content)
         end
       rescue e : Exception
-        handle_exception(socket, e)
+        handle_exception(socket, e, true)
       end
 
       socket.on_close do |_|
@@ -176,7 +174,10 @@ module ::Sushi::Core
         error "on: #{node[:context][:host]}:#{node[:context][:port]}"
       end
 
-      reject!(socket, nil) if reject_node
+      if reject_node
+        error "remove the connection from the pool"
+        reject!(socket, nil)
+      end
 
       @phase = PHASE_NODE_RUNNING
     end
@@ -219,7 +220,7 @@ module ::Sushi::Core
       info "new miner: #{light_green(miner[:address])} (#{@miners.size})"
 
       send(socket, M_TYPE_HANDSHAKE_MINER_ACCEPTED, {
-             difficulty: MINER_DIFFICULTY,
+             difficulty: Consensus::MINER_DIFFICULTY,
              block: @blockchain.latest_block
            })
     end
@@ -297,7 +298,7 @@ module ::Sushi::Core
 
       if miner = get_miner?(socket)
 
-        if !@latest_nonces.includes?(nonce) && @blockchain.latest_block.valid_nonce?(nonce, MINER_DIFFICULTY)
+        if !@latest_nonces.includes?(nonce) && @blockchain.latest_block.valid_nonce?(nonce, Consensus::MINER_DIFFICULTY)
           miner[:nonces].push(nonce)
           @latest_nonces.push(nonce)
 
@@ -305,7 +306,7 @@ module ::Sushi::Core
         else
           warning "nonce #{nonce} has been already discoverd" if @latest_nonces.includes?(nonce)
 
-          if !@blockchain.latest_block.valid_nonce?(nonce, MINER_DIFFICULTY)
+          if !@blockchain.latest_block.valid_nonce?(nonce, Consensus::MINER_DIFFICULTY)
             warning "recieved nonce is invalid, try to update latest block"
 
             send(miner[:socket], M_TYPE_BLOCK_UPDATE, { block: @blockchain.latest_block })
