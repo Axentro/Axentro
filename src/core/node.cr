@@ -301,7 +301,7 @@ module ::Sushi::Core
           miner[:nonces].push(nonce)
           @latest_nonces.push(nonce)
 
-          info "miner #{miner[:address]} founds nonce (#{miner[:nonces].size})"
+          info "miner #{miner[:address]} found nonce (#{miner[:nonces].size})"
         else
           warning "nonce #{nonce} has been already discoverd" if @latest_nonces.includes?(nonce)
 
