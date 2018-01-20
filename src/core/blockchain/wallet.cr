@@ -76,9 +76,9 @@ module ::Sushi::Core
     def self.public_key_to_address(public_key : ECDSA::Point, testnet = false) : String
       prefix = testnet ? TESTNET[:prefix] : MAINNET[:prefix]
       raw_address = (public_key.x + public_key.y).to_s(base: 16)
-      hashed_address = ripemd160(sha256(raw_address)).hexstring
+      hashed_address = ripemd160(sha256(raw_address).hexstring).hexstring
       version_address = prefix + hashed_address
-      hashed_address_again = sha256(sha256(version_address)).hexstring
+      hashed_address_again = sha256(sha256(version_address).hexstring).hexstring
       checksum = hashed_address_again[0..5]
       Base64.strict_encode(version_address + checksum)
     end
