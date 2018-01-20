@@ -219,10 +219,7 @@ module ::Sushi::Core
 
       info "new miner: #{light_green(miner[:address])} (#{@miners.size})"
 
-      send(socket, M_TYPE_HANDSHAKE_MINER_ACCEPTED, {
-             difficulty: Consensus::MINER_DIFFICULTY,
-             block: @blockchain.latest_block
-           })
+      send(socket, M_TYPE_HANDSHAKE_MINER_ACCEPTED, { block: @blockchain.latest_block })
     end
 
     private def _handshake_node(socket, _content)
@@ -298,7 +295,9 @@ module ::Sushi::Core
 
       if miner = get_miner?(socket)
 
-        if !@latest_nonces.includes?(nonce) && @blockchain.latest_block.valid_nonce?(nonce, Consensus::MINER_DIFFICULTY)
+        if !@latest_nonces.includes?(nonce) &&
+           @blockchain.latest_block.valid_nonce?(nonce, miner_difficulty_at(@blockchain.latest_block.index))
+
           miner[:nonces].push(nonce)
           @latest_nonces.push(nonce)
 
@@ -306,7 +305,7 @@ module ::Sushi::Core
         else
           warning "nonce #{nonce} has already been discoverd" if @latest_nonces.includes?(nonce)
 
-          if !@blockchain.latest_block.valid_nonce?(nonce, Consensus::MINER_DIFFICULTY)
+          if !@blockchain.latest_block.valid_nonce?(nonce, miner_difficulty_at(@blockchain.latest_block.index))
             warning "recieved nonce is invalid, try to update latest block"
 
             send(miner[:socket], M_TYPE_BLOCK_UPDATE, { block: @blockchain.latest_block })
@@ -485,6 +484,7 @@ module ::Sushi::Core
     include Logger
     include Router
     include Protocol
+    include Consensus
     include Common::Color
   end
 end

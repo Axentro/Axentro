@@ -54,8 +54,8 @@ module ::Sushi::Core
       ripemd160(current_hashes[0]).hexstring
     end
 
-    def valid_nonce?(nonce : UInt64, difficulty = DIFFICULTY) : Bool
-      valid?(self.to_hash, nonce, difficulty)
+    def valid_nonce?(nonce : UInt64, difficulty : Int32? = nil) : Bool
+      valid?(self.index, self.to_hash, nonce, difficulty)
     end
 
     def valid_as_latest?(blockchain : Blockchain) : Bool

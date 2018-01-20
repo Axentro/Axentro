@@ -1,8 +1,9 @@
 module ::Sushi::Core
   class Miner
     @wallet      : Wallet
-    @latest_hash : String?
     @difficulty  : Int32 = 0
+    @latest_block : Block?
+    @latest_hash : String?
     @latest_nonce : UInt64 = 0_u64 # for debug
 
     def initialize(@is_testnet : Bool, @host : String, @port : Int32, @wallet : Wallet, @threads : Int32)
@@ -20,9 +21,10 @@ module ::Sushi::Core
 
       loop do
         next if @difficulty == 0
+        next unless latest_block = @latest_block
         next unless latest_hash = @latest_hash
 
-        break if valid?(latest_hash, nonce, @difficulty)
+        break if valid?(latest_block.index, latest_hash, nonce, @difficulty)
 
         nonce += 1
 
@@ -47,7 +49,7 @@ module ::Sushi::Core
         error "For hash: #{@latest_hash}"
       end
 
-      info "found new nonce: #{light_cyan(nonce)} (thread: #{thread+1})"
+      info "found new nonce(#{@difficulty}): #{light_cyan(nonce)} (thread: #{thread+1})"
 
       nonce
     end
@@ -87,8 +89,9 @@ module ::Sushi::Core
     private def _handshake_miner_accepted(socket, _content)
       _m_content = M_CONTENT_HANDSHAKE_MINER_ACCEPTED.from_json(_content)
 
-      @difficulty = _m_content.difficulty
+      @latest_block = _m_content.block
       @latest_hash = _m_content.block.to_hash
+      @difficulty = miner_difficulty_at(_m_content.block.index)
 
       info "handshake has been accepted"
       info "set difficulty: #{light_cyan(@difficulty)}"
@@ -107,8 +110,9 @@ module ::Sushi::Core
     private def _block_update(socket, _content)
       _m_content = M_CONTENT_BLOCK_UPDATE.from_json(_content)
 
-      latest_block = _m_content.block
-      @latest_hash = latest_block.to_hash
+      @latest_block = _m_content.block
+      @latest_hash = _m_content.block.to_hash
+      @difficulty = miner_difficulty_at(_m_content.block.index)
 
       info "latest block has been updated"
       info "set latest_hash: #{light_green(@latest_hash)}"

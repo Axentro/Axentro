@@ -20,7 +20,6 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_HANDSHAKE_MINER_ACCEPTED
     JSON.mapping({
-                   difficulty: Int32,
                    block: Block,
                  })
   end
