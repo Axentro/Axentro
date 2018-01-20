@@ -115,6 +115,7 @@ module ::Sushi::Core
       @difficulty = miner_difficulty_at(_m_content.block.index)
 
       info "latest block has been updated"
+      info "set difficulty: #{light_cyan(@difficulty)}"
       info "set latest_hash: #{light_green(@latest_hash)}"
     end
 
