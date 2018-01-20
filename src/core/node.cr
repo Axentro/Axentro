@@ -302,9 +302,9 @@ module ::Sushi::Core
           miner[:nonces].push(nonce)
           @latest_nonces.push(nonce)
 
-          info "miner #{miner[:address]} founds nonce (#{miner[:nonces].size})"
+          info "miner #{miner[:address]} found nonce (#{miner[:nonces].size})"
         else
-          warning "nonce #{nonce} has been already discoverd" if @latest_nonces.includes?(nonce)
+          warning "nonce #{nonce} has already been discoverd" if @latest_nonces.includes?(nonce)
 
           if !@blockchain.latest_block.valid_nonce?(nonce, Consensus::MINER_DIFFICULTY)
             warning "recieved nonce is invalid, try to update latest block"
