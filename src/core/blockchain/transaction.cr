@@ -73,9 +73,10 @@ module ::Sushi::Core
           raise "Not enough fee, should be  #{calculate_fee} >= #{min_fee_of_action(@action)}"
         end
 
-        senders_amount_unconfirmed = blockchain.get_amount_unconfirmed(@senders[0][:address])
-        if prec(senders_amount_unconfirmed - @senders[0][:amount]) < 0.0
-          raise "Sender has not enough coins: #{@senders[0][:address]} (#{senders_amount_unconfirmed})"
+        senders_amount = blockchain.get_amount_unconfirmed(@senders[0][:address])
+
+        if prec(senders_amount - @senders[0][:amount]) < 0.0
+          raise "Sender has not enough coins: #{@senders[0][:address]} (#{senders_amount})"
         end
       else
         raise "actions have to be 'head' for coinbase transaction " if @action != "head"

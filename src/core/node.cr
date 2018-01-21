@@ -2,13 +2,13 @@ require "./node/*"
 
 module ::Sushi::Core
   class Node
-    @blockchain        : Blockchain
-    @network_type      : String
-    @id                : String
-    @phase             : Int32
-    @nodes             : Models::Nodes
-    @miners            : Models::Miners
-    @rpc_controller    : Controllers::RPCController
+    @blockchain     : Blockchain
+    @network_type   : String
+    @id             : String
+    @phase          : Int32
+    @nodes          : Models::Nodes
+    @miners         : Models::Miners
+    @rpc_controller : Controllers::RPCController
 
     @latest_nonces  : Array(UInt64)
     @latest_unknown : Int64? = nil
@@ -130,8 +130,8 @@ module ::Sushi::Core
           _handshake_node_rejected(socket, message_content)
         when M_TYPE_FOUND_NONCE
           _found_nonce(socket, message_content)
-        when M_TYPE_ADD_TRANSACTION
-          _add_transaction(socket, message_content)
+        when M_TYPE_BROADCAST_TRANSACTION
+          _broadcast_transaction(socket, message_content)
         when M_TYPE_BROADCAST_BLOCK
           _broadcast_block(socket, message_content)
         when M_TYPE_REQUEST_CHAIN
@@ -140,7 +140,7 @@ module ::Sushi::Core
           _recieve_chain(socket, message_content)
         end
       rescue e : Exception
-        handle_exception(socket, e, true)
+        handle_exception(socket, e)
       end
 
       socket.on_close do |_|
@@ -158,8 +158,14 @@ module ::Sushi::Core
 
       @blockchain.add_transaction(transaction)
 
-      @nodes.each do |n|
-        send(n[:socket], M_TYPE_ADD_TRANSACTION, { transaction: raw_transaction })
+      known_nodes = @nodes.map { |node| node[:context] }
+      known_nodes << context
+
+      @nodes.each do |node|
+        send(node[:socket], M_TYPE_BROADCAST_TRANSACTION, {
+               transaction: raw_transaction,
+               known_nodes: known_nodes,
+             })
       end
     end
 
@@ -317,8 +323,11 @@ module ::Sushi::Core
 
       info "found new nonce: #{light_green(nonce)} (#{@blockchain.latest_index})"
 
+      known_nodes = @nodes.map { |node| node[:context] }
+      known_nodes << context
+
       @nodes.each do |n|
-        send(n[:socket], M_TYPE_BROADCAST_BLOCK, { block: block })
+        send(n[:socket], M_TYPE_BROADCAST_BLOCK, { block: block, known_nodes: known_nodes })
       end
 
       @miners.each do |m|
@@ -330,24 +339,39 @@ module ::Sushi::Core
       broadcast_to_miners
     end
 
-    private def _add_transaction(socket, _content)
+    private def _broadcast_transaction(socket, _content)
       return unless @phase == PHASE_NODE_RUNNING
 
-      _m_content = M_CONTENT_ADD_TRANSACTION.from_json(_content)
+      _m_content = M_CONTENT_BROADCAST_TRANSACTION.from_json(_content)
 
       transaction = _m_content.transaction
+      known_nodes = _m_content.known_nodes
+
+      raw_transaction = transaction.dup
 
       return unless transaction.valid?(@blockchain, @blockchain.latest_index, false)
 
       info "new transaction coming: #{transaction.id}"
 
       @blockchain.add_transaction(transaction)
+
+      other_known_nodes = @nodes.reject { |node| known_nodes.includes?(node[:context]) }
+
+      known_nodes.concat(other_known_nodes.map { |node| node[:context] })
+
+      other_known_nodes.each do |node|
+        send(node[:socket], M_TYPE_BROADCAST_TRANSACTION, {
+               transaction: raw_transaction,
+               known_nodes: known_nodes,
+             })
+      end
     end
 
     private def _broadcast_block(socket, _content)
       _m_content = M_CONTENT_BROADCAST_BLOCK.from_json(_content)
 
       block = _m_content.block
+      known_nodes = _m_content.known_nodes
 
       @cc += 1
 
@@ -365,6 +389,14 @@ module ::Sushi::Core
         end
 
         info "new block coming: #{light_cyan(@blockchain.chain.size)}"
+
+        other_known_nodes = @nodes.reject { |node| known_nodes.includes?(node[:context]) }
+
+        known_nodes.concat(other_known_nodes.map { |node| node[:context] })
+
+        other_known_nodes.each do |node|
+          send(node[:socket], M_TYPE_BROADCAST_BLOCK, { block: block, known_nodes: known_nodes })
+        end
 
         broadcast_to_miners
 

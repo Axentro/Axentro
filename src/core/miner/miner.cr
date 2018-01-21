@@ -1,7 +1,7 @@
 module ::Sushi::Core
   class Miner
-    @wallet      : Wallet
-    @difficulty  : Int32 = 0
+    @wallet : Wallet
+    @difficulty : Int32 = 0
     @latest_block : Block?
     @latest_hash : String?
     @latest_nonce : UInt64 = 0_u64 # for debug
