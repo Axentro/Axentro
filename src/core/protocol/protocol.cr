@@ -91,11 +91,12 @@ module ::Sushi::Core::Protocol
 
   ##########
 
-  M_TYPE_ADD_TRANSACTION = 0x0014
+  M_TYPE_BROADCAST_TRANSACTION = 0x0014
 
-  struct M_CONTENT_ADD_TRANSACTION
+  struct M_CONTENT_BROADCAST_TRANSACTION
     JSON.mapping({
                    transaction: Transaction,
+                   known_nodes: Models::NodeContexts,
                  })
   end
 
@@ -106,6 +107,7 @@ module ::Sushi::Core::Protocol
   struct M_CONTENT_BROADCAST_BLOCK
     JSON.mapping({
                    block: Block,
+                   known_nodes: Models::NodeContexts,
                  })
   end
 
