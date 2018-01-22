@@ -4,6 +4,7 @@ module ::Sushi::Core::Models
           host: String,
           port: Int32,
           type: String,
+          is_private: Bool,
         )
 
   alias NodeContexts = Array(NodeContext)

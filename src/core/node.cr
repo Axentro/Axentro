@@ -20,11 +20,12 @@ module ::Sushi::Core
     @c3 : Int32 = 0
 
     def initialize(
+          @is_private     : Bool,
           @is_testnet     : Bool,
           @bind_host      : String,
           @bind_port      : Int32,
-          @public_host    : String,
-          @public_port    : Int32,
+          @public_host    : String?,
+          @public_port    : Int32?,
           connect_host    : String?,
           connect_port    : Int32?,
           @wallet         : Wallet,
@@ -33,11 +34,13 @@ module ::Sushi::Core
         )
       @id = Random::Secure.hex(16)
 
-      info "node id: #{light_green(@id)}"
+      info "id: #{light_green(@id)}"
+      info "is_private: #{light_green(@is_private)}"
+      info "public url: #{light_green(@public_host)}:#{light_green(@public_port)}" unless @is_private
 
       @blockchain = Blockchain.new(@wallet, @database)
 
-      info "loaded blockchain: #{light_cyan(@blockchain.chain.size)}"
+      info "loaded blockchain's size: #{light_cyan(@blockchain.chain.size)}"
 
       if @database
         @latest_unknown = @blockchain.latest_index + 1
@@ -249,7 +252,7 @@ module ::Sushi::Core
       end
 
       node_list = @nodes.map { |n|
-        (n[:context][:id] == @id || known_nodes.includes?(n[:context])) ? nil : n[:context]
+        (n[:context][:id] == @id || n[:context][:is_private] || known_nodes.includes?(n[:context])) ? nil : n[:context]
       }.compact.sample(request_nodes_num)
 
       send(socket, M_TYPE_HANDSHAKE_NODE_ACCEPTED, {
@@ -507,9 +510,10 @@ module ::Sushi::Core
     private def context : Models::NodeContext
       {
         id: @id,
-        host: @public_host,
-        port: @public_port,
+        host: @public_host || "",
+        port: @public_port || -1,
         type: @network_type,
+        is_private: @is_private,
       }
     end
 
