@@ -24,11 +24,14 @@ module ::Sushi::Interface
         sub_actions.map { |a| " - #{light_green("%-20s" % a[:name])} | #{"%-40s" % a[:desc]}"}.join("\n")
       available_sub_actions = "Nothing" if available_sub_actions == ""
 
+      message_size = message.split("\n").max_by { |m| m.size }.size
+      messages = message.split("\n").map { |m| white_bg(black(" %-#{message_size}s " % m)) }
+
       puts "\n" +
            "#{light_magenta("Sushi")} #{@action[:desc]}\n\n" +
-           "#{white_bg(black(" " + "-" * message.size + " "))}\n" +
-           "#{white_bg(black(" " + message + " "))}\n" +
-           "#{white_bg(black(" " + "-" * message.size + " "))}\n\n" +
+           "#{white_bg(black(" " + "-" * message_size + " "))}\n" +
+           messages.join("\n") + "\n" +
+           "#{white_bg(black(" " + "-" * message_size + " "))}\n\n" +
            "This is a help message for\n" +
            "> #{light_cyan(command_line)}\n" +
            "\n" +
