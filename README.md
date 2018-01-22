@@ -17,9 +17,9 @@
 - [How to build SushiCoin?](https://github.com/tbrand/SushiCoin/wiki/How-to-build-SushiCoin%3F)
 
 ## Next, what do you want to do with SushiCoin?
-- [I want to get SushiCoin by mining!]() (Write In Progress)
-- [I want to write some apps with SushiCoin's API!]() (Write In Progress)
-- [I want to run a SushiCoin's node]() (Write In Progress)
+- [I want to do mining SushiCoin!](https://github.com/tbrand/SushiCoin/wiki/Mining-SushiCoin)
+- [I want to build my SushiCoin's node!](https://github.com/tbrand/SushiCoin/wiki/Build-SushiCoin's-node)
+- [I want to build an app with SushiCoin!](https://github.com/tbrand/SushiCoin/wiki/SushiCoin's-API)
 
 ## Nodes
 - http://54.199.249.171:3000 (**testnet**)
