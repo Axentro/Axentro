@@ -4,7 +4,7 @@
 
 <p align="center">🍣 <i>An awesome developable blockchain implementation.</i> 🍣</p>
 
-[![ ](https://img.shields.io/badge/join%20the%20community-on%20Slack-green.svg)](https://join.slack.com/t/sushicoin/shared_invite/enQtMzAxMjgxNjc3NzQ4LTZiYjIyZDkzN2ZhMWQ5OGVhZTg5OTg0YjhlN2YwMzQxYWQ5ZjM1NGIwNWRhNzI4ZTcyMTNmMTdkYmEzY2RmMDU)
+[![ ](https://img.shields.io/badge/join%20the%20community-on%20Slack-green.svg)](https://goo.gl/64aVeY)
 
 # SushiCoin
 - Developer friendly APIs
