@@ -1,18 +1,10 @@
 require "./spec_helper"
 
-puts "----- Unit tests -----"
+include ::Sushi::Common::Color
+
+puts "----- #{light_cyan("   Unit tests   ")} -----"
 require "./units/*"
 
-puts "\n----- Integration test -----"
+puts "\n"
+puts "----- #{light_cyan("Integration test")} -----"
 require "./integration/spec"
-
-unless ARGV.includes?("--local")
-  runner = ::Integration::Runner.new
-  runner.run!
-
-  sleep 10
-
-  runner.fin
-else
-  puts "skip integration test."
-end

@@ -16,7 +16,6 @@ describe Wallet do
       Wallet.verify!(wallet.secret_key,wallet.public_key_x, wallet.public_key_y, wallet.address).should be_true
       Wallet.address_network_type(wallet.address).should eq({prefix: "M0", name: "mainnet"})
     end
-
   end
 
   describe "verify wallet" do
@@ -103,7 +102,6 @@ describe Wallet do
         Wallet.address_network_type(create_unknown_network_address)
       end
     end
-
   end
 
   describe "#public_key_to_address" do
@@ -119,7 +117,6 @@ describe Wallet do
       address = Wallet.public_key_to_address(public_key, false)
       Wallet.address_network_type(address).should eq({prefix: "M0", name: "mainnet"})
     end
-
   end
 
   it "should create a key pair" do
@@ -146,9 +143,7 @@ describe Wallet do
        Wallet.from_path("invalid-path")
      end
    end
-
   end
-
 end
 
 def create_expected_keys(key_x, key_y, secret_key)
