@@ -67,8 +67,8 @@ module ::Sushi::Core
       public_key_x = public_key.x.to_s(base: 10)
       public_key_y = public_key.y.to_s(base: 10)
 
-      raise "Invalid public key for #{public_key_raw_x} != #{public_key_x}" unless public_key_raw_x != public_key_x
-      raise "Invalid public key for #{public_key_raw_y} != #{public_key_y}" unless public_key_raw_y != public_key_y
+      raise "Invalid public key (public_key_x) for #{public_key_raw_x} != #{public_key_x}" if public_key_raw_x.to_s != public_key_x
+      raise "Invalid public key (public_key_y) for #{public_key_raw_y} != #{public_key_y}" if public_key_raw_y.to_s != public_key_y
 
       true
     end
@@ -110,4 +110,3 @@ module ::Sushi::Core
     include Hashes
   end
 end
-
