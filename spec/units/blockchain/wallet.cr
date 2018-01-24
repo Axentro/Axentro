@@ -1,6 +1,3 @@
-
-require "./../../spec_helper"
-
 include Sushi::Core
 include Hashes
 

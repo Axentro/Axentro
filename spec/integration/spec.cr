@@ -64,10 +64,3 @@ module ::Integration
     include Utils
   end
 end
-
-runner = ::Integration::Runner.new
-runner.run!
-
-sleep 10
-
-runner.fin

@@ -1,0 +1,9 @@
+[ 2018-01-24 23:25:50 -- [92m   Info[0m ] Launching 1 threads...
+[ 2018-01-24 23:25:50 -- [92m   Info[0m ] starting nonce from [96m7888819997351314239[0m (thread: 1)
+[ 2018-01-24 23:25:50 -- [92m   Info[0m ] handshake has been accepted
+[ 2018-01-24 23:25:50 -- [92m   Info[0m ] set difficulty: [96m3[0m
+[ 2018-01-24 23:25:50 -- [92m   Info[0m ] set latest hash: [92m5396e18efa80a8e891c417fff862d7cad171465e65bc4b4e5e1c1c3ab0aeb88f[0m
+[ 2018-01-24 23:25:52 -- [92m   Info[0m ] 61 works, 36 [Work/s] (thread: 1)
+[ 2018-01-24 23:25:55 -- [92m   Info[0m ] 100 works, 37 [Work/s] (thread: 1)
+[ 2018-01-24 23:25:57 -- [92m   Info[0m ] 100 works, 38 [Work/s] (thread: 1)
+[ 2018-01-24 23:26:00 -- [92m   Info[0m ] 100 works, 40 [Work/s] (thread: 1)
