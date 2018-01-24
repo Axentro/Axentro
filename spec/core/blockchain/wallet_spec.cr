@@ -2,6 +2,7 @@
 require "./../../spec_helper"
 
 include Sushi::Core
+include Hashes
 
 describe Wallet do
 
@@ -61,6 +62,12 @@ describe Wallet do
        end
     end
 
+    it "should verify a valid wallet using the instance method verify!" do
+      wallet1 = Wallet.from_json(Wallet.create(true).to_json)
+      wallet2 = Wallet.new(wallet1.secret_key, wallet1.public_key_x, wallet1.public_key_y, wallet1.address)
+      wallet2.verify!.should be_true
+    end
+
   end
 
   describe "#valid_checksum?" do
@@ -94,6 +101,55 @@ describe Wallet do
       end
     end
 
+    it "should raise an invalid network error when address not mainnet or testnet" do
+      expect_raises(Exception, "Invalid network: U0") do
+        Wallet.address_network_type(create_unknown_network_address)
+      end
+    end
+
+  end
+
+  describe "#public_key_to_address" do
+
+    it "should create an address from a public key for the testnet" do
+      public_key = Wallet.create_key_pair[:public_key]
+      address = Wallet.public_key_to_address(public_key, true)
+      Wallet.address_network_type(address).should eq({prefix: "T0", name: "testnet"})
+    end
+
+    it "should create an address from a public key for the mainnet" do
+      public_key = Wallet.create_key_pair[:public_key]
+      address = Wallet.public_key_to_address(public_key, false)
+      Wallet.address_network_type(address).should eq({prefix: "M0", name: "mainnet"})
+    end
+
+  end
+
+  it "should create a key pair" do
+    key_pair = Wallet.create_key_pair
+    address = Wallet.public_key_to_address(key_pair[:public_key], true)
+
+    secret_key = Base64.strict_encode(key_pair[:secret_key].to_s(base: 10))
+    public_key_x = Base64.strict_encode(key_pair[:public_key].x.to_s(base: 10))
+    public_key_y = Base64.strict_encode(key_pair[:public_key].y.to_s(base: 10))
+
+    Wallet.verify!(secret_key, public_key_x, public_key_y, address).should be_true
+  end
+
+  describe "#from_path" do
+
+    it "should find a wallet from the supplied path" do
+      test_wallet_0 = "#{__DIR__}/../../../wallets/testnet-0.json"
+      wallet = Wallet.from_path(test_wallet_0)
+      Wallet.verify!(wallet.secret_key, wallet.public_key_x, wallet.public_key_y, wallet.address).should be_true
+    end
+
+   it "should raise a wallet not found error when no wallet file exists at the specific path" do
+     expect_raises(Exception, "Failed to find wallet at invalid-path, create it first!") do
+       Wallet.from_path("invalid-path")
+     end
+   end
+
   end
 
 end
@@ -108,4 +164,15 @@ def create_expected_keys(key_x, key_y, secret_key)
   public_key_x = public_key.x.to_s(base: 10)
   public_key_y = public_key.y.to_s(base: 10)
   {public_key_raw_x: public_key_raw_x, public_key_x: public_key_x, public_key_raw_y: public_key_raw_y, public_key_y: public_key_y}
+end
+
+def create_unknown_network_address
+  public_key = Wallet.create_key_pair[:public_key]
+  prefix = "U0"
+  raw_address = (public_key.x + public_key.y).to_s(base: 16)
+  hashed_address = ripemd160(sha256(raw_address).hexstring).hexstring
+  version_address = prefix + hashed_address
+  hashed_address_again = sha256(sha256(version_address).hexstring).hexstring
+  checksum = hashed_address_again[0..5]
+  Base64.strict_encode(version_address + checksum)
 end
