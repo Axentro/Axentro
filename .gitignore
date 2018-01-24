@@ -2,6 +2,6 @@
 /lib/
 /bin/
 /.shards/
-/spec/integration/log/*
+/spec/integration/logs/*
 
 !.gitkeep
