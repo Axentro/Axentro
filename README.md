@@ -4,6 +4,8 @@
 
 <p align="center">🍣 <i>An awesome developable blockchain implementation.</i> 🍣</p>
 
+[![Build Status](https://travis-ci.org/tbrand/SushiCoin.svg?branch=master)](https://travis-ci.org/tbrand/SushiCoin)
+
 ## Specs
 - **PoW** (Scrypt-N algorithm)
 - Ticker: **SUSHI**
