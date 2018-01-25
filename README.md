@@ -4,7 +4,7 @@
 
 <p align="center">🍣 <i>An awesome developable blockchain implementation.</i> 🍣</p>
 
-[![Build Status](https://travis-ci.org/tbrand/SushiCoin.svg?branch=master)](https://travis-ci.org/tbrand/SushiCoin)  [![Slack](https://img.shields.io/badge/slack-join-orange.svg)](https://goo.gl/64aVeY)  [![Wiki](https://img.shields.io/badge/document-wiki-yellow.svg)](https://github.com/SushiCoinHQ/SushiCoin/wiki)
+<p align="center">[![Build Status](https://travis-ci.org/tbrand/SushiCoin.svg?branch=master)](https://travis-ci.org/tbrand/SushiCoin)  [![Slack](https://img.shields.io/badge/slack-join-orange.svg)](https://goo.gl/64aVeY)  [![Wiki](https://img.shields.io/badge/document-wiki-yellow.svg)](https://github.com/SushiCoinHQ/SushiCoin/wiki)</p>
 
 ## Document
 
