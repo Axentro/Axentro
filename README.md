@@ -27,8 +27,9 @@
 - http://54.199.249.171:3000 (**testnet**)
 
 ## Contributors
-- [@taichiro_dev](https://twitter.com/taichiro_dev)
-- [@watzon](https://twitter.com/_watzon)
+- [@taichiro_dev](https://github.com/tbrand) Taichiro Suzuki - creator, maintainer
+- [@watzon](https://github.com/watzon)
+- [@kingsleyh](https://github.com/kingsleyh)
 
 ## Licenses
 - Icons made by [Freepik](http://www.freepik.com) from [www.flaticon.com](https://www.flaticon.com/) is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/)
