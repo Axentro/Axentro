@@ -69,7 +69,7 @@ module ::Integration
 
       start_mining
 
-      sleep 10
+      sleep 200
 
       stop_mining
 
