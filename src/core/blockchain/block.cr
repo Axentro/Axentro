@@ -67,10 +67,10 @@ module ::Sushi::Core
         prev_block = blockchain.chain[-1]
         return valid_for?(prev_block)
       else
-        raise "Index have to be '0' for genesis block: #{@index}" if @index != 0
-        raise "Transaction have to be empty for genesis block: #{@transactions}" if !@transactions.empty?
-        raise "nonce have to be '0' for genesis block: #{@nonce}" if @nonce != 0
-        raise "prev_hash have to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
+        raise "Index has to be '0' for genesis block: #{@index}" if @index != 0 # TODO - kings - seems impossible to get here
+        raise "Transactions have to be empty for genesis block: #{@transactions}" if !@transactions.empty?
+        raise "nonce has to be '0' for genesis block: #{@nonce}" if @nonce != 0
+        raise "prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
       end
 
       transactions.each_with_index do |transaction, idx|
