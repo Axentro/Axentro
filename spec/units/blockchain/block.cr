@@ -139,6 +139,7 @@ describe Block do
     #     begin
     #       v = block.valid_for?(prev_block)
     #       p c
+    #       break if v == true
     #       c = c + 1
     #     rescue
     #       puts "rescue: #{c}"
