@@ -551,7 +551,7 @@ describe Transaction do
     transaction.calculate_fee.should eq(0.01)
   end
 
-  it "should calculate unconfirmed transactions with #calculate_utxo" do
+  it "should calculate unspent transaction outputs with #calculate_utxo" do
     sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
     recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
     blockchain = Blockchain.new(sender_wallet)
