@@ -46,18 +46,11 @@ describe Block do
 
   describe "#valid_nonce?" do
 
-    # it "should return true when valid" do
-    #   coinbase_transaction = a_fixed_coinbase_transaction
-    #   block = Block.new(1.to_i64, [a_fixed_signed_transaction],  1.to_u64, "5396e18efa80a8e891c417fff862d7cad171465e65bc4b4e5e1c1c3ab0aeb88f")
-    #   # c = 0.to_u64
-    #   # loop do
-    #   #   v = block.valid_nonce?(c, 4)
-    #   #   puts c
-    #   #   break if v == true
-    #   #   c = c + 1
-    #   # end
-    #   # block.valid_nonce?(44181.to_u64, 4).should be_true
-    # end
+    it "should return true when valid" do
+      coinbase_transaction = a_fixed_coinbase_transaction
+      block = Block.new(1.to_i64, [coinbase_transaction],  1.to_u64, "prev_hash")
+      block.valid_nonce?(44181.to_u64, 4).should be_true
+    end
 
     it "should return false when invalid" do
       coinbase_transaction = a_fixed_coinbase_transaction
@@ -70,12 +63,21 @@ describe Block do
 
     context "when not a genesis block" do
 
-      # it "should be valid" do
-      #   transaction1 = a_fixed_signed_transaction
-      #   block = Block.new(1.to_i64, [transaction1],  44182.to_u64, "5396e18efa80a8e891c417fff862d7cad171465e65bc4b4e5e1c1c3ab0aeb88f")
-      #   blockchain = Blockchain.new(a_fixed_sender_wallet)
-      #   block.valid_as_latest?(blockchain).should be_true
-      # end
+      it "should be valid" do
+        transaction1 = a_fixed_signed_transaction
+        block = Block.new(1.to_i64, [transaction1],  60127.to_u64, "5396e18efa80a8e891c417fff862d7cad171465e65bc4b4e5e1c1c3ab0aeb88f")
+        blockchain = Blockchain.new(a_fixed_sender_wallet)
+        block.valid_as_latest?(blockchain).should be_true
+      end
+
+      it "should raise an error: Invalid index" do
+        blockchain = Blockchain.new(a_fixed_sender_wallet)
+        prev_hash = blockchain.chain[0].to_hash
+        block = Block.new(2.to_i64, [a_fixed_signed_transaction],  0.to_u64, prev_hash)
+        expect_raises(Exception, "Invalid index, 2 have to be 1") do
+          block.valid_as_latest?(blockchain)
+        end
+      end
 
     end
 
@@ -117,15 +119,79 @@ describe Block do
 
   describe "#valid_for?" do
 
-    it "should raise an error: prev_hash does not match" do
+    # def valid_for?(prev_block : Block) : Bool
+    #   raise "Mismatch index for the prev block(#{prev_block.index}): #{@index}" if prev_block.index + 1 != @index
+    #   raise "prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
+    #   raise "The nonce is invalid: #{@nonce}" if !prev_block.valid_nonce?(@nonce)
+    #
+    #   merkle_tree_root = calcluate_merkle_tree_root
+    #   raise "Invalid merkle tree root: #{merkle_tree_root} != #{@merkle_tree_root}" if merkle_tree_root != @merkle_tree_root
+    #
+    #   true
+    # end
+    # it "should return true when valid" do
+    #   c = 0.to_u64
+    #   loop do
+    #     transaction1 = a_fixed_signed_transaction
+    #     prev_block = Block.new(1.to_i64, [transaction1],  0.to_u64, "prev_hash_1")
+    #     prev_hash = prev_block.to_hash
+    #     block = Block.new(2.to_i64, [transaction1],  483052.to_u64, prev_hash)
+    #     begin
+    #       v = block.valid_for?(prev_block)
+    #       p c
+    #       c = c + 1
+    #     rescue
+    #       puts "rescue: #{c}"
+    #       c = c + 1
+    #     end
+    #   end
+    # end
+
+    it "should raise an error: mismatch index" do
       transaction1 = a_fixed_signed_transaction
-      blockchain = Blockchain.new(a_fixed_sender_wallet)
-      prev_hash = blockchain.chain[0].to_hash
-      block = Block.new(1.to_i64, [transaction1],  0.to_u64, "incorrect_prev_hash")
-      expect_raises(Exception, "prev_hash is invalid: #{prev_hash} != incorrect_prev_hash") do
-        block.valid_as_latest?(blockchain)
+      prev_block = Block.new(3.to_i64, [transaction1],  0.to_u64, "prev_hash_1")
+      prev_hash = prev_block.to_hash
+      block = Block.new(2.to_i64, [transaction1],  0.to_u64, prev_hash)
+      expect_raises(Exception, "Mismatch index for the prev block(3): 2") do
+        block.valid_for?(prev_block)
       end
     end
+
+    it "should raise an error: prev_hash does not match" do
+      transaction1 = a_fixed_signed_transaction
+      prev_block = Block.new(1.to_i64, [transaction1],  0.to_u64, "prev_hash_1")
+      prev_hash = prev_block.to_hash
+      block = Block.new(2.to_i64, [transaction1],  0.to_u64, "incorrect_prev_hash")
+      expect_raises(Exception, "prev_hash is invalid: #{prev_hash} != incorrect_prev_hash") do
+        block.valid_for?(prev_block)
+      end
+    end
+
+    it "should raise an error: nonce is invalid" do
+      transaction1 = a_fixed_signed_transaction
+      prev_block = Block.new(1.to_i64, [transaction1],  0.to_u64, "prev_hash_1")
+      prev_hash = prev_block.to_hash
+      block = Block.new(2.to_i64, [transaction1],  0.to_u64, prev_hash)
+      expect_raises(Exception, "The nonce is invalid: 0") do
+        block.valid_for?(prev_block)
+      end
+    end
+
+    # it "should raise an error: invalid merkle tree root" do
+    #   coinbase_transaction1 = a_fixed_coinbase_transaction
+    #   coinbase_transaction2 = a_fixed_coinbase_transaction_2
+    #
+    #   prev_block = Block.new(1.to_i64, [coinbase_transaction1],  0.to_u64, "prev_hash_1")
+    #   prev_hash = prev_block.to_hash
+    #   block = Block.new(2.to_i64, [coinbase_transaction2],  0.to_u64, prev_hash)
+    #
+    # p prev_block.to_header
+    # p block.to_header
+    #
+    #   # # expect_raises(Exception, "The nonce is invalid: 0") do
+    #   block.valid_for?(prev_block)
+    #   # # end
+    # end
 
   end
 
@@ -138,6 +204,23 @@ def a_fixed_coinbase_transaction
                       "VDBkMzkzY2I1MDBmMDVjYWZiNGVkNjE4YzY2ZjZiNjEwZGNlMWYzZjA4M2MxOGMy")
   Transaction.new(
     "0fdb264fc242318b6815afa9ea00ef26511d67ee3c510cca2e4f27206a5ee18a",
+    "head", # action
+    [] of Sender,
+    [ a_recipient(recipient_wallet, 10000.00) ],
+    "0", # message
+    "0", # prev_hash
+    "0", # sign_r
+    "0", # sign_s
+  )
+end
+
+def a_fixed_coinbase_transaction_2
+  recipient_wallet = Wallet.new("ODQyNDQzNDE4NzE1ODk1MTAwNzc2MTgwMTgyNTE5NTUyODY3NDA3NDg3ODczNjI2NDQyMTUyMjE2Mjc3Mjk3MTI0NTExMTk1MTU3Njg2Njk4NDg1MzA0MjgwODE2MTY0Mjk4NTk1NTAzOTE1MDkxMTA5MTAwMzI3OTgxMDAyMDM4MTIxNDEyNjgwNjM2OTQwODc5MDA0NDM0Mg==",
+                      "OTMwOTEwNjUwMTE0NjkxOTUzNDY2NjQ4MDMxMzk0MjQxODAxMzQ1NjY5Njc2OTQ2NzMwNTIxMjA4MzI4MjY5NzA3NjU5MzgxODU2MDc=",
+                      "NDg4MjA2MDE4NTk5NTYwNTU3MTk1NTE0NzE1NDAwMDI2Nzg5NTI2NjM0NTYzOTUwMTM5NzU2MDIxNTk4ODcyNzM5NDM0ODA2MTAxMDg=",
+                      "VDA2ODA1NGQ4MTkzNDY5Zjc5NDM5MDljMGEyOGRiNWRmZjY2Mzk4NjYzNzA4Njhj")
+  Transaction.new(
+    "cb6ab50f4579e725aa7ad43fd961e82b9056273bb084bf87b3436f085991ef8d",
     "head", # action
     [] of Sender,
     [ a_recipient(recipient_wallet, 10000.00) ],
