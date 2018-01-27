@@ -129,34 +129,9 @@ describe Block do
 
   describe "#valid_for?" do
 
-    # def valid_for?(prev_block : Block) : Bool
-    #   raise "Mismatch index for the prev block(#{prev_block.index}): #{@index}" if prev_block.index + 1 != @index
-    #   raise "prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
-    #   raise "The nonce is invalid: #{@nonce}" if !prev_block.valid_nonce?(@nonce)
-    #
-    #   merkle_tree_root = calcluate_merkle_tree_root
-    #   raise "Invalid merkle tree root: #{merkle_tree_root} != #{@merkle_tree_root}" if merkle_tree_root != @merkle_tree_root
-    #
-    #   true
-    # end
-    # it "should return true when valid" do
-    #   c = 0.to_u64
-    #   loop do
-    #     transaction1 = a_fixed_signed_transaction
-    #     prev_block = Block.new(1.to_i64, [transaction1],  0.to_u64, "prev_hash_1")
-    #     prev_hash = prev_block.to_hash
-    #     block = Block.new(2.to_i64, [transaction1],  483052.to_u64, prev_hash)
-    #     begin
-    #       v = block.valid_for?(prev_block)
-    #       p c
-    #       break if v == true
-    #       c = c + 1
-    #     rescue
-    #       puts "rescue: #{c}"
-    #       c = c + 1
-    #     end
-    #   end
-    # end
+    pending "should return true when valid" do
+      # TODO - need to calculate a valid nonce for this to work
+    end
 
     it "should raise an error: mismatch index" do
       transaction1 = a_fixed_signed_transaction
@@ -188,30 +163,9 @@ describe Block do
       end
     end
 
-    # it "should raise an error: invalid merkle tree root" do
-    #   coinbase_transaction = a_fixed_coinbase_transaction
-    #   invalid_transaction = Transaction.new(
-    #       Transaction.create_id,
-    #       "not-valid-action", # action
-    #       [] of Sender,
-    #       [] of Recipient,
-    #       "0", # message
-    #       "0", # prev_hash
-    #       "0", # sign_r
-    #       "0", # sign_s
-    #     )
-    #
-    #   prev_block = Block.new(1.to_i64, [coinbase_transaction],  0.to_u64, "prev_hash_1")
-    #   prev_hash = prev_block.to_hash
-    #   block = Block.new(2.to_i64, [invalid_transaction],  0.to_u64, prev_hash)
-    #
-    #  p prev_block.to_header[:merkle_tree_root]
-    #  p block.to_header[:merkle_tree_root]
-    #
-    #   # # expect_raises(Exception, "The nonce is invalid: 0") do
-    #   block.valid_for?(prev_block)
-    #   # # end
-    # end
+    pending "should raise an error: Invalid merkle tree root" do
+      # TODO - need to figure out how to test this.
+    end
 
   end
 
