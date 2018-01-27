@@ -4,7 +4,7 @@ module ::Sushi::Interface::Sushi
   class Root < CLI
     @wallet_path       : String?
     @address           : String?
-    @amount            : Float64?
+    @amount            : Int64?
     @node              : String?
     @header            : Bool = false
     @index             : Int32?
@@ -72,7 +72,7 @@ module ::Sushi::Interface::Sushi
           @address = address
         }
         parser.on("-m AMOUNT", "--amount=AMOUNT", "The amount of Sushi coins") { |amount|
-          @amount = amount.to_f
+          @amount = amount.to_i64
         }
         parser.on("--message=MESSAGE", "Add message into transaction") { |message|
           @message = message

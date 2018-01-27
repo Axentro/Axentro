@@ -3,7 +3,7 @@ module ::Sushi::Core::Models
           address: String,
           px: String,
           py: String,
-          amount: Float64,
+          amount: Int64,
         )
 
   alias Senders = Array(Sender)

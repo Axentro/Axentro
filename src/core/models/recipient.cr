@@ -1,7 +1,7 @@
 module ::Sushi::Core::Models
   alias Recipient = NamedTuple(
           address: String,
-          amount: Float64,
+          amount: Int64,
         )
 
   alias Recipients = Array(Recipient)
