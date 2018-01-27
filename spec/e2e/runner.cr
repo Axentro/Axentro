@@ -1,9 +1,11 @@
 require "random"
 require "./utils"
+require "./client"
 
 module ::E2E
-
   class Runner
+    @client : Client
+
     @node_ports : Array(Int32)
 
     def initialize(@num_nodes : Int32, @num_miners : Int32)
@@ -12,6 +14,8 @@ module ::E2E
       raise "@num_miners of E2E::Runner has to be less than 6" if @num_miners > 6
 
       @node_ports = (4000..4000+(@num_nodes-1)).to_a
+
+      @client = Client.new
     end
 
     def pre_build
@@ -50,6 +54,10 @@ module ::E2E
       `pkill -f sushim`
     end
 
+    def launch_client
+      @client.launch
+    end
+
     def assertion!
       latest_block_index = @node_ports.map { |port|
         size = blockchain_size(port)
@@ -76,9 +84,12 @@ module ::E2E
       pre_build
 
       launch_nodes
+
       sleep 1
 
       launch_miners
+      launch_client
+
       sleep 600
 
       kill_miners
