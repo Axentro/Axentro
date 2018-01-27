@@ -51,6 +51,7 @@ module ::E2E
     end
 
     def num_processes_node : Int32
+      STDERR.puts `ps aux | grep sushid | grep -v grep` # debug
       `ps aux | grep sushid | grep -v grep`.split("\n").size / 2
     end
 
