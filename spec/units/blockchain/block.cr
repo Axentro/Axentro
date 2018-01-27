@@ -10,7 +10,7 @@ include Hashes
 describe Block do
 
   it "should create a genesis block (new block with no transactions)" do
-    block = Block.new(0.to_i64, [] of Transaction,  0.to_u64, "genesis")
+    block = Block.new(0_i64, [] of Transaction,  0_u64, "genesis")
     block.index.should eq(0)
     block.transactions.should eq([] of Transaction)
     block.nonce.should eq(0)
@@ -19,27 +19,27 @@ describe Block do
   end
 
   it "should return the header for #to_header" do
-    block = Block.new(0.to_i64, [] of Transaction,  0.to_u64, "genesis")
+    block = Block.new(0_i64, [] of Transaction,  0_u64, "genesis")
     block.to_header.should eq({index: 0_i64, nonce: 0_u64, prev_hash: "genesis", merkle_tree_root: ""})
   end
 
   describe "#calcluate_merkle_tree_root" do
 
     it "should return empty merkle tree root value when no transactions" do
-      block = Block.new(0.to_i64, [] of Transaction,  0.to_u64, "prev_hash")
+      block = Block.new(0_i64, [] of Transaction,  0_u64, "prev_hash")
       block.calcluate_merkle_tree_root.should eq("")
     end
 
     it "should calculate merkle tree root when coinbase transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
-      block = Block.new(1.to_i64, [coinbase_transaction],  1.to_u64, "prev_hash")
+      block = Block.new(1_i64, [coinbase_transaction],  1_u64, "prev_hash")
       block.calcluate_merkle_tree_root.should eq("9233320dac9af5421ea875977c94afe39c041cdb")
     end
 
     it "should calculate merkle tree root when 2 transactions (first is coinbase)" do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
-      block = Block.new(1.to_i64, [coinbase_transaction, transaction1],  1.to_u64, "prev_hash")
+      block = Block.new(1_i64, [coinbase_transaction, transaction1],  1_u64, "prev_hash")
       block.calcluate_merkle_tree_root.should eq("c3e8b4726fb6165fbb7f143a85c8e645f7e33724")
     end
 
@@ -49,14 +49,14 @@ describe Block do
 
     it "should return true when valid" do
       coinbase_transaction = a_fixed_coinbase_transaction
-      block = Block.new(1.to_i64, [coinbase_transaction],  1.to_u64, "08101ac35b72e68db9670e1afc6b4566bc99a2c7df2772f6c03d18d39a3a5dce")
-      block.valid_nonce?(281.to_u64, 2).should be_true
+      block = Block.new(1_i64, [coinbase_transaction],  1_u64, "08101ac35b72e68db9670e1afc6b4566bc99a2c7df2772f6c03d18d39a3a5dce")
+      block.valid_nonce?(281_u64, 2).should be_true
     end
 
     it "should return false when invalid" do
       coinbase_transaction = a_fixed_coinbase_transaction
-      block = Block.new(1.to_i64, [coinbase_transaction],  1.to_u64, "prev_hash")
-      block.valid_nonce?(1.to_u64).should be_false
+      block = Block.new(1_i64, [coinbase_transaction],  1_u64, "prev_hash")
+      block.valid_nonce?(1_u64).should be_false
     end
   end
 
@@ -68,14 +68,14 @@ describe Block do
         blockchain = Blockchain.new(a_fixed_sender_wallet)
         prev_hash = blockchain.chain[0].to_hash
         coinbase_transaction = a_fixed_coinbase_transaction
-        block = Block.new(1.to_i64, [coinbase_transaction],  60127.to_u64, prev_hash)
+        block = Block.new(1_i64, [coinbase_transaction],  60127_u64, prev_hash)
         block.valid_as_latest?(blockchain).should be_true
       end
 
       it "should raise an error: Invalid index" do
         blockchain = Blockchain.new(a_fixed_sender_wallet)
         prev_hash = blockchain.chain[0].to_hash
-        block = Block.new(2.to_i64, [a_fixed_signed_transaction],  0.to_u64, prev_hash)
+        block = Block.new(2_i64, [a_fixed_signed_transaction],  0_u64, prev_hash)
         expect_raises(Exception, "Invalid index, 2 have to be 1") do
           block.valid_as_latest?(blockchain)
         end
@@ -84,7 +84,7 @@ describe Block do
       it "should raise an error: Invalid transaction" do
         blockchain = Blockchain.new(a_fixed_sender_wallet)
         prev_hash = blockchain.chain[0].to_hash
-        block = Block.new(1.to_i64, [a_fixed_signed_transaction],  0.to_u64, prev_hash)
+        block = Block.new(1_i64, [a_fixed_signed_transaction],  0_u64, prev_hash)
         expect_raises(Exception, "actions has to be 'head' for coinbase transaction") do
           block.valid_as_latest?(blockchain)
         end
@@ -96,13 +96,13 @@ describe Block do
 
       it "should be valid" do
         blockchain = Blockchain.new(a_fixed_sender_wallet)
-        block = Block.new(0.to_i64, [] of Transaction,  0.to_u64, "genesis")
+        block = Block.new(0_i64, [] of Transaction,  0_u64, "genesis")
         block.valid_as_latest?(blockchain).should be_true
       end
 
       it "should raise an error: Transactions have to be empty" do
         blockchain = Blockchain.new(a_fixed_sender_wallet)
-        block = Block.new(0.to_i64, [a_fixed_signed_transaction],  0.to_u64, "genesis")
+        block = Block.new(0_i64, [a_fixed_signed_transaction],  0_u64, "genesis")
         expect_raises(Exception, /Transactions have to be empty for genesis block/) do
           block.valid_as_latest?(blockchain)
         end
@@ -110,7 +110,7 @@ describe Block do
 
       it "should raise an error: nonce has to be '0'" do
         blockchain = Blockchain.new(a_fixed_sender_wallet)
-        block = Block.new(0.to_i64, [] of Transaction,  1.to_u64, "genesis")
+        block = Block.new(0_i64, [] of Transaction,  1_u64, "genesis")
         expect_raises(Exception, "nonce has to be '0' for genesis block: 1") do
           block.valid_as_latest?(blockchain)
         end
@@ -118,7 +118,7 @@ describe Block do
 
       it "should raise an error: prev_hash has to be 'genesis'" do
         blockchain = Blockchain.new(a_fixed_sender_wallet)
-        block = Block.new(0.to_i64, [] of Transaction,  0.to_u64, "not-genesis")
+        block = Block.new(0_i64, [] of Transaction,  0_u64, "not-genesis")
         expect_raises(Exception, "prev_hash has to be 'genesis' for genesis block: not-genesis") do
           block.valid_as_latest?(blockchain)
         end
@@ -139,9 +139,9 @@ describe Block do
 
     it "should raise an error: mismatch index" do
       transaction1 = a_fixed_signed_transaction
-      prev_block = Block.new(3.to_i64, [transaction1],  0.to_u64, "prev_hash_1")
+      prev_block = Block.new(3_i64, [transaction1],  0_u64, "prev_hash_1")
       prev_hash = prev_block.to_hash
-      block = Block.new(2.to_i64, [transaction1],  0.to_u64, prev_hash)
+      block = Block.new(2_i64, [transaction1],  0_u64, prev_hash)
       expect_raises(Exception, "Mismatch index for the prev block(3): 2") do
         block.valid_for?(prev_block)
       end
@@ -149,9 +149,9 @@ describe Block do
 
     it "should raise an error: prev_hash does not match" do
       transaction1 = a_fixed_signed_transaction
-      prev_block = Block.new(1.to_i64, [transaction1],  0.to_u64, "prev_hash_1")
+      prev_block = Block.new(1_i64, [transaction1],  0_u64, "prev_hash_1")
       prev_hash = prev_block.to_hash
-      block = Block.new(2.to_i64, [transaction1],  0.to_u64, "incorrect_prev_hash")
+      block = Block.new(2_i64, [transaction1],  0_u64, "incorrect_prev_hash")
       expect_raises(Exception, "prev_hash is invalid: #{prev_hash} != incorrect_prev_hash") do
         block.valid_for?(prev_block)
       end
@@ -159,9 +159,9 @@ describe Block do
 
     it "should raise an error: nonce is invalid" do
       transaction1 = a_fixed_signed_transaction
-      prev_block = Block.new(1.to_i64, [transaction1],  0.to_u64, "prev_hash_1")
+      prev_block = Block.new(1_i64, [transaction1],  0_u64, "prev_hash_1")
       prev_hash = prev_block.to_hash
-      block = Block.new(2.to_i64, [transaction1],  0.to_u64, prev_hash)
+      block = Block.new(2_i64, [transaction1],  0_u64, prev_hash)
       expect_raises(Exception, "The nonce is invalid: 0") do
         block.valid_for?(prev_block)
       end
@@ -204,13 +204,13 @@ describe Block do
 
     it "should find a transaction when an matching one exists" do
       coinbase_transaction = a_fixed_coinbase_transaction
-      block = Block.new(1.to_i64, [coinbase_transaction, a_fixed_signed_transaction],  0.to_u64, "prev_hash_1")
+      block = Block.new(1_i64, [coinbase_transaction, a_fixed_signed_transaction],  0_u64, "prev_hash_1")
       block.find_transaction(coinbase_transaction.id).should eq(coinbase_transaction)
     end
 
     it "should return nil when cannot find a matching transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
-      block = Block.new(1.to_i64, [coinbase_transaction, a_fixed_signed_transaction],  0.to_u64, "prev_hash_1")
+      block = Block.new(1_i64, [coinbase_transaction, a_fixed_signed_transaction],  0_u64, "prev_hash_1")
       block.find_transaction("transaction-not-found").should be_nil
     end
 
