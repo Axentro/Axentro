@@ -215,6 +215,22 @@ describe Block do
 
   end
 
+  describe "#find_transaction" do
+
+    it "should find a transaction when an matching one exists" do
+      coinbase_transaction = a_fixed_coinbase_transaction
+      block = Block.new(1.to_i64, [coinbase_transaction, a_fixed_signed_transaction],  0.to_u64, "prev_hash_1")
+      block.find_transaction(coinbase_transaction.id).should eq(coinbase_transaction)
+    end
+
+    it "should return nil when cannot find a matching transaction" do
+      coinbase_transaction = a_fixed_coinbase_transaction
+      block = Block.new(1.to_i64, [coinbase_transaction, a_fixed_signed_transaction],  0.to_u64, "prev_hash_1")
+      block.find_transaction("transaction-not-found").should be_nil
+    end
+
+  end
+
 end
 
 def a_fixed_coinbase_transaction
