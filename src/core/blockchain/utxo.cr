@@ -61,6 +61,7 @@ module ::Sushi::Core
         @transaction_indices = @transaction_indices.merge(block_utxo[:indices])
       end
 
+      # TODO - Kings - why is this commented out - this is the only usage of the show method below
       # show
     end
 
@@ -73,6 +74,8 @@ module ::Sushi::Core
       @transaction_indices.clear
     end
 
+    # TODO - Kings - this method cannot work as get_unconfirmed takes address and transactions
+    # but since the only caller of this method is commented out in the record method above this method is currently not used
     def show
       return unless @utxo_internal.size > CONFIRMATION + 1
 
