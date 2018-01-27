@@ -4,6 +4,7 @@ require "./../utils"
 include Sushi::Core::Models
 include Units::Utils
 include Sushi::Core
+include Sushi::Common::Num
 include Hashes
 
 describe Block do
@@ -174,7 +175,28 @@ describe Block do
       expect_raises(Exception, "Invalid merkle tree root: #{block_102_invalid.calcluate_merkle_tree_root} != #{block_102.merkle_tree_root}") do
         block_102_invalid.valid_for?(block_101)
       end
+    end
+
   end
+
+  describe "#calculate_utxo" do
+
+    it "should unspent transactions" do
+      r1_address = block_101.transactions.first.recipients.first[:address]
+      r1_amount = prec(block_101.transactions.first.recipients.first[:amount])
+      r2_address = block_101.transactions.first.recipients[1][:address]
+      r2_amount = prec(block_101.transactions.first.recipients[1][:amount])
+      r3_address = block_101.transactions.first.recipients[2][:address]
+      r3_amount = prec(block_101.transactions.first.recipients[2][:amount])
+      transaction_id = block_101.transactions.first.id
+
+      expected_utxo = {utxo: {r1_address => r1_amount,
+                              r2_address => r2_amount,
+                              r3_address => r3_amount},
+                       indices: {transaction_id => block_101.index}}
+
+      block_101.calculate_utxo.should eq(expected_utxo)
+    end
 
   end
 
