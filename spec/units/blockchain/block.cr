@@ -64,9 +64,10 @@ describe Block do
     context "when not a genesis block" do
 
       it "should be valid" do
-        transaction1 = a_fixed_signed_transaction
-        block = Block.new(1.to_i64, [transaction1],  60127.to_u64, "5396e18efa80a8e891c417fff862d7cad171465e65bc4b4e5e1c1c3ab0aeb88f")
         blockchain = Blockchain.new(a_fixed_sender_wallet)
+        prev_hash = blockchain.chain[0].to_hash
+        coinbase_transaction = a_fixed_coinbase_transaction
+        block = Block.new(1.to_i64, [coinbase_transaction],  60127.to_u64, prev_hash)
         block.valid_as_latest?(blockchain).should be_true
       end
 
@@ -75,6 +76,15 @@ describe Block do
         prev_hash = blockchain.chain[0].to_hash
         block = Block.new(2.to_i64, [a_fixed_signed_transaction],  0.to_u64, prev_hash)
         expect_raises(Exception, "Invalid index, 2 have to be 1") do
+          block.valid_as_latest?(blockchain)
+        end
+      end
+
+      it "should raise an error: Invalid transaction" do
+        blockchain = Blockchain.new(a_fixed_sender_wallet)
+        prev_hash = blockchain.chain[0].to_hash
+        block = Block.new(1.to_i64, [a_fixed_signed_transaction],  0.to_u64, prev_hash)
+        expect_raises(Exception, "actions has to be 'head' for coinbase transaction") do
           block.valid_as_latest?(blockchain)
         end
       end
@@ -179,15 +189,24 @@ describe Block do
     end
 
     # it "should raise an error: invalid merkle tree root" do
-    #   coinbase_transaction1 = a_fixed_coinbase_transaction
-    #   coinbase_transaction2 = a_fixed_coinbase_transaction_2
+    #   coinbase_transaction = a_fixed_coinbase_transaction
+    #   invalid_transaction = Transaction.new(
+    #       Transaction.create_id,
+    #       "not-valid-action", # action
+    #       [] of Sender,
+    #       [] of Recipient,
+    #       "0", # message
+    #       "0", # prev_hash
+    #       "0", # sign_r
+    #       "0", # sign_s
+    #     )
     #
-    #   prev_block = Block.new(1.to_i64, [coinbase_transaction1],  0.to_u64, "prev_hash_1")
+    #   prev_block = Block.new(1.to_i64, [coinbase_transaction],  0.to_u64, "prev_hash_1")
     #   prev_hash = prev_block.to_hash
-    #   block = Block.new(2.to_i64, [coinbase_transaction2],  0.to_u64, prev_hash)
+    #   block = Block.new(2.to_i64, [invalid_transaction],  0.to_u64, prev_hash)
     #
-    # p prev_block.to_header
-    # p block.to_header
+    #  p prev_block.to_header[:merkle_tree_root]
+    #  p block.to_header[:merkle_tree_root]
     #
     #   # # expect_raises(Exception, "The nonce is invalid: 0") do
     #   block.valid_for?(prev_block)
