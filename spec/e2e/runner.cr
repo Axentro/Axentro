@@ -50,17 +50,7 @@ module ::E2E
       `pkill -f sushim`
     end
 
-    def num_processes_node : Int32
-      STDERR.puts `ps aux | grep sushid | grep -v grep` # debug
-      STDERR.puts `ps aux | grep sushid | grep -v grep`.split("\n")
-      STDERR.puts `ps aux | grep sushid | grep -v grep`.split("\n").size
-      STDERR.puts `ps aux | grep sushid | grep -v grep`.split("\n").size / 2
-      `ps aux | grep sushid | grep -v grep`.split("\n").size / 2
-    end
-
     def assertion!
-      raise "# of node processes has to be #{@num_nodes} (#{num_processes_node})" if @num_nodes != num_processes_node
-
       latest_block_index = @node_ports.map { |port|
         size = blockchain_size(port)
         STDERR.puts "#{port} <- #{size}"
