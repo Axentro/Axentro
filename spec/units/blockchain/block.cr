@@ -32,14 +32,14 @@ describe Block do
     it "should calculate merkle tree root when coinbase transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
       block = Block.new(1.to_i64, [coinbase_transaction],  1.to_u64, "prev_hash")
-      block.calcluate_merkle_tree_root.should eq("892b10c82be3d98e614bf2f48b7513d8e1200201")
+      block.calcluate_merkle_tree_root.should eq("9233320dac9af5421ea875977c94afe39c041cdb")
     end
 
     it "should calculate merkle tree root when 2 transactions (first is coinbase)" do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = Block.new(1.to_i64, [coinbase_transaction, transaction1],  1.to_u64, "prev_hash")
-      block.calcluate_merkle_tree_root.should eq("4fec03c8fffc18d05beb8025630882e0bf8290f5")
+      block.calcluate_merkle_tree_root.should eq("c3e8b4726fb6165fbb7f143a85c8e645f7e33724")
     end
 
   end
@@ -48,8 +48,8 @@ describe Block do
 
     it "should return true when valid" do
       coinbase_transaction = a_fixed_coinbase_transaction
-      block = Block.new(1.to_i64, [coinbase_transaction],  1.to_u64, "prev_hash")
-      block.valid_nonce?(44181.to_u64, 4).should be_true
+      block = Block.new(1.to_i64, [coinbase_transaction],  1.to_u64, "08101ac35b72e68db9670e1afc6b4566bc99a2c7df2772f6c03d18d39a3a5dce")
+      block.valid_nonce?(281.to_u64, 2).should be_true
     end
 
     it "should return false when invalid" do
@@ -129,8 +129,11 @@ describe Block do
 
   describe "#valid_for?" do
 
-    pending "should return true when valid" do
-      # TODO - need to calculate a valid nonce for this to work
+    it "should return true when valid" do
+      prev_block = block_101
+      prev_hash = prev_block.to_hash
+      block = block_102
+      block.valid_for?(prev_block)
     end
 
     it "should raise an error: mismatch index" do
@@ -163,9 +166,15 @@ describe Block do
       end
     end
 
-    pending "should raise an error: Invalid merkle tree root" do
-      # TODO - need to figure out how to test this.
-    end
+    it "should raise an error: Invalid merkle tree root" do
+      # someone changed the amount from 3145.161290322581 to 13145.161290322581
+      # between block_102 and block_102_invalid
+      block_102.valid_for?(block_101).should eq(true)
+
+      expect_raises(Exception, "Invalid merkle tree root: #{block_102_invalid.calcluate_merkle_tree_root} != #{block_102.merkle_tree_root}") do
+        block_102_invalid.valid_for?(block_101)
+      end
+  end
 
   end
 
@@ -187,42 +196,49 @@ describe Block do
 
 end
 
+def block_101
+  Block.from_json(%({"index":101,"transactions":[{"id":"4db42cdfcffc85c86734dc1bc00adcc21aae274a3137d6a16a31162a8d6ea7b2","action":"head","senders":[],"recipients":[{"address":"VDAyYTVjMDYwZjYyZThkOWM5ODhkZGFkMmM3NzM2MjczZWZhZjIxNDAyN\
+WRmNWQ0","amount":4166.666666666667},{"address":"VDBhYTYxYzk5MTQ4M2QyZmU1YTA4NzUxZjYzYWUzYzA4ZTExYTgzMjdkNWViODU2","amount":3333.333333333333},{"address":"VDAyNTk0YjdlMTc4N2FkODRmYTU0YWZmODM1YzQzOTA2YTEzY2NjYmMyNjdkYjVm","amount":2500.0}\
+],"message":"0","prev_hash":"0","sign_r":"0","sign_s":"0"}],"nonce":1441005721641889293,"prev_hash":"08101ac35b72e68db9670e1afc6b4566bc99a2c7df2772f6c03d18d39a3a5dce","merkle_tree_root":"9233320dac9af5421ea875977c94afe39c041cdb"}))
+end
+
+def block_102
+  Block.from_json(%({"index":102,"transactions":[{"id":"8577698f8e411c4d8449535f716caad50e44d72a5c5561d5d2abde9229d1e402","action":"head","senders":[],"recipients":[{"address":"VDAyYTVjMDYwZjYyZThkOWM5ODhkZGFkMmM3NzM2MjczZWZhZjIxNDAyN\
+WRmNWQ0","amount":3145.161290322581},{"address":"VDBhYTYxYzk5MTQ4M2QyZmU1YTA4NzUxZjYzYWUzYzA4ZTExYTgzMjdkNWViODU2","amount":4354.8387096774195},{"address":"VDAyNTk0YjdlMTc4N2FkODRmYTU0YWZmODM1YzQzOTA2YTEzY2NjYmMyNjdkYjVm","amount":2500.0\
+}],"message":"0","prev_hash":"0","sign_r":"0","sign_s":"0"}],"nonce":220767039727821713,"prev_hash":"dca74fb6b6b3d9ba3e007341ac367aae2503ef1d196676e52c1a1e14fe096007","merkle_tree_root":"710e1c4174d35d2df5df71ca257815013c5d00c8"}))
+end
+
+def block_102_invalid
+  Block.from_json(%({"index":102,"transactions":[{"id":"8577698f8e411c4d8449535f716caad50e44d72a5c5561d5d2abde9229d1e402","action":"head","senders":[],"recipients":[{"address":"VDAyYTVjMDYwZjYyZThkOWM5ODhkZGFkMmM3NzM2MjczZWZhZjIxND\
+AyNWRmNWQ0","amount":13145.161290322581},{"address":"VDBhYTYxYzk5MTQ4M2QyZmU1YTA4NzUxZjYzYWUzYzA4ZTExYTgzMjdkNWViODU2","amount":4354.8387096774195},{"address":"VDAyNTk0YjdlMTc4N2FkODRmYTU0YWZmODM1YzQzOTA2YTEzY2NjYmMyNjdkYjVm","amount":25\
+00.0}],"message":"0","prev_hash":"0","sign_r":"0","sign_s":"0"}],"nonce":220767039727821713,"prev_hash":"dca74fb6b6b3d9ba3e007341ac367aae2503ef1d196676e52c1a1e14fe096007","merkle_tree_root":"710e1c4174d35d2df5df71ca257815013c5d00c8"}))
+end
+
 def a_fixed_coinbase_transaction
-  recipient_wallet = Wallet.new("MTE0OTM2NTgxNjk4OTc2OTcyOTkyNjc3ODIxMjAzMDE3NjMyODM3OTYyNDgyMjM1NTA1ODczOTU0OTQ3NDY3MzU5MjY1ODQxOTg2NDUxNjMxMzg4NzY1MTA3OTg4NTk1NTEzMzc5MzgzMTEwNzY3NTUzNzg3NDY4MTU4MzkwNDE4MTUwNjM3NzMyODY0NDkwMjE4NTMwMTA4NjA=",
-                      "NTM0NDE5MjcyNTEyMzU1Mzg4MTU1ODE3NTM3NDc4NDk2NjYwMzkwNDQ5MDA4Nzg3MzI5NjUxOTg1NjcxMDY0MjUwMDAwOTQ2NTE5NDU=",
-                      "ODk5MjU3NDYwMTc5MzIzMTAxNDMyMDU5MjE2NzkwNzc3OTEyMDE5NjEyOTA4MTg5MzA1NzgzMzk3MjQzMzQ5MjcyNDY4OTkyMzkxNjQ=",
-                      "VDBkMzkzY2I1MDBmMDVjYWZiNGVkNjE4YzY2ZjZiNjEwZGNlMWYzZjA4M2MxOGMy")
+
+  recipient1 = a_recipient_with_address("VDAyYTVjMDYwZjYyZThkOWM5ODhkZGFkMmM3NzM2MjczZWZhZjIxNDAyNWRmNWQ0", 4166.666666666667)
+  recipient2 = a_recipient_with_address("VDBhYTYxYzk5MTQ4M2QyZmU1YTA4NzUxZjYzYWUzYzA4ZTExYTgzMjdkNWViODU2", 3333.333333333333)
+  recipient3 = a_recipient_with_address("VDAyNTk0YjdlMTc4N2FkODRmYTU0YWZmODM1YzQzOTA2YTEzY2NjYmMyNjdkYjVm", 2500.0)
+
   Transaction.new(
-    "0fdb264fc242318b6815afa9ea00ef26511d67ee3c510cca2e4f27206a5ee18a",
+    "4db42cdfcffc85c86734dc1bc00adcc21aae274a3137d6a16a31162a8d6ea7b2",
     "head", # action
     [] of Sender,
-    [ a_recipient(recipient_wallet, 10000.00) ],
+    [ recipient1, recipient2, recipient3],
     "0", # message
     "0", # prev_hash
     "0", # sign_r
     "0", # sign_s
   )
+
+ # prev_hash = 08101ac35b72e68db9670e1afc6b4566bc99a2c7df2772f6c03d18d39a3a5dce
+ # nonce = 1441005721641889293
 end
 
-def a_fixed_coinbase_transaction_2
-  recipient_wallet = Wallet.new("ODQyNDQzNDE4NzE1ODk1MTAwNzc2MTgwMTgyNTE5NTUyODY3NDA3NDg3ODczNjI2NDQyMTUyMjE2Mjc3Mjk3MTI0NTExMTk1MTU3Njg2Njk4NDg1MzA0MjgwODE2MTY0Mjk4NTk1NTAzOTE1MDkxMTA5MTAwMzI3OTgxMDAyMDM4MTIxNDEyNjgwNjM2OTQwODc5MDA0NDM0Mg==",
-                      "OTMwOTEwNjUwMTE0NjkxOTUzNDY2NjQ4MDMxMzk0MjQxODAxMzQ1NjY5Njc2OTQ2NzMwNTIxMjA4MzI4MjY5NzA3NjU5MzgxODU2MDc=",
-                      "NDg4MjA2MDE4NTk5NTYwNTU3MTk1NTE0NzE1NDAwMDI2Nzg5NTI2NjM0NTYzOTUwMTM5NzU2MDIxNTk4ODcyNzM5NDM0ODA2MTAxMDg=",
-                      "VDA2ODA1NGQ4MTkzNDY5Zjc5NDM5MDljMGEyOGRiNWRmZjY2Mzk4NjYzNzA4Njhj")
-  Transaction.new(
-    "cb6ab50f4579e725aa7ad43fd961e82b9056273bb084bf87b3436f085991ef8d",
-    "head", # action
-    [] of Sender,
-    [ a_recipient(recipient_wallet, 10000.00) ],
-    "0", # message
-    "0", # prev_hash
-    "0", # sign_r
-    "0", # sign_s
-  )
-end
 
-def a_fixed_unsigned_transaction
-  a_signed_transaction.as_unsigned
+def a_recipient_with_address(address : String, amount : Float64)
+  {address: address,
+    amount: amount}
 end
 
 def a_fixed_sender_wallet
