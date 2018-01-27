@@ -64,22 +64,18 @@ module ::Sushi::Core
       unless is_genesis
         raise "Invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
 
+        transactions.each_with_index do |transaction, idx|
+          return false unless transaction.valid?(blockchain, @index, idx == 0)
+        end
+
         prev_block = blockchain.chain[-1]
         return valid_for?(prev_block)
       else
-        # raise "Index has to be '0' for genesis block: #{@index}" if @index != 0 # TODO - kings - seems impossible to get here as we are already in the else of is_genesis
-        raise "Transactions have to be empty for genesis block: #{@transactions}" if !@transactions.empty?
-        raise "nonce has to be '0' for genesis block: #{@nonce}" if @nonce != 0
-        raise "prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
+        raise "Index have to be '0' for genesis block: #{@index}" if @index != 0
+        raise "Transaction have to be empty for genesis block: #{@transactions}" if !@transactions.empty?
+        raise "nonce have to be '0' for genesis block: #{@nonce}" if @nonce != 0
+        raise "prev_hash have to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
       end
-
-      # kings - seems impossible to get here:
-      # if not genesis block then there is either a raise invalid index, or a return valid_for?(prev_block)
-      # if is genesis - there is a raise saying a genesis block must have no transactions
-      # So this code could be deleted?
-      # transactions.each_with_index do |transaction, idx|
-      #   return false unless transaction.valid?(blockchain, @index, idx == 0)
-      # end
 
       true
     end
