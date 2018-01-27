@@ -36,9 +36,10 @@ module ::Integration
     end
 
     def start_mining
-      NODE_PORTS.each do |node_port|
-        mining(node_port, Random.rand(NODE_PORTS.size))
-      end
+      # NODE_PORTS.each do |node_port|
+      #   mining(node_port, Random.rand(NODE_PORTS.size))
+      # end
+      mining(4000, Random.rand(NODE_PORTS.size))
     end
 
     def stop_mining
@@ -69,7 +70,7 @@ module ::Integration
 
       start_mining
 
-      sleep 600
+      sleep 1500
 
       stop_mining
 
