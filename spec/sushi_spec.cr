@@ -2,9 +2,9 @@ require "./spec_helper"
 
 include ::Sushi::Common::Color
 
-puts "----- #{light_cyan("   Unit tests   ")} -----"
+puts light_cyan("> Unit tests")
 require "./units/*"
 
 puts "\n"
-puts "----- #{light_cyan("Integration test")} -----"
-require "./integration/spec"
+puts light_cyan("> E2E test")
+require "./e2e/spec"

@@ -1,4 +1,4 @@
-module ::Integration::Utils::API
+module ::E2E::Utils::API
 
   def sushi(args) : String
     _args = args
@@ -16,5 +16,12 @@ module ::Integration::Utils::API
     res = `#{sushi(args)}`
 
     JSON.parse(res)["size"].as_i
+  end
+
+  def block(port : Int32, index : Int32) : String
+    args = ["block", "-n", "http://127.0.0.1:#{port}", "-i", index, "--json"]
+
+    res = `#{sushi(args)}`
+    res
   end
 end

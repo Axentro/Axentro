@@ -1,4 +1,4 @@
-module ::Integration::Utils::Node
+module ::E2E::Utils::Node
 
   def sushid(args) : String
     _args = args

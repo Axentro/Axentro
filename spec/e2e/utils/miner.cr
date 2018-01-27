@@ -1,4 +1,4 @@
-module ::Integration::Utils::Miner
+module ::E2E::Utils::Miner
 
   def sushim(args) : String
     _args = args
