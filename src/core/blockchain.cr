@@ -176,7 +176,7 @@ module ::Sushi::Core
         Transaction.create_id,
         "head",
         senders,
-        miners_recipients.push(node_reccipient),
+        [node_reccipient] + miners_recipients,
         "0", # message
         "0", # prev_hash
         "0", # sign_r

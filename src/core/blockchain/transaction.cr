@@ -42,7 +42,6 @@ module ::Sushi::Core
     def valid?(blockchain : Blockchain, block_index : Int64, is_coinbase : Bool) : Bool
       raise "Length of transaction id have to be 64: #{@id}" if @id.size != 64
       raise "Message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
-      raise "Unknown action: #{@action}" unless ACTIONS.includes?(@action)
 
       @senders.each do |sender|
         raise "Invalid checksum for sender's address: #{sender[:address]}" unless Wallet.valid_checksum?(sender[:address])
@@ -53,6 +52,7 @@ module ::Sushi::Core
       end
 
       if !is_coinbase
+        raise "Unknown action: #{@action}" unless ACTIONS.includes?(@action)
         raise "Sender have to be only one currently" if @senders.size != 1
 
         secp256k1  = ECDSA::Secp256k1.new
@@ -79,12 +79,12 @@ module ::Sushi::Core
           raise "Sender has not enough coins: #{@senders[0][:address]} (#{senders_amount})"
         end
       else
-        raise "actions have to be 'head' for coinbase transaction " if @action != "head"
-        raise "message have to be '0' for coinbase transaction" if @message != "0"
-        raise "Sender have to be only one currently" if @senders.size != 0
-        raise "prev_hash of coinbase transaction have to be '0'" if @prev_hash != "0"
-        raise "sign_r of coinbase transaction have to be '0'" if @sign_r != "0"
-        raise "sign_s of coinbase transaction have to be '0'" if @sign_s != "0"
+        raise "actions has to be 'head' for coinbase transaction " if @action != "head"
+        raise "message has to be '0' for coinbase transaction" if @message != "0"
+        raise "there should be no Sender for a coinbase transaction" if @senders.size != 0
+        raise "prev_hash of coinbase transaction has to be '0'" if @prev_hash != "0"
+        raise "sign_r of coinbase transaction has to be '0'" if @sign_r != "0"
+        raise "sign_s of coinbase transaction has to be '0'" if @sign_s != "0"
 
         served_sum = @recipients.reduce(0.0) { |sum, recipient| prec(sum + recipient[:amount]) }
         raise "Invalid served amount for coinbase transaction: #{served_sum}" if served_sum != Blockchain.served_amount(block_index)
