@@ -77,8 +77,6 @@ module ::E2E
         _block_json = block(node_port, checking_block_index)
         raise "Difference block #{block_json} vs #{_block_json}" if block_json != _block_json
       end
-
-      @client.assertion!
     end
 
     def run!

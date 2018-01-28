@@ -33,7 +33,6 @@ module ::E2E
     end
 
     def kill
-      # do nothing currently
       @alive = false
     end
 
