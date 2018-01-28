@@ -24,8 +24,9 @@ module ::E2E::Utils::API
     res
   end
 
-  def amount(port : Int32, num : Int32) : Int64
-    args = ["amount", "-w", "wallets/testnet-#{num}.json", "-n", "http://127.0.0.1:#{port}", "-u", "--testnet", "--json"]
+  def amount(port : Int32, num : Int32, unconfirmed = false) : Int64
+    args = ["amount", "-w", "wallets/testnet-#{num}.json", "-n", "http://127.0.0.1:#{port}", "--testnet", "--json"]
+    args << "-u" if unconfirmed
 
     res = `#{sushi(args)}`
 
@@ -34,10 +35,11 @@ module ::E2E::Utils::API
 
   def create(port : Int32, n_sender : Int32, n_recipient : Int32) : String?
     a = amount(port, n_sender)
+    au = amount(port, n_sender, true)
 
-    return nil if a == 0
+    return nil if a == 0 || au == 0
 
-    a = a / 2
+    a = [a, au].min / 2
 
     recipient_address = ::Sushi::Core::Wallet.from_path("wallets/testnet-#{n_recipient}.json").address
 
