@@ -58,18 +58,20 @@ module ::E2E
       @client.launch
     end
 
-    def assertion!
+    def kill_client
       @client.kill
+    end
 
+    def assertion!
       latest_block_index = @node_ports.map { |port|
         size = blockchain_size(port)
         STDERR.puts "#{port} <- #{size}"
         size - 1
-      }.min
+      }.max
 
-      return STDERR.puts yellow("mining is not enough") if latest_block_index < 2
+      return STDERR.puts yellow("mining is not enough") if latest_block_index < CONFIRMATION-1
 
-      checking_block_index = latest_block_index - 2
+      checking_block_index = latest_block_index - (CONFIRMATION-1)
 
       block_json = block(@node_ports[0], checking_block_index)
 
@@ -77,6 +79,8 @@ module ::E2E
         _block_json = block(node_port, checking_block_index)
         raise "Difference block #{block_json} vs #{_block_json}" if block_json != _block_json
       end
+
+      STDERR.puts "Total transactions: #{@client.num_transactions}"
     end
 
     def run!
@@ -90,11 +94,19 @@ module ::E2E
       sleep 1
 
       launch_miners
+
+      sleep 1
+
       launch_client
 
-      sleep 600
+      sleep 300
+
+      kill_client
+
+      sleep 1
 
       kill_miners
+
       sleep 1
 
       assertion!

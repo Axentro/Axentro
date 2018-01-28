@@ -36,6 +36,10 @@ module ::E2E
       @alive = false
     end
 
+    def num_transactions : Int32
+      @transaction_ids.size
+    end
+
     include Utils
   end
 end
