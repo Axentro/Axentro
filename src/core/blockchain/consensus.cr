@@ -28,12 +28,10 @@ module ::Sushi::Core::Consensus
     buffer.hexstring[0, difficulty] == "0" * difficulty
   end
 
-  # TODO - Kings - why does this take the block_index?
   def difficulty_at(block_index : Int64) : Int32
     4
   end
 
-  # TODO - Kings - why does this take the block_index?
   def miner_difficulty_at(block_index : Int64) : Int32
     3
   end
