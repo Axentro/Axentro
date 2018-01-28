@@ -13,7 +13,7 @@ module ::Sushi::Core
     def pow(thread : Int32) : UInt64
       nonce : UInt64 = Random.rand(UInt64::MAX)
 
-      info "starting nonce from #{light_cyan(nonce)} (thread: #{thread+1})"
+      info "starting nonce from #{light_cyan(nonce)} (thread: #{thread + 1})"
 
       latest_nonce = nonce
       latest_time = Time.now
@@ -28,7 +28,7 @@ module ::Sushi::Core
 
         nonce += 1
 
-        if nonce%100 == 0
+        if nonce % 100 == 0
           time_now = Time.now
           time_diff = (time_now - latest_time).total_seconds
 
@@ -36,12 +36,11 @@ module ::Sushi::Core
 
           work_rate = (nonce - latest_nonce)/time_diff
 
-          info "#{nonce-latest_nonce} works, #{work_rate_with_unit(work_rate)} (thread: #{thread+1})"
+          info "#{nonce - latest_nonce} works, #{work_rate_with_unit(work_rate)} (thread: #{thread + 1})"
 
           latest_nonce = nonce
           latest_time = time_now
         end
-
       rescue e : Exception
         error e.message.not_nil!
         error e.backtrace.join("\n")
@@ -49,7 +48,7 @@ module ::Sushi::Core
         error "For hash: #{@latest_hash}"
       end
 
-      info "found new nonce(#{@difficulty}): #{light_cyan(nonce)} (thread: #{thread+1})"
+      info "found new nonce(#{@difficulty}): #{light_cyan(nonce)} (thread: #{thread + 1})"
 
       nonce
     end
@@ -57,7 +56,6 @@ module ::Sushi::Core
     def run
       socket = HTTP::WebSocket.new(@host, "peer", @port)
       socket.on_message do |message|
-
         message_json = JSON.parse(message)
         message_type = message_json["type"].as_i
         message_content = message_json["content"].to_s
@@ -72,13 +70,12 @@ module ::Sushi::Core
         end
       end
 
-      send(socket, M_TYPE_HANDSHAKE_MINER, { address: @wallet.address })
+      send(socket, M_TYPE_HANDSHAKE_MINER, {address: @wallet.address})
 
       @threads.times do |thread|
-
         Thread.new do
           while nonce = pow(thread)
-            send(socket, M_TYPE_FOUND_NONCE, { nonce: nonce }) unless socket.closed?
+            send(socket, M_TYPE_FOUND_NONCE, {nonce: nonce}) unless socket.closed?
           end
         end
       end

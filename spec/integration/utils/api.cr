@@ -1,9 +1,8 @@
 module ::Integration::Utils::API
-
   def sushi(args) : String
     _args = args
-            .map { |arg| arg.to_s }
-            .join(" ")
+      .map { |arg| arg.to_s }
+      .join(" ")
 
     bin = File.expand_path("../../../../bin/sushi", __FILE__)
 

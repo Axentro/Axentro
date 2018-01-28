@@ -1,5 +1,4 @@
 module ::Sushi::Interface::Logger
-
   def puts_info(_msg : String?)
     return unless msg = _msg
     puts light_gray(msg)

@@ -2,15 +2,15 @@ require "./node/*"
 
 module ::Sushi::Core
   class Node
-    @blockchain     : Blockchain
-    @network_type   : String
-    @id             : String
-    @phase          : Int32
-    @nodes          : Models::Nodes
-    @miners         : Models::Miners
+    @blockchain : Blockchain
+    @network_type : String
+    @id : String
+    @phase : Int32
+    @nodes : Models::Nodes
+    @miners : Models::Miners
     @rpc_controller : Controllers::RPCController
 
-    @latest_nonces  : Array(UInt64)
+    @latest_nonces : Array(UInt64)
     @latest_unknown : Int64? = nil
 
     @cc : Int32 = 0
@@ -20,18 +20,18 @@ module ::Sushi::Core
     @c3 : Int32 = 0
 
     def initialize(
-          @is_private     : Bool,
-          @is_testnet     : Bool,
-          @bind_host      : String,
-          @bind_port      : Int32,
-          @public_host    : String?,
-          @public_port    : Int32?,
-          connect_host    : String?,
-          connect_port    : Int32?,
-          @wallet         : Wallet,
-          @database       : Database?,
-          @max_connection : Int32,
-        )
+      @is_private : Bool,
+      @is_testnet : Bool,
+      @bind_host : String,
+      @bind_port : Int32,
+      @public_host : String?,
+      @public_port : Int32?,
+      connect_host : String?,
+      connect_port : Int32?,
+      @wallet : Wallet,
+      @database : Database?,
+      @max_connection : Int32
+    )
       @id = Random::Secure.hex(16)
 
       info "id: #{light_green(@id)}"
@@ -48,12 +48,12 @@ module ::Sushi::Core
         warning "no database has been specified"
       end
 
-      @network_type   = @is_testnet ? "testnet" : "mainnet"
-      @nodes          = Models::Nodes.new
-      @miners         = Models::Miners.new
-      @phase          = PHASE_NODE_RUNNING
+      @network_type = @is_testnet ? "testnet" : "mainnet"
+      @nodes = Models::Nodes.new
+      @miners = Models::Miners.new
+      @phase = PHASE_NODE_RUNNING
       @rpc_controller = Controllers::RPCController.new(@blockchain)
-      @latest_nonces  = Array(UInt64).new
+      @latest_nonces = Array(UInt64).new
 
       wallet_network = Wallet.address_network_type(@wallet.address)
 
@@ -65,7 +65,7 @@ module ::Sushi::Core
       end
 
       if connect_host && connect_port
-        connect(connect_host.not_nil!, connect_port.not_nil!,  @max_connection - 1)
+        connect(connect_host.not_nil!, connect_port.not_nil!, @max_connection - 1)
       else
         warning "no connecting node has been specified"
         warning "so this node is standalone from other network"
@@ -80,7 +80,7 @@ module ::Sushi::Core
       socket = HTTP::WebSocket.new(connect_host, "/peer", connect_port)
       peer(socket)
 
-      send(socket, M_TYPE_HANDSHAKE_NODE, { context: context, known_nodes: known_nodes, request_nodes_num: request_nodes_num })
+      send(socket, M_TYPE_HANDSHAKE_NODE, {context: context, known_nodes: known_nodes, request_nodes_num: request_nodes_num})
 
       connect_async(socket)
     rescue e : Exception
@@ -116,7 +116,6 @@ module ::Sushi::Core
     end
 
     private def peer(socket : HTTP::WebSocket)
-
       socket.on_message do |message|
         message_json = JSON.parse(message)
         message_type = message_json["type"].as_i
@@ -149,7 +148,6 @@ module ::Sushi::Core
       socket.on_close do |_|
         reject!(socket, nil)
       end
-
     rescue e : Exception
       handle_exception(socket, e)
     end
@@ -166,9 +164,9 @@ module ::Sushi::Core
 
       @nodes.each do |node|
         send(node[:socket], M_TYPE_BROADCAST_TRANSACTION, {
-               transaction: raw_transaction,
-               known_nodes: known_nodes,
-             })
+          transaction: raw_transaction,
+          known_nodes: known_nodes,
+        })
       end
     end
 
@@ -195,10 +193,10 @@ module ::Sushi::Core
       @phase = PHASE_NODE_SYNCING
 
       if latest_unknown = @latest_unknown
-        send(socket, M_TYPE_REQUEST_CHAIN, { latest_index: latest_unknown - 1 })
-        @latest_unknown= nil
+        send(socket, M_TYPE_REQUEST_CHAIN, {latest_index: latest_unknown - 1})
+        @latest_unknown = nil
       else
-        send(socket, M_TYPE_REQUEST_CHAIN, { latest_index: 0 })
+        send(socket, M_TYPE_REQUEST_CHAIN, {latest_index: 0})
       end
     end
 
@@ -218,17 +216,17 @@ module ::Sushi::Core
         warning "mismatch network type with miner #{address}"
 
         return send(socket, M_TYPE_HANDSHAKE_MINER_REJECTED, {
-                      reason: "Network type mismatch",
-                    })
+          reason: "Network type mismatch",
+        })
       end
 
-      miner = { socket: socket, address: address, nonces: [] of UInt64 }
+      miner = {socket: socket, address: address, nonces: [] of UInt64}
 
       @miners << miner
 
       info "new miner: #{light_green(miner[:address])} (#{@miners.size})"
 
-      send(socket, M_TYPE_HANDSHAKE_MINER_ACCEPTED, { block: @blockchain.latest_block })
+      send(socket, M_TYPE_HANDSHAKE_MINER_ACCEPTED, {block: @blockchain.latest_block})
     end
 
     private def _handshake_node(socket, _content)
@@ -246,9 +244,9 @@ module ::Sushi::Core
         warning "mismatch network type with node #{node_context[:id]}"
 
         return send(socket, M_TYPE_HANDSHAKE_NODE_REJECTED, {
-                      context: context,
-                      reason: "Network type mismatch",
-                    })
+          context: context,
+          reason:  "Network type mismatch",
+        })
       end
 
       node_list = @nodes.map { |n|
@@ -256,12 +254,12 @@ module ::Sushi::Core
       }.compact.sample(request_nodes_num)
 
       send(socket, M_TYPE_HANDSHAKE_NODE_ACCEPTED, {
-             context: context,
-             node_list: node_list,
-             latest_index: @blockchain.latest_index,
-           })
+        context:      context,
+        node_list:    node_list,
+        latest_index: @blockchain.latest_index,
+      })
 
-      @nodes << { socket: socket, context: node_context }
+      @nodes << {socket: socket, context: node_context}
 
       info "new node: #{light_cyan(node_context[:id])} (#{@nodes.size})"
     end
@@ -273,7 +271,7 @@ module ::Sushi::Core
       node_list = _m_content.node_list
       latest_index = _m_content.latest_index
 
-      @nodes << { socket: socket, context: node_context }
+      @nodes << {socket: socket, context: node_context}
 
       info "successfully connected: #{node_context[:id]} (#{@nodes.size})"
 
@@ -303,10 +301,8 @@ module ::Sushi::Core
       nonce = _m_content.nonce
 
       if miner = get_miner?(socket)
-
         if !@latest_nonces.includes?(nonce) &&
            @blockchain.latest_block.valid_nonce?(nonce, miner_difficulty_at(@blockchain.latest_block.index))
-
           miner[:nonces].push(nonce)
           @latest_nonces.push(nonce)
 
@@ -317,7 +313,7 @@ module ::Sushi::Core
           if !@blockchain.latest_block.valid_nonce?(nonce, miner_difficulty_at(@blockchain.latest_block.index))
             warning "recieved nonce is invalid, try to update latest block"
 
-            send(miner[:socket], M_TYPE_BLOCK_UPDATE, { block: @blockchain.latest_block })
+            send(miner[:socket], M_TYPE_BLOCK_UPDATE, {block: @blockchain.latest_block})
           end
         end
       end
@@ -330,7 +326,7 @@ module ::Sushi::Core
       known_nodes << context
 
       @nodes.each do |n|
-        send(n[:socket], M_TYPE_BROADCAST_BLOCK, { block: block, known_nodes: known_nodes })
+        send(n[:socket], M_TYPE_BROADCAST_BLOCK, {block: block, known_nodes: known_nodes})
       end
 
       @miners.each do |m|
@@ -364,9 +360,9 @@ module ::Sushi::Core
 
       other_known_nodes.each do |node|
         send(node[:socket], M_TYPE_BROADCAST_TRANSACTION, {
-               transaction: raw_transaction,
-               known_nodes: known_nodes,
-             })
+          transaction: raw_transaction,
+          known_nodes: known_nodes,
+        })
       end
     end
 
@@ -398,11 +394,10 @@ module ::Sushi::Core
         known_nodes.concat(other_known_nodes.map { |node| node[:context] })
 
         other_known_nodes.each do |node|
-          send(node[:socket], M_TYPE_BROADCAST_BLOCK, { block: block, known_nodes: known_nodes })
+          send(node[:socket], M_TYPE_BROADCAST_BLOCK, {block: block, known_nodes: known_nodes})
         end
 
         broadcast_to_miners
-
       elsif @blockchain.latest_index == block.index
         @c1 += 1
 
@@ -412,7 +407,6 @@ module ::Sushi::Core
 
           @latest_unknown ||= block.index
         end
-
       elsif @blockchain.latest_index + 1 < block.index
         @c2 += 1
 
@@ -435,7 +429,7 @@ module ::Sushi::Core
 
       info "requested new chain: #{latest_index}"
 
-      send(socket, M_TYPE_RECIEVE_CHAIN, { chain: @blockchain.subchain(latest_index+1) })
+      send(socket, M_TYPE_RECIEVE_CHAIN, {chain: @blockchain.subchain(latest_index + 1)})
     end
 
     private def _recieve_chain(socket, _content)
@@ -484,7 +478,7 @@ module ::Sushi::Core
       info "broadcast a block to miners"
 
       @miners.each do |miner|
-        send(miner[:socket], M_TYPE_BLOCK_UPDATE, { block: @blockchain.latest_block })
+        send(miner[:socket], M_TYPE_BLOCK_UPDATE, {block: @blockchain.latest_block})
       end
     end
 
@@ -509,10 +503,10 @@ module ::Sushi::Core
 
     private def context : Models::NodeContext
       {
-        id: @id,
-        host: @public_host || "",
-        port: @public_port || -1,
-        type: @network_type,
+        id:         @id,
+        host:       @public_host || "",
+        port:       @public_port || -1,
+        type:       @network_type,
         is_private: @is_private,
       }
     end

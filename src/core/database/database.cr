@@ -1,7 +1,5 @@
 module ::Sushi::Core
-
   class Database
-
     @db : DB::Database
 
     def initialize(path : String)

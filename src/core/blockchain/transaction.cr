@@ -1,7 +1,7 @@
 module ::Sushi::Core
   class Transaction
     MESSAGE_SIZE_LIMIT = 512
-    ACTIONS = %(send)
+    ACTIONS            = %(send)
 
     JSON.mapping(
       id: String,
@@ -17,15 +17,15 @@ module ::Sushi::Core
     setter prev_hash : String
 
     def initialize(
-          @id : String,
-          @action : String,
-          @senders : Models::Senders,
-          @recipients : Models::Recipients,
-          @message : String,
-          @prev_hash : String,
-          @sign_r : String,
-          @sign_s : String,
-        )
+      @id : String,
+      @action : String,
+      @senders : Models::Senders,
+      @recipients : Models::Recipients,
+      @message : String,
+      @prev_hash : String,
+      @sign_r : String,
+      @sign_s : String
+    )
     end
 
     def self.create_id : String
@@ -55,7 +55,7 @@ module ::Sushi::Core
         raise "Unknown action: #{@action}" unless ACTIONS.includes?(@action)
         raise "Sender have to be only one currently" if @senders.size != 1
 
-        secp256k1  = ECDSA::Secp256k1.new
+        secp256k1 = ECDSA::Secp256k1.new
         public_key = ECDSA::Point.new(
           secp256k1,
           BigInt.new(Base64.decode_string(@senders[0][:px]), base: 10),
@@ -75,7 +75,7 @@ module ::Sushi::Core
 
         senders_amount = blockchain.get_amount_unconfirmed(@senders[0][:address])
 
-        if prec(senders_amount - @senders[0][:amount]) < 0.0
+        if prec(senders_amount - @senders[0][:amount]) < 0_i64
           raise "Sender has not enough coins: #{@senders[0][:address]} (#{senders_amount})"
         end
       else
@@ -86,12 +86,13 @@ module ::Sushi::Core
         raise "sign_r of coinbase transaction has to be '0'" if @sign_r != "0"
         raise "sign_s of coinbase transaction has to be '0'" if @sign_s != "0"
 
-        served_sum = @recipients.reduce(0.0) { |sum, recipient| prec(sum + recipient[:amount]) }
+        served_sum = @recipients.reduce(0_i64) { |sum, recipient| prec(sum + recipient[:amount]) }
         raise "Invalid served amount for coinbase transaction: #{served_sum}" if served_sum != Blockchain.served_amount(block_index)
       end
 
       true
     end
+
     def signed(sign_r : String, sign_s : String)
       Transaction.new(
         self.id,
@@ -118,28 +119,28 @@ module ::Sushi::Core
       )
     end
 
-    def sender_total_amount : Float64
-      senders.reduce(0.0) { |sum, sender| prec(sum + sender[:amount]) }
+    def sender_total_amount : Int64
+      senders.reduce(0_i64) { |sum, sender| prec(sum + sender[:amount]) }
     end
 
-    def recipient_total_amount : Float64
-      recipients.reduce(0.0) { |sum, recipient| prec(sum + recipient[:amount]) }
+    def recipient_total_amount : Int64
+      recipients.reduce(0_i64) { |sum, recipient| prec(sum + recipient[:amount]) }
     end
 
-    def calculate_fee : Float64
+    def calculate_fee : Int64
       prec(sender_total_amount - recipient_total_amount)
     end
 
-    def calculate_utxo : Hash(String, Float64)
-      utxo = Hash(String, Float64).new
+    def calculate_utxo : Hash(String, Int64)
+      utxo = Hash(String, Int64).new
 
       senders.each do |sender|
-        utxo[sender[:address]] ||= 0.0
+        utxo[sender[:address]] ||= 0_i64
         utxo[sender[:address]] = prec(utxo[sender[:address]] - sender[:amount])
       end
 
       recipients.each do |recipient|
-        utxo[recipient[:address]] ||= 0.0
+        utxo[recipient[:address]] ||= 0_i64
         utxo[recipient[:address]] = prec(utxo[recipient[:address]] + recipient[:amount])
       end
 
