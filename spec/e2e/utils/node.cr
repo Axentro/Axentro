@@ -1,4 +1,4 @@
-module ::Integration::Utils::Node
+module ::E2E::Utils::Node
   def sushid(args) : String
     _args = args
       .map { |arg| arg.to_s }
@@ -10,6 +10,8 @@ module ::Integration::Utils::Node
   end
 
   def node(port : Int32, is_private : Bool, connect_port : Int32?, num : Int32)
+    STDERR.puts "node: #{port} #{is_private} #{connect_port} #{num}"
+
     args = ["-p", port, "-w", wallet(num), "--testnet"]
     args << "-n http://127.0.0.1:#{connect_port}" if connect_port
 

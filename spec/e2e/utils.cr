@@ -1,6 +1,6 @@
 require "./utils/*"
 
-module ::Integration::Utils
+module ::E2E::Utils
   include Log
   include API
   include Node

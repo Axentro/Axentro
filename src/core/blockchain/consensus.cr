@@ -40,10 +40,12 @@ module ::Sushi::Core::Consensus
   end
 
   def difficulty_at(block_index : Int64) : Int32
+    return 2 if ENV.has_key?("TRAVIS") # for e2e tests
     4
   end
 
   def miner_difficulty_at(block_index : Int64) : Int32
+    return 1 if ENV.has_key?("TRAVIS") # for e2e tests
     3
   end
 

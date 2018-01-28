@@ -1,4 +1,4 @@
-module ::Integration::Utils::Miner
+module ::E2E::Utils::Miner
   def sushim(args) : String
     _args = args
       .map { |arg| arg.to_s }
@@ -10,6 +10,8 @@ module ::Integration::Utils::Miner
   end
 
   def mining(port : Int32, num : Int32)
+    STDERR.puts "miner: #{port} #{num}"
+
     args = ["-w", "wallets/testnet-#{num}.json", "-n", "http://127.0.0.1:#{port}", "--testnet"]
 
     bin = sushim(args)
