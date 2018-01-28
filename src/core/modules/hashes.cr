@@ -1,5 +1,5 @@
 module ::Sushi::Core::Hashes
-  ALGORITHMS = %w( sha256 ripemd160 )
+  ALGORITHMS = %w(sha256 ripemd160)
 
   {% for a in ALGORITHMS %}
     def {{ a.id }}_from_hexstring(hexstring : String) : Bytes

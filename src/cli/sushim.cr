@@ -3,9 +3,9 @@ require "../cli"
 module ::Sushi::Interface::SushiM
   class Root < CLI
     @wallet_path : String?
-    @node        : String?
-    @is_testnet  : Bool = false
-    @threads     : Int32 = 1
+    @node : String?
+    @is_testnet : Bool = false
+    @threads : Int32 = 1
 
     def sub_actions
       [] of SushiAction
@@ -61,5 +61,5 @@ end
 include ::Sushi::Interface
 
 ::Sushi::Interface::SushiM::Root.new(
-  { name: "sushim", desc: "Sushi's mining process" }, [] of SushiAction, true
+  {name: "sushim", desc: "Sushi's mining process"}, [] of SushiAction, true
 ).run

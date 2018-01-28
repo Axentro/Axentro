@@ -3,19 +3,19 @@ module ::Sushi::Core
     extend Hashes
 
     JSON.mapping({
-                   index: Int64,
-                   transactions: Array(Transaction),
-                   nonce: UInt64,
-                   prev_hash: String,
-                   merkle_tree_root: String,
-                 })
+      index:            Int64,
+      transactions:     Array(Transaction),
+      nonce:            UInt64,
+      prev_hash:        String,
+      merkle_tree_root: String,
+    })
 
     def initialize(
-          @index : Int64,
-          @transactions : Array(Transaction),
-          @nonce : UInt64,
-          @prev_hash : String,
-        )
+      @index : Int64,
+      @transactions : Array(Transaction),
+      @nonce : UInt64,
+      @prev_hash : String
+    )
       @merkle_tree_root = calcluate_merkle_tree_root
     end
 
@@ -26,9 +26,9 @@ module ::Sushi::Core
 
     def to_header : Models::Header
       {
-        index: @index,
-        nonce: @nonce,
-        prev_hash: @prev_hash,
+        index:            @index,
+        nonce:            @nonce,
+        prev_hash:        @prev_hash,
         merkle_tree_root: @merkle_tree_root,
       }
     end
@@ -91,17 +91,17 @@ module ::Sushi::Core
       true
     end
 
-    def calculate_utxo : NamedTuple(utxo: Hash(String, Float64), indices: Hash(String, Int64))
+    def calculate_utxo : NamedTuple(utxo: Hash(String, Int64), indices: Hash(String, Int64))
       coinbase_address = @transactions.size > 0 ? @transactions[0].recipients[0][:address] : ""
 
-      utxo = Hash(String, Float64).new
-      utxo[coinbase_address] ||= 0.0 if coinbase_address.size > 0
+      utxo = Hash(String, Int64).new
+      utxo[coinbase_address] ||= 0_i64 if coinbase_address.size > 0
 
       indices = Hash(String, Int64).new
 
       @transactions.each_with_index do |transaction, i|
         transaction.calculate_utxo.each do |address, amount|
-          utxo[address] ||= 0.0
+          utxo[address] ||= 0_i64
           utxo[address] = prec(utxo[address] + amount)
         end
 
@@ -112,7 +112,7 @@ module ::Sushi::Core
         indices[transaction.id] = @index
       end
 
-      { utxo: utxo, indices: indices }
+      {utxo: utxo, indices: indices}
     end
 
     def find_transaction(transaction_id : String) : Transaction?

@@ -1,7 +1,5 @@
 module ::Sushi::Core::Controllers
-
   class RPCController < Controller
-
     def exec_internal_post(json, context, params) : HTTP::Server::Context
       call = json["call"].to_s
 
@@ -74,11 +72,9 @@ module ::Sushi::Core::Controllers
       address = json["address"].to_s
       unconfirmed = json["unconfirmed"].as_bool
 
-      amount = unconfirmed ?
-                 @blockchain.get_amount_unconfirmed(address) :
-                 @blockchain.get_amount(address)
+      amount = unconfirmed ? @blockchain.get_amount_unconfirmed(address) : @blockchain.get_amount(address)
 
-      json = { amount: amount, address: address, unconfirmed: unconfirmed }.to_json
+      json = {amount: amount, address: address, unconfirmed: unconfirmed}.to_json
 
       context.response.print json
       context
@@ -87,7 +83,7 @@ module ::Sushi::Core::Controllers
     def blockchain_size(json, context, params)
       size = @blockchain.chain.size
 
-      json = { size: size }.to_json
+      json = {size: size}.to_json
       context.response.print json
       context
     end

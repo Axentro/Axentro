@@ -1,7 +1,6 @@
 require "./utils"
 
 module ::Integration
-
   class Runner
     NODE_PORTS = (4000..4005).to_a
 

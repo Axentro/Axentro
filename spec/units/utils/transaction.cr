@@ -1,17 +1,16 @@
 module ::Units::Utils::TransactionHelper
-
   include Sushi::Core
 
-  def a_recipient(wallet : Wallet, amount : Float64)
+  def a_recipient(wallet : Wallet, amount : Int64)
     {address: wallet.address,
-    amount: amount}
+     amount:  amount}
   end
 
-  def a_sender(wallet : Wallet, amount : Float64)
+  def a_sender(wallet : Wallet, amount : Int64)
     {address: wallet.address,
-    px: wallet.public_key_x,
-    py: wallet.public_key_y,
-    amount: amount}
+     px:      wallet.public_key_x,
+     py:      wallet.public_key_y,
+     amount:  amount}
   end
 
   def sign(wallet : Wallet, transaction : Transaction)
@@ -24,5 +23,4 @@ module ::Units::Utils::TransactionHelper
 
     {r: sign[0].to_s(base: 16), s: sign[1].to_s(base: 16)}
   end
-
 end

@@ -2,10 +2,10 @@ module ::Sushi::Core::ECDSA
   abstract class Group
     abstract def _gx : BigInt
     abstract def _gy : BigInt
-    abstract def _a  : BigInt
-    abstract def _b  : BigInt
-    abstract def _n  : BigInt
-    abstract def _p  : BigInt
+    abstract def _a : BigInt
+    abstract def _b : BigInt
+    abstract def _n : BigInt
+    abstract def _p : BigInt
 
     def gp : Point
       Point.new(self, _gx, _gy)
