@@ -13,7 +13,7 @@ module ::E2E
       raise "@num_nodes of E2E::Runner has to be less than 6" if @num_nodes > 6
       raise "@num_miners of E2E::Runner has to be less than 6" if @num_miners > 6
 
-      @node_ports = (4000..4000+(@num_nodes-1)).to_a
+      @node_ports = (4000..4000 + (@num_nodes - 1)).to_a
 
       @client = Client.new(@node_ports, @num_miners)
     end
@@ -34,7 +34,7 @@ module ::E2E
         is_private = Random.rand(10) < 2
         connecting_port = node_ports_public.sample
 
-        node(node_port, is_private, connecting_port, idx+1)
+        node(node_port, is_private, connecting_port, idx + 1)
         node_ports_public.push(node_port) unless is_private
         sleep 1
       end
@@ -62,7 +62,7 @@ module ::E2E
       latest_block_index = @node_ports.map { |port|
         size = blockchain_size(port)
         STDERR.puts "#{port} <- #{size}"
-        size-1
+        size - 1
       }.min
 
       return STDERR.puts yellow("mining is not enough") if latest_block_index < 2

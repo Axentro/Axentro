@@ -129,11 +129,11 @@ describe Wallet do
       Wallet.verify!(wallet.secret_key, wallet.public_key_x, wallet.public_key_y, wallet.address).should be_true
     end
 
-   it "should raise a wallet not found error when no wallet file exists at the specific path" do
-     expect_raises(Exception, "Failed to find wallet at invalid-path, create it first!") do
-       Wallet.from_path("invalid-path")
-     end
-   end
+    it "should raise a wallet not found error when no wallet file exists at the specific path" do
+      expect_raises(Exception, "Failed to find wallet at invalid-path, create it first!") do
+        Wallet.from_path("invalid-path")
+      end
+    end
   end
 
   STDERR.puts "< Wallet"

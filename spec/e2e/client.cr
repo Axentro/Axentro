@@ -3,7 +3,6 @@ require "./utils"
 
 module ::E2E
   class Client
-
     @transaction_ids = [] of String
 
     def initialize(@node_ports : Array(Int32), @num_miners : Int32)
