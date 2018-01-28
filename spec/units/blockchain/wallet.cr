@@ -16,7 +16,6 @@ describe Wallet do
       Wallet.verify!(wallet.secret_key,wallet.public_key_x, wallet.public_key_y, wallet.address).should be_true
       Wallet.address_network_type(wallet.address).should eq({prefix: "M0", name: "mainnet"})
     end
-
   end
 
   describe "verify wallet" do
@@ -64,7 +63,6 @@ describe Wallet do
       wallet2 = Wallet.new(wallet1.secret_key, wallet1.public_key_x, wallet1.public_key_y, wallet1.address)
       wallet2.verify!.should be_true
     end
-
   end
 
   describe "#valid_checksum?" do
@@ -77,7 +75,6 @@ describe Wallet do
     it "should return false when invalid checksum" do
       Wallet.valid_checksum?("invalid-wallet-address").should be_false
     end
-
   end
 
   describe "#address_network_type?" do
@@ -103,7 +100,6 @@ describe Wallet do
         Wallet.address_network_type(create_unknown_network_address)
       end
     end
-
   end
 
   describe "#public_key_to_address" do
@@ -119,7 +115,6 @@ describe Wallet do
       address = Wallet.public_key_to_address(public_key, false)
       Wallet.address_network_type(address).should eq({prefix: "M0", name: "mainnet"})
     end
-
   end
 
   it "should create a key pair" do
@@ -146,9 +141,9 @@ describe Wallet do
        Wallet.from_path("invalid-path")
      end
    end
-
   end
 
+  STDERR.puts "< Wallet"
 end
 
 def create_expected_keys(key_x, key_y, secret_key)

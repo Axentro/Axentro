@@ -60,8 +60,6 @@ module ::Sushi::Core
 
         @transaction_indices = @transaction_indices.merge(block_utxo[:indices])
       end
-
-      # show
     end
 
     def index(transaction_id : String) : Int64?
@@ -71,16 +69,6 @@ module ::Sushi::Core
     def clear
       @utxo_internal.clear
       @transaction_indices.clear
-    end
-
-    def show
-      return unless @utxo_internal.size > CONFIRMATION + 1
-
-      info "UTXO updated:"
-
-      @utxo_internal[-(CONFIRMATION+1)].each do |address, amount|
-        info " - #{address} #{light_green(amount)} (UNCONFIRMED #{light_green(get_unconfirmed(address))})"
-      end
     end
 
     include Logger
