@@ -2,14 +2,14 @@ require "../cli"
 
 module ::Sushi::Interface::SushiD
   class Root < CLI
-    @bind_host      : String = "0.0.0.0"
-    @bind_port      : Int32  = 3000
-    @public_url     : String?
-    @connect_node   : String?
-    @wallet_path    : String?
-    @database_path  : String?
-    @is_testnet     : Bool = false
-    @is_private     : Bool = false
+    @bind_host : String = "0.0.0.0"
+    @bind_port : Int32 = 3000
+    @public_url : String?
+    @connect_node : String?
+    @wallet_path : String?
+    @database_path : String?
+    @is_testnet : Bool = false
+    @is_private : Bool = false
     @max_connection : Int32 = 5
 
     def sub_actions
@@ -40,7 +40,7 @@ module ::Sushi::Interface::SushiD
         parser.on(
           "-w WALLET_PATH",
           "--wallet_path=WALLET_PATH",
-          "wallet json's path",
+          "wallet json's path"
         ) { |wallet_path| @wallet_path = wallet_path }
         parser.on("--testnet", "Set network type as testnet (default is mainnet)") {
           @is_testnet = true
@@ -87,13 +87,11 @@ module ::Sushi::Interface::SushiD
                    nil
                  end
 
-      node = has_first_connection ?
-               Core::Node.new(@is_private, @is_testnet, @bind_host, @bind_port,
-                              public_host, public_port,
-                              connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, @max_connection) :
-               Core::Node.new(@is_private, @is_testnet, @bind_host, @bind_port,
-                              public_host, public_port,
-                              nil, nil, wallet, database, @max_connection)
+      node = has_first_connection ? Core::Node.new(@is_private, @is_testnet, @bind_host, @bind_port,
+        public_host, public_port,
+        connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, @max_connection) : Core::Node.new(@is_private, @is_testnet, @bind_host, @bind_port,
+        public_host, public_port,
+        nil, nil, wallet, database, @max_connection)
       node.run!
     end
 
@@ -105,5 +103,5 @@ end
 include ::Sushi::Interface
 
 ::Sushi::Interface::SushiD::Root.new(
-  { name: "sushid", desc: "Sushi's node" }, [] of SushiAction, true
+  {name: "sushid", desc: "Sushi's node"}, [] of SushiAction, true
 ).run

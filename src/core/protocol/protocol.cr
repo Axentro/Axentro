@@ -1,7 +1,6 @@
 module ::Sushi::Core::Protocol
-
   def send(socket, t, content)
-    socket.send({ type: t, content: content.to_json }.to_json)
+    socket.send({type: t, content: content.to_json}.to_json)
   end
 
   ##########
@@ -10,8 +9,8 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_HANDSHAKE_MINER
     JSON.mapping({
-                   address: String,
-                 })
+      address: String,
+    })
   end
 
   ##########
@@ -20,8 +19,8 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_HANDSHAKE_MINER_ACCEPTED
     JSON.mapping({
-                   block: Block,
-                 })
+      block: Block,
+    })
   end
 
   ##########
@@ -30,8 +29,8 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_HANDSHAKE_MINER_REJECTED
     JSON.mapping({
-                   reason: String,
-                 })
+      reason: String,
+    })
   end
 
   ##########
@@ -40,8 +39,8 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_FOUND_NONCE
     JSON.mapping({
-                   nonce: UInt64,
-                 })
+      nonce: UInt64,
+    })
   end
 
   ##########
@@ -50,20 +49,20 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_BLOCK_UPDATE
     JSON.mapping({
-                   block: Block,
-                 })
+      block: Block,
+    })
   end
 
   ##########
 
-  M_TYPE_HANDSHAKE_NODE  = 0x0011
+  M_TYPE_HANDSHAKE_NODE = 0x0011
 
   struct M_CONTENT_HANDSHAKE_NODE
     JSON.mapping({
-                   context: Models::NodeContext,
-                   known_nodes: Models::NodeContexts,
-                   request_nodes_num: Int32,
-                 })
+      context:           Models::NodeContext,
+      known_nodes:       Models::NodeContexts,
+      request_nodes_num: Int32,
+    })
   end
 
   ##########
@@ -72,10 +71,10 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_HANDSHAKE_NODE_ACCEPTED
     JSON.mapping({
-                   context: Models::NodeContext,
-                   node_list: Models::NodeContexts,
-                   latest_index: Int64,
-                 })
+      context:      Models::NodeContext,
+      node_list:    Models::NodeContexts,
+      latest_index: Int64,
+    })
   end
 
   ##########
@@ -84,9 +83,9 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_HANDSHAKE_NODE_REJECTED
     JSON.mapping({
-                   context: Models::NodeContext,
-                   reason: String,
-                 })
+      context: Models::NodeContext,
+      reason:  String,
+    })
   end
 
   ##########
@@ -95,9 +94,9 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_BROADCAST_TRANSACTION
     JSON.mapping({
-                   transaction: Transaction,
-                   known_nodes: Models::NodeContexts,
-                 })
+      transaction: Transaction,
+      known_nodes: Models::NodeContexts,
+    })
   end
 
   ##########
@@ -106,9 +105,9 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_BROADCAST_BLOCK
     JSON.mapping({
-                   block: Block,
-                   known_nodes: Models::NodeContexts,
-                 })
+      block:       Block,
+      known_nodes: Models::NodeContexts,
+    })
   end
 
   ##########
@@ -117,8 +116,8 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_REQUEST_CHAIN
     JSON.mapping({
-                   latest_index: Int64,
-                 })
+      latest_index: Int64,
+    })
   end
 
   ##########
@@ -127,11 +126,11 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_RECIEVE_CHAIN
     JSON.mapping({
-                   chain: Models::Chain,
-                 })
+      chain: Models::Chain,
+    })
   end
 
-  #### Running phases ####
+  # ### Running phases ####
 
   PHASE_NODE_SYNCING = 1
   PHASE_NODE_RUNNING = 2

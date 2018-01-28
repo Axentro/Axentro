@@ -83,7 +83,7 @@ module ::Sushi::Core
       return false if subchain.size == 0
       return false if subchain[0].index == 0
 
-      first_index = subchain[0].index-1
+      first_index = subchain[0].index - 1
       prev_block = @chain[first_index]
 
       subchain.each do |block|
@@ -162,12 +162,12 @@ module ::Sushi::Core
       miners_rewards_total = prec((rewards_total * 3_i64) / 4_i64)
       miners_recipients = miners.map { |m|
         amount = (miners_rewards_total * m[:nonces].size) / miners_nonces_size
-        { address: m[:address], amount: amount}
+        {address: m[:address], amount: amount}
       }
 
       node_reccipient = {
         address: @wallet.address,
-        amount: prec(rewards_total - miners_recipients.reduce(0_i64) { |sum, m| sum + m[:amount] }),
+        amount:  prec(rewards_total - miners_recipients.reduce(0_i64) { |sum, m| sum + m[:amount] }),
       }
 
       senders = [] of Models::Sender # No senders

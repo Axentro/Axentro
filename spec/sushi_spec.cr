@@ -9,9 +9,9 @@ require "./integration/spec"
 # unless ARGV.includes?("--local")
 #   runner = ::Integration::Runner.new
 #   runner.run!
-#  
+#
 #   sleep 10
-#  
+#
 #   runner.fin
 # else
 #   puts "skip integration test."

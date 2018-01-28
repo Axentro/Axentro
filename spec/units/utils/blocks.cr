@@ -1,5 +1,4 @@
 module ::Units::Utils::BlockHelper
-
   include Sushi::Core
 
   def genesis_block

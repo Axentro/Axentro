@@ -1,6 +1,5 @@
 module ::Sushi::Core
   class UTXO
-
     CONFIRMATION = 10
 
     @utxo_internal : Array(Hash(String, Int64)) = Array(Hash(String, Int64)).new
@@ -12,7 +11,7 @@ module ::Sushi::Core
     def get(address : String) : Int64
       return 0_i64 if @utxo_internal.size <= CONFIRMATION
 
-      @utxo_internal.reverse[0..-(CONFIRMATION+1)].each do |utxo_internal|
+      @utxo_internal.reverse[0..-(CONFIRMATION + 1)].each do |utxo_internal|
         return utxo_internal[address] if utxo_internal[address]?
       end
 
@@ -48,8 +47,7 @@ module ::Sushi::Core
     def record(chain : Models::Chain)
       return if @utxo_internal.size >= chain.size
 
-      chain[@utxo_internal.size .. -1].each do |block|
-
+      chain[@utxo_internal.size..-1].each do |block|
         @utxo_internal.push(Hash(String, Int64).new)
 
         block_utxo = block.calculate_utxo

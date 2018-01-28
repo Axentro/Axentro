@@ -4,7 +4,6 @@ include Sushi::Core
 include Sushi::Core::Fees
 
 describe Fees do
-
   it "should return the correct fee for action 'send'" do
     min_fee_of_action("send").should eq(1_i64)
   end

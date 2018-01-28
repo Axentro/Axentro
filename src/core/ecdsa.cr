@@ -15,7 +15,7 @@ module ::Sushi::Core::ECDSA
 
     lim % mod
   end
-  
+
   include Hashes
 end
 

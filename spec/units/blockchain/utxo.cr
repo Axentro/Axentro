@@ -4,9 +4,7 @@ include Sushi::Core
 include Units::Utils
 
 describe UTXO do
-
   describe "#get" do
-
     it "should return 0 when the number of blocks is less than confirmations" do
       chain = [genesis_block, block_1]
       utxo = UTXO.new
@@ -22,13 +20,12 @@ describe UTXO do
       utxo.record(chain)
 
       address = block_1.transactions.first.recipients.first[:address]
-      expected_amount = chain.reject{|blk| blk.prev_hash == "genesis"}.flat_map{|blk| blk.transactions.first.recipients.select{|r| r[:address] == address} }.map{|x| x[:amount]}.sum
+      expected_amount = chain.reject { |blk| blk.prev_hash == "genesis" }.flat_map { |blk| blk.transactions.first.recipients.select { |r| r[:address] == address } }.map { |x| x[:amount] }.sum
 
       utxo.get(address).should eq(expected_amount)
     end
 
     context "when address does not exist" do
-
       it "should return 0 when the number of blocks is less than confirmations and the address is not found" do
         chain = [genesis_block, block_1]
         utxo = UTXO.new
@@ -48,15 +45,14 @@ describe UTXO do
   end
 
   describe "#get_unconfirmed" do
-
     it "should get unconfirmed transactions amount for the supplied address in the supplied transactions" do
       chain = [genesis_block, block_1]
       utxo = UTXO.new
       utxo.record(chain)
 
-      transactions = chain.reject{|blk| blk.prev_hash == "genesis"}.flat_map{|blk| blk.transactions }
+      transactions = chain.reject { |blk| blk.prev_hash == "genesis" }.flat_map { |blk| blk.transactions }
       address = block_1.transactions.first.recipients.first[:address]
-      expected_amount = transactions.flat_map{|txn| txn.recipients.select{|r| r[:address] == address} }.map{|x| x[:amount]}.sum * 2
+      expected_amount = transactions.flat_map { |txn| txn.recipients.select { |r| r[:address] == address } }.map { |x| x[:amount] }.sum * 2
       utxo.get_unconfirmed(address, transactions).should eq(expected_amount)
     end
 
@@ -67,12 +63,11 @@ describe UTXO do
 
       transactions = [] of Transaction
       address = block_1.transactions.first.recipients.first[:address]
-      expected_amount = chain.reject{|blk| blk.prev_hash == "genesis"}.flat_map{|blk| blk.transactions.first.recipients.select{|r| r[:address] == address} }.map{|x| x[:amount]}.sum
+      expected_amount = chain.reject { |blk| blk.prev_hash == "genesis" }.flat_map { |blk| blk.transactions.first.recipients.select { |r| r[:address] == address } }.map { |x| x[:amount] }.sum
       utxo.get_unconfirmed(address, transactions).should eq(expected_amount)
     end
 
     context "when chain is empty" do
-
       it "should get unconfirmed transactions amount for the supplied address when no transactions are supplied and the chain is empty" do
         chain = [] of Block
         utxo = UTXO.new
@@ -95,7 +90,6 @@ describe UTXO do
   end
 
   describe "#get_unconfirmed_recorded" do
-
     it "should return 0 when there are no transactions" do
       chain = [] of Block
       utxo = UTXO.new
@@ -111,7 +105,7 @@ describe UTXO do
       utxo.record(chain)
 
       address = block_1.transactions.first.recipients.first[:address]
-      expected_amount = chain.reject{|blk| blk.prev_hash == "genesis"}.flat_map{|blk| blk.transactions.first.recipients.select{|r| r[:address] == address} }.map{|x| x[:amount]}.sum
+      expected_amount = chain.reject { |blk| blk.prev_hash == "genesis" }.flat_map { |blk| blk.transactions.first.recipients.select { |r| r[:address] == address } }.map { |x| x[:amount] }.sum
       utxo.get_unconfirmed_recorded(address).should eq(expected_amount)
     end
 
@@ -125,7 +119,6 @@ describe UTXO do
   end
 
   describe "#index" do
-
     it "should return a block index for supplied transaction id" do
       chain = [genesis_block, block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
       utxo = UTXO.new

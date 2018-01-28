@@ -1,7 +1,7 @@
 module ::Sushi::Core
   class Transaction
     MESSAGE_SIZE_LIMIT = 512
-    ACTIONS = %(send)
+    ACTIONS            = %(send)
 
     JSON.mapping(
       id: String,
@@ -17,15 +17,15 @@ module ::Sushi::Core
     setter prev_hash : String
 
     def initialize(
-          @id : String,
-          @action : String,
-          @senders : Models::Senders,
-          @recipients : Models::Recipients,
-          @message : String,
-          @prev_hash : String,
-          @sign_r : String,
-          @sign_s : String,
-        )
+      @id : String,
+      @action : String,
+      @senders : Models::Senders,
+      @recipients : Models::Recipients,
+      @message : String,
+      @prev_hash : String,
+      @sign_r : String,
+      @sign_s : String
+    )
     end
 
     def self.create_id : String
@@ -55,7 +55,7 @@ module ::Sushi::Core
         raise "Unknown action: #{@action}" unless ACTIONS.includes?(@action)
         raise "Sender have to be only one currently" if @senders.size != 1
 
-        secp256k1  = ECDSA::Secp256k1.new
+        secp256k1 = ECDSA::Secp256k1.new
         public_key = ECDSA::Point.new(
           secp256k1,
           BigInt.new(Base64.decode_string(@senders[0][:px]), base: 10),
@@ -92,6 +92,7 @@ module ::Sushi::Core
 
       true
     end
+
     def signed(sign_r : String, sign_s : String)
       Transaction.new(
         self.id,

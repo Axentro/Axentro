@@ -7,7 +7,6 @@ include Sushi::Core
 include Hashes
 
 describe Transaction do
-
   it "should create a transaction id of length 64" do
     Transaction.create_id.size.should eq(64)
   end
@@ -20,8 +19,8 @@ describe Transaction do
     transaction = Transaction.new(
       transaction_id,
       "send", # action
-      [ a_sender(sender_wallet, 1000_i64) ],
-      [ a_recipient(recipient_wallet, 10_i64) ],
+      [a_sender(sender_wallet, 1000_i64)],
+      [a_recipient(recipient_wallet, 10_i64)],
       "0", # message
       "0", # prev_hash
       "0", # sign_r
@@ -49,9 +48,7 @@ describe Transaction do
   end
 
   describe "#valid?" do
-
     context "when not coinbase" do
-
       it "should be valid" do
         sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
         recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
@@ -59,8 +56,8 @@ describe Transaction do
         unsigned_transaction = Transaction.new(
           Transaction.create_id,
           "send", # action
-          [ a_sender(sender_wallet, 1000_i64) ],
-          [ a_recipient(recipient_wallet, 10_i64) ],
+          [a_sender(sender_wallet, 1000_i64)],
+          [a_recipient(recipient_wallet, 10_i64)],
           "0", # message
           "0", # prev_hash
           "0", # sign_r
@@ -69,7 +66,7 @@ describe Transaction do
 
         blockchain = Blockchain.new(sender_wallet)
         signature = sign(sender_wallet, unsigned_transaction)
-        signed_transaction = unsigned_transaction.signed(signature[:r],signature[:s])
+        signed_transaction = unsigned_transaction.signed(signature[:r], signature[:s])
 
         signed_transaction.sign_r.should eq(signature[:r])
         signed_transaction.sign_s.should eq(signature[:s])
@@ -107,9 +104,9 @@ describe Transaction do
           [] of Sender,
           [] of Recipient,
           ("exceeds"*100), # message
-          "0", # prev_hash
-          "0", # sign_r
-          "0", # sign_s
+          "0",             # prev_hash
+          "0",             # sign_r
+          "0",             # sign_s
         )
 
         expect_raises(Exception, "Message size exceeds: 700 for 512") do
@@ -143,14 +140,15 @@ describe Transaction do
 
         invalid_sender = {
           address: "invalid-wallet-address",
-          px: sender_wallet.public_key_x,
-          py: sender_wallet.public_key_y,
-          amount: 1000_i64}
+          px:      sender_wallet.public_key_x,
+          py:      sender_wallet.public_key_y,
+          amount:  1000_i64,
+        }
 
         transaction = Transaction.new(
           Transaction.create_id,
           "send", # action
-          [ invalid_sender ],
+          [invalid_sender],
           [] of Recipient,
           "0", # message
           "0", # prev_hash
@@ -169,13 +167,14 @@ describe Transaction do
 
         invalid_recipient = {
           address: "invalid-wallet-address",
-          amount: 1000_i64}
+          amount:  1000_i64,
+        }
 
         transaction = Transaction.new(
           Transaction.create_id,
           "send", # action
-          [ a_sender(sender_wallet, 1000_i64) ],
-          [ invalid_recipient ],
+          [a_sender(sender_wallet, 1000_i64)],
+          [invalid_recipient],
           "0", # message
           "0", # prev_hash
           "0", # sign_r
@@ -215,8 +214,8 @@ describe Transaction do
         transaction = Transaction.new(
           Transaction.create_id,
           "send", # action
-          [ a_sender(sender_wallet, 1000_i64) ],
-          [ a_recipient(recipient_wallet, 10_i64) ],
+          [a_sender(sender_wallet, 1000_i64)],
+          [a_recipient(recipient_wallet, 10_i64)],
           "0", # message
           "0", # prev_hash
           "0", # sign_r
@@ -236,8 +235,8 @@ describe Transaction do
         unsigned_transaction = Transaction.new(
           Transaction.create_id,
           "send", # action
-          [ a_sender(sender_wallet, 0_i64) ],
-          [ a_recipient(recipient_wallet, 10_i64) ],
+          [a_sender(sender_wallet, 0_i64)],
+          [a_recipient(recipient_wallet, 10_i64)],
           "0", # message
           "0", # prev_hash
           "0", # sign_r
@@ -245,7 +244,7 @@ describe Transaction do
         )
 
         signature = sign(sender_wallet, unsigned_transaction)
-        signed_transaction = unsigned_transaction.signed(signature[:r],signature[:s])
+        signed_transaction = unsigned_transaction.signed(signature[:r], signature[:s])
 
         expect_raises(Exception, "Not enough fee, should be  -10 >= 1") do
           signed_transaction.valid?(blockchain, 0_i64, false)
@@ -260,8 +259,8 @@ describe Transaction do
         unsigned_transaction = Transaction.new(
           Transaction.create_id,
           "send", # action
-          [ a_sender(sender_wallet, 10001_i64) ],
-          [ a_recipient(recipient_wallet, 10_i64) ],
+          [a_sender(sender_wallet, 10001_i64)],
+          [a_recipient(recipient_wallet, 10_i64)],
           "0", # message
           "0", # prev_hash
           "0", # sign_r
@@ -269,7 +268,7 @@ describe Transaction do
         )
 
         signature = sign(sender_wallet, unsigned_transaction)
-        signed_transaction = unsigned_transaction.signed(signature[:r],signature[:s])
+        signed_transaction = unsigned_transaction.signed(signature[:r], signature[:s])
 
         expect_raises(Exception, "Sender has not enough coins: #{sender_wallet.address} (10000)") do
           signed_transaction.valid?(blockchain, 0_i64, false)
@@ -278,13 +277,11 @@ describe Transaction do
     end
 
     context "when coinbase" do
-
       # Every block must have a coinbase transaction, other transactions are optional.
       # The coinbase transaction must be the first transaction of the block (it follows that there can only be one per block).
       # The coinbase's output is used to send the block reward, i.e. block subsidy plus transaction fees, to the miner's address.
 
       it "should be valid" do
-
         sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
         recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
 
@@ -292,7 +289,7 @@ describe Transaction do
           Transaction.create_id,
           "head", # action
           [] of Sender,
-          [ a_recipient(recipient_wallet, 10000_i64) ],
+          [a_recipient(recipient_wallet, 10000_i64)],
           "0", # message
           "0", # prev_hash
           "0", # sign_r
@@ -350,7 +347,7 @@ describe Transaction do
         transaction = Transaction.new(
           Transaction.create_id,
           "head", # action
-          [ a_sender(sender_wallet, 10001_i64) ],
+          [a_sender(sender_wallet, 10001_i64)],
           [] of Recipient,
           "0", # message
           "0", # prev_hash
@@ -432,7 +429,7 @@ describe Transaction do
           Transaction.create_id,
           "head", # action
           [] of Sender,
-          [ a_recipient(recipient_wallet, 10_i64) ],
+          [a_recipient(recipient_wallet, 10_i64)],
           "0", # message
           "0", # prev_hash
           "0", # sign_r
@@ -462,7 +459,7 @@ describe Transaction do
 
     blockchain = Blockchain.new(sender_wallet)
     signature = sign(sender_wallet, unsigned_transaction)
-    signed_transaction = unsigned_transaction.signed(signature[:r],signature[:s])
+    signed_transaction = unsigned_transaction.signed(signature[:r], signature[:s])
 
     signed_transaction.sign_r.should eq(signature[:r])
     signed_transaction.sign_s.should eq(signature[:s])
@@ -484,7 +481,7 @@ describe Transaction do
 
     blockchain = Blockchain.new(sender_wallet)
     signature = sign(sender_wallet, unsigned_transaction)
-    signed_transaction = unsigned_transaction.signed(signature[:r],signature[:s])
+    signed_transaction = unsigned_transaction.signed(signature[:r], signature[:s])
 
     signed_transaction.sign_r.should eq(signature[:r])
     signed_transaction.sign_s.should eq(signature[:s])
@@ -502,8 +499,8 @@ describe Transaction do
     transaction = Transaction.new(
       Transaction.create_id,
       "send", # action
-      [ a_sender(sender_wallet, 10_i64) ],
-      [ a_recipient(recipient_wallet, 10_i64) ],
+      [a_sender(sender_wallet, 10_i64)],
+      [a_recipient(recipient_wallet, 10_i64)],
       "0", # message
       "0", # prev_hash
       "0", # sign_r
@@ -521,8 +518,8 @@ describe Transaction do
     transaction = Transaction.new(
       Transaction.create_id,
       "send", # action
-      [ a_sender(sender_wallet, 10_i64) ],
-      [ a_recipient(recipient_wallet, 10_i64) ],
+      [a_sender(sender_wallet, 10_i64)],
+      [a_recipient(recipient_wallet, 10_i64)],
       "0", # message
       "0", # prev_hash
       "0", # sign_r
@@ -540,8 +537,8 @@ describe Transaction do
     transaction = Transaction.new(
       Transaction.create_id,
       "send", # action
-      [ a_sender(sender_wallet, 11_i64) ],
-      [ a_recipient(recipient_wallet, 10_i64) ],
+      [a_sender(sender_wallet, 11_i64)],
+      [a_recipient(recipient_wallet, 10_i64)],
       "0", # message
       "0", # prev_hash
       "0", # sign_r
@@ -559,8 +556,8 @@ describe Transaction do
     transaction = Transaction.new(
       Transaction.create_id,
       "send", # action
-      [ a_sender(sender_wallet, 11_i64) ],
-      [ a_recipient(recipient_wallet, 10_i64) ],
+      [a_sender(sender_wallet, 11_i64)],
+      [a_recipient(recipient_wallet, 10_i64)],
       "0", # message
       "0", # prev_hash
       "0", # sign_r

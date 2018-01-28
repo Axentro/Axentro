@@ -10,5 +10,4 @@ module ::Sushi::Common::Color
       s.to_s.colorize.back(:{{color.id}}).to_s
     end
   {% end %}
-
 end

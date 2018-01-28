@@ -2,60 +2,57 @@ include Sushi::Core
 include Hashes
 
 describe Wallet do
-
   describe "create new wallet" do
-
     it "should create a new wallet on the testnet" do
       wallet = Wallet.from_json(Wallet.create(true).to_json)
-      Wallet.verify!(wallet.secret_key,wallet.public_key_x, wallet.public_key_y, wallet.address).should be_true
+      Wallet.verify!(wallet.secret_key, wallet.public_key_x, wallet.public_key_y, wallet.address).should be_true
       Wallet.address_network_type(wallet.address).should eq({prefix: "T0", name: "testnet"})
     end
 
     it "should create a new wallet on the mainnet" do
       wallet = Wallet.from_json(Wallet.create(false).to_json)
-      Wallet.verify!(wallet.secret_key,wallet.public_key_x, wallet.public_key_y, wallet.address).should be_true
+      Wallet.verify!(wallet.secret_key, wallet.public_key_x, wallet.public_key_y, wallet.address).should be_true
       Wallet.address_network_type(wallet.address).should eq({prefix: "M0", name: "mainnet"})
     end
   end
 
   describe "verify wallet" do
-
     it "should verify a valid wallet" do
       wallet = Wallet.from_json(Wallet.create(true).to_json)
-      Wallet.verify!(wallet.secret_key,wallet.public_key_x, wallet.public_key_y, wallet.address).should be_true
+      Wallet.verify!(wallet.secret_key, wallet.public_key_x, wallet.public_key_y, wallet.address).should be_true
     end
 
     it "should raise an invalid checksum error when address is invalid" do
-       expect_raises(Exception, "Invalid checksum for invalid-wallet-address") do
-         wallet = Wallet.from_json(Wallet.create(true).to_json)
-         Wallet.verify!(wallet.secret_key,wallet.public_key_x, wallet.public_key_y, "invalid-wallet-address")
-       end
+      expect_raises(Exception, "Invalid checksum for invalid-wallet-address") do
+        wallet = Wallet.from_json(Wallet.create(true).to_json)
+        Wallet.verify!(wallet.secret_key, wallet.public_key_x, wallet.public_key_y, "invalid-wallet-address")
+      end
     end
 
     it "should raise an invalid public key error when public_key_raw_x does not match public_key_x" do
-       wallet1 = Wallet.from_json(Wallet.create(true).to_json)
-       wallet2 = Wallet.from_json(Wallet.create(true).to_json)
+      wallet1 = Wallet.from_json(Wallet.create(true).to_json)
+      wallet2 = Wallet.from_json(Wallet.create(true).to_json)
 
-       expected_keys = create_expected_keys(wallet1.public_key_x, wallet1.public_key_y, wallet2.secret_key)
-       public_key_raw_x = expected_keys[:public_key_raw_x]
-       public_key_x = expected_keys[:public_key_x]
+      expected_keys = create_expected_keys(wallet1.public_key_x, wallet1.public_key_y, wallet2.secret_key)
+      public_key_raw_x = expected_keys[:public_key_raw_x]
+      public_key_x = expected_keys[:public_key_x]
 
-       expect_raises(Exception, "Invalid public key (public_key_x) for #{public_key_raw_x} != #{public_key_x}") do
-         Wallet.verify!(wallet2.secret_key,wallet1.public_key_x, wallet1.public_key_y, wallet1.address).should be_true
-       end
+      expect_raises(Exception, "Invalid public key (public_key_x) for #{public_key_raw_x} != #{public_key_x}") do
+        Wallet.verify!(wallet2.secret_key, wallet1.public_key_x, wallet1.public_key_y, wallet1.address).should be_true
+      end
     end
 
     it "should raise an invalid public key error when public_key_raw_y does not match public_key_y" do
-       wallet1 = Wallet.from_json(Wallet.create(true).to_json)
-       wallet2 = Wallet.from_json(Wallet.create(true).to_json)
+      wallet1 = Wallet.from_json(Wallet.create(true).to_json)
+      wallet2 = Wallet.from_json(Wallet.create(true).to_json)
 
-       expected_keys = create_expected_keys(wallet1.public_key_x, wallet2.public_key_y, wallet1.secret_key)
-       public_key_raw_y = expected_keys[:public_key_raw_y]
-       public_key_y = expected_keys[:public_key_y]
+      expected_keys = create_expected_keys(wallet1.public_key_x, wallet2.public_key_y, wallet1.secret_key)
+      public_key_raw_y = expected_keys[:public_key_raw_y]
+      public_key_y = expected_keys[:public_key_y]
 
-       expect_raises(Exception, "Invalid public key (public_key_y) for #{public_key_raw_y} != #{public_key_y}") do
-         Wallet.verify!(wallet1.secret_key,wallet1.public_key_x, wallet2.public_key_y, wallet1.address)
-       end
+      expect_raises(Exception, "Invalid public key (public_key_y) for #{public_key_raw_y} != #{public_key_y}") do
+        Wallet.verify!(wallet1.secret_key, wallet1.public_key_x, wallet2.public_key_y, wallet1.address)
+      end
     end
 
     it "should verify a valid wallet using the instance method verify!" do
@@ -66,7 +63,6 @@ describe Wallet do
   end
 
   describe "#valid_checksum?" do
-
     it "should return true when valid checksum" do
       wallet = Wallet.from_json(Wallet.create(true).to_json)
       Wallet.valid_checksum?(wallet.address).should be_true
@@ -78,7 +74,6 @@ describe Wallet do
   end
 
   describe "#address_network_type?" do
-
     it "should return testnet with a valid testnet address" do
       wallet = Wallet.from_json(Wallet.create(true).to_json)
       Wallet.address_network_type(wallet.address).should eq({prefix: "T0", name: "testnet"})
@@ -103,7 +98,6 @@ describe Wallet do
   end
 
   describe "#public_key_to_address" do
-
     it "should create an address from a public key for the testnet" do
       public_key = Wallet.create_key_pair[:public_key]
       address = Wallet.public_key_to_address(public_key, true)
@@ -129,18 +123,17 @@ describe Wallet do
   end
 
   describe "#from_path" do
-
     it "should find a wallet from the supplied path" do
       test_wallet_0 = "#{__DIR__}/../../../wallets/testnet-0.json"
       wallet = Wallet.from_path(test_wallet_0)
       Wallet.verify!(wallet.secret_key, wallet.public_key_x, wallet.public_key_y, wallet.address).should be_true
     end
 
-   it "should raise a wallet not found error when no wallet file exists at the specific path" do
-     expect_raises(Exception, "Failed to find wallet at invalid-path, create it first!") do
-       Wallet.from_path("invalid-path")
-     end
-   end
+    it "should raise a wallet not found error when no wallet file exists at the specific path" do
+      expect_raises(Exception, "Failed to find wallet at invalid-path, create it first!") do
+        Wallet.from_path("invalid-path")
+      end
+    end
   end
 
   STDERR.puts "< Wallet"

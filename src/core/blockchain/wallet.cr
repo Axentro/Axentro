@@ -2,15 +2,15 @@ module ::Sushi::Core
   class Wallet
     extend Hashes
 
-    MAINNET = { prefix: "M0", name: "mainnet" }
-    TESTNET = { prefix: "T0", name: "testnet" }
+    MAINNET = {prefix: "M0", name: "mainnet"}
+    TESTNET = {prefix: "T0", name: "testnet"}
 
     JSON.mapping({
-                   secret_key: String,
-                   public_key_x: String,
-                   public_key_y: String,
-                   address: String,
-                 })
+      secret_key:   String,
+      public_key_x: String,
+      public_key_y: String,
+      address:      String,
+    })
 
     getter secret_key : String
     getter public_key_x : String
@@ -35,10 +35,10 @@ module ::Sushi::Core
       address = public_key_to_address(key_pair[:public_key], testnet)
 
       {
-        secret_key: Base64.strict_encode(key_pair[:secret_key].to_s(base: 10)),
+        secret_key:   Base64.strict_encode(key_pair[:secret_key].to_s(base: 10)),
         public_key_x: Base64.strict_encode(key_pair[:public_key].x.to_s(base: 10)),
         public_key_y: Base64.strict_encode(key_pair[:public_key].y.to_s(base: 10)),
-        address: address
+        address:      address,
       }
     end
 

@@ -1,6 +1,5 @@
 module ::Sushi::Core::Controllers
   abstract class Controller
-
     def initialize(@blockchain : Blockchain)
     end
 
@@ -20,7 +19,7 @@ module ::Sushi::Core::Controllers
       end
 
       unpermitted_method(context)
-    rescue e: Exception
+    rescue e : Exception
       if error_message = e.message
         context.response.status_code = 403
         context.response.print error_message

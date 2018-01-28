@@ -3,19 +3,19 @@ module ::Sushi::Core
     extend Hashes
 
     JSON.mapping({
-                   index: Int64,
-                   transactions: Array(Transaction),
-                   nonce: UInt64,
-                   prev_hash: String,
-                   merkle_tree_root: String,
-                 })
+      index:            Int64,
+      transactions:     Array(Transaction),
+      nonce:            UInt64,
+      prev_hash:        String,
+      merkle_tree_root: String,
+    })
 
     def initialize(
-          @index : Int64,
-          @transactions : Array(Transaction),
-          @nonce : UInt64,
-          @prev_hash : String,
-        )
+      @index : Int64,
+      @transactions : Array(Transaction),
+      @nonce : UInt64,
+      @prev_hash : String
+    )
       @merkle_tree_root = calcluate_merkle_tree_root
     end
 
@@ -26,9 +26,9 @@ module ::Sushi::Core
 
     def to_header : Models::Header
       {
-        index: @index,
-        nonce: @nonce,
-        prev_hash: @prev_hash,
+        index:            @index,
+        nonce:            @nonce,
+        prev_hash:        @prev_hash,
         merkle_tree_root: @merkle_tree_root,
       }
     end
@@ -112,7 +112,7 @@ module ::Sushi::Core
         indices[transaction.id] = @index
       end
 
-      { utxo: utxo, indices: indices }
+      {utxo: utxo, indices: indices}
     end
 
     def find_transaction(transaction_id : String) : Transaction?
