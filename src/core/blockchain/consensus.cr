@@ -49,7 +49,7 @@ module ::Sushi::Core::Consensus
     2
   end
 
-  def transactions_pool_mimit_at(block_index : Int64) : Int32
+  def transactions_block_size_at(block_index : Int64) : Int32
     5
   end
 
