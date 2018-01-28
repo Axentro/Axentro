@@ -79,7 +79,7 @@ module ::Sushi::Core
       else
         puts "nonce for latest_block: valid"
       end
-      
+
       # return nil unless latest_block.valid_nonce?(nonce)
 
       index = @chain.size.to_i64
