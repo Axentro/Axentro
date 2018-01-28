@@ -60,7 +60,7 @@ module ::Sushi::Core
       @coinbase_transaction = create_coinbase_transaction(miners)
 
       debug = @transaction_pool.size
-      @transaction_pool = @transaction_pool[transactions.size-1..-1]
+      @transaction_pool = @transaction_pool[transactions.size - 1..-1]
       puts "transaction pool updated: #{debug} => #{@transaction_pool.size}"
 
       prev_transaction = coinbase_transaction
@@ -73,7 +73,14 @@ module ::Sushi::Core
     end
 
     def push_block?(nonce : UInt64, miners : Models::Miners) : Block?
-      return nil unless latest_block.valid_nonce?(nonce)
+      unless latest_block.valid_nonce?(nonce)
+        puts "nonce for latest_block: invalid"
+        return nil
+      else
+        puts "nonce for latest_block: valid"
+      end
+      
+      # return nil unless latest_block.valid_nonce?(nonce)
 
       index = @chain.size.to_i64
 
@@ -90,7 +97,12 @@ module ::Sushi::Core
     end
 
     def push_block?(block : Block, miners : Models::Miners) : Block?
-      return nil unless block.valid_as_latest?(self)
+      unless block.valid_as_latest?(self)
+        puts "block as latest: invalid"
+        return nil
+      else
+        puts "block as latest: valid"
+      end
 
       @chain.push(block)
 
@@ -151,7 +163,7 @@ module ::Sushi::Core
     end
 
     def get_amount_unconfirmed(address : String) : Int64
-      @utxo.get_unconfirmed(address, @transaction_pool)
+      @utxo.get_unconfirmed(address, [coinbase_transaction] + @transaction_pool)
     end
 
     def get_amount(address : String) : Int64

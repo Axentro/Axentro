@@ -41,12 +41,14 @@ module ::Sushi::Core::Consensus
 
   def difficulty_at(block_index : Int64) : Int32
     # 4
-    3
+    # 3
+    2
   end
 
   def miner_difficulty_at(block_index : Int64) : Int32
     # 3
-    2
+    # 2
+    1
   end
 
   def transactions_block_size_at(block_index : Int64) : Int32

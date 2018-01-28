@@ -72,6 +72,9 @@ describe Transaction do
         signed_transaction.sign_s.should eq(signature[:s])
 
         signed_transaction.valid?(blockchain, 0_i64, false).should be_true
+      rescue e : Exception
+        STDERR.puts e.message.not_nil!
+        STDERR.puts e.backtrace.not_nil!.join("\n")
       end
 
       it "should raise invalid id length error if not 64" do
