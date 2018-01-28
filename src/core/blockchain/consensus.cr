@@ -40,19 +40,13 @@ module ::Sushi::Core::Consensus
   end
 
   def difficulty_at(block_index : Int64) : Int32
-    # 4
-    # 3
-    2
+    return 2 if ENV.has_key?("TRAVIS") # for e2e test
+    4
   end
 
   def miner_difficulty_at(block_index : Int64) : Int32
-    # 3
-    # 2
-    1
-  end
-
-  def transactions_block_size_at(block_index : Int64) : Int32
-    5
+    return 1 if ENV.has_key?("TRAVIS") # for e2e test
+    3
   end
 
   include Hashes

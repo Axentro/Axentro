@@ -34,15 +34,11 @@ module ::E2E::Utils::API
   end
 
   def create(port : Int32, n_sender : Int32, n_recipient : Int32) : String?
-    a = amount(port, n_sender)
-    au = amount(port, n_sender, true)
-    puts "confirmed: #{a}, unconfirmed: #{au}"
+    a = amount(port, n_sender, true)
 
-    return nil if a == 0 || au == 0
+    return nil if a == 0
 
-    a = [a, au].min / 2
-
-    puts "sending #{a}"
+    a = a / 2
 
     recipient_address = ::Sushi::Core::Wallet.from_path("wallets/testnet-#{n_recipient}.json").address
 
@@ -57,7 +53,6 @@ module ::E2E::Utils::API
     args = ["transaction", "-t", transaction_id, "-n", "http://127.0.0.1:#{port}", "--json"]
 
     res = `#{sushi(args)}`
-
-    STDERR.puts res
+    res
   end
 end

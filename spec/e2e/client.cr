@@ -4,8 +4,10 @@ require "./utils"
 module ::E2E
   class Client
     @transaction_ids = [] of String
+    @alive : Bool
 
     def initialize(@node_ports : Array(Int32), @num_miners : Int32)
+      @alive = true
     end
 
     def create_transaction
@@ -20,19 +22,19 @@ module ::E2E
     def launch
       spawn do
         loop do
+          break if !@alive
           create_transaction
-          sleep 1
+
+          sleep 0.01
         rescue e : Exception
           STDERR.puts e
         end
       end
     end
 
-    def assertion!
-      @transaction_ids.each do |id|
-        port = @node_ports.sample
-        transaction(port, id)
-      end
+    def kill
+      # do nothing currently
+      @alive = false
     end
 
     include Utils

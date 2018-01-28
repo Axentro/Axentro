@@ -32,14 +32,9 @@ module ::Sushi::Core::Controllers
     def create_transaction(json, context, params)
       transaction = Transaction.from_json(json["transaction"].to_s)
 
-      if transaction.valid?(@blockchain, @blockchain.latest_index, false)
-        node.broadcast_transaction(transaction)
-        context.response.print transaction.to_json
-        return context
-      end
+      node.broadcast_transaction(transaction)
 
-      context.response.status_code = 403
-      context.response.print "Invalid transaction"
+      context.response.print transaction.to_json
       context
     rescue e : Exception
       context.response.status_code = 403

@@ -59,6 +59,8 @@ module ::E2E
     end
 
     def assertion!
+      @client.kill
+
       latest_block_index = @node_ports.map { |port|
         size = blockchain_size(port)
         STDERR.puts "#{port} <- #{size}"

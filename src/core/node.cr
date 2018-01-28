@@ -153,9 +153,7 @@ module ::Sushi::Core
     end
 
     def broadcast_transaction(transaction : Transaction)
-      raw_transaction = transaction.dup
-
-      info "new transaction coming: #{raw_transaction.id}"
+      info "new transaction coming: #{transaction.id}"
 
       @blockchain.add_transaction(transaction)
 
@@ -164,7 +162,7 @@ module ::Sushi::Core
 
       @nodes.each do |node|
         send(node[:socket], M_TYPE_BROADCAST_TRANSACTION, {
-          transaction: raw_transaction,
+          transaction: transaction,
           known_nodes: known_nodes,
         })
       end
@@ -347,8 +345,6 @@ module ::Sushi::Core
       known_nodes = _m_content.known_nodes
 
       raw_transaction = transaction.dup
-
-      return unless transaction.valid?(@blockchain, @blockchain.latest_index, false)
 
       info "new transaction coming: #{transaction.id}"
 

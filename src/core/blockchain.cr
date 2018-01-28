@@ -22,7 +22,7 @@ module ::Sushi::Core
       @coinbase_transaction = create_coinbase_transaction([] of Models::Miner)
     end
 
-    def coinbase_transaction
+    def coinbase_transaction : Transaction
       @coinbase_transaction.not_nil!
     end
 
@@ -53,38 +53,18 @@ module ::Sushi::Core
       set_genesis if @chain.size == 0
     end
 
-    def update_coinbase_transaction(miners : Models::Miners, transactions : Array(Transaction))
-      puts "update coinbase transaction"
-      puts "recorded transactions: #{transactions.size}"
-
+    def update_coinbase_transaction(miners : Models::Miners)
       @coinbase_transaction = create_coinbase_transaction(miners)
-
-      debug = @transaction_pool.size
-      @transaction_pool = @transaction_pool[transactions.size - 1..-1]
-      puts "transaction pool updated: #{debug} => #{@transaction_pool.size}"
-
-      prev_transaction = coinbase_transaction
-
-      @transaction_pool.each_with_index do |transaction, i|
-        puts "updated(#{i})"
-        transaction.prev_hash = prev_transaction.to_hash
-        prev_transaction = transaction
-      end
+      @transaction_pool.clear
     end
 
     def push_block?(nonce : UInt64, miners : Models::Miners) : Block?
-      unless latest_block.valid_nonce?(nonce)
-        puts "nonce for latest_block: invalid"
-        return nil
-      else
-        puts "nonce for latest_block: valid"
-      end
-
-      # return nil unless latest_block.valid_nonce?(nonce)
+      return nil unless latest_block.valid_nonce?(nonce)
 
       index = @chain.size.to_i64
 
-      transactions = [coinbase_transaction] + recorded_transactions
+      transactions = [coinbase_transaction] + @transaction_pool
+      transactions = align_transaction(transactions)
 
       block = Block.new(
         index,
@@ -97,12 +77,7 @@ module ::Sushi::Core
     end
 
     def push_block?(block : Block, miners : Models::Miners) : Block?
-      unless block.valid_as_latest?(self)
-        puts "block as latest: invalid"
-        return nil
-      else
-        puts "block as latest: valid"
-      end
+      return nil unless block.valid_as_latest?(self)
 
       @chain.push(block)
 
@@ -112,7 +87,7 @@ module ::Sushi::Core
         database.push_block(block)
       end
 
-      update_coinbase_transaction(miners, block.transactions)
+      update_coinbase_transaction(miners)
 
       block
     end
@@ -144,26 +119,28 @@ module ::Sushi::Core
     end
 
     def add_transaction(transaction : Transaction)
-      transaction.prev_hash = if @transaction_pool.size == 0
-                                coinbase_transaction.to_hash
-                              else
-                                @transaction_pool[-1].to_hash
-                              end
-
       @transaction_pool << transaction
     end
 
-    def recorded_transactions : Array(Transaction)
-      block_size = transactions_block_size_at(@chain[-1].index)
-      size = (@transaction_pool.size / block_size) * block_size
+    def align_transaction(transactions : Array(Transaction))
+      return [] of Transaction if transactions.size == 0
 
-      return [] of Transaction if size == 0
+      selected_transactions = [transactions[0]]
 
-      @transaction_pool[0..size]
+      transactions[1..-1].each_with_index do |transaction, idx|
+        transaction.valid?(self, latest_index, false, selected_transactions)
+        transaction.prev_hash = selected_transactions[-1].to_hash
+
+        selected_transactions << transaction
+      rescue e : Exception
+        transactions.delete(transaction)
+      end
+
+      selected_transactions
     end
 
-    def get_amount_unconfirmed(address : String) : Int64
-      @utxo.get_unconfirmed(address, [coinbase_transaction] + @transaction_pool)
+    def get_amount_unconfirmed(address : String, transactions : Array(Transaction)? = nil) : Int64
+      @utxo.get_unconfirmed(address, transactions)
     end
 
     def get_amount(address : String) : Int64

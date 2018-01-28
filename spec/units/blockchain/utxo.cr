@@ -20,7 +20,9 @@ describe UTXO do
       utxo.record(chain)
 
       address = block_1.transactions.first.recipients.first[:address]
-      expected_amount = chain.reject { |blk| blk.prev_hash == "genesis" }.flat_map { |blk| blk.transactions.first.recipients.select { |r| r[:address] == address } }.map { |x| x[:amount] }.sum
+      expected_amount = chain[-1].transactions.first.recipients
+                        .select { |r| r[:address] == address }
+                        .reduce(0) { |sum, x| sum + x[:amount] }
 
       utxo.get(address).should eq(expected_amount)
     end
