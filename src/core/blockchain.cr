@@ -8,6 +8,8 @@ module ::Sushi::Core
     getter wallet : Wallet
     getter utxo : UTXO
 
+    @coinbase_transaction : Transaction?
+
     def initialize(@wallet : Wallet, @database : Database? = nil)
       @utxo = UTXO.new
 
@@ -17,7 +19,11 @@ module ::Sushi::Core
         set_genesis
       end
 
-      add_transaction(create_first_transaction([] of Models::Miner))
+      @coinbase_transaction = create_coinbase_transaction([] of Models::Miner)
+    end
+
+    def coinbase_transaction
+      @coinbase_transaction.not_nil!
     end
 
     def set_genesis
@@ -47,11 +53,26 @@ module ::Sushi::Core
       set_genesis if @chain.size == 0
     end
 
+    def update_coinbase_transaction(miners : Models::Miners)
+      puts "update coinbase transaction"
+      @coinbase_transaction = create_coinbase_transaction(miners)
+
+      prev_transaction = coinbase_transaction
+
+      # @current_transactions.each do |transaction|
+      @current_transactions.each_with_index do |transaction, i|
+        puts "updated(#{i})"
+        transaction.prev_hash = prev_transaction.to_hash
+        prev_transaction = transaction
+      end
+    end
+
     def push_block?(nonce : UInt64, miners : Models::Miners) : Block?
       return nil unless latest_block.valid_nonce?(nonce)
 
       index = @chain.size.to_i64
-      transactions = @current_transactions.dup
+      # transactions = @current_transactions.dup
+      transactions = [coinbase_transaction] + @current_transactions
 
       block = Block.new(
         index,
@@ -73,8 +94,10 @@ module ::Sushi::Core
         database.push_block(block)
       end
 
-      @current_transactions.clear
-      add_transaction(create_first_transaction(miners))
+      # @current_transactions.clear
+      # add_transaction(create_first_transaction(miners))
+
+      update_coinbase_transaction(miners)
 
       block
     end
@@ -155,7 +178,7 @@ module ::Sushi::Core
       )
     end
 
-    def create_first_transaction(miners : Models::Miners) : Transaction
+    def create_coinbase_transaction(miners : Models::Miners) : Transaction
       rewards_total = Blockchain.served_amount(latest_index)
 
       miners_nonces_size = miners.reduce(0) { |sum, m| sum + m[:nonces].size }

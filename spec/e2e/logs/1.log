@@ -1,0 +1,228 @@
+[ 2018-01-28 16:25:44 -- [92m   Info[0m ] id: [92m983be7187e84cd1c681de338098f9f80[0m
+[ 2018-01-28 16:25:44 -- [92m   Info[0m ] is_private: [92mfalse[0m
+[ 2018-01-28 16:25:44 -- [92m   Info[0m ] public url: [92m127.0.0.1[0m:[92m4001[0m
+---- 222
+[ 2018-01-28 16:25:44 -- [92m   Info[0m ] loaded blockchain's size: [96m1[0m
+[ 2018-01-28 16:25:44 -- [33mWarning[0m ] no database has been specified
+[ 2018-01-28 16:25:44 -- [92m   Info[0m ] connecting to [92m127.0.0.1[0m:[92m4000[0m
+[ 2018-01-28 16:25:44 -- [92m   Info[0m ] start running Sushi's node on [92m0.0.0.0[0m:[92m4001[0m
+[ 2018-01-28 16:25:44 -- [92m   Info[0m ] network type: [92mtestnet[0m
+[ 2018-01-28 16:25:44 -- [92m   Info[0m ] successfully connected: f5f8652e0caf23499f6e3857602f477a (1)
+[ 2018-01-28 16:25:45 -- [92m   Info[0m ] new node: [96m81e919edaeb910062f5ea0cef8ee4cd6[0m (2)
+[ 2018-01-28 16:25:47 -- [92m   Info[0m ] new miner: [92mVDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1[0m (1)
+[ 2018-01-28 16:25:48 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (1)
+[ 2018-01-28 16:25:48 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (2)
+---- 222
+[ 2018-01-28 16:25:49 -- [92m   Info[0m ] found new nonce: [92m6887503504051659974[0m (1)
+[ 2018-01-28 16:25:49 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:25:49 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (1)
+---- 222
+[ 2018-01-28 16:25:51 -- [92m   Info[0m ] new block coming: [96m3[0m
+[ 2018-01-28 16:25:51 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:25:51 -- [92m   Info[0m ] recieved block >> total: [96m1[0m, new block: [96m1[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+[ 2018-01-28 16:25:51 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (2)
+[ 2018-01-28 16:25:52 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (3)
+[ 2018-01-28 16:25:53 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (4)
+[ 2018-01-28 16:25:53 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (5)
+---- 222
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] new block coming: [96m4[0m
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] recieved block >> total: [96m2[0m, new block: [96m2[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (6)
+---- 222
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] found new nonce: [92m10291839913453176460[0m (4)
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (1)
+[ 2018-01-28 16:25:55 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (2)
+[ 2018-01-28 16:25:55 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (3)
+[ 2018-01-28 16:25:55 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (4)
+[ 2018-01-28 16:25:56 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (5)
+[ 2018-01-28 16:25:56 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (6)
+[ 2018-01-28 16:25:56 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (7)
+[ 2018-01-28 16:25:57 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (8)
+---- 222
+[ 2018-01-28 16:25:57 -- [92m   Info[0m ] new block coming: [96m6[0m
+[ 2018-01-28 16:25:57 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:25:57 -- [92m   Info[0m ] recieved block >> total: [96m3[0m, new block: [96m3[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+[ 2018-01-28 16:25:58 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (9)
+[ 2018-01-28 16:25:58 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (10)
+[ 2018-01-28 16:25:59 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (11)
+[ 2018-01-28 16:25:59 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (12)
+---- 222
+[ 2018-01-28 16:25:59 -- [92m   Info[0m ] found new nonce: [92m13107286276393276902[0m (6)
+[ 2018-01-28 16:25:59 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:00 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (1)
+[ 2018-01-28 16:26:00 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (2)
+[ 2018-01-28 16:26:00 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (3)
+[ 2018-01-28 16:26:00 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (4)
+[ 2018-01-28 16:26:00 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (5)
+[ 2018-01-28 16:26:00 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (6)
+---- 222
+[ 2018-01-28 16:26:00 -- [92m   Info[0m ] found new nonce: [92m13293261220219077142[0m (7)
+[ 2018-01-28 16:26:00 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:01 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (1)
+[ 2018-01-28 16:26:01 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (2)
+[ 2018-01-28 16:26:02 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (3)
+[ 2018-01-28 16:26:02 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (4)
+[ 2018-01-28 16:26:02 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (5)
+[ 2018-01-28 16:26:02 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (6)
+[ 2018-01-28 16:26:03 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (7)
+[ 2018-01-28 16:26:03 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (8)
+[ 2018-01-28 16:26:03 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (9)
+---- 222
+[ 2018-01-28 16:26:03 -- [92m   Info[0m ] found new nonce: [92m12065805158934330985[0m (8)
+[ 2018-01-28 16:26:03 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:04 -- [31m  Error[0m ] Division by zero
+[ 2018-01-28 16:26:04 -- [31m  Error[0m ] on: 127.0.0.1:4002
+[ 2018-01-28 16:26:05 -- [33mWarning[0m ] recieved nonce is invalid, try to update latest block
+[ 2018-01-28 16:26:05 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (1)
+---- 222
+[ 2018-01-28 16:26:06 -- [92m   Info[0m ] new block coming: [96m11[0m
+[ 2018-01-28 16:26:06 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:06 -- [92m   Info[0m ] recieved block >> total: [96m5[0m, new block: [96m5[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+[ 2018-01-28 16:26:07 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (2)
+[ 2018-01-28 16:26:07 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (3)
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (4)
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (5)
+---- 222
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] found new nonce: [92m3439965766260461585[0m (11)
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:08 -- [31m  Error[0m ] Division by zero
+[ 2018-01-28 16:26:08 -- [31m  Error[0m ] on: 127.0.0.1:4002
+[ 2018-01-28 16:26:08 -- [33mWarning[0m ] recieved nonce is invalid, try to update latest block
+[ 2018-01-28 16:26:09 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (1)
+[ 2018-01-28 16:26:09 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (2)
+[ 2018-01-28 16:26:10 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (3)
+[ 2018-01-28 16:26:10 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (4)
+[ 2018-01-28 16:26:10 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (5)
+[ 2018-01-28 16:26:10 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (6)
+[ 2018-01-28 16:26:10 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (7)
+[ 2018-01-28 16:26:11 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (8)
+---- 222
+[ 2018-01-28 16:26:11 -- [92m   Info[0m ] new block coming: [96m14[0m
+[ 2018-01-28 16:26:11 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:11 -- [92m   Info[0m ] recieved block >> total: [96m7[0m, new block: [96m7[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (9)
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (10)
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (11)
+---- 222
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] new block coming: [96m15[0m
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] recieved block >> total: [96m8[0m, new block: [96m8[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (12)
+---- 222
+[ 2018-01-28 16:26:13 -- [92m   Info[0m ] found new nonce: [92m12966060587709955731[0m (15)
+[ 2018-01-28 16:26:13 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:13 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (1)
+[ 2018-01-28 16:26:14 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (2)
+[ 2018-01-28 16:26:15 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (3)
+[ 2018-01-28 16:26:15 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (4)
+[ 2018-01-28 16:26:15 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (5)
+[ 2018-01-28 16:26:15 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (6)
+---- 222
+[ 2018-01-28 16:26:15 -- [92m   Info[0m ] found new nonce: [92m9583563936877933683[0m (16)
+[ 2018-01-28 16:26:15 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:16 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (1)
+[ 2018-01-28 16:26:16 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (2)
+---- 222
+[ 2018-01-28 16:26:16 -- [92m   Info[0m ] found new nonce: [92m14825187990870652091[0m (17)
+[ 2018-01-28 16:26:16 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:17 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (1)
+[ 2018-01-28 16:26:18 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (2)
+[ 2018-01-28 16:26:19 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (3)
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (4)
+---- 222
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] new block coming: [96m19[0m
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] recieved block >> total: [96m9[0m, new block: [96m9[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (5)
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (6)
+---- 222
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] new block coming: [96m20[0m
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] recieved block >> total: [96m10[0m, new block: [96m10[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+[ 2018-01-28 16:26:21 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (7)
+[ 2018-01-28 16:26:21 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (8)
+[ 2018-01-28 16:26:21 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (9)
+[ 2018-01-28 16:26:22 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (10)
+[ 2018-01-28 16:26:22 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (11)
+---- 222
+[ 2018-01-28 16:26:23 -- [92m   Info[0m ] new block coming: [96m21[0m
+[ 2018-01-28 16:26:23 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:23 -- [92m   Info[0m ] recieved block >> total: [96m11[0m, new block: [96m11[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+[ 2018-01-28 16:26:24 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (12)
+[ 2018-01-28 16:26:24 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (13)
+[ 2018-01-28 16:26:25 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (14)
+[ 2018-01-28 16:26:25 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (15)
+[ 2018-01-28 16:26:27 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (16)
+[ 2018-01-28 16:26:27 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (17)
+[ 2018-01-28 16:26:27 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (18)
+[ 2018-01-28 16:26:29 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (19)
+[ 2018-01-28 16:26:29 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (20)
+---- 222
+[ 2018-01-28 16:26:29 -- [92m   Info[0m ] found new nonce: [92m9673507184880873181[0m (21)
+[ 2018-01-28 16:26:29 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:30 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (1)
+[ 2018-01-28 16:26:30 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (2)
+[ 2018-01-28 16:26:30 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (3)
+[ 2018-01-28 16:26:30 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (4)
+[ 2018-01-28 16:26:30 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (5)
+[ 2018-01-28 16:26:31 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (6)
+[ 2018-01-28 16:26:31 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (7)
+---- 222
+[ 2018-01-28 16:26:32 -- [92m   Info[0m ] new block coming: [96m23[0m
+[ 2018-01-28 16:26:32 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:32 -- [92m   Info[0m ] recieved block >> total: [96m12[0m, new block: [96m12[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+[ 2018-01-28 16:26:32 -- [33mWarning[0m ] recieved nonce is invalid, try to update latest block
+[ 2018-01-28 16:26:32 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (8)
+[ 2018-01-28 16:26:32 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (9)
+[ 2018-01-28 16:26:32 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (10)
+[ 2018-01-28 16:26:33 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (11)
+[ 2018-01-28 16:26:33 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (12)
+---- 222
+[ 2018-01-28 16:26:33 -- [92m   Info[0m ] found new nonce: [92m11745548256619242765[0m (23)
+[ 2018-01-28 16:26:33 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:34 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (1)
+[ 2018-01-28 16:26:35 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (2)
+[ 2018-01-28 16:26:35 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (3)
+[ 2018-01-28 16:26:35 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (4)
+[ 2018-01-28 16:26:35 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (5)
+[ 2018-01-28 16:26:35 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (6)
+[ 2018-01-28 16:26:36 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (7)
+[ 2018-01-28 16:26:37 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (8)
+[ 2018-01-28 16:26:37 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (9)
+[ 2018-01-28 16:26:37 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (10)
+---- 222
+[ 2018-01-28 16:26:37 -- [92m   Info[0m ] found new nonce: [92m1473902267292087934[0m (24)
+[ 2018-01-28 16:26:37 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:38 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (1)
+---- 222
+[ 2018-01-28 16:26:38 -- [92m   Info[0m ] new block coming: [96m26[0m
+[ 2018-01-28 16:26:38 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:38 -- [92m   Info[0m ] recieved block >> total: [96m13[0m, new block: [96m13[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+[ 2018-01-28 16:26:38 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (2)
+[ 2018-01-28 16:26:39 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (3)
+[ 2018-01-28 16:26:39 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (4)
+[ 2018-01-28 16:26:39 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (5)
+[ 2018-01-28 16:26:39 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (6)
+[ 2018-01-28 16:26:39 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (7)
+[ 2018-01-28 16:26:40 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (8)
+[ 2018-01-28 16:26:40 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (9)
+[ 2018-01-28 16:26:41 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (10)
+[ 2018-01-28 16:26:42 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (11)
+---- 222
+[ 2018-01-28 16:26:43 -- [92m   Info[0m ] new block coming: [96m27[0m
+[ 2018-01-28 16:26:43 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:43 -- [92m   Info[0m ] recieved block >> total: [96m14[0m, new block: [96m14[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+[ 2018-01-28 16:26:43 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (12)
+[ 2018-01-28 16:26:44 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (13)
+[ 2018-01-28 16:26:44 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (14)
+[ 2018-01-28 16:26:45 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (15)
+[ 2018-01-28 16:26:45 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (16)
+[ 2018-01-28 16:26:46 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (17)
+[ 2018-01-28 16:26:46 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (18)
+---- 222
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] new block coming: [96m28[0m
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] recieved block >> total: [96m15[0m, new block: [96m15[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] miner VDA4Mjc4ZTliOGI0NzIzYWZjOTJhMGY5ZjQwOGQxYTJkMzA5MDg0MTNkNTZlMTk1 found nonce (19)

@@ -40,11 +40,17 @@ module ::Sushi::Core::Consensus
   end
 
   def difficulty_at(block_index : Int64) : Int32
-    4
+    # 4
+    3
   end
 
   def miner_difficulty_at(block_index : Int64) : Int32
-    3
+    # 3
+    2
+  end
+
+  def transactions_pool_mimit_at(block_index : Int64) : Int32
+    5
   end
 
   include Hashes

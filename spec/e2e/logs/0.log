@@ -1,0 +1,120 @@
+[ 2018-01-28 16:25:43 -- [92m   Info[0m ] id: [92mf5f8652e0caf23499f6e3857602f477a[0m
+[ 2018-01-28 16:25:43 -- [92m   Info[0m ] is_private: [92mfalse[0m
+[ 2018-01-28 16:25:43 -- [92m   Info[0m ] public url: [92m127.0.0.1[0m:[92m4000[0m
+---- 222
+[ 2018-01-28 16:25:43 -- [92m   Info[0m ] loaded blockchain's size: [96m1[0m
+[ 2018-01-28 16:25:43 -- [33mWarning[0m ] no database has been specified
+[ 2018-01-28 16:25:43 -- [33mWarning[0m ] no connecting node has been specified
+[ 2018-01-28 16:25:43 -- [33mWarning[0m ] so this node is standalone from other network
+[ 2018-01-28 16:25:43 -- [92m   Info[0m ] start running Sushi's node on [92m0.0.0.0[0m:[92m4000[0m
+[ 2018-01-28 16:25:43 -- [92m   Info[0m ] network type: [92mtestnet[0m
+[ 2018-01-28 16:25:44 -- [92m   Info[0m ] new node: [96m983be7187e84cd1c681de338098f9f80[0m (1)
+[ 2018-01-28 16:25:45 -- [92m   Info[0m ] new node: [96m81e919edaeb910062f5ea0cef8ee4cd6[0m (2)
+---- 222
+[ 2018-01-28 16:25:49 -- [92m   Info[0m ] new block coming: [96m2[0m
+[ 2018-01-28 16:25:49 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:25:49 -- [92m   Info[0m ] recieved block >> total: [96m1[0m, new block: [96m1[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:25:51 -- [92m   Info[0m ] new block coming: [96m3[0m
+[ 2018-01-28 16:25:51 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:25:51 -- [92m   Info[0m ] recieved block >> total: [96m2[0m, new block: [96m2[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] new block coming: [96m4[0m
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] recieved block >> total: [96m3[0m, new block: [96m3[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] new block coming: [96m5[0m
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] recieved block >> total: [96m4[0m, new block: [96m4[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:25:57 -- [92m   Info[0m ] new block coming: [96m6[0m
+[ 2018-01-28 16:25:57 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:25:57 -- [92m   Info[0m ] recieved block >> total: [96m5[0m, new block: [96m5[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:25:59 -- [92m   Info[0m ] new block coming: [96m7[0m
+[ 2018-01-28 16:25:59 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:25:59 -- [92m   Info[0m ] recieved block >> total: [96m6[0m, new block: [96m6[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:01 -- [92m   Info[0m ] new block coming: [96m8[0m
+[ 2018-01-28 16:26:01 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:01 -- [92m   Info[0m ] recieved block >> total: [96m7[0m, new block: [96m7[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:03 -- [92m   Info[0m ] new block coming: [96m9[0m
+[ 2018-01-28 16:26:03 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:03 -- [92m   Info[0m ] recieved block >> total: [96m8[0m, new block: [96m8[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:04 -- [92m   Info[0m ] new block coming: [96m10[0m
+[ 2018-01-28 16:26:04 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:04 -- [92m   Info[0m ] recieved block >> total: [96m9[0m, new block: [96m9[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:06 -- [92m   Info[0m ] new block coming: [96m11[0m
+[ 2018-01-28 16:26:06 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:06 -- [92m   Info[0m ] recieved block >> total: [96m10[0m, new block: [96m10[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] new block coming: [96m12[0m
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] recieved block >> total: [96m11[0m, new block: [96m11[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] new block coming: [96m13[0m
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] recieved block >> total: [96m12[0m, new block: [96m12[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:11 -- [92m   Info[0m ] new block coming: [96m14[0m
+[ 2018-01-28 16:26:11 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:11 -- [92m   Info[0m ] recieved block >> total: [96m13[0m, new block: [96m13[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] new block coming: [96m15[0m
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] recieved block >> total: [96m14[0m, new block: [96m14[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:13 -- [92m   Info[0m ] new block coming: [96m16[0m
+[ 2018-01-28 16:26:13 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:13 -- [92m   Info[0m ] recieved block >> total: [96m15[0m, new block: [96m15[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:15 -- [92m   Info[0m ] new block coming: [96m17[0m
+[ 2018-01-28 16:26:15 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:15 -- [92m   Info[0m ] recieved block >> total: [96m16[0m, new block: [96m16[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:16 -- [92m   Info[0m ] new block coming: [96m18[0m
+[ 2018-01-28 16:26:16 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:16 -- [92m   Info[0m ] recieved block >> total: [96m17[0m, new block: [96m17[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] new block coming: [96m19[0m
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] recieved block >> total: [96m18[0m, new block: [96m18[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] new block coming: [96m20[0m
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] recieved block >> total: [96m19[0m, new block: [96m19[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:23 -- [92m   Info[0m ] new block coming: [96m21[0m
+[ 2018-01-28 16:26:23 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:23 -- [92m   Info[0m ] recieved block >> total: [96m20[0m, new block: [96m20[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:29 -- [92m   Info[0m ] new block coming: [96m22[0m
+[ 2018-01-28 16:26:29 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:29 -- [92m   Info[0m ] recieved block >> total: [96m21[0m, new block: [96m21[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:32 -- [92m   Info[0m ] new block coming: [96m23[0m
+[ 2018-01-28 16:26:32 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:32 -- [92m   Info[0m ] recieved block >> total: [96m22[0m, new block: [96m22[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:33 -- [92m   Info[0m ] new block coming: [96m24[0m
+[ 2018-01-28 16:26:33 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:33 -- [92m   Info[0m ] recieved block >> total: [96m23[0m, new block: [96m23[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:37 -- [92m   Info[0m ] new block coming: [96m25[0m
+[ 2018-01-28 16:26:37 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:37 -- [92m   Info[0m ] recieved block >> total: [96m24[0m, new block: [96m24[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:38 -- [92m   Info[0m ] new block coming: [96m26[0m
+[ 2018-01-28 16:26:38 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:38 -- [92m   Info[0m ] recieved block >> total: [96m25[0m, new block: [96m25[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:43 -- [92m   Info[0m ] new block coming: [96m27[0m
+[ 2018-01-28 16:26:43 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:43 -- [92m   Info[0m ] recieved block >> total: [96m26[0m, new block: [96m26[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m
+---- 222
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] new block coming: [96m28[0m
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] recieved block >> total: [96m27[0m, new block: [96m27[0m, conflict: [96m0[0m, sync chain: [96m0[0m, older block: [96m0[0m

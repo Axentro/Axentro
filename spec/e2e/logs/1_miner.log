@@ -1,0 +1,416 @@
+[ 2018-01-28 16:25:47 -- [92m   Info[0m ] Launching 1 threads...
+[ 2018-01-28 16:25:47 -- [92m   Info[0m ] starting nonce from [96m13821309642201876158[0m (thread: 1)[[ 2018-01-28 16:25:47 -- [92m   Info[0m ] handshake has been accepted
+[ 2018-01-28 16:25:47 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:25:47 -- [92m   Info[0m ] set latest hash: [92m5396e18efa80a8e891c417fff862d7cad171465e65bc4b4e5e1c1c3ab0aeb88f[0m[ 2018-01-28 16:25:48 -- [92m   Info[0m ] 29 works, 35 [Work/s] (thread: 1)
+[ 2018-01-28 16:25:49 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:25:49 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:25:49 -- [92m   Info[0m ] set latest_hash: [92m119f4ded5d5266cd88e56673c8919fd69f4b3719a2a61256baf88d997150a2e5[0m
+[ 2018-01-28 16:25:49 -- [92m   Info[0m ] found new nonce(1): [96m5666388106602312436[0m (thread: 1)
+[ 2018-01-28 16:25:49 -- [92m   Info[0m ] starting nonce from [96m4496011769213168088[0m (thread: 1)
+[ 2018-01-28 16:25:50 -- [92m   Info[0m ] 12 works, 34 [Work/s] (thread: 1)
+[ 2018-01-28 16:25:51 -- [92m   Info[0m ] found new nonce(1): [96m4496011769213168149[0m (thread: 1)
+[ 2018-01-28 16:25:51 -- [92m   Info[0m ] starting nonce from [96m16635290431735178832[0m (thread: 1)
+[ 2018-01-28 16:25:51 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:25:51 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:25:51 -- [92m   Info[0m ] set latest_hash: [92m3af7493b1527884a003e945b0f001901d7cb20fb1b31d4a1ef2660153aba749e[0m
+[ 2018-01-28 16:25:51 -- [92m   Info[0m ] found new nonce(1): [96m16635290431735178839[0m (thread: 1)
+[ 2018-01-28 16:25:51 -- [92m   Info[0m ] starting nonce from [96m8692316098933147170[0m (thread: 1)
+[ 2018-01-28 16:25:51 -- [92m   Info[0m ] found new nonce(1): [96m8692316098933147174[0m (thread: 1)
+[ 2018-01-28 16:25:51 -- [92m   Info[0m ] starting nonce from [96m13121398258370082804[0m (thread: 1)
+[ 2018-01-28 16:25:51 -- [92m   Info[0m ] found new nonce(1): [96m13121398258370082804[0m (thread: 1)
+[ 2018-01-28 16:25:51 -- [92m   Info[0m ] starting nonce from [96m4434072220746091735[0m (thread: 1)
+[ 2018-01-28 16:25:51 -- [92m   Info[0m ] found new nonce[ 2018-01-28 16:25:51 -- [92m   Info[0m ] found new nonce(1): [96m10693374713658903371[0m (thread: 1)
+[ 2018-01-28 16:25:51 -- [92m   Info[0m ] starting nonce from [96m2784778864238496892[0m (thread: 1)
+[ 2018-01-28 16:25:52 -- [92m   Info[0m ] 8 works, 37 [Work/s] (thread: 1)
+[ 2018-01-28 16:25:53 -- [92m   Info[0m ] found new nonce(1): [96m2784778864238496935[0m (thread: 1)
+[ 2018-01-28 16:25:53 -- [92m   Info[0m ] starting nonce from [96m17066990958294600880[0m (thread: 1)
+[ 2018-01-28 16:25:53 -- [92m   Info[0m ] found new nonce(1): [96m17066990958294600881[0m (thread: 1)
+[ 2018-01-28 16:25:53 -- [92m   Info[0m ] starting nonce from [96m454916504208149755[0m (thread: 1)
+[ 2018-01-28 16:25:53 -- [92m   Info[0m ] found new nonce(1): [96m454916504208149756[0m (thread: 1)
+[ 2018-01-28 16:25:53 -- [92m   Info[0m ] starting nonce from [96m15207397002126208067[0m (thread: 1)
+[ 2018-01-28 16:25:53 -- [92m   Info[0m ] found new nonce(1): [96m15207397002126208068[0m (thread: 1)
+[ 2018-01-28 16:25:53 -- [92m   Info[0m ] starting nonce from [96m2729167565625059271[0m (thread: 1)
+[ 2018-01-28 16:25:53 -- [92m   Info[0m ] found new nonce(1): [96m2729167[ 2018-01-28 16:25:54 -- [92m   Info[0m ] found new nonce(1): [96m14576435447480552686[0m (thread: 1)
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] starting nonce from [96m9856498003121013869[0m (thread: 1)
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] found new nonce(1): [96m9856498003121013886[0m (thread: 1)
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] starting nonce from [96m13774322297962080858[0m (thread: 1)
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] set latest_hash: [92mb6c8c5ec9bc63c9d5ec7fc2ba21196492be1f6c4a1e11b9a5aff86119f816334[0m
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] found new nonce(1): [96m13774322297962080862[0m (thread: 1)
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] starting nonce from [96m10996495253255458350[0m (thread: 1)
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] found new nonce(1): [96m10996495253255458356[0m (thread: 1)
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] starting nonce from [96m5840119319837707864[0m (thread: 1)
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:25:54 -- [92m   Info[0m ] set latest_hash: [92mc07eee96baea44c76f0ebc8a5621e4bb81daa3165e53c420400be8bc47754b5d[0m
+[ 2018-01-28 16:25:55 -- [92m   Info[0m ] found new nonce(1): [96m5840119319837707874[0m (thread: 1)
+[ 2018-01-28 16:25:55 -- [92m   Info[0m ] starting nonce from [96m1554217637873878793[0m (thread: 1)
+[ 2018-01-28 16:25:55 -- [92m   Info[0m ] 7 works, 36 [Work/s] (thread: 1)
+[ 2018-01-28 16:25:55 -- [92m   Info[0m ] found new nonce(1): [96m1554217637873878815[0m (thread: 1)
+[ 2018-01-28 16:25:55 -- [92m   Info[0m ] starting nonce from [96m13465869872056238323[0m (thread: 1)
+[ 2018-01-28 16:25:56 -- [92m   Info[0m ] found new nonce(1): [96m13465869872056238368[0m (thread: 1)
+[ 2018-01-28 16:25:56 -- [92m   Info[0m ] starting nonce from [96m6950631304034227058[0m (thread: 1)
+[ 2018-01-28 16:25:57 -- [92m   Info[0m ] found new nonce(1): [96m6950631304034227060[0m (thread: 1)
+[ 2018-01-28 16:25:57 -- [92m   Info[0m ] starting nonce from [96m10787913569173520916[0m (thread: 1)
+[ 2018-01-28 16:25:57 -- [92m   Info[0m ] found new nonce(1): [96m10787913569173520927[0m (thread: 1)
+[ 2018-01-28 16:25:57 -- [92m   Info[0m ] starting nonce from [96m6305413418767176153[0m (thread: 1)
+[ 2018-01-28 16:25:57 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:25:57 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:25:57 -- [92m   Info[0m ] set latest_hash: [92m2c77cb362516f08b5789a5bef7a6c85854ddf49a6aaeea55b8486ec9380ca7b9[0m
+[ 2018-01-28 16:25:57 -- [92m   Info[0m ] found new nonce(1): [96m6305413418767176156[0m (thread: 1)
+[ 2018-01-28 16:25:57 -- [92m   Info[0m ] starting nonce from [96m4702096378471814526[0m (thread: 1)
+[ 2018-01-28 16:25:57 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:25:57 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:25:57 -- [92m   Info[0m ] set latest_hash: [92m2c77cb362516f08b5789a5bef7a6c85854ddf49a6aaeea55b8486ec9380ca7b9[0m
+[ 2018-01-28 16:25:59 -- [92m   Info[0m ] 74 works, 37 [Work/s] (thread: 1)
+[ 2018-01-28 16:25:59 -- [92m   Info[0m ] found new nonce(1): [96m4702096378471814603[0m (thread: 1)
+[ 2018-01-28 16:25:59 -- [92m   Info[0m ] starting nonce from [96m16321728264244078282[0m (thread: 1)
+[ 2018-01-28 16:25:59 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:25:59 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:25:59 -- [92m   Info[0m ] set latest_hash: [92m18f0a92be9543c1628fa6abe55a0f5327c84e913d8791e68f76d6843f9651505[0m
+[ 2018-01-28 16:26:00 -- [92m   Info[0m ] 18 works, 37 [Work/s] (thread: 1)
+[ 2018-01-28 16:26:00 -- [92m   Info[0m ] found new nonce(1): [96m16321728264244078312[0m (thread: 1)
+[ 2018-01-28 16:26:00 -- [92m   Info[0m ] starting nonce from [96m9981799031330712650[0m (thread: 1)
+[ 2018-01-28 16:26:00 -- [92m   Info[0m ] found new nonce(1): [96m9981799031330712665[0m (thread: 1)
+[ 2018-01-28 16:26:00 -- [92m   Info[0m ] starting nonce from [96m8199603867362771528[0m (thread: 1)
+[ 2018-01-28 16:26:00 -- [92m   Info[0m ] found new nonce(1): [96m8199603867362771532[0m (thread: 1)
+[ 2018-01-28 16:26:00 -- [92m   Info[0m ] starting nonce from [96m6410287707245384251[0m (thread: 1)
+[ 2018-01-28 16:26:01 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:01 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:01 -- [92m   Info[0m ] set latest_hash: [92m5f8aa2a332207ce54302fa0a3d293f69f776f40e9f882d0852d94c163f1236f5[0m
+[ 2018-01-28 16:26:01 -- [92m   Info[0m ] found new nonce(1): [96m6410287707245384264[0m (thread: 1)
+[ 2018-01-28 16:26:01 -- [92m   Info[0m ] starting nonce from [96m12482519147968101947[0m (thread: 1)
+[ 2018-01-28 16:26:01 -- [92m   Info[0m ] found new nonce(1): [96m12482519147968101948[0m (thread: 1)
+[ 2018-01-28 16:26:01 -- [92m   Info[0m ] starting nonce from [96m17543572309151777647[0m (thread: 1)
+[ 2018-01-28 16:26:02 -- [92m   Info[0m ] found new nonce(1): [96m17543572309151777677[0m (thread: 1)
+[ 2018-01-28 16:26:02 -- [92m   Info[0m ] starting nonce from [96m8321944963477462293[0m (thread: 1)
+[ 2018-01-28 16:26:02 -- [92m   Info[0m ] 7 works, 37 [Work/s] (thread: 1)
+[ 2018-01-28 16:26:02 -- [92m   Info[0m ] found new nonce(1): [96m8321944963477462305[0m (thread: 1)
+[ 2018-01-28 16:26:02 -- [92m   Info[0m ] starting nonce from [96m5160282613689537253[0m (thread: 1)
+[ 2018-01-28 16:26:03 -- [92m   Info[0m ] found new nonce(1): [96m5160282613689537272[0m (thread: 1)
+[ 2018-01-28 16:26:03 -- [92m   Info[0m ] starting nonce from [96m13282854070869220942[0m (thread: 1)
+[ 2018-01-28 16:26:03 -- [92m   Info[0m ] found new nonce(1): [96m13282854070869220943[0m (thread: 1)
+[ 2018-01-28 16:26:03 -- [92m   Info[0m ] starting nonce from [96m11978120702715876527[0m (thread: 1)
+[ 2018-01-28 16:26:03 -- [92m   Info[0m ] found new nonce(1): [96m11978120702715876530[0m (thread: 1)
+[ 2018-01-28 16:26:03 -- [92m   Info[0m ] starting nonce from [96m15019781463829688777[0m (thread: 1)
+[ 2018-01-28 16:26:03 -- [92m   Info[0m ] found new nonce(1): [96m15019781463829688793[0m (thread: 1)
+[ 2018-01-28 16:26:03 -- [92m   Info[0m ] starting nonce from [96m6990117209322714981[0m (thread: 1)
+[ 2018-01-28 16:26:03 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:03 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:03 -- [92m   Info[0m ] set latest_hash: [92m0fcc4f84f4f0fbbecbd81bf4ffbdacaa5ecdd6243cedbd942321a61ce8dd5da0[0m
+[ 2018-01-28 16:26:04 -- [92m   Info[0m ] 19 works, 36 [Work/s] (thread: 1)
+[ 2018-01-28 16:26:04 -- [92m   Info[0m ] found new nonce(1): [96m6990117209322715003[0m (thread: 1)
+[ 2018-01-28 16:26:04 -- [92m   Info[0m ] starting nonce from [96m1367363091930430724[0m (thread: 1)
+[ 2018-01-28 16:26:04 -- [92m   Info[0m ] found new nonce(1): [96m1367363091930430727[0m (thread: 1)
+[ 2018-01-28 16:26:04 -- [92m   Info[0m ] starting nonce from [96m306447044113429241[0m (thread: 1)
+[ 2018-01-28 16:26:04 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:04 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:04 -- [92m   Info[0m ] set latest_hash: [92m4dde71de236d243946b33f0c59d43e9e29610074c0bcade5f88f058861b09dd4[0m
+[ 2018-01-28 16:26:04 -- [92m   Info[0m ] found new nonce(1): [96m306447044113429261[0m (thread: 1)
+[ 2018-01-28 16:26:04 -- [92m   Info[0m ] starting nonce from [96m1606423403129754724[0m (thread: 1)
+[ 2018-01-28 16:26:05 -- [92m   Info[0m ] found new nonce(1): [96m1606423403129754729[0m (thread: 1)
+[ 2018-01-28 16:26:05 -- [92m   Info[0m ] starting nonce from [96m11159957665821557742[0m (thread: 1)
+[ 2018-01-28 16:26:05 -- [92m   Info[0m ] found new nonce(1): [96m11159957665821557755[0m (thread: 1)
+[ 2018-01-28 16:26:05 -- [92m   Info[0m ] starting nonce from [96m3805668649394058834[0m (thread: 1)
+[ 2018-01-28 16:26:05 -- [92m   Info[0m ] found new nonce(1): [96m3805668649394058834[0m (thread: 1)
+[ 2018-01-28 16:26:05 -- [92m   Info[0m ] starting nonce from [96m13230252982285673571[0m (thread: 1)
+[ 2018-01-28 16:26:06 -- [92m   Info[0m ] 29 works, 38 [Work/s] (thread: 1)
+[ 2018-01-28 16:26:06 -- [92m   Info[0m ] found new nonce(1): [96m13230252982285673601[0m (thread: 1)
+[ 2018-01-28 16:26:06 -- [92m   Info[0m ] starting nonce from [96m8433509949168118299[0m (thread: 1)
+[ 2018-01-28 16:26:06 -- [92m   Info[0m ] 1 works, 37 [Work/s] (thread: 1)
+[ 2018-01-28 16:26:06 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:06 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:06 -- [92m   Info[0m ] set latest_hash: [92m3bbe12f961e80196631813f8bc881b7453100a4f8abc5cf8cd7d2ab1c80c646c[0m
+[ 2018-01-28 16:26:06 -- [92m   Info[0m ] found new nonce(1): [96m8433509949168118310[0m (thread: 1)
+[ 2018-01-28 16:26:06 -- [92m   Info[0m ] starting nonce from [96m18378506974321656516[0m (thread: 1)
+[ 2018-01-28 16:26:07 -- [92m   Info[0m ] found new nonce(1): [96m18378506974321656540[0m (thread: 1)
+[ 2018-01-28 16:26:07 -- [92m   Info[0m ] starting nonce from [96m6879909808677837679[0m (thread: 1)
+[ 2018-01-28 16:26:07 -- [92m   Info[0m ] found new nonce(1): [96m6879909808677837680[0m (thread: 1)
+[ 2018-01-28 16:26:07 -- [92m   Info[0m ] starting nonce from [96m9169854672475434484[0m (thread: 1)
+[ 2018-01-28 16:26:07 -- [92m   Info[0m ] 16 works, 38 [Work/s] (thread: 1)
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] set latest_hash: [92m16c8dd35e3934778602e9412c6aa85d8416656ce8c93ac2fe2077e4114145b7d[0m
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] found new nonce(1): [96m9169854672475434527[0m (thread: 1)
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] starting nonce from [96m6031662890168113115[0m (thread: 1)
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] set latest_hash: [92m307dd4db334f1183faf2e534e44ad28436722958420684566c4080993279e3b8[0m
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:08 -- [92m   Info[0m ] set latest_hash: [92m307dd4db334f1183faf2e534e44ad28436722958420684566c4080993279e3b8[0m
+[ 2018-01-28 16:26:09 -- [92m   Info[0m ] found new nonce(1): [96m6031662890168113136[0m (thread: 1)
+[ 2018-01-28 16:26:09 -- [92m   Info[0m ] starting nonce from [96m2185169724943519581[0m (thread: 1)
+[ 2018-01-28 16:26:09 -- [92m   Info[0m ] found new nonce(1): [96m2185169724943519585[0m (thread: 1)
+[ 2018-01-28 16:26:09 -- [92m   Info[0m ] starting nonce from [96m3955917384730141013[0m (thread: 1)
+[ 2018-01-28 16:26:09 -- [92m   Info[0m ] found new nonce(1): [96m3955917384730141014[0m (thread: 1)
+[ 2018-01-28 16:26:09 -- [92m   Info[0m ] starting nonce from [96m7312949187123852047[0m (thread: 1)
+[ 2018-01-28 16:26:10 -- [92m   Info[0m ] found new nonce(1): [96m7312949187123852069[0m (thread: 1)
+[ 2018-01-28 16:26:10 -- [92m   Info[0m ] starting nonce from [96m16075074448738075227[0m (thread: 1)
+[ 2018-01-28 16:26:10 -- [92m   Info[0m ] found new nonce(1): [96m16075074448738075230[0m (thread: 1)
+[ 2018-01-28 16:26:10 -- [92m   Info[0m ] starting nonce from [96m1618140285519121109[0m (thread: 1)
+[ 2018-01-28 16:26:10 -- [92m   Info[0m ] found new nonce(1): [96m1618140285519121126[0m (thread: 1)
+[ 2018-01-28 16:26:10 -- [92m   Info[0m ] starting nonce from [96m2429935329494342371[0m (thread: 1)
+[ 2018-01-28 16:26:10 -- [92m   Info[0m ] found new nonce(1): [96m2429935329494342374[0m (thread: 1)
+[ 2018-01-28 16:26:10 -- [92m   Info[0m ] starting nonce from [96m15927768565336330593[0m (thread: 1)
+[ 2018-01-28 16:26:10 -- [92m   Info[0m ] 7 works, 34 [Work/s] (thread: 1)
+[ 2018-01-28 16:26:11 -- [92m   Info[0m ] found new nonce(1): [96m15927768565336330617[0m (thread: 1)
+[ 2018-01-28 16:26:11 -- [92m   Info[0m ] starting nonce from [96m13942511007336836548[0m (thread: 1)
+[ 2018-01-28 16:26:11 -- [92m   Info[0m ] found new nonce(1): [96m13942511007336836549[0m (thread: 1)
+[ 2018-01-28 16:26:11 -- [92m   Info[0m ] starting nonce from [96m5682873291744163061[0m (thread: 1)
+[ 2018-01-28 16:26:11 -- [92m   Info[0m ] found new nonce(1): [96m5682873291744163069[0m (thread: 1)
+[ 2018-01-28 16:26:11 -- [92m   Info[0m ] starting nonce from [96m10284651182415452369[0m (thread: 1)
+[ 2018-01-28 16:26:11 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:11 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:11 -- [92m   Info[0m ] set latest_hash: [92m0d7656e9a854d330bd2cd2d499929d87549363ffac14dc979ad4760e482971ee[0m
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] found new nonce(1): [96m10284651182415452387[0m (thread: 1)
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] starting nonce from [96m6138672656381293475[0m (thread: 1)
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] found new nonce(1): [96m6138672656381293486[0m (thread: 1)
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] starting nonce from [96m14565501324537723400[0m (thread: 1)
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] found new nonce(1): [96m14565501324537723404[0m (thread: 1)
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] starting nonce from [96m2832177975477503855[0m (thread: 1)
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] set latest_hash: [92mb6fb597e96ac49750ba4afa491bd71b3f90a37ac166e24c4303b6f367a2f4701[0m
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] found new nonce(1): [96m2832177975477503860[0m (thread: 1)
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] starting nonce from [96m6042244166682293583[0m (thread: 1)
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] found new nonce(1): [96m6042244166682293585[0m (thread: 1)
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] starting nonce from [96m13797352231263637755[0m (thread: 1)
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] found new nonce(1): [96m13797352231263637755[0m (thread: 1)
+[ 2018-01-28 16:26:12 -- [92m   Info[0m ] starting nonce from [96m7158588118535397642[0m (thread: 1)
+[ 2018-01-28 16:26:13 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:13 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:13 -- [92m   Info[0m ] set latest_hash: [92mb88cdf40a3f6483cf66216bad1f67f82dcc58c87aa771332939584caf296d9d1[0m
+[ 2018-01-28 16:26:14 -- [92m   Info[0m ] found new nonce(1): [96m7158588118535397692[0m (thread: 1)
+[ 2018-01-28 16:26:14 -- [92m   Info[0m ] starting nonce from [96m1140133391172496160[0m (thread: 1)
+[ 2018-01-28 16:26:14 -- [92m   Info[0m ] found new nonce(1): [96m1140133391172496169[0m (thread: 1)
+[ 2018-01-28 16:26:14 -- [92m   Info[0m ] starting nonce from [96m9243645484227095811[0m (thread: 1)
+[ 2018-01-28 16:26:15 -- [92m   Info[0m ] found new nonce(1): [96m9243645484227095826[0m (thread: 1)
+[ 2018-01-28 16:26:15 -- [92m   Info[0m ] starting nonce from [96m14192288402655011704[0m (thread: 1)
+[ 2018-01-28 16:26:15 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:15 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:15 -- [92m   Info[0m ] set latest_hash: [92mad6393f8904cf80b269fc82c5cc8b4635a4ed32b7e29c33ed460cf1277d725a9[0m
+[ 2018-01-28 16:26:16 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:16 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:16 -- [92m   Info[0m ] set latest_hash: [92m9b997222fe00db010cdd2f88ca67b5e7c11df866a42e3bc7ccfcbfed665aefa9[0m
+[ 2018-01-28 16:26:16 -- [92m   Info[0m ] found new nonce(1): [96m14192288402655011765[0m (thread: 1)
+[ 2018-01-28 16:26:16 -- [92m   Info[0m ] starting nonce from [96m279217511337433488[0m (thread: 1)
+[ 2018-01-28 16:26:17 -- [92m   Info[0m ] 12 works, 31 [Work/s] (thread: 1)
+[ 2018-01-28 16:26:17 -- [92m   Info[0m ] found new nonce(1): [96m279217511337433505[0m (thread: 1)
+[ 2018-01-28 16:26:17 -- [92m   Info[0m ] starting nonce from [96m15555708866022663078[0m (thread: 1)
+[ 2018-01-28 16:26:17 -- [92m   Info[0m ] found new nonce(1): [96m15555708866022663086[0m (thread: 1)
+[ 2018-01-28 16:26:17 -- [92m   Info[0m ] starting nonce from [96m14076657016221320854[0m (thread: 1)
+[ 2018-01-28 16:26:18 -- [92m   Info[0m ] found new nonce(1): [96m14076657016221320870[0m (thread: 1)
+[ 2018-01-28 16:26:18 -- [92m   Info[0m ] starting nonce from [96m11983432762055423944[0m (thread: 1)
+[ 2018-01-28 16:26:19 -- [92m   Info[0m ] found new nonce(1): [96m11983432762055423973[0m (thread: 1)
+[ 2018-01-28 16:26:19 -- [92m   Info[0m ] starting nonce from [96m9864146739660440722[0m (thread: 1)
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] found new nonce(1): [96m9864146739660440763[0m (thread: 1)
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] starting nonce from [96m4336470486285576636[0m (thread: 1)
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] set latest_hash: [92mb0e8f7aa9723a4b3aadfaa3684a4070743cc776adece7729dcac7086aecf7607[0m
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] set latest_hash: [92m4fc3a3656b9fc8b3a2da44125afb7153609b2424d4ec2cdc35ebc73d7ae86772[0m
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] found new nonce(1): [96m4336470486285576659[0m (thread: 1)
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] starting nonce from [96m1925657374938618433[0m (thread: 1)
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] found new nonce(1): [96m1925657374938618433[0m (thread: 1)
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] starting nonce from [96m4284432198486764099[0m (thread: 1)
+[ 2018-01-28 16:26:20 -- [92m   Info[0m ] 1 works, 37 [Work/s] (thread: 1)
+[ 2018-01-28 16:26:21 -- [92m   Info[0m ] found new nonce(1): [96m4284432198486764101[0m (thread: 1)
+[ 2018-01-28 16:26:21 -- [92m   Info[0m ] starting nonce from [96m13992283382567459540[0m (thread: 1)
+[ 2018-01-28 16:26:21 -- [92m   Info[0m ] found new nonce(1): [96m13992283382567459572[0m (thread: 1)
+[ 2018-01-28 16:26:21 -- [92m   Info[0m ] starting nonce from [96m18150398222716407804[0m (thread: 1)
+[ 2018-01-28 16:26:23 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:23 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:23 -- [92m   Info[0m ] set latest_hash: [92me6b67599cf2fd6f8c9bc236abf50402c7347d2e895cbddfffc053d02621f031a[0m
+[ 2018-01-28 16:26:24 -- [92m   Info[0m ] found new nonce(1): [96m18150398222716407874[0m (thread: 1)
+[ 2018-01-28 16:26:24 -- [92m   Info[0m ] starting nonce from [96m9131009596928934215[0m (thread: 1)
+[ 2018-01-28 16:26:24 -- [92m   Info[0m ] found new nonce(1): [96m9131009596928934240[0m (thread: 1)
+[ 2018-01-28 16:26:24 -- [92m   Info[0m ] starting nonce from [96m5833549121467792617[0m (thread: 1)
+[ 2018-01-28 16:26:26 -- [92m   Info[0m ] found new nonce(1): [96m5833549121467792665[0m (thread: 1)
+[ 2018-01-28 16:26:26 -- [92m   Info[0m ] starting nonce from [96m10632202813141558916[0m (thread: 1)
+[ 2018-01-28 16:26:26 -- [92m   Info[0m ] found new nonce(1): [96m10632202813141558929[0m (thread: 1)
+[ 2018-01-28 16:26:26 -- [92m   Info[0m ] starting nonce from [96m17319602849804239224[0m (thread: 1)
+[ 2018-01-28 16:26:26 -- [92m   Info[0m ] found new nonce(1): [96m17319602849804239224[0m (thread: 1)
+[ 2018-01-28 16:26:26 -- [92m   Info[0m ] starting nonce from [96m14047263234798093865[0m (thread: 1)
+[ 2018-01-28 16:26:26 -- [92m   Info[0m ] found new nonce(1): [96m14047263234798093867[0m (thread: 1)
+[ 2018-01-28 16:26:26 -- [92m   Info[0m ] starting nonce from [96m6488659182323106811[0m (thread: 1)
+[ 2018-01-28 16:26:27 -- [92m   Info[0m ] found new nonce(1): [96m6488659182323106845[0m (thread: 1)
+[ 2018-01-28 16:26:27 -- [92m   Info[0m ] starting nonce from [96m10315364224850817908[0m (thread: 1)
+[ 2018-01-28 16:26:27 -- [92m   Info[0m ] found new nonce(1): [96m10315364224850817912[0m (thread: 1)
+[ 2018-01-28 16:26:27 -- [92m   Info[0m ] starting nonce from [96m3995067495801184424[0m (thread: 1)
+[ 2018-01-28 16:26:27 -- [92m   Info[0m ] found new nonce(1): [96m3995067495801184426[0m (thread: 1)
+[ 2018-01-28 16:26:27 -- [92m   Info[0m ] starting nonce from [96m17563187487122114127[0m (thread: 1)
+[ 2018-01-28 16:26:27 -- [92m   Info[0m ] found new nonce(1): [96m17563187487122114127[0m (thread: 1)
+[ 2018-01-28 16:26:27 -- [92m   Info[0m ] starting nonce from [96m16445858457565521394[0m (thread: 1)
+[ 2018-01-28 16:26:27 -- [92m   Info[0m ] found new nonce(1): [96m16445858457565521394[0m (thread: 1)
+[ 2018-01-28 16:26:27 -- [92m   Info[0m ] starting nonce from [96m11801817090836823683[0m (thread: 1)
+[ 2018-01-28 16:26:27 -- [92m   Info[0m ] found new nonce(1): [96m11801817090836823688[0m (thread: 1)
+[ 2018-01-28 16:26:27 -- [92m   Info[0m ] starting nonce from [96m12298735877695368577[0m (thread: 1)
+[ 2018-01-28 16:26:28 -- [92m   Info[0m ] found new nonce(1): [96m12298735877695368589[0m (thread: 1)
+[ 2018-01-28 16:26:28 -- [92m   Info[0m ] starting nonce from [96m10873964257452397365[0m (thread: 1)
+[ 2018-01-28 16:26:28 -- [92m   Info[0m ] found new nonce(1): [96m10873964257452397386[0m (thread: 1)
+[ 2018-01-28 16:26:28 -- [92m   Info[0m ] starting nonce from [96m2447014605840503548[0m (thread: 1)
+[ 2018-01-28 16:26:29 -- [92m   Info[0m ] found new nonce(1): [96m2447014605840503558[0m (thread: 1)
+[ 2018-01-28 16:26:29 -- [92m   Info[0m ] starting nonce from [96m6355199762136869926[0m (thread: 1)
+[ 2018-01-28 16:26:29 -- [92m   Info[0m ] found new nonce(1): [96m6355199762136869937[0m (thread: 1)
+[ 2018-01-28 16:26:29 -- [92m   Info[0m ] starting nonce from [96m11956757929962151485[0m (thread: 1)
+[ 2018-01-28 16:26:29 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:29 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:29 -- [92m   Info[0m ] set latest_hash: [92m38bf854204a09ad3685ade85c9c0f08370f8235d6f8aa559a5a757d7413ac5a7[0m
+[ 2018-01-28 16:26:30 -- [92m   Info[0m ] 15 works, 34 [Work/s] (thread: 1)
+[ 2018-01-28 16:26:30 -- [92m   Info[0m ] found new nonce(1): [96m11956757929962151501[0m (thread: 1)
+[ 2018-01-28 16:26:30 -- [92m   Info[0m ] starting nonce from [96m14159312015663825243[0m (thread: 1)
+[ 2018-01-28 16:26:30 -- [92m   Info[0m ] found new nonce(1): [96m14159312015663825251[0m (thread: 1)
+[ 2018-01-28 16:26:30 -- [92m   Info[0m ] starting nonce from [96m4509130288172242402[0m (thread: 1)
+[ 2018-01-28 16:26:30 -- [92m   Info[0m ] found new nonce(1): [96m4509130288172242411[0m (thread: 1)
+[ 2018-01-28 16:26:30 -- [92m   Info[0m ] starting nonce from [96m275768317613902373[0m (thread: 1)
+[ 2018-01-28 16:26:31 -- [92m   Info[0m ] 27 works, 36 [Work/s] (thread: 1)
+[ 2018-01-28 16:26:32 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:32 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:32 -- [92m   Info[0m ] set latest_hash: [92m827567ece05583bdff59b7f96c7fb1a6b2496bd8cb07d4db7824aeb0c368ee50[0m
+[ 2018-01-28 16:26:32 -- [92m   Info[0m ] found new nonce(1): [96m275768317613902423[0m (thread: 1)
+[ 2018-01-28 16:26:32 -- [92m   Info[0m ] starting nonce from [96m3720783166617379376[0m (thread: 1)
+[ 2018-01-28 16:26:32 -- [92m   Info[0m ] 24 works, 34 [Work/s] (thread: 1)
+[ 2018-01-28 16:26:33 -- [92m   Info[0m ] found new nonce(1): [96m3720783166617379410[0m (thread: 1)
+[ 2018-01-28 16:26:33 -- [92m   Info[0m ] starting nonce from [96m3154303714945156956[0m (thread: 1)
+[ 2018-01-28 16:26:33 -- [92m   Info[0m ] found new nonce(1): [96m3154303714945156963[0m (thread: 1)
+[ 2018-01-28 16:26:33 -- [92m   Info[0m ] starting nonce from [96m7147583993782775164[0m (thread: 1)
+[ 2018-01-28 16:26:33 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:33 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:33 -- [92m   Info[0m ] set latest_hash: [92m068337fa3939f13e57fe9b5e8f1b411ab33a90d2ad8507468d71dc498cf6b145[0m
+[ 2018-01-28 16:26:33 -- [92m   Info[0m ] found new nonce(1): [96m7147583993782775176[0m (thread: 1)
+[ 2018-01-28 16:26:33 -- [92m   Info[0m ] starting nonce from [96m3798273438692611345[0m (thread: 1)
+[ 2018-01-28 16:26:34 -- [92m   Info[0m ] found new nonce(1): [96m3798273438692611374[0m (thread: 1)
+[ 2018-01-28 16:26:34 -- [92m   Info[0m ] starting nonce from [96m650650339203628645[0m (thread: 1)
+[ 2018-01-28 16:26:34 -- [92m   Info[0m ] found new nonce(1): [96m650650339203628653[0m (thread: 1)
+[ 2018-01-28 16:26:34 -- [92m   Info[0m ] starting nonce from [96m2115221665276626705[0m (thread: 1)
+[ 2018-01-28 16:26:35 -- [92m   Info[0m ] found new nonce(1): [96m2115221665276626718[0m (thread: 1)
+[ 2018-01-28 16:26:35 -- [92m   Info[0m ] starting nonce from [96m5493026853090624766[0m (thread: 1)
+[ 2018-01-28 16:26:35 -- [92m   Info[0m ] found new nonce(1): [96m5493026853090624775[0m (thread: 1)
+[ 2018-01-28 16:26:35 -- [92m   Info[0m ] starting nonce from [96m7080667676669143353[0m (thread: 1)
+[ 2018-01-28 16:26:36 -- [92m   Info[0m ] found new nonce(1): [96m7080667676669143383[0m (thread: 1)
+[ 2018-01-28 16:26:36 -- [92m   Info[0m ] starting nonce from [96m9818195814355134835[0m (thread: 1)
+[ 2018-01-28 16:26:36 -- [92m   Info[0m ] found new nonce(1): [96m9818195814355134855[0m (thread: 1)
+[ 2018-01-28 16:26:36 -- [92m   Info[0m ] starting nonce from [96m15764113949303607618[0m (thread: 1)
+[ 2018-01-28 16:26:37 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:37 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:37 -- [92m   Info[0m ] set latest_hash: [92me4be020a70b7a8701dd20afd2bb4718935f6a2edb3f4fc67b85396c182699b57[0m
+[ 2018-01-28 16:26:38 -- [92m   Info[0m ] found new nonce(1): [96m15764113949303607654[0m (thread: 1)
+[ 2018-01-28 16:26:38 -- [92m   Info[0m ] starting nonce from [96m17621161947460035525[0m (thread: 1)
+[ 2018-01-28 16:26:38 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:38 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:38 -- [92m   Info[0m ] set latest_hash: [92mff64f68ad0a77ec87cc69c84bc0d993c377584d44218bd3f324e0c296242a42e[0m
+[ 2018-01-28 16:26:38 -- [92m   Info[0m ] found new nonce(1): [96m17621161947460035531[0m (thread: 1)
+[ 2018-01-28 16:26:38 -- [92m   Info[0m ] starting nonce from [96m1650698145352827110[0m (thread: 1)
+[ 2018-01-28 16:26:38 -- [92m   Info[0m ] found new nonce(1): [96m1650698145352827121[0m (thread: 1)
+[ 2018-01-28 16:26:38 -- [92m   Info[0m ] starting nonce from [96m8333766023184976080[0m (thread: 1)
+[ 2018-01-28 16:26:39 -- [92m   Info[0m ] found new nonce(1): [96m8333766023184976094[0m (thread: 1)
+[ 2018-01-28 16:26:39 -- [92m   Info[0m ] starting nonce from [96m9847872700542011216[0m (thread: 1)
+[ 2018-01-28 16:26:39 -- [92m   Info[0m ] found new nonce(1): [96m9847872700542011236[0m (thread: 1)
+[ 2018-01-28 16:26:39 -- [92m   Info[0m ] starting nonce from [96m12755252527408471215[0m (thread: 1)
+[ 2018-01-28 16:26:39 -- [92m   Info[0m ] found new nonce(1): [96m12755252527408471219[0m (thread: 1)
+[ 2018-01-28 16:26:39 -- [92m   Info[0m ] starting nonce from [96m13605416655672751408[0m (thread: 1)
+[ 2018-01-28 16:26:39 -- [92m   Info[0m ] found new nonce(1): [96m13605416655672751409[0m (thread: 1)
+[ 2018-01-28 16:26:39 -- [92m   Info[0m ] starting nonce from [96m3155939630934479347[0m (thread: 1)
+[ 2018-01-28 16:26:40 -- [92m   Info[0m ] found new nonce(1): [96m3155939630934479358[0m (thread: 1)
+[ 2018-01-28 16:26:40 -- [92m   Info[0m ] starting nonce from [96m8537423151876907185[0m (thread: 1)
+[ 2018-01-28 16:26:40 -- [92m   Info[0m ] found new nonce(1): [96m8537423151876907189[0m (thread: 1)
+[ 2018-01-28 16:26:40 -- [92m   Info[0m ] starting nonce from [96m14464430015584766579[0m (thread: 1)
+[ 2018-01-28 16:26:40 -- [92m   Info[0m ] 21 works, 37 [Work/s] (thread: 1)
+[ 2018-01-28 16:26:41 -- [92m   Info[0m ] found new nonce(1): [96m14464430015584766606[0m (thread: 1)
+[ 2018-01-28 16:26:41 -- [92m   Info[0m ] starting nonce from [96m16098665171154280894[0m (thread: 1)
+[ 2018-01-28 16:26:41 -- [92m   Info[0m ] 6 works, 36 [Work/s] (thread: 1)
+[ 2018-01-28 16:26:41 -- [92m   Info[0m ] found new nonce(1): [96m16098665171154280906[0m (thread: 1)
+[ 2018-01-28 16:26:41 -- [92m   Info[0m ] starting nonce from [96m1622481150797833320[0m (thread: 1)
+[ 2018-01-28 16:26:41 -- [92m   Info[0m ] found new nonce(1): [96m1622481150797833332[0m (thread: 1)
+[ 2018-01-28 16:26:41 -- [92m   Info[0m ] starting nonce from [96m18359579275762316202[0m (thread: 1)
+[ 2018-01-28 16:26:42 -- [92m   Info[0m ] found new nonce(1): [96m18359579275762316216[0m (thread: 1)
+[ 2018-01-28 16:26:42 -- [92m   Info[0m ] starting nonce from [96m52703325594236849[0m (thread: 1)
+[ 2018-01-28 16:26:42 -- [92m   Info[0m ] found new nonce(1): [96m52703325594236872[0m (thread: 1)
+[ 2018-01-28 16:26:42 -- [92m   Info[0m ] starting nonce from [96m8745898101041362839[0m (thread: 1)
+[ 2018-01-28 16:26:42 -- [92m   Info[0m ] found new nonce(1): [96m8745898101041362842[0m (thread: 1)
+[ 2018-01-28 16:26:42 -- [92m   Info[0m ] starting nonce from [96m7856709807632503235[0m (thread: 1)
+[ 2018-01-28 16:26:43 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:43 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:43 -- [92m   Info[0m ] set latest_hash: [92m5747ecc184ce59c98ba6840b407b930c15d26e0df40a56eceb29811038d64134[0m
+[ 2018-01-28 16:26:43 -- [92m   Info[0m ] found new nonce(1): [96m7856709807632503246[0m (thread: 1)
+[ 2018-01-28 16:26:43 -- [92m   Info[0m ] starting nonce from [96m15808340717586104917[0m (thread: 1)
+[ 2018-01-28 16:26:43 -- [92m   Info[0m ] found new nonce(1): [96m15808340717586104937[0m (thread: 1)
+[ 2018-01-28 16:26:43 -- [92m   Info[0m ] starting nonce from [96m1732805586098064826[0m (thread: 1)
+[ 2018-01-28 16:26:44 -- [92m   Info[0m ] found new nonce(1): [96m1732805586098064830[0m (thread: 1)
+[ 2018-01-28 16:26:44 -- [92m   Info[0m ] starting nonce from [96m11409144497399615750[0m (thread: 1)
+[ 2018-01-28 16:26:44 -- [92m   Info[0m ] found new nonce(1): [96m11409144497399615773[0m (thread: 1)
+[ 2018-01-28 16:26:44 -- [92m   Info[0m ] starting nonce from [96m13696053088144942558[0m (thread: 1)
+[ 2018-01-28 16:26:44 -- [92m   Info[0m ] found new nonce(1): [96m13696053088144942558[0m (thread: 1)
+[ 2018-01-28 16:26:44 -- [92m   Info[0m ] starting nonce from [96m10676230610503478754[0m (thread: 1)
+[ 2018-01-28 16:26:45 -- [92m   Info[0m ] found new nonce(1): [96m10676230610503478764[0m (thread: 1)
+[ 2018-01-28 16:26:45 -- [92m   Info[0m ] starting nonce from [96m11150281638178047395[0m (thread: 1)
+[ 2018-01-28 16:26:45 -- [92m   Info[0m ] found new nonce(1): [96m11150281638178047397[0m (thread: 1)
+[ 2018-01-28 16:26:45 -- [92m   Info[0m ] starting nonce from [96m6528104855794583422[0m (thread: 1)
+[ 2018-01-28 16:26:45 -- [92m   Info[0m ] found new nonce(1): [96m6528104855794583436[0m (thread: 1)
+[ 2018-01-28 16:26:45 -- [92m   Info[0m ] starting nonce from [96m4181530767515727485[0m (thread: 1)
+[ 2018-01-28 16:26:45 -- [92m   Info[0m ] found new nonce(1): [96m4181530767515727490[0m (thread: 1)
+[ 2018-01-28 16:26:45 -- [92m   Info[0m ] starting nonce from [96m12415270810588999150[0m (thread: 1)
+[ 2018-01-28 16:26:46 -- [92m   Info[0m ] found new nonce(1): [96m12415270810588999162[0m (thread: 1)
+[ 2018-01-28 16:26:46 -- [92m   Info[0m ] starting nonce from [96m3588219389723592328[0m (thread: 1)
+[ 2018-01-28 16:26:46 -- [92m   Info[0m ] found new nonce(1): [96m3588219389723592335[0m (thread: 1)
+[ 2018-01-28 16:26:46 -- [92m   Info[0m ] starting nonce from [96m17182198221055995991[0m (thread: 1)
+[ 2018-01-28 16:26:46 -- [92m   Info[0m ] found new nonce(1): [96m17182198221055995992[0m (thread: 1)
+[ 2018-01-28 16:26:46 -- [92m   Info[0m ] starting nonce from [96m9815784656633581488[0m (thread: 1)
+[ 2018-01-28 16:26:46 -- [92m   Info[0m ] 12 works, 32 [Work/s] (thread: 1)
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] set latest_hash: [92m65807f4514010ce4fd9ca8ac99b88491de5b4954e8262738981bb0ce035496d9[0m
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] found new nonce(1): [96m9815784656633581521[0m (thread: 1)
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] starting nonce from [96m7170005189919676196[0m (thread: 1)
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] 4 works, 37 [Work/s] (thread: 1)
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] found new nonce(1): [96m7170005189919676203[0m (thread: 1)
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] starting nonce from [96m12809052003246718416[0m (thread: 1)
+ing nonce from [96m8878533097666116954[0m (thread: 1)
+[ 2018-01-28 16:26:40 -- [92m   Info[0m ] found new nonce(1): [96m8878533097666116959[0m (thread: 1)
+[ 2018-01-28 16:26:40 -- [92m   Info[0m ] starting nonce from [96m15552258977040662489[0m (thread: 1)
+[ 2018-01-28 16:26:40 -- [92m   Info[0m ] 11 works, 37 [Work/s] (thread: 1)
+[ 2018-01-28 16:26:40 -- [92m   Info[0m ] found new nonce(1): [96m15552258977040662506[0m (thread: 1)
+[ 2018-01-28 16:26:40 -- [92m   Info[0m ] starting nonce from [96m8350535808806959992[0m (thread: 1)
+[ 2018-01-28 16:26:40 -- [92m   Info[0m ] found new nonce(1): [96m8350535808806959995[0m (thread: 1)
+[ 2018-01-28 16:26:40 -- [92m   Info[0m ] starting nonce from [96m17736920676362797937[0m (thread: 1)
+[ 2018-01-28 16:26:41 -- [92m   Info[0m ] found new nonce(1): [96m17736920676362797940[0m (thread: 1)
+[ 2018-01-28 16:26:41 -- [92m   Info[0m ] starting nonce from [96m7838346373740970149[0m (thread: 1)
+[ 2018-01-28 16:26:41 -- [92m   Info[0m ] found new nonce(1): [96m7838346373740970160[0m (thread: 1)
+[ 2018-01-28 16:26:41 -- [92m   Info[0m ] starting nonce from [96m16789996556210490722[0m (thread: 1)
+[ 2018-01-28 16:26:43 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:43 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:43 -- [92m   Info[0m ] set latest_hash: [92m5747ecc184ce59c98ba6840b407b930c15d26e0df40a56eceb29811038d64134[0m
+[ 2018-01-28 16:26:43 -- [92m   Info[0m ] 78 works, 35 [Work/s] (thread: 1)
+[ 2018-01-28 16:26:44 -- [92m   Info[0m ] found new nonce(1): [96m16789996556210490831[0m (thread: 1)
+[ 2018-01-28 16:26:44 -- [92m   Info[0m ] starting nonce from [96m3171218565774803563[0m (thread: 1)
+[ 2018-01-28 16:26:44 -- [92m   Info[0m ] found new nonce(1): [96m3171218565774803573[0m (thread: 1)
+[ 2018-01-28 16:26:44 -- [92m   Info[0m ] starting nonce from [96m12710470408863881687[0m (thread: 1)
+[ 2018-01-28 16:26:45 -- [92m   Info[0m ] 13 works, 37 [Work/s] (thread: 1)
+[ 2018-01-28 16:26:45 -- [92m   Info[0m ] found new nonce(1): [96m12710470408863881705[0m (thread: 1)
+[ 2018-01-28 16:26:45 -- [92m   Info[0m ] starting nonce from [96m1164333125272577172[0m (thread: 1)
+[ 2018-01-28 16:26:46 -- [92m   Info[0m ] 28 works, 36 [Work/s] (thread: 1)
+[ 2018-01-28 16:26:46 -- [92m   Info[0m ] found new nonce(1): [96m1164333125272577201[0m (thread: 1)
+[ 2018-01-28 16:26:46 -- [92m   Info[0m ] starting nonce from [96m12125859283348563837[0m (thread: 1)
+[ 2018-01-28 16:26:46 -- [92m   Info[0m ] found new nonce(1): [96m12125859283348563848[0m (thread: 1)
+[ 2018-01-28 16:26:46 -- [92m   Info[0m ] starting nonce from [96m4391365048946029265[0m (thread: 1)
+[ 2018-01-28 16:26:46 -- [92m   Info[0m ] found new nonce(1): [96m4391365048946029268[0m (thread: 1)
+[ 2018-01-28 16:26:46 -- [92m   Info[0m ] starting nonce from [96m7297594446495323617[0m (thread: 1)
+[ 2018-01-28 16:26:46 -- [92m   Info[0m ] found new nonce(1): [96m7297594446495323629[0m (thread: 1)
+[ 2018-01-28 16:26:46 -- [92m   Info[0m ] starting nonce from [96m3058603052973805840[0m (thread: 1)
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] latest block has been updated
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] set difficulty: [96m1[0m
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] set latest_hash: [92m65807f4514010ce4fd9ca8ac99b88491de5b4954e8262738981bb0ce035496d9[0m
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] found new nonce(1): [96m3058603052973805856[0m (thread: 1)
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] starting nonce from [96m15632799734847136943[0m (thread: 1)
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] found new nonce(1): [96m15632799734847136943[0m (thread: 1)
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] starting nonce from [96m7706417891319816240[0m (thread: 1)
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] found new nonce(1): [96m7706417891319816243[0m (thread: 1)
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] starting nonce from [96m2317334837199831441[0m (thread: 1)
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] found new nonce(1): [96m2317334837199831447[0m (thread: 1)
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] starting nonce from [96m16393384405009611293[0m (thread: 1)
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] found new nonce(1): [96m16393384405009611297[0m (thread: 1)
+[ 2018-01-28 16:26:47 -- [92m   Info[0m ] starting nonce from [96m16641965109634831986[0m (thread: 1)
