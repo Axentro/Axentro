@@ -28,4 +28,6 @@ describe Consensus do
     end
 
   end
+
+  STDERR.puts "< Consensus"
 end
