@@ -65,8 +65,8 @@ module ::Sushi::Core
         raise "Invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
 
         transactions.each_with_index do |transaction, idx|
-          raise "Invalid prev_hash #{transaction.prev_hash} vs #{transactions[idx-1].to_hash}" if idx != 0 && transaction.prev_hash != transactions[idx-1].to_hash
-          transaction.valid?(blockchain, @index, idx == 0, idx == 0 ? nil : transactions[0..idx-1])
+          raise "Invalid prev_hash #{transaction.prev_hash} vs #{transactions[idx - 1].to_hash}" if idx != 0 && transaction.prev_hash != transactions[idx - 1].to_hash
+          transaction.valid?(blockchain, @index, idx == 0, idx == 0 ? nil : transactions[0..idx - 1])
         end
 
         prev_block = blockchain.chain[-1]

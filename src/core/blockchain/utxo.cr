@@ -11,7 +11,7 @@ module ::Sushi::Core
     def get(address : String) : Int64
       return 0_i64 if @utxo_internal.size < CONFIRMATION
 
-      @utxo_internal.reverse[(CONFIRMATION-1) .. -1].each do |utxo_internal|
+      @utxo_internal.reverse[(CONFIRMATION - 1)..-1].each do |utxo_internal|
         return utxo_internal[address] if utxo_internal[address]?
       end
 

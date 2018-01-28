@@ -21,8 +21,8 @@ describe UTXO do
 
       address = block_1.transactions.first.recipients.first[:address]
       expected_amount = chain[-1].transactions.first.recipients
-                        .select { |r| r[:address] == address }
-                        .reduce(0) { |sum, x| sum + x[:amount] }
+                                                    .select { |r| r[:address] == address }
+                                                    .reduce(0) { |sum, x| sum + x[:amount] }
 
       utxo.get(address).should eq(expected_amount)
     end
