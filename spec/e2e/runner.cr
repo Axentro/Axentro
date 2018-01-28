@@ -69,9 +69,9 @@ module ::E2E
         size - 1
       }.max
 
-      return STDERR.puts yellow("mining is not enough") if latest_block_index < CONFIRMATION - 1
+      return STDERR.puts yellow("mining is not enough") if latest_block_index < ::Sushi::Core::UTXO::CONFIRMATION - 1
 
-      checking_block_index = latest_block_index - (CONFIRMATION - 1)
+      checking_block_index = latest_block_index - (::Sushi::Core::UTXO::CONFIRMATION - 1)
 
       block_json = block(@node_ports[0], checking_block_index)
 
