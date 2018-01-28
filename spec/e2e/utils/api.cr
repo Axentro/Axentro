@@ -25,37 +25,35 @@ module ::E2E::Utils::API
     res
   end
 
-  def amount(num : Int32) : Float64
-    args = ["amount", "-w", "wallets/testnet-#{num}.json", "-n", "http://127.0.0.1:4000", "-u", "--testnet", "--json"]
+  def amount(port : Int32, num : Int32) : Int64
+    args = ["amount", "-w", "wallets/testnet-#{num}.json", "-n", "http://127.0.0.1:#{port}", "-u", "--testnet", "--json"]
+
+    res = `#{sushi(args)}`
+
+    JSON.parse(res)["amount"].to_s.to_i64
+  end
+
+  def create(port : Int32, n_sender : Int32, n_recipient : Int32) : String?
+    a = amount(port, n_sender)
+
+    return nil if a == 0
+
+    a = a / 2
+
+    recipient_address = ::Sushi::Core::Wallet.from_path("wallets/testnet-#{n_recipient}.json").address
+
+    args = ["send", "-w", "wallets/testnet-#{n_sender}.json", "-a", recipient_address, "-m", a, "-n", "http://127.0.0.1:#{port}", "--json", "--testnet", "--message='E2E Test'"]
+
+    res = `#{sushi(args)}`
+
+    JSON.parse(res)["id"].to_s
+  end
+
+  def transaction(port : Int32, transaction_id : String)
+    args = ["transaction", "-t", transaction_id, "-n", "http://127.0.0.1:#{port}", "--json"]
 
     res = `#{sushi(args)}`
 
     STDERR.puts res
-
-    JSON.parse(res)["amount"].to_s.to_f
-  end
-
-  def create(n_sender : Int32, n_recipient : Int32)
-    a = amount(n_sender)
-
-    STDERR.puts "amount of #{n_sender}: #{a}"
-
-    return if a == 0
-
-    a = a / 2.0
-
-    STDERR.puts "sending amount: #{a}"
-
-    recipient_address = ::Sushi::Core::Wallet.from_path("wallets/testnet-#{n_recipient}.json").address
-
-    STDERR.puts "recipient address: #{recipient_address}"
-
-    args = ["send", "-w", "wallets/testnet-#{n_sender}.json", "-a", recipient_address, "-m", a, "-n", "http://127.0.0.1:4000", "--json", "--testnet", "--message='E2E Test'"]
-
-    res = `#{sushi(args)}`
-
-    STDERR.puts "res: #{res}"
-
-    res
   end
 end

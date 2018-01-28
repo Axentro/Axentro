@@ -83,7 +83,7 @@ module ::Sushi::Core
       return false if subchain.size == 0
       return false if subchain[0].index == 0
 
-      first_index = subchain[0].index-1
+      first_index = subchain[0].index - 1
       prev_block = @chain[first_index]
 
       subchain.each do |block|
@@ -115,11 +115,11 @@ module ::Sushi::Core
       @current_transactions.push(transaction)
     end
 
-    def get_amount_unconfirmed(address : String) : Float64
+    def get_amount_unconfirmed(address : String) : Int64
       @utxo.get_unconfirmed(address, current_transactions)
     end
 
-    def get_amount(address : String) : Float64
+    def get_amount(address : String) : Int64
       @utxo.get(address)
     end
 
@@ -158,16 +158,16 @@ module ::Sushi::Core
     def create_first_transaction(miners : Models::Miners) : Transaction
       rewards_total = Blockchain.served_amount(latest_index)
 
-      miners_nonces_size = miners.reduce(0) { |sum, m| sum + m[:nonces].size }.to_f
-      miners_rewards_total = prec((rewards_total * 3.0) / 4.0)
+      miners_nonces_size = miners.reduce(0) { |sum, m| sum + m[:nonces].size }
+      miners_rewards_total = prec((rewards_total * 3_i64) / 4_i64)
       miners_recipients = miners.map { |m|
-        amount = miners_rewards_total * (m[:nonces].size.to_f / miners_nonces_size)
-        { address: m[:address], amount: amount}
+        amount = (miners_rewards_total * m[:nonces].size) / miners_nonces_size
+        {address: m[:address], amount: amount}
       }
 
       node_reccipient = {
         address: @wallet.address,
-        amount: prec(rewards_total - miners_recipients.reduce(0.0) { |sum, m| sum + m[:amount] }),
+        amount:  prec(rewards_total - miners_recipients.reduce(0_i64) { |sum, m| sum + m[:amount] }),
       }
 
       senders = [] of Models::Sender # No senders
@@ -197,10 +197,10 @@ module ::Sushi::Core
       )
     end
 
-    def self.served_amount(index) : Float64
+    def self.served_amount(index) : Int64
       div = (index / 10000).to_i
-      return 10000.0 if div == 0
-      (10000 / div).to_f
+      return 10000_i64 if div == 0
+      (10000 / div).to_i64
     end
 
     def headers

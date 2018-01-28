@@ -1,9 +1,8 @@
 module ::E2E::Utils::Miner
-
   def sushim(args) : String
     _args = args
-            .map { |arg| arg.to_s }
-            .join(" ")
+      .map { |arg| arg.to_s }
+      .join(" ")
 
     bin = File.expand_path("../../../../bin/sushim", __FILE__)
 

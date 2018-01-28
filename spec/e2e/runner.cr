@@ -15,7 +15,7 @@ module ::E2E
 
       @node_ports = (4000..4000+(@num_nodes-1)).to_a
 
-      @client = Client.new
+      @client = Client.new(@node_ports, @num_miners)
     end
 
     def pre_build
@@ -75,6 +75,8 @@ module ::E2E
         _block_json = block(node_port, checking_block_index)
         raise "Difference block #{block_json} vs #{_block_json}" if block_json != _block_json
       end
+
+      @client.assertion!
     end
 
     def run!
