@@ -95,7 +95,7 @@ describe RPCController do
         case output
         when IO
           res.response.status_code.should eq(200)
-          puts res.response.unsafe_as(MockResponse).content
+          # puts res.response.unsafe_as(MockResponse).content
         else
           fail "expected an io response"
         end
@@ -105,5 +105,5 @@ describe RPCController do
     end
   end
 
-    STDERR.puts "< Controllers::RPCController"
+    STDERR.puts "< Node::RPCController"
 end

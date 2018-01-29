@@ -1,26 +1,24 @@
 module ::Sushi::Core::Controllers
   class RPCController < Controller
     def exec_internal_post(json, context, params) : HTTP::Server::Context
-      puts "FIRST HERE"
-      p typeof(json)
-      p call = json["call"].to_s
+      call = json["call"].to_s
       case call
       when "create_unsigned_transaction"
         return create_unsigned_transaction(json, context, params)
-      # when "create_transaction"
-      #   return create_transaction(json, context, params)
-      # when "amount"
-      #   return amount(json, context, params)
-      # when "blockchain_size"
-      #   return blockchain_size(json, context, params)
-      # when "blockchain"
-      #   return blockchain(json, context, params)
-      # when "block"
-      #   return block(json, context, params)
-      # when "transactions"
-      #   return transactions(json, context, params)
-      # when "transaction"
-      #   return transaction(json, context, params)
+      when "create_transaction"
+        return create_transaction(json, context, params)
+      when "amount"
+        return amount(json, context, params)
+      when "blockchain_size"
+        return blockchain_size(json, context, params)
+      when "blockchain"
+        return blockchain(json, context, params)
+      when "block"
+        return block(json, context, params)
+      when "transactions"
+        return transactions(json, context, params)
+      when "transaction"
+        return transaction(json, context, params)
       end
 
       unpermitted_call(call, context)

@@ -1,2 +1,2 @@
 require "./blockchain/*"
-require "./controllers/*"
+require "./node/*"
