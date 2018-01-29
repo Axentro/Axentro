@@ -1,18 +1,13 @@
 require "./spec_helper"
 
-puts "----- Unit tests -----"
+include ::Sushi::Common::Color
+
+puts light_cyan("> Unit tests")
 require "./units/*"
 
-puts "\n----- Integration test -----"
-require "./integration/spec"
+puts "\n"
+puts light_cyan("> E2E test")
 
-unless ARGV.includes?("--local")
-  runner = ::Integration::Runner.new
-  runner.run!
+ENV["E2E"] = "true" if ENV.has_key?("TRAVIS")
 
-  sleep 10
-
-  runner.fin
-else
-  puts "skip integration test."
-end
+require "./e2e/spec"

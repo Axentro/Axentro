@@ -39,7 +39,7 @@ module ::Sushi::Core
       sha256(string).hexstring
     end
 
-    def valid?(blockchain : Blockchain, block_index : Int64, is_coinbase : Bool) : Bool
+    def valid?(blockchain : Blockchain, block_index : Int64, is_coinbase : Bool, transactions : Array(Transaction)?) : Bool
       raise "Length of transaction id have to be 64: #{@id}" if @id.size != 64
       raise "Message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
 
@@ -73,7 +73,7 @@ module ::Sushi::Core
           raise "Not enough fee, should be  #{calculate_fee} >= #{min_fee_of_action(@action)}"
         end
 
-        senders_amount = blockchain.get_amount_unconfirmed(@senders[0][:address])
+        senders_amount = blockchain.get_amount_unconfirmed(@senders[0][:address], transactions)
 
         if prec(senders_amount - @senders[0][:amount]) < 0_i64
           raise "Sender has not enough coins: #{@senders[0][:address]} (#{senders_amount})"

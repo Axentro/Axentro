@@ -34,7 +34,8 @@ module ::Sushi::Core
 
       @db.query "select json from blocks where idx = ?", [index] do |rows|
         rows.each do
-          block = Block.from_json(rows.read(String))
+          json = rows.read(String)
+          block = Block.from_json(json)
         end
       end
 
