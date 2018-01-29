@@ -7,4 +7,7 @@ require "./units/*"
 
 puts "\n"
 puts light_cyan("> E2E test")
+
+ENV["E2E"] = "true" if ENV.has_key?("TRAVIS")
+
 require "./e2e/spec"
