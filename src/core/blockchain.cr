@@ -28,6 +28,7 @@ module ::Sushi::Core
 
     def set_genesis
       @chain.push(genesis_block)
+      @utxo.record(@chain)
 
       if database = @database
         database.push_block(genesis_block)
@@ -44,6 +45,7 @@ module ::Sushi::Core
         break unless block.valid_as_latest?(self)
 
         @chain.push(block)
+        @utxo.record(@chain)
 
         current_index += 1
       end
@@ -55,7 +57,9 @@ module ::Sushi::Core
 
     def update_coinbase_transaction(miners : Models::Miners)
       @coinbase_transaction = create_coinbase_transaction(miners)
-      @transaction_pool.clear
+
+      # remove transactions which already be included in blockchain
+      @transaction_pool.reject! { |transaction| block_index(transaction.id) }
     end
 
     def push_block?(nonce : UInt64, miners : Models::Miners) : Block?
@@ -80,8 +84,7 @@ module ::Sushi::Core
       return nil unless block.valid_as_latest?(self)
 
       @chain.push(block)
-
-      record_utxo
+      @utxo.record(@chain)
 
       if database = @database
         database.push_block(block)
@@ -109,8 +112,6 @@ module ::Sushi::Core
       @utxo.clear
       @utxo.record(@chain)
 
-      record_utxo
-
       if database = @database
         database.replace_chain(@chain)
       end
@@ -129,8 +130,14 @@ module ::Sushi::Core
 
       transactions[1..-1].each_with_index do |transaction, idx|
         transaction.valid?(self, latest_index, false, selected_transactions)
-        transaction.prev_hash = selected_transactions[-1].to_hash
 
+        # The transaction is already included in another block
+        if block_index(transaction.id)
+          transactions.delete(transaction)
+          next
+        end
+
+        transaction.prev_hash = selected_transactions[-1].to_hash
         selected_transactions << transaction
       rescue e : Exception
         transactions.delete(transaction)
@@ -159,10 +166,6 @@ module ::Sushi::Core
       return nil if @chain.size < from
 
       @chain[from..-1]
-    end
-
-    def record_utxo
-      @utxo.record(@chain)
     end
 
     def genesis_block : Block

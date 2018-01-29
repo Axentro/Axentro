@@ -1,21 +1,24 @@
 require "random"
+require "file_utils"
 require "./utils"
 require "./client"
 
 module ::E2E
   class Runner
     @client : Client
+    @db_name : String
 
     @node_ports : Array(Int32)
 
     def initialize(@num_nodes : Int32, @num_miners : Int32)
       raise "@num_nodes has to be grater than 0" if @num_nodes < 0
-      raise "@num_nodes of E2E::Runner has to be less than 6" if @num_nodes > 6
+      raise "@num_nodes of E2E::Runner has to be less than 5" if @num_nodes > 5
       raise "@num_miners of E2E::Runner has to be less than 6" if @num_miners > 6
 
       @node_ports = (4000..4000 + (@num_nodes - 1)).to_a
 
       @client = Client.new(@node_ports, @num_miners)
+      @db_name = Random.new.hex
     end
 
     def pre_build
@@ -24,7 +27,7 @@ module ::E2E
 
     def launch_nodes
       # genesis node
-      node(@node_ports[0], false, nil, 0)
+      node(@node_ports[0], false, nil, 0, @db_name)
 
       node_ports_public = [@node_ports[0]]
 
@@ -110,19 +113,43 @@ module ::E2E
       STDERR.puts light_green("-> PASSED!")
     end
 
+    def verify_blockchain_can_be_restored_from_database
+      STDERR.puts
+      STDERR.puts "Verifying: #{green("blockchain can be restored from database")}"
+
+      size0 = blockchain_size(4000)
+
+      node(5000, true, nil, 5, @db_name, false)
+
+      sleep 60
+
+      size1 = blockchain_size(5000)
+
+      raise "Restoring blockchain failed (size : #{size0}, db: #{size1})" unless size0 == size1
+
+      STDERR.print "."
+      STDERR.puts
+      STDERR.puts light_green("-> PASSED!")
+    end
+
     def benchmark_result
       STDERR.puts
       STDERR.puts "**************** #{light_yellow("benchmark")} ****************"
       STDERR.puts "- transactions  : #{@client.num_transactions}"
       STDERR.puts "- duration      : #{@client.duration} [sec]"
-      STDERR.puts "- result        : #{light_blue(@client.num_transactions/@client.duration)} [transactions/sec]"
+      STDERR.puts "- result        : #{light_green(@client.num_transactions/@client.duration)} [transactions/sec]"
     end
 
     def assertion!
       verify_latest_confirmed_block
       verify_all_addresses_have_non_negative_amount
+      verify_blockchain_can_be_restored_from_database
 
       benchmark_result
+    end
+
+    def clean_db
+      FileUtils.rm_rf(File.expand_path("../db/#{@db_name}.db", __FILE__))
     end
 
     def run!
@@ -154,6 +181,8 @@ module ::E2E
       assertion!
     ensure
       kill_nodes
+
+      clean_db
     end
 
     include Utils

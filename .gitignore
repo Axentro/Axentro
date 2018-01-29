@@ -2,6 +2,8 @@
 /lib/
 /bin/
 /.shards/
-/spec/e2e/logs/*
+
+*.log
+*.db
 
 !.gitkeep
