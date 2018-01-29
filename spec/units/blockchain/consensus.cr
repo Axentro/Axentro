@@ -28,11 +28,13 @@ describe Consensus do
 
   describe "difficulty" do
     it "should return the #difficulty_at for the blockchain" do
-      difficulty_at(0_i64).should eq(4)
+      difficulty = ENV.has_key?("E2E") ? 2 : 4 # for e2e test
+      difficulty_at(0_i64).should eq(difficulty)
     end
 
     it "should return the #miner_difficulty_at for the miners" do
-      miner_difficulty_at(0_i64).should eq(3)
+      difficulty = ENV.has_key?("E2E") ? 1 : 3 # for e2e test
+      miner_difficulty_at(0_i64).should eq(difficulty)
     end
   end
 
