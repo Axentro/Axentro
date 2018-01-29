@@ -97,8 +97,6 @@ module ::Sushi::Interface
     end
 
     def rpc(node, payload : String) : String
-      p "+++++++++++++++++++++++++++"
-      p "#{node}/rpc"
       res = HTTP::Client.post("#{node}/rpc", HTTP::Headers.new, payload)
       verify_response!(res)
     end

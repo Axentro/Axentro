@@ -2,6 +2,7 @@ module ::Sushi::Core::Controllers
   class RPCController < Controller
     def exec_internal_post(json, context, params) : HTTP::Server::Context
       call = json["call"].to_s
+
       case call
       when "create_unsigned_transaction"
         return create_unsigned_transaction(json, context, params)
