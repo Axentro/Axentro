@@ -1,12 +1,20 @@
 module ::Sushi::Core::Consensus
 
+  # SHA256 Implementation
+  def valid_sha256?(block_index : Int64, block_hash : String, nonce : UInt64, _difficulty : Int32?) : Bool
+    difficulty = _difficulty.nil? ? difficulty_at(block_index) : _difficulty.not_nil!
+    guess_nonce = "#{block_hash}#{nonce}"
+    guess_hash = sha256(guess_nonce)
+    guess_hash.hexstring[0, difficulty] == "0" * difficulty
+  end
+
   N = 1 << 16
   R =   1
   P =   1
   K = 512
 
-  # Uses scrypt implementation
-  def valid?(block_index : Int64, block_hash : String, nonce : UInt64, _difficulty : Int32? = nil) : Bool
+  # Scrypt Implementation
+  def valid_scryptn?(block_index : Int64, block_hash : String, nonce : UInt64, _difficulty : Int32?) : Bool
     difficulty = _difficulty.nil? ? difficulty_at(block_index) : _difficulty.not_nil!
 
     nonce_salt = nonce.to_s(16)
@@ -26,6 +34,10 @@ module ::Sushi::Core::Consensus
     raise "LibScrypt throws an error: #{res}" unless res == 0
 
     buffer.hexstring[0, difficulty] == "0" * difficulty
+  end
+
+  def valid?(block_index : Int64, block_hash : String, nonce : UInt64, _difficulty : Int32? = nil) : Bool
+    valid_scryptn?(block_index, block_hash, nonce, _difficulty)
   end
 
   def difficulty_at(block_index : Int64) : Int32
