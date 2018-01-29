@@ -1,7 +1,7 @@
 require "./spec_helper"
 
 puts "----- Unit tests -----"
-require "./units/*"
+require "./units/units"
 
 puts "\n----- Integration test -----"
 require "./integration/spec"
