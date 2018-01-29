@@ -33,7 +33,7 @@ include Sushi::Core::Controllers
 
 class MockRequest < HTTP::Request
   def initialize
-    super("POST","http://54.199.249.171:3000/rpc",HTTP::Headers.new, IO::Memory.new)
+    super("POST", "/rpc", HTTP::Headers.new, IO::Memory.new)
   end
 end
 
@@ -95,7 +95,8 @@ describe RPCController do
         case output
         when IO
           res.response.status_code.should eq(200)
-          # puts res.response.unsafe_as(MockResponse).content
+          # TODO - Kings - parse out the transaction json and validate it
+          # p res.response.unsafe_as(MockResponse).content
         else
           fail "expected an io response"
         end
