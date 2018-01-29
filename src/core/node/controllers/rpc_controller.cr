@@ -31,9 +31,7 @@ module ::Sushi::Core::Controllers
 
     def create_transaction(json, context, params)
       transaction = Transaction.from_json(json["transaction"].to_s)
-
-      node.broadcast_transaction(transaction)
-
+      # node.broadcast_transaction(transaction) # TODO - Kings - why does this fail with Nil assertion?
       context.response.print transaction.to_json
       context
     rescue e : Exception
