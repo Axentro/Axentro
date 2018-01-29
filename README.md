@@ -1,35 +1,29 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/tbrand/SushiCoin/master/imgs/sushicoin.png" width="150" height="150" />
+  <img src="https://raw.githubusercontent.com/SushiCoinHQ/SushiCoin/master/imgs/sushicoin.png" width="150" height="150" />
 </p1>
 
 <p align="center">🍣 <i>An awesome developable blockchain implementation.</i> 🍣</p>
 
-[![Build Status](https://travis-ci.org/SushiCoinHQ/SushiCoin.svg?branch=master)](https://travis-ci.org/SushiCoinHQ/SushiCoin)
+<p align="center"><a href="https://travis-ci.org/SushiCoinHQ/SushiCoin"><img src="https://travis-ci.org/SushiCoinHQ/SushiCoin.svg?branch=master"></a>  <a href="https://goo.gl/64aVeY"><img src="https://img.shields.io/badge/slack-join-orange.svg"></a>  <a href="https://github.com/SushiCoinHQ/SushiCoin/wiki"><img src="https://img.shields.io/badge/document-wiki-yellow.svg"></a></p>
 
-## Specs
-- **PoW** (Scrypt-N algorithm)
-- Ticker: **SUSHI**
-- Total amount: **1036680000.0**
+## Document
+
+All documents are written on [wiki](https://github.com/SushiCoinHQ/SushiCoin/wiki)
+
+* [What is SushiCoin?](https://github.com/SushiCoinHQ/SushiCoin/wiki/What-is-SushiCoin%3F)
+* [How to build SushiCoin?](https://github.com/SushiCoinHQ/SushiCoin/wiki/How-to-build-SushiCoin%3F)
+* [QuickStart guide!](https://github.com/SushiCoinHQ/SushiCoin/wiki/SushiCoin-QuickStart)
+* [I want to do mining SushiCoin!](https://github.com/SushiCoinHQ/SushiCoin/wiki/Mining-SushiCoin)
+* [I want to build my SushiCoin's node!](https://github.com/SushiCoinHQ/SushiCoin/wiki/Build-SushiCoin's-node)
+* [I want to build an app with SushiCoin!](https://github.com/SushiCoinHQ/SushiCoin/wiki/SushiCoin's-API)
 
 ## Community
-- [Slack](https://goo.gl/64aVeY)
 
-## First of all
-- [What is SushiCoin?](https://github.com/tbrand/SushiCoin/wiki/What-is-SushiCoin%3F)
-- [How to build SushiCoin?](https://github.com/tbrand/SushiCoin/wiki/How-to-build-SushiCoin%3F)
+We are discussing many things everyday in [Slack](https://goo.gl/64aVeY).
 
-## Next, what do you want to do with SushiCoin?
-- [I want to do mining SushiCoin!](https://github.com/tbrand/SushiCoin/wiki/Mining-SushiCoin)
-- [I want to build my SushiCoin's node!](https://github.com/tbrand/SushiCoin/wiki/Build-SushiCoin's-node)
-- [I want to build an app with SushiCoin!](https://github.com/tbrand/SushiCoin/wiki/SushiCoin's-API)
-
-## Nodes
-- http://54.199.249.171:3000 (**testnet**)
+🍣 We are welcome your joining! 🍣
 
 ## Contributors
-- [@taichiro_dev](https://github.com/tbrand) Taichiro Suzuki - creator, maintainer
-- [@watzon](https://github.com/watzon)
+- [@tbrand](https://github.com/tbrand) Taichiro Suzuki - creator, maintainer
 - [@kingsleyh](https://github.com/kingsleyh)
-
-## Licenses
-- Icons made by [Freepik](http://www.freepik.com) from [www.flaticon.com](https://www.flaticon.com/) is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/)
+- [@watzon](https://github.com/watzon)

@@ -4,7 +4,7 @@ module ::Sushi::Core::Consensus
     difficulty = _difficulty.nil? ? difficulty_at(block_index) : _difficulty.not_nil!
     guess_nonce = "#{block_hash}#{nonce}"
     guess_hash = sha256(guess_nonce)
-    guess_hash[0, difficulty] == "0" * difficulty
+    guess_hash.hexstring[0, difficulty] == "0" * difficulty
   end
 
   N = 1 << 16
@@ -40,10 +40,12 @@ module ::Sushi::Core::Consensus
   end
 
   def difficulty_at(block_index : Int64) : Int32
+    return 2 if ENV.has_key?("E2E") # for e2e test
     4
   end
 
   def miner_difficulty_at(block_index : Int64) : Int32
+    return 1 if ENV.has_key?("E2E") # for e2e test
     3
   end
 
