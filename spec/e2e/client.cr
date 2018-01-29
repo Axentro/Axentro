@@ -23,20 +23,19 @@ module ::E2E
       @launch_time = Time.now
 
       spawn do
-        loop do
-          break if !@alive
-          create_transaction
-
-          sleep 0.01
-        rescue e : Exception
-          STDERR.puts e
+        while @alive
+          begin
+            create_transaction
+          rescue e : Exception
+            STDERR.puts e
+          end
         end
       end
     end
 
     def kill
-      @alive = false
       @kill_time = Time.now
+      @alive = false
     end
 
     def num_transactions : Int32

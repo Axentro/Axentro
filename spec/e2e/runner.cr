@@ -62,23 +62,26 @@ module ::E2E
       @client.kill
     end
 
-    def verify_latest_confirmed_block
-      STDERR.puts
-      STDERR.puts "Verifying: #{green("latest confirmed block")} ..."
-
+    def latest_block_index : Int32
       latest_block_index = @node_ports.map { |port|
         size = blockchain_size(port)
         size - 1
       }.max
+    end
 
-      return STDERR.puts yellow("mining is not enough") if latest_block_index < ::Sushi::Core::UTXO::CONFIRMATION - 1
+    def latest_confirmed_block_index : Int32
+      return 0 if latest_block_index < ::Sushi::Core::UTXO::CONFIRMATION - 1
+      latest_block_index - (::Sushi::Core::UTXO::CONFIRMATION - 1)
+    end
 
-      checking_block_index = latest_block_index - (::Sushi::Core::UTXO::CONFIRMATION - 1)
+    def verify_latest_confirmed_block
+      STDERR.puts
+      STDERR.puts "Verifying: #{green("latest confirmed block")} ..."
 
-      block_json = block(@node_ports[0], checking_block_index)
+      block_json = block(@node_ports[0], latest_confirmed_block_index)
 
       @node_ports[1..-1].each do |node_port|
-        _block_json = block(node_port, checking_block_index)
+        _block_json = block(node_port, latest_confirmed_block_index)
         raise "Difference block #{block_json} vs #{_block_json}" if block_json != _block_json
         STDERR.print "."
       end
@@ -96,6 +99,10 @@ module ::E2E
           a = amount(node_port, num)
           raise "Amount of #{num} is #{a} on #{node_port}"  if a < 0
           STDERR.print "."
+
+          a = amount(node_port, num, true)
+          raise "Amount of #{num} is #{a} on #{node_port} (unconfirmed)"  if a < 0
+          STDERR.print "."
         end
       end
 
@@ -105,10 +112,10 @@ module ::E2E
 
     def benchmark_result
       STDERR.puts
-      STDERR.puts "**************** benchmark ****************"
-      STDERR.puts "# of transactions: #{@client.num_transactions}"
-      STDERR.puts "duration: #{@client.duration}[sec]"
-      STDERR.puts "#{@client.num_transactions/@client.duration}[transaction/sec]"
+      STDERR.puts "**************** #{light_yellow("benchmark")} ****************"
+      STDERR.puts "- transactions  : #{@client.num_transactions}"
+      STDERR.puts "- duration      : #{@client.duration} [sec]"
+      STDERR.puts "- result        : #{light_blue(@client.num_transactions/@client.duration)} [transactions/sec]"
     end
 
     def assertion!
