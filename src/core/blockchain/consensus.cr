@@ -1,10 +1,11 @@
 module ::Sushi::Core::Consensus
+
   # SHA256 Implementation
   def valid_sha256?(block_index : Int64, block_hash : String, nonce : UInt64, _difficulty : Int32?) : Bool
     difficulty = _difficulty.nil? ? difficulty_at(block_index) : _difficulty.not_nil!
     guess_nonce = "#{block_hash}#{nonce}"
     guess_hash = sha256(guess_nonce)
-    guess_hash[0, difficulty] == "0" * difficulty
+    guess_hash.hexstring[0, difficulty] == "0" * difficulty
   end
 
   N = 1 << 16
