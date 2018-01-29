@@ -19,7 +19,7 @@ module ::E2E
     end
 
     def pre_build
-      STDERR.puts `shards build`
+      raise "Build failed" unless system("shards build")
     end
 
     def launch_nodes
@@ -62,10 +62,12 @@ module ::E2E
       @client.kill
     end
 
-    def assertion!
+    def verify_latest_confirmed_block
+      STDERR.puts
+      STDERR.puts "Verifying: #{green("latest confirmed block")} ..."
+
       latest_block_index = @node_ports.map { |port|
         size = blockchain_size(port)
-        STDERR.puts "#{port} <- #{size}"
         size - 1
       }.max
 
@@ -78,9 +80,42 @@ module ::E2E
       @node_ports[1..-1].each do |node_port|
         _block_json = block(node_port, checking_block_index)
         raise "Difference block #{block_json} vs #{_block_json}" if block_json != _block_json
+        STDERR.print "."
       end
 
-      STDERR.puts "Total transactions: #{@client.num_transactions}"
+      STDERR.puts
+      STDERR.puts light_green("-> PASSED!")
+    end
+
+    def verify_all_addresses_have_non_negative_amount
+      STDERR.puts
+      STDERR.puts "Verifying: #{green("all addresses have non-negative amount")}"
+
+      @node_ports.each do |node_port|
+        @num_miners.times do |num|
+          a = amount(node_port, num)
+          raise "Amount of #{num} is #{a} on #{node_port}"  if a < 0
+          STDERR.print "."
+        end
+      end
+
+      STDERR.puts
+      STDERR.puts light_green("-> PASSED!")
+    end
+
+    def benchmark_result
+      STDERR.puts
+      STDERR.puts "**************** benchmark ****************"
+      STDERR.puts "# of transactions: #{@client.num_transactions}"
+      STDERR.puts "duration: #{@client.duration}[sec]"
+      STDERR.puts "#{@client.num_transactions/@client.duration}[transaction/sec]"
+    end
+
+    def assertion!
+      verify_latest_confirmed_block
+      verify_all_addresses_have_non_negative_amount
+
+      benchmark_result
     end
 
     def run!

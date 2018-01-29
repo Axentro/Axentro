@@ -20,6 +20,8 @@ module ::E2E
     end
 
     def launch
+      @launch_time = Time.now
+
       spawn do
         loop do
           break if !@alive
@@ -34,10 +36,16 @@ module ::E2E
 
     def kill
       @alive = false
+      @kill_time = Time.now
     end
 
     def num_transactions : Int32
       @transaction_ids.size
+    end
+
+    def duration : Float64
+      raise "@launch_time or @kill_time is nil!" if @launch_time.nil? || @kill_time.nil?
+      (@kill_time.not_nil! - @launch_time.not_nil!).total_seconds
     end
 
     include Utils

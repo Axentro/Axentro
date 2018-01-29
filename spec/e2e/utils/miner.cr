@@ -10,7 +10,7 @@ module ::E2E::Utils::Miner
   end
 
   def mining(port : Int32, num : Int32)
-    STDERR.puts "miner: #{port} #{num}"
+    STDERR.puts "#{light_blue("launch miner")}: port(#{port}) num(#{num})"
 
     args = ["-w", "wallets/testnet-#{num}.json", "-n", "http://127.0.0.1:#{port}", "--testnet"]
 
