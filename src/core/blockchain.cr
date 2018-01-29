@@ -225,9 +225,10 @@ module ::Sushi::Core
     end
 
     def self.served_amount(index) : Int64
-      div = (index / 10000).to_i
-      return 10000_i64 if div == 0
-      (10000 / div).to_i64
+      base = 10000
+      div = (index / base).to_i
+      return base.to_i64 if div == 0
+      (base / div).to_i64
     end
 
     def headers
