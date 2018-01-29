@@ -24,6 +24,6 @@ We are discussing many things everyday in [Slack](https://goo.gl/64aVeY).
 🍣 We are welcome your joining! 🍣
 
 ## Contributors
-- [@taichiro_dev](https://github.com/tbrand) Taichiro Suzuki - creator, maintainer
+- [@tbrand](https://github.com/tbrand) Taichiro Suzuki - creator, maintainer
 - [@kingsleyh](https://github.com/kingsleyh)
 - [@watzon](https://github.com/watzon)
