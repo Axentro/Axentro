@@ -198,6 +198,66 @@ describe RPCController do
 
       end
 
+      it "should return a 403 when an Exception occurs" do
+        sender_wallet = wallet_1
+        recipient_wallet = wallet_2
+
+        chain = [genesis_block, block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
+        blockchain = Blockchain.new(sender_wallet)
+        blockchain.replace_chain(chain)
+
+        rpc = RPCController.new(blockchain)
+
+        senders = [a_sender(sender_wallet, 1000_i64)]
+        recipients = [a_recipient(recipient_wallet, 100_i64)]
+
+        payload = {
+          call:    "create_transaction",
+          missing: "missing",
+        }.to_json
+
+        json = JSON.parse(payload)
+
+        res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+        res.response.output.flush
+        res.response.output.close
+        output = res.response.output
+        case output
+        when IO
+          res.response.status_code.should eq(403)
+          http_res = res.response.unsafe_as(MockResponse).content
+          http_res.includes?(%{Missing hash key: "transaction"}).should be_true
+        else
+          fail "expected an io response"
+        end
+      end
+
+    end
+
+    describe "#amount" do
+      sender_wallet = wallet_1
+      chain = [genesis_block, block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
+      blockchain = Blockchain.new(sender_wallet)
+      blockchain.replace_chain(chain)
+
+      rpc = RPCController.new(blockchain)
+
+      payload = {call: "blockchain_size"}.to_json
+      json = JSON.parse(payload)
+
+      res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+      res.response.output.flush
+      res.response.output.close
+      output = res.response.output
+      case output
+      when IO
+        res.response.status_code.should eq(200)
+        http_res = res.response.unsafe_as(MockResponse).content
+        size = http_res.split("\n")[4].chomp
+        size.should eq(%{{"size":1}})
+      else
+        fail "expected an io response"
+      end
     end
 
   end
