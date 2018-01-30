@@ -141,8 +141,7 @@ describe RPCController do
 
     describe "#create_transaction" do
 
-      # Currently fails on node.broadcast_transaction
-      pending "should return a signed transaction when valid" do
+      it "should return a signed transaction when valid" do
         sender_wallet = wallet_1
         recipient_wallet = wallet_2
 
@@ -151,6 +150,8 @@ describe RPCController do
         blockchain.replace_chain(chain)
 
         rpc = RPCController.new(blockchain)
+        node = Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+        rpc.set_node(node)
 
         senders = [a_sender(sender_wallet, 1000_i64)]
         recipients = [a_recipient(recipient_wallet, 100_i64)]
@@ -208,6 +209,8 @@ describe RPCController do
         blockchain.replace_chain(chain)
 
         rpc = RPCController.new(blockchain)
+        node = Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+        rpc.set_node(node)
 
         senders = [a_sender(sender_wallet, 1000_i64)]
         recipients = [a_recipient(recipient_wallet, 100_i64)]
@@ -244,6 +247,8 @@ describe RPCController do
         blockchain.replace_chain(chain)
 
         rpc = RPCController.new(blockchain)
+        node = Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+        rpc.set_node(node)
 
         payload = {call: "blockchain_size"}.to_json
         json = JSON.parse(payload)
@@ -273,6 +278,8 @@ describe RPCController do
         blockchain.replace_chain(chain)
 
         rpc = RPCController.new(blockchain)
+        node = Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+        rpc.set_node(node)
 
         payload = {call: "blockchain", header: false}.to_json
         json = JSON.parse(payload)
@@ -299,6 +306,8 @@ describe RPCController do
        blockchain.replace_chain(chain)
 
        rpc = RPCController.new(blockchain)
+       node = Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+       rpc.set_node(node)
 
        payload = {call: "blockchain", header: true}.to_json
        json = JSON.parse(payload)

@@ -153,7 +153,6 @@ module ::Sushi::Core
     end
 
     def broadcast_transaction(transaction : Transaction)
-      p "IN BROADCAST"
       info "new transaction coming: #{transaction.id}"
 
       @blockchain.add_transaction(transaction)
