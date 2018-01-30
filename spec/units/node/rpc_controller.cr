@@ -74,6 +74,8 @@ describe RPCController do
         blockchain.replace_chain(chain)
 
         rpc = RPCController.new(blockchain)
+        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+        rpc.set_node(node)
 
         senders = [a_sender(sender_wallet, 1000_i64)]
         recipients = [a_recipient(recipient_wallet, 10_i64)]
@@ -119,6 +121,8 @@ describe RPCController do
         blockchain.replace_chain(chain)
 
         rpc = RPCController.new(blockchain)
+        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+        rpc.set_node(node)
 
         senders = [a_sender(sender_wallet, 0_i64)]
         recipients = [a_recipient(recipient_wallet, 10_i64)]
@@ -150,7 +154,7 @@ describe RPCController do
         blockchain.replace_chain(chain)
 
         rpc = RPCController.new(blockchain)
-        node = Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
         rpc.set_node(node)
 
         senders = [a_sender(sender_wallet, 1000_i64)]
@@ -209,7 +213,7 @@ describe RPCController do
         blockchain.replace_chain(chain)
 
         rpc = RPCController.new(blockchain)
-        node = Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
         rpc.set_node(node)
 
         senders = [a_sender(sender_wallet, 1000_i64)]
@@ -247,7 +251,7 @@ describe RPCController do
         blockchain.replace_chain(chain)
 
         rpc = RPCController.new(blockchain)
-        node = Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
         rpc.set_node(node)
 
         payload = {call: "blockchain_size"}.to_json
@@ -278,7 +282,7 @@ describe RPCController do
         blockchain.replace_chain(chain)
 
         rpc = RPCController.new(blockchain)
-        node = Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
         rpc.set_node(node)
 
         payload = {call: "blockchain", header: false}.to_json
@@ -306,7 +310,7 @@ describe RPCController do
        blockchain.replace_chain(chain)
 
        rpc = RPCController.new(blockchain)
-       node = Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+       node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
        rpc.set_node(node)
 
        payload = {call: "blockchain", header: true}.to_json
