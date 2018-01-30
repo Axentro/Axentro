@@ -3,6 +3,7 @@ require "./../utils"
 
 include Sushi::Core
 include Units::Utils
+include Sushi::Core::Models
 include Sushi::Core::Controllers
 
 # def exec_internal_post(json, context, params) : HTTP::Server::Context
@@ -301,6 +302,69 @@ describe RPCController do
          fail "expected an io response"
        end
      end
+    end
+
+    describe "#amount" do
+
+      it "should return the unconfirmed amount" do
+        sender_wallet = wallet_1
+        recipient_wallet = wallet_2
+
+        chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
+        blockchain = Blockchain.new(sender_wallet)
+        blockchain.replace_chain(chain)
+
+        rpc = RPCController.new(blockchain)
+        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+        rpc.set_node(node)
+
+        payload = {call: "amount", address: wallet_2.address, unconfirmed: true}.to_json
+        json = JSON.parse(payload)
+
+        res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+        res.response.output.flush
+        res.response.output.close
+        output = res.response.output
+        case output
+        when IO
+          res.response.status_code.should eq(200)
+          http_res = res.response.unsafe_as(MockResponse).content
+          amount_result = http_res.split("\n")[4].chomp
+          amount_result.should eq(%{{"amount":0,"address":"VDAyZmJiYzJjOWZlOTBmYzc0ZDUyMWI4ZjNmZjMwYWQ1ZDllNzU5Y2VjNGE3MTAy","unconfirmed":true}})
+        else
+          fail "expected an io response"
+        end
+      end
+
+      it "should return the confirmed amount" do
+        sender_wallet = wallet_1
+        recipient_wallet = wallet_2
+        chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
+        blockchain = Blockchain.new(sender_wallet)
+        blockchain.replace_chain(chain)
+
+        rpc = RPCController.new(blockchain)
+        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+        rpc.set_node(node)
+
+        payload = {call: "amount", address: wallet_2.address, unconfirmed: false}.to_json
+        json = JSON.parse(payload)
+
+        res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+        res.response.output.flush
+        res.response.output.close
+        output = res.response.output
+        case output
+        when IO
+          res.response.status_code.should eq(200)
+          http_res = res.response.unsafe_as(MockResponse).content
+          amount_result = http_res.split("\n")[4].chomp
+          amount_result.should eq(%{{"amount":0,"address":"VDAyZmJiYzJjOWZlOTBmYzc0ZDUyMWI4ZjNmZjMwYWQ1ZDllNzU5Y2VjNGE3MTAy","unconfirmed":false}})
+        else
+          fail "expected an io response"
+        end
+      end
+
     end
 
   end
