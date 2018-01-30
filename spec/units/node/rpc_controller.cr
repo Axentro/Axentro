@@ -446,7 +446,7 @@ describe RPCController do
         when IO
           res.response.status_code.should eq(200)
           http_res = res.response.unsafe_as(MockResponse).content
-          puts transaction = http_res.split("\n")[4].chomp
+          transaction = http_res.split("\n")[4].chomp
           transaction.should eq(expected_transaction)
         else
           fail "expected an io response"
