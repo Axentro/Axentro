@@ -48,5 +48,4 @@ module ::Units::Utils::WalletHelper
     }
     Wallet.from_json(json)
   end
-
 end
