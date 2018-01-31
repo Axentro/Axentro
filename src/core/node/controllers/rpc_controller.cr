@@ -31,9 +31,7 @@ module ::Sushi::Core::Controllers
 
     def create_transaction(json, context, params)
       transaction = Transaction.from_json(json["transaction"].to_s)
-
       node.broadcast_transaction(transaction)
-
       context.response.print transaction.to_json
       context
     rescue e : Exception
