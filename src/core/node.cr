@@ -224,7 +224,10 @@ module ::Sushi::Core
 
       info "new miner: #{light_green(miner[:address])} (#{@miners.size})"
 
-      send(socket, M_TYPE_HANDSHAKE_MINER_ACCEPTED, {block: @blockchain.latest_block})
+      send(socket, M_TYPE_HANDSHAKE_MINER_ACCEPTED, {
+             block: @blockchain.latest_block,
+             difficulty: miner_difficulty_at(@blockchain.latest_index),
+           })
     end
 
     private def _handshake_node(socket, _content)
@@ -311,7 +314,10 @@ module ::Sushi::Core
           if !@blockchain.latest_block.valid_nonce?(nonce, miner_difficulty_at(@blockchain.latest_block.index))
             warning "recieved nonce is invalid, try to update latest block"
 
-            send(miner[:socket], M_TYPE_BLOCK_UPDATE, {block: @blockchain.latest_block})
+            send(miner[:socket], M_TYPE_BLOCK_UPDATE, {
+                   block: @blockchain.latest_block,
+                   difficulty: miner_difficulty_at(@blockchain.latest_index),
+                 })
           end
         end
       end
