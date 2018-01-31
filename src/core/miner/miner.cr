@@ -88,7 +88,7 @@ module ::Sushi::Core
 
       @latest_block = _m_content.block
       @latest_hash = _m_content.block.to_hash
-      @difficulty = miner_difficulty_at(_m_content.block.index)
+      @difficulty = _m_content.difficulty
 
       info "handshake has been accepted"
       info "set difficulty: #{light_cyan(@difficulty)}"
@@ -109,7 +109,7 @@ module ::Sushi::Core
 
       @latest_block = _m_content.block
       @latest_hash = _m_content.block.to_hash
-      @difficulty = miner_difficulty_at(_m_content.block.index)
+      @difficulty = _m_content.difficulty
 
       info "latest block has been updated"
       info "set difficulty: #{light_cyan(@difficulty)}"

@@ -19,7 +19,8 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_HANDSHAKE_MINER_ACCEPTED
     JSON.mapping({
-      block: Block,
+      block:      Block,
+      difficulty: Int32,
     })
   end
 
@@ -49,7 +50,8 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_BLOCK_UPDATE
     JSON.mapping({
-      block: Block,
+      block:      Block,
+      difficulty: Int32,
     })
   end
 
