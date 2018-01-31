@@ -6,120 +6,313 @@ include Units::Utils
 include Sushi::Core::Models
 include Sushi::Core::Controllers
 
-# def exec_internal_post(json, context, params) : HTTP::Server::Context
-#   call = json["call"].to_s
-#
-#   case call
-#   when "create_unsigned_transaction"
-#     return create_unsigned_transaction(json, context, params)
-#   when "create_transaction"
-#     return create_transaction(json, context, params)
-#   when "amount"
-#     return amount(json, context, params)
-#   when "blockchain_size"
-#     return blockchain_size(json, context, params)
-#   when "blockchain"
-#     return blockchain(json, context, params)
-#   when "block"
-#     return block(json, context, params)
-#   when "transactions"
-#     return transactions(json, context, params)
-#   when "transaction"
-#     return transaction(json, context, params)
-#   end
-#
-#   unpermitted_call(call, context)
-# end
+def with_node(&block)
+  sender_wallet = wallet_1
+  recipient_wallet = wallet_2
+
+  chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
+  blockchain = Blockchain.new(sender_wallet)
+  blockchain.replace_chain(chain)
+
+  rpc = RPCController.new(blockchain)
+  node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+  rpc.set_node(node)
+  yield sender_wallet, recipient_wallet, chain, blockchain, rpc
+end
+
+def with_rpc_exec_internal_post(rpc, json, &block)
+  res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+  res.response.output.flush
+  res.response.output.close
+  output = res.response.output
+  case output
+  when IO
+    yield res
+  else
+    fail "expected an io response"
+  end
+end
 
 describe RPCController do
-
   describe "#exec_internal_post" do
-
     describe "#create_unsigned_transaction" do
-
       it "should return the transaction as json when valid" do
-        sender_wallet = wallet_1
-        recipient_wallet = wallet_2
+        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          senders = [a_sender(sender_wallet, 1000_i64)]
+          recipients = [a_recipient(recipient_wallet, 10_i64)]
 
-        chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
-        blockchain = Blockchain.new(sender_wallet)
-        blockchain.replace_chain(chain)
+          payload = {
+            call:       "create_unsigned_transaction",
+            action:     "send",
+            senders:    senders.to_json,
+            recipients: recipients.to_json,
+            message:    "",
+          }.to_json
 
-        rpc = RPCController.new(blockchain)
-        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
-        rpc.set_node(node)
+          json = JSON.parse(payload)
 
-        senders = [a_sender(sender_wallet, 1000_i64)]
-        recipients = [a_recipient(recipient_wallet, 10_i64)]
-
-        payload = {
-          call:       "create_unsigned_transaction",
-          action:     "send",
-          senders:    senders.to_json,
-          recipients: recipients.to_json,
-          message:    "",
-        }.to_json
-
-        json = JSON.parse(payload)
-
-        res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
-        res.response.output.flush
-        res.response.output.close
-        output = res.response.output
-        case output
-        when IO
-          res.response.status_code.should eq(200)
-          http_res = res.response.unsafe_as(MockResponse).content
-          transaction_json = http_res.split("\n")[4].chomp
-          transaction = Transaction.from_json(transaction_json)
-          transaction.action.should eq("send")
-          transaction.prev_hash.should eq("0")
-          transaction.message.should eq("")
-          transaction.sign_r.should eq("0")
-          transaction.sign_s.should eq("0")
-          transaction.senders.should eq(senders)
-          transaction.recipients.should eq(recipients)
-        else
-          fail "expected an io response"
+          with_rpc_exec_internal_post(rpc, json) do |res|
+            res.response.status_code.should eq(200)
+            http_res = res.response.unsafe_as(MockResponse).content
+            transaction_json = http_res.split("\n")[4].chomp
+            transaction = Transaction.from_json(transaction_json)
+            transaction.action.should eq("send")
+            transaction.prev_hash.should eq("0")
+            transaction.message.should eq("")
+            transaction.sign_r.should eq("0")
+            transaction.sign_s.should eq("0")
+            transaction.senders.should eq(senders)
+            transaction.recipients.should eq(recipients)
+          end
         end
       end
 
       it "should raise an error: invalid fee if fee is too small for action" do
-        sender_wallet = wallet_1
-        recipient_wallet = wallet_2
+        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          senders = [a_sender(sender_wallet, 0_i64)]
+          recipients = [a_recipient(recipient_wallet, 10_i64)]
 
-        chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
-        blockchain = Blockchain.new(sender_wallet)
-        blockchain.replace_chain(chain)
+          payload = {
+            call:       "create_unsigned_transaction",
+            action:     "send",
+            senders:    senders.to_json,
+            recipients: recipients.to_json,
+            message:    "",
+          }.to_json
 
-        rpc = RPCController.new(blockchain)
-        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
-        rpc.set_node(node)
+          json = JSON.parse(payload)
 
-        senders = [a_sender(sender_wallet, 0_i64)]
-        recipients = [a_recipient(recipient_wallet, 10_i64)]
-
-        payload = {
-          call:       "create_unsigned_transaction",
-          action:     "send",
-          senders:    senders.to_json,
-          recipients: recipients.to_json,
-          message:    "",
-        }.to_json
-
-        json = JSON.parse(payload)
-
-        expect_raises(Exception, "Invalid fee -10 for the action send") do
-          rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+          expect_raises(Exception, "Invalid fee -10 for the action send") do
+            rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+          end
         end
       end
     end
 
     describe "#create_transaction" do
-
       it "should return a signed transaction when valid" do
+        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          senders = [a_sender(sender_wallet, 1000_i64)]
+          recipients = [a_recipient(recipient_wallet, 100_i64)]
+
+          unsigned_transaction = Transaction.new(
+            Transaction.create_id,
+            "send", # action
+            senders,
+            recipients,
+            "0", # message
+            "0", # prev_hash
+            "0", # sign_r
+            "0", # sign_s
+          )
+
+          signature = sign(sender_wallet, unsigned_transaction)
+          signed_transaction = unsigned_transaction.signed(signature[:r], signature[:s])
+
+          payload = {
+            call:        "create_transaction",
+            transaction: signed_transaction.to_json,
+          }.to_json
+
+          json = JSON.parse(payload)
+
+          with_rpc_exec_internal_post(rpc, json) do |res|
+            res.response.status_code.should eq(200)
+            http_res = res.response.unsafe_as(MockResponse).content
+            transaction_json = http_res.split("\n")[4].chomp
+            transaction = Transaction.from_json(transaction_json)
+            transaction.action.should eq("send")
+            transaction.prev_hash.should eq("0")
+            transaction.message.should eq("0")
+            transaction.sign_r.should eq(signature[:r])
+            transaction.sign_s.should eq(signature[:s])
+            transaction.senders.should eq(senders)
+          end
+        end
+      end
+
+      it "should return a 403 when an Exception occurs" do
+        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          senders = [a_sender(sender_wallet, 1000_i64)]
+          recipients = [a_recipient(recipient_wallet, 100_i64)]
+
+          payload = {
+            call:    "create_transaction",
+            missing: "missing",
+          }.to_json
+
+          json = JSON.parse(payload)
+
+          with_rpc_exec_internal_post(rpc, json) do |res|
+            res.response.status_code.should eq(403)
+            http_res = res.response.unsafe_as(MockResponse).content
+            http_res.includes?(%{Missing hash key: "transaction"}).should be_true
+          end
+        end
+      end
+    end
+
+    describe "#blockchain_size" do
+      it "should return the blockchain size for the current node" do
+        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          payload = {call: "blockchain_size"}.to_json
+          json = JSON.parse(payload)
+
+          with_rpc_exec_internal_post(rpc, json) do |res|
+            res.response.status_code.should eq(200)
+            http_res = res.response.unsafe_as(MockResponse).content
+            size = http_res.split("\n")[4].chomp
+            size.should eq(%{{"size":11}})
+          end
+        end
+      end
+    end
+
+    describe "#blockchain" do
+      it "should return the full blockchain including headers" do
+        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          payload = {call: "blockchain", header: false}.to_json
+          json = JSON.parse(payload)
+
+          with_rpc_exec_internal_post(rpc, json) do |res|
+            res.response.status_code.should eq(200)
+            http_res = res.response.unsafe_as(MockResponse).content
+            full_blockchain = http_res.split("\n")[4].chomp
+            full_blockchain.should eq(expected_blockchain)
+          end
+        end
+      end
+
+      it "should return the blockchain headers only" do
+        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          payload = {call: "blockchain", header: true}.to_json
+          json = JSON.parse(payload)
+
+          with_rpc_exec_internal_post(rpc, json) do |res|
+            res.response.status_code.should eq(200)
+            http_res = res.response.unsafe_as(MockResponse).content
+            headers = http_res.split("\n")[4].chomp
+            headers.should eq(expected_headers)
+          end
+        end
+      end
+    end
+
+    describe "#amount" do
+      it "should return the unconfirmed amount" do
+        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          recipient_address = block_1.transactions.first.recipients.first[:address]
+          payload = {call: "amount", address: recipient_address, unconfirmed: true}.to_json
+          json = JSON.parse(payload)
+
+          with_rpc_exec_internal_post(rpc, json) do |res|
+            res.response.status_code.should eq(200)
+            http_res = res.response.unsafe_as(MockResponse).content
+            amount_result = http_res.split("\n")[4].chomp
+            amount_result.should eq(%{{"amount":100000,"address":"#{recipient_address}","unconfirmed":true}})
+          end
+        end
+      end
+
+      it "should return the confirmed amount" do
+        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          recipient_address = block_1.transactions.first.recipients.first[:address]
+          payload = {call: "amount", address: recipient_address, unconfirmed: false}.to_json
+          json = JSON.parse(payload)
+
+          with_rpc_exec_internal_post(rpc, json) do |res|
+            res.response.status_code.should eq(200)
+            http_res = res.response.unsafe_as(MockResponse).content
+            amount_result = http_res.split("\n")[4].chomp
+            amount_result.should eq(%{{"amount":10000,"address":"#{recipient_address}","unconfirmed":false}})
+          end
+        end
+      end
+    end
+
+    describe "#transactions" do
+      it "should return transactions for the specified block index" do
+        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          payload = {call: "transactions", index: 1}.to_json
+          json = JSON.parse(payload)
+
+          with_rpc_exec_internal_post(rpc, json) do |res|
+            res.response.status_code.should eq(200)
+            http_res = res.response.unsafe_as(MockResponse).content
+            transactions = http_res.split("\n")[4].chomp
+            transactions.should eq(expected_transactions)
+          end
+        end
+      end
+
+      it "should raise an error: invalid index" do
+        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          payload = {call: "transactions", index: 99}.to_json
+          json = JSON.parse(payload)
+
+          expect_raises(Exception, "Invalid index 99 (Blockchain size is 11)") do
+            rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+          end
+        end
+      end
+    end
+
+    describe "#transaction" do
+      it "should return a transaction for the supplied transaction id" do
+        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          payload = {call: "transaction", transaction_id: block_2.transactions.first.id}.to_json
+          json = JSON.parse(payload)
+
+          with_rpc_exec_internal_post(rpc, json) do |res|
+            res.response.status_code.should eq(200)
+            http_res = res.response.unsafe_as(MockResponse).content
+            transaction = http_res.split("\n")[4].chomp
+            transaction.should eq(expected_transaction)
+          end
+        end
+      end
+
+      it "should raise an error: transaction not found in any block" do
+        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          payload = {call: "transaction", transaction_id: "invalid-transaction-id"}.to_json
+          json = JSON.parse(payload)
+
+          expect_raises(Exception, "Failed to find a block for the transaction invalid-transaction-id") do
+            rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+          end
+        end
+      end
+
+      # TODO - Kings - Not sure how to make this error
+      pending "should raise an error: transaction not found for supplied transaction id" do
+        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          payload = {call: "transaction", transaction_id: "invalid-transaction-id"}.to_json
+          json = JSON.parse(payload)
+
+          expect_raises(Exception, "Failed to find a block for the transaction invalid-transaction-id") do
+            rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+          end
+        end
+      end
+    end
+
+    describe "#block" do
+      it "should return the block specified by the supplied block index" do
+        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          payload = {call: "block", index: 2, header: false}.to_json
+          json = JSON.parse(payload)
+
+          with_rpc_exec_internal_post(rpc, json) do |res|
+            res.response.status_code.should eq(200)
+            http_res = res.response.unsafe_as(MockResponse).content
+            block = http_res.split("\n")[4].chomp
+            block.should eq(expected_block)
+          end
+        end
+      end
+
+      it "should return the block header specified by the supplied block index" do
         sender_wallet = wallet_1
-        recipient_wallet = wallet_2
 
         chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
         blockchain = Blockchain.new(sender_wallet)
@@ -129,28 +322,7 @@ describe RPCController do
         node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
         rpc.set_node(node)
 
-        senders = [a_sender(sender_wallet, 1000_i64)]
-        recipients = [a_recipient(recipient_wallet, 100_i64)]
-
-        unsigned_transaction = Transaction.new(
-          Transaction.create_id,
-          "send", # action
-          senders,
-          recipients,
-          "0", # message
-          "0", # prev_hash
-          "0", # sign_r
-          "0", # sign_s
-        )
-
-        signature = sign(sender_wallet, unsigned_transaction)
-        signed_transaction = unsigned_transaction.signed(signature[:r], signature[:s])
-
-        payload = {
-          call:        "create_transaction",
-          transaction: signed_transaction.to_json,
-        }.to_json
-
+        payload = {call: "block", index: 2, header: true}.to_json
         json = JSON.parse(payload)
 
         res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
@@ -161,24 +333,15 @@ describe RPCController do
         when IO
           res.response.status_code.should eq(200)
           http_res = res.response.unsafe_as(MockResponse).content
-          transaction_json = http_res.split("\n")[4].chomp
-          transaction = Transaction.from_json(transaction_json)
-          transaction.action.should eq("send")
-          transaction.prev_hash.should eq("0")
-          transaction.message.should eq("0")
-          transaction.sign_r.should eq(signature[:r])
-          transaction.sign_s.should eq(signature[:s])
-          transaction.senders.should eq(senders)
-          transaction.recipients.should eq(recipients)
+          block = http_res.split("\n")[4].chomp
+          block.should eq(expected_block_header)
         else
           fail "expected an io response"
         end
-
       end
 
-      it "should return a 403 when an Exception occurs" do
+      it "should return the block specified by the supplied transaction id" do
         sender_wallet = wallet_1
-        recipient_wallet = wallet_2
 
         chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
         blockchain = Blockchain.new(sender_wallet)
@@ -188,14 +351,124 @@ describe RPCController do
         node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
         rpc.set_node(node)
 
-        senders = [a_sender(sender_wallet, 1000_i64)]
-        recipients = [a_recipient(recipient_wallet, 100_i64)]
+        payload = {call: "block", transaction_id: block_2.transactions.first.id, header: false}.to_json
+        json = JSON.parse(payload)
 
-        payload = {
-          call:    "create_transaction",
-          missing: "missing",
-        }.to_json
+        res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+        res.response.output.flush
+        res.response.output.close
+        output = res.response.output
+        case output
+        when IO
+          res.response.status_code.should eq(200)
+          http_res = res.response.unsafe_as(MockResponse).content
+          block = http_res.split("\n")[4].chomp
+          block.should eq(expected_block)
+        else
+          fail "expected an io response"
+        end
+      end
 
+      it "should return the block header specified by the supplied transaction id" do
+        sender_wallet = wallet_1
+
+        chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
+        blockchain = Blockchain.new(sender_wallet)
+        blockchain.replace_chain(chain)
+
+        rpc = RPCController.new(blockchain)
+        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+        rpc.set_node(node)
+
+        payload = {call: "block", transaction_id: block_2.transactions.first.id, header: true}.to_json
+        json = JSON.parse(payload)
+
+        res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+        res.response.output.flush
+        res.response.output.close
+        output = res.response.output
+        case output
+        when IO
+          res.response.status_code.should eq(200)
+          http_res = res.response.unsafe_as(MockResponse).content
+          block = http_res.split("\n")[4].chomp
+          block.should eq(expected_block_header)
+        else
+          fail "expected an io response"
+        end
+      end
+
+      it "should raise a error: invalid index" do
+        sender_wallet = wallet_1
+
+        chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
+        blockchain = Blockchain.new(sender_wallet)
+        blockchain.replace_chain(chain)
+
+        rpc = RPCController.new(blockchain)
+        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+        rpc.set_node(node)
+
+        payload = {call: "block", index: 99, header: false}.to_json
+        json = JSON.parse(payload)
+
+        expect_raises(Exception, "Invalid index 99 (Blockchain size is 11)") do
+          rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+        end
+      end
+
+      it "should raise an error: failed to find a block for the transaction" do
+        sender_wallet = wallet_1
+
+        chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
+        blockchain = Blockchain.new(sender_wallet)
+        blockchain.replace_chain(chain)
+
+        rpc = RPCController.new(blockchain)
+        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+        rpc.set_node(node)
+
+        payload = {call: "block", transaction_id: "invalid-transaction-id", header: false}.to_json
+        json = JSON.parse(payload)
+
+        expect_raises(Exception, "Failed to find a block for the transaction invalid-transaction-id") do
+          rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+        end
+      end
+    end
+
+    describe "#unpermitted_call" do
+      it "should raise an error: Missing hash key call" do
+        sender_wallet = wallet_1
+
+        chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
+        blockchain = Blockchain.new(sender_wallet)
+        blockchain.replace_chain(chain)
+
+        rpc = RPCController.new(blockchain)
+        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+        rpc.set_node(node)
+
+        payload = {unknown: "unknown"}.to_json
+        json = JSON.parse(payload)
+
+        expect_raises(Exception, %{Missing hash key: "call"}) do
+          rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+        end
+      end
+
+      it "should return a 403 when the rpc call is unknown" do
+        sender_wallet = wallet_1
+
+        chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
+        blockchain = Blockchain.new(sender_wallet)
+        blockchain.replace_chain(chain)
+
+        rpc = RPCController.new(blockchain)
+        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+        rpc.set_node(node)
+
+        payload = {call: "unknown"}.to_json
         json = JSON.parse(payload)
 
         res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
@@ -206,454 +479,47 @@ describe RPCController do
         when IO
           res.response.status_code.should eq(403)
           http_res = res.response.unsafe_as(MockResponse).content
-          http_res.includes?(%{Missing hash key: "transaction"}).should be_true
-        else
-          fail "expected an io response"
-        end
-      end
-
-    end
-
-    describe "#blockchain_size" do
-
-      it "should return the blockchain size for the current node" do
-        sender_wallet = wallet_1
-        chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
-        blockchain = Blockchain.new(sender_wallet)
-        blockchain.replace_chain(chain)
-
-        rpc = RPCController.new(blockchain)
-        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
-        rpc.set_node(node)
-
-        payload = {call: "blockchain_size"}.to_json
-        json = JSON.parse(payload)
-
-        res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
-        res.response.output.flush
-        res.response.output.close
-        output = res.response.output
-        case output
-        when IO
-          res.response.status_code.should eq(200)
-          http_res = res.response.unsafe_as(MockResponse).content
-          size = http_res.split("\n")[4].chomp
-          size.should eq(%{{"size":11}})
+          message = http_res.split("\n")[4].chomp
+          message.should eq("Unpermitted call: unknown")
         else
           fail "expected an io response"
         end
       end
     end
-
-    describe "#blockchain" do
-
-      it "should return the full blockchain including headers" do
-        sender_wallet = wallet_1
-        chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
-        blockchain = Blockchain.new(sender_wallet)
-        blockchain.replace_chain(chain)
-
-        rpc = RPCController.new(blockchain)
-        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
-        rpc.set_node(node)
-
-        payload = {call: "blockchain", header: false}.to_json
-        json = JSON.parse(payload)
-
-        res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
-        res.response.output.flush
-        res.response.output.close
-        output = res.response.output
-        case output
-        when IO
-          res.response.status_code.should eq(200)
-          http_res = res.response.unsafe_as(MockResponse).content
-          full_blockchain = http_res.split("\n")[4].chomp
-          full_blockchain.should eq(expected_blockchain)
-        else
-          fail "expected an io response"
-        end
-      end
-
-     it "should return the blockchain headers only" do
-       sender_wallet = wallet_1
-       chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
-       blockchain = Blockchain.new(sender_wallet)
-       blockchain.replace_chain(chain)
-
-       rpc = RPCController.new(blockchain)
-       node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
-       rpc.set_node(node)
-
-       payload = {call: "blockchain", header: true}.to_json
-       json = JSON.parse(payload)
-
-       res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
-       res.response.output.flush
-       res.response.output.close
-       output = res.response.output
-       case output
-       when IO
-         res.response.status_code.should eq(200)
-         http_res = res.response.unsafe_as(MockResponse).content
-         headers = http_res.split("\n")[4].chomp
-         headers.should eq(expected_headers)
-       else
-         fail "expected an io response"
-       end
-     end
-    end
-
-    describe "#amount" do
-
-      it "should return the unconfirmed amount" do
-        sender_wallet = wallet_1
-        chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
-        blockchain = Blockchain.new(sender_wallet)
-        blockchain.replace_chain(chain)
-
-        rpc = RPCController.new(blockchain)
-        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
-        rpc.set_node(node)
-
-        recipient_address = block_1.transactions.first.recipients.first[:address]
-        payload = {call: "amount", address: recipient_address, unconfirmed: true}.to_json
-        json = JSON.parse(payload)
-
-        res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
-        res.response.output.flush
-        res.response.output.close
-        output = res.response.output
-        case output
-        when IO
-          res.response.status_code.should eq(200)
-          http_res = res.response.unsafe_as(MockResponse).content
-          amount_result = http_res.split("\n")[4].chomp
-          amount_result.should eq(%{{"amount":100000,"address":"#{recipient_address}","unconfirmed":true}})
-        else
-          fail "expected an io response"
-        end
-      end
-
-      it "should return the confirmed amount" do
-        sender_wallet = wallet_1
-        chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
-        blockchain = Blockchain.new(sender_wallet)
-        blockchain.replace_chain(chain)
-
-        rpc = RPCController.new(blockchain)
-        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
-        rpc.set_node(node)
-
-        recipient_address = block_1.transactions.first.recipients.first[:address]
-        payload = {call: "amount", address: recipient_address, unconfirmed: false}.to_json
-        json = JSON.parse(payload)
-
-        res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
-        res.response.output.flush
-        res.response.output.close
-        output = res.response.output
-        case output
-        when IO
-          res.response.status_code.should eq(200)
-          http_res = res.response.unsafe_as(MockResponse).content
-          amount_result = http_res.split("\n")[4].chomp
-          amount_result.should eq(%{{"amount":10000,"address":"#{recipient_address}","unconfirmed":false}})
-        else
-          fail "expected an io response"
-        end
-      end
-
-    end
-
-    describe "#transactions" do
-
-      it "should return transactions for the specified block index" do
-        sender_wallet = wallet_1
-
-        chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
-        blockchain = Blockchain.new(sender_wallet)
-        blockchain.replace_chain(chain)
-
-        rpc = RPCController.new(blockchain)
-        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
-        rpc.set_node(node)
-
-        payload = {call: "transactions", index: 1}.to_json
-        json = JSON.parse(payload)
-
-        res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
-        res.response.output.flush
-        res.response.output.close
-        output = res.response.output
-        case output
-        when IO
-          res.response.status_code.should eq(200)
-          http_res = res.response.unsafe_as(MockResponse).content
-          transactions = http_res.split("\n")[4].chomp
-          transactions.should eq(expected_transactions)
-        else
-          fail "expected an io response"
-        end
-      end
-
-      it "should raise an error: invalid index" do
-        sender_wallet = wallet_1
-
-        chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
-        blockchain = Blockchain.new(sender_wallet)
-        blockchain.replace_chain(chain)
-
-        rpc = RPCController.new(blockchain)
-        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
-        rpc.set_node(node)
-
-        payload = {call: "transactions", index: 99}.to_json
-        json = JSON.parse(payload)
-
-        expect_raises(Exception, "Invalid index 99 (Blockchain size is 11)") do
-          rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
-        end
-
-
-
-      end
-
-    end
-
-    describe "#transaction" do
-
-      it "should return a transaction for the supplied transaction id" do
-        sender_wallet = wallet_1
-
-        chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
-        blockchain = Blockchain.new(sender_wallet)
-        blockchain.replace_chain(chain)
-
-        rpc = RPCController.new(blockchain)
-        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
-        rpc.set_node(node)
-
-        payload = {call: "transaction", transaction_id: block_2.transactions.first.id}.to_json
-        json = JSON.parse(payload)
-
-        res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
-        res.response.output.flush
-        res.response.output.close
-        output = res.response.output
-        case output
-        when IO
-          res.response.status_code.should eq(200)
-          http_res = res.response.unsafe_as(MockResponse).content
-          transaction = http_res.split("\n")[4].chomp
-          transaction.should eq(expected_transaction)
-        else
-          fail "expected an io response"
-        end
-      end
-
-      it "should raise an error: transaction not found in any block" do
-        sender_wallet = wallet_1
-
-        chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
-        blockchain = Blockchain.new(sender_wallet)
-        blockchain.replace_chain(chain)
-
-        rpc = RPCController.new(blockchain)
-        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
-        rpc.set_node(node)
-
-        payload = {call: "transaction", transaction_id: "invalid-transaction-id"}.to_json
-        json = JSON.parse(payload)
-
-        expect_raises(Exception, "Failed to find a block for the transaction invalid-transaction-id") do
-          rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
-        end
-      end
-
-      # TODO - Kings - Not sure how to make this error
-      pending "should raise an error: transaction not found for supplied transaction id" do
-        sender_wallet = wallet_1
-
-        chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
-        blockchain = Blockchain.new(sender_wallet)
-        blockchain.replace_chain(chain)
-
-        rpc = RPCController.new(blockchain)
-        node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
-        rpc.set_node(node)
-
-        payload = {call: "transaction", transaction_id: "invalid-transaction-id"}.to_json
-        json = JSON.parse(payload)
-
-        expect_raises(Exception, "Failed to find a block for the transaction invalid-transaction-id") do
-          rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
-        end
-      end
-
-    end
-
-    describe "#block" do
-
-     it "should return the block specified by the supplied block index" do
-       sender_wallet = wallet_1
-
-       chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
-       blockchain = Blockchain.new(sender_wallet)
-       blockchain.replace_chain(chain)
-
-       rpc = RPCController.new(blockchain)
-       node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
-       rpc.set_node(node)
-
-       payload = {call: "block", index: 2, header: false}.to_json
-       json = JSON.parse(payload)
-
-       res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
-       res.response.output.flush
-       res.response.output.close
-       output = res.response.output
-       case output
-       when IO
-         res.response.status_code.should eq(200)
-         http_res = res.response.unsafe_as(MockResponse).content
-         block = http_res.split("\n")[4].chomp
-         block.should eq(expected_block)
-       else
-         fail "expected an io response"
-       end
-     end
-
-     it "should return the block header specified by the supplied block index" do
-       sender_wallet = wallet_1
-
-       chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
-       blockchain = Blockchain.new(sender_wallet)
-       blockchain.replace_chain(chain)
-
-       rpc = RPCController.new(blockchain)
-       node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
-       rpc.set_node(node)
-
-       payload = {call: "block", index: 2, header: true}.to_json
-       json = JSON.parse(payload)
-
-       res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
-       res.response.output.flush
-       res.response.output.close
-       output = res.response.output
-       case output
-       when IO
-         res.response.status_code.should eq(200)
-         http_res = res.response.unsafe_as(MockResponse).content
-         block = http_res.split("\n")[4].chomp
-         block.should eq(expected_block_header)
-       else
-         fail "expected an io response"
-       end
-     end
-
-     it "should return the block specified by the supplied transaction id" do
-       sender_wallet = wallet_1
-
-       chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
-       blockchain = Blockchain.new(sender_wallet)
-       blockchain.replace_chain(chain)
-
-       rpc = RPCController.new(blockchain)
-       node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
-       rpc.set_node(node)
-
-       payload = {call: "block", transaction_id: block_2.transactions.first.id, header: false}.to_json
-       json = JSON.parse(payload)
-
-       res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
-       res.response.output.flush
-       res.response.output.close
-       output = res.response.output
-       case output
-       when IO
-         res.response.status_code.should eq(200)
-         http_res = res.response.unsafe_as(MockResponse).content
-         block = http_res.split("\n")[4].chomp
-         block.should eq(expected_block)
-       else
-         fail "expected an io response"
-       end
-     end
-
-     it "should return the block header specified by the supplied transaction id" do
-       sender_wallet = wallet_1
-
-       chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
-       blockchain = Blockchain.new(sender_wallet)
-       blockchain.replace_chain(chain)
-
-       rpc = RPCController.new(blockchain)
-       node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
-       rpc.set_node(node)
-
-       payload = {call: "block", transaction_id: block_2.transactions.first.id, header: true}.to_json
-       json = JSON.parse(payload)
-
-       res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
-       res.response.output.flush
-       res.response.output.close
-       output = res.response.output
-       case output
-       when IO
-         res.response.status_code.should eq(200)
-         http_res = res.response.unsafe_as(MockResponse).content
-         block = http_res.split("\n")[4].chomp
-         block.should eq(expected_block_header)
-       else
-         fail "expected an io response"
-       end
-     end
-
-     it "should raise a error: invalid index" do
-       sender_wallet = wallet_1
-
-       chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
-       blockchain = Blockchain.new(sender_wallet)
-       blockchain.replace_chain(chain)
-
-       rpc = RPCController.new(blockchain)
-       node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
-       rpc.set_node(node)
-
-       payload = {call: "block", index: 99, header: false}.to_json
-       json = JSON.parse(payload)
-
-       expect_raises(Exception, "Invalid index 99 (Blockchain size is 11)") do
-         rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
-       end
-     end
-
-     it "should raise an error: failed to find a block for the transaction" do
-       sender_wallet = wallet_1
-
-       chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
-       blockchain = Blockchain.new(sender_wallet)
-       blockchain.replace_chain(chain)
-
-       rpc = RPCController.new(blockchain)
-       node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
-       rpc.set_node(node)
-
-        payload = {call: "block", transaction_id: "invalid-transaction-id", header: false}.to_json
-       json = JSON.parse(payload)
-
-       expect_raises(Exception, "Failed to find a block for the transaction invalid-transaction-id") do
-         rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
-       end
-     end
-
-    end
-
   end
 
-    STDERR.puts "< Node::RPCController"
+  describe "#exec_internal_get" do
+    it "should return an unpermitted call response" do
+      sender_wallet = wallet_1
+
+      chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
+      blockchain = Blockchain.new(sender_wallet)
+      blockchain.replace_chain(chain)
+
+      rpc = RPCController.new(blockchain)
+      node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+      rpc.set_node(node)
+
+      payload = {call: "unknown"}.to_json
+      json = JSON.parse(payload)
+
+      res = rpc.exec_internal_get(MockContext.new("GET").unsafe_as(HTTP::Server::Context), nil)
+      res.response.output.flush
+      res.response.output.close
+      output = res.response.output
+      case output
+      when IO
+        res.response.status_code.should eq(403)
+        http_res = res.response.unsafe_as(MockResponse).content
+        message = http_res.split("\n")[4].chomp
+        message.should eq("Unpermitted method: GET")
+      else
+        fail "expected an io response"
+      end
+    end
+  end
+
+  STDERR.puts "< Node::RPCController"
 end
 
 def expected_headers

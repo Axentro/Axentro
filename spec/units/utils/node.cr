@@ -2,8 +2,8 @@ module ::Units::Utils::NodeHelper
   include Sushi::Core
 
   class MockRequest < HTTP::Request
-    def initialize
-      super("POST", "/rpc", HTTP::Headers.new, IO::Memory.new)
+    def initialize(method : String)
+      super(method, "/rpc", HTTP::Headers.new, IO::Memory.new)
     end
   end
 
@@ -22,8 +22,8 @@ module ::Units::Utils::NodeHelper
 
   class MockContext < HTTP::Server::Context
 
-    def initialize
-      @request = MockRequest.new.unsafe_as(HTTP::Request)
+    def initialize(method : String = "POST")
+      @request = MockRequest.new(method).unsafe_as(HTTP::Request)
       @response = MockResponse.new.unsafe_as(HTTP::Server::Response)
     end
 
