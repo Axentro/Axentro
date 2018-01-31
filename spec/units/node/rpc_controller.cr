@@ -308,8 +308,6 @@ describe RPCController do
 
       it "should return the unconfirmed amount" do
         sender_wallet = wallet_1
-        recipient_wallet = wallet_2 # TODO - use wallet with money in
-
         chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
         blockchain = Blockchain.new(sender_wallet)
         blockchain.replace_chain(chain)
@@ -318,7 +316,8 @@ describe RPCController do
         node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
         rpc.set_node(node)
 
-        payload = {call: "amount", address: wallet_2.address, unconfirmed: true}.to_json
+        recipient_address = block_1.transactions.first.recipients.first[:address]
+        payload = {call: "amount", address: recipient_address, unconfirmed: true}.to_json
         json = JSON.parse(payload)
 
         res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
@@ -330,7 +329,7 @@ describe RPCController do
           res.response.status_code.should eq(200)
           http_res = res.response.unsafe_as(MockResponse).content
           amount_result = http_res.split("\n")[4].chomp
-          amount_result.should eq(%{{"amount":0,"address":"VDAyZmJiYzJjOWZlOTBmYzc0ZDUyMWI4ZjNmZjMwYWQ1ZDllNzU5Y2VjNGE3MTAy","unconfirmed":true}})
+          amount_result.should eq(%{{"amount":100000,"address":"#{recipient_address}","unconfirmed":true}})
         else
           fail "expected an io response"
         end
@@ -338,7 +337,6 @@ describe RPCController do
 
       it "should return the confirmed amount" do
         sender_wallet = wallet_1
-        recipient_wallet = wallet_2
         chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
         blockchain = Blockchain.new(sender_wallet)
         blockchain.replace_chain(chain)
@@ -347,7 +345,8 @@ describe RPCController do
         node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
         rpc.set_node(node)
 
-        payload = {call: "amount", address: wallet_2.address, unconfirmed: false}.to_json
+        recipient_address = block_1.transactions.first.recipients.first[:address]
+        payload = {call: "amount", address: recipient_address, unconfirmed: false}.to_json
         json = JSON.parse(payload)
 
         res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
@@ -359,7 +358,7 @@ describe RPCController do
           res.response.status_code.should eq(200)
           http_res = res.response.unsafe_as(MockResponse).content
           amount_result = http_res.split("\n")[4].chomp
-          amount_result.should eq(%{{"amount":0,"address":"VDAyZmJiYzJjOWZlOTBmYzc0ZDUyMWI4ZjNmZjMwYWQ1ZDllNzU5Y2VjNGE3MTAy","unconfirmed":false}})
+          amount_result.should eq(%{{"amount":10000,"address":"#{recipient_address}","unconfirmed":false}})
         else
           fail "expected an io response"
         end
@@ -493,6 +492,165 @@ describe RPCController do
       end
 
     end
+
+    describe "#block" do
+
+     it "should return the block specified by the supplied block index" do
+       sender_wallet = wallet_1
+
+       chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
+       blockchain = Blockchain.new(sender_wallet)
+       blockchain.replace_chain(chain)
+
+       rpc = RPCController.new(blockchain)
+       node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+       rpc.set_node(node)
+
+       payload = {call: "block", index: 2, header: false}.to_json
+       json = JSON.parse(payload)
+
+       res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+       res.response.output.flush
+       res.response.output.close
+       output = res.response.output
+       case output
+       when IO
+         res.response.status_code.should eq(200)
+         http_res = res.response.unsafe_as(MockResponse).content
+         block = http_res.split("\n")[4].chomp
+         block.should eq(expected_block)
+       else
+         fail "expected an io response"
+       end
+     end
+
+     it "should return the block header specified by the supplied block index" do
+       sender_wallet = wallet_1
+
+       chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
+       blockchain = Blockchain.new(sender_wallet)
+       blockchain.replace_chain(chain)
+
+       rpc = RPCController.new(blockchain)
+       node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+       rpc.set_node(node)
+
+       payload = {call: "block", index: 2, header: true}.to_json
+       json = JSON.parse(payload)
+
+       res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+       res.response.output.flush
+       res.response.output.close
+       output = res.response.output
+       case output
+       when IO
+         res.response.status_code.should eq(200)
+         http_res = res.response.unsafe_as(MockResponse).content
+         block = http_res.split("\n")[4].chomp
+         block.should eq(expected_block_header)
+       else
+         fail "expected an io response"
+       end
+     end
+
+     it "should return the block specified by the supplied transaction id" do
+       sender_wallet = wallet_1
+
+       chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
+       blockchain = Blockchain.new(sender_wallet)
+       blockchain.replace_chain(chain)
+
+       rpc = RPCController.new(blockchain)
+       node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+       rpc.set_node(node)
+
+       payload = {call: "block", transaction_id: block_2.transactions.first.id, header: false}.to_json
+       json = JSON.parse(payload)
+
+       res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+       res.response.output.flush
+       res.response.output.close
+       output = res.response.output
+       case output
+       when IO
+         res.response.status_code.should eq(200)
+         http_res = res.response.unsafe_as(MockResponse).content
+         block = http_res.split("\n")[4].chomp
+         block.should eq(expected_block)
+       else
+         fail "expected an io response"
+       end
+     end
+
+     it "should return the block header specified by the supplied transaction id" do
+       sender_wallet = wallet_1
+
+       chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
+       blockchain = Blockchain.new(sender_wallet)
+       blockchain.replace_chain(chain)
+
+       rpc = RPCController.new(blockchain)
+       node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+       rpc.set_node(node)
+
+       payload = {call: "block", transaction_id: block_2.transactions.first.id, header: true}.to_json
+       json = JSON.parse(payload)
+
+       res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+       res.response.output.flush
+       res.response.output.close
+       output = res.response.output
+       case output
+       when IO
+         res.response.status_code.should eq(200)
+         http_res = res.response.unsafe_as(MockResponse).content
+         block = http_res.split("\n")[4].chomp
+         block.should eq(expected_block_header)
+       else
+         fail "expected an io response"
+       end
+     end
+
+     it "should raise a error: invalid index" do
+       sender_wallet = wallet_1
+
+       chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
+       blockchain = Blockchain.new(sender_wallet)
+       blockchain.replace_chain(chain)
+
+       rpc = RPCController.new(blockchain)
+       node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+       rpc.set_node(node)
+
+       payload = {call: "block", index: 99, header: false}.to_json
+       json = JSON.parse(payload)
+
+       expect_raises(Exception, "Invalid index 99 (Blockchain size is 11)") do
+         rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+       end
+     end
+
+     it "should raise an error: failed to find a block for the transaction" do
+       sender_wallet = wallet_1
+
+       chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
+       blockchain = Blockchain.new(sender_wallet)
+       blockchain.replace_chain(chain)
+
+       rpc = RPCController.new(blockchain)
+       node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+       rpc.set_node(node)
+
+        payload = {call: "block", transaction_id: "invalid-transaction-id", header: false}.to_json
+       json = JSON.parse(payload)
+
+       expect_raises(Exception, "Failed to find a block for the transaction invalid-transaction-id") do
+         rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+       end
+     end
+
+    end
+
   end
 
     STDERR.puts "< Node::RPCController"
@@ -512,4 +670,12 @@ end
 
 def expected_transaction
   %{{"id":"73478665802282437a537a72985befb106d3864e10ca43bab44ee96406256586","action":"head","senders":[],"recipients":[{"address":"VDAyYTVjMDYwZjYyZThkOWM5ODhkZGFkMmM3NzM2MjczZWZhZjIxNDAyNWRmNWQ0","amount":2500},{"address":"VDAyYTVjMDYwZjYyZThkOWM5ODhkZGFkMmM3NzM2MjczZWZhZjIxNDAyNWRmNWQ0","amount":7500}],"message":"0","prev_hash":"0","sign_r":"0","sign_s":"0"}}
+end
+
+def expected_block
+  %{{"index":2,"transactions":[{"id":"73478665802282437a537a72985befb106d3864e10ca43bab44ee96406256586","action":"head","senders":[],"recipients":[{"address":"VDAyYTVjMDYwZjYyZThkOWM5ODhkZGFkMmM3NzM2MjczZWZhZjIxNDAyNWRmNWQ0","amount":2500},{"address":"VDAyYTVjMDYwZjYyZThkOWM5ODhkZGFkMmM3NzM2MjczZWZhZjIxNDAyNWRmNWQ0","amount":7500}],"message":"0","prev_hash":"0","sign_r":"0","sign_s":"0"}],"nonce":4531115808962198085,"prev_hash":"7cbc286a6db06aa97ba57f3f39bf06586c2f18cfcc6495023d5cdd012abeec60","merkle_tree_root":"c96d6d7d9cb53a61316dfac05b913d61a3ec02c4"}}
+end
+
+def expected_block_header
+  %{{"index":2,"nonce":4531115808962198085,"prev_hash":"7cbc286a6db06aa97ba57f3f39bf06586c2f18cfcc6495023d5cdd012abeec60","merkle_tree_root":"c96d6d7d9cb53a61316dfac05b913d61a3ec02c4"}}
 end
