@@ -480,7 +480,10 @@ module ::Sushi::Core
       info "broadcast a block to miners"
 
       @miners.each do |miner|
-        send(miner[:socket], M_TYPE_BLOCK_UPDATE, {block: @blockchain.latest_block})
+        send(miner[:socket], M_TYPE_BLOCK_UPDATE, {
+               block: @blockchain.latest_block,
+               difficulty: miner_difficulty_at(@blockchain.latest_index),
+             })
       end
     end
 
