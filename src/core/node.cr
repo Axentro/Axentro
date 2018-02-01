@@ -481,9 +481,9 @@ module ::Sushi::Core
 
       @miners.each do |miner|
         send(miner[:socket], M_TYPE_BLOCK_UPDATE, {
-               block: @blockchain.latest_block,
-               difficulty: miner_difficulty_at(@blockchain.latest_index),
-             })
+          block:      @blockchain.latest_block,
+          difficulty: miner_difficulty_at(@blockchain.latest_index),
+        })
       end
     end
 
