@@ -1,4 +1,5 @@
 require "./../../spec_helper"
+require "./../utils"
 
 include Sushi::Core
 include Units::Utils
@@ -20,9 +21,7 @@ describe UTXO do
       utxo.record(chain)
 
       address = block_1.transactions.first.recipients.first[:address]
-      expected_amount = chain[-1].transactions.first.recipients
-                                                    .select { |r| r[:address] == address }
-                                                    .reduce(0) { |sum, x| sum + x[:amount] }
+      expected_amount = 10000_i64
 
       utxo.get(address).should eq(expected_amount)
     end

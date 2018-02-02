@@ -5,6 +5,7 @@ include Sushi::Core
 include Hashes
 include Units::Utils
 include Sushi::Common::Num
+include Sushi::Core::Models
 
 describe Block do
   it "should create a genesis block (new block with no transactions)" do
@@ -30,14 +31,14 @@ describe Block do
     it "should calculate merkle tree root when coinbase transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
       block = Block.new(1_i64, [coinbase_transaction], 1_u64, "prev_hash")
-      block.calcluate_merkle_tree_root.should eq("4f57745f5f96b8ee6654539649e428b493b7de2d")
+      block.calcluate_merkle_tree_root.should eq("d8d522eb329b5adb18c6873952f516cee3e2fef7")
     end
 
     it "should calculate merkle tree root when 2 transactions (first is coinbase)" do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = Block.new(1_i64, [coinbase_transaction, transaction1], 1_u64, "prev_hash")
-      block.calcluate_merkle_tree_root.should eq("a0d15b42c006d1381147c8da55240f07c52eafad")
+      block.calcluate_merkle_tree_root.should eq("4aaa1b2887d2e147c1eb7ef71775782c60442f84")
     end
   end
 
@@ -45,7 +46,7 @@ describe Block do
     it "should return true when valid" do
       coinbase_transaction = a_fixed_coinbase_transaction
       block = Block.new(1_i64, [coinbase_transaction], 1_u64, "08101ac35b72e68db9670e1afc6b4566bc99a2c7df2772f6c03d18d39a3a5dce")
-      block.valid_nonce?(67_u64, 2).should be_true
+      block.valid_nonce?(116_u64, 2).should be_true
     end
 
     it "should return false when invalid" do
@@ -122,7 +123,7 @@ describe Block do
       prev_block = block_1
       prev_hash = prev_block.to_hash
       block = block_2
-      block.valid_for?(prev_block)
+      block.valid_for?(prev_block).should be_true
     end
 
     it "should raise an error: mismatch index" do
@@ -167,14 +168,14 @@ describe Block do
   end
 
   describe "#calculate_utxo" do
-    it "should unspent transactions" do
+    it "should calculate unspent transactions" do
       r1_address = block_2.transactions.first.recipients.first[:address]
       r1_amount = prec(block_2.transactions.first.recipients.first[:amount])
       r2_address = block_2.transactions.first.recipients[1][:address]
       r2_amount = prec(block_2.transactions.first.recipients[1][:amount])
       transaction_id = block_2.transactions.first.id
 
-      expected_utxo = {utxo:    {r1_address => r1_amount + r2_amount},
+      expected_utxo = {utxo:    {r1_address => r1_amount, r2_address => r2_amount},
                        indices: {transaction_id => block_2.index}}
 
       block_2.calculate_utxo.should eq(expected_utxo)

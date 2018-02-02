@@ -155,9 +155,9 @@ def create_unknown_network_address
   public_key = Wallet.create_key_pair[:public_key]
   prefix = "U0"
   raw_address = (public_key.x + public_key.y).to_s(base: 16)
-  hashed_address = ripemd160(sha256(raw_address).hexstring).hexstring
+  hashed_address = ripemd160(sha256(raw_address))
   version_address = prefix + hashed_address
-  hashed_address_again = sha256(sha256(version_address).hexstring).hexstring
+  hashed_address_again = sha256(sha256(version_address))
   checksum = hashed_address_again[0..5]
   Base64.strict_encode(version_address + checksum)
 end
