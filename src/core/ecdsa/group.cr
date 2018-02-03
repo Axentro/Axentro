@@ -34,7 +34,7 @@ module ::Sushi::Core::ECDSA
     end
 
     def sign(secret_key : BigInt, message : String) : Array(BigInt)
-      hash = BigInt.new(sha256(message).hexstring, base: 16)
+      hash = BigInt.new(sha256(message), base: 16)
 
       random = Random::Secure.hex(64)
 
@@ -54,7 +54,7 @@ module ::Sushi::Core::ECDSA
     end
 
     def verify(public_key : Point, message : String, r : BigInt, s : BigInt) : Bool
-      hash = BigInt.new(sha256(message).hexstring, base: 16)
+      hash = BigInt.new(sha256(message), base: 16)
 
       c = mod_inv(s, _n)
 

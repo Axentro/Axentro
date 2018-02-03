@@ -4,7 +4,7 @@ module ::Sushi::Core::Consensus
     difficulty = _difficulty.nil? ? difficulty_at(block_index) : _difficulty.not_nil!
     guess_nonce = "#{block_hash}#{nonce}"
     guess_hash = sha256(guess_nonce)
-    guess_hash.hexstring[0, difficulty] == "0" * difficulty
+    guess_hash[0, difficulty] == "0" * difficulty
   end
 
   N = 1 << 16
