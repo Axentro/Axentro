@@ -184,7 +184,6 @@ module ::Sushi::Core
 
     def create_coinbase_transaction(miners : Models::Miners) : Transaction
       rewards_total = served_amount(latest_index)
-      puts "rewards_total: #{rewards_total}"
 
       miners_nonces_size = miners.reduce(0) { |sum, m| sum + m[:nonces].size }
       miners_rewards_total = prec((rewards_total * 3_i64) / 4_i64)
@@ -234,8 +233,6 @@ module ::Sushi::Core
 
     def served_amount(index) : Int64
       total_fees = total_fees_of_latest_block
-      puts "total_fees(#{index}): #{total_fees}"
-
       base = 10000
       div = (index / base).to_i
       return base.to_i64 + total_fees if div == 0
