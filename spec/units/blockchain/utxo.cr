@@ -21,7 +21,7 @@ describe UTXO do
       utxo.record(chain)
 
       address = block_1.transactions.first.recipients.first[:address]
-      expected_amount = 10000_i64
+      expected_amount = block_1.transactions[0].recipients[0]["amount"]
 
       utxo.get(address).should eq(expected_amount)
     end
