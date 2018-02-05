@@ -3,7 +3,7 @@ module ::Sushi::Core::Keys
 
   class PublicKey
 
-    def initalize(hex : String)
+    def initialize(hex : String)
       @hex = hex
     end
 
@@ -33,7 +33,7 @@ module ::Sushi::Core::Keys
 
   class PrivateKey
 
-    def initalize(hex : String)
+    def initialize(hex : String)
       @hex = hex
     end
 
