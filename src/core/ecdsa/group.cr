@@ -16,7 +16,7 @@ module ::Sushi::Core::ECDSA
     end
 
     def create_key_pair
-      random_key = Random::Secure.hex(64)
+      random_key = Random::Secure.hex(32)
 
       return create_key_pair if random_key[0] == '0'
 
