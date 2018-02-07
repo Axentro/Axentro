@@ -35,6 +35,16 @@ describe Keys do
       keys = Keys.generate({prefix: "T0", name: "testnet"})
       keys.wif.network.should eq({prefix: "T0", name: "testnet"})
     end
+
+    it "should make an address for mainnet when no network supplied" do
+      keys = Keys.generate
+      keys.address.network.should eq({prefix: "M0", name: "mainnet"})
+    end
+
+    it "should make an address for the specified network" do
+      keys = Keys.generate({prefix: "T0", name: "testnet"})
+      keys.address.network.should eq({prefix: "T0", name: "testnet"})
+    end
   end
 
   describe PublicKey do
