@@ -21,13 +21,13 @@ module ::Sushi::Core::Keys
   end
 
   class Address
-    getter network
+    getter network : Network
 
     def initialize(hex_address : String, @network : Network = {prefix: "M0", name: "mainnet"})
       @hex = hex_address
     end
 
-    def as_hex
+    def as_hex : String
       @hex
     end
   end
