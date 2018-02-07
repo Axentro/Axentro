@@ -6,8 +6,9 @@ module ::Sushi::Core::Keys
     getter private_key : PrivateKey
     getter public_key : PublicKey
     getter wif : Wif
+    getter address : Address
 
-    def initialize(@private_key : PrivateKey, @public_key : PublicKey, @wif : Wif)
+    def initialize(@private_key : PrivateKey, @public_key : PublicKey, @wif : Wif, @address : Address)
     end
 
     def self.generate(network : Network = {prefix: "M0", name: "mainnet"})
@@ -15,7 +16,7 @@ module ::Sushi::Core::Keys
       key_pair = secp256k1.create_key_pair
       private_key = PrivateKey.new(key_pair[:secret_key].to_s(16), network)
       public_key = PublicKey.new(key_pair[:public_key].x.to_s(16) + key_pair[:public_key].y.to_s(16), network)
-      Keys.new(private_key, public_key, Wif.from(private_key, network))
+      Keys.new(private_key, public_key, Wif.from(private_key, network), public_key.address)
     end
   end
 
