@@ -19,13 +19,31 @@ describe Secp256k1 do
     secp256k1.infinity.infinity?.should eq(true)
   end
 
-  it "should create a new key pair when calling #create_key_pair" do
-    key_pair = secp256k1.create_key_pair
-    key_pair[:secret_key].should be_a(BigInt)
-    public_key = key_pair[:public_key]
-    public_key.infinity?.should eq(false)
-    public_key.x.should be_a(BigInt)
-    public_key.y.should be_a(BigInt)
+  describe "#create_key_pair" do
+    it "should create a new key pair when calling #create_key_pair" do
+      key_pair = secp256k1.create_key_pair
+      key_pair[:secret_key].to_s(16).size.should eq(64)
+      public_key = key_pair[:public_key]
+      public_key.infinity?.should eq(false)
+      public_key.x.to_s(16).size.should eq(64)
+      public_key.y.to_s(16).size.should eq(64)
+    end
+    it "should always produce a secret key that when as hex is size 64" do
+      # Tested manually with an infinite loop - so just putting 5 here for speed
+      5.times do
+        key_pair = secp256k1.create_key_pair
+        key_pair[:secret_key].to_s(16).size.should eq(64)
+      end
+    end
+    it "should always produce a public key x,y that when as hex is size 64" do
+      # Tested manually with an infinite loop - so just putting 5 here for speed
+      5.times do
+        key_pair = secp256k1.create_key_pair
+        public_key = key_pair[:public_key]
+        public_key.x.to_s(16).size.should eq(64)
+        public_key.y.to_s(16).size.should eq(64)
+      end
+    end
   end
 
   it "should create a public key from a secret key when calling #create_key_pair(secret_key)" do
@@ -88,7 +106,7 @@ describe Secp256k1 do
       secp256k1._p.should eq(BigInt.new("115792089237316195423570985008687907853269984665640564039457584007908834671663"))
     end
   end
-    STDERR.puts "< ECDSA::Secp256k1"
+  STDERR.puts "< ECDSA::Secp256k1"
 end
 
 # javascript:
