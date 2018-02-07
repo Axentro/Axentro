@@ -19,7 +19,8 @@ module ::Sushi::Core::ECDSA
       random_key = Random::Secure.hex(32)
       secret_key = BigInt.new(random_key, base: 16)
 
-      return create_key_pair if secret_key.to_s(16).hexbytes? == nil
+      secret_key_hex = secret_key.to_s(16)
+      return create_key_pair if secret_key_hex.hexbytes? == nil || secret_key_hex.size != 64
 
       key_pair = create_key_pair(secret_key)
 
