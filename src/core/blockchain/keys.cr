@@ -11,7 +11,7 @@ module ::Sushi::Core::Keys
       PublicKey.new(hex)
     end
 
-    def self.from(bytes : Array(UInt8)) : PublicKey
+    def self.from(bytes : Bytes) : PublicKey
       PublicKey.new(to_hex(bytes))
     end
 
@@ -19,11 +19,14 @@ module ::Sushi::Core::Keys
       @hex
     end
 
-    def as_bytes : Array(UInt8)
+    def as_bytes : Bytes
       to_bytes(@hex)
     end
 
     def address : String
+      secp256k1 = ECDSA::Secp256k1.new
+      p secp256k1.create_key_pair(self.as_bytes)
+      ""
     end
 
     def is_valid? : Bool
@@ -41,7 +44,7 @@ module ::Sushi::Core::Keys
       PrivateKey.new(hex)
     end
 
-    def self.from(bytes : Array(UInt8)) : PrivateKey
+    def self.from(bytes : Bytes) : PrivateKey
         PrivateKey.new(to_hex(bytes))
     end
 
@@ -49,7 +52,7 @@ module ::Sushi::Core::Keys
       @hex
     end
 
-    def as_bytes : Array(UInt8)
+    def as_bytes : Bytes
       to_bytes(@hex)
     end
 
@@ -102,10 +105,12 @@ module ::Sushi::Core::Keys
   end
 
 
-  def to_hex(bytes) : String
+  def to_hex(bytes : Bytes) : String
+    bytes.to_unsafe.to_slice(bytes.size).hexstring
   end
 
-  def to_bytes(hex) : Array(UInt8)
+  def to_bytes(hex : String) : Bytes
+    hex.hexbytes
   end
 
 end
