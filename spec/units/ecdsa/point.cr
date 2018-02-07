@@ -92,12 +92,6 @@ describe Point do
   end
 
   describe "#is_on?" do
-    # Don't know how to make a true value for is_on?
-    pending "should return true if is on" do
-      point = Point.new(ECDSA::Secp256k1.new.unsafe_as(Group), BigInt.new(-1), BigInt.new(3), false)
-      point.is_on?.should be_true
-    end
-
     it "should return false if is not on" do
       point = Point.new(ECDSA::Secp256k1.new.unsafe_as(Group), BigInt.new(1), BigInt.new(2), false)
       point.is_on?.should be_false

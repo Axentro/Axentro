@@ -108,17 +108,3 @@ describe Secp256k1 do
   end
   STDERR.puts "< ECDSA::Secp256k1"
 end
-
-# javascript:
-# var hexPrivateKey = "47b9ffa2d50ae1049729dc53a1ad1235ad2fff57196740005cb9fd690c7076aa"
-# var ecparams = all_crypto.ecurve.getCurveByName('secp256k1');
-# var curvePt = ecparams.G.multiply(all_crypto.BigInteger.fromBuffer(hexstring2ab(hexPrivateKey)));
-# var publicKey = ab2hexstring(curvePt.getEncoded(false))
-# # 04dd2e7605289bfe2203ca34a934ba047674f19733570499ae79f13ec116d4b1364741474ebb51e0b359cd92f440c971d1684a90f77b512918593517f2cbac972f
-#
-# sushicoin:
-# var hexPrivateKey = "47b9ffa2d50ae1049729dc53a1ad1235ad2fff57196740005cb9fd690c7076aa".to_big_i(16)
-# key_pair = secp256k1.create_key_pair(hexPrivateKey)
-# public_key = key_pair[:public_key].x.to_s(base: 16) + key_pair[:public_key].y.to_s(base: 16)
-# # dd2e7605289bfe2203ca34a934ba047674f19733570499ae79f13ec116d4b1364741474ebb51e0b359cd92f440c971d1684a90f77b512918593517f2cbac972f
-#
