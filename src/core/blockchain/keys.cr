@@ -12,7 +12,7 @@ module ::Sushi::Core::Keys
     def self.generate(network : Network = {prefix: "M0", name: "mainnet"})
       secp256k1 = ECDSA::Secp256k1.new
       key_pair = secp256k1.create_key_pair
-      private_key = PrivateKey.new(key_pair[:secret_key].to_s(16))
+      private_key = PrivateKey.new(key_pair[:secret_key].to_s(16), network)
       public_key = PublicKey.new(key_pair[:public_key].x.to_s(16) + key_pair[:public_key].y.to_s(16), network)
       Keys.new(private_key, public_key)
     end
@@ -47,7 +47,7 @@ module ::Sushi::Core::Keys
     end
 
     def is_valid? : Bool
-      @hex.hexbytes? != nil
+      @hex.hexbytes? != nil && @hex.size == 128
     end
   end
 
@@ -56,7 +56,7 @@ module ::Sushi::Core::Keys
 
     def initialize(hex : String, @network : Network = {prefix: "M0", name: "mainnet"})
       @hex = hex
-      raise "Invalid public key: #{@hex}" unless is_valid?
+      raise "Invalid private key: #{@hex}" unless is_valid?
     end
 
     def self.from(hex : String, network : Network = {prefix: "M0", name: "mainnet"}) : PrivateKey
@@ -92,7 +92,7 @@ module ::Sushi::Core::Keys
     end
 
     def is_valid? : Bool
-      @hex.hexbytes? != nil
+      @hex.hexbytes? != nil && @hex.size == 64
     end
   end
 
@@ -120,7 +120,7 @@ module ::Sushi::Core::Keys
     def address : String
     end
 
-    private def to_wif(private_key : PrivateKey, network : Network) : Wif
+    private def to_wif(private_key : PrivateKey, network : Network = {prefix: "M0", name: "mainnet"}) : Wif
     end
   end
 
