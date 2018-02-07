@@ -25,6 +25,16 @@ describe Keys do
       keys = Keys.generate({prefix: "T0", name: "testnet"})
       keys.public_key.network.should eq({prefix: "T0", name: "testnet"})
     end
+
+    it "should make a wif for mainnet when no network supplied" do
+      keys = Keys.generate
+      keys.wif.network.should eq({prefix: "M0", name: "mainnet"})
+    end
+
+    it "should make a wif for the specified network" do
+      keys = Keys.generate({prefix: "T0", name: "testnet"})
+      keys.wif.network.should eq({prefix: "T0", name: "testnet"})
+    end
   end
 
   describe PublicKey do
@@ -105,18 +115,18 @@ describe Keys do
         hex_public_key = "b9a152547ec31de50a726896293c7b99e63e6d9588b6d48fde5c926a1794d0616af3598724f335ec71b00509a69e3ce376a285ca5dd77ed5cce8e558c9d5b7e7"
 
         public_key = PublicKey.from(hex_public_key)
-        public_key.address.should eq("TTA5YjVkYTA1NWVkNWQyNDYyMmNiMWU5M2EwZWVhZmFmODA4MDg3MjU5NzAxNTll")
+        public_key.address.as_hex.should eq("TTA5YjVkYTA1NWVkNWQyNDYyMmNiMWU5M2EwZWVhZmFmODA4MDg3MjU5NzAxNTll")
       end
 
       it "should return a mainnet address" do
         keys = Keys.generate
-        decoded_address = Base64.decode_string(keys.public_key.address)
+        decoded_address = Base64.decode_string(keys.public_key.address.as_hex)
         decoded_address[0..1].should eq("M0")
       end
 
       it "should return a testnet address" do
         keys = Keys.generate({prefix: "T0", name: "testnet"})
-        decoded_address = Base64.decode_string(keys.public_key.address)
+        decoded_address = Base64.decode_string(keys.public_key.address.as_hex)
         decoded_address[0..1].should eq("T0")
       end
     end
@@ -207,18 +217,18 @@ describe Keys do
         hex_private_key = "5509e2f567bbe25ef90d2682e3fed09266117ce493438a3c20c05b34293a29a6"
 
         private_key = PrivateKey.from(hex_private_key)
-        private_key.address.should eq("TTA0YTQzZDQ1M2UwNzdlZDA5YTI1NGYxZGNiNTNhYmY0OTE4NmEyMzg5YTJmMGI0")
+        private_key.address.as_hex.should eq("TTA0YTQzZDQ1M2UwNzdlZDA5YTI1NGYxZGNiNTNhYmY0OTE4NmEyMzg5YTJmMGI0")
       end
 
       it "should return a mainnet address" do
         keys = Keys.generate
-        decoded_address = Base64.decode_string(keys.private_key.address)
+        decoded_address = Base64.decode_string(keys.private_key.address.as_hex)
         decoded_address[0..1].should eq("M0")
       end
 
       it "should return a testnet address" do
         keys = Keys.generate({prefix: "T0", name: "testnet"})
-        decoded_address = Base64.decode_string(keys.private_key.address)
+        decoded_address = Base64.decode_string(keys.private_key.address.as_hex)
         decoded_address[0..1].should eq("T0")
       end
     end

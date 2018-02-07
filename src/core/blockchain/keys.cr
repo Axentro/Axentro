@@ -3,10 +3,11 @@ module ::Sushi::Core::Keys
   include Sushi::Core::Models
 
   class Keys
-    property private_key : PrivateKey
-    property public_key : PublicKey
+    getter private_key : PrivateKey
+    getter public_key : PublicKey
+    getter wif : Wif
 
-    def initialize(@private_key : PrivateKey, @public_key : PublicKey)
+    def initialize(@private_key : PrivateKey, @public_key : PublicKey, @wif : Wif)
     end
 
     def self.generate(network : Network = {prefix: "M0", name: "mainnet"})
@@ -14,15 +15,28 @@ module ::Sushi::Core::Keys
       key_pair = secp256k1.create_key_pair
       private_key = PrivateKey.new(key_pair[:secret_key].to_s(16), network)
       public_key = PublicKey.new(key_pair[:public_key].x.to_s(16) + key_pair[:public_key].y.to_s(16), network)
-      Keys.new(private_key, public_key)
+      Keys.new(private_key, public_key, Wif.from(private_key, network))
     end
+  end
+
+  class Address
+    getter network
+
+    def initialize(hex_address : String, @network : Network = {prefix: "M0", name: "mainnet"})
+      @hex = hex_address
+    end
+
+    def as_hex
+      @hex
+    end
+
   end
 
   class PublicKey
     getter network : Network
 
-    def initialize(hex : String, @network : Network = {prefix: "M0", name: "mainnet"})
-      @hex = hex
+    def initialize(public_key_hex : String, @network : Network = {prefix: "M0", name: "mainnet"})
+      @hex = public_key_hex
       raise "Invalid public key: #{@hex}" unless is_valid?
     end
 
@@ -42,8 +56,8 @@ module ::Sushi::Core::Keys
       to_bytes(@hex)
     end
 
-    def address : String
-      get_address_from_public_key(self)
+    def address : Address
+      Address.new(get_address_from_public_key(self), @network)
     end
 
     def is_valid? : Bool
@@ -54,8 +68,8 @@ module ::Sushi::Core::Keys
   class PrivateKey
     getter network : Network
 
-    def initialize(hex : String, @network : Network = {prefix: "M0", name: "mainnet"})
-      @hex = hex
+    def initialize(private_key_hex : String, @network : Network = {prefix: "M0", name: "mainnet"})
+      @hex = private_key_hex
       raise "Invalid private key: #{@hex}" unless is_valid?
     end
 
@@ -87,8 +101,8 @@ module ::Sushi::Core::Keys
       PublicKey.new(key_pair[:public_key].x.to_s(16) + key_pair[:public_key].y.to_s(16), @network)
     end
 
-    def address : String
-      get_address_from_public_key(self.public_key)
+    def address : Address
+      Address.new(get_address_from_public_key(self.public_key), @network)
     end
 
     def is_valid? : Bool
@@ -97,31 +111,37 @@ module ::Sushi::Core::Keys
   end
 
   class Wif
-    def initialize(private_key : PrivateKey, network : Network)
-      @wif = to_wif(private_key, network)
+    def initialize(wif_hex : String)
+      @hex = wif_hex
+    end
+
+    def as_hex
+      @hex
     end
 
     def self.from(private_key : PrivateKey, network : Network) : Wif
-      Wif.new(private_key, network)
-    end
-
-    def self.from(wif : String) : Wif
+      to_wif(private_key, network)
     end
 
     def private_key : PrivateKey
+      from_wif(self)[:private_key]
     end
 
     def public_key : PublicKey
+      from_wif(self)[:private_key].public_key
     end
 
     def network : Network
+      from_wif(self)[:network]
     end
 
-    def address : String
+    def address : Address
+      res = from_wif(self)
+      public_key = res[:private_key].public_key
+      network = res[:network]
+      Address.new(get_address_from_public_key(public_key), network)
     end
 
-    private def to_wif(private_key : PrivateKey, network : Network = {prefix: "M0", name: "mainnet"}) : Wif
-    end
   end
 
   def to_hex(bytes : Bytes) : String
@@ -138,5 +158,23 @@ module ::Sushi::Core::Keys
     hashed_address_again = sha256(sha256(network_address))
     checksum = hashed_address_again[0..5]
     Base64.strict_encode(network_address + checksum)
+  end
+
+  def to_wif(key : PrivateKey, network : Network) : Wif
+    private_key = key.as_hex
+    network_key = network[:prefix] + private_key
+    hashed_key = sha256(sha256(network_key))
+    checksum = hashed_key[0..5]
+    encoded_key = Base64.strict_encode(network_key + checksum)
+    Wif.new(encoded_key)
+  end
+
+  def from_wif(wif : Wif) : {private_key: PrivateKey, network: Network}
+    decoded_wif = Base64.decode_string(wif.as_hex)
+    network_prefix = decoded_wif[0..1]
+    network = network_prefix == "M0" ? {prefix: "M0", name: "mainnet"} : {prefix: "T0", name: "testnet"}
+    private_key_hex = decoded_wif[2..-7]
+    private_key = PrivateKey.from(private_key_hex)
+    {private_key: private_key, network: network}
   end
 end
