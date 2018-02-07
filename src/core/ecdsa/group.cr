@@ -22,7 +22,15 @@ module ::Sushi::Core::ECDSA
       return create_key_pair if secret_key.to_s(16).hexbytes? == nil
 
       key_pair = create_key_pair(secret_key)
-      if key_pair[:public_key].x.to_s(16).hexbytes? == nil || key_pair[:public_key].y.to_s(16).hexbytes? == nil
+
+      x = key_pair[:public_key].x.to_s(16)
+      y = key_pair[:public_key].y.to_s(16)
+
+      if x.hexbytes? == nil || y.hexbytes? == nil
+        return create_key_pair
+      end
+
+      if x.size != 64 || y.size != 64
         return create_key_pair
       end
 
