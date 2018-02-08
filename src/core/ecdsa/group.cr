@@ -16,12 +16,26 @@ module ::Sushi::Core::ECDSA
     end
 
     def create_key_pair
-      random_key = Random::Secure.hex(64)
-
-      return create_key_pair if random_key[0] == '0'
-
+      random_key = Random::Secure.hex(32)
       secret_key = BigInt.new(random_key, base: 16)
-      create_key_pair(secret_key)
+
+      secret_key_hex = secret_key.to_s(16)
+      return create_key_pair if secret_key_hex.hexbytes? == nil || secret_key_hex.size != 64
+
+      key_pair = create_key_pair(secret_key)
+
+      x = key_pair[:public_key].x.to_s(16)
+      y = key_pair[:public_key].y.to_s(16)
+
+      if x.hexbytes? == nil || y.hexbytes? == nil
+        return create_key_pair
+      end
+
+      if x.size != 64 || y.size != 64
+        return create_key_pair
+      end
+
+      key_pair
     end
 
     def create_key_pair(secret_key : BigInt)
