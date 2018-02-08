@@ -31,15 +31,28 @@ module ::Sushi::Core
     end
 
     def self.create(testnet = false)
+
+      keys = Keys::Keys.generate
+      a = {
+        private_key: keys.private_key.as_hex,
+        public_key: keys.public_key.as_hex,
+        wif: keys.wif.as_hex,
+        address: keys.address.as_hex
+      }
+
+      puts a
+
       key_pair = create_key_pair
       address = public_key_to_address(key_pair[:public_key], testnet)
 
-      {
+      b = {
         secret_key:   Base64.strict_encode(key_pair[:secret_key].to_s(base: 10)),
         public_key_x: Base64.strict_encode(key_pair[:public_key].x.to_s(base: 10)),
         public_key_y: Base64.strict_encode(key_pair[:public_key].y.to_s(base: 10)),
         address:      address,
       }
+      puts b
+      b
     end
 
     def self.create_key_pair
