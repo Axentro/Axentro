@@ -321,6 +321,9 @@ describe Keys do
     end
 
     it "should raise an error if address checksum is not valid" do
+      expect_raises(Exception, "Invalid address checksum for: invalid-address") do
+        Address.new("invalid-address")
+      end
     end
 
     it "should return the network when calling #network" do
