@@ -139,6 +139,7 @@ describe Keys do
         decoded_address = Base64.decode_string(keys.public_key.address.as_hex)
         decoded_address[0..1].should eq("T0")
       end
+
     end
 
     describe "#is_valid?" do
@@ -310,5 +311,28 @@ describe Keys do
       end
     end
   end
+
+  describe Address do
+
+    it "should create an address object from a hex string" do
+      address_hex = "TTBkYzI1OGY3MWY5YTNjZTU5Zjg4ZGJlNjI1ODUxNmU3OTY3MDg4NGE1MDU2YzE0"
+      address = Address.new(address_hex)
+      address.as_hex.should eq(address_hex)
+    end
+
+    it "should raise an error if address checksum is not valid" do
+    end
+
+    it "should return the network when calling #network" do
+      Keys.generate.address.network.should eq({prefix: "M0", name: "mainnet"})
+    end
+
+    it "should return true for #is_valid?" do
+      # NOTE a return value of false is not possible as Address can't be created when invalid
+      Keys.generate.address.is_valid?.should be_true
+    end
+
+  end
+
     STDERR.puts "< Keys"
 end
