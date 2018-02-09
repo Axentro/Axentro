@@ -33,6 +33,31 @@ describe PublicKey do
     end
   end
 
+  describe "#x and #y" do
+    it "should return values for x and y identical to the original x and y" do
+      secp256k1 = ECDSA::Secp256k1.new
+      key_pair = secp256k1.create_key_pair
+      public_key_x = key_pair[:public_key].x
+      public_key_y = key_pair[:public_key].y
+      hex_public_key = key_pair[:public_key].x.to_s(16) + key_pair[:public_key].y.to_s(16)
+
+      public_key = PublicKey.from(hex_public_key)
+      public_key.x.should eq(public_key_x)
+      public_key.y.should eq(public_key_y)
+    end
+
+    it "should return an ECDSA Point for public key" do
+      secp256k1 = ECDSA::Secp256k1.new
+      key_pair = secp256k1.create_key_pair
+      hex_public_key = key_pair[:public_key].x.to_s(16) + key_pair[:public_key].y.to_s(16)
+
+      public_key = PublicKey.from(hex_public_key)
+      public_key.point.x.should eq(key_pair[:public_key].x)
+      public_key.point.y.should eq(key_pair[:public_key].y)
+      public_key.point.infinity?.should eq(key_pair[:public_key].infinity?)
+    end
+  end
+
   describe "#from bytes" do
     it "should create a public key object from a public key byte array" do
       secp256k1 = ECDSA::Secp256k1.new
@@ -70,10 +95,10 @@ describe PublicKey do
 
   describe "#network" do
     it "should return the mainnet by default" do
-      Keys.generate.public_key.network.should eq({prefix: "M0", name: "mainnet"})
+      Keys.generate.public_key.network.should eq(MAINNET)
     end
     it "should return the supplied network" do
-      Keys.generate({prefix: "T0", name: "testnet"}).public_key.network.should eq({prefix: "T0", name: "testnet"})
+      Keys.generate(TESTNET).public_key.network.should eq(TESTNET)
     end
   end
 
@@ -92,7 +117,7 @@ describe PublicKey do
     end
 
     it "should return a testnet address" do
-      keys = Keys.generate({prefix: "T0", name: "testnet"})
+      keys = Keys.generate(TESTNET)
       decoded_address = Base64.decode_string(keys.public_key.address.as_hex)
       decoded_address[0..1].should eq("T0")
     end

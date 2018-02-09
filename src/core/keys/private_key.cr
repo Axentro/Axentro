@@ -4,16 +4,16 @@ module ::Sushi::Core::Keys
   class PrivateKey
     getter network : Network
 
-    def initialize(private_key_hex : String, @network : Network = {prefix: "M0", name: "mainnet"})
+    def initialize(private_key_hex : String, @network : Network = MAINNET)
       @hex = private_key_hex
       raise "Invalid private key: #{@hex}" unless is_valid?
     end
 
-    def self.from(hex : String, network : Network = {prefix: "M0", name: "mainnet"}) : PrivateKey
+    def self.from(hex : String, network : Network = MAINNET) : PrivateKey
       PrivateKey.new(hex, network)
     end
 
-    def self.from(bytes : Bytes, network : Network = {prefix: "M0", name: "mainnet"}) : PrivateKey
+    def self.from(bytes : Bytes, network : Network = MAINNET) : PrivateKey
       PrivateKey.new(KeyUtils.to_hex(bytes), network)
     end
 
@@ -23,6 +23,10 @@ module ::Sushi::Core::Keys
 
     def as_bytes : Bytes
       KeyUtils.to_bytes(@hex)
+    end
+
+    def as_big_i : BigInt
+      @hex.to_big_i(16)
     end
 
     def wif : Wif

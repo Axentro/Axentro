@@ -18,32 +18,32 @@ describe Keys do
 
     it "should generate a key pair for the mainnet when no network supplied" do
       keys = Keys.generate
-      keys.public_key.network.should eq({prefix: "M0", name: "mainnet"})
+      keys.public_key.network.should eq(MAINNET)
     end
 
     it "should generate a key pair for the specified network" do
-      keys = Keys.generate({prefix: "T0", name: "testnet"})
-      keys.public_key.network.should eq({prefix: "T0", name: "testnet"})
+      keys = Keys.generate(TESTNET)
+      keys.public_key.network.should eq(TESTNET)
     end
 
     it "should make a wif for mainnet when no network supplied" do
       keys = Keys.generate
-      keys.wif.network.should eq({prefix: "M0", name: "mainnet"})
+      keys.wif.network.should eq(MAINNET)
     end
 
     it "should make a wif for the specified network" do
-      keys = Keys.generate({prefix: "T0", name: "testnet"})
-      keys.wif.network.should eq({prefix: "T0", name: "testnet"})
+      keys = Keys.generate(TESTNET)
+      keys.wif.network.should eq(TESTNET)
     end
 
     it "should make an address for mainnet when no network supplied" do
       keys = Keys.generate
-      keys.address.network.should eq({prefix: "M0", name: "mainnet"})
+      keys.address.network.should eq(MAINNET)
     end
 
     it "should make an address for the specified network" do
-      keys = Keys.generate({prefix: "T0", name: "testnet"})
-      keys.address.network.should eq({prefix: "T0", name: "testnet"})
+      keys = Keys.generate(TESTNET)
+      keys.address.network.should eq(TESTNET)
     end
   end
 

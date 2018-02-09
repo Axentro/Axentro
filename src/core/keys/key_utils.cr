@@ -1,8 +1,9 @@
 module ::Sushi::Core::Keys
-  include Hashes
+  include Sushi::Core::Hashes
   include Sushi::Core::Models
 
   class KeyUtils
+
     def self.to_hex(bytes : Bytes) : String
       bytes.to_unsafe.to_slice(bytes.size).hexstring
     end
@@ -31,7 +32,7 @@ module ::Sushi::Core::Keys
     def self.from_wif(wif : Wif) : {private_key: PrivateKey, network: Network}
       decoded_wif = Base64.decode_string(wif.as_hex)
       network_prefix = decoded_wif[0..1]
-      network = network_prefix == "M0" ? {prefix: "M0", name: "mainnet"} : {prefix: "T0", name: "testnet"}
+      network = network_prefix == "M0" ? MAINNET : TESTNET
       private_key_hex = decoded_wif[2..-7]
       private_key = PrivateKey.from(private_key_hex)
       {private_key: private_key, network: network}

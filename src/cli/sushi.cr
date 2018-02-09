@@ -3,6 +3,7 @@ require "../cli"
 module ::Sushi::Interface::Sushi
   class Root < CLI
     @wallet_path : String?
+    @wallet_password : String?
     @address : String?
     @amount : Int64?
     @node : String?
@@ -68,6 +69,9 @@ module ::Sushi::Interface::Sushi
         ) { |wallet_path|
           @wallet_path = wallet_path
         }
+        parser.on("--password=PASSWORD", "Wallet password") { |password|
+          @wallet_password = password
+        }
         parser.on("-a ADDRESS", "--address=ADDRESS", "Public address") { |address|
           @address = address
         }
@@ -131,21 +135,25 @@ module ::Sushi::Interface::Sushi
         puts_help(HELP_WALLET_PATH)
       end
 
+      unless wallet_password = @wallet_password
+        puts_help(HELP_WALLET_PASSWORD_CREATE)
+      end
+
       wallet_path = wallet_path.ends_with?(".json") ? wallet_path : wallet_path + ".json"
 
       if File.exists?(wallet_path)
         puts_help(HELP_WALLET_ALREADY_EXISTS % wallet_path)
       end
 
-      wallet_json = Core::Wallet.create(@is_testnet).to_json
+      encrypted_wallet_json = Core::Wallet.create(wallet_password, @is_testnet).to_json
 
-      File.write(wallet_path, wallet_json)
+      File.write(wallet_path, encrypted_wallet_json)
 
       unless @json
         puts_success("Your new wallet has been created at #{wallet_path}")
         puts_success("Please take backup of the json file and keep it secret.")
       else
-        puts wallet_json
+        puts encrypted_wallet_json
       end
     end
 
@@ -154,7 +162,13 @@ module ::Sushi::Interface::Sushi
         puts_help(HELP_WALLET_PATH)
       end
 
-      wallet = Core::Wallet.from_path(wallet_path)
+      unless wallet_password = @wallet_password
+        puts_help(HELP_WALLET_PASSWORD)
+      end
+
+      encrypted_wallet = Core::Wallet.from_path(wallet_path)
+      wallet = Core::Wallet.decrypt(encrypted_wallet, wallet_password)
+
       puts_success "#{wallet_path} is perfect!" if wallet.verify!
 
       network = Core::Wallet.address_network_type(wallet.address)
@@ -171,7 +185,11 @@ module ::Sushi::Interface::Sushi
       end
 
       address = if wallet_path = @wallet_path
-                  wallet = Core::Wallet.from_path(wallet_path)
+                  unless wallet_password = @wallet_password
+                    puts_help(HELP_WALLET_PASSWORD)
+                  end
+                  encrypted_wallet = Core::Wallet.from_path(wallet_path)
+                  wallet = Core::Wallet.decrypt(encrypted_wallet, wallet_password)
                   wallet.address
                 elsif _address = @address
                   _address
@@ -197,6 +215,10 @@ module ::Sushi::Interface::Sushi
         puts_help(HELP_WALLET_PATH)
       end
 
+      unless wallet_password = @wallet_password
+        puts_help(HELP_WALLET_PASSWORD)
+      end
+
       unless recipient_address = @address
         puts_help(HELP_ADDRESS_RECIPIENT)
       end
@@ -209,18 +231,16 @@ module ::Sushi::Interface::Sushi
         puts_help(HELP_CONNECTING_NODE)
       end
 
-      unless Core::Wallet.valid_checksum?(recipient_address)
-        raise "Invalid checksum for recipient address: #{recipient_address}"
-      end
+      to_address = Address.from(recipient_address, "recipient")
 
-      wallet = Core::Wallet.from_path(wallet_path)
+      encrypted_wallet = Core::Wallet.from_path(wallet_path)
+      wallet = Core::Wallet.decrypt(encrypted_wallet, wallet_password)
 
       senders = Core::Models::Senders.new
       senders.push(
         {
           address: wallet.address,
-          px:      wallet.public_key_x,
-          py:      wallet.public_key_y,
+          public_key:      wallet.public_key,
           amount:  amount + min_fee_of_action("send"),
         }
       )
@@ -228,7 +248,7 @@ module ::Sushi::Interface::Sushi
       recipients = Core::Models::Recipients.new
       recipients.push(
         {
-          address: recipient_address,
+          address: to_address.as_hex,
           amount:  amount,
         }
       )
@@ -382,8 +402,10 @@ module ::Sushi::Interface::Sushi
     def sign(wallet : Core::Wallet, transaction : Core::Transaction) : Core::Transaction
       secp256k1 = Core::ECDSA::Secp256k1.new
 
+      private_key = Wif.new(wallet.wif).private_key
+
       sign = secp256k1.sign(
-        BigInt.new(Base64.decode_string(wallet.secret_key), base: 10),
+        private_key.as_big_i,
         transaction.to_hash,
       )
 
@@ -397,7 +419,9 @@ module ::Sushi::Interface::Sushi
   end
 end
 
+
 include ::Sushi::Interface
+include Sushi::Core::Keys
 
 ::Sushi::Interface::Sushi::Root.new(
   {name: "sushi", desc: "Sushi's command line client"}, [] of SushiAction

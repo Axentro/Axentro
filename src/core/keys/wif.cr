@@ -12,8 +12,10 @@ module ::Sushi::Core::Keys
       @hex
     end
 
-    def self.from(private_key : PrivateKey, network : Network = {prefix: "M0", name: "mainnet"}) : Wif
-      KeyUtils.to_wif(private_key, network)
+    def self.from(private_key : PrivateKey, network : Network = MAINNET) : Wif
+      wif = KeyUtils.to_wif(private_key, network)
+      raise "Invalid wif: #{wif.as_hex}" unless wif.is_valid?
+      wif
     end
 
     def private_key : PrivateKey

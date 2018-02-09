@@ -4,6 +4,7 @@ require "./../utils"
 include Sushi::Core
 include Sushi::Core::Keys
 
+# TODO - add tests for Address.from(hex)
 describe Address do
   it "should create an address object from a hex string" do
     address_hex = "TTBkYzI1OGY3MWY5YTNjZTU5Zjg4ZGJlNjI1ODUxNmU3OTY3MDg4NGE1MDU2YzE0"
@@ -12,13 +13,13 @@ describe Address do
   end
 
   it "should raise an error if address checksum is not valid" do
-    expect_raises(Exception, "Invalid address checksum for: invalid-address") do
+    expect_raises(Exception, "Invalid generic address checksum for: invalid-address") do
       Address.new("invalid-address")
     end
   end
 
   it "should return the network when calling #network" do
-    Keys.generate.address.network.should eq({prefix: "M0", name: "mainnet"})
+    Keys.generate.address.network.should eq(MAINNET)
   end
 
   it "should return true for #is_valid?" do
