@@ -40,7 +40,7 @@ module ::Sushi::Core
         address: keys.address.as_hex
       }
 
-      puts a
+      # puts a
 
       key_pair = create_key_pair
       address = public_key_to_address(key_pair[:public_key], testnet)
@@ -51,7 +51,7 @@ module ::Sushi::Core
         public_key_y: Base64.strict_encode(key_pair[:public_key].y.to_s(base: 10)),
         address:      address,
       }
-      puts b
+      # puts b
       b
     end
 
