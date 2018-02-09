@@ -42,7 +42,7 @@ describe Wif do
       Keys.generate.wif.network.should eq({prefix: "M0", name: "mainnet"})
     end
     it "should return the supplied network" do
-      Keys.generate({prefix: "T0", name: "testnet"}).wif.network.should eq({prefix: "T0", name: "testnet"})
+      Keys.generate(TESTNET).wif.network.should eq(TESTNET)
     end
   end
 

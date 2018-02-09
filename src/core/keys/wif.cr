@@ -12,7 +12,7 @@ module ::Sushi::Core::Keys
       @hex
     end
 
-    def self.from(private_key : PrivateKey, network : Network = {prefix: "M0", name: "mainnet"}) : Wif
+    def self.from(private_key : PrivateKey, network : Network = MAINNET) : Wif
       KeyUtils.to_wif(private_key, network)
     end
 

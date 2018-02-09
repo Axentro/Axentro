@@ -18,7 +18,7 @@ describe Address do
   end
 
   it "should return the network when calling #network" do
-    Keys.generate.address.network.should eq({prefix: "M0", name: "mainnet"})
+    Keys.generate.address.network.should eq(MAINNET)
   end
 
   it "should return true for #is_valid?" do

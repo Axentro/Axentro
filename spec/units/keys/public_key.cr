@@ -70,10 +70,10 @@ describe PublicKey do
 
   describe "#network" do
     it "should return the mainnet by default" do
-      Keys.generate.public_key.network.should eq({prefix: "M0", name: "mainnet"})
+      Keys.generate.public_key.network.should eq(MAINNET)
     end
     it "should return the supplied network" do
-      Keys.generate({prefix: "T0", name: "testnet"}).public_key.network.should eq({prefix: "T0", name: "testnet"})
+      Keys.generate(TESTNET).public_key.network.should eq(TESTNET)
     end
   end
 
@@ -92,7 +92,7 @@ describe PublicKey do
     end
 
     it "should return a testnet address" do
-      keys = Keys.generate({prefix: "T0", name: "testnet"})
+      keys = Keys.generate(TESTNET)
       decoded_address = Base64.decode_string(keys.public_key.address.as_hex)
       decoded_address[0..1].should eq("T0")
     end

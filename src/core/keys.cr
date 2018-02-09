@@ -1,6 +1,9 @@
 module ::Sushi::Core::Keys
   include Sushi::Core::Models
 
+  MAINNET = {prefix: "M0", name: "mainnet"}
+  TESTNET = {prefix: "T0", name: "testnet"}
+  
   class Keys
     getter private_key : PrivateKey
     getter public_key : PublicKey

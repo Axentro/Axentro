@@ -4,16 +4,16 @@ module ::Sushi::Core::Keys
   class PublicKey
     getter network : Network
 
-    def initialize(public_key_hex : String, @network : Network = {prefix: "M0", name: "mainnet"})
+    def initialize(public_key_hex : String, @network : Network = MAINNET)
       @hex = public_key_hex
       raise "Invalid public key: #{@hex}" unless is_valid?
     end
 
-    def self.from(hex : String, network : Network = {prefix: "M0", name: "mainnet"}) : PublicKey
+    def self.from(hex : String, network : Network = MAINNET) : PublicKey
       PublicKey.new(hex, network)
     end
 
-    def self.from(bytes : Bytes, network : Network = {prefix: "M0", name: "mainnet"}) : PublicKey
+    def self.from(bytes : Bytes, network : Network = MAINNET) : PublicKey
       PublicKey.new(KeyUtils.to_hex(bytes), network)
     end
 
