@@ -82,7 +82,7 @@ module ::Sushi::Core
 
       peer(socket)
 
-      send(socket, M_TYPE_HANDSHAKE_NODE, {context: context})# , known_nodes: known_nodes, request_nodes_num: request_nodes_num})
+      send(socket, M_TYPE_HANDSHAKE_NODE, {context: context}) # , known_nodes: known_nodes, request_nodes_num: request_nodes_num})
 
       connect_async(socket)
     rescue e : Exception
@@ -258,7 +258,7 @@ module ::Sushi::Core
       # }.compact.sample(request_nodes_num)
 
       send(socket, M_TYPE_HANDSHAKE_NODE_ACCEPTED, {
-        context:      context,
+        context: context,
         # node_list:    node_list,
         latest_index: @blockchain.latest_index,
       })
@@ -288,9 +288,9 @@ module ::Sushi::Core
         info "requesting new nodes (#{@max_connection - @nodes.size})"
 
         send(socket, M_TYPE_REQUEST_NODES, {
-               known_nodes: known_nodes,
-               request_nodes_num: @max_connection - @nodes.size,
-             })
+          known_nodes:       known_nodes,
+          request_nodes_num: @max_connection - @nodes.size,
+        })
       end
 
       sync_chain(socket) if latest_index > @blockchain.latest_index && !flag_get?(FLAG_BLOCKCHAIN_SYNCING)

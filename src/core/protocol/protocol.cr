@@ -71,7 +71,7 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_HANDSHAKE_NODE_ACCEPTED
     JSON.mapping({
-      context: Models::NodeContext,
+      context:      Models::NodeContext,
       latest_index: Int64,
     })
   end
@@ -135,9 +135,9 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_REQUEST_NODES
     JSON.mapping({
-                   known_nodes: Models::NodeContexts,
-                   request_nodes_num: Int32,
-                 })
+      known_nodes:       Models::NodeContexts,
+      request_nodes_num: Int32,
+    })
   end
 
   ##########
@@ -146,11 +146,11 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_RECIEVE_NODES
     JSON.mapping({
-                   node_list: Models::NodeContexts,
-                 })
+      node_list: Models::NodeContexts,
+    })
   end
 
-  #### Flags for node status ####
+  # ### Flags for node status ####
 
   FLAG_NONE               = 0b00000000
   FLAG_REQUESTING_NODES   = 0b00000001
