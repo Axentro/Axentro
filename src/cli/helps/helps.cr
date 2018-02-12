@@ -3,6 +3,8 @@ module ::Sushi::Interface
     HELP_WALLET_PATH                   = "Please specify your wallet: -w [your_wallet.json]"
     HELP_WALLET_PATH_OR_ADDRESS        = "Please specify a wallet or an address: -w [your_wallet.json] or -a [public_address]"
     HELP_WALLET_ALREADY_EXISTS         = "The wallet at %s already exists, specify another path"
+    HELP_WALLET_PASSWORD_CREATE        = "Please specify a password of minimum 16 characters to protect this wallet"
+    HELP_WALLET_PASSWORD               = "Please specify the password for this wallet"
     HELP_ADDRESS_RECIPIENT             = "Please specify a recipient's address: -a [public address]"
     HELP_AMOUNT                        = "Please specify sending amount: -m [amount]"
     HELP_CONNECTING_NODE               = "Please specify a connecting node: -n http://[host]:[port]"

@@ -38,7 +38,7 @@ describe Block do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = Block.new(1_i64, [coinbase_transaction, transaction1], 1_u64, "prev_hash")
-      block.calcluate_merkle_tree_root.should eq("4aaa1b2887d2e147c1eb7ef71775782c60442f84")
+      block.calcluate_merkle_tree_root.should eq("3f77766896975bdc574359acc7fd62542fa3b61f")
     end
   end
 
