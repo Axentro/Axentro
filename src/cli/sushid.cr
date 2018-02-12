@@ -49,7 +49,7 @@ module ::Sushi::Interface::SushiD
         parser.on("--conn_max=CONN_MAX", "Max # of connections when launch a node") { |conn_max|
           @max_connection = conn_max.to_i
         }
-        parser.on("-p PASSWORD", "--password=PASSWORD", "Wallet password") { |password|
+       parser.on("--password=PASSWORD", "Wallet password") { |password|
           @wallet_password = password
         }
       end

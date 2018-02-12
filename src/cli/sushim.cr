@@ -26,7 +26,7 @@ module ::Sushi::Interface::SushiM
         parser.on("--threads=THREADS", "# of the work threads (default is 1)") { |threads|
           @threads = threads.to_i
         }
-        parser.on("-p PASSWORD", "--password=PASSWORD", "Wallet password") { |password|
+        parser.on("--password=PASSWORD", "Wallet password") { |password|
           @wallet_password = password
         }
       end

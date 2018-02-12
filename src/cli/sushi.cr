@@ -69,7 +69,7 @@ module ::Sushi::Interface::Sushi
         ) { |wallet_path|
           @wallet_path = wallet_path
         }
-        parser.on("-p PASSWORD", "--password=PASSWORD", "Wallet password") { |password|
+        parser.on("--password=PASSWORD", "Wallet password") { |password|
           @wallet_password = password
         }
         parser.on("-a ADDRESS", "--address=ADDRESS", "Public address") { |address|
