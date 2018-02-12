@@ -54,7 +54,7 @@ describe Wallet do
 
   describe "#from_path" do
     it "should find a wallet from the supplied path" do
-      test_wallet_0 = "#{__DIR__}/../../../wallets/enc-testnet-0.json"
+      test_wallet_0 = "#{__DIR__}/../../../wallets/testnet-0.json"
       wallet = Wallet.decrypt(Wallet.from_path(test_wallet_0), password)
       Wallet.verify!(wallet.private_key, wallet.public_key, wallet.wif, wallet.address).should be_true
     end
