@@ -1,8 +1,9 @@
 module ::Sushi::Core::Keys
-  include Hashes
+  include Sushi::Core::Hashes
   include Sushi::Core::Models
 
   class KeyUtils
+
     def self.to_hex(bytes : Bytes) : String
       bytes.to_unsafe.to_slice(bytes.size).hexstring
     end

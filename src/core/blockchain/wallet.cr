@@ -48,8 +48,8 @@ module ::Sushi::Core
 
       # raise "Password is too short, it must be a minimum of 16 characters" if password.size < 17
 
-      network = testnet ? Keys::TESTNET : Keys::MAINNET
-      keys = Keys::Keys.generate(network)
+      network = testnet ? TESTNET : MAINNET
+      keys = Keys.generate(network)
 
       wallet = {
         private_key: keys.private_key.as_hex,
@@ -63,7 +63,7 @@ module ::Sushi::Core
     end
 
     def self.verify!(private_key : String, public_key : String, wif : String, address : String) : Bool
-      Keys::Keys.is_valid?(private_key, public_key, wif, address)
+      Keys.is_valid?(private_key, public_key, wif, address)
     end
 
     # def self.verify!(secret_key : String,
@@ -88,9 +88,10 @@ module ::Sushi::Core
     # end
 
     def self.address_network_type(address : String) : Models::Network
-      Keys::Address.from(address).network
+      Address.from(address).network
     end
 
+    include Keys
     include Hashes
   end
 end

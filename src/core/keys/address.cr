@@ -6,7 +6,7 @@ module ::Sushi::Core::Keys
 
     getter network : Network
 
-    def initialize(hex_address : String, @network : Network = MAINNET, name : String = "")
+    def initialize(hex_address : String, @network : Network = MAINNET, name : String = "generic")
       @hex = hex_address
       raise "Invalid #{name} address checksum for: #{@hex}" unless is_valid?
     end

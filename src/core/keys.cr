@@ -1,5 +1,6 @@
 module ::Sushi::Core::Keys
   include Sushi::Core::Models
+  include Sushi::Core::Hashes
 
   MAINNET = {prefix: "M0", name: "mainnet"}
   TESTNET = {prefix: "T0", name: "testnet"}
