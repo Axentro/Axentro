@@ -13,7 +13,9 @@ module ::Sushi::Core::Keys
     end
 
     def self.from(private_key : PrivateKey, network : Network = MAINNET) : Wif
-      KeyUtils.to_wif(private_key, network)
+      wif = KeyUtils.to_wif(private_key, network)
+      raise "Invalid wif: #{wif.as_hex}" unless wif.is_valid?
+      wif
     end
 
     def private_key : PrivateKey

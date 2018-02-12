@@ -25,6 +25,10 @@ module ::Sushi::Core::Keys
       KeyUtils.to_bytes(@hex)
     end
 
+    def as_big_i : BigInt
+      @hex.to_big_i(16)
+    end
+
     def wif : Wif
       Wif.from(self, @network)
     end

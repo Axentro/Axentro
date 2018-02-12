@@ -4,6 +4,7 @@ require "./../utils"
 include Sushi::Core
 include Sushi::Core::Keys
 
+# TODO - add tests for Address.from(hex)
 describe Address do
   it "should create an address object from a hex string" do
     address_hex = "TTBkYzI1OGY3MWY5YTNjZTU5Zjg4ZGJlNjI1ODUxNmU3OTY3MDg4NGE1MDU2YzE0"

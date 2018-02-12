@@ -50,11 +50,9 @@ module ::Sushi::Core::ECDSA
     def sign(secret_key : BigInt, message : String) : Array(BigInt)
       hash = BigInt.new(sha256(message), base: 16)
 
-      random = Random::Secure.hex(64)
+      random = create_key_pair[:secret_key]
 
-      return sign(secret_key, message) if random[0] == '0'
-
-      k = BigInt.new(random, base: 16)
+      k = random
       p = gp * k
       r = p.x
 
