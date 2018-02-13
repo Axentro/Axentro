@@ -7,9 +7,6 @@ include Sushi::Core
 include Hashes
 
 describe Transaction do
-
-  password = "passwordpassword"
-
   it "should create a transaction id of length 64" do
     Transaction.create_id.size.should eq(64)
   end
@@ -151,9 +148,9 @@ describe Transaction do
         blockchain = Blockchain.new(sender_wallet)
 
         invalid_sender = {
-          address: Base64.strict_encode("T0invalid-wallet-address"),
+          address:    Base64.strict_encode("T0invalid-wallet-address"),
           public_key: sender_wallet.public_key,
-          amount:  1000_i64,
+          amount:     1000_i64,
         }
 
         transaction = Transaction.new(

@@ -5,9 +5,6 @@ include Sushi::Core
 include Hashes
 
 describe Wallet do
-
-  password = "passwordpassword"
-
   describe "create new wallet" do
     it "should create a new wallet on the testnet" do
       wallet = Wallet.from_json(Wallet.create(true).to_json)
