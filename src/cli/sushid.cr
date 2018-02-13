@@ -7,7 +7,6 @@ module ::Sushi::Interface::SushiD
     @public_url : String?
     @connect_node : String?
     @wallet_path : String?
-    @wallet_password : String?
     @database_path : String?
     @is_testnet : Bool = false
     @is_private : Bool = false
@@ -49,19 +48,12 @@ module ::Sushi::Interface::SushiD
         parser.on("--conn_max=CONN_MAX", "Max # of connections when launch a node") { |conn_max|
           @max_connection = conn_max.to_i
         }
-       parser.on("--password=PASSWORD", "Wallet password") { |password|
-          @wallet_password = password
-        }
       end
     end
 
     def run_impl(action_name)
       unless wallet_path = @wallet_path
         puts_help(HELP_WALLET_PATH)
-      end
-
-      unless wallet_password = @wallet_password
-        puts_help(HELP_WALLET_PASSWORD)
       end
 
       unless @is_private
@@ -87,8 +79,7 @@ module ::Sushi::Interface::SushiD
         has_first_connection = !connect_uri.host.nil? && !connect_uri.port.nil?
       end
 
-      encrypted_wallet = Core::Wallet.from_path(wallet_path)
-      wallet = Core::Wallet.decrypt(encrypted_wallet, wallet_password)
+      wallet = Core::Wallet.from_path(wallet_path)
 
       database = if database_path = @database_path
                    Core::Database.new(database_path)

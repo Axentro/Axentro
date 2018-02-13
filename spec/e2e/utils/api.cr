@@ -25,7 +25,7 @@ module ::E2E::Utils::API
   end
 
   def amount(port : Int32, num : Int32, unconfirmed = false) : Int64
-    args = ["amount", "-w", "wallets/testnet-#{num}.json", "--password=passwordpassword", "-n", "http://127.0.0.1:#{port}", "--testnet", "--json"]
+    args = ["amount", "-w", "wallets/testnet-#{num}.json", "-n", "http://127.0.0.1:#{port}", "--testnet", "--json"]
     args << "-u" if unconfirmed
 
     res = `#{sushi(args)}`
@@ -40,12 +40,9 @@ module ::E2E::Utils::API
 
     a = a / 2
 
-    encrypted_wallet = ::Sushi::Core::Wallet.from_path("wallets/testnet-#{n_recipient}.json")
-    wallet = ::Sushi::Core::Wallet.decrypt(encrypted_wallet, "passwordpassword")
+    recipient_address = ::Sushi::Core::Wallet.from_path("wallets/testnet-#{n_recipient}.json").address
 
-    recipient_address = wallet.address
-
-    args = ["send", "-w", "wallets/testnet-#{n_sender}.json", "--password=passwordpassword", "-a", recipient_address, "-m", a, "-n", "http://127.0.0.1:#{port}", "--json", "--testnet", "--message='E2E Test'"]
+    args = ["send", "-w", "wallets/testnet-#{n_sender}.json", "-a", recipient_address, "-m", a, "-n", "http://127.0.0.1:#{port}", "--json", "--testnet", "--message='E2E Test'"]
 
     res = `#{sushi(args)}`
 

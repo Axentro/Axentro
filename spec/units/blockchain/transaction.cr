@@ -15,8 +15,8 @@ describe Transaction do
   end
 
   it "should create a new unsigned transaction" do
-    sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
-    recipient_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+    sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
+    recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
 
     transaction_id = Transaction.create_id
     transaction = Transaction.new(
@@ -52,8 +52,8 @@ describe Transaction do
   describe "#valid?" do
     context "when not coinbase" do
       it "should be valid" do
-        sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
-        recipient_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
+        recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
 
         serving_transaction = Transaction.new(
           Transaction.create_id,
@@ -87,7 +87,7 @@ describe Transaction do
       end
 
       it "should raise invalid id length error if not 64" do
-        sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
         blockchain = Blockchain.new(sender_wallet)
 
         transaction = Transaction.new(
@@ -107,7 +107,7 @@ describe Transaction do
       end
 
       it "should raise message exceeds limit error if message bytesize exceeds the limit" do
-        sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
         blockchain = Blockchain.new(sender_wallet)
 
         transaction = Transaction.new(
@@ -127,7 +127,7 @@ describe Transaction do
       end
 
       it "should raise unknown action error if supplied action is not in the list of valid actions" do
-        sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
         blockchain = Blockchain.new(sender_wallet)
 
         transaction = Transaction.new(
@@ -147,7 +147,7 @@ describe Transaction do
       end
 
       it "should raise invalid senders address checksum error if supplied sender address is invalid" do
-        sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
         blockchain = Blockchain.new(sender_wallet)
 
         invalid_sender = {
@@ -173,7 +173,7 @@ describe Transaction do
       end
 
       it "should raise invalid recipient address checksum error if supplied recipient address is invalid" do
-        sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
         blockchain = Blockchain.new(sender_wallet)
 
         invalid_recipient = {
@@ -198,7 +198,7 @@ describe Transaction do
       end
 
       it "should raise invalid number of senders error when the amount of senders is not 1" do
-        sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
         blockchain = Blockchain.new(sender_wallet)
 
         transaction = Transaction.new(
@@ -218,8 +218,8 @@ describe Transaction do
       end
 
       it "should raise invalid signing error when the signature is invalid" do
-        sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
-        recipient_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
+        recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
         blockchain = Blockchain.new(sender_wallet)
 
         transaction = Transaction.new(
@@ -239,8 +239,8 @@ describe Transaction do
       end
 
       it "should raise not enough fee error if the sender can't afford the fee" do
-        sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
-        recipient_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
+        recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
         blockchain = Blockchain.new(sender_wallet)
 
         unsigned_transaction = Transaction.new(
@@ -263,8 +263,8 @@ describe Transaction do
       end
 
       it "should raise not enough coins error if the sender can't afford to pay the amount" do
-        sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
-        recipient_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
+        recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
         blockchain = Blockchain.new(sender_wallet)
 
         unsigned_transaction = Transaction.new(
@@ -293,8 +293,8 @@ describe Transaction do
       # The coinbase's output is used to send the block reward, i.e. block subsidy plus transaction fees, to the miner's address.
 
       it "should be valid" do
-        sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
-        recipient_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
+        recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
 
         unsigned_transaction = Transaction.new(
           Transaction.create_id,
@@ -312,7 +312,7 @@ describe Transaction do
       end
 
       it "should raise message should be '0' error if supplied coinbase message is not '0'" do
-        sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
         blockchain = Blockchain.new(sender_wallet)
 
         transaction = Transaction.new(
@@ -332,7 +332,7 @@ describe Transaction do
       end
 
       it "should raise action should be 'head' error if supplied coinbase action is not 'head'" do
-        sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
         blockchain = Blockchain.new(sender_wallet)
 
         transaction = Transaction.new(
@@ -352,7 +352,7 @@ describe Transaction do
       end
 
       it "should raise error if supplied coinbase sender is not empty" do
-        sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
         blockchain = Blockchain.new(sender_wallet)
 
         transaction = Transaction.new(
@@ -372,7 +372,7 @@ describe Transaction do
       end
 
       it "should raise error if supplied coinbase prev_hash is not '0'" do
-        sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
         blockchain = Blockchain.new(sender_wallet)
 
         transaction = Transaction.new(
@@ -392,7 +392,7 @@ describe Transaction do
       end
 
       it "should raise error if supplied coinbase sign_r is not '0'" do
-        sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
         blockchain = Blockchain.new(sender_wallet)
 
         transaction = Transaction.new(
@@ -412,7 +412,7 @@ describe Transaction do
       end
 
       it "should raise error if supplied coinbase sign_s is not '0'" do
-        sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
         blockchain = Blockchain.new(sender_wallet)
 
         transaction = Transaction.new(
@@ -432,8 +432,8 @@ describe Transaction do
       end
 
       it "should raise error when served amount for coinbase transaction does not equal the blockchain amount" do
-        sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
-        recipient_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
+        recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
         blockchain = Blockchain.new(sender_wallet)
 
         transaction = Transaction.new(
@@ -455,7 +455,7 @@ describe Transaction do
   end
   #
   # it "should add the signatures to the transaction using #signed" do
-  #   sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+  #   sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
   #
   #   unsigned_transaction = Transaction.new(
   #     Transaction.create_id,
@@ -477,7 +477,7 @@ describe Transaction do
   # end
   #
   # it "should transform a signed transaction to an unsigned one using #as_unsigned" do
-  #   sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+  #   sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
   #
   #   unsigned_transaction = Transaction.new(
   #     Transaction.create_id,
@@ -503,8 +503,8 @@ describe Transaction do
   # end
   #
   # it "should get the sender amount with #sender_total_amount" do
-  #   sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
-  #   recipient_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+  #   sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
+  #   recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
   #   blockchain = Blockchain.new(sender_wallet)
   #
   #   transaction = Transaction.new(
@@ -522,8 +522,8 @@ describe Transaction do
   # end
   #
   # it "should get the recipient amount with #recipient_total_amount" do
-  #   sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
-  #   recipient_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+  #   sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
+  #   recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
   #   blockchain = Blockchain.new(sender_wallet)
   #
   #   transaction = Transaction.new(
@@ -541,8 +541,8 @@ describe Transaction do
   # end
   #
   # it "should get the sender fee amount with #calculate_fee" do
-  #   sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
-  #   recipient_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+  #   sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
+  #   recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
   #   blockchain = Blockchain.new(sender_wallet)
   #
   #   transaction = Transaction.new(
@@ -560,8 +560,8 @@ describe Transaction do
   # end
   #
   # it "should calculate unspent transaction outputs with #calculate_utxo" do
-  #   sender_wallet = Wallet.decrypt(Wallet.create(password, true), password)
-  #   recipient_wallet = Wallet.decrypt(Wallet.create(password, true), password)
+  #   sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
+  #   recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
   #   blockchain = Blockchain.new(sender_wallet)
   #
   #   transaction = Transaction.new(

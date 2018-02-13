@@ -10,13 +10,13 @@ describe Wallet do
 
   describe "create new wallet" do
     it "should create a new wallet on the testnet" do
-      wallet = Wallet.decrypt(Wallet.create(password, true), password)
+      wallet = Wallet.from_json(Wallet.create(true).to_json)
       Wallet.verify!(wallet.private_key, wallet.public_key, wallet.wif, wallet.address).should be_true
       Wallet.address_network_type(wallet.address).should eq({prefix: "T0", name: "testnet"})
     end
 
     it "should create a new wallet on the mainnet" do
-      wallet = Wallet.decrypt(Wallet.create(password, false), password)
+      wallet = Wallet.from_json(Wallet.create(false).to_json)
       Wallet.verify!(wallet.private_key, wallet.public_key, wallet.wif, wallet.address).should be_true
       Wallet.address_network_type(wallet.address).should eq({prefix: "M0", name: "mainnet"})
     end
@@ -24,24 +24,24 @@ describe Wallet do
 
   describe "verify wallet" do
     it "should verify a valid wallet" do
-      wallet = Wallet.decrypt(Wallet.create(password, false), password)
+      wallet = Wallet.from_json(Wallet.create(false).to_json)
       Wallet.verify!(wallet.private_key, wallet.public_key, wallet.wif, wallet.address).should be_true
     end
 
     it "should verify a valid wallet using the instance method verify!" do
-      wallet = Wallet.decrypt(Wallet.create(password, false), password)
+      wallet = Wallet.from_json(Wallet.create(false).to_json)
       wallet.verify!.should be_true
     end
   end
 
   describe "#address_network_type?" do
     it "should return testnet with a valid testnet address" do
-      wallet = Wallet.decrypt(Wallet.create(password, true), password)
+      wallet = Wallet.from_json(Wallet.create(true).to_json)
       Wallet.address_network_type(wallet.address).should eq({prefix: "T0", name: "testnet"})
     end
 
     it "should return mainnet with a valid mainnet address" do
-      wallet = Wallet.decrypt(Wallet.create(password, false), password)
+      wallet = Wallet.from_json(Wallet.create(false).to_json)
       Wallet.address_network_type(wallet.address).should eq({prefix: "M0", name: "mainnet"})
     end
 
@@ -55,7 +55,7 @@ describe Wallet do
   describe "#from_path" do
     it "should find a wallet from the supplied path" do
       test_wallet_0 = "#{__DIR__}/../../../wallets/testnet-0.json"
-      wallet = Wallet.decrypt(Wallet.from_path(test_wallet_0), password)
+      wallet = Wallet.from_path(test_wallet_0)
       Wallet.verify!(wallet.private_key, wallet.public_key, wallet.wif, wallet.address).should be_true
     end
 
