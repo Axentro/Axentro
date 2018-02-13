@@ -184,7 +184,7 @@ module ::Sushi::Core
         reject!(socket, nil)
       end
 
-      @flag = 0
+      @flag = FLAG_NONE
     end
 
     private def sync_chain(socket)
