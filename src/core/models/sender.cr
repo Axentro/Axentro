@@ -1,8 +1,7 @@
 module ::Sushi::Core::Models
   alias Sender = NamedTuple(
     address: String,
-    px: String,
-    py: String,
+    public_key: String,
     amount: Int64,
   )
 

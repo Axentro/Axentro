@@ -31,8 +31,7 @@ describe Transaction do
     senders = transaction.senders
     senders.size.should eq(1)
     senders.first[:address].should eq(sender_wallet.address)
-    senders.first[:px].should eq(sender_wallet.public_key_x)
-    senders.first[:py].should eq(sender_wallet.public_key_y)
+    senders.first[:public_key].should eq(sender_wallet.public_key)
     senders.first[:amount].should eq(1000_i64)
 
     recipients = transaction.recipients
@@ -149,10 +148,9 @@ describe Transaction do
         blockchain = Blockchain.new(sender_wallet)
 
         invalid_sender = {
-          address: "invalid-wallet-address",
-          px:      sender_wallet.public_key_x,
-          py:      sender_wallet.public_key_y,
-          amount:  1000_i64,
+          address:    Base64.strict_encode("T0invalid-wallet-address"),
+          public_key: sender_wallet.public_key,
+          amount:     1000_i64,
         }
 
         transaction = Transaction.new(
@@ -166,7 +164,7 @@ describe Transaction do
           "0", # sign_s
         )
 
-        expect_raises(Exception, "Invalid checksum for sender's address: invalid-wallet-address") do
+        expect_raises(Exception, "Invalid sender address checksum for: VDBpbnZhbGlkLXdhbGxldC1hZGRyZXNz") do
           transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
         end
       end
@@ -176,7 +174,7 @@ describe Transaction do
         blockchain = Blockchain.new(sender_wallet)
 
         invalid_recipient = {
-          address: "invalid-wallet-address",
+          address: Base64.strict_encode("T0invalid-wallet-address"),
           amount:  1000_i64,
         }
 
@@ -191,7 +189,7 @@ describe Transaction do
           "0", # sign_s
         )
 
-        expect_raises(Exception, "Invalid checksum for recipient's address: invalid-wallet-address") do
+        expect_raises(Exception, "Invalid recipient address checksum for: VDBpbnZhbGlkLXdhbGxldC1hZGRyZXNz") do
           transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
         end
       end

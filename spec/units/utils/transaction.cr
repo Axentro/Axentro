@@ -8,16 +8,16 @@ module ::Units::Utils::TransactionHelper
 
   def a_sender(wallet : Wallet, amount : Int64)
     {address: wallet.address,
-     px:      wallet.public_key_x,
-     py:      wallet.public_key_y,
+     public_key:      wallet.public_key,
      amount:  amount}
   end
 
   def sign(wallet : Wallet, transaction : Transaction)
     secp256k1 = ECDSA::Secp256k1.new
+    wif = Keys::Wif.new(wallet.wif)
 
     sign = secp256k1.sign(
-      BigInt.new(Base64.decode_string(wallet.secret_key), base: 10),
+      wif.private_key.as_big_i,
       transaction.to_hash,
     )
 

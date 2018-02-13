@@ -38,7 +38,7 @@ describe Block do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = Block.new(1_i64, [coinbase_transaction, transaction1], 1_u64, "prev_hash")
-      block.calcluate_merkle_tree_root.should eq("4aaa1b2887d2e147c1eb7ef71775782c60442f84")
+      block.calcluate_merkle_tree_root.should eq("68e413c72b795b43475c7e919bc8621eede45344")
     end
   end
 
@@ -222,19 +222,17 @@ def a_recipient_with_address(address : String, amount : Int64)
 end
 
 def a_fixed_sender_wallet
-  Wallet.new("ODI1MTY3NzY2NTA2NTYyMjQwNTM3NjM3NTQ1NjEzMTIyNzI3NDA3MTU0NjUxMDU2NjY3MjY2NTYyNTIxNjAwMDI4MTMxNDY3NTk0MTMxMjQ5NjU3MjcwNjQ2MDUzMTU0MjE4MTg5Mzg3NzI4NjU5MjEwMzM0NDcyNjg1NDY5MjQ0NTEwNzQxMzU5MzkzNjIxNDMzNjMyMTA2NA==",
-    "ODQ3MjA0OTg1OTk2Mjc3MzY3NjIxMzAxMTEwMzIxMjI1NTk2Mjc1OTgzMjQ5MDYwNTgwMzUzMDcxMzg4MTk1NDQ3NDUwNDg1NDEwNzQ=",
-    "MjE1NjcyMjkyNTU1NjI5Mzg4NzgxNDg4MzA1ODk4NzQ4MDU2ODY3OTI4NjQ5MzcwNDg3MzQzNDkxMjcxMTc3MTUwNjQzNTkyOTAzMTU=",
-    "VDAyMWQyNDk3YTVjZmFlNGNhMmU3ZDFmNzcyMTdhNDNlM2VjOWU2MGVjMWM3NjY2")
+  Wallet.new("f3df738b74757c81499e0780e93a43a7e6fca21909709163cf3f90223b350c55dc203ab377fef06529cfa9a471ba4bec3e8cbd91ab811728614524adbc1aa6c3",
+    "TTBkN2I1YmMwZDI0YTYxNDRiZDQ5YWZmMmYyMDIzMGNkZDBlMWMwZDVlNzdiZjc3MzhhZGU0N2I4YjZhYzZmYWQ5OGIyNWQ0",
+    "TTBiNGY0YzQzMDZhNzY0YmI5NjBiMWQxZGNjZGQxZDY0ODM5Nzk0YWI1Nzc4MzU3")
 end
 
 def a_fixed_signed_transaction
   sender_wallet = a_fixed_sender_wallet
 
-  recipient_wallet = Wallet.new("MTMwNzg1MjY3Nzk5Nzg3NTUxMDM2NTY0MDkxODMxNDQzMzE5MDg3NjEzMTY1NDg5MTY2NTAyMjcxMzUxMDgxMzA0ODM2MDkyOTA5MTgwMjMxNTk1NDYwNDc4NDAyNzYwMDAyMjUwMzI2ODA5NDc2OTM2NTI0MTQ5MzIyNDI0NDY4MjI5MDEzMDM1OTA2MDg2ODE1MjE3MzU3MTk=",
-    "ODYzMTIyOTk1MjE4Mzk0NDE5ODUxNjMyOTkzMTQ5MjM5NjE2MDgyMjc5Mzg2OTcyNzkxMzYxNDc4MzU2OTY3MzcyODI4Mjg3MTM0OTQ=",
-    "MzIzMzQyMTI3NDEzNDM2NjQwMzg1Njc0MDY5ODg3ODk3MTU0MTQ5NTU2OTc5MjM0ODI4ODA1ODcwNDM0NTg3ODkzOTg4MDc4MTEwMDI=",
-    "VDBlMWQ2YTYyYTZiMTVjZjc1MTQ2NDJlMjgwNjA5ZTMyOGU3NTE5YTRhMWI3NjY1")
+  recipient_wallet =   Wallet.new("2ee4c6a6197e334c3de5b6384af495ae08093e3aceb4122ce7270a072caba1a9cd119eb7bc59adcd925123deba2fba44f70aefcd189c6c145cd2d00290a385cf",
+      "TTA0MGQyMjc2ODMxNmE2MzlmZTNmNDZmNzRlYTU0NDFmNDM3MGY0MDBmNzU3NGVlMDE2OThkNDM4MjcxMTk0NzY4NjM4NWVj",
+      "TTA4ZGViYmM1NTdiNTkyNmU1MmUwZmQ5NThkZWQ1M2E1ODE5NjU2NDg1OWM2MWQw")
 
   unsigned_transaction = Transaction.new(
     "ded1ea5373f55b4e84ea9c140761ba181af31a94cc6c2bb22685b2f86639ca1e",
