@@ -5,6 +5,7 @@ module ::Sushi::Core
     @blockchain : Blockchain
     @network_type : String
     @id : String
+    @flag : Int32
     @nodes : Models::Nodes
     @miners : Models::Miners
     @rpc_controller : Controllers::RPCController
@@ -18,8 +19,6 @@ module ::Sushi::Core
     @c2 : Int32 = 0
     @c3 : Int32 = 0
 
-    @flag = FLAG_NONE
-
     def initialize(
       @is_private : Bool,
       @is_testnet : Bool,
@@ -31,7 +30,7 @@ module ::Sushi::Core
       connect_port : Int32?,
       @wallet : Wallet,
       @database : Database?,
-      @max_connection : Int32
+      @min_connection : Int32
     )
       @id = Random::Secure.hex(16)
 
@@ -52,7 +51,7 @@ module ::Sushi::Core
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @nodes = Models::Nodes.new
       @miners = Models::Miners.new
-      @flag = 0_u8
+      @flag = FLAG_NONE
       @rpc_controller = Controllers::RPCController.new(@blockchain)
       @latest_nonces = Array(UInt64).new
 
@@ -66,23 +65,21 @@ module ::Sushi::Core
       end
 
       if connect_host && connect_port
-        connect(connect_host.not_nil!, connect_port.not_nil!) # , @max_connection - 1)
+        connect(connect_host.not_nil!, connect_port.not_nil!)
       else
         warning "no connecting node has been specified"
         warning "so this node is standalone from other network"
       end
     end
 
-    private def connect(connect_host : String, connect_port : Int32) # , request_nodes_num : Int32 = 0)
+    private def connect(connect_host : String, connect_port : Int32)
       info "connecting to #{light_green(connect_host)}:#{light_green(connect_port)}"
-
-      # known_nodes = @nodes.map { |n| n[:context] }
 
       socket = HTTP::WebSocket.new(connect_host, "/peer", connect_port)
 
       peer(socket)
 
-      send(socket, M_TYPE_HANDSHAKE_NODE, {context: context}) # , known_nodes: known_nodes, request_nodes_num: request_nodes_num})
+      send(socket, M_TYPE_HANDSHAKE_NODE, {context: context})
 
       connect_async(socket)
     rescue e : Exception
@@ -239,8 +236,6 @@ module ::Sushi::Core
       _m_content = M_CONTENT_HANDSHAKE_NODE.from_json(_content)
 
       node_context = _m_content.context
-      # known_nodes = _m_content.known_nodes
-      # request_nodes_num = _m_content.request_nodes_num
 
       return warning "node #{node_context[:id]} is already connected" if get_node?(node_context[:id])
 
@@ -253,13 +248,8 @@ module ::Sushi::Core
         })
       end
 
-      # node_list = @nodes.map { |n|
-      #   (n[:context][:id] == @id || n[:context][:is_private] || known_nodes.includes?(n[:context])) ? nil : n[:context]
-      # }.compact.sample(request_nodes_num)
-
       send(socket, M_TYPE_HANDSHAKE_NODE_ACCEPTED, {
         context: context,
-        # node_list:    node_list,
         latest_index: @blockchain.latest_index,
       })
 
@@ -272,26 +262,13 @@ module ::Sushi::Core
       _m_content = M_CONTENT_HANDSHAKE_NODE_ACCEPTED.from_json(_content)
 
       node_context = _m_content.context
-      # node_list = _m_content.node_list
       latest_index = _m_content.latest_index
 
       @nodes << {socket: socket, context: node_context}
 
       info "successfully connected: #{node_context[:id]} (#{@nodes.size})"
 
-      # node_list.each { |nc| connect(nc[:host], nc[:port]) }
-
-      if @nodes.size < @max_connection && !flag_get?(FLAG_REQUESTING_NODES)
-        flag_set(FLAG_REQUESTING_NODES)
-
-        info "current connection (#{@nodes.size}) is less than the min connection (#{@max_connection})."
-        info "requesting new nodes (#{@max_connection - @nodes.size})"
-
-        send(socket, M_TYPE_REQUEST_NODES, {
-          known_nodes:       known_nodes,
-          request_nodes_num: @max_connection - @nodes.size,
-        })
-      end
+      connect_nodes?
 
       sync_chain(socket) if latest_index > @blockchain.latest_index && !flag_get?(FLAG_BLOCKCHAIN_SYNCING)
     end
@@ -473,9 +450,15 @@ module ::Sushi::Core
       _known_nodes = _m_content.known_nodes
       request_nodes_num = _m_content.request_nodes_num
 
-      node_list = @nodes.map { |n|
+      node_list_all = @nodes.map { |n|
         (n[:context][:id] == @id || n[:context][:is_private] || _known_nodes.includes?(n[:context])) ? nil : n[:context]
-      }.compact.sample(request_nodes_num)
+      }.compact
+
+      node_list = if node_list_all.size == 0
+                    [] of Models::NodeContext
+                  else
+                    node_list_all.sample(request_nodes_num)
+                  end
 
       send(socket, M_TYPE_RECIEVE_NODES, {node_list: node_list})
     end
@@ -486,17 +469,24 @@ module ::Sushi::Core
       flag_unset(FLAG_REQUESTING_NODES)
 
       node_list = _m_content.node_list
+
+      info "recieved new nodes #{node_list.size}"
+
       node_list.each { |nc| connect(nc[:host], nc[:port]) }
     end
 
     private def reject!(socket : HTTP::WebSocket, _e : Exception?)
-      info "a node has been removed. (#{@nodes.size})" if reject_node?(socket)
+      if reject_node?(socket)
+        info "a node has been removed. (#{@nodes.size})"
+        connect_nodes?
+      end
+
       info "a miner has been removed. (#{@miners.size})" if reject_miner?(socket)
 
-      return unless e = _e
-
-      if error_message = e.message
-        error error_message
+      if e = _e
+        if error_message = e.message
+          error error_message
+        end
       end
     end
 
@@ -556,6 +546,24 @@ module ::Sushi::Core
       _known_nodes = @nodes.map { |node| node[:context] }
       _known_nodes << context
       _known_nodes
+    end
+
+    private def connect_nodes?
+      return if @nodes.size == 0
+
+      socket = @nodes.sample[:socket]
+
+      if @nodes.size < @min_connection && !flag_get?(FLAG_REQUESTING_NODES)
+        flag_set(FLAG_REQUESTING_NODES)
+
+        info "current connection (#{@nodes.size}) is less than the min connection (#{@min_connection})."
+        info "requesting new nodes (#{@min_connection - @nodes.size})"
+
+        send(socket, M_TYPE_REQUEST_NODES, {
+               known_nodes:       known_nodes,
+               request_nodes_num: @min_connection - @nodes.size,
+             })
+      end
     end
 
     private def flag_set(new_flag)
