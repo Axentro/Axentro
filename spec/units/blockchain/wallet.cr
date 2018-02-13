@@ -2,27 +2,28 @@ require "./../../spec_helper"
 require "./../utils"
 
 include Sushi::Core
+include Sushi::Core::Keys
 include Hashes
 
 describe Wallet do
   describe "create new wallet" do
     it "should create a new wallet on the testnet" do
       wallet = Wallet.from_json(Wallet.create(true).to_json)
-      Wallet.verify!(wallet.private_key, wallet.public_key, wallet.wif, wallet.address).should be_true
-      Wallet.address_network_type(wallet.address).should eq({prefix: "T0", name: "testnet"})
+      Wallet.verify!(wallet.public_key, wallet.wif, wallet.address).should be_true
+      Wallet.address_network_type(wallet.address).should eq(TESTNET)
     end
 
     it "should create a new wallet on the mainnet" do
       wallet = Wallet.from_json(Wallet.create(false).to_json)
-      Wallet.verify!(wallet.private_key, wallet.public_key, wallet.wif, wallet.address).should be_true
-      Wallet.address_network_type(wallet.address).should eq({prefix: "M0", name: "mainnet"})
+      Wallet.verify!(wallet.public_key, wallet.wif, wallet.address).should be_true
+      Wallet.address_network_type(wallet.address).should eq(MAINNET)
     end
   end
 
   describe "verify wallet" do
     it "should verify a valid wallet" do
       wallet = Wallet.from_json(Wallet.create(false).to_json)
-      Wallet.verify!(wallet.private_key, wallet.public_key, wallet.wif, wallet.address).should be_true
+      Wallet.verify!(wallet.public_key, wallet.wif, wallet.address).should be_true
     end
 
     it "should verify a valid wallet using the instance method verify!" do
@@ -34,12 +35,12 @@ describe Wallet do
   describe "#address_network_type?" do
     it "should return testnet with a valid testnet address" do
       wallet = Wallet.from_json(Wallet.create(true).to_json)
-      Wallet.address_network_type(wallet.address).should eq({prefix: "T0", name: "testnet"})
+      Wallet.address_network_type(wallet.address).should eq(TESTNET)
     end
 
     it "should return mainnet with a valid mainnet address" do
       wallet = Wallet.from_json(Wallet.create(false).to_json)
-      Wallet.address_network_type(wallet.address).should eq({prefix: "M0", name: "mainnet"})
+      Wallet.address_network_type(wallet.address).should eq(MAINNET)
     end
 
     it "should raise an invalid network error when address not mainnet or testnet" do
@@ -53,7 +54,7 @@ describe Wallet do
     it "should find a wallet from the supplied path" do
       test_wallet_0 = "#{__DIR__}/../../../wallets/testnet-0.json"
       wallet = Wallet.from_path(test_wallet_0)
-      Wallet.verify!(wallet.private_key, wallet.public_key, wallet.wif, wallet.address).should be_true
+      Wallet.verify!(wallet.public_key, wallet.wif, wallet.address).should be_true
     end
 
     it "should raise a wallet not found error when no wallet file exists at the specific path" do

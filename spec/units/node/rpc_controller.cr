@@ -227,18 +227,6 @@ describe RPCController do
           end
         end
       end
-
-      # TODO - Kings - Not sure how to make this error
-      pending "should raise an error: transaction not found for supplied transaction id" do
-        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
-          payload = {call: "transaction", transaction_id: "invalid-transaction-id"}.to_json
-          json = JSON.parse(payload)
-
-          expect_raises(Exception, "Failed to find a block for the transaction invalid-transaction-id") do
-            rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
-          end
-        end
-      end
     end
 
     describe "#block" do

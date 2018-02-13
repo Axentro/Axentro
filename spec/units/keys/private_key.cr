@@ -98,7 +98,6 @@ describe PrivateKey do
 
   describe "#is_valid?" do
     it "should return true if the public key is valid" do
-      # See comment on PublicKey #is_valid? same applies here
       Keys.generate.private_key.is_valid?.should be_true
     end
   end

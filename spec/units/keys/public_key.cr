@@ -125,9 +125,6 @@ describe PublicKey do
 
   describe "#is_valid?" do
     it "should return true if the public key is valid" do
-      # will always be true when called externally since we raise an error creating a public key with an invalid hex
-      # however when called internally we use this to determine if the supplied hex is valid when creating a public key
-      # so we can't test the false condition here.
       Keys.generate.public_key.is_valid?.should be_true
     end
   end

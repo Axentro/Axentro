@@ -39,7 +39,7 @@ describe Wif do
 
   describe "#network" do
     it "should return the mainnet by default" do
-      Keys.generate.wif.network.should eq({prefix: "M0", name: "mainnet"})
+      Keys.generate.wif.network.should eq(MAINNET)
     end
     it "should return the supplied network" do
       Keys.generate(TESTNET).wif.network.should eq(TESTNET)
@@ -58,7 +58,6 @@ describe Wif do
 
   describe "#is_valid?" do
     it "should return true if the wif is valid" do
-      # See comment on PublicKey #is_valid? same applies here
       Keys.generate.wif.is_valid?.should be_true
     end
   end
