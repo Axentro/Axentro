@@ -1,11 +1,9 @@
 module ::Sushi::Core
-
   class Wallet
-
     JSON.mapping({
       public_key: String,
-      wif: String,
-      address: String,
+      wif:        String,
+      address:    String,
     })
 
     getter public_key : String
@@ -31,8 +29,8 @@ module ::Sushi::Core
 
       {
         public_key: keys.public_key.as_hex,
-        wif: keys.wif.as_hex,
-        address: keys.address.as_hex
+        wif:        keys.wif.as_hex,
+        address:    keys.address.as_hex,
       }
     end
 

@@ -216,9 +216,9 @@ module ::Sushi::Interface::Sushi
       senders = Core::Models::Senders.new
       senders.push(
         {
-          address: wallet.address,
+          address:    wallet.address,
           public_key: wallet.public_key,
-          amount:  amount + min_fee_of_action("send"),
+          amount:     amount + min_fee_of_action("send"),
         }
       )
 

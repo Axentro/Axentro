@@ -230,9 +230,9 @@ end
 def a_fixed_signed_transaction
   sender_wallet = a_fixed_sender_wallet
 
-  recipient_wallet =   Wallet.new("2ee4c6a6197e334c3de5b6384af495ae08093e3aceb4122ce7270a072caba1a9cd119eb7bc59adcd925123deba2fba44f70aefcd189c6c145cd2d00290a385cf",
-      "TTA0MGQyMjc2ODMxNmE2MzlmZTNmNDZmNzRlYTU0NDFmNDM3MGY0MDBmNzU3NGVlMDE2OThkNDM4MjcxMTk0NzY4NjM4NWVj",
-      "TTA4ZGViYmM1NTdiNTkyNmU1MmUwZmQ5NThkZWQ1M2E1ODE5NjU2NDg1OWM2MWQw")
+  recipient_wallet = Wallet.new("2ee4c6a6197e334c3de5b6384af495ae08093e3aceb4122ce7270a072caba1a9cd119eb7bc59adcd925123deba2fba44f70aefcd189c6c145cd2d00290a385cf",
+    "TTA0MGQyMjc2ODMxNmE2MzlmZTNmNDZmNzRlYTU0NDFmNDM3MGY0MDBmNzU3NGVlMDE2OThkNDM4MjcxMTk0NzY4NjM4NWVj",
+    "TTA4ZGViYmM1NTdiNTkyNmU1MmUwZmQ5NThkZWQ1M2E1ODE5NjU2NDg1OWM2MWQw")
 
   unsigned_transaction = Transaction.new(
     "ded1ea5373f55b4e84ea9c140761ba181af31a94cc6c2bb22685b2f86639ca1e",

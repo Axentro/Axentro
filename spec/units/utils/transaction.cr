@@ -7,9 +7,9 @@ module ::Units::Utils::TransactionHelper
   end
 
   def a_sender(wallet : Wallet, amount : Int64)
-    {address: wallet.address,
-     public_key:      wallet.public_key,
-     amount:  amount}
+    {address:    wallet.address,
+     public_key: wallet.public_key,
+     amount:     amount}
   end
 
   def sign(wallet : Wallet, transaction : Transaction)
