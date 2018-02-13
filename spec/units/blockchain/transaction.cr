@@ -450,130 +450,130 @@ describe Transaction do
       end
     end
   end
-  #
-  # it "should add the signatures to the transaction using #signed" do
-  #   sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
-  #
-  #   unsigned_transaction = Transaction.new(
-  #     Transaction.create_id,
-  #     "send", # action
-  #     [] of Sender,
-  #     [] of Recipient,
-  #     "0", # message
-  #     "0", # prev_hash
-  #     "0", # sign_r
-  #     "0", # sign_s
-  #   )
-  #
-  #   blockchain = Blockchain.new(sender_wallet)
-  #   signature = sign(sender_wallet, unsigned_transaction)
-  #   signed_transaction = unsigned_transaction.signed(signature[:r], signature[:s])
-  #
-  #   signed_transaction.sign_r.should eq(signature[:r])
-  #   signed_transaction.sign_s.should eq(signature[:s])
-  # end
-  #
-  # it "should transform a signed transaction to an unsigned one using #as_unsigned" do
-  #   sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
-  #
-  #   unsigned_transaction = Transaction.new(
-  #     Transaction.create_id,
-  #     "send", # action
-  #     [] of Sender,
-  #     [] of Recipient,
-  #     "0", # message
-  #     "0", # prev_hash
-  #     "0", # sign_r
-  #     "0", # sign_s
-  #   )
-  #
-  #   blockchain = Blockchain.new(sender_wallet)
-  #   signature = sign(sender_wallet, unsigned_transaction)
-  #   signed_transaction = unsigned_transaction.signed(signature[:r], signature[:s])
-  #
-  #   signed_transaction.sign_r.should eq(signature[:r])
-  #   signed_transaction.sign_s.should eq(signature[:s])
-  #
-  #   unsigned = signed_transaction.as_unsigned
-  #   unsigned.sign_r.should eq("0")
-  #   unsigned.sign_s.should eq("0")
-  # end
-  #
-  # it "should get the sender amount with #sender_total_amount" do
-  #   sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
-  #   recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
-  #   blockchain = Blockchain.new(sender_wallet)
-  #
-  #   transaction = Transaction.new(
-  #     Transaction.create_id,
-  #     "send", # action
-  #     [a_sender(sender_wallet, 10_i64)],
-  #     [a_recipient(recipient_wallet, 10_i64)],
-  #     "0", # message
-  #     "0", # prev_hash
-  #     "0", # sign_r
-  #     "0", # sign_s
-  #   )
-  #
-  #   transaction.sender_total_amount.should eq(10_i64)
-  # end
-  #
-  # it "should get the recipient amount with #recipient_total_amount" do
-  #   sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
-  #   recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
-  #   blockchain = Blockchain.new(sender_wallet)
-  #
-  #   transaction = Transaction.new(
-  #     Transaction.create_id,
-  #     "send", # action
-  #     [a_sender(sender_wallet, 10_i64)],
-  #     [a_recipient(recipient_wallet, 10_i64)],
-  #     "0", # message
-  #     "0", # prev_hash
-  #     "0", # sign_r
-  #     "0", # sign_s
-  #   )
-  #
-  #   transaction.recipient_total_amount.should eq(10_i64)
-  # end
-  #
-  # it "should get the sender fee amount with #calculate_fee" do
-  #   sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
-  #   recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
-  #   blockchain = Blockchain.new(sender_wallet)
-  #
-  #   transaction = Transaction.new(
-  #     Transaction.create_id,
-  #     "send", # action
-  #     [a_sender(sender_wallet, 11_i64)],
-  #     [a_recipient(recipient_wallet, 10_i64)],
-  #     "0", # message
-  #     "0", # prev_hash
-  #     "0", # sign_r
-  #     "0", # sign_s
-  #   )
-  #
-  #   transaction.calculate_fee.should eq(1_i64)
-  # end
-  #
-  # it "should calculate unspent transaction outputs with #calculate_utxo" do
-  #   sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
-  #   recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
-  #   blockchain = Blockchain.new(sender_wallet)
-  #
-  #   transaction = Transaction.new(
-  #     Transaction.create_id,
-  #     "send", # action
-  #     [a_sender(sender_wallet, 11_i64)],
-  #     [a_recipient(recipient_wallet, 10_i64)],
-  #     "0", # message
-  #     "0", # prev_hash
-  #     "0", # sign_r
-  #     "0", # sign_s
-  #   )
-  #
-  #   transaction.calculate_utxo.should eq({sender_wallet.address => -11_i64, recipient_wallet.address => 10_i64})
-  # end
+
+  it "should add the signatures to the transaction using #signed" do
+    sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
+
+    unsigned_transaction = Transaction.new(
+      Transaction.create_id,
+      "send", # action
+      [] of Sender,
+      [] of Recipient,
+      "0", # message
+      "0", # prev_hash
+      "0", # sign_r
+      "0", # sign_s
+    )
+
+    blockchain = Blockchain.new(sender_wallet)
+    signature = sign(sender_wallet, unsigned_transaction)
+    signed_transaction = unsigned_transaction.signed(signature[:r], signature[:s])
+
+    signed_transaction.sign_r.should eq(signature[:r])
+    signed_transaction.sign_s.should eq(signature[:s])
+  end
+
+  it "should transform a signed transaction to an unsigned one using #as_unsigned" do
+    sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
+
+    unsigned_transaction = Transaction.new(
+      Transaction.create_id,
+      "send", # action
+      [] of Sender,
+      [] of Recipient,
+      "0", # message
+      "0", # prev_hash
+      "0", # sign_r
+      "0", # sign_s
+    )
+
+    blockchain = Blockchain.new(sender_wallet)
+    signature = sign(sender_wallet, unsigned_transaction)
+    signed_transaction = unsigned_transaction.signed(signature[:r], signature[:s])
+
+    signed_transaction.sign_r.should eq(signature[:r])
+    signed_transaction.sign_s.should eq(signature[:s])
+
+    unsigned = signed_transaction.as_unsigned
+    unsigned.sign_r.should eq("0")
+    unsigned.sign_s.should eq("0")
+  end
+
+  it "should get the sender amount with #sender_total_amount" do
+    sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
+    recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
+    blockchain = Blockchain.new(sender_wallet)
+
+    transaction = Transaction.new(
+      Transaction.create_id,
+      "send", # action
+      [a_sender(sender_wallet, 10_i64)],
+      [a_recipient(recipient_wallet, 10_i64)],
+      "0", # message
+      "0", # prev_hash
+      "0", # sign_r
+      "0", # sign_s
+    )
+
+    transaction.sender_total_amount.should eq(10_i64)
+  end
+
+  it "should get the recipient amount with #recipient_total_amount" do
+    sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
+    recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
+    blockchain = Blockchain.new(sender_wallet)
+
+    transaction = Transaction.new(
+      Transaction.create_id,
+      "send", # action
+      [a_sender(sender_wallet, 10_i64)],
+      [a_recipient(recipient_wallet, 10_i64)],
+      "0", # message
+      "0", # prev_hash
+      "0", # sign_r
+      "0", # sign_s
+    )
+
+    transaction.recipient_total_amount.should eq(10_i64)
+  end
+
+  it "should get the sender fee amount with #calculate_fee" do
+    sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
+    recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
+    blockchain = Blockchain.new(sender_wallet)
+
+    transaction = Transaction.new(
+      Transaction.create_id,
+      "send", # action
+      [a_sender(sender_wallet, 11_i64)],
+      [a_recipient(recipient_wallet, 10_i64)],
+      "0", # message
+      "0", # prev_hash
+      "0", # sign_r
+      "0", # sign_s
+    )
+
+    transaction.calculate_fee.should eq(1_i64)
+  end
+
+  it "should calculate unspent transaction outputs with #calculate_utxo" do
+    sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
+    recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
+    blockchain = Blockchain.new(sender_wallet)
+
+    transaction = Transaction.new(
+      Transaction.create_id,
+      "send", # action
+      [a_sender(sender_wallet, 11_i64)],
+      [a_recipient(recipient_wallet, 10_i64)],
+      "0", # message
+      "0", # prev_hash
+      "0", # sign_r
+      "0", # sign_s
+    )
+
+    transaction.calculate_utxo.should eq({sender_wallet.address => -11_i64, recipient_wallet.address => 10_i64})
+  end
 
   STDERR.puts "< Transaction"
 end
