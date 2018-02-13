@@ -249,7 +249,7 @@ module ::Sushi::Core
       end
 
       send(socket, M_TYPE_HANDSHAKE_NODE_ACCEPTED, {
-        context: context,
+        context:      context,
         latest_index: @blockchain.latest_index,
       })
 
@@ -560,9 +560,9 @@ module ::Sushi::Core
         info "requesting new nodes (#{@min_connection - @nodes.size})"
 
         send(socket, M_TYPE_REQUEST_NODES, {
-               known_nodes:       known_nodes,
-               request_nodes_num: @min_connection - @nodes.size,
-             })
+          known_nodes:       known_nodes,
+          request_nodes_num: @min_connection - @nodes.size,
+        })
       end
     end
 

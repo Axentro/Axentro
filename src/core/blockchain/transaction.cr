@@ -44,26 +44,24 @@ module ::Sushi::Core
       raise "Message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
 
       @senders.each do |sender|
-        raise "Invalid checksum for sender's address: #{sender[:address]}" unless Wallet.valid_checksum?(sender[:address])
+        raise "Invalid checksum for sender's address: #{sender[:address]}" unless Keys::Address.from(sender[:address], "sender")
       end
 
       @recipients.each do |recipient|
-        raise "Invalid checksum for recipient's address: #{recipient[:address]}" unless Wallet.valid_checksum?(recipient[:address])
+        raise "Invalid checksum for recipient's address: #{recipient[:address]}" unless Keys::Address.from(recipient[:address], "recipient")
       end
 
       if !is_coinbase
         raise "Unknown action: #{@action}" unless ACTIONS.includes?(@action)
         raise "Sender have to be only one currently" if @senders.size != 1
 
+        network = Keys::Address.from(@senders.first[:address]).network
+        public_key = Keys::PublicKey.new(@senders.first[:public_key], network)
+
         secp256k1 = ECDSA::Secp256k1.new
-        public_key = ECDSA::Point.new(
-          secp256k1,
-          BigInt.new(Base64.decode_string(@senders[0][:px]), base: 10),
-          BigInt.new(Base64.decode_string(@senders[0][:py]), base: 10),
-        )
 
         raise "Invalid signing" if !secp256k1.verify(
-                                     public_key,
+                                     public_key.point,
                                      self.as_unsigned.to_hash,
                                      BigInt.new(@sign_r, base: 16),
                                      BigInt.new(@sign_s, base: 16),

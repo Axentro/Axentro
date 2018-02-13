@@ -101,6 +101,7 @@ module ::Sushi::Interface::SushiD
 end
 
 include ::Sushi::Interface
+include Sushi::Core::Keys
 
 ::Sushi::Interface::SushiD::Root.new(
   {name: "sushid", desc: "Sushi's node"}, [] of SushiAction, true
