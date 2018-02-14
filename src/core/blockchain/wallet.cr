@@ -14,7 +14,7 @@ module ::Sushi::Core
         raise "This wallet was not encrypted with the sushi binary" unless encrypted_wallet.source == "sushi"
         encrypted_wallet
       rescue e : Exception
-        raise "Failed to find a wallet that was encrypted with sushi at #{wallet_path}"
+            raise "Error: #{e.message}"
       end
   end
 
@@ -79,8 +79,10 @@ module ::Sushi::Core
       ciphertext = encrypted_wallet.ciphertext
       salt = encrypted_wallet.salt
       BlowFish.decrypt(password, ciphertext, salt)
+    rescue OpenSSL::Error
+      raise "Failed to decrypt the wallet with the supplied password"
     rescue e
-      raise "Failed to decrypt the wallet"  
+      raise "Failed to decrypt the wallet: #{e.message}"
     end
 
     include Keys
