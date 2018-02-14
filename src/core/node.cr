@@ -31,7 +31,7 @@ module ::Sushi::Core
       @bind_port : Int32,
       @public_host : String?,
       @public_port : Int32?,
-      @ssl         : Bool?,
+      @ssl : Bool?,
       connect_host : String?,
       connect_port : Int32?,
       @wallet : Wallet,
