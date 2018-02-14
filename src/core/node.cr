@@ -31,6 +31,7 @@ module ::Sushi::Core
       @bind_port : Int32,
       @public_host : String?,
       @public_port : Int32?,
+      @ssl         : Bool?,
       connect_host : String?,
       connect_port : Int32?,
       @wallet : Wallet,
@@ -89,9 +90,9 @@ module ::Sushi::Core
       peer(socket)
 
       send(socket, M_TYPE_HANDSHAKE_NODE, {
-             context: context,
-             connection_salt: @connection_salt,
-           })
+        context:         context,
+        connection_salt: @connection_salt,
+      })
 
       connect_async(socket)
     rescue e : Exception
@@ -267,8 +268,8 @@ module ::Sushi::Core
       info "connection hash as server #{connection_hash}"
 
       send(socket, M_TYPE_HANDSHAKE_NODE_ACCEPTED, {
-        context:      context,
-        latest_index: @blockchain.latest_index,
+        context:         context,
+        latest_index:    @blockchain.latest_index,
         connection_hash: connection_hash,
       })
 
@@ -565,6 +566,7 @@ module ::Sushi::Core
         id:         @id,
         host:       @public_host || "",
         port:       @public_port || -1,
+        ssl:        @ssl || false,
         type:       @network_type,
         is_private: @is_private,
       }
@@ -607,8 +609,7 @@ module ::Sushi::Core
     end
 
     private def http_handshake(context : Models::NodeContext) : String
-      # todo: https
-      res = HTTP::Client.get("http://#{context[:host]}:#{context[:port]}/handshake/#{@connection_salt}")
+      res = HTTP::Client.get("#{context[:ssl] ? "https" : "http"}://#{context[:host]}:#{context[:port]}/handshake/#{@connection_salt}")
       res.body
     end
 

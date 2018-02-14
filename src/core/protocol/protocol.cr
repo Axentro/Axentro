@@ -61,8 +61,8 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_HANDSHAKE_NODE
     JSON.mapping({
-                   context: Models::NodeContext,
-                   connection_salt: String,
+      context:         Models::NodeContext,
+      connection_salt: String,
     })
   end
 
@@ -72,8 +72,8 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_HANDSHAKE_NODE_ACCEPTED
     JSON.mapping({
-      context:      Models::NodeContext,
-      latest_index: Int64,
+      context:         Models::NodeContext,
+      latest_index:    Int64,
       connection_hash: String,
     })
   end

@@ -70,6 +70,8 @@ module ::Sushi::Interface::SushiD
         unless public_port = public_uri.port
           puts_help(HELP_PUBLIC_URL)
         end
+
+        ssl = (public_uri.scheme == "https")
       end
 
       has_first_connection = false
@@ -88,9 +90,9 @@ module ::Sushi::Interface::SushiD
                  end
 
       node = has_first_connection ? Core::Node.new(@is_private, @is_testnet, @bind_host, @bind_port,
-        public_host, public_port,
+        public_host, public_port, ssl,
         connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, @min_connection) : Core::Node.new(@is_private, @is_testnet, @bind_host, @bind_port,
-        public_host, public_port,
+        public_host, public_port, ssl,
         nil, nil, wallet, database, @min_connection)
       node.run!
     end
