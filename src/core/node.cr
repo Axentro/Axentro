@@ -2,13 +2,16 @@ require "./node/*"
 
 module ::Sushi::Core
   class Node
+    getter id : String
+
     @blockchain : Blockchain
     @network_type : String
-    @id : String
     @flag : Int32
     @nodes : Models::Nodes
     @miners : Models::Miners
+
     @rpc_controller : Controllers::RPCController
+    @handshake_controller : Controllers::HandshakeController
 
     @latest_nonces : Array(UInt64)
     @latest_unknown : Int64? = nil
@@ -18,6 +21,8 @@ module ::Sushi::Core
     @c1 : Int32 = 0
     @c2 : Int32 = 0
     @c3 : Int32 = 0
+
+    @connection_salt : String
 
     def initialize(
       @is_private : Bool,
@@ -33,6 +38,7 @@ module ::Sushi::Core
       @min_connection : Int32
     )
       @id = Random::Secure.hex(16)
+      @connection_salt = Random::Secure.hex(16)
 
       info "id: #{light_green(@id)}"
       info "is_private: #{light_green(@is_private)}"
@@ -52,7 +58,10 @@ module ::Sushi::Core
       @nodes = Models::Nodes.new
       @miners = Models::Miners.new
       @flag = FLAG_NONE
+
       @rpc_controller = Controllers::RPCController.new(@blockchain)
+      @handshake_controller = Controllers::HandshakeController.new(@blockchain)
+
       @latest_nonces = Array(UInt64).new
 
       wallet_network = Wallet.address_network_type(@wallet.address)
@@ -79,7 +88,10 @@ module ::Sushi::Core
 
       peer(socket)
 
-      send(socket, M_TYPE_HANDSHAKE_NODE, {context: context})
+      send(socket, M_TYPE_HANDSHAKE_NODE, {
+             context: context,
+             connection_salt: @connection_salt,
+           })
 
       connect_async(socket)
     rescue e : Exception
@@ -96,10 +108,12 @@ module ::Sushi::Core
 
     private def draw_routes!
       post "/rpc" { |context, params| @rpc_controller.exec(context, params) }
+      get "/handshake/:salt" { |context, params| @handshake_controller.exec(context, params) }
     end
 
     def run!
       @rpc_controller.set_node(self)
+      @handshake_controller.set_node(self)
 
       draw_routes!
 
@@ -236,6 +250,8 @@ module ::Sushi::Core
       _m_content = M_CONTENT_HANDSHAKE_NODE.from_json(_content)
 
       node_context = _m_content.context
+      connection_salt = _m_content.connection_salt
+      connection_hash = sha256(connection_salt + @id)
 
       return warning "node #{node_context[:id]} is already connected" if get_node?(node_context[:id])
 
@@ -248,9 +264,12 @@ module ::Sushi::Core
         })
       end
 
+      info "connection hash as server #{connection_hash}"
+
       send(socket, M_TYPE_HANDSHAKE_NODE_ACCEPTED, {
         context:      context,
         latest_index: @blockchain.latest_index,
+        connection_hash: connection_hash,
       })
 
       @nodes << {socket: socket, context: node_context}
@@ -263,6 +282,15 @@ module ::Sushi::Core
 
       node_context = _m_content.context
       latest_index = _m_content.latest_index
+      connection_hash = _m_content.connection_hash
+
+      info "connection hash as client #{connection_hash}"
+
+      asserted_connection_hash = http_handshake(node_context)
+
+      if asserted_connection_hash != connection_hash
+        raise "Invalid connection hash: #{asserted_connection_hash} != #{connection_hash}"
+      end
 
       @nodes << {socket: socket, context: node_context}
 
@@ -576,6 +604,12 @@ module ::Sushi::Core
 
     private def flag_get?(flag) : Bool
       (@flag & flag) == flag
+    end
+
+    private def http_handshake(context : Models::NodeContext) : String
+      # todo: https
+      res = HTTP::Client.get("http://#{context[:host]}:#{context[:port]}/handshake/#{@connection_salt}")
+      res.body
     end
 
     include Logger
