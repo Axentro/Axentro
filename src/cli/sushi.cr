@@ -13,6 +13,7 @@ module ::Sushi::Interface::Sushi
     @json : Bool = false
     @is_testnet : Bool = false
     @message : String = ""
+    @wallet_password : String?
 
     def sub_actions
       [
@@ -56,6 +57,14 @@ module ::Sushi::Interface::Sushi
           name: "transaction",
           desc: "Get a transaction for a transaction id",
         },
+        {
+          name: "encrypt",
+          desc: "Encrypt a sushi wallet",
+        },
+        {
+          name: "decrypt",
+          desc: "Decrypt a sushi wallet (that was encrypted using sushi)",
+        },
       ]
     end
 
@@ -98,6 +107,9 @@ module ::Sushi::Interface::Sushi
         parser.on("--testnet", "Set network type as testnet (default is mainnet)") {
           @is_testnet = true
         }
+        parser.on("--password=PASSWORD", "Password for encrypted wallet") { |password|
+          @wallet_password = password
+        }
       end
     end
 
@@ -123,6 +135,10 @@ module ::Sushi::Interface::Sushi
         transactions
       when "transaction"
         transaction
+      when "encrypt"
+        encrypt
+      when "decrypt"
+        decrypt
       end
     end
 
@@ -160,6 +176,57 @@ module ::Sushi::Interface::Sushi
 
       network = Core::Wallet.address_network_type(wallet.address)
       puts_success "Network (#{network[:prefix]}): #{network[:name]}"
+    end
+
+    def encrypt
+      unless wallet_path = @wallet_path
+        puts_help(HELP_WALLET_PATH)
+      end
+
+      unless wallet_password = @wallet_password
+        puts_help(HELP_WALLET_PASSWORD)
+      end
+
+      encrypted_wallet_json = Core::Wallet.encrypt(wallet_password, wallet_path).to_json
+      encrypted_wallet_path = "encrypted-" + wallet_path
+
+      if File.exists?(encrypted_wallet_path)
+        puts_help(HELP_WALLET_ALREADY_EXISTS % encrypted_wallet_path)
+      end
+
+      File.write(encrypted_wallet_path, encrypted_wallet_json)
+
+      unless @json
+        puts_success("Your wallet has been encrypted at #{encrypted_wallet_path}")
+        puts_success("Please don't forget your password - there is no way to recover an encrypted wallet.")
+      else
+        puts encrypted_wallet_json
+      end
+    end
+
+    def decrypt
+      unless wallet_path = @wallet_path
+        puts_help(HELP_WALLET_PATH)
+      end
+
+      unless wallet_password = @wallet_password
+        puts_help(HELP_WALLET_PASSWORD)
+      end
+
+      decrypted_wallet_json = Core::Wallet.decrypt(wallet_password, wallet_path).to_json
+      decrypted_wallet_path = "decrypted-" + wallet_path
+
+      if File.exists?(decrypted_wallet_path)
+        puts_help(HELP_WALLET_ALREADY_EXISTS % decrypted_wallet_path)
+      end
+
+      File.write(decrypted_wallet_path, decrypted_wallet_json)
+
+      unless @json
+        puts_success("Your wallet has been decrypted at #{decrypted_wallet_path}")
+      else
+        puts decrypted_wallet_json
+      end
     end
 
     def amount
