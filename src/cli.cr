@@ -49,7 +49,6 @@ module ::Sushi::Interface
         Core::Wallet.from_path(wallet_path)
       rescue Core::WalletException
         password_from_env = ENV["WALLET_PASSWORD"]?
-
         password = password_from_env || wallet_password
 
         unless password

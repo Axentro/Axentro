@@ -177,7 +177,7 @@ module ::Sushi::Interface::Sushi
       end
     end
 
-      def verify
+    def verify
       unless wallet_path = @wallet_path
         puts_help(HELP_WALLET_PATH)
       end
@@ -200,8 +200,8 @@ module ::Sushi::Interface::Sushi
         puts_help(HELP_WALLET_PASSWORD)
       end
 
-      p encrypted_wallet_json = Core::Wallet.encrypt(wallet_password, wallet_path).to_json
-      p encrypted_wallet_path = "encrypted-" + wallet_path
+      encrypted_wallet_json = Core::Wallet.encrypt(wallet_password, wallet_path).to_json
+      encrypted_wallet_path = "encrypted-" + wallet_path
 
       if File.exists?(encrypted_wallet_path)
         puts_help(HELP_WALLET_ALREADY_EXISTS % encrypted_wallet_path)
