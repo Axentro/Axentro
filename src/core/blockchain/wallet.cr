@@ -81,7 +81,7 @@ module ::Sushi::Core
 
     def self.encrypt(password : String, wallet_path : String)
       begin
-        wallet = self.from_path(wallet_path)
+        wallet : Wallet = self.from_path(wallet_path)
       rescue e
         raise "Failed to encrypt the wallet: #{e.message}"
       end
