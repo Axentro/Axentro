@@ -3,6 +3,7 @@ module ::Sushi::Core::Models
     id: String,
     host: String,
     port: Int32,
+    ssl: Bool,
     type: String,
     is_private: Bool,
   )
