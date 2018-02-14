@@ -156,6 +156,7 @@ module ::Sushi::Interface::Sushi
 
       wallet = Core::Wallet.from_path(wallet_path)
       puts_success "#{wallet_path} is perfect!" if wallet.verify!
+      puts_success "Address: #{wallet.address}"
 
       network = Core::Wallet.address_network_type(wallet.address)
       puts_success "Network (#{network[:prefix]}): #{network[:name]}"
@@ -216,9 +217,9 @@ module ::Sushi::Interface::Sushi
       senders = Core::Models::Senders.new
       senders.push(
         {
-          address: wallet.address,
+          address:    wallet.address,
           public_key: wallet.public_key,
-          amount:  amount + min_fee_of_action("send"),
+          amount:     amount + min_fee_of_action("send"),
         }
       )
 

@@ -10,7 +10,7 @@ module ::Sushi::Interface::SushiD
     @database_path : String?
     @is_testnet : Bool = false
     @is_private : Bool = false
-    @max_connection : Int32 = 5
+    @min_connection : Int32 = 5
 
     def sub_actions
       [] of SushiAction
@@ -45,8 +45,8 @@ module ::Sushi::Interface::SushiD
         parser.on("--testnet", "Set network type as testnet (default is mainnet)") {
           @is_testnet = true
         }
-        parser.on("--conn_max=CONN_MAX", "Max # of connections when launch a node") { |conn_max|
-          @max_connection = conn_max.to_i
+        parser.on("--conn_min=CONN_MIN", "Min # of connections when launch a node") { |conn_min|
+          @min_connection = conn_min.to_i
         }
       end
     end
@@ -89,9 +89,9 @@ module ::Sushi::Interface::SushiD
 
       node = has_first_connection ? Core::Node.new(@is_private, @is_testnet, @bind_host, @bind_port,
         public_host, public_port,
-        connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, @max_connection) : Core::Node.new(@is_private, @is_testnet, @bind_host, @bind_port,
+        connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, @min_connection) : Core::Node.new(@is_private, @is_testnet, @bind_host, @bind_port,
         public_host, public_port,
-        nil, nil, wallet, database, @max_connection)
+        nil, nil, wallet, database, @min_connection)
       node.run!
     end
 

@@ -3,7 +3,6 @@ module ::Sushi::Core::Keys
   include Sushi::Core::Models
 
   class Address
-
     getter network : Network
 
     def initialize(hex_address : String, @network : Network = MAINNET, name : String = "generic")
