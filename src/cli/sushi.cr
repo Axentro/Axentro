@@ -14,6 +14,7 @@ module ::Sushi::Interface::Sushi
     @is_testnet : Bool = false
     @message : String = ""
     @wallet_password : String?
+    @encrypted : Bool = false
 
     def sub_actions
       [
@@ -110,6 +111,9 @@ module ::Sushi::Interface::Sushi
         parser.on("--password=PASSWORD", "Password for encrypted wallet") { |password|
           @wallet_password = password
         }
+        parser.on("-e", "--encrypted", "Set this flag when creating a wallet to create an encrypted wallet") {
+          @encrypted = true
+        }
       end
     end
 
@@ -153,24 +157,33 @@ module ::Sushi::Interface::Sushi
         puts_help(HELP_WALLET_ALREADY_EXISTS % wallet_path)
       end
 
-      wallet_json = Core::Wallet.create(@is_testnet).to_json
+      wallet = Core::Wallet.from_json(Core::Wallet.create(@is_testnet).to_json)
 
-      File.write(wallet_path, wallet_json)
+      if @encrypted
+        unless wallet_password = @wallet_password
+          puts_help(HELP_WALLET_PASSWORD)
+        end
+        encrypted_wallet = Core::Wallet.encrypt(wallet_password, wallet)
+        File.write(wallet_path, encrypted_wallet.to_json)
+      else
+        File.write(wallet_path, wallet.to_json)
+      end
 
       unless @json
         puts_success("Your new wallet has been created at #{wallet_path}")
         puts_success("Please take backup of the json file and keep it secret.")
       else
-        puts wallet_json
+        puts wallet.to_json
       end
     end
 
-    def verify
+      def verify
       unless wallet_path = @wallet_path
         puts_help(HELP_WALLET_PATH)
       end
 
-      wallet = Core::Wallet.from_path(wallet_path)
+      wallet = get_wallet(wallet_path, @wallet_password)
+
       puts_success "#{wallet_path} is perfect!" if wallet.verify!
       puts_success "Address: #{wallet.address}"
 
@@ -239,7 +252,7 @@ module ::Sushi::Interface::Sushi
       end
 
       address = if wallet_path = @wallet_path
-                  wallet = Core::Wallet.from_path(wallet_path)
+                  wallet = get_wallet(wallet_path, @wallet_password)
                   wallet.address
                 elsif _address = @address
                   _address
@@ -279,7 +292,7 @@ module ::Sushi::Interface::Sushi
 
       to_address = Address.from(recipient_address, "recipient")
 
-      wallet = Core::Wallet.from_path(wallet_path)
+      wallet = get_wallet(wallet_path, @wallet_password)
 
       senders = Core::Models::Senders.new
       senders.push(
