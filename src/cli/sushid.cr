@@ -11,6 +11,7 @@ module ::Sushi::Interface::SushiD
     @is_testnet : Bool = false
     @is_private : Bool = false
     @min_connection : Int32 = 5
+    @wallet_password : String?
 
     def sub_actions
       [] of SushiAction
@@ -48,6 +49,9 @@ module ::Sushi::Interface::SushiD
         parser.on("--conn_min=CONN_MIN", "Min # of connections when launch a node") { |conn_min|
           @min_connection = conn_min.to_i
         }
+        parser.on("--password=PASSWORD", "Password for encrypted wallet") { |password|
+          @wallet_password = password
+        }
       end
     end
 
@@ -81,7 +85,7 @@ module ::Sushi::Interface::SushiD
         has_first_connection = !connect_uri.host.nil? && !connect_uri.port.nil?
       end
 
-      wallet = Core::Wallet.from_path(wallet_path)
+      wallet = get_wallet(wallet_path, @wallet_password)
 
       database = if database_path = @database_path
                    Core::Database.new(database_path)

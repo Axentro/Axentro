@@ -44,6 +44,22 @@ module ::Sushi::Interface
       exit exit_code
     end
 
+    def get_wallet(wallet_path, wallet_password) : Core::Wallet
+      begin
+        Core::Wallet.from_path(wallet_path)
+      rescue Core::WalletException
+        password_from_env = ENV["WALLET_PASSWORD"]?
+        password = password_from_env || wallet_password
+
+        unless password
+          puts_help(HELP_WALLET_PASSWORD)
+        end
+
+        wallet = Core::EncryptedWallet.from_path(wallet_path)
+        Core::Wallet.from_json(Core::Wallet.decrypt(password, wallet))
+      end
+    end
+
     def command_line
       return @action[:name] if @parents.size == 0
       @parents.map { |a| a[:name] }.join(" ") + " " + @action[:name]

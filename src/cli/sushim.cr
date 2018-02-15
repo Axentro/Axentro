@@ -6,6 +6,7 @@ module ::Sushi::Interface::SushiM
     @node : String?
     @is_testnet : Bool = false
     @threads : Int32 = 1
+    @wallet_password : String?
 
     def sub_actions
       [] of SushiAction
@@ -24,6 +25,9 @@ module ::Sushi::Interface::SushiM
         }
         parser.on("--threads=THREADS", "# of the work threads (default is 1)") { |threads|
           @threads = threads.to_i
+        }
+        parser.on("--password=PASSWORD", "Password for encrypted wallet") { |password|
+          @wallet_password = password
         }
       end
     end
@@ -47,7 +51,7 @@ module ::Sushi::Interface::SushiM
         puts_help(HELP_CONNECTING_NODE)
       end
 
-      wallet = Core::Wallet.from_path(wallet_path)
+      wallet = get_wallet(wallet_path, @wallet_password)
       wallet_is_testnet = (Core::Wallet.address_network_type(wallet.address)[:name] == "testnet")
 
       raise "Wallet type mismatch" if @is_testnet != wallet_is_testnet

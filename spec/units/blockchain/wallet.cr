@@ -64,6 +64,54 @@ describe Wallet do
     end
   end
 
+  describe "encryption" do
+    describe "#encrypt" do
+      it "should encrypt a wallet" do
+        wallet = "#{__DIR__}/../utils/data/wallet1.json"
+        encrypted_wallet = EncryptedWallet.from_json(Wallet.encrypt("password", wallet).to_json)
+        encrypted_wallet.source.should eq("sushi")
+        encrypted_wallet.ciphertext.nil?.should be_false
+        encrypted_wallet.salt.nil?.should be_false
+        encrypted_wallet.address.should eq(Wallet.from_json(File.read(wallet)).address)
+      end
+
+      it "should raise an error if cannot encrypt" do
+        expect_raises(Exception, "Failed to encrypt the wallet: Failed to find wallet at invalid-wallet, create it first!") do
+          EncryptedWallet.from_json(Wallet.encrypt("password", "invalid-wallet").to_json)
+        end
+      end
+    end
+
+    describe "#decrypt" do
+      it "should decrypt a wallet" do
+        wallet = "#{__DIR__}/../utils/data/encrypted-wallet1.json"
+        decrypted_wallet = Wallet.from_json(Wallet.decrypt("password", wallet))
+        expected_wallet = Wallet.from_json(File.read("#{__DIR__}/../utils/data/wallet1.json"))
+        decrypted_wallet.public_key.should eq(expected_wallet.public_key)
+        decrypted_wallet.wif.should eq(expected_wallet.wif)
+        decrypted_wallet.address.should eq(expected_wallet.address)
+      end
+
+      it "should raise an error when wallet not found" do
+        expect_raises(Exception, "Failed to decrypt the wallet: Error: Failed to find encrypted wallet at invalid-wallet") do
+          Wallet.from_json(Wallet.decrypt("password", "invalid-wallet"))
+        end
+      end
+
+      it "should raise an error if the encrypted wallet source is not 'sushi'" do
+        expect_raises(Exception, "Error: This wallet was not encrypted with the sushi binary") do
+          Wallet.from_json(Wallet.decrypt("password", "#{__DIR__}/../utils/data/encrypted-wallet2.json"))
+        end
+      end
+
+      it "should raise an error if it cannot decrypt" do
+        expect_raises(Exception, "Failed to decrypt the wallet with the supplied password") do
+          Wallet.from_json(Wallet.decrypt("oops", "#{__DIR__}/../utils/data/encrypted-wallet1.json"))
+        end
+      end
+    end
+  end
+
   STDERR.puts "< Wallet"
 end
 
