@@ -2,24 +2,23 @@ require "../cli"
 
 module ::Sushi::Interface::SushiD
   class Root < CLI
-
     def sub_actions
       [] of SushiAction
     end
 
     def option_parser
       create_option_parser([
-                             Options::CONNECT_NODE,
-                             Options::WALLET_PATH,
-                             Options::WALLET_PASSWORD,
-                             Options::IS_TESTNET,
-                             Options::IS_PRIVATE,
-                             Options::BIND_HOST,
-                             Options::BIND_PORT,
-                             Options::PUBLIC_URL,
-                             Options::DATABASE_PATH,
-                             Options::CONN_MIN,
-                           ])
+        Options::CONNECT_NODE,
+        Options::WALLET_PATH,
+        Options::WALLET_PASSWORD,
+        Options::IS_TESTNET,
+        Options::IS_PRIVATE,
+        Options::BIND_HOST,
+        Options::BIND_PORT,
+        Options::PUBLIC_URL,
+        Options::DATABASE_PATH,
+        Options::CONN_MIN,
+      ])
     end
 
     def run_impl(action_name)
@@ -51,13 +50,11 @@ module ::Sushi::Interface::SushiD
                    nil
                  end
 
-      node = has_first_connection ?
-               Core::Node.new(@is_private, @is_testnet, @bind_host, @bind_port,
-                              public_host, public_port, ssl,
-                              connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, @conn_min) :
-               Core::Node.new(@is_private, @is_testnet, @bind_host, @bind_port,
-                              public_host, public_port, ssl,
-                              nil, nil, wallet, database, @conn_min)
+      node = has_first_connection ? Core::Node.new(@is_private, @is_testnet, @bind_host, @bind_port,
+        public_host, public_port, ssl,
+        connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, @conn_min) : Core::Node.new(@is_private, @is_testnet, @bind_host, @bind_port,
+        public_host, public_port, ssl,
+        nil, nil, wallet, database, @conn_min)
       node.run!
     end
 

@@ -46,18 +46,18 @@ module ::Sushi::Interface::Sushi
 
     def option_parser
       create_option_parser([
-                             Options::CONNECT_NODE,
-                             Options::WALLET_PATH,
-                             Options::WALLET_PASSWORD,
-                             Options::JSON,
-                             Options::UNCONFIRMED,
-                             Options::ADDRESS,
-                             Options::AMOUNT,
-                             Options::MESSAGE,
-                             Options::BLOCK_INDEX,
-                             Options::TRANSACTION_ID,
-                             Options::HEADER,
-                           ])
+        Options::CONNECT_NODE,
+        Options::WALLET_PATH,
+        Options::WALLET_PASSWORD,
+        Options::JSON,
+        Options::UNCONFIRMED,
+        Options::ADDRESS,
+        Options::AMOUNT,
+        Options::MESSAGE,
+        Options::BLOCK_INDEX,
+        Options::TRANSACTION_ID,
+        Options::HEADER,
+      ])
     end
 
     def run_impl(action_name)

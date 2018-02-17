@@ -29,26 +29,26 @@ module ::Sushi::Interface
 
     module Options
       # common options
-      CONNECT_NODE = 0x00000001
-      WALLET_PATH = 0x00000002
+      CONNECT_NODE    = 0x00000001
+      WALLET_PATH     = 0x00000002
       WALLET_PASSWORD = 0x00000003
       # flags
-      IS_TESTNET = 0x00000100
-      IS_PRIVATE = 0x00000200
-      JSON = 0x00000300
+      IS_TESTNET  = 0x00000100
+      IS_PRIVATE  = 0x00000200
+      JSON        = 0x00000300
       UNCONFIRMED = 0x00000400
       # for node setting up
-      BIND_HOST = 0x00000010
-      BIND_PORT = 0x00000020
-      PUBLIC_URL = 0x00000030
+      BIND_HOST     = 0x00000010
+      BIND_PORT     = 0x00000020
+      PUBLIC_URL    = 0x00000030
       DATABASE_PATH = 0x00000040
-      CONN_MIN = 0x00000050
+      CONN_MIN      = 0x00000050
       # for transaction
-      ADDRESS = 0x00001000
-      AMOUNT =  0x00002000
-      MESSAGE = 0x00003000
-      BLOCK_INDEX = 0x00004000
-      TRANSACTION_ID= 0x00005000
+      ADDRESS        = 0x00001000
+      AMOUNT         = 0x00002000
+      MESSAGE        = 0x00003000
+      BLOCK_INDEX    = 0x00004000
+      TRANSACTION_ID = 0x00005000
       # for blockchain
       HEADER = 0x00010000
       # for miners
@@ -59,7 +59,6 @@ module ::Sushi::Interface
 
     def create_option_parser(actives : Array(Int32)) : OptionParser
       OptionParser.new do |parser|
-
         parser.on("-n NODE", "--node=NODE", "a url of the connect node") { |connect_node|
           @connect_node = connect_node
         } if is_active?(actives, Options::CONNECT_NODE)

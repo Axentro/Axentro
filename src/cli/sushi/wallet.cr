@@ -1,6 +1,5 @@
 module ::Sushi::Interface::Sushi
   class Wallet < CLI
-
     def sub_actions
       [
         {
@@ -24,12 +23,12 @@ module ::Sushi::Interface::Sushi
 
     def option_parser
       create_option_parser([
-                             Options::WALLET_PATH,
-                             Options::WALLET_PASSWORD,
-                             Options::IS_TESTNET,
-                             Options::ENCRYPTED,
-                             Options::JSON,
-                           ])
+        Options::WALLET_PATH,
+        Options::WALLET_PASSWORD,
+        Options::IS_TESTNET,
+        Options::ENCRYPTED,
+        Options::JSON,
+      ])
     end
 
     def run_impl(action_name)

@@ -2,19 +2,18 @@ require "../cli"
 
 module ::Sushi::Interface::SushiM
   class Root < CLI
-
     def sub_actions
       [] of SushiAction
     end
 
     def option_parser
       create_option_parser([
-                             Options::CONNECT_NODE,
-                             Options::WALLET_PATH,
-                             Options::WALLET_PASSWORD,
-                             Options::IS_TESTNET,
-                             Options::THREADS,
-                           ])
+        Options::CONNECT_NODE,
+        Options::WALLET_PATH,
+        Options::WALLET_PASSWORD,
+        Options::IS_TESTNET,
+        Options::THREADS,
+      ])
     end
 
     def run_impl(action_name)

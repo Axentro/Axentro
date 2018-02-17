@@ -1,5 +1,4 @@
 module ::Sushi::Core
-
   class WalletException < Exception
   end
 
