@@ -74,9 +74,7 @@ module ::Sushi::Interface
     end
 
     def run
-      if ARGV.size > 0 && ARGV[0] == "help"
-        puts_help
-      end
+      puts_help if ARGV.size > 0 && ARGV[0] == "help"
 
       if ARGV.size > 0 &&
          !ARGV[0].starts_with?('-') &&
@@ -92,8 +90,10 @@ module ::Sushi::Interface
 
       action_name = ARGV.size > 0 && !@has_default_action ? ARGV.shift : nil
 
-      if parser = option_parser
-        parser.parse!
+      if ARGV.size > 0 && ARGV[0].starts_with?('-')
+        if parser = option_parser
+          parser.parse!
+        end
       end
 
       run_impl(action_name)

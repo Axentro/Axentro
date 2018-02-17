@@ -1,128 +1,72 @@
 require "../cli"
+require "./sushi/*"
 
 module ::Sushi::Interface::Sushi
   class Root < CLI
-    @wallet_path : String?
-    @address : String?
-    @amount : Int64?
-    @node : String?
-    @header : Bool = false
-    @index : Int32?
-    @transaction_id : String?
-    @unconfirmed : Bool = false
-    @json : Bool = false
-    @is_testnet : Bool = false
-    @message : String = ""
-    @wallet_password : String?
-    @encrypted : Bool = false
-
     def sub_actions
       [
         {
-          name: "create",
-          desc: "Create a wallet file",
-        },
-        {
-          name: "verify",
-          desc: "Verify a wallet file",
+          name: "wallet",
+          desc: "create, encrypt or decrypt your wallet",
         },
         {
           name: "amount",
-          desc: "Show remaining amount of Sushi coins for specified address",
+          desc: "show remaining amount of Sushi coins for specified address",
         },
         {
           name: "send",
-          desc: "Send Sushi coins to a specified address",
+          desc: "send Sushi coins to a specified address",
         },
         {
           name: "fees",
-          desc: "Show fees for each action",
+          desc: "show fees for each action",
         },
         {
           name: "size",
-          desc: "Show current blockchain size",
+          desc: "show current blockchain size",
         },
         {
           name: "blockchain",
-          desc: "Get whole blockchain. Headers (without transactions) only with --header option",
+          desc: "get whole blockchain. headers (without transactions) only with --header option",
         },
         {
           name: "block",
-          desc: "Get a block for a specified index or transaction id",
+          desc: "get a block for a specified index or transaction id",
         },
         {
           name: "transactions",
-          desc: "Get trasactions in a specified block",
+          desc: "get trasactions in a specified block",
         },
         {
           name: "transaction",
-          desc: "Get a transaction for a transaction id",
-        },
-        {
-          name: "encrypt",
-          desc: "Encrypt a sushi wallet",
-        },
-        {
-          name: "decrypt",
-          desc: "Decrypt a sushi wallet (that was encrypted using sushi)",
+          desc: "get a transaction for a transaction id",
         },
       ]
     end
 
     def option_parser
-      OptionParser.new do |parser|
-        parser.on(
-          "-w WALLET_PATH",
-          "--wallet-path=WALLET_PATH",
-          "wallet json's path"
-        ) { |wallet_path|
-          @wallet_path = wallet_path
-        }
-        parser.on("-a ADDRESS", "--address=ADDRESS", "Public address") { |address|
-          @address = address
-        }
-        parser.on("-m AMOUNT", "--amount=AMOUNT", "The amount of Sushi coins") { |amount|
-          @amount = amount.to_i64
-        }
-        parser.on("--message=MESSAGE", "Add message into transaction") { |message|
-          @message = message
-        }
-        parser.on("-n NODE", "--node=NODE", "Connecting node") { |node|
-          @node = node
-        }
-        parser.on("-h", "--header", "Get headers only when get a blockchain") { @header = true }
-        parser.on("-i INDEX", "--index=INDEX", "Block index") { |index| @index = index.to_i }
-        parser.on(
-          "-t TRANSACTION_ID",
-          "--transaction_id=TRANSACTION_ID",
-          "Transaction id"
-        ) { |transaction_id|
-          @transaction_id = transaction_id
-        }
-        parser.on("-u", "--unconfirmed", "Showing UNCONFIRMED amount") {
-          @unconfirmed = true
-        }
-        parser.on("-j", "--json", "Print results as json") {
-          @json = true
-        }
-        parser.on("--testnet", "Set network type as testnet (default is mainnet)") {
-          @is_testnet = true
-        }
-        parser.on("--password=PASSWORD", "Password for encrypted wallet") { |password|
-          @wallet_password = password
-        }
-        parser.on("-e", "--encrypted", "Set this flag when creating a wallet to create an encrypted wallet") {
-          @encrypted = true
-        }
-      end
+      create_option_parser([
+                             Options::CONNECT_NODE,
+                             Options::WALLET_PATH,
+                             Options::WALLET_PASSWORD,
+                             Options::JSON,
+                             Options::UNCONFIRMED,
+                             Options::ADDRESS,
+                             Options::AMOUNT,
+                             Options::MESSAGE,
+                             Options::BLOCK_INDEX,
+                             Options::TRANSACTION_ID,
+                             Options::HEADER,
+                           ])
     end
 
     def run_impl(action_name)
       case action_name
-      when "create"
-        create
-      when "verify"
-        verify
+      when "wallet"
+        Wallet.new(
+          {name: "wallet", desc: "create, encrypt or decrypt your wallet"},
+          next_parents,
+        ).run
       when "amount"
         amount
       when "send"
@@ -139,117 +83,12 @@ module ::Sushi::Interface::Sushi
         transactions
       when "transaction"
         transaction
-      when "encrypt"
-        encrypt
-      when "decrypt"
-        decrypt
-      end
-    end
-
-    def create
-      unless wallet_path = @wallet_path
-        puts_help(HELP_WALLET_PATH)
-      end
-
-      wallet_path = wallet_path.ends_with?(".json") ? wallet_path : wallet_path + ".json"
-
-      if File.exists?(wallet_path)
-        puts_help(HELP_WALLET_ALREADY_EXISTS % wallet_path)
-      end
-
-      wallet = Core::Wallet.from_json(Core::Wallet.create(@is_testnet).to_json)
-
-      if @encrypted
-        unless wallet_password = @wallet_password
-          puts_help(HELP_WALLET_PASSWORD)
-        end
-        encrypted_wallet = Core::Wallet.encrypt(wallet_password, wallet)
-        File.write(wallet_path, encrypted_wallet.to_json)
-      else
-        File.write(wallet_path, wallet.to_json)
-      end
-
-      unless @json
-        puts_success("Your new wallet has been created at #{wallet_path}")
-        puts_success("Please take backup of the json file and keep it secret.")
-      else
-        puts wallet.to_json
-      end
-    end
-
-    def verify
-      unless wallet_path = @wallet_path
-        puts_help(HELP_WALLET_PATH)
-      end
-
-      wallet = get_wallet(wallet_path, @wallet_password)
-
-      puts_success "#{wallet_path} is perfect!" if wallet.verify!
-      puts_success "Address: #{wallet.address}"
-
-      network = Core::Wallet.address_network_type(wallet.address)
-      puts_success "Network (#{network[:prefix]}): #{network[:name]}"
-    end
-
-    def encrypt
-      unless wallet_path = @wallet_path
-        puts_help(HELP_WALLET_PATH)
-      end
-
-      unless wallet_password = @wallet_password
-        puts_help(HELP_WALLET_PASSWORD)
-      end
-
-      encrypted_wallet_json = Core::Wallet.encrypt(wallet_password, wallet_path).to_json
-      encrypted_wallet_path = "encrypted-" + wallet_path
-
-      if File.exists?(encrypted_wallet_path)
-        puts_help(HELP_WALLET_ALREADY_EXISTS % encrypted_wallet_path)
-      end
-
-      File.write(encrypted_wallet_path, encrypted_wallet_json)
-
-      unless @json
-        puts_success("Your wallet has been encrypted at #{encrypted_wallet_path}")
-        puts_success("Please don't forget your password - there is no way to recover an encrypted wallet.")
-      else
-        puts encrypted_wallet_json
-      end
-    end
-
-    def decrypt
-      unless wallet_path = @wallet_path
-        puts_help(HELP_WALLET_PATH)
-      end
-
-      unless wallet_password = @wallet_password
-        puts_help(HELP_WALLET_PASSWORD)
-      end
-
-      decrypted_wallet_json = Core::Wallet.decrypt(wallet_password, wallet_path)
-      decrypted_wallet_path = "decrypted-" + wallet_path
-
-      if File.exists?(decrypted_wallet_path)
-        puts_help(HELP_WALLET_ALREADY_EXISTS % decrypted_wallet_path)
-      end
-
-      File.write(decrypted_wallet_path, decrypted_wallet_json)
-
-      unless @json
-        puts_success("Your wallet has been decrypted at #{decrypted_wallet_path}")
-      else
-        puts decrypted_wallet_json
       end
     end
 
     def amount
-      if @wallet_path.nil? && @address.nil?
-        puts_help(HELP_WALLET_PATH_OR_ADDRESS)
-      end
-
-      unless node = @node
-        puts_help(HELP_CONNECTING_NODE)
-      end
+      puts_help(HELP_WALLET_PATH_OR_ADDRESS) if @wallet_path.nil? && @address.nil?
+      puts_help(HELP_CONNECTING_NODE) unless node = @connect_node
 
       address = if wallet_path = @wallet_path
                   wallet = get_wallet(wallet_path, @wallet_password)
@@ -274,21 +113,10 @@ module ::Sushi::Interface::Sushi
     end
 
     def send
-      unless wallet_path = @wallet_path
-        puts_help(HELP_WALLET_PATH)
-      end
-
-      unless recipient_address = @address
-        puts_help(HELP_ADDRESS_RECIPIENT)
-      end
-
-      unless amount = @amount
-        puts_help(HELP_AMOUNT)
-      end
-
-      unless node = @node
-        puts_help(HELP_CONNECTING_NODE)
-      end
+      puts_help(HELP_WALLET_PATH) unless wallet_path = @wallet_path
+      puts_help(HELP_ADDRESS_RECIPIENT) unless recipient_address = @address
+      puts_help(HELP_AMOUNT) unless amount = @amount
+      puts_help(HELP_CONNECTING_NODE) unless node = @connect_node
 
       to_address = Address.from(recipient_address, "recipient")
 
@@ -325,9 +153,7 @@ module ::Sushi::Interface::Sushi
     end
 
     def size
-      unless node = @node
-        puts_help(HELP_CONNECTING_NODE)
-      end
+      puts_help(HELP_CONNECTING_NODE) unless node = @connect_node
 
       payload = {call: "blockchain_size"}.to_json
 
@@ -342,9 +168,7 @@ module ::Sushi::Interface::Sushi
     end
 
     def blockchain
-      unless node = @node
-        puts_help(HELP_CONNECTING_NODE)
-      end
+      puts_help(HELP_CONNECTING_NODE) unless node = @connect_node
 
       payload = {call: "blockchain", header: @header}.to_json
 
@@ -355,17 +179,12 @@ module ::Sushi::Interface::Sushi
     end
 
     def block
-      unless node = @node
-        puts_help(HELP_CONNECTING_NODE)
-      end
+      puts_help(HELP_CONNECTING_NODE) unless node = @connect_node
+      puts_help(HELP_BLOCK_INDEX_OR_TRANSACTION_ID) if @block_index.nil? && @transaction_id.nil?
 
-      if @index.nil? && @transaction_id.nil?
-        puts_help(HELP_BLOCK_INDEX_OR_TRANSACTION_ID)
-      end
-
-      payload = if index = @index
-                  success_message = "Show a block for index: #{@index}"
-                  {call: "block", index: index, header: @header}.to_json
+      payload = if block_index = @block_index
+                  success_message = "Show a block for index: #{@block_index}"
+                  {call: "block", index: block_index, header: @header}.to_json
                 elsif transaction_id = @transaction_id
                   success_message = "Show a block for transaction: #{@transaction_id}"
                   {call: "block", transaction_id: transaction_id, header: @header}.to_json
@@ -380,30 +199,21 @@ module ::Sushi::Interface::Sushi
     end
 
     def transactions
-      unless node = @node
-        puts_help(HELP_CONNECTING_NODE)
-      end
+      puts_help(HELP_CONNECTING_NODE) unless node = @connect_node
+      puts_help(HELP_BLOCK_INDEX) unless block_index = @block_index
 
-      unless index = @index
-        puts_help(HELP_BLOCK_INDEX)
-      end
-
-      payload = {call: "transactions", index: index}.to_json
+      payload = {call: "transactions", index: block_index}.to_json
 
       body = rpc(node, payload)
 
-      puts_success("Show transactions in a block #{index}")
+      # todo json
+      puts_success("Show transactions in a block #{block_index}")
       puts_info(body)
     end
 
     def transaction
-      unless node = @node
-        puts_help(HELP_CONNECTING_NODE)
-      end
-
-      unless transaction_id = @transaction_id
-        puts_help(HELP_TRANSACTION_ID)
-      end
+      puts_help(HELP_CONNECTING_NODE) unless node = @connect_node
+      puts_help(HELP_TRANSACTION_ID) unless transaction_id = @transaction_id
 
       payload = {call: "transaction", transaction_id: transaction_id}.to_json
 
@@ -474,6 +284,7 @@ module ::Sushi::Interface::Sushi
     end
 
     include Core::Fees
+    include GlobalOptionParser
   end
 end
 

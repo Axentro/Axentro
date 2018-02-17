@@ -38,7 +38,7 @@ module ::E2E::Utils::API
 
     return nil if a == 0
 
-    a = a / 2
+    a = Random.rand(a/4) + 1
 
     recipient_address = ::Sushi::Core::Wallet.from_path("wallets/testnet-#{n_recipient}.json").address
 

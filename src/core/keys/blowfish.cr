@@ -1,7 +1,7 @@
 require "openssl/cipher"
 require "crypto/bcrypt/password"
 
-module ::Sushi::Core::BlowFish
+module ::Sushi::Core::Keys::BlowFish
   def self.encrypt(password, data)
     hashed_password = Crypto::Bcrypt::Password.create(password, cost: 10)
     cipher = OpenSSL::Cipher.new("bf-ecb")

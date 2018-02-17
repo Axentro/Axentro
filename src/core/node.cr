@@ -36,7 +36,7 @@ module ::Sushi::Core
       connect_port : Int32?,
       @wallet : Wallet,
       @database : Database?,
-      @min_connection : Int32
+      @conn_min : Int32
     )
       @id = Random::Secure.hex(16)
       @connection_salt = Random::Secure.hex(16)
@@ -583,15 +583,15 @@ module ::Sushi::Core
 
       socket = @nodes.sample[:socket]
 
-      if @nodes.size < @min_connection && !flag_get?(FLAG_REQUESTING_NODES)
+      if @nodes.size < @conn_min && !flag_get?(FLAG_REQUESTING_NODES)
         flag_set(FLAG_REQUESTING_NODES)
 
-        info "current connection (#{@nodes.size}) is less than the min connection (#{@min_connection})."
-        info "requesting new nodes (#{@min_connection - @nodes.size})"
+        info "current connection (#{@nodes.size}) is less than the min connection (#{@conn_min})."
+        info "requesting new nodes (#{@conn_min - @nodes.size})"
 
         send(socket, M_TYPE_REQUEST_NODES, {
           known_nodes:       known_nodes,
-          request_nodes_num: @min_connection - @nodes.size,
+          request_nodes_num: @conn_min - @nodes.size,
         })
       end
     end
