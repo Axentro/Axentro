@@ -138,6 +138,8 @@ module ::E2E
       STDERR.puts "- transactions  : #{@client.num_transactions}"
       STDERR.puts "- duration      : #{@client.duration} [sec]"
       STDERR.puts "- result        : #{light_green(@client.num_transactions/@client.duration)} [transactions/sec]"
+      STDERR.puts "- nodes         : #{@num_nodes}"
+      STDERR.puts "- miners        : #{@num_miners}"
     end
 
     def assertion!
