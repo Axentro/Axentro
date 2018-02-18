@@ -80,11 +80,11 @@ module ::Sushi::Interface
         exit -1
       end
 
-      action_name = ""
+      action_name = if ARGV.size > 0 && !ARGV[0].starts_with?('-')
+                      ARGV.shift
+                    end
 
-      if ARGV.size > 0 && !ARGV[0].starts_with?('-')
-        action_name = ARGV.shift
-      else
+      if ARGV.size > 0 && ARGV[0].starts_with?('-')
         if parser = option_parser
           parser.parse!
         end
