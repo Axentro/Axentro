@@ -36,6 +36,8 @@ module ::E2E
     def kill
       @kill_time = Time.now
       @alive = false
+
+      `pkill -f sushi`
     end
 
     def num_transactions : Int32
