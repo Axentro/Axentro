@@ -12,34 +12,34 @@ module ::Sushi::Interface::Sushi
         },
         {
           name: "clean",
-          desc: "clean the default configuration"
+          desc: "clean the default configuration",
         },
       ]
     end
 
     def option_parser
       create_option_parser([
-                             Options::CONNECT_NODE,
-                             Options::WALLET_PATH,
-                             # Options::WALLET_PASSWORD,
-                             Options::IS_TESTNET,
-                             Options::IS_PRIVATE,
-                             Options::JSON,
-                             Options::UNCONFIRMED,
-                             Options::BIND_HOST,
-                             Options::BIND_PORT,
-                             Options::PUBLIC_URL,
-                             Options::DATABASE_PATH,
-                             Options::CONN_MIN,
-                             # Options::ADDRESS,
-                             # Options::AMOUNT,
-                             # Options::MESSAGE,
-                             # Options::BLOCK_INDEX,
-                             # Options::TRANSACTION_ID,
-                             Options::HEADER,
-                             Options::THREADS,
-                             Options::ENCRYPTED,
-                           ])
+        Options::CONNECT_NODE,
+        Options::WALLET_PATH,
+        # Options::WALLET_PASSWORD,
+        Options::IS_TESTNET,
+        Options::IS_PRIVATE,
+        Options::JSON,
+        Options::UNCONFIRMED,
+        Options::BIND_HOST,
+        Options::BIND_PORT,
+        Options::PUBLIC_URL,
+        Options::DATABASE_PATH,
+        Options::CONN_MIN,
+        # Options::ADDRESS,
+        # Options::AMOUNT,
+        # Options::MESSAGE,
+        # Options::BLOCK_INDEX,
+        # Options::TRANSACTION_ID,
+        Options::HEADER,
+        Options::THREADS,
+        Options::ENCRYPTED,
+      ])
     end
 
     def run_impl(action_name)

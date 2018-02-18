@@ -32,24 +32,24 @@ module ::Sushi::Interface::Sushi
       case action_name
       when "wallet"
         return Wallet.new(
-                 {name: "wallet", desc: "create, encrypt or decrypt your wallet"},
-                 next_parents,
-               ).run
+          {name: "wallet", desc: "create, encrypt or decrypt your wallet"},
+          next_parents,
+        ).run
       when "blockchain"
         return Blockchain.new(
-                 {name: "blockchain", desc: "get a whole blockchain or each block"},
-                 next_parents,
-               ).run
+          {name: "blockchain", desc: "get a whole blockchain or each block"},
+          next_parents,
+        ).run
       when "transaction"
         return Transaction.new(
-                 {name: "transaction", desc: "get or create transactions"},
-                 next_parents,
-               ).run
+          {name: "transaction", desc: "get or create transactions"},
+          next_parents,
+        ).run
       when "config"
         return Config.new(
-                 {name: "config", desc: "save default configuration used by sushi, sushid and sushim"},
-                 next_parents,
-               ).run
+          {name: "config", desc: "save default configuration used by sushi, sushid and sushim"},
+          next_parents,
+        ).run
       end
 
       specify_subaction!

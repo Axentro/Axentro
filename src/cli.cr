@@ -14,7 +14,7 @@ module ::Sushi::Interface
   abstract class CLI
     def initialize(
       @action : SushiAction,
-      @parents : Array(SushiAction),
+      @parents : Array(SushiAction)
     )
     end
 

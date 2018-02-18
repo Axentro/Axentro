@@ -1,7 +1,6 @@
 module ::Sushi::Interface
   class ConfigManager
-
-    alias Configurable = String|Int32|Int64|Bool|Nil
+    alias Configurable = String | Int32 | Int64 | Bool | Nil
 
     @@manager = nil
 
