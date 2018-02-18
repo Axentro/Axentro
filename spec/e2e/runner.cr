@@ -45,6 +45,7 @@ module ::E2E
 
     def kill_nodes
       `pkill -f sushid`
+      STDERR.puts `ps aux | grep sushi`
     end
 
     def launch_miners
@@ -55,6 +56,7 @@ module ::E2E
 
     def kill_miners
       `pkill -f sushim`
+      STDERR.puts `ps aux | grep sushi`
     end
 
     def launch_client
@@ -79,7 +81,7 @@ module ::E2E
 
     def verify_latest_confirmed_block
       STDERR.puts
-      STDERR.puts "Verifying: #{green("latest confirmed block")} ..."
+      STDERR.puts "Verifying: #{green("latest confirmed block")} #{green(latest_confirmed_block_index)}..."
 
       block_json = block(@node_ports[0], latest_confirmed_block_index)
 
