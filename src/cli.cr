@@ -94,9 +94,9 @@ module ::Sushi::Interface
     rescue e : Exception
       if error_message = e.message
         puts_error(e.message)
-      else
-        puts_error(e.backtrace.join("\n"))
       end
+
+      puts_error(e.backtrace.join("\n"))
     end
 
     def specify_subaction!
