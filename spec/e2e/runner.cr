@@ -45,7 +45,8 @@ module ::E2E
 
     def kill_nodes
       `pkill -f sushid`
-      STDERR.puts `ps aux | grep sushi`
+      STDERR.puts "killed nodes"
+      STDERR.puts `ps aux | grep sushi | grep -v grep`
     end
 
     def launch_miners
@@ -56,7 +57,8 @@ module ::E2E
 
     def kill_miners
       `pkill -f sushim`
-      STDERR.puts `ps aux | grep sushi`
+      STDERR.puts "killed miners"
+      STDERR.puts `ps aux | grep sushi | grep -v grep`
     end
 
     def launch_client
@@ -65,6 +67,9 @@ module ::E2E
 
     def kill_client
       @client.kill
+      sleep 10
+      STDERR.puts "killed client"
+      `ps aux | grep sushi | grep -v grep`
     end
 
     def latest_block_index : Int32
