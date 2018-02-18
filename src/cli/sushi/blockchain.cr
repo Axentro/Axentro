@@ -30,12 +30,14 @@ module ::Sushi::Interface::Sushi
     def run_impl(action_name)
       case action_name
       when "size"
-        size
+        return size
       when "all"
-        all
+        return all
       when "block"
-        block
+        return block
       end
+
+      specify_subaction!
     end
 
     def size

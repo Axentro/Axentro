@@ -34,12 +34,14 @@ module ::Sushi::Interface::Sushi
     def run_impl(action_name)
       case action_name
       when "send"
-        send
+        return send
       when "transactions"
-        transactions
+        return transactions
       when "transaction"
-        transaction
+        return transaction
       end
+
+      specify_subaction!
     end
 
     def send

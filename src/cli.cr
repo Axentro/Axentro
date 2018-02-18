@@ -1,6 +1,7 @@
 require "option_parser"
 require "file_utils"
 require "colorize"
+require "yaml"
 require "uri"
 
 require "./core"
@@ -14,7 +15,6 @@ module ::Sushi::Interface
     def initialize(
       @action : SushiAction,
       @parents : Array(SushiAction),
-      @has_default_action : Bool = false
     )
     end
 
@@ -27,13 +27,10 @@ module ::Sushi::Interface
       messages = message.split("\n").map { |m| white_bg(black(" %-#{message_size}s " % m)) }
 
       puts "\n" +
-           "#{light_magenta("--- sushi ---")}    #{@action[:desc]}\n\n" +
+           "#{light_magenta("> " + command_line)} | #{@action[:desc]}\n\n" +
            "#{white_bg(black(" " + "-" * message_size + " "))}\n" +
            messages.join("\n") + "\n" +
            "#{white_bg(black(" " + "-" * message_size + " "))}\n\n" +
-           "this is a help message for\n" +
-           "> #{light_cyan(command_line)}\n" +
-           "\n" +
            "available sub actions\n" +
            available_sub_actions +
            "\n\n" +
@@ -83,12 +80,7 @@ module ::Sushi::Interface
         exit -1
       end
 
-      if ARGV.size == 0 && !@has_default_action
-        puts_help
-        exit -1
-      end
-
-      action_name = ARGV.size > 0 && !@has_default_action ? ARGV.shift : nil
+      action_name = ARGV.size > 0 ? ARGV.shift : nil
 
       if ARGV.size > 0 && ARGV[0].starts_with?('-')
         if parser = option_parser
@@ -103,6 +95,10 @@ module ::Sushi::Interface
       else
         puts_error(e.backtrace.join("\n"))
       end
+    end
+
+    def specify_subaction!
+      puts_help("specify a sub action in #{sub_action_names}")
     end
 
     def option_error(option_name : String, parser : OptionParser)
@@ -130,6 +126,10 @@ module ::Sushi::Interface
       end
 
       body
+    end
+
+    def cm
+      ConfigManager.get_instance
     end
 
     abstract def sub_actions : Array(SushiAction)

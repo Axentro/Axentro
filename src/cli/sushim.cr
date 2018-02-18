@@ -42,5 +42,5 @@ include ::Sushi::Interface
 include Sushi::Core::Keys
 
 ::Sushi::Interface::SushiM::Root.new(
-  {name: "sushim", desc: "sushi's mining process"}, [] of SushiAction, true
+  {name: "sushim", desc: "sushi's mining process"}, [] of SushiAction
 ).run

@@ -45,18 +45,20 @@ module ::Sushi::Interface::Sushi
     def run_impl(action_name)
       case action_name
       when "create"
-        create
+        return create
       when "verify"
-        verify
+        return verify
       when "encrypt"
-        encrypt
+        return encrypt
       when "decrypt"
-        decrypt
+        return decrypt
       when "amount"
-        amount
+        return amount
       when "fees"
-        fees
+        return fees
       end
+
+      specify_subaction!
     end
 
     def create

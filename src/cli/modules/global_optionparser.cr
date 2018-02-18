@@ -77,7 +77,7 @@ module ::Sushi::Interface
           @is_testnet = true
         } if is_active?(actives, Options::IS_TESTNET)
 
-        parser.on("--private", "Launch a node in private mode. It will not be connected from other nodes.") {
+        parser.on("--private", "launch a node in private mode. it will not be connected from other nodes.") {
           @is_private = true
         } if is_active?(actives, Options::IS_PRIVATE)
 
@@ -98,7 +98,7 @@ module ::Sushi::Interface
           @bind_port = bind_port.to_i
         } if is_active?(actives, Options::BIND_PORT)
 
-        parser.on("-u PUBLIC_URL", "--public_url=PUBLIC_URL", "public url of your node that can be accessed from internet\nif your node is behind a NAT, you can add --private flag instread of this option") { |public_url|
+        parser.on("-u PUBLIC_URL", "--public_url=PUBLIC_URL", "public url of your node that can be accessed from internet. if your node is behind a NAT, you can add --private flag instread of this option") { |public_url|
           @public_url = public_url
         } if is_active?(actives, Options::PUBLIC_URL)
 
@@ -106,7 +106,7 @@ module ::Sushi::Interface
           @database_path = database_path
         } if is_active?(actives, Options::DATABASE_PATH)
 
-        parser.on("--conn_min=CONN_MIN", "min # of the first connections when you launch a node\nthe number is not guaranteed when there are not enough node.") { |conn_min|
+        parser.on("--conn_min=CONN_MIN", "min # of the first connections when you launch a node. the number is not guaranteed when there are not enough node.") { |conn_min|
           @conn_min = conn_min.to_i
         } if is_active?(actives, Options::CONN_MIN)
 
