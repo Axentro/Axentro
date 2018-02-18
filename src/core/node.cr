@@ -229,7 +229,7 @@ module ::Sushi::Core
         warning "mismatch network type with miner #{address}"
 
         return send(socket, M_TYPE_HANDSHAKE_MINER_REJECTED, {
-          reason: "Network type mismatch",
+          reason: "network type mismatch",
         })
       end
 
@@ -261,7 +261,7 @@ module ::Sushi::Core
 
         return send(socket, M_TYPE_HANDSHAKE_NODE_REJECTED, {
           context: context,
-          reason:  "Network type mismatch",
+          reason:  "network type mismatch",
         })
       end
 
@@ -290,7 +290,7 @@ module ::Sushi::Core
       asserted_connection_hash = http_handshake(node_context)
 
       if asserted_connection_hash != connection_hash
-        raise "Invalid connection hash: #{asserted_connection_hash} != #{connection_hash}"
+        raise "invalid connection hash: #{asserted_connection_hash} != #{connection_hash}"
       end
 
       @nodes << {socket: socket, context: node_context}

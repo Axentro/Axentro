@@ -98,7 +98,7 @@ describe Transaction do
           "0", # sign_s
         )
 
-        expect_raises(Exception, "Length of transaction id have to be 64: too-short-id") do
+        expect_raises(Exception, "length of transaction id have to be 64: too-short-id") do
           transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
         end
       end
@@ -118,7 +118,7 @@ describe Transaction do
           "0",             # sign_s
         )
 
-        expect_raises(Exception, "Message size exceeds: 700 for 512") do
+        expect_raises(Exception, "message size exceeds: 700 for 512") do
           transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
         end
       end
@@ -138,7 +138,7 @@ describe Transaction do
           "0", # sign_s
         )
 
-        expect_raises(Exception, "Unknown action: not-valid-action") do
+        expect_raises(Exception, "unknown action: not-valid-action") do
           transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
         end
       end
@@ -164,7 +164,7 @@ describe Transaction do
           "0", # sign_s
         )
 
-        expect_raises(Exception, "Invalid sender address checksum for: VDBpbnZhbGlkLXdhbGxldC1hZGRyZXNz") do
+        expect_raises(Exception, "invalid sender address checksum for: VDBpbnZhbGlkLXdhbGxldC1hZGRyZXNz") do
           transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
         end
       end
@@ -189,7 +189,7 @@ describe Transaction do
           "0", # sign_s
         )
 
-        expect_raises(Exception, "Invalid recipient address checksum for: VDBpbnZhbGlkLXdhbGxldC1hZGRyZXNz") do
+        expect_raises(Exception, "invalid recipient address checksum for: VDBpbnZhbGlkLXdhbGxldC1hZGRyZXNz") do
           transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
         end
       end
@@ -209,7 +209,7 @@ describe Transaction do
           "0", # sign_s
         )
 
-        expect_raises(Exception, "Sender have to be only one currently") do
+        expect_raises(Exception, "sender have to be only one currently") do
           transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
         end
       end
@@ -230,7 +230,7 @@ describe Transaction do
           "0", # sign_s
         )
 
-        expect_raises(Exception, "Invalid signing") do
+        expect_raises(Exception, "invalid signing") do
           transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
         end
       end
@@ -254,7 +254,7 @@ describe Transaction do
         signature = sign(sender_wallet, unsigned_transaction)
         signed_transaction = unsigned_transaction.signed(signature[:r], signature[:s])
 
-        expect_raises(Exception, "Not enough fee, should be  -10 >= 1") do
+        expect_raises(Exception, "not enough fee, should be  -10 >= 1") do
           signed_transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
         end
       end
@@ -278,7 +278,7 @@ describe Transaction do
         signature = sign(sender_wallet, unsigned_transaction)
         signed_transaction = unsigned_transaction.signed(signature[:r], signature[:s])
 
-        expect_raises(Exception, "Sender has not enough coins: #{sender_wallet.address} (0)") do
+        expect_raises(Exception, "sender has not enough coins: #{sender_wallet.address} (0)") do
           signed_transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
         end
       end
@@ -444,7 +444,7 @@ describe Transaction do
           "0", # sign_s
         )
 
-        expect_raises(Exception, "Invalid served amount for coinbase transaction: 10") do
+        expect_raises(Exception, "invalid served amount for coinbase transaction: 10") do
           transaction.valid?(blockchain, 0_i64, true, [] of Transaction)
         end
       end

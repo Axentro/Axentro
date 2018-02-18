@@ -18,17 +18,28 @@ module ::Sushi::Interface::Sushi
           name: "decrypt",
           desc: "decrypt a sushi wallet (that was encrypted using sushi)",
         },
+        {
+          name: "amount",
+          desc: "show remaining amount of Sushi coins for specified address",
+        },
+        {
+          name: "fees",
+          desc: "show fees for each action",
+        },
       ]
     end
 
     def option_parser
       create_option_parser([
-        Options::WALLET_PATH,
-        Options::WALLET_PASSWORD,
-        Options::IS_TESTNET,
-        Options::ENCRYPTED,
-        Options::JSON,
-      ])
+                             Options::CONNECT_NODE,
+                             Options::WALLET_PATH,
+                             Options::WALLET_PASSWORD,
+                             Options::IS_TESTNET,
+                             Options::ENCRYPTED,
+                             Options::JSON,
+                             Options::UNCONFIRMED,
+                             Options::ADDRESS,
+                           ])
     end
 
     def run_impl(action_name)
@@ -41,6 +52,10 @@ module ::Sushi::Interface::Sushi
         encrypt
       when "decrypt"
         decrypt
+      when "amount"
+        amount
+      when "fees"
+        fees
       end
     end
 
@@ -64,8 +79,8 @@ module ::Sushi::Interface::Sushi
       end
 
       unless @json
-        puts_success("Your new wallet has been created at #{wallet_path}")
-        puts_success("Please take backup of the json file and keep it secret.")
+        puts_success("your new wallet has been created at #{wallet_path}")
+        puts_success("please take backup of the json file and keep it secret.")
       else
         puts wallet.to_json
       end
@@ -77,10 +92,10 @@ module ::Sushi::Interface::Sushi
       wallet = get_wallet(wallet_path, @wallet_password)
 
       puts_success "#{wallet_path} is perfect!" if wallet.verify!
-      puts_success "Address: #{wallet.address}"
+      puts_success "address: #{wallet.address}"
 
       network = Core::Wallet.address_network_type(wallet.address)
-      puts_success "Network (#{network[:prefix]}): #{network[:name]}"
+      puts_success "network (#{network[:prefix]}): #{network[:name]}"
     end
 
     def encrypt
@@ -95,8 +110,8 @@ module ::Sushi::Interface::Sushi
       File.write(encrypted_wallet_path, encrypted_wallet_json)
 
       unless @json
-        puts_success("Your wallet has been encrypted at #{encrypted_wallet_path}")
-        puts_success("Please don't forget your password - there is no way to recover an encrypted wallet.")
+        puts_success("your wallet has been encrypted at #{encrypted_wallet_path}")
+        puts_success("please don't forget your password - there is no way to recover an encrypted wallet.")
       else
         puts encrypted_wallet_json
       end
@@ -114,12 +129,49 @@ module ::Sushi::Interface::Sushi
       File.write(decrypted_wallet_path, decrypted_wallet_json)
 
       unless @json
-        puts_success("Your wallet has been decrypted at #{decrypted_wallet_path}")
+        puts_success("your wallet has been decrypted at #{decrypted_wallet_path}")
       else
         puts decrypted_wallet_json
       end
     end
 
+    def amount
+      puts_help(HELP_WALLET_PATH_OR_ADDRESS) if @wallet_path.nil? && @address.nil?
+      puts_help(HELP_CONNECTING_NODE) unless node = @connect_node
+
+      address = if wallet_path = @wallet_path
+                  wallet = get_wallet(wallet_path, @wallet_password)
+                  wallet.address
+                elsif _address = @address
+                  _address
+                else
+                  puts_help(HELP_WALLET_PATH_OR_ADDRESS)
+                end
+
+      payload = {call: "amount", address: address, unconfirmed: @unconfirmed}.to_json
+
+      body = rpc(node, payload)
+
+      unless @json
+        json = JSON.parse(body)
+        puts_success("show Sushi coins amount of #{address}")
+        puts_info(json["amount"].to_s)
+      else
+        puts body
+      end
+    end
+
+    def fees
+      unless @json
+        puts_success("showing fees for each action.")
+        puts_info("send     : #{FEE_SEND}")
+      else
+        json = {send: FEE_SEND}.to_json
+        puts json
+      end
+    end
+
+    include Core::Fees
     include GlobalOptionParser
   end
 end

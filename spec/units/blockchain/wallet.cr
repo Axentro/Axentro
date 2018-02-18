@@ -44,7 +44,7 @@ describe Wallet do
     end
 
     it "should raise an invalid network error when address not mainnet or testnet" do
-      expect_raises(Exception, /Invalid network: U0/) do
+      expect_raises(Exception, /invalid network: U0/) do
         Wallet.address_network_type(create_unknown_network_address)
       end
     end
@@ -58,7 +58,7 @@ describe Wallet do
     end
 
     it "should raise a wallet not found error when no wallet file exists at the specific path" do
-      expect_raises(Exception, "Failed to find wallet at invalid-path, create it first!") do
+      expect_raises(Exception, "failed to find wallet at invalid-path, create it first!") do
         Wallet.from_path("invalid-path")
       end
     end
@@ -76,7 +76,7 @@ describe Wallet do
       end
 
       it "should raise an error if cannot encrypt" do
-        expect_raises(Exception, "Failed to encrypt the wallet: Failed to find wallet at invalid-wallet, create it first!") do
+        expect_raises(Exception, "failed to encrypt the wallet: failed to find wallet at invalid-wallet, create it first!") do
           EncryptedWallet.from_json(Wallet.encrypt("password", "invalid-wallet").to_json)
         end
       end
@@ -93,19 +93,19 @@ describe Wallet do
       end
 
       it "should raise an error when wallet not found" do
-        expect_raises(Exception, "Failed to decrypt the wallet: Error: Failed to find encrypted wallet at invalid-wallet") do
+        expect_raises(Exception, "failed to decrypt the wallet: failed to find encrypted wallet at invalid-wallet") do
           Wallet.from_json(Wallet.decrypt("password", "invalid-wallet"))
         end
       end
 
       it "should raise an error if the encrypted wallet source is not 'sushi'" do
-        expect_raises(Exception, "Error: This wallet was not encrypted with the sushi binary") do
+        expect_raises(Exception, "this wallet was not encrypted with the sushi binary") do
           Wallet.from_json(Wallet.decrypt("password", "#{__DIR__}/../utils/data/encrypted-wallet2.json"))
         end
       end
 
       it "should raise an error if it cannot decrypt" do
-        expect_raises(Exception, "Failed to decrypt the wallet with the supplied password") do
+        expect_raises(Exception, "failed to decrypt the wallet with the supplied password") do
           Wallet.from_json(Wallet.decrypt("oops", "#{__DIR__}/../utils/data/encrypted-wallet1.json"))
         end
       end

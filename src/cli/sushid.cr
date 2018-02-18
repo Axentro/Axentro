@@ -68,5 +68,5 @@ include ::Sushi::Interface
 include Sushi::Core::Keys
 
 ::Sushi::Interface::SushiD::Root.new(
-  {name: "sushid", desc: "Sushi's node"}, [] of SushiAction, true
+  {name: "sushid", desc: "sushi's node"}, [] of SushiAction, true
 ).run

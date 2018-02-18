@@ -22,7 +22,7 @@ module ::E2E
     end
 
     def pre_build
-      raise "Build failed" unless system("shards build")
+      raise "build failed" unless system("shards build")
     end
 
     def launch_nodes
@@ -79,13 +79,13 @@ module ::E2E
 
     def verify_latest_confirmed_block
       STDERR.puts
-      STDERR.puts "Verifying: #{green("latest confirmed block")} #{green(latest_confirmed_block_index)}..."
+      STDERR.puts "verifying: #{green("latest confirmed block")} #{green(latest_confirmed_block_index)}..."
 
       block_json = block(@node_ports[0], latest_confirmed_block_index)
 
       @node_ports[1..-1].each do |node_port|
         _block_json = block(node_port, latest_confirmed_block_index)
-        raise "Difference block #{block_json} vs #{_block_json}" if block_json != _block_json
+        raise "difference block #{block_json} vs #{_block_json}" if block_json != _block_json
         STDERR.print "."
       end
 
@@ -95,16 +95,16 @@ module ::E2E
 
     def verify_all_addresses_have_non_negative_amount
       STDERR.puts
-      STDERR.puts "Verifying: #{green("all addresses have non-negative amount")}"
+      STDERR.puts "verifying: #{green("all addresses have non-negative amount")}"
 
       @node_ports.each do |node_port|
         @num_miners.times do |num|
           a = amount(node_port, num)
-          raise "Amount of #{num} is #{a} on #{node_port}" if a < 0
+          raise "amount of #{num} is #{a} on #{node_port}" if a < 0
           STDERR.print "."
 
           a = amount(node_port, num, true)
-          raise "Amount of #{num} is #{a} on #{node_port} (unconfirmed)" if a < 0
+          raise "amount of #{num} is #{a} on #{node_port} (unconfirmed)" if a < 0
           STDERR.print "."
         end
       end
@@ -115,7 +115,7 @@ module ::E2E
 
     def verify_blockchain_can_be_restored_from_database
       STDERR.puts
-      STDERR.puts "Verifying: #{green("blockchain can be restored from database")}"
+      STDERR.puts "verifying: #{green("blockchain can be restored from database")}"
 
       size0 = blockchain_size(4000)
 
@@ -125,7 +125,7 @@ module ::E2E
 
       size1 = blockchain_size(5000)
 
-      raise "Restoring blockchain failed (size : #{size0}, db: #{size1})" unless size0 == size1
+      raise "restoring blockchain failed (size : #{size0}, db: #{size1})" unless size0 == size1
 
       STDERR.print "."
       STDERR.puts

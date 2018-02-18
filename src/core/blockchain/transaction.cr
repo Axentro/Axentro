@@ -40,27 +40,27 @@ module ::Sushi::Core
     end
 
     def valid?(blockchain : Blockchain, block_index : Int64, is_coinbase : Bool, transactions : Array(Transaction)?) : Bool
-      raise "Length of transaction id have to be 64: #{@id}" if @id.size != 64
-      raise "Message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
+      raise "length of transaction id have to be 64: #{@id}" if @id.size != 64
+      raise "message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
 
       @senders.each do |sender|
-        raise "Invalid checksum for sender's address: #{sender[:address]}" unless Keys::Address.from(sender[:address], "sender")
+        raise "invalid checksum for sender's address: #{sender[:address]}" unless Keys::Address.from(sender[:address], "sender")
       end
 
       @recipients.each do |recipient|
-        raise "Invalid checksum for recipient's address: #{recipient[:address]}" unless Keys::Address.from(recipient[:address], "recipient")
+        raise "invalid checksum for recipient's address: #{recipient[:address]}" unless Keys::Address.from(recipient[:address], "recipient")
       end
 
       if !is_coinbase
-        raise "Unknown action: #{@action}" unless ACTIONS.includes?(@action)
-        raise "Sender have to be only one currently" if @senders.size != 1
+        raise "unknown action: #{@action}" unless ACTIONS.includes?(@action)
+        raise "sender have to be only one currently" if @senders.size != 1
 
         network = Keys::Address.from(@senders.first[:address]).network
         public_key = Keys::PublicKey.new(@senders.first[:public_key], network)
 
         secp256k1 = ECDSA::Secp256k1.new
 
-        raise "Invalid signing" if !secp256k1.verify(
+        raise "invalid signing" if !secp256k1.verify(
                                      public_key.point,
                                      self.as_unsigned.to_hash,
                                      BigInt.new(@sign_r, base: 16),
@@ -68,13 +68,13 @@ module ::Sushi::Core
                                    )
 
         if calculate_fee < min_fee_of_action(@action)
-          raise "Not enough fee, should be  #{calculate_fee} >= #{min_fee_of_action(@action)}"
+          raise "not enough fee, should be  #{calculate_fee} >= #{min_fee_of_action(@action)}"
         end
 
         senders_amount = blockchain.get_amount_unconfirmed(@senders[0][:address], transactions)
 
         if prec(senders_amount - @senders[0][:amount]) < 0_i64
-          raise "Sender has not enough coins: #{@senders[0][:address]} (#{senders_amount})"
+          raise "sender has not enough coins: #{@senders[0][:address]} (#{senders_amount})"
         end
       else
         raise "actions has to be 'head' for coinbase transaction " if @action != "head"
@@ -85,7 +85,7 @@ module ::Sushi::Core
         raise "sign_s of coinbase transaction has to be '0'" if @sign_s != "0"
 
         served_sum = @recipients.reduce(0_i64) { |sum, recipient| prec(sum + recipient[:amount]) }
-        raise "Invalid served amount for coinbase transaction: #{served_sum}" if served_sum != blockchain.served_amount(block_index)
+        raise "invalid served amount for coinbase transaction: #{served_sum}" if served_sum != blockchain.served_amount(block_index)
       end
 
       true

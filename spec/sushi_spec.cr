@@ -4,7 +4,7 @@ include ::Sushi::Common::Color
 
 ENV["UNIT"] = "true"
 
-puts light_cyan("> Unit tests")
+puts light_cyan("> unit tests")
 require "./units/units"
 
 ENV["E2E"] = "true" if ENV.has_key?("TRAVIS")

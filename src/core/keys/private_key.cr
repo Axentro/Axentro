@@ -6,7 +6,7 @@ module ::Sushi::Core::Keys
 
     def initialize(private_key_hex : String, @network : Network = MAINNET)
       @hex = private_key_hex
-      raise "Invalid private key: #{@hex}" unless is_valid?
+      raise "invalid private key: #{@hex}" unless is_valid?
     end
 
     def self.from(hex : String, network : Network = MAINNET) : PrivateKey
@@ -37,7 +37,7 @@ module ::Sushi::Core::Keys
       secp256k1 = ECDSA::Secp256k1.new
       key_pair = secp256k1.create_key_pair(@hex.to_big_i(16))
 
-      raise "Private key mismatch when finding public key" unless key_pair[:secret_key].to_s(16) == @hex
+      raise "private key mismatch when finding public key" unless key_pair[:secret_key].to_s(16) == @hex
 
       PublicKey.new(key_pair[:public_key].x.to_s(16) + key_pair[:public_key].y.to_s(16), @network)
     end

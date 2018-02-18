@@ -18,27 +18,27 @@ module ::Sushi::Interface
     )
     end
 
-    def puts_help(message = "Showing help message.", exit_code = -1)
+    def puts_help(message = "showing help message.", exit_code = -1)
       available_sub_actions =
         sub_actions.map { |a| " - #{light_green("%-20s" % a[:name])} | #{"%-40s" % a[:desc]}" }.join("\n")
-      available_sub_actions = "Nothing" if available_sub_actions == ""
+      available_sub_actions = "nothing" if available_sub_actions == ""
 
       message_size = message.split("\n").max_by { |m| m.size }.size
       messages = message.split("\n").map { |m| white_bg(black(" %-#{message_size}s " % m)) }
 
       puts "\n" +
-           "#{light_magenta("Sushi")} #{@action[:desc]}\n\n" +
+           "#{light_magenta("--- sushi ---")}    #{@action[:desc]}\n\n" +
            "#{white_bg(black(" " + "-" * message_size + " "))}\n" +
            messages.join("\n") + "\n" +
            "#{white_bg(black(" " + "-" * message_size + " "))}\n\n" +
-           "This is a help message for\n" +
+           "this is a help message for\n" +
            "> #{light_cyan(command_line)}\n" +
            "\n" +
-           "Available sub actions\n" +
+           "available sub actions\n" +
            available_sub_actions +
            "\n\n" +
-           "Available options\n" +
-           (option_parser.nil? ? "Nothing" : option_parser.to_s) +
+           "available options\n" +
+           (option_parser.nil? ? "nothing" : option_parser.to_s) +
            "\n\n"
 
       exit exit_code
@@ -79,7 +79,7 @@ module ::Sushi::Interface
       if ARGV.size > 0 &&
          !ARGV[0].starts_with?('-') &&
          !sub_action_names.includes?(ARGV[0])
-        puts_help("Invalid action '#{ARGV[0]}' for '#{command_line}'")
+        puts_help("invalid action '#{ARGV[0]}' for '#{command_line}'")
         exit -1
       end
 
@@ -106,7 +106,7 @@ module ::Sushi::Interface
     end
 
     def option_error(option_name : String, parser : OptionParser)
-      puts_error("Please specify #{option_name}")
+      puts_error("please specify #{option_name}")
       puts ""
       puts parser.to_s
       exit -1
@@ -119,13 +119,13 @@ module ::Sushi::Interface
 
     def verify_response!(res) : String
       unless res.status_code == 200
-        puts_error "Failed to call an API."
+        puts_error "failed to call an API."
         puts_error res.body
         exit -1
       end
 
       unless body = res.body
-        puts_error "Returned body is empty"
+        puts_error "returned body is empty"
         exit -1
       end
 

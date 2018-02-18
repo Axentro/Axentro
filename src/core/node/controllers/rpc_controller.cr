@@ -55,7 +55,7 @@ module ::Sushi::Core::Controllers
 
       fee = transaction.calculate_fee
 
-      raise "Invalid fee #{fee} for the action #{action}" if fee <= 0.0
+      raise "invalid fee #{fee} for the action #{action}" if fee <= 0.0
 
       context.response.print transaction.to_json
       context
@@ -121,7 +121,7 @@ module ::Sushi::Core::Controllers
       index = json["index"].as_i
 
       if index > @blockchain.chain.size - 1
-        raise "Invalid index #{index} (Blockchain size is #{@blockchain.chain.size})"
+        raise "invalid index #{index} (Blockchain size is #{@blockchain.chain.size})"
       end
 
       context.response.print @blockchain.chain[index].transactions.to_json
@@ -132,11 +132,11 @@ module ::Sushi::Core::Controllers
       transaction_id = json["transaction_id"].to_s
 
       unless block_index = @blockchain.block_index(transaction_id)
-        raise "Failed to find a block for the transaction #{transaction_id}"
+        raise "failed to find a block for the transaction #{transaction_id}"
       end
 
       unless transaction = @blockchain.chain[block_index].find_transaction(transaction_id)
-        raise "Failed to find a transaction for #{transaction_id}"
+        raise "failed to find a transaction for #{transaction_id}"
       end
 
       context.response.print transaction.to_json
@@ -145,7 +145,7 @@ module ::Sushi::Core::Controllers
 
     def unpermitted_call(call, context) : HTTP::Server::Context
       context.response.status_code = 403
-      context.response.print "Unpermitted call: #{call}"
+      context.response.print "unpermitted call: #{call}"
       context
     end
 

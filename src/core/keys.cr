@@ -26,10 +26,10 @@ module ::Sushi::Core::Keys
       address = Address.from(address)
       wif = Wif.new(wif)
 
-      raise "Network mismatch between address and wif" if address.network != wif.network
+      raise "network mismatch between address and wif" if address.network != wif.network
 
       public_key = PublicKey.from(public_key, address.network)
-      raise "Public key mismatch between public key and wif" if public_key.as_hex != wif.public_key.as_hex
+      raise "public key mismatch between public key and wif" if public_key.as_hex != wif.public_key.as_hex
 
       true
     end

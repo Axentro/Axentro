@@ -28,7 +28,7 @@ module ::Sushi::Interface::SushiM
       wallet = get_wallet(wallet_path, @wallet_password)
       wallet_is_testnet = (Core::Wallet.address_network_type(wallet.address)[:name] == "testnet")
 
-      raise "Wallet type mismatch" if @is_testnet != wallet_is_testnet
+      raise "wallet type mismatch" if @is_testnet != wallet_is_testnet
 
       miner = Core::Miner.new(@is_testnet, host, port, wallet, @threads)
       miner.run
@@ -42,5 +42,5 @@ include ::Sushi::Interface
 include Sushi::Core::Keys
 
 ::Sushi::Interface::SushiM::Root.new(
-  {name: "sushim", desc: "Sushi's mining process"}, [] of SushiAction, true
+  {name: "sushim", desc: "sushi's mining process"}, [] of SushiAction, true
 ).run

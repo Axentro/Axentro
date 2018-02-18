@@ -8,7 +8,7 @@ module ::Sushi::Core
     @threads = [] of Thread
 
     def initialize(@is_testnet : Bool, @host : String, @port : Int32, @wallet : Wallet, @num_threads : Int32)
-      info "Launching #{@num_threads} threads..."
+      info "launching #{@num_threads} threads..."
     end
 
     def pow(thread : Int32) : UInt64
@@ -45,8 +45,8 @@ module ::Sushi::Core
       rescue e : Exception
         error e.message.not_nil!
         error e.backtrace.join("\n")
-        error "For nonce: #{@latest_nonce} (#{@latest_nonce.to_s(16)}, #{@latest_nonce.to_s(16).bytesize})"
-        error "For hash: #{@latest_hash}"
+        error "for nonce: #{@latest_nonce} (#{@latest_nonce.to_s(16)}, #{@latest_nonce.to_s(16).bytesize})"
+        error "for hash: #{@latest_hash}"
       end
 
       info "found new nonce(#{@difficulty}): #{light_cyan(nonce)} (thread: #{thread + 1})"

@@ -90,7 +90,7 @@ module ::Sushi::Interface
         } if is_active?(actives, Options::UNCONFIRMED)
 
         parser.on("-h BIND_HOST", "--bind_host=BIND_HOST", "binding host; '0.0.0.0' by default") { |bind_host|
-          raise "Invalid host: #{bind_host}" unless bind_host.count('.') == 3
+          raise "invalid host: #{bind_host}" unless bind_host.count('.') == 3
           @bind_host = bind_host
         } if is_active?(actives, Options::BIND_HOST)
 

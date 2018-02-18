@@ -66,16 +66,16 @@ describe Block do
         block.valid_as_latest?(blockchain).should be_true
       end
 
-      it "should raise an error: Invalid index" do
+      it "should raise an error: invalid index" do
         blockchain = Blockchain.new(a_fixed_sender_wallet)
         prev_hash = blockchain.chain[0].to_hash
         block = Block.new(2_i64, [a_fixed_signed_transaction], 0_u64, prev_hash)
-        expect_raises(Exception, "Invalid index, 2 have to be 1") do
+        expect_raises(Exception, "invalid index, 2 have to be 1") do
           block.valid_as_latest?(blockchain)
         end
       end
 
-      it "should raise an error: Invalid transaction" do
+      it "should raise an error: invalid transaction" do
         blockchain = Blockchain.new(a_fixed_sender_wallet)
         prev_hash = blockchain.chain[0].to_hash
         block = Block.new(1_i64, [a_fixed_signed_transaction], 0_u64, prev_hash)
@@ -92,10 +92,10 @@ describe Block do
         block.valid_as_latest?(blockchain).should be_true
       end
 
-      it "should raise an error: Transactions have to be empty" do
+      it "should raise an error: transactions have to be empty" do
         blockchain = Blockchain.new(a_fixed_sender_wallet)
         block = Block.new(0_i64, [a_fixed_signed_transaction], 0_u64, "genesis")
-        expect_raises(Exception, /Transactions have to be empty for genesis block/) do
+        expect_raises(Exception, /transactions have to be empty for genesis block/) do
           block.valid_as_latest?(blockchain)
         end
       end
@@ -131,7 +131,7 @@ describe Block do
       prev_block = Block.new(3_i64, [transaction1], 0_u64, "prev_hash_1")
       prev_hash = prev_block.to_hash
       block = Block.new(2_i64, [transaction1], 0_u64, prev_hash)
-      expect_raises(Exception, "Mismatch index for the prev block(3): 2") do
+      expect_raises(Exception, "mismatch index for the prev block(3): 2") do
         block.valid_for?(prev_block)
       end
     end
@@ -151,7 +151,7 @@ describe Block do
       prev_block = Block.new(1_i64, [transaction1], 0_u64, "prev_hash_1")
       prev_hash = prev_block.to_hash
       block = Block.new(2_i64, [transaction1], 0_u64, prev_hash)
-      expect_raises(Exception, "The nonce is invalid: 0") do
+      expect_raises(Exception, "the nonce is invalid: 0") do
         block.valid_for?(prev_block)
       end
     end
@@ -161,7 +161,7 @@ describe Block do
       # between block_2 and block_2_invalid
       block_2.valid_for?(block_1).should eq(true)
 
-      expect_raises(Exception, "Invalid merkle tree root: #{block_2_invalid.calcluate_merkle_tree_root} != #{block_2.merkle_tree_root}") do
+      expect_raises(Exception, "invalid merkle tree root: #{block_2_invalid.calcluate_merkle_tree_root} != #{block_2.merkle_tree_root}") do
         block_2_invalid.valid_for?(block_1)
       end
     end

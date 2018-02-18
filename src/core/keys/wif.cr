@@ -5,7 +5,7 @@ module ::Sushi::Core::Keys
   class Wif
     def initialize(wif_hex : String)
       @hex = wif_hex
-      raise "Invalid wif: #{@hex}" unless is_valid?
+      raise "invalid wif: #{@hex}" unless is_valid?
     end
 
     def as_hex
@@ -14,7 +14,7 @@ module ::Sushi::Core::Keys
 
     def self.from(private_key : PrivateKey, network : Network = MAINNET) : Wif
       wif = KeyUtils.to_wif(private_key, network)
-      raise "Invalid wif: #{wif.as_hex}" unless wif.is_valid?
+      raise "invalid wif: #{wif.as_hex}" unless wif.is_valid?
       wif
     end
 

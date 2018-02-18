@@ -7,7 +7,7 @@ module ::Sushi::Core::Keys
 
     def initialize(hex_address : String, @network : Network = MAINNET, name : String = "generic")
       @hex = hex_address
-      raise "Invalid #{name} address checksum for: #{@hex}" unless is_valid?
+      raise "invalid #{name} address checksum for: #{@hex}" unless is_valid?
     end
 
     def as_hex : String
@@ -37,7 +37,7 @@ module ::Sushi::Core::Keys
       when TESTNET[:prefix]
         TESTNET
       else
-        raise "Invalid network: #{decoded_address[0..1]} for address: #{hex_address}"
+        raise "invalid network: #{decoded_address[0..1]} for address: #{hex_address}"
       end
     end
 
