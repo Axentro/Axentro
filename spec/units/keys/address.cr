@@ -12,7 +12,7 @@ describe Address do
   end
 
   it "should raise an error if address checksum is not valid" do
-    expect_raises(Exception, "Invalid generic address checksum for: invalid-address") do
+    expect_raises(Exception, "invalid generic address checksum for: invalid-address") do
       Address.new("invalid-address")
     end
   end
@@ -35,14 +35,14 @@ describe Address do
 
     it "should raise an error if network is invalid" do
       address_hex = Base64.strict_encode("UO-invalid-address")
-      expect_raises(Exception, "Invalid network: UO for address: VU8taW52YWxpZC1hZGRyZXNz") do
+      expect_raises(Exception, "invalid network: UO for address: VU8taW52YWxpZC1hZGRyZXNz") do
         Address.from(address_hex)
       end
     end
 
     it "should raise an error using supplied name" do
       address_hex = Base64.strict_encode("T0-invalid-address")
-      expect_raises(Exception, "Invalid supplied name address checksum for: VDAtaW52YWxpZC1hZGRyZXNz") do
+      expect_raises(Exception, "invalid supplied name address checksum for: VDAtaW52YWxpZC1hZGRyZXNz") do
         Address.from(address_hex, "supplied name")
       end
     end

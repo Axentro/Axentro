@@ -62,11 +62,11 @@ module ::Sushi::Core
       is_genesis = (@index == 0)
 
       unless is_genesis
-        raise "Invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
+        raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
 
         transactions.each_with_index do |transaction, idx|
-          raise "Invalid prev_hash #{transaction.prev_hash} vs #{transactions[idx - 1].to_hash}" if idx != 0 && transaction.prev_hash != transactions[idx - 1].to_hash
-          raise "The transaction #{transaction.id} is already included in #{blockchain.block_index(transaction.id)}" if blockchain.block_index(transaction.id)
+          raise "invalid prev_hash #{transaction.prev_hash} vs #{transactions[idx - 1].to_hash}" if idx != 0 && transaction.prev_hash != transactions[idx - 1].to_hash
+          raise "the transaction #{transaction.id} is already included in #{blockchain.block_index(transaction.id)}" if blockchain.block_index(transaction.id)
           transaction.valid?(blockchain, @index, idx == 0, idx == 0 ? nil : transactions[0..idx - 1])
         end
 
@@ -74,8 +74,8 @@ module ::Sushi::Core
 
         return valid_for?(prev_block)
       else
-        raise "Index has to be '0' for genesis block: #{@index}" if @index != 0
-        raise "Transactions have to be empty for genesis block: #{@transactions}" if !@transactions.empty?
+        raise "index has to be '0' for genesis block: #{@index}" if @index != 0
+        raise "transactions have to be empty for genesis block: #{@transactions}" if !@transactions.empty?
         raise "nonce has to be '0' for genesis block: #{@nonce}" if @nonce != 0
         raise "prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
       end
@@ -84,12 +84,12 @@ module ::Sushi::Core
     end
 
     def valid_for?(prev_block : Block) : Bool
-      raise "Mismatch index for the prev block(#{prev_block.index}): #{@index}" if prev_block.index + 1 != @index
+      raise "mismatch index for the prev block(#{prev_block.index}): #{@index}" if prev_block.index + 1 != @index
       raise "prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
-      raise "The nonce is invalid: #{@nonce}" if !prev_block.valid_nonce?(@nonce)
+      raise "the nonce is invalid: #{@nonce}" if !prev_block.valid_nonce?(@nonce)
 
       merkle_tree_root = calcluate_merkle_tree_root
-      raise "Invalid merkle tree root: #{merkle_tree_root} != #{@merkle_tree_root}" if merkle_tree_root != @merkle_tree_root
+      raise "invalid merkle tree root: #{merkle_tree_root} != #{@merkle_tree_root}" if merkle_tree_root != @merkle_tree_root
 
       true
     end

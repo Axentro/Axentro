@@ -187,10 +187,14 @@ module ::Sushi::Core
 
       miners_nonces_size = miners.reduce(0) { |sum, m| sum + m[:nonces].size }
       miners_rewards_total = prec((rewards_total * 3_i64) / 4_i64)
-      miners_recipients = miners.map { |m|
-        amount = (miners_rewards_total * m[:nonces].size) / miners_nonces_size
-        {address: m[:address], amount: amount}
-      }
+      miners_recipients = if miners_nonces_size > 0
+                            miners.map { |m|
+                              amount = (miners_rewards_total * m[:nonces].size) / miners_nonces_size
+                              {address: m[:address], amount: amount}
+                            }
+                          else
+                            [] of NamedTuple(address: String, amount: Int64)
+                          end
 
       node_reccipient = {
         address: @wallet.address,

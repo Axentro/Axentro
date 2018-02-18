@@ -16,7 +16,7 @@ describe PrivateKey do
     end
 
     it "should raise an error if the private key hex string is not a valid private key" do
-      expect_raises(Exception, "Invalid private key: 123") do
+      expect_raises(Exception, "invalid private key: 123") do
         PrivateKey.new("123")
       end
     end

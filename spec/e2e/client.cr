@@ -27,7 +27,7 @@ module ::E2E
           begin
             create_transaction
           rescue e : Exception
-            STDERR.puts e
+            STDERR.puts red(e.message.not_nil!)
           end
         end
       end

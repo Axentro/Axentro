@@ -53,7 +53,7 @@ describe RPCController do
 
           json = JSON.parse(payload)
 
-          expect_raises(Exception, "Invalid fee -10 for the action send") do
+          expect_raises(Exception, "invalid fee -10 for the action send") do
             rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
           end
         end
@@ -198,7 +198,7 @@ describe RPCController do
           payload = {call: "transactions", index: 99}.to_json
           json = JSON.parse(payload)
 
-          expect_raises(Exception, "Invalid index 99 (Blockchain size is 11)") do
+          expect_raises(Exception, "invalid index 99 (Blockchain size is 11)") do
             rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
           end
         end
@@ -222,7 +222,7 @@ describe RPCController do
           payload = {call: "transaction", transaction_id: "invalid-transaction-id"}.to_json
           json = JSON.parse(payload)
 
-          expect_raises(Exception, "Failed to find a block for the transaction invalid-transaction-id") do
+          expect_raises(Exception, "failed to find a block for the transaction invalid-transaction-id") do
             rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
           end
         end
@@ -315,7 +315,7 @@ describe RPCController do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(rpc, json, 403) do |json_result|
-            json_result.should eq("Unpermitted call: unknown")
+            json_result.should eq("unpermitted call: unknown")
           end
         end
       end
@@ -329,7 +329,7 @@ describe RPCController do
         json = JSON.parse(payload)
 
         with_rpc_exec_internal_get(rpc, 403) do |json_result|
-          json_result.should eq("Unpermitted method: GET")
+          json_result.should eq("unpermitted method: GET")
         end
       end
     end

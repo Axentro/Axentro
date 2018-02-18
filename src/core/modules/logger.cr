@@ -1,18 +1,21 @@
 module ::Sushi::Core::Logger
   def debug(msg : String)
+    return if ENV.has_key?("UNIT") || ENV.has_key?("E2E")
     log_out("Debug", msg, :light_gray)
+  end
+
+  def info(msg : String)
+    return if ENV.has_key?("UNIT") || ENV.has_key?("E2E")
+    log_out("Info", msg, :light_green)
+  end
+
+  def warning(msg : String)
+    return if ENV.has_key?("UNIT") || ENV.has_key?("E2E")
+    log_out("Warning", msg, :yellow)
   end
 
   def error(msg : String)
     log_out("Error", msg, :red)
-  end
-
-  def warning(msg : String)
-    log_out("Warning", msg, :yellow)
-  end
-
-  def info(msg : String)
-    log_out("Info", msg, :light_green)
   end
 
   private def log_out(t : String, msg : String, color : Symbol)

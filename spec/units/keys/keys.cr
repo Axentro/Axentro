@@ -58,7 +58,7 @@ describe Keys do
       public_key = "fbc573b1fbb55088560ee58499ef1be2c6e9c532dd03aaaf46a0207f47310f91926545b8a73d60b29f626a71d1c8691fe8135fc9c63321b70fcfa8461e4a18fe"
       address = "TTBkYzFlNzgxMDRkMzBiNDJmZWI1MDlmMjg2OWY2ZmFlMDU0NTg4ZjAwYmI0MTBi"
 
-      expect_raises(Exception, "Network mismatch between address and wif") do
+      expect_raises(Exception, "network mismatch between address and wif") do
         Keys.is_valid?(public_key, keys.wif.as_hex, address)
       end
     end
@@ -67,7 +67,7 @@ describe Keys do
       keys = Keys.generate(MAINNET)
       wif = "TTAzMjRkYjJmMjhjYWM0YzhhNjI2MzI3MzhmYjcwNjA2OGI3OWYxZWVhMDI5YWEzOGM5MzExNjUzMzhhYzk2OTNjMDA3ODI2"
 
-      expect_raises(Exception, "Public key mismatch between public key and wif") do
+      expect_raises(Exception, "public key mismatch between public key and wif") do
         Keys.is_valid?(keys.public_key.as_hex, wif, keys.address.as_hex)
       end
     end

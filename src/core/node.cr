@@ -36,7 +36,7 @@ module ::Sushi::Core
       connect_port : Int32?,
       @wallet : Wallet,
       @database : Database?,
-      @min_connection : Int32
+      @conn_min : Int32
     )
       @id = Random::Secure.hex(16)
       @connection_salt = Random::Secure.hex(16)
@@ -229,7 +229,7 @@ module ::Sushi::Core
         warning "mismatch network type with miner #{address}"
 
         return send(socket, M_TYPE_HANDSHAKE_MINER_REJECTED, {
-          reason: "Network type mismatch",
+          reason: "network type mismatch",
         })
       end
 
@@ -261,7 +261,7 @@ module ::Sushi::Core
 
         return send(socket, M_TYPE_HANDSHAKE_NODE_REJECTED, {
           context: context,
-          reason:  "Network type mismatch",
+          reason:  "network type mismatch",
         })
       end
 
@@ -290,7 +290,7 @@ module ::Sushi::Core
       asserted_connection_hash = http_handshake(node_context)
 
       if asserted_connection_hash != connection_hash
-        raise "Invalid connection hash: #{asserted_connection_hash} != #{connection_hash}"
+        raise "invalid connection hash: #{asserted_connection_hash} != #{connection_hash}"
       end
 
       @nodes << {socket: socket, context: node_context}
@@ -583,15 +583,15 @@ module ::Sushi::Core
 
       socket = @nodes.sample[:socket]
 
-      if @nodes.size < @min_connection && !flag_get?(FLAG_REQUESTING_NODES)
+      if @nodes.size < @conn_min && !flag_get?(FLAG_REQUESTING_NODES)
         flag_set(FLAG_REQUESTING_NODES)
 
-        info "current connection (#{@nodes.size}) is less than the min connection (#{@min_connection})."
-        info "requesting new nodes (#{@min_connection - @nodes.size})"
+        info "current connection (#{@nodes.size}) is less than the min connection (#{@conn_min})."
+        info "requesting new nodes (#{@conn_min - @nodes.size})"
 
         send(socket, M_TYPE_REQUEST_NODES, {
           known_nodes:       known_nodes,
-          request_nodes_num: @min_connection - @nodes.size,
+          request_nodes_num: @conn_min - @nodes.size,
         })
       end
     end

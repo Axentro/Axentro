@@ -35,8 +35,8 @@ module ::Sushi::Core::Controllers
     end
 
     def exec_post(context, params) : HTTP::Server::Context
-      raise "Empty body" unless body = context.request.body
-      raise "Empty payload" unless payload = body.gets
+      raise "empty body" unless body = context.request.body
+      raise "empty payload" unless payload = body.gets
 
       json = JSON.parse(payload)
 
@@ -45,7 +45,7 @@ module ::Sushi::Core::Controllers
 
     def unpermitted_method(context) : HTTP::Server::Context
       context.response.status_code = 403
-      context.response.print "Unpermitted method: #{context.request.method}"
+      context.response.print "unpermitted method: #{context.request.method}"
       context
     end
 

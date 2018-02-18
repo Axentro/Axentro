@@ -6,7 +6,7 @@ module ::Sushi::Core::Keys
 
     def initialize(public_key_hex : String, @network : Network = MAINNET)
       @hex = public_key_hex
-      raise "Invalid public key: #{@hex}" unless is_valid?
+      raise "invalid public key: #{@hex}" unless is_valid?
     end
 
     def self.from(hex : String, network : Network = MAINNET) : PublicKey

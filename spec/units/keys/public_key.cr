@@ -16,7 +16,7 @@ describe PublicKey do
     end
 
     it "should raise an error if the public key hex string is not a valid public key" do
-      expect_raises(Exception, "Invalid public key: 123") do
+      expect_raises(Exception, "invalid public key: 123") do
         PublicKey.new("123")
       end
     end

@@ -1,5 +1,4 @@
 module ::Sushi::Core
-
   class WalletException < Exception
   end
 
@@ -12,12 +11,12 @@ module ::Sushi::Core
     })
 
     def self.from_path(wallet_path : String) : EncryptedWallet
-      raise "Failed to find encrypted wallet at #{wallet_path}" unless File.exists?(wallet_path)
+      raise "failed to find encrypted wallet at #{wallet_path}" unless File.exists?(wallet_path)
       encrypted_wallet = self.from_json(File.read(wallet_path))
-      raise "This wallet was not encrypted with the sushi binary" unless encrypted_wallet.source == "sushi"
+      raise "this wallet was not encrypted with the sushi binary" unless encrypted_wallet.source == "sushi"
       encrypted_wallet
     rescue e : Exception
-      raise "Error: #{e.message}"
+      raise "#{e.message}"
     end
   end
 
@@ -40,7 +39,7 @@ module ::Sushi::Core
     end
 
     def self.from_path(wallet_path : String) : Wallet
-      raise "Failed to find wallet at #{wallet_path}, create it first!" unless File.exists?(wallet_path)
+      raise "failed to find wallet at #{wallet_path}, create it first!" unless File.exists?(wallet_path)
       begin
         self.from_json(File.read(wallet_path))
       rescue e
@@ -76,14 +75,14 @@ module ::Sushi::Core
         salt:       encrypted[:salt],
       }
     rescue e
-      raise "Failed to encrypt the wallet: #{e.message}"
+      raise "failed to encrypt the wallet: #{e.message}"
     end
 
     def self.encrypt(password : String, wallet_path : String)
       begin
         wallet : Wallet = self.from_path(wallet_path)
       rescue e
-        raise "Failed to encrypt the wallet: #{e.message}"
+        raise "failed to encrypt the wallet: #{e.message}"
       end
       self.encrypt(password, wallet)
     end
@@ -93,16 +92,16 @@ module ::Sushi::Core
       salt = encrypted_wallet.salt
       BlowFish.decrypt(password, ciphertext, salt)
     rescue OpenSSL::Error
-      raise "Failed to decrypt the wallet with the supplied password"
+      raise "failed to decrypt the wallet with the supplied password"
     rescue e
-      raise "Failed to decrypt the wallet: #{e.message}"
+      raise "failed to decrypt the wallet: #{e.message}"
     end
 
     def self.decrypt(password : String, wallet_path : String)
       begin
         encrypted_wallet = EncryptedWallet.from_path(wallet_path)
       rescue e
-        raise "Failed to decrypt the wallet: #{e.message}"
+        raise "failed to decrypt the wallet: #{e.message}"
       end
       self.decrypt(password, encrypted_wallet)
     end
