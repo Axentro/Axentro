@@ -31,15 +31,15 @@ module ::Sushi::Interface::Sushi
 
     def option_parser
       create_option_parser([
-                             Options::CONNECT_NODE,
-                             Options::WALLET_PATH,
-                             Options::WALLET_PASSWORD,
-                             Options::IS_TESTNET,
-                             Options::ENCRYPTED,
-                             Options::JSON,
-                             Options::UNCONFIRMED,
-                             Options::ADDRESS,
-                           ])
+        Options::CONNECT_NODE,
+        Options::WALLET_PATH,
+        Options::WALLET_PASSWORD,
+        Options::IS_TESTNET,
+        Options::ENCRYPTED,
+        Options::JSON,
+        Options::UNCONFIRMED,
+        Options::ADDRESS,
+      ])
     end
 
     def run_impl(action_name)
