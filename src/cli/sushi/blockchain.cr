@@ -30,22 +30,24 @@ module ::Sushi::Interface::Sushi
     def run_impl(action_name)
       case action_name
       when "size"
-        size
+        return size
       when "all"
-        all
+        return all
       when "block"
-        block
+        return block
       end
+
+      specify_subaction!
     end
 
     def size
-      puts_help(HELP_CONNECTING_NODE) unless node = @connect_node
+      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
 
       payload = {call: "blockchain_size"}.to_json
 
       body = rpc(node, payload)
 
-      unless @json
+      unless __json
         json = JSON.parse(body)
         puts_success("current blockchain size is #{json["size"]}")
       else
@@ -54,9 +56,9 @@ module ::Sushi::Interface::Sushi
     end
 
     def all
-      puts_help(HELP_CONNECTING_NODE) unless node = @connect_node
+      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
 
-      payload = {call: "blockchain", header: @header}.to_json
+      payload = {call: "blockchain", header: __header}.to_json
 
       body = rpc(node, payload)
 
@@ -65,15 +67,15 @@ module ::Sushi::Interface::Sushi
     end
 
     def block
-      puts_help(HELP_CONNECTING_NODE) unless node = @connect_node
-      puts_help(HELP_BLOCK_INDEX_OR_TRANSACTION_ID) if @block_index.nil? && @transaction_id.nil?
+      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+      puts_help(HELP_BLOCK_INDEX_OR_TRANSACTION_ID) if __block_index.nil? && __transaction_id.nil?
 
-      payload = if block_index = @block_index
-                  success_message = "show a block for index: #{@block_index}"
-                  {call: "block", index: block_index, header: @header}.to_json
-                elsif transaction_id = @transaction_id
-                  success_message = "show a block for transaction: #{@transaction_id}"
-                  {call: "block", transaction_id: transaction_id, header: @header}.to_json
+      payload = if block_index = __block_index
+                  success_message = "show a block for index: #{__block_index}"
+                  {call: "block", index: block_index, header: __header}.to_json
+                elsif transaction_id = __transaction_id
+                  success_message = "show a block for transaction: #{__transaction_id}"
+                  {call: "block", transaction_id: transaction_id, header: __header}.to_json
                 else
                   puts_help(HELP_BLOCK_INDEX_OR_TRANSACTION_ID)
                 end

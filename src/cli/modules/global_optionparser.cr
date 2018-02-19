@@ -5,7 +5,9 @@ module ::Sushi::Interface
     @wallet_password : String?
 
     @is_testnet : Bool = false
+    @is_testnet_changed = false
     @is_private : Bool = false
+    @is_private_changed = false
     @json : Bool = false
     @unconfirmed : Bool = false
 
@@ -73,12 +75,24 @@ module ::Sushi::Interface
           @wallet_password = password
         } if is_active?(actives, Options::WALLET_PASSWORD)
 
-        parser.on("--testnet", "set network type as testnet (default is mainnet)") {
-          @is_testnet = true
+        parser.on("--mainnet", "set network type as mainnet (default is mainnet)") {
+          @is_testnet = false
+          @is_testnet_changed = true
         } if is_active?(actives, Options::IS_TESTNET)
 
-        parser.on("--private", "Launch a node in private mode. It will not be connected from other nodes.") {
+        parser.on("--testnet", "set network type as testnet (default is mainnet)") {
+          @is_testnet = true
+          @is_testnet_changed = true
+        } if is_active?(actives, Options::IS_TESTNET)
+
+        parser.on("--public", "launch a node in public mode. (default is public mode)") {
+          @is_private = false
+          @is_private_changed = true
+        } if is_active?(actives, Options::IS_PRIVATE)
+
+        parser.on("--private", "launch a node in private mode. it will not be connected from other nodes.") {
           @is_private = true
+          @is_private_changed = true
         } if is_active?(actives, Options::IS_PRIVATE)
 
         parser.on("-j", "--json", "print results as json") {
@@ -98,7 +112,7 @@ module ::Sushi::Interface
           @bind_port = bind_port.to_i
         } if is_active?(actives, Options::BIND_PORT)
 
-        parser.on("-u PUBLIC_URL", "--public_url=PUBLIC_URL", "public url of your node that can be accessed from internet\nif your node is behind a NAT, you can add --private flag instread of this option") { |public_url|
+        parser.on("-u PUBLIC_URL", "--public_url=PUBLIC_URL", "public url of your node that can be accessed from internet. if your node is behind a NAT, you can add --private flag instread of this option") { |public_url|
           @public_url = public_url
         } if is_active?(actives, Options::PUBLIC_URL)
 
@@ -106,7 +120,7 @@ module ::Sushi::Interface
           @database_path = database_path
         } if is_active?(actives, Options::DATABASE_PATH)
 
-        parser.on("--conn_min=CONN_MIN", "min # of the first connections when you launch a node\nthe number is not guaranteed when there are not enough node.") { |conn_min|
+        parser.on("--conn_min=CONN_MIN", "min # of the first connections when you launch a node. the number is not guaranteed when there are not enough node.") { |conn_min|
           @conn_min = conn_min.to_i
         } if is_active?(actives, Options::CONN_MIN)
 
@@ -150,6 +164,108 @@ module ::Sushi::Interface
 
     def is_active?(actives : Array(Int32), option : Int32) : Bool
       actives.includes?(option)
+    end
+
+    def __connect_node : String?
+      return @connect_node if @connect_node
+      cm.get_s("connect_node")
+    end
+
+    def __wallet_path : String?
+      return @wallet_path if @wallet_path
+      cm.get_s("wallet_path")
+    end
+
+    def __wallet_password : String?
+      @wallet_password
+    end
+
+    def __is_testnet : Bool
+      return @is_testnet if @is_testnet_changed
+      return cm.get_bool("is_testnet").not_nil! if cm.get_bool("is_testnet")
+      @is_testnet
+    end
+
+    def __is_private : Bool
+      return @is_private if @is_private_changed
+      return cm.get_bool("is_private").not_nil! if cm.get_bool("is_private")
+      @is_private
+    end
+
+    def __json : Bool
+      @json
+    end
+
+    def __unconfirmed : Bool
+      @unconfirmed
+    end
+
+    def __bind_host : String
+      return @bind_host if @bind_host != "0.0.0.0"
+      return cm.get_s("bind_host").not_nil! if cm.get_s("bind_host")
+      @bind_host
+    end
+
+    def __bind_port : Int32
+      return @bind_port if @bind_port != 3000
+      return cm.get_i32("bind_port").not_nil! if cm.get_i32("bind_port")
+      @bind_port
+    end
+
+    def __public_url : String?
+      return @public_url if @public_url
+      cm.get_s("public_url")
+    end
+
+    def __database_path : String?
+      return @database_path if @database_path
+      cm.get_s("database_path")
+    end
+
+    def __conn_min : Int32
+      return @conn_min if @conn_min != 5
+      return cm.get_i32("conn_min").not_nil! if cm.get_i32("conn_min")
+      @conn_min
+    end
+
+    def __address : String?
+      @address
+    end
+
+    def __amount : Int64?
+      @amount
+    end
+
+    def __message : String
+      @message
+    end
+
+    def __block_index : Int32?
+      @block_index
+    end
+
+    def __transaction_id : String?
+      @transaction_id
+    end
+
+    def __header : Bool
+      @header
+    end
+
+    def __threads : Int32
+      return @threads if @threads != 1
+      return cm.get_i32("threads").not_nil! if cm.get_i32("threads")
+      @threads
+    end
+
+    def __encrypted : Bool
+      return @encrypted if @encrypted
+      return cm.get_bool("encrypted").not_nil! if cm.get_bool("encrypted")
+      @encrypted
+    end
+
+    def cm
+      ConfigManager.get_instance
     end
   end
 end

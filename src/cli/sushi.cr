@@ -17,6 +17,10 @@ module ::Sushi::Interface::Sushi
           name: "transaction",
           desc: "get or create transactions",
         },
+        {
+          name: "config",
+          desc: "save default configuration used by sushi, sushid and sushim",
+        },
       ]
     end
 
@@ -27,21 +31,28 @@ module ::Sushi::Interface::Sushi
     def run_impl(action_name)
       case action_name
       when "wallet"
-        Wallet.new(
+        return Wallet.new(
           {name: "wallet", desc: "create, encrypt or decrypt your wallet"},
           next_parents,
         ).run
       when "blockchain"
-        Blockchain.new(
+        return Blockchain.new(
           {name: "blockchain", desc: "get a whole blockchain or each block"},
           next_parents,
         ).run
       when "transaction"
-        Transaction.new(
+        return Transaction.new(
           {name: "transaction", desc: "get or create transactions"},
           next_parents,
         ).run
+      when "config"
+        return Config.new(
+          {name: "config", desc: "save default configuration used by sushi, sushid and sushim"},
+          next_parents,
+        ).run
       end
+
+      specify_subaction!
     end
   end
 end
