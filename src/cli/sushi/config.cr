@@ -56,20 +56,22 @@ module ::Sushi::Interface::Sushi
     end
 
     def save
-      cm.set("connect_node", @connect_node) if @connect_node
-      cm.set("wallet_path", @wallet_path) if @wallet_path
-      cm.set("is_testnet", @is_testnet)
-      cm.set("is_private", @is_private)
-      cm.set("bind_host", @bind_host)
-      cm.set("bind_port", @bind_port)
-      cm.set("public_url", @public_url) if @public_url
-      cm.set("database_path", @database_path) if @database_path
-      cm.set("conn_min", @conn_min)
-      cm.set("threads", @threads)
-      cm.set("encrypted", @encrypted)
+      cm.set("connect_node", __connect_node)
+      cm.set("wallet_path", __wallet_path)
+      cm.set("is_testnet", __is_testnet)
+      cm.set("is_private", __is_private)
+      cm.set("bind_host", __bind_host)
+      cm.set("bind_port", __bind_port)
+      cm.set("public_url", __public_url)
+      cm.set("database_path", __database_path)
+      cm.set("conn_min", __conn_min)
+      cm.set("threads", __threads)
+      cm.set("encrypted", __encrypted)
       cm.save
 
       puts_success "saved the configuration at #{cm.config_path}"
+
+      cm.release_config
 
       if config = cm.get_config
         puts_info config.to_s

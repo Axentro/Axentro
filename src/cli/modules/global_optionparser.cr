@@ -5,7 +5,9 @@ module ::Sushi::Interface
     @wallet_password : String?
 
     @is_testnet : Bool = false
+    @is_testnet_changed = false
     @is_private : Bool = false
+    @is_private_changed = false
     @json : Bool = false
     @unconfirmed : Bool = false
 
@@ -73,12 +75,24 @@ module ::Sushi::Interface
           @wallet_password = password
         } if is_active?(actives, Options::WALLET_PASSWORD)
 
+        parser.on("--mainnet", "set network type as mainnet (default is mainnet)") {
+          @is_testnet = false
+          @is_testnet_changed = true
+        } if is_active?(actives, Options::IS_TESTNET)
+
         parser.on("--testnet", "set network type as testnet (default is mainnet)") {
           @is_testnet = true
+          @is_testnet_changed = true
         } if is_active?(actives, Options::IS_TESTNET)
+
+        parser.on("--public", "launch a node in public mode. (default is public mode)") {
+          @is_private = false
+          @is_private_changed = true
+        } if is_active?(actives, Options::IS_PRIVATE)
 
         parser.on("--private", "launch a node in private mode. it will not be connected from other nodes.") {
           @is_private = true
+          @is_private_changed = true
         } if is_active?(actives, Options::IS_PRIVATE)
 
         parser.on("-j", "--json", "print results as json") {
@@ -167,14 +181,14 @@ module ::Sushi::Interface
     end
 
     def __is_testnet : Bool
-      return true if @is_testnet
-      return true if cm.get_bool("is_testnet")
+      return @is_testnet if @is_testnet_changed
+      return cm.get_bool("is_testnet").not_nil! if cm.get_bool("is_testnet")
       @is_testnet
     end
 
     def __is_private : Bool
-      return true if @is_private
-      return true if cm.get_bool("is_private")
+      return @is_private if @is_private_changed
+      return cm.get_bool("is_private").not_nil! if cm.get_bool("is_private")
       @is_private
     end
 

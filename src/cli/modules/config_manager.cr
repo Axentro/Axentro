@@ -28,6 +28,10 @@ module ::Sushi::Interface
       @config_yaml.not_nil!
     end
 
+    def release_config
+      @config_yaml = nil
+    end
+
     def get_s(name : String) : String?
       return nil unless config = get_config
       return nil unless config[name]?
