@@ -45,14 +45,14 @@ module ::Sushi::Interface::Sushi
     end
 
     def send
-      puts_help(HELP_CONNECTING_NODE) unless node = @connect_node
-      puts_help(HELP_WALLET_PATH) unless wallet_path = @wallet_path
-      puts_help(HELP_ADDRESS_RECIPIENT) unless recipient_address = @address
-      puts_help(HELP_AMOUNT) unless amount = @amount
+      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+      puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
+      puts_help(HELP_ADDRESS_RECIPIENT) unless recipient_address = __address
+      puts_help(HELP_AMOUNT) unless amount = __amount
 
       to_address = Address.from(recipient_address, "recipient")
 
-      wallet = get_wallet(wallet_path, @wallet_password)
+      wallet = get_wallet(wallet_path, __wallet_password)
 
       senders = Core::Models::Senders.new
       senders.push(
@@ -71,12 +71,12 @@ module ::Sushi::Interface::Sushi
         }
       )
 
-      add_transaction(node, wallet, "send", senders, recipients, @message)
+      add_transaction(node, wallet, "send", senders, recipients, __message)
     end
 
     def transactions
-      puts_help(HELP_CONNECTING_NODE) unless node = @connect_node
-      puts_help(HELP_BLOCK_INDEX) unless block_index = @block_index
+      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+      puts_help(HELP_BLOCK_INDEX) unless block_index = __block_index
 
       payload = {call: "transactions", index: block_index}.to_json
 
@@ -88,8 +88,8 @@ module ::Sushi::Interface::Sushi
     end
 
     def transaction
-      puts_help(HELP_CONNECTING_NODE) unless node = @connect_node
-      puts_help(HELP_TRANSACTION_ID) unless transaction_id = @transaction_id
+      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+      puts_help(HELP_TRANSACTION_ID) unless transaction_id = __transaction_id
 
       payload = {call: "transaction", transaction_id: transaction_id}.to_json
 
@@ -117,7 +117,7 @@ module ::Sushi::Interface::Sushi
 
       rpc(node, payload)
 
-      unless @json
+      unless __json
         puts_success "successfully create your transaction!"
         puts_success "=> #{signed_transaction.id}"
       else

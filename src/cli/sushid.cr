@@ -22,10 +22,10 @@ module ::Sushi::Interface::SushiD
     end
 
     def run_impl(action_name)
-      puts_help(HELP_WALLET_PATH) unless wallet_path = @wallet_path
+      puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
 
-      unless @is_private
-        puts_help(HELP_PUBLIC_URL) unless public_url = @public_url
+      unless __is_private
+        puts_help(HELP_PUBLIC_URL) unless public_url = __public_url
 
         public_uri = URI.parse(public_url)
 
@@ -37,24 +37,26 @@ module ::Sushi::Interface::SushiD
 
       has_first_connection = false
 
-      if connect_node = @connect_node
+      if connect_node = __connect_node
         connect_uri = URI.parse(connect_node)
         has_first_connection = !connect_uri.host.nil? && !connect_uri.port.nil?
       end
 
-      wallet = get_wallet(wallet_path, @wallet_password)
+      wallet = get_wallet(wallet_path, __wallet_password)
 
-      database = if database_path = @database_path
+      database = if database_path = __database_path
                    Core::Database.new(database_path)
                  else
                    nil
                  end
 
-      node = has_first_connection ? Core::Node.new(@is_private, @is_testnet, @bind_host, @bind_port,
-        public_host, public_port, ssl,
-        connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, @conn_min) : Core::Node.new(@is_private, @is_testnet, @bind_host, @bind_port,
-        public_host, public_port, ssl,
-        nil, nil, wallet, database, @conn_min)
+      node = has_first_connection ?
+               Core::Node.new(__is_private, __is_testnet, __bind_host, __bind_port,
+                              public_host, public_port, ssl,
+                              connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, __conn_min) :
+               Core::Node.new(__is_private, __is_testnet, __bind_host, __bind_port,
+                              public_host, public_port, ssl,
+                              nil, nil, wallet, database, __conn_min)
       node.run!
     end
 

@@ -30,28 +30,28 @@ module ::Sushi::Interface
 
     def get_s(name : String) : String?
       return nil unless config = get_config
-      return nil unless config.has_key?(name)
+      return nil unless config[name]?
 
       config[name].as_s
     end
 
     def get_i32(name : String) : Int32?
       return nil unless config = get_config
-      return nil unless config.has_key?(name)
+      return nil unless config[name]?
 
       config[name].as_i
     end
 
     def get_i64(name : String) : Int64?
       return nil unless config = get_config
-      return nil unless config.has_key?(name)
+      return nil unless config[name]?
 
       config[name].as_i64
     end
 
     def get_bool(name : String) : Bool?
       return nil unless config = get_config
-      return nil unless config.has_key?(name)
+      return nil unless config[name]?
 
       config[name].to_s == "true"
     end

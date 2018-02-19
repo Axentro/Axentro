@@ -152,73 +152,99 @@ module ::Sushi::Interface
       actives.includes?(option)
     end
 
-    def connect_node : String?
+    def __connect_node : String?
       return @connect_node if @connect_node
       cm.get_s("connect_node")
     end
 
-    def wallet_path : String?
+    def __wallet_path : String?
       return @wallet_path if @wallet_path
       cm.get_s("wallet_path")
     end
 
-    def wallet_password : String?
-      return @wallet_password if @wallet_password
-      cm.get_s("wallet_password")
+    def __wallet_password : String?
+      @wallet_password
     end
 
-    def is_testnet : Bool
+    def __is_testnet : Bool
       return true if @is_testnet
       return true if cm.get_bool("is_testnet")
       @is_testnet
     end
 
-    def is_private : Bool
+    def __is_private : Bool
       return true if @is_private
       return true if cm.get_bool("is_private")
       @is_private
     end
 
-    def json : Bool
-      return true if @json
-      return true if cm.get_bool("json")
+    def __json : Bool
       @json
     end
 
-    def bind_host : String
+    def __unconfirmed : Bool
+      @unconfirmed
+    end
+
+    def __bind_host : String
       return @bind_host if @bind_host != "0.0.0.0"
       return cm.get_s("bind_host").not_nil! if cm.get_s("bind_host")
       @bind_host
     end
 
-    def bind_port : Int32
+    def __bind_port : Int32
       return @bind_port if @bind_port != 3000
       return cm.get_i32("bind_port").not_nil! if cm.get_i32("bind_port")
       @bind_port
     end
 
-    def public_url : String?
+    def __public_url : String?
       return @public_url if @public_url
       cm.get_s("public_url")
     end
 
-    def database_path : String?
+    def __database_path : String?
       return @database_path if @database_path
       cm.get_s("database_path")
     end
 
-    def conn_min : Int32
+    def __conn_min : Int32
       return @conn_min if @conn_min != 5
       return cm.get_i32("conn_min").not_nil! if cm.get_i32("conn_min")
+      @conn_min
     end
 
-    def threads : Int32
+    def __address : String?
+      @address
+    end
+
+    def __amount : Int64?
+      @amount
+    end
+
+    def __message : String
+      @message
+    end
+
+    def __block_index : Int32?
+      @block_index
+    end
+
+    def __transaction_id : String?
+      @transaction_id
+    end
+
+    def __header : Bool
+      @header
+    end
+
+    def __threads : Int32
       return @threads if @threads != 1
       return cm.get_i32("threads").not_nil! if cm.get_i32("threads")
       @threads
     end
 
-    def encrypted : Int32
+    def __encrypted : Bool
       return @encrypted if @encrypted
       return cm.get_bool("encrypted").not_nil! if cm.get_bool("encrypted")
       @encrypted
