@@ -130,10 +130,6 @@ module ::Sushi::Interface
       body
     end
 
-    def cm
-      ConfigManager.get_instance
-    end
-
     abstract def sub_actions : Array(SushiAction)
     abstract def option_parser : OptionParser?
     abstract def run_impl(action_name : String?) : OptionParser?

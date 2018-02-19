@@ -24,8 +24,8 @@ module ::Sushi::Interface::Sushi
         # Options::WALLET_PASSWORD,
         Options::IS_TESTNET,
         Options::IS_PRIVATE,
-        Options::JSON,
-        Options::UNCONFIRMED,
+        # Options::JSON,
+        # Options::UNCONFIRMED,
         Options::BIND_HOST,
         Options::BIND_PORT,
         Options::PUBLIC_URL,
@@ -36,7 +36,7 @@ module ::Sushi::Interface::Sushi
         # Options::MESSAGE,
         # Options::BLOCK_INDEX,
         # Options::TRANSACTION_ID,
-        Options::HEADER,
+        # Options::HEADER,
         Options::THREADS,
         Options::ENCRYPTED,
       ])
@@ -60,14 +60,11 @@ module ::Sushi::Interface::Sushi
       cm.set("wallet_path", @wallet_path) if @wallet_path
       cm.set("is_testnet", @is_testnet)
       cm.set("is_private", @is_private)
-      cm.set("json", @json)
-      cm.set("unconfirmed", @unconfirmed)
       cm.set("bind_host", @bind_host)
       cm.set("bind_port", @bind_port)
       cm.set("public_url", @public_url) if @public_url
       cm.set("database_path", @database_path) if @database_path
       cm.set("conn_min", @conn_min)
-      cm.set("header", @header)
       cm.set("threads", @threads)
       cm.set("encrypted", @encrypted)
       cm.save
