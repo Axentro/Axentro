@@ -14,6 +14,10 @@ module ::Sushi::Interface::Sushi
           name: "transaction",
           desc: "get a transaction for a transaction id",
         },
+        {
+          name: "confirmation",
+          desc: "get a number of confirmations",
+        },
       ]
     end
 
@@ -39,6 +43,8 @@ module ::Sushi::Interface::Sushi
         return transactions
       when "transaction"
         return transaction
+      when "confirmation"
+        return confirmation
       end
 
       specify_subaction!
@@ -82,7 +88,7 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
-      # todo json
+      # todo json support
       puts_success("show transactions in a block #{block_index}")
       puts_info(body)
     end
@@ -95,7 +101,21 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
+      # todo json support
       puts_success("show the transaction #{transaction_id}")
+      puts_info(body)
+    end
+
+    def confirmation
+      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+      puts_help(HELP_TRANSACTION_ID) unless transaction_id = __transaction_id
+
+      payload = {call: "confirmation", transaction_id: transaction_id}.to_json
+
+      body = rpc(node, payload)
+
+      # todo json support
+      puts_success("show the number of confirmations of #{transaction_id}")
       puts_info(body)
     end
 

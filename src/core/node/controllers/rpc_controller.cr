@@ -20,6 +20,8 @@ module ::Sushi::Core::Controllers
         return transactions(json, context, params)
       when "transaction"
         return transaction(json, context, params)
+      when "confirmation"
+        return confirmation(json, context, params)
       end
 
       unpermitted_call(call, context)
@@ -129,7 +131,7 @@ module ::Sushi::Core::Controllers
     end
 
     def transaction(json, context, params)
-      transaction_id = json["transaction_id"].to_s
+      transaction_id = json["transaction_id"].as_s
 
       unless block_index = @blockchain.block_index(transaction_id)
         raise "failed to find a block for the transaction #{transaction_id}"
@@ -140,6 +142,24 @@ module ::Sushi::Core::Controllers
       end
 
       context.response.print transaction.to_json
+      context
+    end
+
+    def confirmation(json, context, params)
+      transaction_id = json["transaction_id"].as_s
+
+      unless block_index = @blockchain.block_index(transaction_id)
+        raise "failed to find a block for the transaction #{transaction_id}"
+      end
+
+      latest_index = @blockchain.chain[-1].index
+
+      result = {
+        confirmations: latest_index - block_index,
+        threshold: UTXO::CONFIRMATION,
+      }.to_json
+
+      context.response.print result
       context
     end
 
