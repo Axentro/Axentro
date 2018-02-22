@@ -88,8 +88,7 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
-      # todo json support
-      puts_success("show transactions in a block #{block_index}")
+      puts_success("show transactions in a block #{block_index}") unless __json
       puts_info(body)
     end
 
@@ -101,8 +100,7 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
-      # todo json support
-      puts_success("show the transaction #{transaction_id}")
+      puts_success("show the transaction #{transaction_id}") unless __json
       puts_info(body)
     end
 
@@ -114,9 +112,19 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
-      # todo json support
-      puts_success("show the number of confirmations of #{transaction_id}")
-      puts_info(body)
+      unless __json
+        puts_success("show the number of confirmations of #{transaction_id}")
+
+        json = JSON.parse(body)
+
+        puts_info("transaction id: #{transaction_id}")
+        puts_info("--------------")
+        puts_info("confirmed: #{json["confirmed"]}")
+        puts_info("confirmations: #{json["confirmations"]}")
+        puts_info("threshold: #{json["threshold"]}")
+      else
+        puts_info(body)
+      end
     end
 
     def add_transaction(node : String,

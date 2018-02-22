@@ -25,8 +25,8 @@ describe RPCController do
 
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |json_result|
-            transaction = Transaction.from_json(json_result)
+          with_rpc_exec_internal_post(rpc, json) do |result|
+            transaction = Transaction.from_json(result)
             transaction.action.should eq("send")
             transaction.prev_hash.should eq("0")
             transaction.message.should eq("")
@@ -87,8 +87,8 @@ describe RPCController do
 
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |json_result|
-            transaction = Transaction.from_json(json_result)
+          with_rpc_exec_internal_post(rpc, json) do |result|
+            transaction = Transaction.from_json(result)
             transaction.action.should eq("send")
             transaction.prev_hash.should eq("0")
             transaction.message.should eq("0")
@@ -124,8 +124,8 @@ describe RPCController do
           payload = {call: "blockchain_size"}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |json_result|
-            json_result.should eq(%{{"size":11}})
+          with_rpc_exec_internal_post(rpc, json) do |result|
+            result.should eq(%{{"size":11}})
           end
         end
       end
@@ -137,8 +137,8 @@ describe RPCController do
           payload = {call: "blockchain", header: false}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |json_result|
-            json_result.should eq(expected_blockchain)
+          with_rpc_exec_internal_post(rpc, json) do |result|
+            result.should eq(expected_blockchain)
           end
         end
       end
@@ -148,8 +148,8 @@ describe RPCController do
           payload = {call: "blockchain", header: true}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |json_result|
-            json_result.should eq(expected_headers)
+          with_rpc_exec_internal_post(rpc, json) do |result|
+            result.should eq(expected_headers)
           end
         end
       end
@@ -162,8 +162,8 @@ describe RPCController do
           payload = {call: "amount", address: recipient_address, unconfirmed: true}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |json_result|
-            json_result.should eq(%{{"amount":32500,"address":"#{recipient_address}","unconfirmed":true}})
+          with_rpc_exec_internal_post(rpc, json) do |result|
+            result.should eq(%{{"amount":32500,"address":"#{recipient_address}","unconfirmed":true}})
           end
         end
       end
@@ -174,8 +174,8 @@ describe RPCController do
           payload = {call: "amount", address: recipient_address, unconfirmed: false}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |json_result|
-            json_result.should eq(%{{"amount":10000,"address":"#{recipient_address}","unconfirmed":false}})
+          with_rpc_exec_internal_post(rpc, json) do |result|
+            result.should eq(%{{"amount":10000,"address":"#{recipient_address}","unconfirmed":false}})
           end
         end
       end
@@ -187,8 +187,8 @@ describe RPCController do
           payload = {call: "transactions", index: 1}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |json_result|
-            json_result.should eq(expected_transactions)
+          with_rpc_exec_internal_post(rpc, json) do |result|
+            result.should eq(expected_transactions)
           end
         end
       end
@@ -211,8 +211,8 @@ describe RPCController do
           payload = {call: "transaction", transaction_id: block_2.transactions.first.id}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |json_result|
-            json_result.should eq(expected_transaction)
+          with_rpc_exec_internal_post(rpc, json) do |result|
+            result.should eq(expected_transaction)
           end
         end
       end
@@ -229,14 +229,30 @@ describe RPCController do
       end
     end
 
+    describe "#confirmation" do
+      it "should return confirmation info for the supplied transaction id" do
+        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          payload = {call: "confirmation", transaction_id: block_2.transactions.first.id}.to_json
+          json = JSON.parse(payload)
+
+          with_rpc_exec_internal_post(rpc, json) do |result|
+            json_result = JSON.parse(result)
+            json_result["confirmed"].as_bool.should be_false
+            json_result["confirmations"].as_i.should eq(8)
+            json_result["threshold"].as_i.should eq(10)
+          end
+        end
+      end
+    end
+
     describe "#block" do
       it "should return the block specified by the supplied block index" do
         with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
           payload = {call: "block", index: 2, header: false}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |json_result|
-            json_result.should eq(expected_block)
+          with_rpc_exec_internal_post(rpc, json) do |result|
+            result.should eq(expected_block)
           end
         end
       end
@@ -246,8 +262,8 @@ describe RPCController do
           payload = {call: "block", index: 2, header: true}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |json_result|
-            json_result.should eq(expected_block_header)
+          with_rpc_exec_internal_post(rpc, json) do |result|
+            result.should eq(expected_block_header)
           end
         end
       end
@@ -257,8 +273,8 @@ describe RPCController do
           payload = {call: "block", transaction_id: block_2.transactions.first.id, header: false}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |json_result|
-            json_result.should eq(expected_block)
+          with_rpc_exec_internal_post(rpc, json) do |result|
+            result.should eq(expected_block)
           end
         end
       end
@@ -268,8 +284,8 @@ describe RPCController do
           payload = {call: "block", transaction_id: block_2.transactions.first.id, header: true}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |json_result|
-            json_result.should eq(expected_block_header)
+          with_rpc_exec_internal_post(rpc, json) do |result|
+            result.should eq(expected_block_header)
           end
         end
       end
@@ -314,8 +330,8 @@ describe RPCController do
           payload = {call: "unknown"}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json, 403) do |json_result|
-            json_result.should eq("unpermitted call: unknown")
+          with_rpc_exec_internal_post(rpc, json, 403) do |result|
+            result.should eq("unpermitted call: unknown")
           end
         end
       end
@@ -328,8 +344,8 @@ describe RPCController do
         payload = {call: "unknown"}.to_json
         json = JSON.parse(payload)
 
-        with_rpc_exec_internal_get(rpc, 403) do |json_result|
-          json_result.should eq("unpermitted method: GET")
+        with_rpc_exec_internal_get(rpc, 403) do |result|
+          result.should eq("unpermitted method: GET")
         end
       end
     end
