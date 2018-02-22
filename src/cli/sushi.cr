@@ -7,19 +7,19 @@ module ::Sushi::Interface::Sushi
       [
         {
           name: "wallet",
-          desc: "create, encrypt or decrypt your wallet",
+          desc: "create, encrypt or decrypt your wallet (wt for short)",
         },
         {
           name: "blockchain",
-          desc: "get a whole blockchain or each block",
+          desc: "get a whole blockchain or each block (bc for short)",
         },
         {
           name: "transaction",
-          desc: "get or create transactions",
+          desc: "get or create transactions (tx for short)",
         },
         {
           name: "config",
-          desc: "save default configuration used by sushi, sushid and sushim",
+          desc: "save default configuration used by sushi, sushid and sushim (cg for short)",
         },
       ]
     end
@@ -30,29 +30,29 @@ module ::Sushi::Interface::Sushi
 
     def run_impl(action_name)
       case action_name
-      when "wallet"
+      when "wallet", "wt"
         return Wallet.new(
           {name: "wallet", desc: "create, encrypt or decrypt your wallet"},
           next_parents,
         ).run
-      when "blockchain"
+      when "blockchain", "bc"
         return Blockchain.new(
           {name: "blockchain", desc: "get a whole blockchain or each block"},
           next_parents,
         ).run
-      when "transaction"
+      when "transaction", "tx"
         return Transaction.new(
           {name: "transaction", desc: "get or create transactions"},
           next_parents,
         ).run
-      when "config"
+      when "config", "cg"
         return Config.new(
           {name: "config", desc: "save default configuration used by sushi, sushid and sushim"},
           next_parents,
         ).run
       end
 
-      specify_subaction!
+      specify_sub_action!(action_name)
     end
   end
 end

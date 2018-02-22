@@ -8,11 +8,11 @@ module ::Sushi::Interface::Sushi
         },
         {
           name: "transactions",
-          desc: "get trasactions in a specified block",
+          desc: "get trasactions in a specified block (tx for short)",
         },
         {
           name: "transaction",
-          desc: "get a transaction for a transaction id",
+          desc: "get a transaction for a transaction id (txs for short)",
         },
       ]
     end
@@ -35,13 +35,13 @@ module ::Sushi::Interface::Sushi
       case action_name
       when "send"
         return send
-      when "transactions"
+      when "transactions", "tx"
         return transactions
-      when "transaction"
+      when "transaction", "txs"
         return transaction
       end
 
-      specify_subaction!
+      specify_sub_action!(action_name)
     end
 
     def send
