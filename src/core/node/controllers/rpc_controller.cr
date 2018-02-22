@@ -155,9 +155,9 @@ module ::Sushi::Core::Controllers
       latest_index = @blockchain.chain[-1].index
 
       result = {
-        confirmed: (latest_index - block_index) >= UTXO::CONFIRMATION,
+        confirmed:     (latest_index - block_index) >= UTXO::CONFIRMATION,
         confirmations: latest_index - block_index,
-        threshold: UTXO::CONFIRMATION,
+        threshold:     UTXO::CONFIRMATION,
       }.to_json
 
       context.response.print result
