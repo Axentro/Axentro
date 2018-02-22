@@ -237,7 +237,7 @@ module ::Sushi::Core
 
     def served_amount(index) : Int64
       total_fees = total_fees_of_latest_block
-      base = 40000
+      base = 10000
       div = (index / base).to_i
       return base.to_i64 + total_fees if div == 0
       (base / div).to_i64 + total_fees
