@@ -16,7 +16,7 @@ module ::Sushi::Interface::Sushi
         },
         {
           name: "confirmation",
-          desc: "get a number of confirmations",
+          desc: "get a number of confirmations (cf for short)",
         },
       ]
     end
@@ -43,7 +43,7 @@ module ::Sushi::Interface::Sushi
         return transactions
       when "transaction", "txs"
         return transaction
-      when "confirmation"
+      when "confirmation", "cf"
         return confirmation
       end
 
