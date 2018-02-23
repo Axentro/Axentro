@@ -58,7 +58,7 @@ module ::Sushi::Interface::Sushi
         return fees
       end
 
-      specify_subaction!
+      specify_sub_action!(action_name)
     end
 
     def create

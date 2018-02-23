@@ -37,7 +37,7 @@ module ::Sushi::Interface::Sushi
         return block
       end
 
-      specify_subaction!
+      specify_sub_action!(action_name)
     end
 
     def size

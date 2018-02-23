@@ -52,7 +52,7 @@ module ::Sushi::Interface::Sushi
         return clean
       end
 
-      specify_subaction!
+      specify_sub_action!(action_name)
     end
 
     def save

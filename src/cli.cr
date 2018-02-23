@@ -73,13 +73,6 @@ module ::Sushi::Interface
     def run
       puts_help if ARGV.size > 0 && ARGV[0] == "help"
 
-      if ARGV.size > 0 &&
-         !ARGV[0].starts_with?('-') &&
-         !sub_action_names.includes?(ARGV[0])
-        puts_help("invalid action '#{ARGV[0]}' for '#{command_line}'")
-        exit -1
-      end
-
       action_name = if ARGV.size > 0 && !ARGV[0].starts_with?('-')
                       ARGV.shift
                     end
@@ -99,8 +92,12 @@ module ::Sushi::Interface
       puts_error(e.backtrace.join("\n"))
     end
 
-    def specify_subaction!
-      puts_help("specify a sub action in #{sub_action_names}")
+    def specify_sub_action!(_sub_action : String? = nil)
+      if sub_action = _sub_action
+        puts_help("invalid sub action \"#{sub_action}\"")
+      else
+        puts_help("specify a sub action in #{sub_action_names}")
+      end
     end
 
     def option_error(option_name : String, parser : OptionParser)

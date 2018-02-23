@@ -8,11 +8,15 @@ module ::Sushi::Interface::Sushi
         },
         {
           name: "transactions",
-          desc: "get trasactions in a specified block",
+          desc: "get trasactions in a specified block (tx for short)",
         },
         {
           name: "transaction",
-          desc: "get a transaction for a transaction id",
+          desc: "get a transaction for a transaction id (txs for short)",
+        },
+        {
+          name: "confirmation",
+          desc: "get a number of confirmations (cf for short)",
         },
       ]
     end
@@ -35,13 +39,15 @@ module ::Sushi::Interface::Sushi
       case action_name
       when "send"
         return send
-      when "transactions"
+      when "transactions", "tx"
         return transactions
-      when "transaction"
+      when "transaction", "txs"
         return transaction
+      when "confirmation", "cf"
+        return confirmation
       end
 
-      specify_subaction!
+      specify_sub_action!(action_name)
     end
 
     def send
@@ -82,8 +88,7 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
-      # todo json
-      puts_success("show transactions in a block #{block_index}")
+      puts_success("show transactions in a block #{block_index}") unless __json
       puts_info(body)
     end
 
@@ -95,8 +100,31 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
-      puts_success("show the transaction #{transaction_id}")
+      puts_success("show the transaction #{transaction_id}") unless __json
       puts_info(body)
+    end
+
+    def confirmation
+      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+      puts_help(HELP_TRANSACTION_ID) unless transaction_id = __transaction_id
+
+      payload = {call: "confirmation", transaction_id: transaction_id}.to_json
+
+      body = rpc(node, payload)
+
+      unless __json
+        puts_success("show the number of confirmations of #{transaction_id}")
+
+        json = JSON.parse(body)
+
+        puts_info("transaction id: #{transaction_id}")
+        puts_info("--------------")
+        puts_info("confirmed: #{json["confirmed"]}")
+        puts_info("confirmations: #{json["confirmations"]}")
+        puts_info("threshold: #{json["threshold"]}")
+      else
+        puts_info(body)
+      end
     end
 
     def add_transaction(node : String,
