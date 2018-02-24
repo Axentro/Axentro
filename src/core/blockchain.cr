@@ -251,6 +251,16 @@ module ::Sushi::Core
       @utxo.index(transaction_id)
     end
 
+    def transactions_for_address(address : String) : Array(Transaction)
+      @chain
+        .map { |block| block.transactions }
+        .flatten
+        .select { |transaction|
+        transaction.senders.any? { |sender| sender[:address] == address } ||
+          transaction.recipients.any? { |recipient| recipient[:address] == address }
+      }
+    end
+
     include Hashes
     include Consensus
     include Common::Num

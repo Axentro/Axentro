@@ -96,18 +96,18 @@ module ::Sushi::Core::Controllers
     def block(json, context, params)
       block = if index = json["index"]?
                 if index.as_i > @blockchain.chain.size - 1
-                  raise "Invalid index #{index} (Blockchain size is #{@blockchain.chain.size})"
+                  raise "invalid index #{index} (Blockchain size is #{@blockchain.chain.size})"
                 end
 
                 @blockchain.chain[index.as_i]
               elsif transaction_id = json["transaction_id"]?
                 unless block_index = @blockchain.block_index(transaction_id.to_s)
-                  raise "Failed to find a block for the transaction #{transaction_id}"
+                  raise "failed to find a block for the transaction #{transaction_id}"
                 end
 
                 @blockchain.chain[block_index]
               else
-                raise "Please specify block index or transaction id"
+                raise "please specify block index or transaction id"
               end
 
       if json["header"].as_bool
@@ -120,13 +120,18 @@ module ::Sushi::Core::Controllers
     end
 
     def transactions(json, context, params)
-      index = json["index"].as_i
-
-      if index > @blockchain.chain.size - 1
-        raise "invalid index #{index} (Blockchain size is #{@blockchain.chain.size})"
+      if index = json["index"]?
+        if index.as_i > @blockchain.chain.size - 1
+          raise "invalid index #{index.as_i} (Blockchain size is #{@blockchain.chain.size})"
+        end
+        context.response.print @blockchain.chain[index.as_i].transactions.to_json
+      elsif address = json["address"]?
+        transactions = @blockchain.transactions_for_address(address.as_s)
+        context.response.print transactions.to_json
+      else
+        raise "please specify a block index or an address"
       end
 
-      context.response.print @blockchain.chain[index].transactions.to_json
       context
     end
 

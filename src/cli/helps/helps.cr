@@ -7,7 +7,7 @@ module ::Sushi::Interface
     HELP_ADDRESS_RECIPIENT             = "please specify a recipient's address: -a [public address]"
     HELP_AMOUNT                        = "please specify sending amount: -m [amount]"
     HELP_CONNECTING_NODE               = "please specify a connecting node: -n http://[host]:[port]"
-    HELP_BLOCK_INDEX                   = "please specify a block index: -i [block index]"
+    HELP_BLOCK_INDEX_OR_ADDRESS        = "please specify a block index or an address: -i [block index] or -a [address]"
     HELP_BLOCK_INDEX_OR_TRANSACTION_ID = "please specify a block index or transaction id: -i [block index] or -t [transaction id]"
     HELP_TRANSACTION_ID                = "please specify a transaction id: -t [transaction id]"
     HELP_PUBLIC_URL                    = "please specify a public url that can be accessed from internet: -u http://[host]:[port]\nIf your node is behind a NET, you can use --private flag instread of this option"
