@@ -193,6 +193,17 @@ describe RPCController do
         end
       end
 
+      it "should return transactions for the specified address" do
+        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          payload = {call: "transactions", address: "TTBjOGYyMDJjZjVmNjg0YzhmNTBlNTRmNGQ3ZjFiZDRkNzE4NTkzODM2NDlmODZi"}.to_json
+          json = JSON.parse(payload)
+
+          with_rpc_exec_internal_post(rpc, json) do |result|
+            result.should eq(transactions_for_the_address)
+          end
+        end
+      end
+
       it "should raise an error: invalid index" do
         with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
           payload = {call: "transactions", index: 99}.to_json
@@ -295,7 +306,7 @@ describe RPCController do
           payload = {call: "block", index: 99, header: false}.to_json
           json = JSON.parse(payload)
 
-          expect_raises(Exception, "Invalid index 99 (Blockchain size is 11)") do
+          expect_raises(Exception, "invalid index 99 (Blockchain size is 11)") do
             rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
           end
         end
@@ -306,7 +317,7 @@ describe RPCController do
           payload = {call: "block", transaction_id: "invalid-transaction-id", header: false}.to_json
           json = JSON.parse(payload)
 
-          expect_raises(Exception, "Failed to find a block for the transaction invalid-transaction-id") do
+          expect_raises(Exception, "failed to find a block for the transaction invalid-transaction-id") do
             rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
           end
         end
