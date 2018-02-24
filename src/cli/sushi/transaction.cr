@@ -8,11 +8,11 @@ module ::Sushi::Interface::Sushi
         },
         {
           name: "transactions",
-          desc: "get trasactions in a specified block (tx for short)",
+          desc: "get trasactions in a specified block or for an address (txs for short)",
         },
         {
           name: "transaction",
-          desc: "get a transaction for a transaction id (txs for short)",
+          desc: "get a transaction for a transaction id (tx for short)",
         },
         {
           name: "confirmation",
@@ -39,9 +39,9 @@ module ::Sushi::Interface::Sushi
       case action_name
       when "send"
         return send
-      when "transactions", "tx"
+      when "transactions", "txs"
         return transactions
-      when "transaction", "txs"
+      when "transaction", "tx"
         return transaction
       when "confirmation", "cf"
         return confirmation
@@ -82,13 +82,21 @@ module ::Sushi::Interface::Sushi
 
     def transactions
       puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
-      puts_help(HELP_BLOCK_INDEX) unless block_index = __block_index
+      puts_help(HELP_BLOCK_INDEX_OR_ADDRESS) if __block_index.nil? && __address.nil?
 
-      payload = {call: "transactions", index: block_index}.to_json
+      payload = if block_index = __block_index
+                  success_message = "show transactions in a block #{block_index}"
+                  {call: "transactions", index: block_index}.to_json
+                elsif address = __address
+                  success_message = "show transactions for an address #{address}"
+                  {call: "transactions", address: address}.to_json
+                else
+                  puts_help(HELP_BLOCK_INDEX_OR_ADDRESS)
+                end
 
       body = rpc(node, payload)
 
-      puts_success("show transactions in a block #{block_index}") unless __json
+      puts_success(success_message) unless __json
       puts_info(body)
     end
 
