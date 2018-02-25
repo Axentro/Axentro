@@ -18,6 +18,10 @@ module ::Sushi::Interface::Sushi
           name: "confirmation",
           desc: "get a number of confirmations (cf for short)",
         },
+        {
+          name: "fees",
+          desc: "show fees for each action",
+        },
       ]
     end
 
@@ -32,6 +36,7 @@ module ::Sushi::Interface::Sushi
         Options::MESSAGE,
         Options::BLOCK_INDEX,
         Options::TRANSACTION_ID,
+        Options::FEE,
       ])
     end
 
@@ -45,6 +50,8 @@ module ::Sushi::Interface::Sushi
         return transaction
       when "confirmation", "cf"
         return confirmation
+      when "fees"
+        return fees
       end
 
       specify_sub_action!(action_name)
@@ -55,6 +62,9 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
       puts_help(HELP_ADDRESS_RECIPIENT) unless recipient_address = __address
       puts_help(HELP_AMOUNT) unless amount = __amount
+      puts_help(HELP_FEE) unless fee = __fee
+
+      raise "invalid fee for the action send: minimum fee is #{min_fee_of_action("send")}" if fee < min_fee_of_action("send")
 
       to_address = Address.from(recipient_address, "recipient")
 
@@ -65,7 +75,7 @@ module ::Sushi::Interface::Sushi
         {
           address:    wallet.address,
           public_key: wallet.public_key,
-          amount:     amount + min_fee_of_action("send"),
+          amount:     amount + fee,
         }
       )
 
@@ -132,6 +142,16 @@ module ::Sushi::Interface::Sushi
         puts_info("threshold: #{json["threshold"]}")
       else
         puts_info(body)
+      end
+    end
+
+    def fees
+      unless __json
+        puts_success("showing fees for each action.")
+        puts_info("send     : #{FEE_SEND}")
+      else
+        json = {send: FEE_SEND}.to_json
+        puts json
       end
     end
 
