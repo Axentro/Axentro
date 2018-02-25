@@ -22,10 +22,6 @@ module ::Sushi::Interface::Sushi
           name: "amount",
           desc: "show remaining amount of Sushi coins for specified address",
         },
-        {
-          name: "fees",
-          desc: "show fees for each action",
-        },
       ]
     end
 
@@ -54,8 +50,6 @@ module ::Sushi::Interface::Sushi
         return decrypt
       when "amount"
         return amount
-      when "fees"
-        return fees
       end
 
       specify_sub_action!(action_name)
@@ -163,17 +157,6 @@ module ::Sushi::Interface::Sushi
       end
     end
 
-    def fees
-      unless __json
-        puts_success("showing fees for each action.")
-        puts_info("send     : #{FEE_SEND}")
-      else
-        json = {send: FEE_SEND}.to_json
-        puts json
-      end
-    end
-
-    include Core::Fees
     include GlobalOptionParser
   end
 end

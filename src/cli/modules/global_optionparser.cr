@@ -22,6 +22,7 @@ module ::Sushi::Interface
     @message : String = ""
     @block_index : Int32?
     @transaction_id : String?
+    @fee : Int64?
 
     @header : Bool = false
 
@@ -51,6 +52,7 @@ module ::Sushi::Interface
       MESSAGE        = 0x00003000
       BLOCK_INDEX    = 0x00004000
       TRANSACTION_ID = 0x00005000
+      FEE            = 0x00006000
       # for blockchain
       HEADER = 0x00010000
       # for miners
@@ -147,6 +149,10 @@ module ::Sushi::Interface
         ) { |transaction_id|
           @transaction_id = transaction_id
         } if is_active?(actives, Options::TRANSACTION_ID)
+
+        parser.on("-f FEE", "--fee=FEE", "the amount of fee") { |fee|
+          @fee = fee.to_i64
+        } if is_active?(actives, Options::FEE)
 
         parser.on("-h", "--header", "get headers only when get a blockchain or blocks") {
           @header = true
@@ -246,6 +252,10 @@ module ::Sushi::Interface
 
     def __transaction_id : String?
       @transaction_id
+    end
+
+    def __fee : Int64?
+      @fee
     end
 
     def __header : Bool
