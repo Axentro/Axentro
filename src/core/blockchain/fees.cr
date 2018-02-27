@@ -1,7 +1,7 @@
 module ::Sushi::Core::Fees
-  FEE_SEND = 1_i64
-  FEE_SCARS_BUY = 100_i64
-  FEE_SCARS_SELL = 10_i64
+  FEE_SEND       =   1_i64
+  FEE_SCARS_BUY  = 100_i64
+  FEE_SCARS_SELL =  10_i64
 
   def min_fee_of_action(action : String) : Int64
     case action

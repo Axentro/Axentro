@@ -19,14 +19,14 @@ module ::Sushi::Interface::Sushi
 
     def option_parser
       create_option_parser([
-                             Options::CONNECT_NODE,
-                             Options::WALLET_PATH,
-                             Options::WALLET_PASSWORD,
-                             Options::JSON,
-                             Options::FEE,
-                             Options::PRICE,
-                             Options::DOMAIN,
-                           ])
+        Options::CONNECT_NODE,
+        Options::WALLET_PATH,
+        Options::WALLET_PASSWORD,
+        Options::JSON,
+        Options::FEE,
+        Options::PRICE,
+        Options::DOMAIN,
+      ])
     end
 
     def run_impl(action_name)

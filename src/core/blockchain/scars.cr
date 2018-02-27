@@ -16,19 +16,19 @@ module ::Sushi::Core
 
     def buy(domain_name : String, address : String, price : Int64) : Bool
       sale_price = if domain = @domains[domain_name]?
-        raise "domain #{domain_name} is not for sale now" unless domain[:status] == Models::DomainStatusForSale
-        domain[:price]
-      else
-        0 # No body has bought
-      end
+                     raise "domain #{domain_name} is not for sale now" unless domain[:status] == Models::DomainStatusForSale
+                     domain[:price]
+                   else
+                     0 # No body has bought
+                   end
 
       raise "the price #{price} is different of #{sale_price}" unless sale_price == price
 
       @domains[domain_name] = {
         domain_name: domain_name,
-        address: address,
-        price: price,
-        status: Models::DomainStatusResolved
+        address:     address,
+        price:       price,
+        status:      Models::DomainStatusResolved,
       }
 
       true
@@ -40,9 +40,9 @@ module ::Sushi::Core
 
       @domains[domain_name] = {
         domain_name: domain_name,
-        address: address,
-        price: price,
-        status: Models::DomainStatusForSale
+        address:     address,
+        price:       price,
+        status:      Models::DomainStatusForSale,
       }
 
       true

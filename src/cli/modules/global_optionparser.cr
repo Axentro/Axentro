@@ -63,7 +63,7 @@ module ::Sushi::Interface
       # for wallet
       ENCRYPTED = 0x01000000
       # for scars
-      PRICE = 0x10000000
+      PRICE  = 0x10000000
       DOMAIN = 0x20000000
     end
 
