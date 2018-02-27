@@ -30,6 +30,9 @@ module ::Sushi::Interface
 
     @encrypted : Bool = false
 
+    @price : Int64?
+    @domain : String?
+
     module Options
       # common options
       CONNECT_NODE    = 0x00000001
@@ -59,6 +62,9 @@ module ::Sushi::Interface
       THREADS = 0x00100000
       # for wallet
       ENCRYPTED = 0x01000000
+      # for scars
+      PRICE = 0x10000000
+      DOMAIN = 0x20000000
     end
 
     def create_option_parser(actives : Array(Int32)) : OptionParser
@@ -165,6 +171,14 @@ module ::Sushi::Interface
         parser.on("-e", "--encrypted", "set this flag when creating a wallet to create an encrypted wallet") {
           @encrypted = true
         } if is_active?(actives, Options::ENCRYPTED)
+
+        parser.on("--price=PRICE", "buy/sell price for SCARS") { |price|
+          @price = price.to_i64
+        } if is_active?(actives, Options::PRICE)
+
+        parser.on("--domain=DOMAIN", "specify a domain for SCARS") { |domain|
+          @domain = domain
+        } if is_active?(actives, Options::DOMAIN)
       end
     end
 
@@ -272,6 +286,14 @@ module ::Sushi::Interface
       return @encrypted if @encrypted
       return cm.get_bool("encrypted").not_nil! if cm.get_bool("encrypted")
       @encrypted
+    end
+
+    def __price : Int64?
+      @price
+    end
+
+    def __domain : String?
+      @domain
     end
 
     def cm
