@@ -108,7 +108,18 @@ module ::Sushi::Core
     end
 
     private def draw_routes!
-      post "/rpc" { |context, params| @rpc_controller.exec(context, params) }
+      options "/rpc" do |context|
+        context.response.headers["Allow"] = "HEAD,GET,PUT,POST,DELETE,OPTIONS"
+        context.response.headers["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Cache-Control, Accept"
+        context.response.headers["Access-Control-Allow-Origin"] = "*"
+        context.response.status_code = 200
+        context.response.print ""
+        context
+      end
+      post "/rpc" do |context, params|
+        context.response.headers["Access-Control-Allow-Origin"] = "*"
+        @rpc_controller.exec(context, params)
+      end
       get "/handshake/:salt" { |context, params| @handshake_controller.exec(context, params) }
     end
 

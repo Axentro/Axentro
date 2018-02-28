@@ -189,8 +189,8 @@ module ::Sushi::Interface::Sushi
       payload = {
         call:       "create_unsigned_transaction",
         action:     action,
-        senders:    senders.to_json,
-        recipients: recipients.to_json,
+        senders:    senders,
+        recipients: recipients,
         message:    message,
       }.to_json
 
