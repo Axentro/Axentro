@@ -82,7 +82,7 @@ describe RPCController do
 
           payload = {
             call:        "create_transaction",
-            transaction: signed_transaction.to_json,
+            transaction: signed_transaction,
           }.to_json
 
           json = JSON.parse(payload)
