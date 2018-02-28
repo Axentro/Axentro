@@ -32,7 +32,7 @@ module ::Sushi::Core::Controllers
     end
 
     def create_transaction(json, context, params)
-      transaction = Transaction.from_json(json["transaction"].to_s)
+      transaction = Transaction.from_json(json["transaction"].to_json)
       node.broadcast_transaction(transaction)
       context.response.print transaction.to_json
       context
