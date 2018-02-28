@@ -32,7 +32,7 @@ module ::Sushi::Core::Controllers
     end
 
     def create_transaction(json, context, params)
-      transaction = Transaction.from_json(json["transaction"].to_s)
+      transaction = Transaction.from_json(json["transaction"].to_json)
       node.broadcast_transaction(transaction)
       context.response.print transaction.to_json
       context
@@ -44,8 +44,8 @@ module ::Sushi::Core::Controllers
 
     def create_unsigned_transaction(json, context, params)
       action = json["action"].to_s
-      senders = Models::Senders.from_json(json["senders"].to_s)
-      recipients = Models::Recipients.from_json(json["recipients"].to_s)
+      senders = Models::Senders.from_json(json["senders"].to_json)
+      recipients = Models::Recipients.from_json(json["recipients"].to_json)
       message = json["message"].to_s
 
       transaction = @blockchain.create_unsigned_transaction(

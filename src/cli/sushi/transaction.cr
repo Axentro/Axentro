@@ -168,7 +168,7 @@ module ::Sushi::Interface::Sushi
 
       payload = {
         call:        "create_transaction",
-        transaction: signed_transaction.to_json,
+        transaction: signed_transaction,
       }.to_json
 
       rpc(node, payload)
@@ -189,8 +189,8 @@ module ::Sushi::Interface::Sushi
       payload = {
         call:       "create_unsigned_transaction",
         action:     action,
-        senders:    senders.to_json,
-        recipients: recipients.to_json,
+        senders:    senders,
+        recipients: recipients,
         message:    message,
       }.to_json
 

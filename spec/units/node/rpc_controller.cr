@@ -18,8 +18,8 @@ describe RPCController do
           payload = {
             call:       "create_unsigned_transaction",
             action:     "send",
-            senders:    senders.to_json,
-            recipients: recipients.to_json,
+            senders:    senders,
+            recipients: recipients,
             message:    "",
           }.to_json
 
@@ -46,8 +46,8 @@ describe RPCController do
           payload = {
             call:       "create_unsigned_transaction",
             action:     "send",
-            senders:    senders.to_json,
-            recipients: recipients.to_json,
+            senders:    senders,
+            recipients: recipients,
             message:    "",
           }.to_json
 
@@ -82,7 +82,7 @@ describe RPCController do
 
           payload = {
             call:        "create_transaction",
-            transaction: signed_transaction.to_json,
+            transaction: signed_transaction,
           }.to_json
 
           json = JSON.parse(payload)
