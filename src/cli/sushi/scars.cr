@@ -14,6 +14,10 @@ module ::Sushi::Interface::Sushi
           name: "list",
           desc: "show list for sales",
         },
+        {
+          name: "whois",
+          desc: "show an address of the domain if it's registered",
+        },
       ]
     end
 
@@ -37,6 +41,8 @@ module ::Sushi::Interface::Sushi
         return sell
       when "list"
         return list
+      when "whois"
+        return whois
       end
 
       specify_sub_action!
@@ -66,6 +72,13 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
 
       puts "debug: list"
+    end
+
+    def whois
+      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+      puts_help(HELP_DOMAIN) unless domain = __domain
+
+      puts "debug: whois"
     end
 
     include GlobalOptionParser
