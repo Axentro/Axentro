@@ -22,6 +22,10 @@ module ::Sushi::Core::Controllers
         return transaction(json, context, params)
       when "confirmation"
         return confirmation(json, context, params)
+      when "scars_sales"
+        return scars_sales(json, context, params)
+      when "scars_resolve"
+        return scars_resolve(json, context, params)
       end
 
       unpermitted_call(call, context)
@@ -31,9 +35,34 @@ module ::Sushi::Core::Controllers
       unpermitted_method(context)
     end
 
+    def scars_sales(json, context, params)
+      puts "----- scars sales -----"
+      sales = @blockchain.scars_sales
+
+      context.response.print sales.to_json
+      context
+    end
+
+    def scars_resolve(json, context, params)
+      puts "----- scars resolve -----"
+      domain_name = json["domain_name"].as_s
+      domain = @blockchain.scars_resolve(domain_name)
+
+      response = if domain
+                   {resolved: true, domain: domain.to_json}.to_json
+                 else
+                   {resolved: false, domain: nil}.to_json
+                 end
+
+      context.response.print response
+      context
+    end
+
     def create_transaction(json, context, params)
       transaction = Transaction.from_json(json["transaction"].to_s)
+
       node.broadcast_transaction(transaction)
+
       context.response.print transaction.to_json
       context
     rescue e : Exception

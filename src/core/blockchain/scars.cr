@@ -14,8 +14,13 @@ module ::Sushi::Core
       @domains = DomainMap.new
     end
 
-    def buy(domain_name : String, address : String, price : Int64) : Bool
-      sale_price = if domain = @domains[domain_name]?
+    def buy?(domain_name : String, address : String, price : Int64) : Bool
+      puts "come here"
+      puts "domain_name: #{domain_name}"
+      puts "address: #{address}"
+      puts "price: #{price}"
+
+      sale_price = if domain = resolve?(domain_name)
                      raise "domain #{domain_name} is not for sale now" unless domain[:status] == Models::DomainStatusForSale
                      domain[:price]
                    else
@@ -24,28 +29,33 @@ module ::Sushi::Core
 
       raise "the price #{price} is different of #{sale_price}" unless sale_price == price
 
-      @domains[domain_name] = {
-        domain_name: domain_name,
-        address:     address,
-        price:       price,
-        status:      Models::DomainStatusResolved,
-      }
+      # @domains[domain_name] = {
+      #   domain_name: domain_name,
+      #   address:     address,
+      #   price:       price,
+      #   status:      Models::DomainStatusResolved,
+      # }
+
+      puts "OK!!"
 
       true
     end
 
-    def sell(domain_name : String, address : String, price : Int64) : Bool
-      raise "domain #{domain_name} not found" unless domain = @domains[domain_name]?
+    def sell?(domain_name : String, address : String, price : Int64) : Bool
+      raise "domain #{domain_name} not found" unless domain = resolve?(domain_name)
       raise "domain address mismatch: #{address} vs #{domain[:address]}" unless address == domain[:address]
 
-      @domains[domain_name] = {
-        domain_name: domain_name,
-        address:     address,
-        price:       price,
-        status:      Models::DomainStatusForSale,
-      }
+      # @domains[domain_name] = {
+      #   domain_name: domain_name,
+      #   address:     address,
+      #   price:       price,
+      #   status:      Models::DomainStatusForSale,
+      # }
 
       true
+    end
+
+    def record # todo
     end
 
     def sales : Array(Models::Domain)
@@ -54,7 +64,7 @@ module ::Sushi::Core
         .select { |domain| domain[:status] == Models::DomainStatusForSale }
     end
 
-    def resolve(domain_name : String) : Models::Domain?
+    def resolve?(domain_name : String) : Models::Domain?
       @domains[domain_name]?
     end
   end

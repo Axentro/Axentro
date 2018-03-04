@@ -1,7 +1,7 @@
 module ::Sushi::Core
   class Transaction
     MESSAGE_SIZE_LIMIT = 512
-    ACTIONS            = %(send)
+    ACTIONS            = %(send scars_buy scars_sell)
 
     JSON.mapping(
       id: String,
@@ -75,6 +75,13 @@ module ::Sushi::Core
 
         if prec(senders_amount - @senders[0][:amount]) < 0_i64
           raise "sender has not enough coins: #{@senders[0][:address]} (#{senders_amount})"
+        end
+
+        case @action
+        when "scars_buy"
+          puts "transaction scars buy!!!!!!!!!!!!!!!"
+          blockchain.scars_buy?(message, @senders[0][:address], @senders[0][:amount] - calculate_fee)
+        when "scars_sell"
         end
       else
         raise "actions has to be 'head' for coinbase transaction " if @action != "head"

@@ -11,11 +11,11 @@ module ::Sushi::Interface::Sushi
           desc: "sell your domain",
         },
         {
-          name: "list",
+          name: "sales",
           desc: "show list for sales",
         },
         {
-          name: "whois",
+          name: "resolve",
           desc: "show an address of the domain if it's registered",
         },
       ]
@@ -39,10 +39,10 @@ module ::Sushi::Interface::Sushi
         return buy
       when "sell"
         return sell
-      when "list"
-        return list
-      when "whois"
-        return whois
+      when "sales"
+        return sales
+      when "resolve"
+        return resolve
       end
 
       specify_sub_action!
@@ -55,7 +55,35 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_PRICE) unless price = __price
       puts_help(HELP_DOMAIN) unless domain = __domain
 
+      wallet = get_wallet(wallet_path, __wallet_password)
+
       puts "debug: buy"
+
+      senders = Core::Models::Senders.new
+      senders.push({
+                     address: wallet.address,
+                     public_key: wallet.public_key,
+                     amount: price + fee,
+                   })
+
+      recipients = Core::Models::Recipients.new
+
+      # unsigned_transaction = create_unsigned_transaction(node, "scars_buy", senders, recipients, domain)
+      #  
+      # puts_success unsigned_transaction.to_json
+      #  
+      # signed_transaction = sign(wallet, unsigned_transaction)
+      #  
+      # puts_success signed_transaction.to_json
+      #  
+      # payload = {
+      #   call: "scars_buy",
+      #   transaction: signed_transaction.to_json,
+      # }
+      #  
+      # rpc(node, payload)
+
+      add_transaction(node, wallet, "scars_buy", senders, recipients, domain)
     end
 
     def sell
@@ -68,17 +96,27 @@ module ::Sushi::Interface::Sushi
       puts "debug: sell"
     end
 
-    def list
+    def sales
       puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
 
-      puts "debug: list"
+      payload = {call: "scars_sales"}.to_json
+
+      body = rpc(node, payload)
+
+      puts_success "debug: sales"
+      puts_success body
     end
 
-    def whois
+    def resolve
       puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
       puts_help(HELP_DOMAIN) unless domain = __domain
 
-      puts "debug: whois"
+      payload = {call: "scars_resolve", domain_name: domain}.to_json
+
+      body = rpc(node, payload)
+
+      puts_success "debug: resolve"
+      puts_success body
     end
 
     include GlobalOptionParser

@@ -7,11 +7,13 @@ module ::Sushi::Core
     getter transaction_pool = [] of Transaction
     getter wallet : Wallet
     getter utxo : UTXO
+    getter scars : Scars
 
     @coinbase_transaction : Transaction?
 
     def initialize(@wallet : Wallet, @database : Database? = nil)
       @utxo = UTXO.new
+      @scars = Scars.new
 
       if database = @database
         restore_from_database(database)
@@ -154,6 +156,14 @@ module ::Sushi::Core
       @utxo.get(address)
     end
 
+    def scars_buy?(domain_name : String, address : String, price : Int64) : Bool
+      @scars.buy?(domain_name, address, price)
+    end
+
+    def scars_sell?(domain_name : String, address : String, price : Int64) : Bool
+      @scars.sell?(domain_name, address, price)
+    end
+
     def latest_block : Block
       @chain[-1]
     end
@@ -259,6 +269,14 @@ module ::Sushi::Core
         transaction.senders.any? { |sender| sender[:address] == address } ||
           transaction.recipients.any? { |recipient| recipient[:address] == address }
       }
+    end
+
+    def scars_sales : Array(Models::Domain)
+      @scars.sales
+    end
+
+    def scars_resolve(domain_name : String) : Models::Domain?
+      @scars.resolve?(domain_name)
     end
 
     include Hashes
