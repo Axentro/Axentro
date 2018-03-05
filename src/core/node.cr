@@ -36,7 +36,8 @@ module ::Sushi::Core
       connect_port : Int32?,
       @wallet : Wallet,
       @database : Database?,
-      @conn_min : Int32
+      @conn_min : Int32,
+      use_ssl : Bool?
     )
       @id = Random::Secure.hex(16)
       @connection_salt = Random::Secure.hex(16)
@@ -75,17 +76,18 @@ module ::Sushi::Core
       end
 
       if connect_host && connect_port
-        connect(connect_host.not_nil!, connect_port.not_nil!)
+        connect(connect_host.not_nil!, connect_port.not_nil!, use_ssl.not_nil!)
       else
         warning "no connecting node has been specified"
         warning "so this node is standalone from other network"
       end
     end
 
-    private def connect(connect_host : String, connect_port : Int32)
+    private def connect(connect_host : String, connect_port : Int32, use_ssl : Bool = false)
       info "connecting to #{light_green(connect_host)}:#{light_green(connect_port)}"
+      info "detected an https connecting node - switching to SSL" if use_ssl
 
-      socket = HTTP::WebSocket.new(connect_host, "/peer", connect_port)
+      socket = HTTP::WebSocket.new(connect_host, "/peer", connect_port, use_ssl)
 
       peer(socket)
 

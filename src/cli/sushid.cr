@@ -39,6 +39,7 @@ module ::Sushi::Interface::SushiD
 
       if connect_node = __connect_node
         connect_uri = URI.parse(connect_node)
+        use_ssl = (connect_uri.scheme == "https")
         has_first_connection = !connect_uri.host.nil? && !connect_uri.port.nil?
       end
 
@@ -52,9 +53,9 @@ module ::Sushi::Interface::SushiD
 
       node = has_first_connection ? Core::Node.new(__is_private, __is_testnet, __bind_host, __bind_port,
         public_host, public_port, ssl,
-        connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, __conn_min) : Core::Node.new(__is_private, __is_testnet, __bind_host, __bind_port,
+        connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, __conn_min, use_ssl.not_nil!) : Core::Node.new(__is_private, __is_testnet, __bind_host, __bind_port,
         public_host, public_port, ssl,
-        nil, nil, wallet, database, __conn_min)
+        nil, nil, wallet, database, __conn_min, use_ssl.not_nil!)
       node.run!
     end
 
