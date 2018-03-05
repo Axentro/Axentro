@@ -37,7 +37,7 @@ module ::Sushi::Core
       @wallet : Wallet,
       @database : Database?,
       @conn_min : Int32,
-      use_ssl : Bool?
+      use_ssl : Bool
     )
       @id = Random::Secure.hex(16)
       @connection_salt = Random::Secure.hex(16)
