@@ -35,7 +35,7 @@ module ::Units::Utils::NodeHelper
     blockchain.replace_chain(chain)
 
     rpc = RPCController.new(blockchain)
-    node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, sender_wallet, nil, 1_i32)
+    node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, sender_wallet, nil, 1_i32, false)
     rpc.set_node(node)
     yield sender_wallet, recipient_wallet, chain, blockchain, rpc
   end
