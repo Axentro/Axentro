@@ -76,7 +76,7 @@ module ::Sushi::Core
       end
 
       if connect_host && connect_port
-        connect(connect_host.not_nil!, connect_port.not_nil!, use_ssl.not_nil!)
+        connect(connect_host.not_nil!, connect_port.not_nil!, use_ssl)
       else
         warning "no connecting node has been specified"
         warning "so this node is standalone from other network"
