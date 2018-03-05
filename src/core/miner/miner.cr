@@ -6,8 +6,9 @@ module ::Sushi::Core
     @latest_hash : String?
     @latest_nonce : UInt64 = 0_u64 # for debug
     @threads = [] of Thread
+    @use_ssl : Bool
 
-    def initialize(@is_testnet : Bool, @host : String, @port : Int32, @wallet : Wallet, @num_threads : Int32)
+    def initialize(@is_testnet : Bool, @host : String, @port : Int32, @wallet : Wallet, @num_threads : Int32, @use_ssl : Bool)
       info "launching #{@num_threads} threads..."
     end
 
@@ -56,7 +57,7 @@ module ::Sushi::Core
 
     def run
       puts "host: #{@host}, port: #{@port}"
-      socket = HTTP::WebSocket.new(@host, "/peer", @port, false)
+      socket = HTTP::WebSocket.new(@host, "/peer", @port, @use_ssl)
       socket.on_message do |message|
         message_json = JSON.parse(message)
         message_type = message_json["type"].as_i

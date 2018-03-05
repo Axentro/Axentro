@@ -27,6 +27,7 @@ module ::Sushi::Interface
     @header : Bool = false
 
     @threads : Int32 = 1
+    @use_ssl : Bool = false
 
     @encrypted : Bool = false
 
@@ -57,6 +58,7 @@ module ::Sushi::Interface
       HEADER = 0x00010000
       # for miners
       THREADS = 0x00100000
+      USE_SSL = 0x00200000
       # for wallet
       ENCRYPTED = 0x01000000
     end
@@ -162,6 +164,10 @@ module ::Sushi::Interface
           @threads = threads.to_i
         } if is_active?(actives, Options::THREADS)
 
+        parser.on("--ssl", "use an ssl endpoint (default is non ssl)") {
+          @use_ssl = true
+        } if is_active?(actives, Options::USE_SSL)
+
         parser.on("-e", "--encrypted", "set this flag when creating a wallet to create an encrypted wallet") {
           @encrypted = true
         } if is_active?(actives, Options::ENCRYPTED)
@@ -266,6 +272,10 @@ module ::Sushi::Interface
       return @threads if @threads != 1
       return cm.get_i32("threads").not_nil! if cm.get_i32("threads")
       @threads
+    end
+
+    def __use_ssl : Bool
+      @use_ssl
     end
 
     def __encrypted : Bool
