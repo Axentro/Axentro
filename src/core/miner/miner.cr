@@ -55,7 +55,8 @@ module ::Sushi::Core
     end
 
     def run
-      socket = HTTP::WebSocket.new(@host, "peer", @port)
+      puts "host: #{@host}, port: #{@port}"
+      socket = HTTP::WebSocket.new(@host, "/peer", @port, false)
       socket.on_message do |message|
         message_json = JSON.parse(message)
         message_type = message_json["type"].as_i
