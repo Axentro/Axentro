@@ -31,6 +31,9 @@ module ::Sushi::Interface::SushiM
 
       raise "wallet type mismatch" if __is_testnet != wallet_is_testnet
 
+      puts "---------------miner.cr"
+      puts "use_ssl: #{use_ssl}"
+
       miner = Core::Miner.new(__is_testnet, host, port, wallet, __threads, use_ssl)
       miner.run
     end

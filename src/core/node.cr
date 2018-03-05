@@ -37,7 +37,7 @@ module ::Sushi::Core
       @wallet : Wallet,
       @database : Database?,
       @conn_min : Int32,
-      use_ssl : Bool
+      @use_ssl : Bool = false
     )
       @id = Random::Secure.hex(16)
       @connection_salt = Random::Secure.hex(16)
@@ -45,6 +45,7 @@ module ::Sushi::Core
       info "id: #{light_green(@id)}"
       info "is_private: #{light_green(@is_private)}"
       info "public url: #{light_green(@public_host)}:#{light_green(@public_port)}" unless @is_private
+      info "connecting node is using ssl?: #{light_green(@use_ssl)}"
 
       @blockchain = Blockchain.new(@wallet, @database)
 
@@ -76,18 +77,18 @@ module ::Sushi::Core
       end
 
       if connect_host && connect_port
-        connect(connect_host.not_nil!, connect_port.not_nil!, use_ssl)
+        connect(connect_host.not_nil!, connect_port.not_nil!)
       else
         warning "no connecting node has been specified"
         warning "so this node is standalone from other network"
       end
     end
 
-    private def connect(connect_host : String, connect_port : Int32, use_ssl : Bool = false)
+    private def connect(connect_host : String, connect_port : Int32)
       info "connecting to #{light_green(connect_host)}:#{light_green(connect_port)}"
-      info "detected an https connecting node - switching to SSL" if use_ssl
+      info "detected an https connecting node - switching to SSL" if @use_ssl
 
-      socket = HTTP::WebSocket.new(connect_host, "/peer", connect_port, use_ssl)
+      socket = HTTP::WebSocket.new(connect_host, "/peer", connect_port, @use_ssl)
 
       peer(socket)
 
