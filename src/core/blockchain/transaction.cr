@@ -52,7 +52,10 @@ module ::Sushi::Core
       end
 
       if !is_coinbase
+        puts @action
+        puts "point 0"
         raise "unknown action: #{@action}" unless ACTIONS.includes?(@action)
+        puts "point 1"
         raise "sender have to be only one currently" if @senders.size != 1
 
         network = Keys::Address.from(@senders.first[:address]).network
@@ -60,6 +63,7 @@ module ::Sushi::Core
 
         secp256k1 = ECDSA::Secp256k1.new
 
+        puts "point 2"
         raise "invalid signing" if !secp256k1.verify(
                                      public_key.point,
                                      self.as_unsigned.to_hash,
@@ -67,22 +71,28 @@ module ::Sushi::Core
                                      BigInt.new(@sign_s, base: 16),
                                    )
 
+        puts "point 3"
         if calculate_fee < min_fee_of_action(@action)
           raise "not enough fee, should be  #{calculate_fee} >= #{min_fee_of_action(@action)}"
         end
 
+        puts "point 4"
         senders_amount = blockchain.get_amount_unconfirmed(@senders[0][:address], transactions)
 
+        puts "point 5"
         if prec(senders_amount - @senders[0][:amount]) < 0_i64
           raise "sender has not enough coins: #{@senders[0][:address]} (#{senders_amount})"
         end
 
+        puts "point 6"
         case @action
         when "scars_buy"
           puts "transaction scars buy!!!!!!!!!!!!!!!"
           blockchain.scars_buy?(message, @senders[0][:address], @senders[0][:amount] - calculate_fee)
         when "scars_sell"
+          puts "transaction scars sell!!!!!!!!!!!!!!!!!!!"
         end
+        puts "point 7"
       else
         raise "actions has to be 'head' for coinbase transaction " if @action != "head"
         raise "message has to be '0' for coinbase transaction" if @message != "0"
