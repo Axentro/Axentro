@@ -156,12 +156,12 @@ module ::Sushi::Core
       @utxo.get(address)
     end
 
-    def scars_buy?(domain_name : String, address : String, price : Int64) : Bool
-      @scars.buy?(domain_name, address, price)
+    def scars_buy?(transactions : Array(Transaction), domain_name : String, address : String, price : Int64) : Bool
+      @scars.buy?(transactions, domain_name, address, price)
     end
 
-    def scars_sell?(domain_name : String, address : String, price : Int64) : Bool
-      @scars.sell?(domain_name, address, price)
+    def scars_sell?(transactions : Array(Transaction), domain_name : String, address : String, price : Int64) : Bool
+      @scars.sell?(transactions, domain_name, address, price)
     end
 
     def latest_block : Block
