@@ -2,6 +2,7 @@ module ::Sushi::Core
   # SushiChain Address Resolution System
   # todo:
   # sell
+  # confirmations
   # domain validation
   # unit tests for raises
   # integrated into e2e
