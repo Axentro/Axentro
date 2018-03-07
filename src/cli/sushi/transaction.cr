@@ -64,7 +64,7 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_AMOUNT) unless amount = __amount
       puts_help(HELP_FEE) unless fee = __fee
 
-      raise "invalid fee for the action send: minimum fee is #{min_fee_of_action("send")}" if fee < min_fee_of_action("send")
+      raise "invalid fee for the action send: fee is #{min_fee_of_action("send")}" if fee != min_fee_of_action("send")
 
       to_address = Address.from(recipient_address, "recipient")
 

@@ -6,6 +6,7 @@ module ::Sushi::Core
     getter chain : Models::Chain = Models::Chain.new
     getter transaction_pool = [] of Transaction
     getter wallet : Wallet
+    # todo: dApps
     getter utxo : UTXO
     getter scars : Scars
 

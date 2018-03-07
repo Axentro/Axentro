@@ -68,21 +68,6 @@ module ::Sushi::Interface::Sushi
 
       recipients = Core::Models::Recipients.new
 
-      # unsigned_transaction = create_unsigned_transaction(node, "scars_buy", senders, recipients, domain)
-      #
-      # puts_success unsigned_transaction.to_json
-      #
-      # signed_transaction = sign(wallet, unsigned_transaction)
-      #
-      # puts_success signed_transaction.to_json
-      #
-      # payload = {
-      #   call: "scars_buy",
-      #   transaction: signed_transaction.to_json,
-      # }
-      #
-      # rpc(node, payload)
-
       add_transaction(node, wallet, "scars_buy", senders, recipients, domain)
     end
 

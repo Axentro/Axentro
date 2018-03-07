@@ -1,11 +1,12 @@
 module ::Sushi::Core
   # SushiChain Address Resolution System
   # todo:
+  # sell
   # domain validation
   # unit tests for raises
   # integrated into e2e
   # create as dApps
-
+  # min_fee_of_action => fee_of_action
   class Scars
     @domains_internal : DomainMap
 
