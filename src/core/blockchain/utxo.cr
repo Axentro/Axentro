@@ -18,18 +18,16 @@ module ::Sushi::Core
       0_i64
     end
 
-    def get_unconfirmed(address : String, _transactions : Array(Transaction)?) : Int64
+    def get_unconfirmed(address : String, transactions : Array(Transaction)) : Int64
       utxos_transactions = 0_i64
 
-      if transactions = _transactions
-        transactions.each do |transaction|
-          utxos_transaction_senders = transaction.senders.select { |s| s[:address] == address }
-          utxos_transaction_recipients = transaction.recipients.select { |r| r[:address] == address }
-          utxos_transaction = utxos_transaction_recipients.reduce(0_i64) { |sum, utxo| prec(sum + utxo[:amount]) } -
-                              utxos_transaction_senders.reduce(0_i64) { |sum, utxo| prec(sum + utxo[:amount]) }
+      transactions.each do |transaction|
+        utxos_transaction_senders = transaction.senders.select { |s| s[:address] == address }
+        utxos_transaction_recipients = transaction.recipients.select { |r| r[:address] == address }
+        utxos_transaction = utxos_transaction_recipients.reduce(0_i64) { |sum, utxo| prec(sum + utxo[:amount]) } -
+                            utxos_transaction_senders.reduce(0_i64) { |sum, utxo| prec(sum + utxo[:amount]) }
 
-          utxos_transactions = prec(utxos_transactions + utxos_transaction)
-        end
+        utxos_transactions = prec(utxos_transactions + utxos_transaction)
       end
 
       unconfirmed_recorded = get_unconfirmed_recorded(address)

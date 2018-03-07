@@ -1,12 +1,10 @@
 module ::Sushi::Core
   # SushiChain Address Resolution System
   # todo:
-  # integrated into blockchain
-  # integrated into rpc
-  # integrated into sushi cli
   # domain validation
   # unit tests for raises
   # integrated into e2e
+  # create as dApps
 
   class Scars
     @domains_internal : DomainMap
@@ -16,12 +14,14 @@ module ::Sushi::Core
     end
 
     def buy?(transactions : Array(Transaction), domain_name : String, address : String, price : Int64) : Bool
-      puts "come here"
+      puts "--- scars.buy? の有効性を確認 ---"
       puts "domain_name: #{domain_name}"
       puts "address: #{address}"
       puts "price: #{price}"
 
       sale_price = if domain = tmp_domains(transactions)[domain_name]?
+                     puts "解決した既存のドメイン"
+                     puts domain
                      raise "domain #{domain_name} is not for sale now" unless domain[:status] == Models::DomainStatusForSale
                      domain[:price]
                    else
@@ -30,20 +30,30 @@ module ::Sushi::Core
 
       raise "the price #{price} is different of #{sale_price}" unless sale_price == price
 
-      puts "OK!!"
+      puts "有効！"
 
       true
     end
 
     def sell?(transactions : Array(Transaction), domain_name : String, address : String, price : Int64) : Bool
+      puts "--- scars.sell? の有効性を確認 ---"
+      puts "domain_name: #{domain_name}"
+      puts "address: #{address}"
+      puts "price: #{price}"
+
       raise "domain #{domain_name} not found" unless domain = tmp_domains(transactions)[domain_name]?
       raise "domain address mismatch: #{address} vs #{domain[:address]}" unless address == domain[:address]
+
+      puts "有効！"
 
       true
     end
 
     def tmp_domains(transactions : Array(Transaction)) : DomainMap
       tmp_domains_internal = @domains_internal.dup
+
+      puts "transactions:"
+      puts transactions
 
       transactions.each do |transaction|
         next if transaction.action != "scars_buy" && transaction.action != "scars_sell"
@@ -72,6 +82,9 @@ module ::Sushi::Core
         end
       end
 
+      puts "tmp_domains: "
+      puts tmp_domains_internal
+
       tmp_domains_internal
     end
 
@@ -90,9 +103,9 @@ module ::Sushi::Core
         puts "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
         scars_transactions.each do |scars_transaction|
-          domain_name = transaction.message
-          address = transaction.senders[0][:address]
-          price = transaction.senders[0][:amount] - min_fee_of_action(transaction.action)
+          domain_name = scars_transaction.message
+          address = scars_transaction.senders[0][:address]
+          price = scars_transaction.senders[0][:amount] - min_fee_of_action(scars_transaction.action)
 
           puts "scars record: #{domain_name} #{address} #{price}"
 
@@ -113,6 +126,10 @@ module ::Sushi::Core
             }
           end
         end
+
+        puts "++++++++++ recorded +++++++++++"
+        puts @domains_internal
+        puts "+++++++++++++++++++++++++++++++"
       end
     end
 
@@ -127,6 +144,10 @@ module ::Sushi::Core
     end
 
     def resolve?(domain_name : String) : Models::Domain?
+      puts "-------- resolve? called --------"
+      puts "domain_name: #{domain_name}"
+      puts "@domain_internal"
+      puts @domains_internal
       @domains_internal[domain_name]?
     end
 

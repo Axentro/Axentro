@@ -31,6 +31,7 @@ module ::Sushi::Core
     def set_genesis
       @chain.push(genesis_block)
       @utxo.record(@chain)
+      @scars.record(@chain)
 
       if database = @database
         database.push_block(genesis_block)
@@ -48,6 +49,7 @@ module ::Sushi::Core
 
         @chain.push(block)
         @utxo.record(@chain)
+        @scars.record(@chain)
 
         current_index += 1
       end
@@ -79,14 +81,15 @@ module ::Sushi::Core
         latest_block.to_hash,
       )
 
-      push_block?(block, miners)
+      push_block?(block, miners, true)
     end
 
-    def push_block?(block : Block, miners : Models::Miners) : Block?
-      return nil unless block.valid_as_latest?(self)
+    def push_block?(block : Block, miners : Models::Miners, internal : Bool = false) : Block?
+      return nil if !internal && !block.valid_as_latest?(self)
 
       @chain.push(block)
       @utxo.record(@chain)
+      @scars.record(@chain)
 
       if database = @database
         database.push_block(block)
@@ -114,6 +117,9 @@ module ::Sushi::Core
       @utxo.clear
       @utxo.record(@chain)
 
+      @scars.clear
+      @scars.record(@chain)
+
       if database = @database
         database.replace_chain(@chain)
       end
@@ -126,6 +132,9 @@ module ::Sushi::Core
     end
 
     def align_transaction(transactions : Array(Transaction))
+      info "+++ alignment fo the transactions +++"
+      puts transactions
+      info "+++++++++++++++++++++++++++++++++++++"
       return [] of Transaction if transactions.size == 0
 
       selected_transactions = [transactions[0]]
@@ -142,13 +151,16 @@ module ::Sushi::Core
         transaction.prev_hash = selected_transactions[-1].to_hash
         selected_transactions << transaction
       rescue e : Exception
+        warning "invalid transaction found, will be removed from the pool"
+        warning e.message.not_nil! if e.message
+
         transactions.delete(transaction)
       end
 
       selected_transactions
     end
 
-    def get_amount_unconfirmed(address : String, transactions : Array(Transaction)? = nil) : Int64
+    def get_amount_unconfirmed(address : String, transactions : Array(Transaction)) : Int64
       @utxo.get_unconfirmed(address, transactions)
     end
 
@@ -279,6 +291,7 @@ module ::Sushi::Core
       @scars.resolve?(domain_name)
     end
 
+    include Logger
     include Hashes
     include Consensus
     include Common::Num
