@@ -78,7 +78,29 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_PRICE) unless price = __price
       puts_help(HELP_DOMAIN) unless domain = __domain
 
+      resolved = resolve_internal(node, domain)
+
+      puts "resolved"
+      puts resolved
+
+      wallet = get_wallet(wallet_path, __wallet_password)
+
       puts "debug: sell"
+
+      senders = Core::Models::Senders.new
+      senders.push({
+                     address: wallet.address,
+                     public_key: wallet.public_key,
+                     amount: price + fee,
+                   })
+
+      recipients = Core::Models::Recipients.new
+      recipients.push({
+                        address: resolved["domain"]["address"].as_s,
+                        amount: price,
+                      })
+
+      add_transaction(node, wallet, "scars_sell", senders, recipients, domain)
     end
 
     def sales
@@ -96,12 +118,18 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
       puts_help(HELP_DOMAIN) unless domain = __domain
 
+      resolved = resolve_internal(node, domain)
+
+      puts_success "debug: resolve"
+      puts_success resolved.to_json
+    end
+
+    def resolve_internal(node, domain) : JSON::Any
       payload = {call: "scars_resolve", domain_name: domain}.to_json
 
       body = rpc(node, payload)
 
-      puts_success "debug: resolve"
-      puts_success body
+      JSON.parse(body)
     end
 
     include GlobalOptionParser

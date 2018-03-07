@@ -52,7 +52,7 @@ module ::Sushi::Core::Controllers
       puts "domain: #{domain}"
 
       response = if domain
-                   {resolved: true, domain: domain.to_json}.to_json
+                   {resolved: true, domain: domain}.to_json
                  else
                    {resolved: false, domain: nil}.to_json
                  end
