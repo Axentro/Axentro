@@ -57,13 +57,12 @@ module ::Sushi::Interface::Sushi
 
       wallet = get_wallet(wallet_path, __wallet_password)
 
-      puts "debug: buy"
-
       senders = Core::Models::Senders.new
       senders.push({
         address:    wallet.address,
         public_key: wallet.public_key,
-        amount:     price + fee,
+        amount:     price,
+        fee: fee,
       })
 
       recipients = Core::Models::Recipients.new
@@ -80,18 +79,14 @@ module ::Sushi::Interface::Sushi
 
       resolved = resolve_internal(node, domain)
 
-      puts "resolved"
-      puts resolved
-
       wallet = get_wallet(wallet_path, __wallet_password)
-
-      puts "debug: sell"
 
       senders = Core::Models::Senders.new
       senders.push({
         address:    wallet.address,
         public_key: wallet.public_key,
-        amount:     price + fee,
+        amount:     price,
+        fee: fee,
       })
 
       recipients = Core::Models::Recipients.new
@@ -110,7 +105,6 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
-      puts_success "debug: sales"
       puts_success body
     end
 
@@ -120,7 +114,6 @@ module ::Sushi::Interface::Sushi
 
       resolved = resolve_internal(node, domain)
 
-      puts_success "debug: resolve"
       puts_success resolved.to_json
     end
 

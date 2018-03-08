@@ -64,7 +64,9 @@ module ::Sushi::Core
       @coinbase_transaction = create_coinbase_transaction(miners)
 
       # remove transactions which already be included in blockchain
-      @transaction_pool.reject! { |transaction| block_index(transaction.id) }
+      info "@transaction_pool #{@transaction_pool.size} (before update_coinbase_transaction)"
+      @transaction_pool.reject! { |transaction| block_index?(transaction.id) }
+      info "@transaction_pool #{@transaction_pool.size} (after update_coinbase_transaction)"
     end
 
     def push_block?(nonce : UInt64, miners : Models::Miners) : Block?
@@ -89,6 +91,7 @@ module ::Sushi::Core
       return nil if !internal && !block.valid_as_latest?(self)
 
       @chain.push(block)
+
       @utxo.record(@chain)
       @scars.record(@chain)
 
@@ -133,9 +136,10 @@ module ::Sushi::Core
     end
 
     def align_transaction(transactions : Array(Transaction))
-      info "+++ alignment fo the transactions +++"
-      puts transactions
-      info "+++++++++++++++++++++++++++++++++++++"
+      info "@transaction_pool #{@transaction_pool.size} (before align_transaction)"
+      info "----------------- align_transaction -----------------"
+      info "transactions: #{transactions.size}"
+
       return [] of Transaction if transactions.size == 0
 
       selected_transactions = [transactions[0]]
@@ -144,7 +148,7 @@ module ::Sushi::Core
         transaction.valid?(self, latest_index, false, selected_transactions)
 
         # The transaction is already included in another block
-        if block_index(transaction.id)
+        if block_index?(transaction.id)
           transactions.delete(transaction)
           next
         end
@@ -155,8 +159,11 @@ module ::Sushi::Core
         warning "invalid transaction found, will be removed from the pool"
         warning e.message.not_nil! if e.message
 
-        transactions.delete(transaction)
+        @transaction_pool.delete(transaction)
       end
+
+      info "=> selected_transactions: #{selected_transactions.size}"
+      info "@transaction_pool #{@transaction_pool.size} (after align_transaction)"
 
       selected_transactions
     end
@@ -270,7 +277,7 @@ module ::Sushi::Core
       @chain.map { |block| block.to_header }
     end
 
-    def block_index(transaction_id : String) : Int64?
+    def block_index?(transaction_id : String) : Int64?
       @utxo.index(transaction_id)
     end
 

@@ -52,7 +52,6 @@ module ::Sushi::Core
       end
 
       if !is_coinbase
-        puts @action
         raise "unknown action: #{@action}" unless ACTIONS.includes?(@action)
         raise "sender have to be only one currently" if @senders.size != 1
 
@@ -74,19 +73,17 @@ module ::Sushi::Core
 
         senders_amount = blockchain.get_amount_unconfirmed(@senders[0][:address], transactions)
 
-        puts "senderは十分なCoinを持っているか？ (#{senders_amount} - #{@senders[0][:amount]})"
-
         if prec(senders_amount - @senders[0][:amount]) < 0_i64
           raise "sender has not enough coins: #{@senders[0][:address]} (#{senders_amount})"
         end
 
         case @action
         when "scars_buy"
-          "scars_buyが有効かを確認します"
-          blockchain.scars_buy?(transactions, message, @senders[0][:address], @senders[0][:amount] - calculate_fee)
+          "scars_buyは有効？ (amount: #{@senders[0][:amount]}, fee: #{calculate_fee})"
+          blockchain.scars_buy?(transactions, message, @senders[0][:address], @senders[0][:amount])
         when "scars_sell"
-          "scars_sellが有効かを確認します"
-          blockchain.scars_sell?(transactions, message, @senders[0][:address], @senders[0][:amount] - calculate_fee)
+          "scars_ sellは有効？ (amount: #{@senders[0][:amount]}, fee: #{calculate_fee})"
+          blockchain.scars_sell?(transactions, message, @senders[0][:address], @senders[0][:amount])
         end
       else
         raise "actions has to be 'head' for coinbase transaction " if @action != "head"
@@ -138,7 +135,7 @@ module ::Sushi::Core
     end
 
     def calculate_fee : Int64
-      prec(sender_total_amount - recipient_total_amount)
+      prec(senders.reduce(0_i64) { |sum, sender| prec(sum + sender[:fee]) })
     end
 
     def calculate_utxo : Hash(String, Int64)

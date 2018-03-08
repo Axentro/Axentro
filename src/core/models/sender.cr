@@ -3,6 +3,7 @@ module ::Sushi::Core::Models
     address: String,
     public_key: String,
     amount: Int64,
+    fee: Int64,
   )
 
   alias Senders = Array(Sender)
