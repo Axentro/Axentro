@@ -48,6 +48,7 @@ module ::Sushi::Interface::Sushi
       specify_sub_action!
     end
 
+    # todo: check minimum fee
     def buy
       puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
       puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
@@ -70,6 +71,7 @@ module ::Sushi::Interface::Sushi
       add_transaction(node, wallet, "scars_buy", senders, recipients, domain)
     end
 
+    # todo: check minimum fee
     def sell
       puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
       puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
@@ -78,6 +80,8 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_DOMAIN) unless domain = __domain
 
       resolved = resolve_internal(node, domain)
+
+      puts_help(HELP_DOMAIN_NOT_RESOLVED % domain) unless resolved["resolved"].as_bool
 
       wallet = get_wallet(wallet_path, __wallet_password)
 

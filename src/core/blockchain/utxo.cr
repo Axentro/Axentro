@@ -5,9 +5,6 @@ module ::Sushi::Core
     @utxo_internal : Array(Hash(String, Int64)) = Array(Hash(String, Int64)).new
     @transaction_indices : Hash(String, Int64) = Hash(String, Int64).new
 
-    def initialize
-    end
-
     def get(address : String) : Int64
       return 0_i64 if @utxo_internal.size < CONFIRMATION
 
@@ -25,7 +22,7 @@ module ::Sushi::Core
         utxos_transaction_senders = transaction.senders.select { |s| s[:address] == address }
         utxos_transaction_recipients = transaction.recipients.select { |r| r[:address] == address }
         utxos_transaction = utxos_transaction_recipients.reduce(0_i64) { |sum, utxo| prec(sum + utxo[:amount]) } -
-                            utxos_transaction_senders.reduce(0_i64) { |sum, utxo| prec(sum + utxo[:amount]) }
+                            utxos_transaction_senders.reduce(0_i64) { |sum, utxo| prec(sum + utxo[:amount] + utxo[:fee]) }
 
         utxos_transactions = prec(utxos_transactions + utxos_transaction)
       end
