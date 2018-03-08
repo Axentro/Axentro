@@ -65,7 +65,7 @@ module ::Sushi::Interface::Sushi
         address:    wallet.address,
         public_key: wallet.public_key,
         amount:     price,
-        fee: fee,
+        fee:        fee,
       })
 
       recipients = Core::Models::Recipients.new
@@ -93,7 +93,7 @@ module ::Sushi::Interface::Sushi
         address:    wallet.address,
         public_key: wallet.public_key,
         amount:     price,
-        fee: fee,
+        fee:        fee,
       })
 
       recipients = Core::Models::Recipients.new

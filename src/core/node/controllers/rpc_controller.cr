@@ -47,9 +47,7 @@ module ::Sushi::Core::Controllers
       domain_name = json["domain_name"].as_s
       unconfirmed = json["unconfirmed"].as_bool
 
-      domain = unconfirmed ?
-                 @blockchain.scars.get_unconfirmed(domain_name, [] of Transaction) :
-                 @blockchain.scars.get(domain_name)
+      domain = unconfirmed ? @blockchain.scars.get_unconfirmed(domain_name, [] of Transaction) : @blockchain.scars.get(domain_name)
 
       response = if domain
                    {resolved: true, domain: domain}.to_json
@@ -99,9 +97,7 @@ module ::Sushi::Core::Controllers
       address = json["address"].to_s
       unconfirmed = json["unconfirmed"].as_bool
 
-      amount = unconfirmed ?
-                 @blockchain.utxo.get_unconfirmed(address, [] of Transaction) :
-                 @blockchain.utxo.get(address)
+      amount = unconfirmed ? @blockchain.utxo.get_unconfirmed(address, [] of Transaction) : @blockchain.utxo.get(address)
 
       json = {amount: amount, address: address, unconfirmed: unconfirmed}.to_json
 

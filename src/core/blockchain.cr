@@ -122,7 +122,7 @@ module ::Sushi::Core
 
       @dapps.each do |dapp|
         dapp[:app].record(@chain)
-      end      
+      end
 
       if database = @database
         database.push_block(block)
@@ -154,7 +154,7 @@ module ::Sushi::Core
 
       # @utxo.clear
       # @utxo.record(@chain)
-      #  
+      #
       # @scars.clear
       # @scars.record(@chain)
 
@@ -205,15 +205,15 @@ module ::Sushi::Core
     # def get_amount_unconfirmed(address : String, transactions : Array(Transaction)) : Int64
     #   @utxo.get_unconfirmed(address, transactions)
     # end
-    #  
+    #
     # def get_amount(address : String) : Int64
     #   @utxo.get(address)
     # end
-    #  
+    #
     # def scars_buy?(transactions : Array(Transaction), domain_name : String, address : String, price : Int64) : Bool
     #   @scars.buy?(transactions, domain_name, address, price)
     # end
-    #  
+    #
     # def scars_sell?(transactions : Array(Transaction), domain_name : String, address : String, price : Int64) : Bool
     #   @scars.sell?(transactions, domain_name, address, price)
     # end
@@ -221,11 +221,11 @@ module ::Sushi::Core
     # def scars_sales : Array(Models::Domain)
     #   @scars.sales
     # end
-    #  
+    #
     # def scars_resolve(domain_name : String) : Models::Domain?
     #   @scars.get(domain_name)
     # end
-    #  
+    #
     # def scars_resolve_unconfirmed(domain_name : String) : Models::Domain?
     #   @scars.get_unconfirmed(domain_name, [] of Transaction)
     # end
