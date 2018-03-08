@@ -296,7 +296,10 @@ module ::Sushi::Core
     end
 
     def scars_resolve(domain_name : String) : Models::Domain?
-      # todo: support confirmed and unconfirmed
+      @scars.get(domain_name)
+    end
+
+    def scars_resolve_unconfirmed(domain_name : String) : Models::Domain?
       @scars.get_unconfirmed(domain_name, [] of Transaction)
     end
 

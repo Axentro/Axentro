@@ -27,6 +27,7 @@ module ::Sushi::Interface::Sushi
         Options::WALLET_PATH,
         Options::WALLET_PASSWORD,
         Options::JSON,
+        Options::UNCONFIRMED,
         Options::FEE,
         Options::PRICE,
         Options::DOMAIN,
@@ -48,13 +49,14 @@ module ::Sushi::Interface::Sushi
       specify_sub_action!
     end
 
-    # todo: check minimum fee
     def buy
       puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
       puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
       puts_help(HELP_FEE) unless fee = __fee
       puts_help(HELP_PRICE) unless price = __price
       puts_help(HELP_DOMAIN) unless domain = __domain
+
+      raise "invalid fee for the action buy: minimum fee is #{min_fee_of_action("scars_buy")}" if fee < min_fee_of_action("scars_buy")
 
       wallet = get_wallet(wallet_path, __wallet_password)
 
@@ -71,7 +73,6 @@ module ::Sushi::Interface::Sushi
       add_transaction(node, wallet, "scars_buy", senders, recipients, domain)
     end
 
-    # todo: check minimum fee
     def sell
       puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
       puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
@@ -79,7 +80,9 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_PRICE) unless price = __price
       puts_help(HELP_DOMAIN) unless domain = __domain
 
-      resolved = resolve_internal(node, domain)
+      raise "invalid fee for the action sell: minimum fee is #{min_fee_of_action("scars_sell")}" if fee < min_fee_of_action("scars_sell")
+
+      resolved = resolve_internal(node, domain, true)
 
       puts_help(HELP_DOMAIN_NOT_RESOLVED % domain) unless resolved["resolved"].as_bool
 
@@ -116,19 +119,38 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
       puts_help(HELP_DOMAIN) unless domain = __domain
 
-      resolved = resolve_internal(node, domain)
+      resolved = resolve_internal(node, domain, __unconfirmed)
 
-      puts_success resolved.to_json
+      unless __json
+        puts_success "show information of domain #{domain}"
+        puts_success "resolved : #{resolved["resolved"]}"
+
+        if resolved["resolved"].as_bool
+          status = case resolved["domain"]["status"].as_i
+                   when 0
+                     "acquired"
+                   when 1
+                     "for sale"
+                   end
+
+          puts_success "address  : #{resolved["domain"]["address"]}"
+          puts_success "status   : #{status}"
+          puts_success "price    : #{resolved["domain"]["price"]}"
+        end
+      else
+        puts_info resolved.to_json
+      end
     end
 
-    def resolve_internal(node, domain) : JSON::Any
-      payload = {call: "scars_resolve", domain_name: domain}.to_json
+    def resolve_internal(node, domain, unconfirmed : Bool) : JSON::Any
+      payload = {call: "scars_resolve", domain_name: domain, unconfirmed: unconfirmed}.to_json
 
       body = rpc(node, payload)
 
       JSON.parse(body)
     end
 
+    include Core::Fees
     include GlobalOptionParser
   end
 end

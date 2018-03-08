@@ -45,7 +45,9 @@ module ::Sushi::Core::Controllers
 
     def scars_resolve(json, context, params)
       domain_name = json["domain_name"].as_s
-      domain = @blockchain.scars_resolve(domain_name)
+      unconfirmed = json["unconfirmed"].as_bool
+
+      domain = unconfirmed ? @blockchain.scars_resolve_unconfirmed(domain_name) : @blockchain.scars_resolve(domain_name)
 
       response = if domain
                    {resolved: true, domain: domain}.to_json

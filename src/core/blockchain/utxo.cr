@@ -1,7 +1,5 @@
 module ::Sushi::Core
   class UTXO
-    CONFIRMATION = 10
-
     @utxo_internal : Array(Hash(String, Int64)) = Array(Hash(String, Int64)).new
     @transaction_indices : Hash(String, Int64) = Hash(String, Int64).new
 
@@ -67,6 +65,7 @@ module ::Sushi::Core
     end
 
     include Logger
+    include Consensus
     include Common::Num
     include Common::Color
   end

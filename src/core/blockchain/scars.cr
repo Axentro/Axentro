@@ -109,6 +109,7 @@ module ::Sushi::Core
       [] of Models::Domain
     end
 
-    include Core::Fees
+    include Fees
+    include Consensus
   end
 end
