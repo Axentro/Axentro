@@ -6,10 +6,11 @@ module ::Sushi::Core
   # integrated into e2e
   # create as dApps
   # min_fee_of_action (not equal)
-  class Scars
+  class Scars < DApp
     @domains_internal : Array(DomainMap) = Array(DomainMap).new
 
     private def get_for(domain_name : String, domains : Array(DomainMap)) : Models::Domain?
+      puts "get_for: #{domain_name}, domains: #{domains}"
       domains.each do |domains_internal|
         return domains_internal[domain_name] if domains_internal[domain_name]?
       end
@@ -62,7 +63,28 @@ module ::Sushi::Core
       get_for(domain_name, tmp_domains_internal.reverse)
     end
 
-    def buy?(transactions : Array(Transaction), domain_name : String, address : String, price : Int64) : Bool
+    def valid?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
+      puts "point 0"
+      raise "senders have to be only one currently" if transaction.senders.size != 1
+
+      domain_name = transaction.message
+      address = transaction.senders[0][:address]
+      price = transaction.senders[0][:amount]
+      puts "point 1"
+      case transaction.action
+      when "scars_buy"
+        puts "point 2"
+        "scars_buyは有効？"
+        return valid_buy?(domain_name, address, price, prev_transactions)
+      when "scars_sell"
+        "scars_ sellは有効？"
+        return valid_sell?(domain_name, address, price, prev_transactions)
+      end
+
+      false
+    end
+
+    def valid_buy?(domain_name : String, address : String, price : Int64, transactions : Array(Transaction)) : Bool
       puts "scars_buy domain_name: #{domain_name}, address: #{address}, price: #{price}"
 
       sale_price = if domain = get_unconfirmed(domain_name, transactions)
@@ -79,7 +101,7 @@ module ::Sushi::Core
       true
     end
 
-    def sell?(transactions : Array(Transaction), domain_name : String, address : String, price : Int64) : Bool
+    def valid_sell?(domain_name : String, address : String, price : Int64, transactions : Array(Transaction)) : Bool
       puts "scars_sell domain_name: #{domain_name}, address: #{address}, price: #{price}"
 
       raise "domain #{domain_name} not found" unless domain = get_unconfirmed(domain_name, transactions)

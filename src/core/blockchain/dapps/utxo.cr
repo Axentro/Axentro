@@ -1,5 +1,6 @@
 module ::Sushi::Core
   class UTXO < DApp
+    # todo: detach transaction_indices
     @utxo_internal : Array(Hash(String, Int64)) = Array(Hash(String, Int64)).new
     @transaction_indices : Hash(String, Int64) = Hash(String, Int64).new
 
@@ -44,12 +45,13 @@ module ::Sushi::Core
       raise "recipients have to be only one currently" if transaction.recipients.size != 1
 
       sender = transaction.senders[0]
-
-      senders_amount = get_unconfirmed(sender[:address], transactions)
+      senders_amount = get_unconfirmed(sender[:address], prev_transactions)
 
       if prec(senders_amount - sender[:amount]) < 0_i64
-        raise "sender has not enough coins: #{@senders[0][:address]} (#{senders_amount})"
+        raise "sender has not enough coins: #{sender[:address]} (#{senders_amount})"
       end
+
+      true
     end
 
     def record(chain : Models::Chain)

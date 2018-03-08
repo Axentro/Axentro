@@ -6,15 +6,20 @@ module ::Sushi::Core
     getter chain : Models::Chain = Models::Chain.new
     getter transaction_pool = [] of Transaction
     getter wallet : Wallet
+
     # todo: dApps
-    getter utxo : UTXO
-    getter scars : Scars
+    # getter utxo : UTXO
+    # getter scars : Scars
+
+    @dapps : Array(NamedTuple(name: Symbol, app: DApp)) = [] of NamedTuple(name: Symbol, app: DApp)
 
     @coinbase_transaction : Transaction?
 
     def initialize(@wallet : Wallet, @database : Database? = nil)
-      @utxo = UTXO.new
-      @scars = Scars.new
+      # @utxo = UTXO.new
+      # @scars = Scars.new
+      @dapps.push({name: :utxo, app: UTXO.new})
+      @dapps.push({name: :scars, app: Scars.new})
 
       if database = @database
         restore_from_database(database)
@@ -25,14 +30,29 @@ module ::Sushi::Core
       @coinbase_transaction = create_coinbase_transaction([] of Models::Miner)
     end
 
+    def utxo : UTXO
+      raise "utxo undefined" unless _utxo = @dapps.find { |dapp| dapp[:name] == :utxo }
+      _utxo[:app].as(UTXO)
+    end
+
+    def scars : Scars
+      raise "scars undefined" unless _scars = @dapps.find { |dapp| dapp[:name] == :scars }
+      _scars[:app].as(Scars)
+    end
+
     def coinbase_transaction : Transaction
       @coinbase_transaction.not_nil!
     end
 
     def set_genesis
       @chain.push(genesis_block)
-      @utxo.record(@chain)
-      @scars.record(@chain)
+
+      # @utxo.record(@chain)
+      # @scars.record(@chain)
+
+      @dapps.each do |dapp|
+        dapp[:app].record(@chain)
+      end
 
       if database = @database
         database.push_block(genesis_block)
@@ -49,8 +69,13 @@ module ::Sushi::Core
         break unless block.valid_as_latest?(self)
 
         @chain.push(block)
-        @utxo.record(@chain)
-        @scars.record(@chain)
+
+        # @utxo.record(@chain)
+        # @scars.record(@chain)
+
+        @dapps.each do |dapp|
+          dapp[:app].record(@chain)
+        end
 
         current_index += 1
       end
@@ -92,8 +117,12 @@ module ::Sushi::Core
 
       @chain.push(block)
 
-      @utxo.record(@chain)
-      @scars.record(@chain)
+      # @utxo.record(@chain)
+      # @scars.record(@chain)
+
+      @dapps.each do |dapp|
+        dapp[:app].record(@chain)
+      end      
 
       if database = @database
         database.push_block(block)
@@ -118,11 +147,16 @@ module ::Sushi::Core
 
       @chain = @chain[0..first_index].concat(subchain)
 
-      @utxo.clear
-      @utxo.record(@chain)
+      @dapps.each do |dapp|
+        dapp[:app].clear
+        dapp[:app].record(@chain)
+      end
 
-      @scars.clear
-      @scars.record(@chain)
+      # @utxo.clear
+      # @utxo.record(@chain)
+      #  
+      # @scars.clear
+      # @scars.record(@chain)
 
       if database = @database
         database.replace_chain(@chain)
@@ -168,21 +202,33 @@ module ::Sushi::Core
       selected_transactions
     end
 
-    def get_amount_unconfirmed(address : String, transactions : Array(Transaction)) : Int64
-      @utxo.get_unconfirmed(address, transactions)
-    end
-
-    def get_amount(address : String) : Int64
-      @utxo.get(address)
-    end
-
-    def scars_buy?(transactions : Array(Transaction), domain_name : String, address : String, price : Int64) : Bool
-      @scars.buy?(transactions, domain_name, address, price)
-    end
-
-    def scars_sell?(transactions : Array(Transaction), domain_name : String, address : String, price : Int64) : Bool
-      @scars.sell?(transactions, domain_name, address, price)
-    end
+    # def get_amount_unconfirmed(address : String, transactions : Array(Transaction)) : Int64
+    #   @utxo.get_unconfirmed(address, transactions)
+    # end
+    #  
+    # def get_amount(address : String) : Int64
+    #   @utxo.get(address)
+    # end
+    #  
+    # def scars_buy?(transactions : Array(Transaction), domain_name : String, address : String, price : Int64) : Bool
+    #   @scars.buy?(transactions, domain_name, address, price)
+    # end
+    #  
+    # def scars_sell?(transactions : Array(Transaction), domain_name : String, address : String, price : Int64) : Bool
+    #   @scars.sell?(transactions, domain_name, address, price)
+    # end
+    #
+    # def scars_sales : Array(Models::Domain)
+    #   @scars.sales
+    # end
+    #  
+    # def scars_resolve(domain_name : String) : Models::Domain?
+    #   @scars.get(domain_name)
+    # end
+    #  
+    # def scars_resolve_unconfirmed(domain_name : String) : Models::Domain?
+    #   @scars.get_unconfirmed(domain_name, [] of Transaction)
+    # end
 
     def latest_block : Block
       @chain[-1]
@@ -277,8 +323,9 @@ module ::Sushi::Core
       @chain.map { |block| block.to_header }
     end
 
+    # todo: will be deprecated
     def block_index?(transaction_id : String) : Int64?
-      @utxo.index(transaction_id)
+      utxo.index(transaction_id)
     end
 
     def transactions_for_address(address : String) : Array(Transaction)
@@ -289,18 +336,6 @@ module ::Sushi::Core
         transaction.senders.any? { |sender| sender[:address] == address } ||
           transaction.recipients.any? { |recipient| recipient[:address] == address }
       }
-    end
-
-    def scars_sales : Array(Models::Domain)
-      @scars.sales
-    end
-
-    def scars_resolve(domain_name : String) : Models::Domain?
-      @scars.get(domain_name)
-    end
-
-    def scars_resolve_unconfirmed(domain_name : String) : Models::Domain?
-      @scars.get_unconfirmed(domain_name, [] of Transaction)
     end
 
     include Logger
