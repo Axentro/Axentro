@@ -1,4 +1,6 @@
 module ::Sushi::Core::Fees
+  # todo
+  # remove here (integrate into blockchain?)
   FEE_SEND       =   1_i64
   FEE_SCARS_BUY  = 100_i64
   FEE_SCARS_SELL =  10_i64

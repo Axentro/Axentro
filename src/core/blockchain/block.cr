@@ -64,8 +64,9 @@ module ::Sushi::Core
       unless is_genesis
         raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
 
+        # todo: refactoring here
         transactions.each_with_index do |transaction, idx|
-          raise "invalid prev_hash #{transaction.prev_hash} vs #{transactions[idx - 1].to_hash}" if idx != 0 && transaction.prev_hash != transactions[idx - 1].to_hash
+          raise "invalid prev_hash #{transaction.prev_hash} vs #{transactions[idx-1].to_hash}" if idx != 0 && transaction.prev_hash != transactions[idx - 1].to_hash
           raise "the transaction #{transaction.id} is already included in #{blockchain.block_index?(transaction.id)}" if blockchain.block_index?(transaction.id)
           transaction.valid?(blockchain, @index, idx == 0, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
         end

@@ -1,6 +1,7 @@
 module ::Sushi::Core
   # SushiChain Address Resolution System
   # todo:
+  # record rejected transactions
   # domain validation
   # resolve domain for unsigned transaction
   # integrated into e2e
@@ -28,10 +29,8 @@ module ::Sushi::Core
     def valid?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
       case transaction.action
       when "scars_buy"
-        "scars_buyは有効？"
         return valid_buy?(transaction, prev_transactions)
       when "scars_sell"
-        "scars_ sellは有効？"
         return valid_sell?(transaction, prev_transactions)
       end
 
@@ -65,8 +64,6 @@ module ::Sushi::Core
 
       raise "the price #{price} is different of #{sale_price}" unless sale_price == price
 
-      puts "有効！"
-
       true
     end
 
@@ -83,8 +80,6 @@ module ::Sushi::Core
       raise "domain address mismatch: #{address} vs #{domain[:address]}" unless address == domain[:address]
       raise "the price have to be greater than 0" if price < 0
 
-      puts "有効！"
-
       true
     end
 
@@ -100,7 +95,6 @@ module ::Sushi::Core
     end
 
     private def get_for(domain_name : String, domains : Array(DomainMap)) : Models::Domain?
-      puts "get_for: #{domain_name}, domains: #{domains}"
       domains.each do |domains_internal|
         return domains_internal[domain_name] if domains_internal[domain_name]?
       end

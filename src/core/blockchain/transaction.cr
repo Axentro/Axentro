@@ -1,6 +1,7 @@
 module ::Sushi::Core
   class Transaction
     MESSAGE_SIZE_LIMIT = 512
+    # todo: remove here
     ACTIONS            = %(send scars_buy scars_sell)
 
     JSON.mapping(
@@ -40,7 +41,6 @@ module ::Sushi::Core
     end
 
     def valid?(blockchain : Blockchain, block_index : Int64, is_coinbase : Bool, transactions : Array(Transaction)) : Bool
-      puts @action
       raise "length of transaction id have to be 64: #{@id}" if @id.size != 64
       raise "message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
 
@@ -72,8 +72,8 @@ module ::Sushi::Core
           raise "not enough fee, should be  #{calculate_fee} >= #{min_fee_of_action(@action)}"
         end
 
-        return blockchain.utxo.valid?(self, transactions) if blockchain.utxo.related?(@action)
-        return blockchain.scars.valid?(self, transactions) if blockchain.scars.related?(@action)
+        blockchain.utxo.valid?(self, transactions) if blockchain.utxo.related?(@action)
+        blockchain.scars.valid?(self, transactions) if blockchain.scars.related?(@action)
       else
         raise "actions has to be 'head' for coinbase transaction " if @action != "head"
         raise "message has to be '0' for coinbase transaction" if @message != "0"

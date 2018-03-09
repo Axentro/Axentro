@@ -81,7 +81,7 @@ module ::Sushi::Core
       index = @chain.size.to_i64
 
       transactions = [coinbase_transaction] + @transaction_pool
-      transactions = align_transaction(transactions)
+      transactions = align_transactions(transactions)
 
       block = Block.new(
         index,
@@ -141,7 +141,7 @@ module ::Sushi::Core
       @transaction_pool << transaction
     end
 
-    def align_transaction(transactions : Array(Transaction))
+    def align_transactions(transactions : Array(Transaction))
       return [] of Transaction if transactions.size == 0
 
       selected_transactions = [transactions[0]]
