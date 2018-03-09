@@ -11,10 +11,6 @@ module ::Sushi::Interface::Sushi
           desc: "sell your domain",
         },
         {
-          name: "sales",
-          desc: "show list for sales",
-        },
-        {
           name: "resolve",
           desc: "show an address of the domain if it's registered",
         },
@@ -40,8 +36,6 @@ module ::Sushi::Interface::Sushi
         return buy
       when "sell"
         return sell
-      when "sales"
-        return sales
       when "resolve"
         return resolve
       end
@@ -58,6 +52,8 @@ module ::Sushi::Interface::Sushi
 
       raise "invalid fee for the action buy: minimum fee is #{min_fee_of_action("scars_buy")}" if fee < min_fee_of_action("scars_buy")
 
+      resolved = resolve_internal(node, domain, true)
+
       wallet = get_wallet(wallet_path, __wallet_password)
 
       senders = Core::Models::Senders.new
@@ -69,6 +65,18 @@ module ::Sushi::Interface::Sushi
       })
 
       recipients = Core::Models::Recipients.new
+
+      if resolved["resolved"].as_bool
+        resolved_price = resolved["domain"]["price"].as_i64
+        resolved_address = resolved["domain"]["address"].as_s
+
+        raise "invalid price. you specified #{price} but the price is #{resolved_price}" if resolved_price != price
+
+        recipients.push({
+                          address: resolved_address,
+                          amount: resolved_price,
+                        })
+      end
 
       add_transaction(node, wallet, "scars_buy", senders, recipients, domain)
     end
@@ -97,22 +105,8 @@ module ::Sushi::Interface::Sushi
       })
 
       recipients = Core::Models::Recipients.new
-      recipients.push({
-        address: resolved["domain"]["address"].as_s,
-        amount:  price,
-      })
 
       add_transaction(node, wallet, "scars_sell", senders, recipients, domain)
-    end
-
-    def sales
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
-
-      payload = {call: "scars_sales"}.to_json
-
-      body = rpc(node, payload)
-
-      puts_success body
     end
 
     def resolve

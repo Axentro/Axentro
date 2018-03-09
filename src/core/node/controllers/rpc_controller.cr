@@ -22,8 +22,6 @@ module ::Sushi::Core::Controllers
         return transaction(json, context, params)
       when "confirmation"
         return confirmation(json, context, params)
-      when "scars_sales"
-        return scars_sales(json, context, params)
       when "scars_resolve"
         return scars_resolve(json, context, params)
       end
@@ -33,14 +31,6 @@ module ::Sushi::Core::Controllers
 
     def exec_internal_get(context, params) : HTTP::Server::Context
       unpermitted_method(context)
-    end
-
-    def scars_sales(json, context, params)
-      puts "----- scars sales -----"
-      sales = @blockchain.scars.sales
-
-      context.response.print sales.to_json
-      context
     end
 
     def scars_resolve(json, context, params)

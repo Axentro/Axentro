@@ -40,6 +40,10 @@ module ::Sushi::Core
       0_i64
     end
 
+    def related?(action : String) : Bool
+      action == "send"
+    end
+
     def valid?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
       raise "senders have to be only one currently" if transaction.senders.size != 1
       raise "recipients have to be only one currently" if transaction.recipients.size != 1

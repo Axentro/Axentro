@@ -54,7 +54,6 @@ module ::Sushi::Core
 
       if !is_coinbase
         raise "unknown action: #{@action}" unless ACTIONS.includes?(@action)
-        # raise "sender have to be only one currently" if @senders.size != 1
 
         network = Keys::Address.from(@senders.first[:address]).network
         public_key = Keys::PublicKey.new(@senders.first[:public_key], network)
@@ -73,25 +72,8 @@ module ::Sushi::Core
           raise "not enough fee, should be  #{calculate_fee} >= #{min_fee_of_action(@action)}"
         end
 
-        # senders_amount = blockchain.get_amount_unconfirmed(@senders[0][:address], transactions)
-
-        # if prec(senders_amount - @senders[0][:amount]) < 0_i64
-        #   raise "sender has not enough coins: #{@senders[0][:address]} (#{senders_amount})"
-        # end
-
-        # case @action
-        # when "scars_buy"
-        #   "scars_buyは有効？ (amount: #{@senders[0][:amount]}, fee: #{calculate_fee})"
-        #   blockchain.scars_buy?(transactions, message, @senders[0][:address], @senders[0][:amount])
-        # when "scars_sell"
-        #   "scars_ sellは有効？ (amount: #{@senders[0][:amount]}, fee: #{calculate_fee})"
-        #   blockchain.scars_sell?(transactions, message, @senders[0][:address], @senders[0][:amount])
-        # end
-        puts "fa 0"
-        return blockchain.utxo.valid?(self, transactions) if @action == "send"
-        puts "fa 1"
-        return blockchain.scars.valid?(self, transactions) if @action.starts_with?("scars_")
-        puts "fa 2"
+        return blockchain.utxo.valid?(self, transactions) if blockchain.utxo.related?(@action)
+        return blockchain.scars.valid?(self, transactions) if blockchain.scars.related?(@action)
       else
         raise "actions has to be 'head' for coinbase transaction " if @action != "head"
         raise "message has to be '0' for coinbase transaction" if @message != "0"

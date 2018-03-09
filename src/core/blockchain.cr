@@ -7,19 +7,20 @@ module ::Sushi::Core
     getter transaction_pool = [] of Transaction
     getter wallet : Wallet
 
-    # todo: dApps
-    # getter utxo : UTXO
-    # getter scars : Scars
+    DAPPS = %w(UTXO Scars)
 
-    @dapps : Array(NamedTuple(name: Symbol, app: DApp)) = [] of NamedTuple(name: Symbol, app: DApp)
+    @dapps : Array(DApp) = [] of DApp
+
+    {% for dapp in DAPPS %}
+      getter {{ dapp.id.underscore }} : {{ dapp.id }} = {{ dapp.id }}.new
+    {% end %}
 
     @coinbase_transaction : Transaction?
 
     def initialize(@wallet : Wallet, @database : Database? = nil)
-      # @utxo = UTXO.new
-      # @scars = Scars.new
-      @dapps.push({name: :utxo, app: UTXO.new})
-      @dapps.push({name: :scars, app: Scars.new})
+      {% for dapp in DAPPS %}
+        @dapps.push(@{{ dapp.id.underscore }})
+      {% end %}
 
       if database = @database
         restore_from_database(database)
@@ -30,16 +31,6 @@ module ::Sushi::Core
       @coinbase_transaction = create_coinbase_transaction([] of Models::Miner)
     end
 
-    def utxo : UTXO
-      raise "utxo undefined" unless _utxo = @dapps.find { |dapp| dapp[:name] == :utxo }
-      _utxo[:app].as(UTXO)
-    end
-
-    def scars : Scars
-      raise "scars undefined" unless _scars = @dapps.find { |dapp| dapp[:name] == :scars }
-      _scars[:app].as(Scars)
-    end
-
     def coinbase_transaction : Transaction
       @coinbase_transaction.not_nil!
     end
@@ -47,11 +38,8 @@ module ::Sushi::Core
     def set_genesis
       @chain.push(genesis_block)
 
-      # @utxo.record(@chain)
-      # @scars.record(@chain)
-
       @dapps.each do |dapp|
-        dapp[:app].record(@chain)
+        dapp.record(@chain)
       end
 
       if database = @database
@@ -70,11 +58,8 @@ module ::Sushi::Core
 
         @chain.push(block)
 
-        # @utxo.record(@chain)
-        # @scars.record(@chain)
-
         @dapps.each do |dapp|
-          dapp[:app].record(@chain)
+          dapp.record(@chain)
         end
 
         current_index += 1
@@ -87,11 +72,7 @@ module ::Sushi::Core
 
     def update_coinbase_transaction(miners : Models::Miners)
       @coinbase_transaction = create_coinbase_transaction(miners)
-
-      # remove transactions which already be included in blockchain
-      info "@transaction_pool #{@transaction_pool.size} (before update_coinbase_transaction)"
       @transaction_pool.reject! { |transaction| block_index?(transaction.id) }
-      info "@transaction_pool #{@transaction_pool.size} (after update_coinbase_transaction)"
     end
 
     def push_block?(nonce : UInt64, miners : Models::Miners) : Block?
@@ -117,11 +98,8 @@ module ::Sushi::Core
 
       @chain.push(block)
 
-      # @utxo.record(@chain)
-      # @scars.record(@chain)
-
       @dapps.each do |dapp|
-        dapp[:app].record(@chain)
+        dapp.record(@chain)
       end
 
       if database = @database
@@ -148,15 +126,9 @@ module ::Sushi::Core
       @chain = @chain[0..first_index].concat(subchain)
 
       @dapps.each do |dapp|
-        dapp[:app].clear
-        dapp[:app].record(@chain)
+        dapp.clear
+        dapp.record(@chain)
       end
-
-      # @utxo.clear
-      # @utxo.record(@chain)
-      #
-      # @scars.clear
-      # @scars.record(@chain)
 
       if database = @database
         database.replace_chain(@chain)
@@ -170,10 +142,6 @@ module ::Sushi::Core
     end
 
     def align_transaction(transactions : Array(Transaction))
-      info "@transaction_pool #{@transaction_pool.size} (before align_transaction)"
-      info "----------------- align_transaction -----------------"
-      info "transactions: #{transactions.size}"
-
       return [] of Transaction if transactions.size == 0
 
       selected_transactions = [transactions[0]]
@@ -196,39 +164,8 @@ module ::Sushi::Core
         @transaction_pool.delete(transaction)
       end
 
-      info "=> selected_transactions: #{selected_transactions.size}"
-      info "@transaction_pool #{@transaction_pool.size} (after align_transaction)"
-
       selected_transactions
     end
-
-    # def get_amount_unconfirmed(address : String, transactions : Array(Transaction)) : Int64
-    #   @utxo.get_unconfirmed(address, transactions)
-    # end
-    #
-    # def get_amount(address : String) : Int64
-    #   @utxo.get(address)
-    # end
-    #
-    # def scars_buy?(transactions : Array(Transaction), domain_name : String, address : String, price : Int64) : Bool
-    #   @scars.buy?(transactions, domain_name, address, price)
-    # end
-    #
-    # def scars_sell?(transactions : Array(Transaction), domain_name : String, address : String, price : Int64) : Bool
-    #   @scars.sell?(transactions, domain_name, address, price)
-    # end
-    #
-    # def scars_sales : Array(Models::Domain)
-    #   @scars.sales
-    # end
-    #
-    # def scars_resolve(domain_name : String) : Models::Domain?
-    #   @scars.get(domain_name)
-    # end
-    #
-    # def scars_resolve_unconfirmed(domain_name : String) : Models::Domain?
-    #   @scars.get_unconfirmed(domain_name, [] of Transaction)
-    # end
 
     def latest_block : Block
       @chain[-1]
