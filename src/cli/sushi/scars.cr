@@ -73,9 +73,9 @@ module ::Sushi::Interface::Sushi
         raise "invalid price. you specified #{price} but the price is #{resolved_price}" if resolved_price != price
 
         recipients.push({
-                          address: resolved_address,
-                          amount: resolved_price,
-                        })
+          address: resolved_address,
+          amount:  resolved_price,
+        })
       end
 
       add_transaction(node, wallet, "scars_buy", senders, recipients, domain)

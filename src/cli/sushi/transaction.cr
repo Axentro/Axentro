@@ -154,8 +154,8 @@ module ::Sushi::Interface::Sushi
         puts_info("scars_sell : #{Core::Scars.fee("scars_sell")}")
       else
         json = {
-          send: Core::UTXO.fee("send"),
-          scars_buy: Core::Scars.fee("scars_buy"),
+          send:       Core::UTXO.fee("send"),
+          scars_buy:  Core::Scars.fee("scars_buy"),
           scars_sell: Core::Scars.fee("scars_sell"),
         }.to_json
         puts json

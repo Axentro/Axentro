@@ -2,7 +2,7 @@ module ::Sushi::Core
   class Transaction
     MESSAGE_SIZE_LIMIT = 512
     # todo: remove here
-    ACTIONS            = %(send scars_buy scars_sell)
+    ACTIONS = %(send scars_buy scars_sell)
 
     JSON.mapping(
       id: String,

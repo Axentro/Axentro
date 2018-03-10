@@ -36,7 +36,7 @@ module ::Sushi::Core
     def record(chain : Models::Chain)
       return if @indices.size >= chain.size
 
-      chain[@indices.size .. -1].each do |block|
+      chain[@indices.size..-1].each do |block|
         @indices.push(Hash(String, Int64).new)
 
         block.transactions.each do |transaction|

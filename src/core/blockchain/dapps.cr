@@ -14,7 +14,7 @@ module ::Sushi::Core
       raise "senders have to be only one currently" if transaction.senders.size != 1
       sender = transaction.senders[0]
 
-      if sender[:fee]< fee(transaction.action)
+      if sender[:fee] < fee(transaction.action)
         raise "not enough fee, should be #{sender[:fee]} >= #{fee(transaction.action)}"
       end
 
