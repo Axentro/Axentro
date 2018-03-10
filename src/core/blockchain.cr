@@ -147,15 +147,9 @@ module ::Sushi::Core
       selected_transactions = [transactions[0]]
 
       transactions[1..-1].each_with_index do |transaction, idx|
+        transaction.prev_hash = selected_transactions[-1].to_hash
         transaction.valid?(self, latest_index, false, selected_transactions)
 
-        # The transaction is already included in another block
-        if indices.get_unconfirmed(transaction.id)
-          transactions.delete(transaction)
-          next
-        end
-
-        transaction.prev_hash = selected_transactions[-1].to_hash
         selected_transactions << transaction
       rescue e : Exception
         warning "invalid transaction found, will be removed from the pool"
@@ -199,7 +193,7 @@ module ::Sushi::Core
       rewards_total = served_amount(latest_index)
 
       miners_nonces_size = miners.reduce(0) { |sum, m| sum + m[:nonces].size }
-      miners_rewards_total = prec((rewards_total * 3_i64) / 4_i64)
+      miners_rewards_total = (rewards_total * 3_i64) / 4_i64
       miners_recipients = if miners_nonces_size > 0
                             miners.map { |m|
                               amount = (miners_rewards_total * m[:nonces].size) / miners_nonces_size
@@ -211,7 +205,7 @@ module ::Sushi::Core
 
       node_reccipient = {
         address: @wallet.address,
-        amount:  prec(rewards_total - miners_recipients.reduce(0_i64) { |sum, m| sum + m[:amount] }),
+        amount:  rewards_total - miners_recipients.reduce(0_i64) { |sum, m| sum + m[:amount] },
       }
 
       senders = [] of Models::Sender # No senders
@@ -270,9 +264,12 @@ module ::Sushi::Core
       }
     end
 
+    def available_actions : Array(String)
+      @dapps.map { |dapp| dapp.actions }.flatten
+    end
+
     include Logger
     include Hashes
     include Consensus
-    include Common::Num
   end
 end

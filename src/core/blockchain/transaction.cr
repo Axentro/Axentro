@@ -1,8 +1,6 @@
 module ::Sushi::Core
   class Transaction
     MESSAGE_SIZE_LIMIT = 512
-    # todo: remove here
-    ACTIONS = %(send scars_buy scars_sell)
 
     JSON.mapping(
       id: String,
@@ -53,7 +51,15 @@ module ::Sushi::Core
       end
 
       if !is_coinbase
-        raise "unknown action: #{@action}" unless ACTIONS.includes?(@action)
+        raise "unknown action: #{@action}" unless blockchain.available_actions.includes?(@action)
+
+        if @prev_hash != transactions[-1].to_hash
+          raise "invalid prev_hash #{@prev_hash} vs #{transactions[-1].to_hash}"
+        end
+
+        if blockchain.indices.get_unconfirmed(@id)
+          raise "the transaction #{@id} is already included in #{blockchain.indices.get_unconfirmed(@id)}"
+        end
 
         network = Keys::Address.from(@senders.first[:address]).network
         public_key = Keys::PublicKey.new(@senders.first[:public_key], network)
@@ -78,7 +84,7 @@ module ::Sushi::Core
         raise "sign_r of coinbase transaction has to be '0'" if @sign_r != "0"
         raise "sign_s of coinbase transaction has to be '0'" if @sign_s != "0"
 
-        served_sum = @recipients.reduce(0_i64) { |sum, recipient| prec(sum + recipient[:amount]) }
+        served_sum = @recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
         raise "invalid served amount for coinbase transaction: #{served_sum}" if served_sum != blockchain.served_amount(block_index)
       end
 
@@ -112,34 +118,17 @@ module ::Sushi::Core
     end
 
     def sender_total_amount : Int64
-      senders.reduce(0_i64) { |sum, sender| prec(sum + sender[:amount]) }
+      senders.reduce(0_i64) { |sum, sender| sum + sender[:amount] }
     end
 
     def recipient_total_amount : Int64
-      recipients.reduce(0_i64) { |sum, recipient| prec(sum + recipient[:amount]) }
+      recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
     end
 
     def calculate_fee : Int64
-      prec(senders.reduce(0_i64) { |sum, sender| prec(sum + sender[:fee]) })
-    end
-
-    def calculate_utxo : Hash(String, Int64)
-      utxo = Hash(String, Int64).new
-
-      senders.each do |sender|
-        utxo[sender[:address]] ||= 0_i64
-        utxo[sender[:address]] = prec(utxo[sender[:address]] - sender[:amount] - sender[:fee])
-      end
-
-      recipients.each do |recipient|
-        utxo[recipient[:address]] ||= 0_i64
-        utxo[recipient[:address]] = prec(utxo[recipient[:address]] + recipient[:amount])
-      end
-
-      utxo
+      senders.reduce(0_i64) { |sum, sender| sum + sender[:fee] }
     end
 
     include Hashes
-    include Common::Num
   end
 end

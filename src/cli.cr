@@ -193,6 +193,5 @@ module ::Sushi::Interface
 
     include Helps
     include Logger
-    include Common::Num
   end
 end

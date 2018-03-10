@@ -51,8 +51,6 @@ module ::Sushi::Core::Controllers
 
     abstract def exec_internal_get(context, params) : HTTP::Server::Context
     abstract def exec_internal_post(json, context, params) : HTTP::Server::Context
-
-    include Common::Num
   end
 end
 

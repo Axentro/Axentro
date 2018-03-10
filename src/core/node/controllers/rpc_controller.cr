@@ -194,7 +194,5 @@ module ::Sushi::Core::Controllers
       context.response.print "unpermitted call: #{call}"
       context
     end
-
-    include Common::Num
   end
 end
