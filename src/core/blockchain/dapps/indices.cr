@@ -24,7 +24,6 @@ module ::Sushi::Core
       [] of String
     end
 
-    # override
     def related?(action : String) : Bool
       true
     end

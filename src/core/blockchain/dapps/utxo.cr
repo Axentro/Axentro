@@ -43,13 +43,17 @@ module ::Sushi::Core
       ["send"]
     end
 
+    def related?(action : String) : Bool
+      true
+    end
+
     def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-      raise "recipients have to be only one currently" if transaction.recipients.size != 1
+      raise "recipients have to be less than one" if transaction.recipients.size > 1
 
       sender = transaction.senders[0]
       senders_amount = get_unconfirmed(sender[:address], prev_transactions)
 
-      if senders_amount - sender[:amount] < 0_i64
+      if senders_amount - sender[:amount] - sender[:fee] < 0_i64
         raise "sender has not enough coins: #{sender[:address]} (#{senders_amount})"
       end
 

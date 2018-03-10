@@ -1,6 +1,10 @@
 module ::Sushi::Core
   # SushiChain Address Resolution System
   # todo:
+  #
+  # price分だけsenderがお金を持っていないとこのようになる
+  # sender has not enough coins: VDA4N2VjZDQ2ODQ5NDVkMDk3YTkxOGEyNGE0MGE0YTZkMjNkYjBmNDdhOGMzOTVl (2000)
+  #
   # record rejected transactions
   # domain validation
   # resolve domain for unsigned transaction
@@ -24,6 +28,10 @@ module ::Sushi::Core
 
     def actions : Array(String)
       ["scars_buy", "scars_sell"]
+    end
+
+    def related?(action : String) : Bool
+      action.starts_with?("scars_")
     end
 
     def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
