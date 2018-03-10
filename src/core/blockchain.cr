@@ -7,7 +7,7 @@ module ::Sushi::Core
     getter transaction_pool = [] of Transaction
     getter wallet : Wallet
 
-    DAPPS = %w(UTXO Scars)
+    DAPPS = %w(UTXO Scars Indices)
 
     @dapps : Array(DApp) = [] of DApp
 
@@ -72,7 +72,7 @@ module ::Sushi::Core
 
     def update_coinbase_transaction(miners : Models::Miners)
       @coinbase_transaction = create_coinbase_transaction(miners)
-      @transaction_pool.reject! { |transaction| block_index?(transaction.id) }
+      @transaction_pool.reject! { |transaction| indices.get_unconfirmed(transaction.id) }
     end
 
     def push_block?(nonce : UInt64, miners : Models::Miners) : Block?
@@ -150,7 +150,7 @@ module ::Sushi::Core
         transaction.valid?(self, latest_index, false, selected_transactions)
 
         # The transaction is already included in another block
-        if block_index?(transaction.id)
+        if indices.get_unconfirmed(transaction.id)
           transactions.delete(transaction)
           next
         end
@@ -258,11 +258,6 @@ module ::Sushi::Core
 
     def headers
       @chain.map { |block| block.to_header }
-    end
-
-    # todo: will be deprecated
-    def block_index?(transaction_id : String) : Int64?
-      utxo.index(transaction_id)
     end
 
     def transactions_for_address(address : String) : Array(Transaction)

@@ -22,11 +22,11 @@ module ::Sushi::Core
       get_for(domain_name, tmp_domains_internal.reverse)
     end
 
-    def related?(action : String) : Bool
-      return action.starts_with?("scars_")
+    def actions : Array(String)
+      ["scars_buy", "scars_sell"]
     end
 
-    def valid?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
+    def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
       case transaction.action
       when "scars_buy"
         return valid_buy?(transaction, prev_transactions)
@@ -38,8 +38,6 @@ module ::Sushi::Core
     end
 
     def valid_buy?(transaction : Transaction, transactions : Array(Transaction)) : Bool
-      raise "senders have to be only one currently" if transaction.senders.size != 1
-
       sender = transaction.senders[0]
       recipients = transaction.recipients
       domain_name = transaction.message
@@ -68,7 +66,6 @@ module ::Sushi::Core
     end
 
     def valid_sell?(transaction : Transaction, transactions : Array(Transaction)) : Bool
-      raise "senders have to be only one currently" if transaction.senders.size != 1
       raise "you cannot any set recipients" if transaction.recipients.size != 0
 
       sender = transaction.senders[0]
@@ -133,8 +130,17 @@ module ::Sushi::Core
       domain_map
     end
 
+    def fee(action : String) : Int64
+      case action
+      when "scars_buy"
+        return 100_i64
+      when "scars_sell"
+        return 10_i64
+      end
 
-    include Fees
+      0_i64 # not coming here
+    end
+
     include Consensus
   end
 end

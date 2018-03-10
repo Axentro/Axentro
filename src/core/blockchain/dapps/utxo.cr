@@ -1,8 +1,6 @@
 module ::Sushi::Core
   class UTXO < DApp
-    # todo: detach transaction_indices
     @utxo_internal : Array(Hash(String, Int64)) = Array(Hash(String, Int64)).new
-    @transaction_indices : Hash(String, Int64) = Hash(String, Int64).new
 
     def get(address : String) : Int64
       return 0_i64 if @utxo_internal.size < CONFIRMATION
@@ -40,12 +38,11 @@ module ::Sushi::Core
       0_i64
     end
 
-    def related?(action : String) : Bool
-      action == "send"
+    def actions : Array(String)
+      ["send"]
     end
 
-    def valid?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-      raise "senders have to be only one currently" if transaction.senders.size != 1
+    def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
       raise "recipients have to be only one currently" if transaction.recipients.size != 1
 
       sender = transaction.senders[0]
@@ -64,23 +61,20 @@ module ::Sushi::Core
       chain[@utxo_internal.size..-1].each do |block|
         @utxo_internal.push(Hash(String, Int64).new)
 
-        block_utxo = block.calculate_utxo
+        block_utxo = block.calculate_utxo # todo: integrated into utxo
         block_utxo[:utxo].each do |address, amount|
           @utxo_internal[-1][address] ||= get_unconfirmed_recorded(address)
           @utxo_internal[-1][address] = prec(@utxo_internal[-1][address] + amount)
         end
-
-        @transaction_indices = @transaction_indices.merge(block_utxo[:indices])
       end
-    end
-
-    def index(transaction_id : String) : Int64?
-      @transaction_indices[transaction_id]?
     end
 
     def clear
       @utxo_internal.clear
-      @transaction_indices.clear
+    end
+
+    def fee(action : String) : Int64
+      1_i64
     end
 
     include Logger

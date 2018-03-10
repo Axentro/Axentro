@@ -50,7 +50,7 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_PRICE) unless price = __price
       puts_help(HELP_DOMAIN) unless domain = __domain
 
-      raise "invalid fee for the action buy: minimum fee is #{min_fee_of_action("scars_buy")}" if fee < min_fee_of_action("scars_buy")
+      raise "invalid fee for the action buy: minimum fee is #{Core::Scars.fee("scars_buy")}" if fee < Core::Scars.fee("scars_buy")
 
       resolved = resolve_internal(node, domain, true)
 
@@ -88,7 +88,7 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_PRICE) unless price = __price
       puts_help(HELP_DOMAIN) unless domain = __domain
 
-      raise "invalid fee for the action sell: minimum fee is #{min_fee_of_action("scars_sell")}" if fee < min_fee_of_action("scars_sell")
+      raise "invalid fee for the action sell: minimum fee is #{Core::Scars.fee("scars_sell")}" if fee < Core::Scars.fee("scars_sell")
 
       resolved = resolve_internal(node, domain, true)
 
@@ -144,7 +144,6 @@ module ::Sushi::Interface::Sushi
       JSON.parse(body)
     end
 
-    include Core::Fees
     include GlobalOptionParser
   end
 end

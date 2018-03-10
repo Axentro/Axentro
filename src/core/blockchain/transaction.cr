@@ -67,13 +67,9 @@ module ::Sushi::Core
                                      BigInt.new(@sign_s, base: 16),
                                    )
 
-        # todo: integrated into dapps
-        if calculate_fee < min_fee_of_action(@action)
-          raise "not enough fee, should be  #{calculate_fee} >= #{min_fee_of_action(@action)}"
-        end
-
         blockchain.utxo.valid?(self, transactions) if blockchain.utxo.related?(@action)
         blockchain.scars.valid?(self, transactions) if blockchain.scars.related?(@action)
+        blockchain.indices.valid?(self, transactions) if blockchain.indices.related?(@action)
       else
         raise "actions has to be 'head' for coinbase transaction " if @action != "head"
         raise "message has to be '0' for coinbase transaction" if @message != "0"
@@ -143,7 +139,6 @@ module ::Sushi::Core
       utxo
     end
 
-    include Fees
     include Hashes
     include Common::Num
   end

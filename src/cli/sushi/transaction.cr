@@ -64,7 +64,7 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_AMOUNT) unless amount = __amount
       puts_help(HELP_FEE) unless fee = __fee
 
-      raise "invalid fee for the action send: minimum fee is #{min_fee_of_action("send")}" if fee < min_fee_of_action("send")
+      raise "invalid fee for the action send: minimum fee is #{Core::UTXO.fee("send")}" if fee < Core::UTXO.fee("send")
 
       to_address = Address.from(recipient_address, "recipient")
 
@@ -149,14 +149,19 @@ module ::Sushi::Interface::Sushi
     def fees
       unless __json
         puts_success("showing fees for each action.")
-        puts_info("send     : #{FEE_SEND}")
+        puts_info("send       : #{Core::UTXO.fee("send")}")
+        puts_info("scars_buy  : #{Core::Scars.fee("scars_buy")}")
+        puts_info("scars_sell : #{Core::Scars.fee("scars_sell")}")
       else
-        json = {send: FEE_SEND}.to_json
+        json = {
+          send: Core::UTXO.fee("send"),
+          scars_buy: Core::Scars.fee("scars_buy"),
+          scars_sell: Core::Scars.fee("scars_sell"),
+        }.to_json
         puts json
       end
     end
 
-    include Core::Fees
     include GlobalOptionParser
   end
 end
