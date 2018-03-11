@@ -38,26 +38,31 @@ describe RPCController do
         end
       end
 
-      it "should raise an error: invalid fee if fee is too small for action" do
-        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
-          senders = [a_sender(sender_wallet, 0_i64)]
-          recipients = [a_recipient(recipient_wallet, 10_i64)]
+      # TODO - Kings - if no invalid fee error is raised when creating an unsigned transaction - at what
+      # point will this check occur? If a user sends a transaction with a fee which is lower than than the specified fee for
+      # the transaction - how will they get to know that their transaction was reject for this reason? Having this check here was handy to avoid
+      # simple mistakes with the fee right at the point of sending the transaction.
 
-          payload = {
-            call:       "create_unsigned_transaction",
-            action:     "send",
-            senders:    senders.to_json,
-            recipients: recipients.to_json,
-            message:    "",
-          }.to_json
-
-          json = JSON.parse(payload)
-
-          expect_raises(Exception, "invalid fee -10 for the action send") do
-            rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
-          end
-        end
-      end
+      # it "should raise an error: invalid fee if fee is too small for action" do
+      #   with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+      #     senders = [a_sender(sender_wallet, 0_i64)]
+      #     recipients = [a_recipient(recipient_wallet, 10_i64)]
+      #
+      #     payload = {
+      #       call:       "create_unsigned_transaction",
+      #       action:     "send",
+      #       senders:    senders.to_json,
+      #       recipients: recipients.to_json,
+      #       message:    "",
+      #     }.to_json
+      #
+      #     json = JSON.parse(payload)
+      #
+      #     expect_raises(Exception, "invalid fee -10 for the action send") do
+      #       rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+      #     end
+      #   end
+      # end
     end
 
     describe "#create_transaction" do

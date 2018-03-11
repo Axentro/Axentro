@@ -2,6 +2,7 @@ require "./../../spec_helper"
 require "./../utils"
 
 include Sushi::Core
+include Sushi::Core::Models
 include Units::Utils
 
 describe UTXO do
@@ -119,36 +120,13 @@ describe UTXO do
     end
   end
 
-  describe "#index" do
-    it "should return a block index for supplied transaction id" do
-      chain = [genesis_block, block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
-      utxo = UTXO.new
-      utxo.record(chain)
-
-      transaction_id = block_1.transactions.first.id
-      utxo.index(transaction_id).should eq(1_i64)
-    end
-
-    it "should return nil when supplied transaction id is not found" do
-      chain = [genesis_block, block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
-      utxo = UTXO.new
-      utxo.record(chain)
-
-      utxo.index("transaction-id-does-not-exist").should be_nil
-    end
-  end
-
   it "should clear the internal transaction lists with #clear" do
     chain = [genesis_block, block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
     utxo = UTXO.new
     utxo.record(chain)
 
-    utxo.@transaction_indices.size.should eq(10)
     utxo.@utxo_internal.size.should eq(11)
-
     utxo.clear
-
-    utxo.@transaction_indices.size.should eq(0)
     utxo.@utxo_internal.size.should eq(0)
   end
 
