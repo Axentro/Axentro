@@ -106,9 +106,9 @@ module ::Sushi::Interface::Sushi
 
       recipients = Core::Models::Recipients.new
       recipients.push({
-                        address: wallet.address,
-                        amount: price,
-                      })
+        address: wallet.address,
+        amount:  price,
+      })
 
       add_transaction(node, wallet, "scars_sell", senders, recipients, domain)
     end
