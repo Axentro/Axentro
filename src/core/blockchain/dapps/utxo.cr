@@ -53,8 +53,16 @@ module ::Sushi::Core
       sender = transaction.senders[0]
       senders_amount = get_unconfirmed(sender[:address], prev_transactions)
 
-      if senders_amount - sender[:amount] - sender[:fee] < 0_i64
-        raise "sender has not enough coins: #{sender[:address]} (#{senders_amount})"
+      sender_as_recipient = transaction.recipients.select { |recipient| recipient[:address] == sender[:address] }
+
+      recipient_amount = if sender_as_recipient.size > 0
+                           sender_as_recipient.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
+                         else
+                           0_i64
+                         end
+
+      if senders_amount + recipient_amount - sender[:amount] - sender[:fee] < 0_i64
+        raise "sender has not enough tokens: #{sender[:address]} (#{senders_amount})"
       end
 
       true

@@ -20,7 +20,7 @@ module ::Sushi::Interface::Sushi
         },
         {
           name: "amount",
-          desc: "show remaining amount of Sushi coins for specified address",
+          desc: "show remaining amount of Sushi tokens for specified address",
         },
       ]
     end
@@ -150,7 +150,7 @@ module ::Sushi::Interface::Sushi
 
       unless __json
         json = JSON.parse(body)
-        puts_success("show Sushi coins amount of #{address}")
+        puts_success("show Sushi tokens amount of #{address}")
         puts_info(json["amount"].to_s)
       else
         puts body

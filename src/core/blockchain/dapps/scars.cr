@@ -1,10 +1,6 @@
 module ::Sushi::Core
   # SushiChain Address Resolution System
   # todo:
-  #
-  # price分だけsenderがお金を持っていないとこのようになる
-  # sender has not enough coins: VDA4N2VjZDQ2ODQ5NDVkMDk3YTkxOGEyNGE0MGE0YTZkMjNkYjBmNDdhOGMzOTVl (2000)
-  #
   # record rejected transactions
   # domain validation
   # resolve domain for unsigned transaction
@@ -74,13 +70,17 @@ module ::Sushi::Core
     end
 
     def valid_sell?(transaction : Transaction, transactions : Array(Transaction)) : Bool
-      raise "you cannot any set recipients" if transaction.recipients.size != 0
+      raise "you have to set one recipient" if transaction.recipients.size != 1
 
       sender = transaction.senders[0]
       domain_name = transaction.message
       address = sender[:address]
       price = sender[:amount]
 
+      recipient = transaction.recipients[0]
+
+      raise "address mistach for scars_sell: #{address} vs #{recipient[:address]}" if address != recipient[:address]
+      raise "price mistach for scars_sell: #{price} vs #{recipient[:amount]}" if price != recipient[:amount]
       raise "domain #{domain_name} not found" unless domain = get_unconfirmed(domain_name, transactions)
       raise "domain address mismatch: #{address} vs #{domain[:address]}" unless address == domain[:address]
       raise "the price have to be greater than 0" if price < 0

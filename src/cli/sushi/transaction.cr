@@ -4,7 +4,7 @@ module ::Sushi::Interface::Sushi
       [
         {
           name: "send",
-          desc: "send Sushi coins to a specified address",
+          desc: "send Sushi tokens to a specified address",
         },
         {
           name: "transactions",
