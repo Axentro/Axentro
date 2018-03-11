@@ -121,7 +121,7 @@ module ::Sushi::Core::Controllers
 
                 @blockchain.chain[index.as_i]
               elsif transaction_id = json["transaction_id"]?
-                unless block_index = @blockchain.indices.get_unconfirmed(transaction_id.to_s)
+                unless block_index = @blockchain.indices.get(transaction_id.to_s)
                   raise "failed to find a block for the transaction #{transaction_id}"
                 end
 
@@ -158,7 +158,7 @@ module ::Sushi::Core::Controllers
     def transaction(json, context, params)
       transaction_id = json["transaction_id"].as_s
 
-      unless block_index = @blockchain.indices.get_unconfirmed(transaction_id)
+      unless block_index = @blockchain.indices.get(transaction_id)
         raise "failed to find a block for the transaction #{transaction_id}"
       end
 
@@ -173,7 +173,7 @@ module ::Sushi::Core::Controllers
     def confirmation(json, context, params)
       transaction_id = json["transaction_id"].as_s
 
-      unless block_index = @blockchain.indices.get_unconfirmed(transaction_id)
+      unless block_index = @blockchain.indices.get(transaction_id)
         raise "failed to find a block for the transaction #{transaction_id}"
       end
 

@@ -1,18 +1,9 @@
 module ::Sushi::Core
   class Indices < DApp
     @indices : Array(Hash(String, Int64)) = Array(Hash(String, Int64)).new
+    @rejects : Hash(String, String) = Hash(String, String).new
 
     def get(transaction_id : String) : Int64?
-      return nil if @indices.size < CONFIRMATION
-
-      @indices.reverse[(CONFIRMATION - 1)..-1].each do |indices|
-        return indices[transaction_id] if indices[transaction_id]?
-      end
-
-      nil
-    end
-
-    def get_unconfirmed(transaction_id : String) : Int64?
       @indices.reverse.each do |indices|
         return indices[transaction_id] if indices[transaction_id]?
       end
@@ -30,6 +21,11 @@ module ::Sushi::Core
 
     def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
       true
+    end
+
+    def store_reject(transaction_id : String, e : Exception)
+      error_message = e.message ? e.message.not_nil! : "unknown"
+      @rejects[transaction_id] ||= error_message
     end
 
     def record(chain : Models::Chain)

@@ -2,9 +2,11 @@ module ::Sushi::Core
   # SushiChain Address Resolution System
   # todo:
   # record rejected transactions
-  # domain validation
-  # resolve domain for unsigned transaction
   # integrated into e2e
+
+  # valid suffixes
+  SUFFIX = %w(sc)
+
   class Scars < DApp
     @domains_internal : Array(DomainMap) = Array(DomainMap).new
 
@@ -48,8 +50,10 @@ module ::Sushi::Core
       address = sender[:address]
       price = sender[:amount]
 
+      valid_domain?(domain_name)
+
       sale_price = if domain = get_unconfirmed(domain_name, transactions)
-                     raise "domain #{domain_name} is not for sale now" unless domain[:status] == Models::DomainStatusForSale
+                     raise "domain #{domain_name} is not for sale now" unless domain[:status] == Models::DomainStatus::ForSale
                      raise "you have to the set a domain owener as a recipient" if recipients.size == 0
                      raise "you cannot set multiple recipients" if recipients.size > 1
 
@@ -84,6 +88,18 @@ module ::Sushi::Core
       raise "domain #{domain_name} not found" unless domain = get_unconfirmed(domain_name, transactions)
       raise "domain address mismatch: #{address} vs #{domain[:address]}" unless address == domain[:address]
       raise "the price have to be greater than 0" if price < 0
+
+      true
+    end
+
+    def valid_domain?(domain_name : String) : Bool
+      raise "domain have to be shorter than 20 characters" if domain_name.size > 20
+      raise "domain have to contains at least one dot" unless domain_name.includes?(".")
+
+      domain_parts = domain_name.split(".")
+
+      raise "domain cannot contain an empty part between dots" if domain_parts.includes?("")
+      raise "domain have to be ended with #{SUFFIX} (#{domain_parts[-1]})" unless SUFFIX.includes?(domain_parts[-1])
 
       true
     end
@@ -123,14 +139,14 @@ module ::Sushi::Core
             domain_name: domain_name,
             address:     address,
             price:       price,
-            status:      Models::DomainStatusResolved,
+            status:      Models::DomainStatus::Acquired,
           }
         when "scars_sell"
           domain_map[domain_name] = {
             domain_name: domain_name,
             address:     address,
             price:       price,
-            status:      Models::DomainStatusForSale,
+            status:      Models::DomainStatus::ForSale,
           }
         end
       end

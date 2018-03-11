@@ -9,7 +9,7 @@ module ::Sushi::Core
 
     DAPPS = %w(UTXO Scars Indices)
 
-    @dapps : Array(DApp) = [] of DApp
+    getter dapps : Array(DApp) = [] of DApp
 
     {% for dapp in DAPPS %}
       getter {{ dapp.id.underscore }} : {{ dapp.id }} = {{ dapp.id }}.new
@@ -72,7 +72,7 @@ module ::Sushi::Core
 
     def update_coinbase_transaction(miners : Models::Miners)
       @coinbase_transaction = create_coinbase_transaction(miners)
-      @transaction_pool.reject! { |transaction| indices.get_unconfirmed(transaction.id) }
+      @transaction_pool.reject! { |transaction| indices.get(transaction.id) }
     end
 
     def push_block?(nonce : UInt64, miners : Models::Miners) : Block?
@@ -154,6 +154,9 @@ module ::Sushi::Core
       rescue e : Exception
         warning "invalid transaction found, will be removed from the pool"
         warning e.message.not_nil! if e.message
+
+        # todo: show error message for cli/sushi/tx
+        indices.store_reject(transaction.id, e)
 
         @transaction_pool.delete(transaction)
       end

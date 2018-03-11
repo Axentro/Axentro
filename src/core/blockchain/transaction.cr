@@ -57,8 +57,8 @@ module ::Sushi::Core
           raise "invalid prev_hash #{@prev_hash} vs #{transactions[-1].to_hash}"
         end
 
-        if blockchain.indices.get_unconfirmed(@id)
-          raise "the transaction #{@id} is already included in #{blockchain.indices.get_unconfirmed(@id)}"
+        if blockchain.indices.get(@id)
+          raise "the transaction #{@id} is already included in #{blockchain.indices.get(@id)}"
         end
 
         network = Keys::Address.from(@senders.first[:address]).network
@@ -73,9 +73,9 @@ module ::Sushi::Core
                                      BigInt.new(@sign_s, base: 16),
                                    )
 
-        blockchain.utxo.valid?(self, transactions) if blockchain.utxo.related?(@action)
-        blockchain.scars.valid?(self, transactions) if blockchain.scars.related?(@action)
-        blockchain.indices.valid?(self, transactions) if blockchain.indices.related?(@action)
+        blockchain.dapps.each do |dapp|
+          dapp.valid?(self, transactions) if dapp.related?(@action)
+        end
       else
         raise "actions has to be 'head' for coinbase transaction " if @action != "head"
         raise "message has to be '0' for coinbase transaction" if @message != "0"
