@@ -187,6 +187,14 @@ module ::Sushi::Interface
       )
     end
 
+    def resolve_internal(node, domain, confirmed : Bool = true) : JSON::Any
+      payload = {call: "scars_resolve", domain_name: domain, confirmed: confirmed}.to_json
+
+      body = rpc(node, payload)
+
+      JSON.parse(body)
+    end
+
     abstract def sub_actions : Array(SushiAction)
     abstract def option_parser : OptionParser?
     abstract def run_impl(action_name : String?) : OptionParser?

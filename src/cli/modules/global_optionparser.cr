@@ -35,36 +35,36 @@ module ::Sushi::Interface
 
     module Options
       # common options
-      CONNECT_NODE    = 0x00000001
-      WALLET_PATH     = 0x00000002
-      WALLET_PASSWORD = 0x00000003
+      CONNECT_NODE    = 0
+      WALLET_PATH     = 1
+      WALLET_PASSWORD = 2
       # flags
-      IS_TESTNET  = 0x00000100
-      IS_PRIVATE  = 0x00000200
-      JSON        = 0x00000300
-      UNCONFIRMED = 0x00000400
+      IS_TESTNET  = 3
+      IS_PRIVATE  = 4
+      JSON        = 5
+      UNCONFIRMED = 6
       # for node setting up
-      BIND_HOST     = 0x00000010
-      BIND_PORT     = 0x00000020
-      PUBLIC_URL    = 0x00000030
-      DATABASE_PATH = 0x00000040
-      CONN_MIN      = 0x00000050
+      BIND_HOST     = 7
+      BIND_PORT     = 8
+      PUBLIC_URL    = 9
+      DATABASE_PATH = 10
+      CONN_MIN      = 11
       # for transaction
-      ADDRESS        = 0x00001000
-      AMOUNT         = 0x00002000
-      MESSAGE        = 0x00003000
-      BLOCK_INDEX    = 0x00004000
-      TRANSACTION_ID = 0x00005000
-      FEE            = 0x00006000
+      ADDRESS        = 12
+      AMOUNT         = 13
+      MESSAGE        = 14
+      BLOCK_INDEX    = 15
+      TRANSACTION_ID = 16
+      FEE            = 17
       # for blockchain
-      HEADER = 0x00010000
+      HEADER = 18
       # for miners
-      THREADS = 0x00100000
+      THREADS = 19
       # for wallet
-      ENCRYPTED = 0x01000000
+      ENCRYPTED = 20
       # for scars
-      PRICE  = 0x10000000
-      DOMAIN = 0x20000000
+      PRICE  = 21
+      DOMAIN = 22
     end
 
     def create_option_parser(actives : Array(Int32)) : OptionParser

@@ -52,7 +52,7 @@ module ::Sushi::Interface::Sushi
 
       raise "invalid fee for the action buy: minimum fee is #{Core::Scars.fee("scars_buy")}" if fee < Core::Scars.fee("scars_buy")
 
-      resolved = resolve_internal(node, domain, true)
+      resolved = resolve_internal(node, domain, false)
 
       wallet = get_wallet(wallet_path, __wallet_password)
 
@@ -90,7 +90,7 @@ module ::Sushi::Interface::Sushi
 
       raise "invalid fee for the action sell: minimum fee is #{Core::Scars.fee("scars_sell")}" if fee < Core::Scars.fee("scars_sell")
 
-      resolved = resolve_internal(node, domain, true)
+      resolved = resolve_internal(node, domain, false)
 
       puts_help(HELP_DOMAIN_NOT_RESOLVED % domain) unless resolved["resolved"].as_bool
 
@@ -117,7 +117,7 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
       puts_help(HELP_DOMAIN) unless domain = __domain
 
-      resolved = resolve_internal(node, domain, __unconfirmed)
+      resolved = resolve_internal(node, domain, !__unconfirmed)
 
       unless __json
         puts_success "show information of domain #{domain}"
@@ -138,14 +138,6 @@ module ::Sushi::Interface::Sushi
       else
         puts_info resolved.to_json
       end
-    end
-
-    def resolve_internal(node, domain, unconfirmed : Bool) : JSON::Any
-      payload = {call: "scars_resolve", domain_name: domain, unconfirmed: unconfirmed}.to_json
-
-      body = rpc(node, payload)
-
-      JSON.parse(body)
     end
 
     include GlobalOptionParser

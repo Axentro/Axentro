@@ -37,6 +37,7 @@ module ::Sushi::Interface::Sushi
         Options::BLOCK_INDEX,
         Options::TRANSACTION_ID,
         Options::FEE,
+        Options::DOMAIN,
       ])
     end
 
@@ -60,11 +61,19 @@ module ::Sushi::Interface::Sushi
     def send
       puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
       puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
-      puts_help(HELP_ADDRESS_RECIPIENT) unless recipient_address = __address
       puts_help(HELP_AMOUNT) unless amount = __amount
       puts_help(HELP_FEE) unless fee = __fee
+      puts_help(HELP_ADDRESS_DOMAIN_RECIPIENT) if __address.nil? && __domain.nil?
 
       raise "invalid fee for the action send: minimum fee is #{Core::UTXO.fee("send")}" if fee < Core::UTXO.fee("send")
+
+      recipient_address = if address = __address
+                            address
+                          else
+                            resolved = resolve_internal(node, __domain.not_nil!)
+                            raise "domain #{__domain.not_nil!} is not resolved" unless resolved["resolved"].as_bool
+                            resolved["domain"]["address"].as_s
+                          end
 
       to_address = Address.from(recipient_address, "recipient")
 
