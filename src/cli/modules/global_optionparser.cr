@@ -44,9 +44,9 @@ module ::Sushi::Interface
       JSON        = 5
       UNCONFIRMED = 6
       # for node setting up
-      BIND_HOST     = 7
-      BIND_PORT     = 8
-      PUBLIC_URL    = 9
+      BIND_HOST     =  7
+      BIND_PORT     =  8
+      PUBLIC_URL    =  9
       DATABASE_PATH = 10
       CONN_MIN      = 11
       # for transaction
