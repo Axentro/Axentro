@@ -22,7 +22,7 @@ All documents are written on [wiki](https://github.com/SushiCoinHQ/SushiCoin/wik
 
 ## Community
 
-We are discussing many things everyday in [Slack](https://goo.gl/64aVeY).
+We are discussing many things everyday in [Slack](https://goo.gl/MnBKcy).
 
 🍣 We are welcome your joining! 🍣
 
