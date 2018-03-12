@@ -52,8 +52,6 @@ module ::Sushi::Core
 
       if !is_coinbase
         raise "unknown action: #{@action}" unless blockchain.available_actions.includes?(@action)
-
-        # This senders != 1 check should remain here I think - other wise lines 68/69 will fail looking up the network and public_key
         raise "sender have to be only one currently" if @senders.size != 1
 
         # TODO - Kings - when this is in place it causes invalid signing further down - not sure why?

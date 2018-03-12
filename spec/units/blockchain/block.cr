@@ -4,7 +4,6 @@ require "./../utils"
 include Sushi::Core
 include Hashes
 include Units::Utils
-# include Sushi::Common::Num
 include Sushi::Core::Models
 
 describe Block do

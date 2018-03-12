@@ -29,11 +29,11 @@ describe Consensus do
 
   describe "difficulty" do
     it "should return the #difficulty_at for the blockchain" do
-      difficulty_at(0_i64).should eq(3)
+      difficulty_at(0_i64).should eq(4)
     end
 
     it "should return the #miner_difficulty_at for the miners" do
-      miner_difficulty_at(0_i64).should eq(2)
+      miner_difficulty_at(0_i64).should eq(3)
     end
   end
 
