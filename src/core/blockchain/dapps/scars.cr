@@ -116,6 +116,7 @@ module ::Sushi::Core
     end
 
     private def get_for(domain_name : String, domains : Array(DomainMap)) : Models::Domain?
+      p domains
       domains.each do |domains_internal|
         return domains_internal[domain_name] if domains_internal[domain_name]?
       end

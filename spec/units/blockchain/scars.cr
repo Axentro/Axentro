@@ -1,3 +1,38 @@
+require "./../../spec_helper.cr"
+require "./../utils"
+
+include Sushi::Core::Models
+include Sushi::Core
+include Units::Utils
+
+describe Scars do
+
+  describe "#get" do
+    it "should return nil if the number internal domains is less than confirmations" do
+      chain = [genesis_block, block_1]
+      scars = Scars.new
+      scars.record(chain)
+      scars.get("domain1.sc").should be_nil
+    end
+
+    it "should return nil if the domain is not found" do
+      chain = [genesis_block, block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
+      scars = Scars.new
+      scars.record(chain)
+      scars.get("domain1.sc").should be_nil
+    end
+
+    it "should return domain info if the domain is found" do
+      chain = [genesis_block, block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
+      scars = Scars.new
+      scars.record(chain)
+      p scars.get("domain1.sc")
+    end
+  end
+
+end
+
+
 # require "./../../spec_helper.cr"
 #
 # include Sushi::Core::Models
