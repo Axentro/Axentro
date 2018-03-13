@@ -7,6 +7,21 @@ include Units::Utils
 
 describe Scars do
 
+  it "woop" do
+    factory = BlockFactory.new
+    factory.addBlocks(3)
+    factory.addBlock([
+      factory.transaction_factory.make_send(10_i64),
+      factory.transaction_factory.make_scars_buy_platform("domain.sc", 1000_i64)
+      ])
+    # factory.addBlocks(10)
+
+
+ p factory.chain
+
+
+  end
+
   describe "#get" do
     it "should return nil if the number internal domains is less than confirmations" do
       chain = [genesis_block, block_1]
