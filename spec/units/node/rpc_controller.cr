@@ -18,8 +18,8 @@ describe RPCController do
           payload = {
             call:       "create_unsigned_transaction",
             action:     "send",
-            senders:    senders.to_json,
-            recipients: recipients.to_json,
+            senders:    senders,
+            recipients: recipients,
             message:    "",
           }.to_json
 
@@ -34,6 +34,27 @@ describe RPCController do
             transaction.sign_s.should eq("0")
             transaction.senders.should eq(senders)
             transaction.recipients.should eq(recipients)
+          end
+        end
+      end
+
+      it "should raise an error: invalid fee if fee is too small for action" do
+        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          senders = [a_sender(sender_wallet, 0_i64)]
+          recipients = [a_recipient(recipient_wallet, 10_i64)]
+
+          payload = {
+            call:       "create_unsigned_transaction",
+            action:     "send",
+            senders:    senders.to_json,
+            recipients: recipients.to_json,
+            message:    "",
+          }.to_json
+
+          json = JSON.parse(payload)
+
+          expect_raises(Exception, "invalid fee -10 for the action send") do
+            rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
           end
         end
       end
@@ -61,7 +82,7 @@ describe RPCController do
 
           payload = {
             call:        "create_transaction",
-            transaction: signed_transaction.to_json,
+            transaction: signed_transaction,
           }.to_json
 
           json = JSON.parse(payload)

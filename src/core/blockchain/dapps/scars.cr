@@ -10,6 +10,10 @@ module ::Sushi::Core
   class Scars < DApp
     @domains_internal : Array(DomainMap) = Array(DomainMap).new
 
+    def sales : Array(Models::Domain)
+      # todo
+    end
+
     def get(domain_name : String) : Models::Domain?
       return nil if @domains_internal.size < CONFIRMATION
       get_for(domain_name, @domains_internal.reverse[(CONFIRMATION - 1)..-1])
@@ -64,8 +68,7 @@ module ::Sushi::Core
                      domain[:price]
                    else
                      raise "you cannot set a recipient since no body has bought the domain: #{domain_name}" if recipients.size > 0
-
-                     1000 # default price
+                     0 # default price
                    end
 
       raise "the price #{price} is different of #{sale_price}" unless sale_price == price
@@ -102,6 +105,10 @@ module ::Sushi::Core
       raise "domain have to be ended with #{SUFFIX} (#{domain_parts[-1]})" unless SUFFIX.includes?(domain_parts[-1])
 
       true
+    end
+
+    def self.valid_domain?(domain_name : String) : Bool
+      self.new.valid_domain?(domain_name)
     end
 
     def record(chain)
