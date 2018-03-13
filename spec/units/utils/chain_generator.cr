@@ -3,6 +3,11 @@ module ::Units::Utils::ChainGenerator
   include Sushi::Core::Models
   include Sushi::Core::Keys
 
+  def with_factory(&block)
+    block_factory = BlockFactory.new
+    yield block_factory, block_factory.transaction_factory
+  end
+
   class MockWebSocket < HTTP::WebSocket
     def initialize
       super(IO::Memory.new)
@@ -32,6 +37,7 @@ module ::Units::Utils::ChainGenerator
 
     def addBlocks(number : Int)
       (1..number).each {|_| addBlock }
+      self
     end
 
     def addBlock(transactions : Array(Transaction))
