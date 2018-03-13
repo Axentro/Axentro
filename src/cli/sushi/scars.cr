@@ -52,6 +52,8 @@ module ::Sushi::Interface::Sushi
 
       raise "invalid fee for the action buy: minimum fee is #{Core::Scars.fee("scars_buy")}" if fee < Core::Scars.fee("scars_buy")
 
+      Core::Scars.valid_domain?(domain)
+
       resolved = resolve_internal(node, domain, false)
 
       wallet = get_wallet(wallet_path, __wallet_password)
@@ -123,18 +125,18 @@ module ::Sushi::Interface::Sushi
         puts_success "show information of domain #{domain}"
         puts_success "resolved : #{resolved["resolved"]}"
 
-        if resolved["resolved"].as_bool
-          status = case resolved["domain"]["status"].as_i
-                   when 0
-                     "acquired"
-                   when 1
-                     "for sale"
-                   end
+        status = case resolved["domain"]["status"].as_i
+                 when Core::Models::DomainStatus::Acquired
+                   "acquired"
+                 when Core::Models::DomainStatus::ForSale
+                   "for sale"
+                 when Core::Models::DomainStatus::NotFound
+                   "not found"
+                 end
 
-          puts_success "address  : #{resolved["domain"]["address"]}"
-          puts_success "status   : #{status}"
-          puts_success "price    : #{resolved["domain"]["price"]}"
-        end
+        puts_success "address  : #{resolved["domain"]["address"]}"
+        puts_success "status   : #{status}"
+        puts_success "price    : #{resolved["domain"]["price"]}"
       else
         puts_info resolved.to_json
       end
