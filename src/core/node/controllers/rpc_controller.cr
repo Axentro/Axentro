@@ -42,7 +42,7 @@ module ::Sushi::Core::Controllers
       response = if domain
                    {resolved: true, domain: domain}.to_json
                  else
-                   default_domain = { domain_name: domain_name, address: "", status: Models::DomainStatus::NotFound, price: 0 }
+                   default_domain = {domain_name: domain_name, address: "", status: Models::DomainStatus::NotFound, price: 0}
                    {resolved: false, domain: default_domain}.to_json
                  end
 

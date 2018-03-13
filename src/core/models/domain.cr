@@ -1,7 +1,7 @@
 module ::Sushi::Core::Models
   module DomainStatus
-    Acquired = 0
-    ForSale  = 1
+    Acquired =  0
+    ForSale  =  1
     NotFound = -1
   end
 
