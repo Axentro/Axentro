@@ -15,7 +15,6 @@ module ::Units::Utils::ChainGenerator
   end
 
   class BlockFactory
-
     @miner : Miner
     property node_wallet : Wallet
     property miner_wallet : Wallet
@@ -27,34 +26,31 @@ module ::Units::Utils::ChainGenerator
       @blockchain = Blockchain.new(node_wallet)
       @miner = {address: miner_wallet.address, socket: MockWebSocket.new, nonces: [] of UInt64}
       @transaction_factory = TransactionFactory.new(@node_wallet)
-      ENV["UT"]="unit test"
+      ENV["UT"] = "unit test"
     end
 
     def addBlock
-     @blockchain.push_block?(1_u64, [@miner])
-     self
+      @blockchain.push_block?(1_u64, [@miner])
+      self
     end
 
     def addBlocks(number : Int)
-      (1..number).each {|_| addBlock }
+      (1..number).each { |_| addBlock }
       self
     end
 
     def addBlock(transactions : Array(Transaction))
-     transactions.each { |txn| @blockchain.add_transaction(txn) }
-     @blockchain.push_block?(1_u64, [@miner])
-     self
+      transactions.each { |txn| @blockchain.add_transaction(txn) }
+      @blockchain.push_block?(1_u64, [@miner])
+      self
     end
 
     def chain
       @blockchain.chain
     end
-
-
   end
 
   class TransactionFactory
-
     property recipient_wallet : Wallet
     property sender_wallet : Wallet
 
@@ -87,9 +83,9 @@ module ::Units::Utils::ChainGenerator
         [a_sender(sender_wallet, sender_amount, 100_i64)],
         [] of Recipient,
         domain, # message
-        "0", # prev_hash
-        "0", # sign_r
-        "0", # sign_s
+        "0",    # prev_hash
+        "0",    # sign_r
+        "0",    # sign_s
       )
       signature = sign(sender_wallet, unsigned_transaction)
       unsigned_transaction.signed(signature[:r], signature[:s])
@@ -128,5 +124,4 @@ module ::Units::Utils::ChainGenerator
     # end
 
   end
-
 end
