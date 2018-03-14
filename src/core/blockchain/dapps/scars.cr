@@ -11,7 +11,21 @@ module ::Sushi::Core
     @domains_internal : Array(DomainMap) = Array(DomainMap).new
 
     def sales : Array(Models::Domain)
+      # [ { "d0" => DOMAIN0, "d1" => DOMAIN1 }, { "d1" => DOMAIN0, "d2" => DOMAIN2 } ]
       # todo
+      domain_all = DomainMap.new
+
+      @domains_internal.each do |domain_map|
+        domain_map.each do |domain_name, domain|
+          domain_all[domain_name] ||= domain
+        end
+      end
+
+      domain_for_sale = domain_all
+                        .select { |domain_name, domain| domain[:status] == Models::DomainStatus::ForSale }
+                        .map { |domain_name, domain| domain }
+
+      domain_for_sale
     end
 
     def get(domain_name : String) : Models::Domain?

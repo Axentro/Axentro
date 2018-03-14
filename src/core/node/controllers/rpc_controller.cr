@@ -24,6 +24,8 @@ module ::Sushi::Core::Controllers
         return confirmation(json, context, params)
       when "scars_resolve"
         return scars_resolve(json, context, params)
+      when "scars_for_sale"
+        return scars_for_sale(json, context, params)
       end
 
       unpermitted_call(call, context)
@@ -47,6 +49,13 @@ module ::Sushi::Core::Controllers
                  end
 
       context.response.print response
+      context
+    end
+
+    def scars_for_sale(json, context, params)
+      domain_for_sale = @blockchain.scars.sales
+
+      context.response.print domain_for_sale.to_json
       context
     end
 

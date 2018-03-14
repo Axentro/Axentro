@@ -14,6 +14,10 @@ module ::Sushi::Interface::Sushi
           name: "resolve",
           desc: "show an address of the domain if it's registered",
         },
+        {
+          name: "sales",
+          desc: "show a list of domains for sale",
+        },
       ]
     end
 
@@ -38,6 +42,8 @@ module ::Sushi::Interface::Sushi
         return sell
       when "resolve"
         return resolve
+      when "sales"
+        return sales
       end
 
       specify_sub_action!
@@ -113,6 +119,20 @@ module ::Sushi::Interface::Sushi
       })
 
       add_transaction(node, wallet, "scars_sell", senders, recipients, domain)
+    end
+
+    def sales
+      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+
+      payload = {call: "scars_for_sale"}.to_json
+
+      body = rpc(node, payload)
+
+      unless __json
+        puts body
+      else
+        puts body
+      end
     end
 
     def resolve
