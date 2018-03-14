@@ -40,6 +40,35 @@ describe Scars do
         end
       end
     end
+
+    describe "#get_unconfirmed" do
+      it "should return nil if the domain is not found" do
+        with_factory do |block_factory|
+          chain = block_factory.addBlock.chain
+          scars = Scars.new
+          scars.record(chain)
+          scars.get_unconfirmed("domain1.sc", chain.last.transactions).should be_nil
+        end
+      end
+
+      it "should return the domain info for unconfirmed domains" do
+        with_factory do |block_factory, transaction_factory|
+          domain = "domain1.sc"
+          transactions = [transaction_factory.make_scars_buy_platform(domain, 0_i64)]
+          chain = block_factory.addBlock(transactions).addBlocks(2).chain
+          scars = Scars.new
+          scars.record(chain)
+
+          onSuccess(scars.get_unconfirmed(domain, transactions)) do |result|
+            result["domain_name"].should eq(domain)
+            result["address"].should eq(transaction_factory.sender_wallet.address)
+            result["status"].should eq(0)
+            result["price"].should eq(0_i64)
+          end
+        end
+      end
+      
+    end
   end
   STDERR.puts "< Scars"
 end
