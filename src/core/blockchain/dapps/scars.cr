@@ -95,6 +95,7 @@ module ::Sushi::Core
       true
     end
 
+    #TODO - Kings - I think we should a regex here such as: ^[a-zA-z0-9]{1,20}\.(sc|sushichain)$
     def valid_domain?(domain_name : String) : Bool
       raise "domain length must be shorter than 20 characters" if domain_name.size > 20
       raise "domain name must contain at least one dot" unless domain_name.includes?(".")
