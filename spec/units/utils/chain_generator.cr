@@ -75,7 +75,7 @@ module ::Units::Utils::ChainGenerator
       unsigned_transaction.signed(signature[:r], signature[:s])
     end
 
-    def make_scars_buy_platform(domain : String, sender_amount : Int64, sender_wallet : Wallet = @sender_wallet) : Transaction
+    def make_buy_domain_from_platform(domain : String, sender_amount : Int64, sender_wallet : Wallet = @sender_wallet) : Transaction
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
         transaction_id,
@@ -91,37 +91,69 @@ module ::Units::Utils::ChainGenerator
       unsigned_transaction.signed(signature[:r], signature[:s])
     end
 
-    # def make_scars_buy_from(domain : String, sender_amount : Int64, sender_wallet : Wallet = @sender_wallet) : Transaction
-    #   transaction_id = Transaction.create_id
-    #   unsigned_transaction = Transaction.new(
-    #     transaction_id,
-    #     "scars_buy", # action
-    #     [a_sender(sender_wallet, sender_amount, 100_i64)],
-    #     [a_recipient(@recipient_wallet, 1000_i64)],
-    #     domain, # message
-    #     "0", # prev_hash
-    #     "0", # sign_r
-    #     "0", # sign_s
-    #   )
-    #   signature = sign(sender_wallet, unsigned_transaction)
-    #   unsigned_transaction.signed(signature[:r], signature[:s])
-    # end
-    #
-    # def make_scars_sell(domain : String, sender_amount : Int64, sender_wallet : Wallet = @sender_wallet) : Transaction
-    #   transaction_id = Transaction.create_id
-    #   unsigned_transaction = Transaction.new(
-    #     transaction_id,
-    #     "scars_sell", # action
-    #     [a_sender(sender_wallet, sender_amount, 100_i64)],
-    #     [] of Recipient,
-    #     domain, # message
-    #     "0", # prev_hash
-    #     "0", # sign_r
-    #     "0", # sign_s
-    #   )
-    #   signature = sign(sender_wallet, unsigned_transaction)
-    #   unsigned_transaction.signed(signature[:r], signature[:s])
-    # end
+    def make_buy_domain_from_seller(domain : String, recipient_amount : Int64, recipient_wallet : Wallet = @recipient_wallet) : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        "scars_buy", # action
+        [a_sender(recipient_wallet, recipient_amount, 100_i64)],
+        [a_recipient(@sender_wallet, 100_i64)],
+        domain, # message
+        "0", # prev_hash
+        "0", # sign_r
+        "0", # sign_s
+      )
+      signature = sign(sender_wallet, unsigned_transaction)
+      unsigned_transaction.signed(signature[:r], signature[:s])
+    end
+
+    def make_buy_domain_from_seller(domain : String, recipient_amount : Int64, recipients : Array(Recipient)) : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        "scars_buy", # action
+        [a_sender(recipient_wallet, recipient_amount, 100_i64)],
+        recipients,
+        domain, # message
+        "0", # prev_hash
+        "0", # sign_r
+        "0", # sign_s
+      )
+      signature = sign(sender_wallet, unsigned_transaction)
+      unsigned_transaction.signed(signature[:r], signature[:s])
+    end
+
+    def make_sell_domain(domain : String, sender_amount : Int64, sender_wallet : Wallet = @sender_wallet) : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        "scars_sell", # action
+        [a_sender(sender_wallet, sender_amount, 100_i64)],
+        [a_recipient(sender_wallet, sender_amount)],
+        domain, # message
+        "0", # prev_hash
+        "0", # sign_r
+        "0", # sign_s
+      )
+      signature = sign(sender_wallet, unsigned_transaction)
+      unsigned_transaction.signed(signature[:r], signature[:s])
+    end
+
+    def make_sell_domain(domain : String, sender_amount : Int64, recipients : Array(Recipient), sender_wallet : Wallet = @sender_wallet) : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        "scars_sell", # action
+        [a_sender(sender_wallet, sender_amount, 100_i64)],
+        recipients,
+        domain, # message
+        "0", # prev_hash
+        "0", # sign_r
+        "0", # sign_s
+      )
+      signature = sign(sender_wallet, unsigned_transaction)
+      unsigned_transaction.signed(signature[:r], signature[:s])
+    end
 
   end
 end

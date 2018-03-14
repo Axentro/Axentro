@@ -58,7 +58,7 @@ module ::Sushi::Core
 
       sale_price = if domain = get_unconfirmed(domain_name, transactions)
                      raise "domain #{domain_name} is not for sale now" unless domain[:status] == Models::DomainStatus::ForSale
-                     raise "you have to the set a domain owener as a recipient" if recipients.size == 0
+                     raise "you have to the set a domain owner as a recipient" if recipients.size == 0
                      raise "you cannot set multiple recipients" if recipients.size > 1
 
                      recipient_address = recipients[0][:address]
@@ -71,7 +71,7 @@ module ::Sushi::Core
                      0 # default price
                    end
 
-      raise "the price #{price} is different of #{sale_price}" unless sale_price == price
+      raise "the supplied price #{price} is different to expected price #{sale_price}" unless sale_price == price
 
       true
     end
@@ -86,23 +86,23 @@ module ::Sushi::Core
 
       recipient = transaction.recipients[0]
 
-      raise "address mistach for scars_sell: #{address} vs #{recipient[:address]}" if address != recipient[:address]
-      raise "price mistach for scars_sell: #{price} vs #{recipient[:amount]}" if price != recipient[:amount]
       raise "domain #{domain_name} not found" unless domain = get_unconfirmed(domain_name, transactions)
-      raise "domain address mismatch: #{address} vs #{domain[:address]}" unless address == domain[:address]
-      raise "the price have to be greater than 0" if price < 0
+      raise "domain address mismatch: expected #{address} but got #{domain[:address]}" unless address == domain[:address]
+      raise "address mistach for scars_sell: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
+      raise "price mistach for scars_sell: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
+      raise "the selling price must be 0 or higher" if price < 0
 
       true
     end
 
     def valid_domain?(domain_name : String) : Bool
-      raise "domain have to be shorter than 20 characters" if domain_name.size > 20
-      raise "domain have to contains at least one dot" unless domain_name.includes?(".")
+      raise "domain length must be shorter than 20 characters" if domain_name.size > 20
+      raise "domain name must contain at least one dot" unless domain_name.includes?(".")
 
       domain_parts = domain_name.split(".")
 
-      raise "domain cannot contain an empty part between dots" if domain_parts.includes?("")
-      raise "domain have to be ended with #{SUFFIX} (#{domain_parts[-1]})" unless SUFFIX.includes?(domain_parts[-1])
+      raise "domain must not contain any empty spaces before the dot" if domain_parts.includes?("")
+      raise "domain must end with #{SUFFIX} (#{domain_parts[-1]})" unless SUFFIX.includes?(domain_parts[-1])
 
       true
     end
