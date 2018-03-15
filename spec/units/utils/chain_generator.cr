@@ -48,6 +48,11 @@ module ::Units::Utils::ChainGenerator
     def chain
       @blockchain.chain
     end
+
+    def sub_chain
+      @blockchain.chain.reject!{|b| b.prev_hash == "genesis"}
+    end
+
   end
 
   class TransactionFactory
@@ -68,6 +73,27 @@ module ::Units::Utils::ChainGenerator
         [a_recipient(recipient_wallet, sender_amount)],
         "0", # message
         "0", # prev_hash
+        "0", # sign_r
+        "0", # sign_s
+      )
+      signature = sign(sender_wallet, unsigned_transaction)
+      unsigned_transaction.signed(signature[:r], signature[:s])
+    end
+
+    def align_transaction(transaction : Transaction, prev_hash : String) : Transaction
+      transaction.prev_hash = prev_hash
+      transaction
+    end
+
+    def make_send_with_prev_hash(sender_amount : Int64, prev_hash : String, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        "send", # action
+        [a_sender(sender_wallet, sender_amount)],
+        [a_recipient(recipient_wallet, sender_amount)],
+        "0", # message
+        prev_hash, # prev_hash
         "0", # sign_r
         "0", # sign_s
       )
