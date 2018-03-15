@@ -105,7 +105,7 @@ module ::Sushi::Core
     end
 
     def valid_domain?(domain_name : String) : Bool
-      unless domain_name =~ /^[a-zA-z0-9]{1,20}\.sc$/
+      unless domain_name =~ /^[a-zA-z0-9]{1,20}\.(#{SUFFIX.join("|")})$/
         domain_rule = <<-RULE
 Your domain '#{domain_name}' is not valid
 
