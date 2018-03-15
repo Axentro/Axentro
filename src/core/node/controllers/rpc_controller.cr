@@ -39,7 +39,7 @@ module ::Sushi::Core::Controllers
       domain_name = json["domain_name"].as_s
       confirmed = json["confirmed"].as_bool
 
-      domain = confirmed ? @blockchain.scars.get(domain_name) : @blockchain.scars.get_unconfirmed(domain_name, [] of Transaction)
+      domain = confirmed ? @blockchain.scars.resolve(domain_name) : @blockchain.scars.resolve_unconfirmed(domain_name, [] of Transaction)
 
       response = if domain
                    {resolved: true, domain: domain}.to_json

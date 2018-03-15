@@ -129,7 +129,16 @@ module ::Sushi::Interface::Sushi
       body = rpc(node, payload)
 
       unless __json
-        puts body
+        puts_success "\n SCARS domains for sale!\n"
+
+        puts "   %20s | %64s | %s" % ["Domain", "Address", "Price"]
+
+        json = JSON.parse(body)
+        json.each do |domain|
+          puts " - %20s | %64s | %d" % [domain["domain_name"].as_s, domain["address"].as_s, domain["price"].as_i]
+        end
+
+        puts
       else
         puts body
       end
