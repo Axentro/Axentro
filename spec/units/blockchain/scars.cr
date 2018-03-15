@@ -5,8 +5,6 @@ include Sushi::Core::Models
 include Sushi::Core
 include Units::Utils
 
-alias InternalDomain = Array(Hash(String, NamedTuple(domain_name: String, address: String, status: Int32, price: Int64)))
-
 describe Scars do
   describe "#resolve" do
     it "should return nil if the number internal domains is less than confirmations" do
@@ -365,7 +363,7 @@ describe Scars do
           expected = [{"domain.sc" => {domain_name: "domain.sc", address: transaction_factory.sender_wallet.address, status: 0, price: 0_i64}}]
           scars.@domains_internal.reject!(&.empty?).should eq(expected)
           scars.clear
-          scars.@domains_internal.should eq([] of InternalDomain)
+          scars.@domains_internal.size.should eq(0)
         end
       end
     end
