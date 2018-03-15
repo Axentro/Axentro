@@ -1,8 +1,5 @@
 module ::Sushi::Core
   # SushiChain Address Resolution System
-  # todo:
-  # record rejected transactions
-  # integrated into e2e
 
   # valid suffixes
   SUFFIX = %w(sc)
@@ -11,21 +8,33 @@ module ::Sushi::Core
     @domains_internal : Array(DomainMap) = Array(DomainMap).new
 
     def sales : Array(Models::Domain)
-      # todo
+      domain_all = DomainMap.new
+
+      @domains_internal.reverse.each do |domain_map|
+        domain_map.each do |domain_name, domain|
+          domain_all[domain_name] ||= domain
+        end
+      end
+
+      domain_for_sale = domain_all
+                        .select { |domain_name, domain| domain[:status] == Models::DomainStatus::ForSale }
+                        .map { |domain_name, domain| domain }
+
+      domain_for_sale
     end
 
-    def get(domain_name : String) : Models::Domain?
+    def resolve(domain_name : String) : Models::Domain?
       return nil if @domains_internal.size < CONFIRMATION
-      get_for(domain_name, @domains_internal.reverse[(CONFIRMATION - 1)..-1])
+      resolve_for(domain_name, @domains_internal.reverse[(CONFIRMATION - 1)..-1])
     end
 
-    def get_unconfirmed(domain_name, transactions : Array(Transaction)) : Models::Domain?
+    def resolve_unconfirmed(domain_name : String, transactions : Array(Transaction)) : Models::Domain?
       domain_map = create_domain_map_for_transactions(transactions)
 
       tmp_domains_internal = @domains_internal.dup
       tmp_domains_internal.push(domain_map)
 
-      get_for(domain_name, tmp_domains_internal.reverse)
+      resolve_for(domain_name, tmp_domains_internal.reverse)
     end
 
     def actions : Array(String)
@@ -56,7 +65,7 @@ module ::Sushi::Core
 
       valid_domain?(domain_name)
 
-      sale_price = if domain = get_unconfirmed(domain_name, transactions)
+      sale_price = if domain = resolve_unconfirmed(domain_name, transactions)
                      raise "domain #{domain_name} is not for sale now" unless domain[:status] == Models::DomainStatus::ForSale
                      raise "you have to the set a domain owner as a recipient" if recipients.size == 0
                      raise "you cannot set multiple recipients" if recipients.size > 1
@@ -86,7 +95,7 @@ module ::Sushi::Core
 
       recipient = transaction.recipients[0]
 
-      raise "domain #{domain_name} not found" unless domain = get_unconfirmed(domain_name, transactions)
+      raise "domain #{domain_name} not found" unless domain = resolve_unconfirmed(domain_name, transactions)
       raise "domain address mismatch: expected #{address} but got #{domain[:address]}" unless address == domain[:address]
       raise "address mistach for scars_sell: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
       raise "price mistach for scars_sell: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
@@ -97,13 +106,16 @@ module ::Sushi::Core
 
     #TODO - Kings - I think we should a regex here such as: ^[a-zA-z0-9]{1,20}\.(sc|sushichain)$
     def valid_domain?(domain_name : String) : Bool
-      raise "domain length must be shorter than 20 characters" if domain_name.size > 20
-      raise "domain name must contain at least one dot" unless domain_name.includes?(".")
+      unless domain_name =~ /^[a-zA-z0-9]{1,20}\.(#{SUFFIX.join("|")})$/
+        domain_rule = <<-RULE
+Your domain '#{domain_name}' is not valid
 
-      domain_parts = domain_name.split(".")
-
-      raise "domain must not contain any empty spaces before the dot" if domain_parts.includes?("")
-      raise "domain must end with #{SUFFIX} (#{domain_parts[-1]})" unless SUFFIX.includes?(domain_parts[-1])
+1. domain can contain alphabet characters and numbers
+2. domain have to be ended with one of #{SUFFIX}
+3. domain length have to be less than 20 (except suffix)
+RULE
+        raise domain_rule
+      end
 
       true
     end
@@ -123,7 +135,7 @@ module ::Sushi::Core
       @domains_internal.clear
     end
 
-    private def get_for(domain_name : String, domains : Array(DomainMap)) : Models::Domain?
+    private def resolve_for(domain_name : String, domains : Array(DomainMap)) : Models::Domain?
       domains.each do |domains_internal|
         return domains_internal[domain_name] if domains_internal[domain_name]?
       end
