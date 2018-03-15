@@ -97,8 +97,8 @@ module ::Sushi::Core
 
       raise "domain #{domain_name} not found" unless domain = resolve_unconfirmed(domain_name, transactions)
       raise "domain address mismatch: expected #{address} but got #{domain[:address]}" unless address == domain[:address]
-      raise "address mistach for scars_sell: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
-      raise "price mistach for scars_sell: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
+      raise "address mismatch for scars_sell: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
+      raise "price mismatch for scars_sell: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
       raise "the selling price must be 0 or higher" if price < 0
 
       true

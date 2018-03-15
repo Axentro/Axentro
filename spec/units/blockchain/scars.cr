@@ -216,7 +216,7 @@ describe Scars do
           tx1 = transaction_factory.make_sell_domain("domain1.sc", 500_i64, recipients)
           actual = transaction_factory.sender_wallet.address
           expected = transaction_factory.recipient_wallet.address
-          expect_raises(Exception, "address mistach for scars_sell: expected #{actual} but got #{expected}") do
+          expect_raises(Exception, "address mismatch for scars_sell: expected #{actual} but got #{expected}") do
             Scars.new.valid_sell?(tx1, txns)
           end
         end
@@ -229,7 +229,7 @@ describe Scars do
           recipients = [a_recipient(transaction_factory.sender_wallet, 200_i64)]
           tx1 = transaction_factory.make_sell_domain("domain1.sc", 500_i64, recipients)
 
-          expect_raises(Exception, "price mistach for scars_sell: expected 500 but got 200") do
+          expect_raises(Exception, "price mismatch for scars_sell: expected 500 but got 200") do
             Scars.new.valid_sell?(tx1, txns)
           end
         end
