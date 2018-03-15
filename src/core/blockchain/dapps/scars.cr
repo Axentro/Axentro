@@ -110,9 +110,9 @@ module ::Sushi::Core
         domain_rule = <<-RULE
 Your domain '#{domain_name}' is not valid
 
-1. domain can contain alphabet characters and numbers
-2. domain have to be ended with one of #{SUFFIX}
-3. domain length have to be less than 20 (except suffix)
+1. domain name must contain only alphanumerics
+2. domain name must end with one of these suffixes: #{SUFFIX}
+3. domain length must be between 1 and 20 characters (excluding suffix)
 RULE
         raise domain_rule
       end

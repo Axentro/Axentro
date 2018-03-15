@@ -5,14 +5,16 @@ include Sushi::Core::Models
 include Sushi::Core
 include Units::Utils
 
+alias InternalDomain = Array(Hash(String, NamedTuple(domain_name: String, address: String, status: Int32, price: Int64)))
+
 describe Scars do
-  describe "#get" do
+  describe "#resolve" do
     it "should return nil if the number internal domains is less than confirmations" do
       with_factory do |block_factory|
         chain = block_factory.addBlock.chain
         scars = Scars.new
         scars.record(chain)
-        scars.get("domain1.sc").should be_nil
+        scars.resolve("domain1.sc").should be_nil
       end
     end
 
@@ -21,7 +23,7 @@ describe Scars do
         chain = block_factory.addBlocks(10).chain
         scars = Scars.new
         scars.record(chain)
-        scars.get("domain1.sc").should be_nil
+        scars.resolve("domain1.sc").should be_nil
       end
     end
 
@@ -32,7 +34,7 @@ describe Scars do
         scars = Scars.new
         scars.record(chain)
 
-        onSuccess(scars.get(domain)) do |result|
+        onSuccess(scars.resolve(domain)) do |result|
           result["domain_name"].should eq(domain)
           result["address"].should eq(transaction_factory.sender_wallet.address)
           result["status"].should eq(0)
@@ -41,13 +43,13 @@ describe Scars do
       end
     end
 
-    describe "#get_unconfirmed" do
+    describe "#resolve_unconfirmed" do
       it "should return nil if the domain is not found" do
         with_factory do |block_factory|
           chain = block_factory.addBlock.chain
           scars = Scars.new
           scars.record(chain)
-          scars.get_unconfirmed("domain1.sc", chain.last.transactions).should be_nil
+          scars.resolve_unconfirmed("domain1.sc", chain.last.transactions).should be_nil
         end
       end
 
@@ -59,7 +61,7 @@ describe Scars do
           scars = Scars.new
           scars.record(chain)
 
-          onSuccess(scars.get_unconfirmed(domain, transactions)) do |result|
+          onSuccess(scars.resolve_unconfirmed(domain, transactions)) do |result|
             result["domain_name"].should eq(domain)
             result["address"].should eq(transaction_factory.sender_wallet.address)
             result["status"].should eq(0)
@@ -69,8 +71,10 @@ describe Scars do
       end
     end
 
-    it "should return scars #actions" do
-      Scars.new.actions.should eq(["scars_buy", "scars_sell"])
+    describe "#actions" do
+      it "should return scars actions" do
+        Scars.new.actions.should eq(["scars_buy", "scars_sell"])
+      end
     end
 
     describe "#related" do
@@ -269,41 +273,137 @@ describe Scars do
       end
     end
 
+    describe "#valid_impl?" do
+      it "should return true when domain is a valid buy from platform" do
+        with_factory do |block_factory, transaction_factory|
+          tx1 = transaction_factory.make_buy_domain_from_platform("domain1.sc", 0_i64)
+          Scars.new.valid_impl?(tx1, [] of Transaction)
+        end
+      end
+      it "should return true on valid sell" do
+        with_factory do |block_factory, transaction_factory|
+          txns = [transaction_factory.make_buy_domain_from_platform("domain1.sc", 0_i64)]
+
+          tx1 = transaction_factory.make_sell_domain("domain1.sc", 500_i64)
+          Scars.new.valid_impl?(tx1, txns).should be_true
+        end
+      end
+      it "should return false when neither buy or sell" do
+        with_factory do |block_factory, transaction_factory|
+          tx1 = transaction_factory.make_send(100_i64)
+          Scars.new.valid_impl?(tx1, [] of Transaction).should be_false
+        end
+      end
+    end
+
     describe "#valid_domain?" do
       it "should return true when domain name is valid" do
         Scars.new.valid_domain?("sushi.sc").should be_true
       end
 
+      it "should raise an error with a message when " do
+        domain_rule = <<-RULE
+        Your domain '123456789012345678901.sc' is not valid
+
+        1. domain name must contain only alphanumerics
+        2. domain name must end with one of these suffixes: ["sc"]
+        3. domain length must be between 1 and 20 characters (excluding suffix)
+        RULE
+
+        expect_raises(Exception, domain_rule) do
+          Scars.new.valid_domain?("123456789012345678901.sc")
+        end
+      end
+
       it "should raise an error when domain name is longer than 20 characters" do
-        expect_raises(Exception, "domain length must be shorter than 20 characters") do
+        expect_raises(Exception) do
           Scars.new.valid_domain?("123456789012345678901.sc")
         end
       end
 
       it "should raise an error when domain name does not contain a dot" do
-        expect_raises(Exception, "domain name must contain at least one dot") do
+        expect_raises(Exception) do
           Scars.new.valid_domain?("nodotsc")
         end
       end
 
-      it "should raise an error when domain name contains empty spaces before the dot" do
-        expect_raises(Exception, "domain must not contain any empty spaces before the dot") do
-          Scars.new.valid_domain?(".sc")
-        end
-      end
-
       it "should raise an error when domain name does not end with .sc prefix" do
-        expect_raises(Exception, "domain must end with [\"sc\"] (rt)") do
+        expect_raises(Exception) do
           Scars.new.valid_domain?("domain.rt")
         end
       end
 
-      pending "should raise an error when domain name contains empty spaces" do
-        expect_raises(Exception, "domain must not contain any empty spaces") do
+      it "should raise an error when domain name contains empty spaces" do
+        expect_raises(Exception) do
           Scars.new.valid_domain?("h e l l o.sc")
         end
       end
 
+      it "should work when using Self.valid_domain?" do
+        Scars.valid_domain?("domain.sc").should be_true
+      end
+    end
+
+    describe "#record" do
+      it "should record internal domains" do
+        with_factory do |block_factory, transaction_factory|
+          chain = block_factory.addBlock([transaction_factory.make_buy_domain_from_platform("domain.sc", 0_i64)]).addBlocks(10).chain
+          scars = Scars.new
+          scars.record(chain)
+          expected = [{"domain.sc" => {domain_name: "domain.sc", address: transaction_factory.sender_wallet.address, status: 0, price: 0_i64}}]
+          scars.@domains_internal.reject!(&.empty?).should eq(expected)
+        end
+      end
+    end
+
+    describe "#clear" do
+      it "should clear internal domains" do
+        with_factory do |block_factory, transaction_factory|
+          chain = block_factory.addBlock([transaction_factory.make_buy_domain_from_platform("domain.sc", 0_i64)]).addBlocks(10).chain
+          scars = Scars.new
+          scars.record(chain)
+          expected = [{"domain.sc" => {domain_name: "domain.sc", address: transaction_factory.sender_wallet.address, status: 0, price: 0_i64}}]
+          scars.@domains_internal.reject!(&.empty?).should eq(expected)
+          scars.clear
+          scars.@domains_internal.should eq([] of InternalDomain)
+        end
+      end
+    end
+
+    describe "#fee" do
+      it "should show the fee for an action" do
+        Scars.new.fee("scars_buy").should eq(100_i64)
+        Scars.new.fee("scars_sell").should eq(10_i64)
+        Scars.new.fee("unknown").should eq(0_i64)
+      end
+    end
+
+    describe "#sales" do
+      it "should list all the domains that are for sale" do
+        with_factory do |block_factory, transaction_factory|
+          domain = "domain1.sc"
+          txns = [
+            transaction_factory.make_buy_domain_from_platform(domain, 0_i64),
+            transaction_factory.make_sell_domain(domain, 500_i64),
+          ]
+          chain = block_factory.addBlock(txns).addBlocks(10).chain
+          scars = Scars.new
+          scars.record(chain)
+
+          sales = scars.sales
+          sales.size.should eq(1)
+
+          result = sales.first
+          result["domain_name"].should eq(domain)
+          result["address"].should eq(transaction_factory.sender_wallet.address)
+          result["status"].should eq(1)
+          result["price"].should eq(500_i64)
+        end
+      end
+
+      it "should return empty list when no domains are for sale" do
+        Scars.new.sales.size.should eq(0)
+      end
     end
   end
   STDERR.puts "< Scars"
