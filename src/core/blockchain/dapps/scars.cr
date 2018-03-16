@@ -67,7 +67,7 @@ module ::Sushi::Core
 
       sale_price = if domain = resolve_unconfirmed(domain_name, transactions)
                      raise "domain #{domain_name} is not for sale now" unless domain[:status] == Models::DomainStatus::ForSale
-                     raise "you have to the set a domain owener as a recipient" if recipients.size == 0
+                     raise "you have to the set a domain owner as a recipient" if recipients.size == 0
                      raise "you cannot set multiple recipients" if recipients.size > 1
 
                      recipient_address = recipients[0][:address]
@@ -80,7 +80,7 @@ module ::Sushi::Core
                      0 # default price
                    end
 
-      raise "the price #{price} is different of #{sale_price}" unless sale_price == price
+      raise "the supplied price #{price} is different to expected price #{sale_price}" unless sale_price == price
 
       true
     end
@@ -95,23 +95,24 @@ module ::Sushi::Core
 
       recipient = transaction.recipients[0]
 
-      raise "address mistach for scars_sell: #{address} vs #{recipient[:address]}" if address != recipient[:address]
-      raise "price mistach for scars_sell: #{price} vs #{recipient[:amount]}" if price != recipient[:amount]
       raise "domain #{domain_name} not found" unless domain = resolve_unconfirmed(domain_name, transactions)
-      raise "domain address mismatch: #{address} vs #{domain[:address]}" unless address == domain[:address]
-      raise "the price have to be greater than 0" if price < 0
+      raise "domain address mismatch: expected #{address} but got #{domain[:address]}" unless address == domain[:address]
+      raise "address mismatch for scars_sell: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
+      raise "price mismatch for scars_sell: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
+      raise "the selling price must be 0 or higher" if price < 0
 
       true
     end
 
+    #TODO - Kings - I think we should a regex here such as: ^[a-zA-z0-9]{1,20}\.(sc|sushichain)$
     def valid_domain?(domain_name : String) : Bool
       unless domain_name =~ /^[a-zA-z0-9]{1,20}\.(#{SUFFIX.join("|")})$/
         domain_rule = <<-RULE
 Your domain '#{domain_name}' is not valid
 
-1. domain can contain alphabet characters and numbers
-2. domain have to be ended with one of #{SUFFIX}
-3. domain length have to be less than 20 (except suffix)
+1. domain name must contain only alphanumerics
+2. domain name must end with one of these suffixes: #{SUFFIX}
+3. domain length must be between 1 and 20 characters (excluding suffix)
 RULE
         raise domain_rule
       end

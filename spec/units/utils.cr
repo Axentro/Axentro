@@ -5,4 +5,5 @@ module ::Units::Utils
   include BlockHelper
   include WalletHelper
   include NodeHelper
+  include ChainGenerator
 end
