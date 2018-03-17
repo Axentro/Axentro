@@ -513,24 +513,5 @@ describe Transaction do
     transaction.calculate_fee.should eq(1_i64)
   end
 
-  # it "should calculate unspent transaction outputs with #calculate_utxo" do
-  #   sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
-  #   recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
-  #   blockchain = Blockchain.new(sender_wallet)
-  #
-  #   transaction = Transaction.new(
-  #     Transaction.create_id,
-  #     "send", # action
-  #     [a_sender(sender_wallet, 11_i64)],
-  #     [a_recipient(recipient_wallet, 10_i64)],
-  #     "0", # message
-  #     "0", # prev_hash
-  #     "0", # sign_r
-  #     "0", # sign_s
-  #   )
-  #
-  #   transaction.calculate_utxo.should eq({sender_wallet.address => -11_i64, recipient_wallet.address => 10_i64})
-  # end
-
   STDERR.puts "< Transaction"
 end
