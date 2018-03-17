@@ -42,14 +42,14 @@ module ::Sushi::Core::Consensus
   end
 
   def difficulty_at(block_index : Int64) : Int32
-    return 2 if ENV.has_key?("E2E") # for e2e test
-    return 0 if ENV.has_key?("UT") # for unit tests
+    return 2 if ENV.has_key?("E2E")   # for e2e test
+    return 0 if ENV.has_key?("UT")    # for unit tests
     return 3 if ENV.has_key?("DEBUG") # for debugging
     4
   end
 
   def miner_difficulty_at(block_index : Int64) : Int32
-    return 1 if ENV.has_key?("E2E") # for e2e test
+    return 1 if ENV.has_key?("E2E")   # for e2e test
     return 2 if ENV.has_key?("DEBUG") # for debugging
     3
   end

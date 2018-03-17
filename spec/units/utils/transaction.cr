@@ -10,7 +10,7 @@ module ::Units::Utils::TransactionHelper
     {address:    wallet.address,
      public_key: wallet.public_key,
      amount:     amount,
-     fee: fee
+     fee:        fee,
     }
   end
 

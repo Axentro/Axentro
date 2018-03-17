@@ -50,9 +50,8 @@ module ::Units::Utils::ChainGenerator
     end
 
     def sub_chain
-      @blockchain.chain.reject!{|b| b.prev_hash == "genesis"}
+      @blockchain.chain.reject! { |b| b.prev_hash == "genesis" }
     end
-
   end
 
   class TransactionFactory
@@ -92,10 +91,10 @@ module ::Units::Utils::ChainGenerator
         "send", # action
         [a_sender(sender_wallet, sender_amount)],
         [a_recipient(recipient_wallet, sender_amount)],
-        "0", # message
+        "0",       # message
         prev_hash, # prev_hash
-        "0", # sign_r
-        "0", # sign_s
+        "0",       # sign_r
+        "0",       # sign_s
       )
       signature = sign(sender_wallet, unsigned_transaction)
       unsigned_transaction.signed(signature[:r], signature[:s])
@@ -125,9 +124,9 @@ module ::Units::Utils::ChainGenerator
         [a_sender(recipient_wallet, recipient_amount, 100_i64)],
         [a_recipient(@sender_wallet, 100_i64)],
         domain, # message
-        "0", # prev_hash
-        "0", # sign_r
-        "0", # sign_s
+        "0",    # prev_hash
+        "0",    # sign_r
+        "0",    # sign_s
       )
       signature = sign(sender_wallet, unsigned_transaction)
       unsigned_transaction.signed(signature[:r], signature[:s])
@@ -141,9 +140,9 @@ module ::Units::Utils::ChainGenerator
         [a_sender(recipient_wallet, recipient_amount, 100_i64)],
         recipients,
         domain, # message
-        "0", # prev_hash
-        "0", # sign_r
-        "0", # sign_s
+        "0",    # prev_hash
+        "0",    # sign_r
+        "0",    # sign_s
       )
       signature = sign(sender_wallet, unsigned_transaction)
       unsigned_transaction.signed(signature[:r], signature[:s])
@@ -157,9 +156,9 @@ module ::Units::Utils::ChainGenerator
         [a_sender(sender_wallet, sender_amount, 100_i64)],
         [a_recipient(sender_wallet, sender_amount)],
         domain, # message
-        "0", # prev_hash
-        "0", # sign_r
-        "0", # sign_s
+        "0",    # prev_hash
+        "0",    # sign_r
+        "0",    # sign_s
       )
       signature = sign(sender_wallet, unsigned_transaction)
       unsigned_transaction.signed(signature[:r], signature[:s])
@@ -173,13 +172,12 @@ module ::Units::Utils::ChainGenerator
         [a_sender(sender_wallet, sender_amount, 100_i64)],
         recipients,
         domain, # message
-        "0", # prev_hash
-        "0", # sign_r
-        "0", # sign_s
+        "0",    # prev_hash
+        "0",    # sign_r
+        "0",    # sign_s
       )
       signature = sign(sender_wallet, unsigned_transaction)
       unsigned_transaction.signed(signature[:r], signature[:s])
     end
-
   end
 end

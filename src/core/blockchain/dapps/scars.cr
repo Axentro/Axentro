@@ -17,8 +17,8 @@ module ::Sushi::Core
       end
 
       domain_for_sale = domain_all
-                        .select { |domain_name, domain| domain[:status] == Models::DomainStatus::ForSale }
-                        .map { |domain_name, domain| domain }
+        .select { |domain_name, domain| domain[:status] == Models::DomainStatus::ForSale }
+        .map { |domain_name, domain| domain }
 
       domain_for_sale
     end
@@ -104,7 +104,7 @@ module ::Sushi::Core
       true
     end
 
-    #TODO - Kings - I think we should a regex here such as: ^[a-zA-z0-9]{1,20}\.(sc|sushichain)$
+    # TODO - Kings - I think we should a regex here such as: ^[a-zA-z0-9]{1,20}\.(sc|sushichain)$
     def valid_domain?(domain_name : String) : Bool
       unless domain_name =~ /^[a-zA-z0-9]{1,20}\.(#{SUFFIX.join("|")})$/
         domain_rule = <<-RULE
