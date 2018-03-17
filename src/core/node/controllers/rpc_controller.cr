@@ -22,6 +22,10 @@ module ::Sushi::Core::Controllers
         return transaction(json, context, params)
       when "confirmation"
         return confirmation(json, context, params)
+      when "scars_resolve"
+        return scars_resolve(json, context, params)
+      when "scars_for_sale"
+        return scars_for_sale(json, context, params)
       end
 
       unpermitted_call(call, context)
@@ -31,9 +35,35 @@ module ::Sushi::Core::Controllers
       unpermitted_method(context)
     end
 
+    def scars_resolve(json, context, params)
+      domain_name = json["domain_name"].as_s
+      confirmed = json["confirmed"].as_bool
+
+      domain = confirmed ? @blockchain.scars.resolve(domain_name) : @blockchain.scars.resolve_unconfirmed(domain_name, [] of Transaction)
+
+      response = if domain
+                   {resolved: true, domain: domain}.to_json
+                 else
+                   default_domain = {domain_name: domain_name, address: "", status: Models::DomainStatus::NotFound, price: 0}
+                   {resolved: false, domain: default_domain}.to_json
+                 end
+
+      context.response.print response
+      context
+    end
+
+    def scars_for_sale(json, context, params)
+      domain_for_sale = @blockchain.scars.sales
+
+      context.response.print domain_for_sale.to_json
+      context
+    end
+
     def create_transaction(json, context, params)
       transaction = Transaction.from_json(json["transaction"].to_json)
+
       node.broadcast_transaction(transaction)
+
       context.response.print transaction.to_json
       context
     rescue e : Exception
@@ -67,7 +97,7 @@ module ::Sushi::Core::Controllers
       address = json["address"].to_s
       unconfirmed = json["unconfirmed"].as_bool
 
-      amount = unconfirmed ? @blockchain.get_amount_unconfirmed(address) : @blockchain.get_amount(address)
+      amount = unconfirmed ? @blockchain.utxo.get_unconfirmed(address, [] of Transaction) : @blockchain.utxo.get(address)
 
       json = {amount: amount, address: address, unconfirmed: unconfirmed}.to_json
 
@@ -101,7 +131,7 @@ module ::Sushi::Core::Controllers
 
                 @blockchain.chain[index.as_i]
               elsif transaction_id = json["transaction_id"]?
-                unless block_index = @blockchain.block_index(transaction_id.to_s)
+                unless block_index = @blockchain.indices.get(transaction_id.to_s)
                   raise "failed to find a block for the transaction #{transaction_id}"
                 end
 
@@ -138,7 +168,7 @@ module ::Sushi::Core::Controllers
     def transaction(json, context, params)
       transaction_id = json["transaction_id"].as_s
 
-      unless block_index = @blockchain.block_index(transaction_id)
+      unless block_index = @blockchain.indices.get(transaction_id)
         raise "failed to find a block for the transaction #{transaction_id}"
       end
 
@@ -153,7 +183,7 @@ module ::Sushi::Core::Controllers
     def confirmation(json, context, params)
       transaction_id = json["transaction_id"].as_s
 
-      unless block_index = @blockchain.block_index(transaction_id)
+      unless block_index = @blockchain.indices.get(transaction_id)
         raise "failed to find a block for the transaction #{transaction_id}"
       end
 
@@ -174,8 +204,5 @@ module ::Sushi::Core::Controllers
       context.response.print "unpermitted call: #{call}"
       context
     end
-
-    include Fees
-    include Common::Num
   end
 end

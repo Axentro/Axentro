@@ -49,38 +49,15 @@ describe Transaction do
   describe "#valid?" do
     context "when not coinbase" do
       it "should be valid" do
-        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
-        recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
+        with_factory do |block_factory, transaction_factory|
+          signed_transaction1 = transaction_factory.make_send(100_i64)
+          signed_transaction2 = transaction_factory.make_send(200_i64)
+          signed_transaction2 = transaction_factory.align_transaction(signed_transaction2, signed_transaction1.to_hash)
 
-        serving_transaction = Transaction.new(
-          Transaction.create_id,
-          "send", # action
-          [a_sender(recipient_wallet, 2000_i64)],
-          [a_recipient(sender_wallet, 1500_i64)],
-          "0", # message
-          "0", # prev_hash
-          "0", # sign_r
-          "0", # sign_s
-        )
-
-        unsigned_transaction = Transaction.new(
-          Transaction.create_id,
-          "send", # action
-          [a_sender(sender_wallet, 1000_i64)],
-          [a_recipient(recipient_wallet, 10_i64)],
-          "0", # message
-          "0", # prev_hash
-          "0", # sign_r
-          "0", # sign_s
-        )
-
-        blockchain = Blockchain.new(sender_wallet)
-        signature = sign(sender_wallet, unsigned_transaction)
-        signed_transaction = unsigned_transaction.signed(signature[:r], signature[:s])
-
-        signed_transaction.sign_r.should eq(signature[:r])
-        signed_transaction.sign_s.should eq(signature[:s])
-        signed_transaction.valid?(blockchain, 0_i64, false, [serving_transaction]).should be_true
+          blockchain = Blockchain.new(transaction_factory.sender_wallet)
+          blockchain.replace_chain(block_factory.addBlocks(1).sub_chain)
+          signed_transaction2.valid?(blockchain, 0_i64, false, [signed_transaction1]).should be_true
+        end
       end
 
       it "should raise invalid id length error if not 64" do
@@ -100,6 +77,21 @@ describe Transaction do
 
         expect_raises(Exception, "length of transaction id have to be 64: too-short-id") do
           transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
+        end
+      end
+
+      it "should raise error: transaction already included in indices" do
+        with_factory do |block_factory, transaction_factory|
+          transaction1 = transaction_factory.make_send(100_i64)
+          transaction2 = transaction_factory.make_send(200_i64)
+          chain = block_factory.addBlock.addBlock([transaction1, transaction2]).sub_chain
+          blockchain = Blockchain.new(transaction_factory.sender_wallet)
+          blockchain.replace_chain(chain)
+
+          transaction1 = transaction_factory.align_transaction(transaction1, blockchain.chain.last.transactions.last.to_hash)
+          expect_raises(Exception, "the transaction #{transaction1.id} is already included in 2") do
+            transaction1.valid?(blockchain, 0_i64, false, blockchain.chain.last.transactions)
+          end
         end
       end
 
@@ -151,6 +143,7 @@ describe Transaction do
           address:    Base64.strict_encode("T0invalid-wallet-address"),
           public_key: sender_wallet.public_key,
           amount:     1000_i64,
+          fee:        1_i64,
         }
 
         transaction = Transaction.new(
@@ -214,72 +207,36 @@ describe Transaction do
         end
       end
 
-      it "should raise invalid signing error when the signature is invalid" do
+      it "should raise error when there are no transactions" do
         sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
-        recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
         blockchain = Blockchain.new(sender_wallet)
 
         transaction = Transaction.new(
           Transaction.create_id,
           "send", # action
           [a_sender(sender_wallet, 1000_i64)],
-          [a_recipient(recipient_wallet, 10_i64)],
+          [] of Recipient,
           "0", # message
           "0", # prev_hash
           "0", # sign_r
           "0", # sign_s
         )
 
-        expect_raises(Exception, "invalid signing") do
+        expect_raises(Exception, "There must be some transactions") do
           transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
         end
       end
 
-      it "should raise not enough fee error if the sender can't afford the fee" do
-        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
-        recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
-        blockchain = Blockchain.new(sender_wallet)
+      it "should raise invalid signing error when the signature is invalid" do
+        with_factory do |block_factory, transaction_factory|
+          signed_transaction1 = transaction_factory.make_send(100_i64)
+          signed_transaction2 = transaction_factory.make_send_with_prev_hash(200_i64, signed_transaction1.to_hash)
 
-        unsigned_transaction = Transaction.new(
-          Transaction.create_id,
-          "send", # action
-          [a_sender(sender_wallet, 0_i64)],
-          [a_recipient(recipient_wallet, 10_i64)],
-          "0", # message
-          "0", # prev_hash
-          "0", # sign_r
-          "0", # sign_s
-        )
+          blockchain = Blockchain.new(transaction_factory.sender_wallet)
 
-        signature = sign(sender_wallet, unsigned_transaction)
-        signed_transaction = unsigned_transaction.signed(signature[:r], signature[:s])
-
-        expect_raises(Exception, "not enough fee, should be  -10 >= 1") do
-          signed_transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
-        end
-      end
-
-      it "should raise not enough coins error if the sender can't afford to pay the amount" do
-        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
-        recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
-        blockchain = Blockchain.new(sender_wallet)
-
-        unsigned_transaction = Transaction.new(
-          Transaction.create_id,
-          "send", # action
-          [a_sender(sender_wallet, 10000_i64)],
-          [a_recipient(recipient_wallet, 10_i64)],
-          "0", # message
-          "0", # prev_hash
-          "0", # sign_r
-          "0", # sign_s
-        )
-
-        signature = sign(sender_wallet, unsigned_transaction)
-        signed_transaction = unsigned_transaction.signed(signature[:r], signature[:s])
-
-        expect_raises(Exception, "sender has not enough coins: #{sender_wallet.address} (0)") do
-          signed_transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
+          expect_raises(Exception, "invalid signing") do
+            signed_transaction2.valid?(blockchain, 0_i64, false, [signed_transaction1])
+          end
         end
       end
     end
@@ -554,25 +511,6 @@ describe Transaction do
     )
 
     transaction.calculate_fee.should eq(1_i64)
-  end
-
-  it "should calculate unspent transaction outputs with #calculate_utxo" do
-    sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
-    recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
-    blockchain = Blockchain.new(sender_wallet)
-
-    transaction = Transaction.new(
-      Transaction.create_id,
-      "send", # action
-      [a_sender(sender_wallet, 11_i64)],
-      [a_recipient(recipient_wallet, 10_i64)],
-      "0", # message
-      "0", # prev_hash
-      "0", # sign_r
-      "0", # sign_s
-    )
-
-    transaction.calculate_utxo.should eq({sender_wallet.address => -11_i64, recipient_wallet.address => 10_i64})
   end
 
   STDERR.puts "< Transaction"

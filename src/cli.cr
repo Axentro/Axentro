@@ -127,12 +127,79 @@ module ::Sushi::Interface
       body
     end
 
+    def add_transaction(node : String,
+                        wallet : Core::Wallet,
+                        action : String,
+                        senders : Core::Models::Senders,
+                        recipients : Core::Models::Recipients,
+                        message : String)
+      unsigned_transaction =
+        create_unsigned_transaction(node, action, senders, recipients, message)
+
+      signed_transaction = sign(wallet, unsigned_transaction)
+
+      payload = {
+        call:        "create_transaction",
+        transaction: signed_transaction,
+      }.to_json
+
+      rpc(node, payload)
+
+      unless __json
+        puts_success "successfully create your transaction!"
+        puts_success "=> #{signed_transaction.id}"
+      else
+        puts signed_transaction.to_json
+      end
+    end
+
+    def create_unsigned_transaction(node : String,
+                                    action : String,
+                                    senders : Core::Models::Senders,
+                                    recipients : Core::Models::Recipients,
+                                    message : String)
+      payload = {
+        call:       "create_unsigned_transaction",
+        action:     action,
+        senders:    senders,
+        recipients: recipients,
+        message:    message,
+      }.to_json
+
+      body = rpc(node, payload)
+
+      Core::Transaction.from_json(body)
+    end
+
+    def sign(wallet : Core::Wallet, transaction : Core::Transaction) : Core::Transaction
+      secp256k1 = Core::ECDSA::Secp256k1.new
+
+      private_key = Wif.new(wallet.wif).private_key
+
+      sign = secp256k1.sign(
+        private_key.as_big_i,
+        transaction.to_hash,
+      )
+
+      transaction.signed(
+        sign[0].to_s(base: 16),
+        sign[1].to_s(base: 16),
+      )
+    end
+
+    def resolve_internal(node, domain, confirmed : Bool = true) : JSON::Any
+      payload = {call: "scars_resolve", domain_name: domain, confirmed: confirmed}.to_json
+
+      body = rpc(node, payload)
+
+      JSON.parse(body)
+    end
+
     abstract def sub_actions : Array(SushiAction)
     abstract def option_parser : OptionParser?
     abstract def run_impl(action_name : String?) : OptionParser?
 
     include Helps
     include Logger
-    include Common::Num
   end
 end

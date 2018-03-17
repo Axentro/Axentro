@@ -6,12 +6,21 @@ module ::Sushi::Core
     getter chain : Models::Chain = Models::Chain.new
     getter transaction_pool = [] of Transaction
     getter wallet : Wallet
-    getter utxo : UTXO
+
+    DAPPS = %w(UTXO Scars Indices)
+
+    getter dapps : Array(DApp) = [] of DApp
+
+    {% for dapp in DAPPS %}
+      getter {{ dapp.id.underscore }} : {{ dapp.id }} = {{ dapp.id }}.new
+    {% end %}
 
     @coinbase_transaction : Transaction?
 
     def initialize(@wallet : Wallet, @database : Database? = nil)
-      @utxo = UTXO.new
+      {% for dapp in DAPPS %}
+        @dapps.push(@{{ dapp.id.underscore }})
+      {% end %}
 
       if database = @database
         restore_from_database(database)
@@ -28,7 +37,10 @@ module ::Sushi::Core
 
     def set_genesis
       @chain.push(genesis_block)
-      @utxo.record(@chain)
+
+      @dapps.each do |dapp|
+        dapp.record(@chain)
+      end
 
       if database = @database
         database.push_block(genesis_block)
@@ -45,7 +57,10 @@ module ::Sushi::Core
         break unless block.valid_as_latest?(self)
 
         @chain.push(block)
-        @utxo.record(@chain)
+
+        @dapps.each do |dapp|
+          dapp.record(@chain)
+        end
 
         current_index += 1
       end
@@ -57,9 +72,7 @@ module ::Sushi::Core
 
     def update_coinbase_transaction(miners : Models::Miners)
       @coinbase_transaction = create_coinbase_transaction(miners)
-
-      # remove transactions which already be included in blockchain
-      @transaction_pool.reject! { |transaction| block_index(transaction.id) }
+      @transaction_pool.reject! { |transaction| indices.get(transaction.id) }
     end
 
     def push_block?(nonce : UInt64, miners : Models::Miners) : Block?
@@ -68,7 +81,7 @@ module ::Sushi::Core
       index = @chain.size.to_i64
 
       transactions = [coinbase_transaction] + @transaction_pool
-      transactions = align_transaction(transactions)
+      transactions = align_transactions(transactions)
 
       block = Block.new(
         index,
@@ -77,14 +90,17 @@ module ::Sushi::Core
         latest_block.to_hash,
       )
 
-      push_block?(block, miners)
+      push_block?(block, miners, true)
     end
 
-    def push_block?(block : Block, miners : Models::Miners) : Block?
-      return nil unless block.valid_as_latest?(self)
+    def push_block?(block : Block, miners : Models::Miners, internal : Bool = false) : Block?
+      return nil if !internal && !block.valid_as_latest?(self)
 
       @chain.push(block)
-      @utxo.record(@chain)
+
+      @dapps.each do |dapp|
+        dapp.record(@chain)
+      end
 
       if database = @database
         database.push_block(block)
@@ -109,8 +125,10 @@ module ::Sushi::Core
 
       @chain = @chain[0..first_index].concat(subchain)
 
-      @utxo.clear
-      @utxo.record(@chain)
+      @dapps.each do |dapp|
+        dapp.clear
+        dapp.record(@chain)
+      end
 
       if database = @database
         database.replace_chain(@chain)
@@ -123,35 +141,27 @@ module ::Sushi::Core
       @transaction_pool << transaction
     end
 
-    def align_transaction(transactions : Array(Transaction))
+    def align_transactions(transactions : Array(Transaction))
       return [] of Transaction if transactions.size == 0
 
       selected_transactions = [transactions[0]]
 
       transactions[1..-1].each_with_index do |transaction, idx|
+        transaction.prev_hash = selected_transactions[-1].to_hash
         transaction.valid?(self, latest_index, false, selected_transactions)
 
-        # The transaction is already included in another block
-        if block_index(transaction.id)
-          transactions.delete(transaction)
-          next
-        end
-
-        transaction.prev_hash = selected_transactions[-1].to_hash
         selected_transactions << transaction
       rescue e : Exception
-        transactions.delete(transaction)
+        warning "invalid transaction found, will be removed from the pool"
+        warning e.message.not_nil! if e.message
+
+        # todo: show error message for cli/sushi/tx
+        indices.store_reject(transaction.id, e)
+
+        @transaction_pool.delete(transaction)
       end
 
       selected_transactions
-    end
-
-    def get_amount_unconfirmed(address : String, transactions : Array(Transaction)? = nil) : Int64
-      @utxo.get_unconfirmed(address, transactions)
-    end
-
-    def get_amount(address : String) : Int64
-      @utxo.get(address)
     end
 
     def latest_block : Block
@@ -186,7 +196,7 @@ module ::Sushi::Core
       rewards_total = served_amount(latest_index)
 
       miners_nonces_size = miners.reduce(0) { |sum, m| sum + m[:nonces].size }
-      miners_rewards_total = prec((rewards_total * 3_i64) / 4_i64)
+      miners_rewards_total = (rewards_total * 3_i64) / 4_i64
       miners_recipients = if miners_nonces_size > 0
                             miners.map { |m|
                               amount = (miners_rewards_total * m[:nonces].size) / miners_nonces_size
@@ -198,7 +208,7 @@ module ::Sushi::Core
 
       node_reccipient = {
         address: @wallet.address,
-        amount:  prec(rewards_total - miners_recipients.reduce(0_i64) { |sum, m| sum + m[:amount] }),
+        amount:  rewards_total - miners_recipients.reduce(0_i64) { |sum, m| sum + m[:amount] },
       }
 
       senders = [] of Models::Sender # No senders
@@ -247,10 +257,6 @@ module ::Sushi::Core
       @chain.map { |block| block.to_header }
     end
 
-    def block_index(transaction_id : String) : Int64?
-      @utxo.index(transaction_id)
-    end
-
     def transactions_for_address(address : String) : Array(Transaction)
       @chain
         .map { |block| block.transactions }
@@ -261,8 +267,12 @@ module ::Sushi::Core
       }
     end
 
+    def available_actions : Array(String)
+      @dapps.map { |dapp| dapp.actions }.flatten
+    end
+
+    include Logger
     include Hashes
     include Consensus
-    include Common::Num
   end
 end

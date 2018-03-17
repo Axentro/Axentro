@@ -4,7 +4,6 @@ require "./../utils"
 include Sushi::Core
 include Hashes
 include Units::Utils
-include Sushi::Common::Num
 include Sushi::Core::Models
 
 describe Block do
@@ -38,7 +37,7 @@ describe Block do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = Block.new(1_i64, [coinbase_transaction, transaction1], 1_u64, "prev_hash")
-      block.calcluate_merkle_tree_root.should eq("68e413c72b795b43475c7e919bc8621eede45344")
+      block.calcluate_merkle_tree_root.should eq("76c1ec02abe869508c71ff91908f3d5f11b475d7")
     end
   end
 
@@ -164,21 +163,6 @@ describe Block do
       expect_raises(Exception, "invalid merkle tree root: #{block_2_invalid.calcluate_merkle_tree_root} != #{block_2.merkle_tree_root}") do
         block_2_invalid.valid_for?(block_1)
       end
-    end
-  end
-
-  describe "#calculate_utxo" do
-    it "should calculate unspent transactions" do
-      r1_address = block_2.transactions.first.recipients.first[:address]
-      r1_amount = prec(block_2.transactions.first.recipients.first[:amount])
-      r2_address = block_2.transactions.first.recipients[1][:address]
-      r2_amount = prec(block_2.transactions.first.recipients[1][:amount])
-      transaction_id = block_2.transactions.first.id
-
-      expected_utxo = {utxo:    {r1_address => r1_amount, r2_address => r2_amount},
-                       indices: {transaction_id => block_2.index}}
-
-      block_2.calculate_utxo.should eq(expected_utxo)
     end
   end
 

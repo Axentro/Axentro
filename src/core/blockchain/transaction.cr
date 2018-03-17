@@ -1,7 +1,6 @@
 module ::Sushi::Core
   class Transaction
     MESSAGE_SIZE_LIMIT = 512
-    ACTIONS            = %(send)
 
     JSON.mapping(
       id: String,
@@ -39,7 +38,7 @@ module ::Sushi::Core
       sha256(string)
     end
 
-    def valid?(blockchain : Blockchain, block_index : Int64, is_coinbase : Bool, transactions : Array(Transaction)?) : Bool
+    def valid?(blockchain : Blockchain, block_index : Int64, is_coinbase : Bool, transactions : Array(Transaction)) : Bool
       raise "length of transaction id have to be 64: #{@id}" if @id.size != 64
       raise "message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
 
@@ -52,8 +51,17 @@ module ::Sushi::Core
       end
 
       if !is_coinbase
-        raise "unknown action: #{@action}" unless ACTIONS.includes?(@action)
+        raise "unknown action: #{@action}" unless blockchain.available_actions.includes?(@action)
         raise "sender have to be only one currently" if @senders.size != 1
+        raise "There must be some transactions" if transactions.size < 1
+
+        if @prev_hash != transactions[-1].to_hash
+          raise "invalid prev_hash #{@prev_hash} vs #{transactions[-1].to_hash}"
+        end
+
+        if blockchain.indices.get(@id)
+          raise "the transaction #{@id} is already included in #{blockchain.indices.get(@id)}"
+        end
 
         network = Keys::Address.from(@senders.first[:address]).network
         public_key = Keys::PublicKey.new(@senders.first[:public_key], network)
@@ -67,14 +75,8 @@ module ::Sushi::Core
                                      BigInt.new(@sign_s, base: 16),
                                    )
 
-        if calculate_fee < min_fee_of_action(@action)
-          raise "not enough fee, should be  #{calculate_fee} >= #{min_fee_of_action(@action)}"
-        end
-
-        senders_amount = blockchain.get_amount_unconfirmed(@senders[0][:address], transactions)
-
-        if prec(senders_amount - @senders[0][:amount]) < 0_i64
-          raise "sender has not enough coins: #{@senders[0][:address]} (#{senders_amount})"
+        blockchain.dapps.each do |dapp|
+          dapp.valid?(self, transactions) if dapp.related?(@action)
         end
       else
         raise "actions has to be 'head' for coinbase transaction " if @action != "head"
@@ -84,7 +86,7 @@ module ::Sushi::Core
         raise "sign_r of coinbase transaction has to be '0'" if @sign_r != "0"
         raise "sign_s of coinbase transaction has to be '0'" if @sign_s != "0"
 
-        served_sum = @recipients.reduce(0_i64) { |sum, recipient| prec(sum + recipient[:amount]) }
+        served_sum = @recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
         raise "invalid served amount for coinbase transaction: #{served_sum}" if served_sum != blockchain.served_amount(block_index)
       end
 
@@ -118,35 +120,17 @@ module ::Sushi::Core
     end
 
     def sender_total_amount : Int64
-      senders.reduce(0_i64) { |sum, sender| prec(sum + sender[:amount]) }
+      senders.reduce(0_i64) { |sum, sender| sum + sender[:amount] }
     end
 
     def recipient_total_amount : Int64
-      recipients.reduce(0_i64) { |sum, recipient| prec(sum + recipient[:amount]) }
+      recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
     end
 
     def calculate_fee : Int64
-      prec(sender_total_amount - recipient_total_amount)
+      senders.reduce(0_i64) { |sum, sender| sum + sender[:fee] }
     end
 
-    def calculate_utxo : Hash(String, Int64)
-      utxo = Hash(String, Int64).new
-
-      senders.each do |sender|
-        utxo[sender[:address]] ||= 0_i64
-        utxo[sender[:address]] = prec(utxo[sender[:address]] - sender[:amount])
-      end
-
-      recipients.each do |recipient|
-        utxo[recipient[:address]] ||= 0_i64
-        utxo[recipient[:address]] = prec(utxo[recipient[:address]] + recipient[:amount])
-      end
-
-      utxo
-    end
-
-    include Fees
     include Hashes
-    include Common::Num
   end
 end

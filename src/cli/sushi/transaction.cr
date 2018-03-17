@@ -4,7 +4,7 @@ module ::Sushi::Interface::Sushi
       [
         {
           name: "send",
-          desc: "send Sushi coins to a specified address",
+          desc: "send Sushi tokens to a specified address",
         },
         {
           name: "transactions",
@@ -37,6 +37,7 @@ module ::Sushi::Interface::Sushi
         Options::BLOCK_INDEX,
         Options::TRANSACTION_ID,
         Options::FEE,
+        Options::DOMAIN,
       ])
     end
 
@@ -60,11 +61,19 @@ module ::Sushi::Interface::Sushi
     def send
       puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
       puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
-      puts_help(HELP_ADDRESS_RECIPIENT) unless recipient_address = __address
       puts_help(HELP_AMOUNT) unless amount = __amount
       puts_help(HELP_FEE) unless fee = __fee
+      puts_help(HELP_ADDRESS_DOMAIN_RECIPIENT) if __address.nil? && __domain.nil?
 
-      raise "invalid fee for the action send: minimum fee is #{min_fee_of_action("send")}" if fee < min_fee_of_action("send")
+      raise "invalid fee for the action send: minimum fee is #{Core::UTXO.fee("send")}" if fee < Core::UTXO.fee("send")
+
+      recipient_address = if address = __address
+                            address
+                          else
+                            resolved = resolve_internal(node, __domain.not_nil!)
+                            raise "domain #{__domain.not_nil!} is not resolved" unless resolved["resolved"].as_bool
+                            resolved["domain"]["address"].as_s
+                          end
 
       to_address = Address.from(recipient_address, "recipient")
 
@@ -75,7 +84,8 @@ module ::Sushi::Interface::Sushi
         {
           address:    wallet.address,
           public_key: wallet.public_key,
-          amount:     amount + fee,
+          amount:     amount,
+          fee:        fee,
         }
       )
 
@@ -148,74 +158,19 @@ module ::Sushi::Interface::Sushi
     def fees
       unless __json
         puts_success("showing fees for each action.")
-        puts_info("send     : #{FEE_SEND}")
+        puts_info("send       : #{Core::UTXO.fee("send")}")
+        puts_info("scars_buy  : #{Core::Scars.fee("scars_buy")}")
+        puts_info("scars_sell : #{Core::Scars.fee("scars_sell")}")
       else
-        json = {send: FEE_SEND}.to_json
+        json = {
+          send:       Core::UTXO.fee("send"),
+          scars_buy:  Core::Scars.fee("scars_buy"),
+          scars_sell: Core::Scars.fee("scars_sell"),
+        }.to_json
         puts json
       end
     end
 
-    def add_transaction(node : String,
-                        wallet : Core::Wallet,
-                        action : String,
-                        senders : Core::Models::Senders,
-                        recipients : Core::Models::Recipients,
-                        message : String)
-      unsigned_transaction =
-        create_unsigned_transaction(node, action, senders, recipients, message)
-
-      signed_transaction = sign(wallet, unsigned_transaction)
-
-      payload = {
-        call:        "create_transaction",
-        transaction: signed_transaction,
-      }.to_json
-
-      rpc(node, payload)
-
-      unless __json
-        puts_success "successfully create your transaction!"
-        puts_success "=> #{signed_transaction.id}"
-      else
-        puts signed_transaction.to_json
-      end
-    end
-
-    def create_unsigned_transaction(node : String,
-                                    action : String,
-                                    senders : Core::Models::Senders,
-                                    recipients : Core::Models::Recipients,
-                                    message : String)
-      payload = {
-        call:       "create_unsigned_transaction",
-        action:     action,
-        senders:    senders,
-        recipients: recipients,
-        message:    message,
-      }.to_json
-
-      body = rpc(node, payload)
-
-      Core::Transaction.from_json(body)
-    end
-
-    def sign(wallet : Core::Wallet, transaction : Core::Transaction) : Core::Transaction
-      secp256k1 = Core::ECDSA::Secp256k1.new
-
-      private_key = Wif.new(wallet.wif).private_key
-
-      sign = secp256k1.sign(
-        private_key.as_big_i,
-        transaction.to_hash,
-      )
-
-      transaction.signed(
-        sign[0].to_s(base: 16),
-        sign[1].to_s(base: 16),
-      )
-    end
-
-    include Core::Fees
     include GlobalOptionParser
   end
 end

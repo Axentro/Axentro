@@ -1,4 +1,6 @@
 module ::Sushi::Core::Consensus
+  CONFIRMATION = 10
+
   # SHA256 Implementation
   def valid_sha256?(block_index : Int64, block_hash : String, nonce : UInt64, _difficulty : Int32?) : Bool
     difficulty = _difficulty.nil? ? difficulty_at(block_index) : _difficulty.not_nil!
@@ -40,12 +42,15 @@ module ::Sushi::Core::Consensus
   end
 
   def difficulty_at(block_index : Int64) : Int32
-    return 2 if ENV.has_key?("E2E") # for e2e test
+    return 2 if ENV.has_key?("E2E")   # for e2e test
+    return 0 if ENV.has_key?("UT")    # for unit tests
+    return 3 if ENV.has_key?("DEBUG") # for debugging
     4
   end
 
   def miner_difficulty_at(block_index : Int64) : Int32
-    return 1 if ENV.has_key?("E2E") # for e2e test
+    return 1 if ENV.has_key?("E2E")   # for e2e test
+    return 2 if ENV.has_key?("DEBUG") # for debugging
     3
   end
 

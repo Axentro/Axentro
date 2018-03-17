@@ -18,6 +18,10 @@ module ::Sushi::Interface::Sushi
           desc: "get or create transactions (tx for short)",
         },
         {
+          name: "scars",
+          desc: "SushiCon Address Resolution System (SCARS), buy/sell a readable domain for your address (sc for short)",
+        },
+        {
           name: "config",
           desc: "save default configuration used by sushi, sushid and sushim (cg for short)",
         },
@@ -43,6 +47,11 @@ module ::Sushi::Interface::Sushi
       when "transaction", "tx"
         return Transaction.new(
           {name: "transaction", desc: "get or create transactions"},
+          next_parents,
+        ).run
+      when "scars", "sc"
+        return Scars.new(
+          {name: "scars", desc: "SushiCon Address Resolution System (SCARS), buy/sell a readable domain for your address"},
           next_parents,
         ).run
       when "config", "cg"

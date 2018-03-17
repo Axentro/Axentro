@@ -20,7 +20,7 @@ module ::Sushi::Interface::Sushi
         },
         {
           name: "amount",
-          desc: "show remaining amount of Sushi coins for specified address",
+          desc: "show remaining amount of Sushi tokens for specified address",
         },
       ]
     end
@@ -35,6 +35,7 @@ module ::Sushi::Interface::Sushi
         Options::JSON,
         Options::UNCONFIRMED,
         Options::ADDRESS,
+        Options::DOMAIN,
       ])
     end
 
@@ -132,7 +133,7 @@ module ::Sushi::Interface::Sushi
     end
 
     def amount
-      puts_help(HELP_WALLET_PATH_OR_ADDRESS) if __wallet_path.nil? && __address.nil?
+      puts_help(HELP_WALLET_PATH_OR_ADDRESS_OR_DOMAIN) if __wallet_path.nil? && __address.nil? && __domain.nil?
       puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
 
       address = if wallet_path = __wallet_path
@@ -140,8 +141,12 @@ module ::Sushi::Interface::Sushi
                   wallet.address
                 elsif _address = __address
                   _address
+                elsif _domain = __domain
+                  resolved = resolve_internal(node, _domain, !__unconfirmed)
+                  raise "domain #{_domain} is not resolved" unless resolved["resolved"].as_bool
+                  resolved["domain"]["address"].as_s
                 else
-                  puts_help(HELP_WALLET_PATH_OR_ADDRESS)
+                  puts_help(HELP_WALLET_PATH_OR_ADDRESS_OR_DOMAIN)
                 end
 
       payload = {call: "amount", address: address, unconfirmed: __unconfirmed}.to_json
@@ -150,7 +155,7 @@ module ::Sushi::Interface::Sushi
 
       unless __json
         json = JSON.parse(body)
-        puts_success("show Sushi coins amount of #{address}")
+        puts_success("show Sushi tokens amount of #{address}")
         puts_info(json["amount"].to_s)
       else
         puts body

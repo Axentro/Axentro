@@ -65,9 +65,7 @@ module ::Sushi::Core
         raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
 
         transactions.each_with_index do |transaction, idx|
-          raise "invalid prev_hash #{transaction.prev_hash} vs #{transactions[idx - 1].to_hash}" if idx != 0 && transaction.prev_hash != transactions[idx - 1].to_hash
-          raise "the transaction #{transaction.id} is already included in #{blockchain.block_index(transaction.id)}" if blockchain.block_index(transaction.id)
-          transaction.valid?(blockchain, @index, idx == 0, idx == 0 ? nil : transactions[0..idx - 1])
+          transaction.valid?(blockchain, @index, idx == 0, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
         end
 
         prev_block = blockchain.chain[-1]
@@ -94,29 +92,11 @@ module ::Sushi::Core
       true
     end
 
-    def calculate_utxo : NamedTuple(utxo: Hash(String, Int64), indices: Hash(String, Int64))
-      utxo = Hash(String, Int64).new
-
-      indices = Hash(String, Int64).new
-
-      @transactions.each_with_index do |transaction, i|
-        transaction.calculate_utxo.each do |address, amount|
-          utxo[address] ||= 0_i64
-          utxo[address] = prec(utxo[address] + amount)
-        end
-
-        indices[transaction.id] = @index
-      end
-
-      {utxo: utxo, indices: indices}
-    end
-
     def find_transaction(transaction_id : String) : Transaction?
       @transactions.find { |t| t.id == transaction_id }
     end
 
     include Hashes
     include Consensus
-    include Common::Num
   end
 end
