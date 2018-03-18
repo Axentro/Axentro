@@ -401,7 +401,7 @@ describe Transaction do
           "0", # sign_s
         )
 
-        expect_raises(Exception, "invalid served amount for coinbase transaction: 10") do
+        expect_raises(Exception, "invalid served amount for coinbase transaction: expected 10000 but got 10") do
           transaction.valid?(blockchain, 0_i64, true, [] of Transaction)
         end
       end
