@@ -65,6 +65,9 @@ module ::Sushi::Core
         current_index += 1
       end
     rescue e : Exception
+      error "an error happens during restoring a blockchain from database"
+      error e.message.not_nil! if e.message
+
       database.delete_blocks(current_index.not_nil!)
     ensure
       set_genesis if @chain.size == 0
