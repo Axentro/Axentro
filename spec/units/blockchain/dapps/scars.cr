@@ -1,5 +1,5 @@
-require "./../../spec_helper.cr"
-require "./../utils"
+require "./../../../spec_helper.cr"
+require "./../../utils"
 
 include Sushi::Core::Models
 include Sushi::Core
@@ -7,7 +7,7 @@ include Units::Utils
 
 describe Scars do
   describe "#resolve" do
-    it "should return nil if the number internal domains is less than confirmations" do
+    it "should return nil if the domain is not found" do
       with_factory do |block_factory|
         chain = block_factory.addBlock.chain
         scars = Scars.new
@@ -16,7 +16,7 @@ describe Scars do
       end
     end
 
-    it "should return nil if the domain is not found" do
+    it "should return nil if the number internal domains is less than confirmations" do
       with_factory do |block_factory|
         chain = block_factory.addBlocks(10).chain
         scars = Scars.new
