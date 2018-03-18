@@ -7,7 +7,7 @@ module ::Sushi::Core
     getter transaction_pool = [] of Transaction
     getter wallet : Wallet
 
-    DAPPS = %w(UTXO Scars Indices)
+    DAPPS = %w(UTXO Scars Indices Rejects)
 
     getter dapps : Array(DApp) = [] of DApp
 
@@ -155,8 +155,7 @@ module ::Sushi::Core
         warning "invalid transaction found, will be removed from the pool"
         warning e.message.not_nil! if e.message
 
-        # todo: show error message for cli/sushi/tx
-        indices.store_reject(transaction.id, e)
+        rejects.record_reject(transaction.id, e)
 
         @transaction_pool.delete(transaction)
       end

@@ -168,6 +168,10 @@ module ::Sushi::Core::Controllers
     def transaction(json, context, params)
       transaction_id = json["transaction_id"].as_s
 
+      if rejected_reason = @blockchain.rejects.find?(transaction_id)
+        raise "the transaction was rejected for the reason '#{rejected_reason}'"
+      end
+
       unless block_index = @blockchain.indices.get(transaction_id)
         raise "failed to find a block for the transaction #{transaction_id}"
       end
