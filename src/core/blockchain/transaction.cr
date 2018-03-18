@@ -87,7 +87,10 @@ module ::Sushi::Core
         raise "sign_s of coinbase transaction has to be '0'" if @sign_s != "0"
 
         served_sum = @recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
-        raise "invalid served amount for coinbase transaction: #{served_sum}" if served_sum != blockchain.served_amount(block_index)
+
+        if served_sum != blockchain.served_amount(block_index)
+          raise "invalid served amount for coinbase transaction: expected #{blockchain.served_amount(block_index)} but got #{served_sum}"
+        end
       end
 
       true
