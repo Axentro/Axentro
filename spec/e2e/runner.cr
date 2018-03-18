@@ -121,7 +121,7 @@ module ::E2E
 
       node(5000, true, nil, 5, @db_name, false)
 
-      sleep 120
+      sleep 180
 
       size1 = blockchain_size(5000)
 
