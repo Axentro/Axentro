@@ -75,9 +75,9 @@ module ::Sushi::Core
       info "core version: #{light_green(Core::CORE_VERSION)}"
 
       send(socket, M_TYPE_HANDSHAKE_MINER, {
-             version: Core::CORE_VERSION,
-             address: @wallet.address,
-           })
+        version: Core::CORE_VERSION,
+        address: @wallet.address,
+      })
 
       @num_threads.times do |thread|
         @threads << Thread.new do

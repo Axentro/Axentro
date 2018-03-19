@@ -244,10 +244,10 @@ module ::Sushi::Core
 
       if Core::CORE_VERSION > version
         return send(socket,
-                    M_TYPE_HANDSHAKE_MINER_REJECTED,
-                    {
-                      reason: "your sushim is out of date, please update it  (node version: #{Core::CORE_VERSION}, miner version: #{version})"
-                    })
+          M_TYPE_HANDSHAKE_MINER_REJECTED,
+          {
+            reason: "your sushim is out of date, please update it  (node version: #{Core::CORE_VERSION}, miner version: #{version})",
+          })
       end
 
       miner_network = Wallet.address_network_type(address)[:name]
@@ -285,10 +285,10 @@ module ::Sushi::Core
 
       if Core::CORE_VERSION > version
         return send(socket,
-                    M_TYPE_HANDSHAKE_NODE_REJECTED, {
-                      context: context,
-                      reason: "your sushid is out of date, please update it (connecting node: #{Core::CORE_VERSION}, your node: #{version})"
-                    })
+          M_TYPE_HANDSHAKE_NODE_REJECTED, {
+          context: context,
+          reason:  "your sushid is out of date, please update it (connecting node: #{Core::CORE_VERSION}, your node: #{version})",
+        })
       end
 
       return warning "node #{node_context[:id]} is already connected" if get_node?(node_context[:id])
