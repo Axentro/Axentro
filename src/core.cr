@@ -1,4 +1,5 @@
 module ::Sushi::Core
+  CORE_VERSION = 1
 end
 
 require "big"
