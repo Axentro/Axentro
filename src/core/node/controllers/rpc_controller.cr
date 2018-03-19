@@ -18,8 +18,8 @@ module ::Sushi::Core::Controllers
         return block(json, context, params)
       when "transactions" # blockchain
         return transactions(json, context, params)
-      # when "transaction"
-      #   return transaction(json, context, params)
+        # when "transaction"
+        #   return transaction(json, context, params)
       end
 
       @blockchain.dapps.each do |dapp|
