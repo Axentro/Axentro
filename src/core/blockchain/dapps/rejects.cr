@@ -32,5 +32,9 @@ module ::Sushi::Core
     def find?(transaction_id : String) : String?
       @rejects[transaction_id]?
     end
+
+    def rpc?(call, json, context, params)
+      nil
+    end
   end
 end

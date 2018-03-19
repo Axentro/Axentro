@@ -6,6 +6,7 @@ module ::Sushi::Core
     abstract def record(chain : Models::Chain)
     abstract def clear
     abstract def fee(action : String) : Int64
+    abstract def rpc?(call : String, json : JSON::Any, context : HTTP::Server::Context, params : Hash(String, String)) : HTTP::Server::Context?
 
     def valid?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
       raise "senders have to be only one currently" if transaction.senders.size != 1

@@ -185,6 +185,41 @@ RULE
       0_i64 # not coming here
     end
 
+    def rpc?(call, json, context, params)
+      case call
+      when "scars_resolve"
+        return scars_resolve(json, context, params)
+      when "scars_for_sale"
+        return scars_for_sale(json, context, params)
+      end
+
+      nil
+    end
+
+    def scars_resolve(json, context, params)
+      domain_name = json["domain_name"].as_s
+      confirmed = json["confirmed"].as_bool
+
+      domain = confirmed ? resolve(domain_name) : resolve_unconfirmed(domain_name, [] of Transaction)
+
+      response = if domain
+                   {resolved: true, domain: domain}.to_json
+                 else
+                   default_domain = {domain_name: domain_name, address: "", status: Models::DomainStatus::NotFound, price: 0}
+                   {resolved: false, domain: default_domain}.to_json
+                 end
+
+      context.response.print response
+      context
+    end
+
+    def scars_for_sale(json, context, params)
+      domain_for_sale = sales
+
+      context.response.print domain_for_sale.to_json
+      context
+    end
+
     include Consensus
   end
 end

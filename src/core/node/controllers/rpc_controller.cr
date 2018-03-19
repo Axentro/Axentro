@@ -3,29 +3,28 @@ module ::Sushi::Core::Controllers
     def exec_internal_post(json, context, params) : HTTP::Server::Context
       call = json["call"].to_s
 
+      # todo
+      # may be blockchain itself is also dapp
       case call
       when "create_unsigned_transaction"
         return create_unsigned_transaction(json, context, params)
       when "create_transaction"
         return create_transaction(json, context, params)
-      when "amount"
-        return amount(json, context, params)
-      when "blockchain_size"
+      when "blockchain_size" # blockchain
         return blockchain_size(json, context, params)
-      when "blockchain"
+      when "blockchain" # blockchain
         return blockchain(json, context, params)
-      when "block"
+      when "block" # blockchain
         return block(json, context, params)
-      when "transactions"
+      when "transactions" # blockchain
         return transactions(json, context, params)
-      when "transaction"
-        return transaction(json, context, params)
-      when "confirmation"
-        return confirmation(json, context, params)
-      when "scars_resolve"
-        return scars_resolve(json, context, params)
-      when "scars_for_sale"
-        return scars_for_sale(json, context, params)
+      # when "transaction"
+      #   return transaction(json, context, params)
+      end
+
+      @blockchain.dapps.each do |dapp|
+        next unless res_context = dapp.rpc?(call, json, context, params)
+        return res_context
       end
 
       unpermitted_call(call, context)
@@ -33,30 +32,6 @@ module ::Sushi::Core::Controllers
 
     def exec_internal_get(context, params) : HTTP::Server::Context
       unpermitted_method(context)
-    end
-
-    def scars_resolve(json, context, params)
-      domain_name = json["domain_name"].as_s
-      confirmed = json["confirmed"].as_bool
-
-      domain = confirmed ? @blockchain.scars.resolve(domain_name) : @blockchain.scars.resolve_unconfirmed(domain_name, [] of Transaction)
-
-      response = if domain
-                   {resolved: true, domain: domain}.to_json
-                 else
-                   default_domain = {domain_name: domain_name, address: "", status: Models::DomainStatus::NotFound, price: 0}
-                   {resolved: false, domain: default_domain}.to_json
-                 end
-
-      context.response.print response
-      context
-    end
-
-    def scars_for_sale(json, context, params)
-      domain_for_sale = @blockchain.scars.sales
-
-      context.response.print domain_for_sale.to_json
-      context
     end
 
     def create_transaction(json, context, params)
@@ -90,18 +65,6 @@ module ::Sushi::Core::Controllers
       raise "invalid fee #{fee} for the action #{action}" if fee <= 0.0
 
       context.response.print transaction.to_json
-      context
-    end
-
-    def amount(json, context, params)
-      address = json["address"].to_s
-      unconfirmed = json["unconfirmed"].as_bool
-
-      amount = unconfirmed ? @blockchain.utxo.get_unconfirmed(address, [] of Transaction) : @blockchain.utxo.get(address)
-
-      json = {amount: amount, address: address, unconfirmed: unconfirmed}.to_json
-
-      context.response.print json
       context
     end
 
@@ -162,44 +125,6 @@ module ::Sushi::Core::Controllers
         raise "please specify a block index or an address"
       end
 
-      context
-    end
-
-    def transaction(json, context, params)
-      transaction_id = json["transaction_id"].as_s
-
-      if rejected_reason = @blockchain.rejects.find?(transaction_id)
-        raise "the transaction was rejected for the reason '#{rejected_reason}'"
-      end
-
-      unless block_index = @blockchain.indices.get(transaction_id)
-        raise "failed to find a block for the transaction #{transaction_id}"
-      end
-
-      unless transaction = @blockchain.chain[block_index].find_transaction(transaction_id)
-        raise "failed to find a transaction for #{transaction_id}"
-      end
-
-      context.response.print transaction.to_json
-      context
-    end
-
-    def confirmation(json, context, params)
-      transaction_id = json["transaction_id"].as_s
-
-      unless block_index = @blockchain.indices.get(transaction_id)
-        raise "failed to find a block for the transaction #{transaction_id}"
-      end
-
-      latest_index = @blockchain.chain[-1].index
-
-      result = {
-        confirmed:     (latest_index - block_index) >= UTXO::CONFIRMATION,
-        confirmations: latest_index - block_index,
-        threshold:     UTXO::CONFIRMATION,
-      }.to_json
-
-      context.response.print result
       context
     end
 

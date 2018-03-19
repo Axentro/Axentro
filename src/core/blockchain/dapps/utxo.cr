@@ -120,6 +120,27 @@ module ::Sushi::Core
       1_i64
     end
 
+    def rpc?(call, json, context, params)
+      case call
+      when "amount"
+        return amount(json, context, params)
+      end
+
+      nil
+    end
+
+    def amount(json, context, params)
+      address = json["address"].to_s
+      unconfirmed = json["unconfirmed"].as_bool
+
+      amount = unconfirmed ? get_unconfirmed(address, [] of Transaction) : get(address)
+
+      json = {amount: amount, address: address, unconfirmed: unconfirmed}.to_json
+
+      context.response.print json
+      context
+    end
+
     include Logger
     include Consensus
     include Common::Color
