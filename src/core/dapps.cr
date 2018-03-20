@@ -1,4 +1,7 @@
 module ::Sushi::Core
+  # todo:
+  # plugin sample
+  # token sample
   abstract class DApp
     abstract def actions : Array(String)
     abstract def related?(action : String) : Bool
