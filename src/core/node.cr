@@ -42,6 +42,7 @@ module ::Sushi::Core
       @id = Random::Secure.hex(16)
       @connection_salt = Random::Secure.hex(16)
 
+      info "core version: #{light_green(Core::CORE_VERSION)}"
       info "id: #{light_green(@id)}"
       info "is_private: #{light_green(@is_private)}"
       info "public url: #{light_green(@public_host)}:#{light_green(@public_port)}" unless @is_private
@@ -93,6 +94,7 @@ module ::Sushi::Core
       peer(socket)
 
       send(socket, M_TYPE_HANDSHAKE_NODE, {
+        version:         Core::CORE_VERSION,
         context:         context,
         connection_salt: @connection_salt,
       })
@@ -236,7 +238,18 @@ module ::Sushi::Core
       return if flag_get?(FLAG_BLOCKCHAIN_SYNCING)
 
       _m_content = M_CONTENT_HANDSHAKE_MINER.from_json(_content)
+
+      version = _m_content.version
       address = _m_content.address
+
+      if Core::CORE_VERSION > version
+        return send(socket,
+          M_TYPE_HANDSHAKE_MINER_REJECTED,
+          {
+            reason: "your sushim is out of date, please update it  (node version: #{Core::CORE_VERSION}, miner version: #{version})",
+          })
+      end
+
       miner_network = Wallet.address_network_type(address)[:name]
 
       if miner_network != @network_type
@@ -254,6 +267,7 @@ module ::Sushi::Core
       info "new miner: #{light_green(miner[:address])} (#{@miners.size})"
 
       send(socket, M_TYPE_HANDSHAKE_MINER_ACCEPTED, {
+        version:    Core::CORE_VERSION,
         block:      @blockchain.latest_block,
         difficulty: miner_difficulty_at(@blockchain.latest_index),
       })
@@ -264,9 +278,18 @@ module ::Sushi::Core
 
       _m_content = M_CONTENT_HANDSHAKE_NODE.from_json(_content)
 
+      version = _m_content.version
       node_context = _m_content.context
       connection_salt = _m_content.connection_salt
       connection_hash = sha256(connection_salt + @id)
+
+      if Core::CORE_VERSION > version
+        return send(socket,
+          M_TYPE_HANDSHAKE_NODE_REJECTED, {
+          context: context,
+          reason:  "your sushid is out of date, please update it (connecting node: #{Core::CORE_VERSION}, your node: #{version})",
+        })
+      end
 
       return warning "node #{node_context[:id]} is already connected" if get_node?(node_context[:id])
 
@@ -304,7 +327,7 @@ module ::Sushi::Core
       asserted_connection_hash = http_handshake(node_context)
 
       if asserted_connection_hash != connection_hash
-        raise "invalid connection hash: #{asserted_connection_hash} != #{connection_hash}"
+        raise "invalid connection hash: expected #{connection_hash} but got #{asserted_connection_hash}"
       end
 
       @nodes << {socket: socket, context: node_context}

@@ -9,6 +9,7 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_HANDSHAKE_MINER
     JSON.mapping({
+      version: Int32,
       address: String,
     })
   end
@@ -19,6 +20,7 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_HANDSHAKE_MINER_ACCEPTED
     JSON.mapping({
+      version:    Int32,
       block:      Block,
       difficulty: Int32,
     })
@@ -61,6 +63,7 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_HANDSHAKE_NODE
     JSON.mapping({
+      version:         Int32,
       context:         Models::NodeContext,
       connection_salt: String,
     })
