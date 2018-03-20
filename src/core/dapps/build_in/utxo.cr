@@ -1,4 +1,4 @@
-module ::Sushi::Core
+module ::Sushi::Core::DApps
   class UTXO < DApp
     @utxo_internal : Array(Hash(String, Int64)) = Array(Hash(String, Int64)).new
 
@@ -141,8 +141,6 @@ module ::Sushi::Core
       1_i64
     end
 
-    include Logger
     include Consensus
-    include Common::Color
   end
 end

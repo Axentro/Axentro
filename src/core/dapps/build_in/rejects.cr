@@ -1,4 +1,4 @@
-module ::Sushi::Core
+module ::Sushi::Core::DApps
   class Rejects < DApp
     @rejects : Hash(String, String) = Hash(String, String).new
 
@@ -7,21 +7,19 @@ module ::Sushi::Core
     end
 
     def related?(action : String) : Bool
-      true
+      false
     end
 
     def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
       true
     end
 
-    # todo: can we remove this method?
     def record_reject(transaction_id : String, e : Exception)
       error_message = e.message ? e.message.not_nil! : "unknown"
       @rejects[transaction_id] ||= error_message
     end
 
     def record(chain : Models::Chain)
-      # todo: think about this
     end
 
     def clear

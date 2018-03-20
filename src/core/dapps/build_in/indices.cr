@@ -1,4 +1,4 @@
-module ::Sushi::Core
+module ::Sushi::Core::DApps
   class Indices < DApp
     @indices : Array(Hash(String, Int64)) = Array(Hash(String, Int64)).new
 
@@ -15,7 +15,7 @@ module ::Sushi::Core
     end
 
     def related?(action : String) : Bool
-      true
+      false
     end
 
     def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool

@@ -1,4 +1,4 @@
-module ::Sushi::Core
+module ::Sushi::Core::DApps
   # SushiChain Address Resolution System
 
   # valid suffixes

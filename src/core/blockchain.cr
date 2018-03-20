@@ -7,7 +7,8 @@ module ::Sushi::Core
     getter transaction_pool = [] of Transaction
     getter wallet : Wallet
 
-    DAPPS = %w(UTXO Scars Indices Rejects)
+    # todo: loading during runtime
+    DAPPS = %w(BlockchainInfo UTXO Scars Indices Rejects)
 
     getter dapps : Array(DApp) = [] of DApp
 

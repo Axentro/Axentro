@@ -1,5 +1,4 @@
 module ::Sushi::Core
-  # todo: move directory
   abstract class DApp
     abstract def actions : Array(String)
     abstract def related?(action : String) : Bool

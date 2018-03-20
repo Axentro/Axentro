@@ -3,23 +3,11 @@ module ::Sushi::Core::Controllers
     def exec_internal_post(json, context, params) : HTTP::Server::Context
       call = json["call"].to_s
 
-      # todo
-      # may be blockchain itself is also dapp
       case call
       when "create_unsigned_transaction"
         return create_unsigned_transaction(json, context, params)
       when "create_transaction"
         return create_transaction(json, context, params)
-      when "blockchain_size" # blockchain
-        return blockchain_size(json, context, params)
-      when "blockchain" # blockchain
-        return blockchain(json, context, params)
-      when "block" # blockchain
-        return block(json, context, params)
-      when "transactions" # blockchain
-        return transactions(json, context, params)
-        # when "transaction"
-        #   return transaction(json, context, params)
       end
 
       @blockchain.dapps.each do |dapp|
@@ -65,66 +53,6 @@ module ::Sushi::Core::Controllers
       raise "invalid fee #{fee} for the action #{action}" if fee <= 0.0
 
       context.response.print transaction.to_json
-      context
-    end
-
-    def blockchain_size(json, context, params)
-      size = @blockchain.chain.size
-
-      json = {size: size}.to_json
-      context.response.print json
-      context
-    end
-
-    def blockchain(json, context, params)
-      if json["header"].as_bool
-        context.response.print @blockchain.headers.to_json
-      else
-        context.response.print @blockchain.chain.to_json
-      end
-
-      context
-    end
-
-    def block(json, context, params)
-      block = if index = json["index"]?
-                if index.as_i > @blockchain.chain.size - 1
-                  raise "invalid index #{index} (Blockchain size is #{@blockchain.chain.size})"
-                end
-
-                @blockchain.chain[index.as_i]
-              elsif transaction_id = json["transaction_id"]?
-                unless block_index = @blockchain.indices.get(transaction_id.to_s)
-                  raise "failed to find a block for the transaction #{transaction_id}"
-                end
-
-                @blockchain.chain[block_index]
-              else
-                raise "please specify block index or transaction id"
-              end
-
-      if json["header"].as_bool
-        context.response.print block.to_header.to_json
-      else
-        context.response.print block.to_json
-      end
-
-      context
-    end
-
-    def transactions(json, context, params)
-      if index = json["index"]?
-        if index.as_i > @blockchain.chain.size - 1
-          raise "invalid index #{index.as_i} (Blockchain size is #{@blockchain.chain.size})"
-        end
-        context.response.print @blockchain.chain[index.as_i].transactions.to_json
-      elsif address = json["address"]?
-        transactions = @blockchain.transactions_for_address(address.as_s)
-        context.response.print transactions.to_json
-      else
-        raise "please specify a block index or an address"
-      end
-
       context
     end
 
