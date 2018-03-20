@@ -56,7 +56,7 @@ module ::Sushi::Core
         raise "There must be some transactions" if transactions.size < 1
 
         if @prev_hash != transactions[-1].to_hash
-          raise "invalid prev_hash #{@prev_hash} vs #{transactions[-1].to_hash}"
+          raise "invalid prev_hash: expected #{transactions[-1].to_hash} but got #{@prev_hash}"
         end
 
         if blockchain.indices.get(@id)

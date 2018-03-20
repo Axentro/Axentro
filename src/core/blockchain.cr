@@ -12,16 +12,16 @@ module ::Sushi::Core
     getter dapps : Array(DApp) = [] of DApp
 
     {% for dapp in DAPPS %}
-      getter {{ dapp.id.underscore }} : {{ dapp.id }} = {{ dapp.id }}.new
+      @{{ dapp.id.underscore }} : {{ dapp.id }}?
+
+      def {{ dapp.id.underscore }} : {{ dapp.id }}
+        @{{ dapp.id.underscore }}.not_nil!
+      end
     {% end %}
 
     @coinbase_transaction : Transaction?
 
     def initialize(@wallet : Wallet, @database : Database? = nil)
-      {% for dapp in DAPPS %}
-        @dapps.push(@{{ dapp.id.underscore }})
-      {% end %}
-
       if database = @database
         restore_from_database(database)
       else
@@ -29,6 +29,15 @@ module ::Sushi::Core
       end
 
       @coinbase_transaction = create_coinbase_transaction([] of Models::Miner)
+
+      setup_dapps
+    end
+
+    def setup_dapps
+      {% for dapp in DAPPS %}
+        @{{ dapp.id.underscore }} = {{ dapp.id }}.new(self)
+        @dapps.push(@{{ dapp.id.underscore }}.not_nil!)
+      {% end %}
     end
 
     def coinbase_transaction : Transaction
@@ -58,10 +67,6 @@ module ::Sushi::Core
 
         @chain.push(block)
 
-        @dapps.each do |dapp|
-          dapp.record(@chain)
-        end
-
         current_index += 1
       end
     rescue e : Exception
@@ -71,6 +76,10 @@ module ::Sushi::Core
       database.delete_blocks(current_index.not_nil!)
     ensure
       set_genesis if @chain.size == 0
+
+      @dapps.each do |dapp|
+        dapp.record(@chain)
+      end
     end
 
     def update_coinbase_transaction(miners : Models::Miners)

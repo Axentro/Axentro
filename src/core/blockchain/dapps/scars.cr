@@ -104,8 +104,11 @@ module ::Sushi::Core
       true
     end
 
-    # TODO - Kings - I think we should a regex here such as: ^[a-zA-z0-9]{1,20}\.(sc|sushichain)$
     def valid_domain?(domain_name : String) : Bool
+      Core::Scars.valid_domain?(domain_name)
+    end
+
+    def self.valid_domain?(domain_name : String) : Bool
       unless domain_name =~ /^[a-zA-z0-9]{1,20}\.(#{SUFFIX.join("|")})$/
         domain_rule = <<-RULE
 Your domain '#{domain_name}' is not valid
@@ -118,10 +121,6 @@ RULE
       end
 
       true
-    end
-
-    def self.valid_domain?(domain_name : String) : Bool
-      self.new.valid_domain?(domain_name)
     end
 
     def record(chain)
@@ -174,7 +173,7 @@ RULE
       domain_map
     end
 
-    def fee(action : String) : Int64
+    def self.fee(action : String) : Int64
       case action
       when "scars_buy"
         return 100_i64
@@ -182,7 +181,7 @@ RULE
         return 10_i64
       end
 
-      0_i64 # not coming here
+      raise "got unknown action #{action} during getting a fee for scars"
     end
 
     def rpc?(call, json, context, params)

@@ -116,10 +116,6 @@ module ::Sushi::Core
       @utxo_internal.clear
     end
 
-    def fee(action : String) : Int64
-      1_i64
-    end
-
     def rpc?(call, json, context, params)
       case call
       when "amount"
@@ -139,6 +135,10 @@ module ::Sushi::Core
 
       context.response.print json
       context
+    end
+
+    def self.fee(action : String) : Int64
+      1_i64
     end
 
     include Logger

@@ -38,10 +38,6 @@ module ::Sushi::Core
       @indices.clear
     end
 
-    def fee(action : String) : Int64
-      0_i64
-    end
-
     def rpc?(call, json, context, params)
       case call
       when "transaction"
@@ -56,22 +52,17 @@ module ::Sushi::Core
     def transaction(json, context, params)
       transaction_id = json["transaction_id"].as_s
 
-      # todo
-      # if rejected_reason = @blockchain.rejects.find?(transaction_id)
-      #   raise "the transaction was rejected for the reason '#{rejected_reason}'"
-      # end
+      result = if block_index = get(transaction_id)
+                 if transaction = blockchain.chain[block_index].find_transaction(transaction_id)
+                   {found: true, transaction: transaction}
+                 else
+                   {found: false}
+                 end
+               else
+                 {found: false}
+               end
 
-      unless block_index = get(transaction_id)
-        raise "failed to find a block for the transaction #{transaction_id}"
-      end
-
-      # todo
-      # think about this
-      unless transaction = @blockchain.chain[block_index].find_transaction(transaction_id)
-        raise "failed to find a transaction for #{transaction_id}"
-      end
-
-      context.response.print transaction.to_json
+      context.response.print result.to_json
       context
     end
 
