@@ -41,12 +41,12 @@ module ::Sushi::Core::DApps::BuildIn
       result = if rejected_reason = @rejects[transaction_id]?
                  {
                    rejected: true,
-                   reason: rejected_reason,
+                   reason:   rejected_reason,
                  }
                else
                  {
                    rejected: false,
-                   reason: "",
+                   reason:   "",
                  }
                end
 

@@ -1,7 +1,7 @@
 module ::Sushi::Core
   class Transaction
     MESSAGE_SIZE_LIMIT = 512
-    TOKEN_SIZE_LIMIT = 16
+    TOKEN_SIZE_LIMIT   =  16
 
     JSON.mapping(
       id: String,
