@@ -1,4 +1,4 @@
-module ::Sushi::Core::DApps
+module ::Sushi::Core::DApps::BuildIn
   # SushiChain Address Resolution System
 
   # valid suffixes
@@ -105,7 +105,7 @@ module ::Sushi::Core::DApps
     end
 
     def valid_domain?(domain_name : String) : Bool
-      Core::Scars.valid_domain?(domain_name)
+      Core::DApps::BuildIn::Scars.valid_domain?(domain_name)
     end
 
     def self.valid_domain?(domain_name : String) : Bool

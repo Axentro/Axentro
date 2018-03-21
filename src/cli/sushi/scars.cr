@@ -56,9 +56,11 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_PRICE) unless price = __price
       puts_help(HELP_DOMAIN) unless domain = __domain
 
-      raise "invalid fee for the action buy: minimum fee is #{Core::Scars.fee("scars_buy")}" if fee < Core::Scars.fee("scars_buy")
+      if fee < Core::DApps::BuildIn::Scars.fee("scars_buy")
+        raise "invalid fee for the action buy: minimum fee is #{Core::DApps::BuildIn::Scars.fee("scars_buy")}"
+      end
 
-      Core::Scars.valid_domain?(domain)
+      Core::DApps::BuildIn::Scars.valid_domain?(domain)
 
       resolved = resolve_internal(node, domain, false)
 
@@ -86,7 +88,7 @@ module ::Sushi::Interface::Sushi
         })
       end
 
-      add_transaction(node, wallet, "scars_buy", senders, recipients, domain)
+      add_transaction(node, wallet, "scars_buy", senders, recipients, domain, TOKEN_DEFAULT)
     end
 
     def sell
@@ -96,7 +98,9 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_PRICE) unless price = __price
       puts_help(HELP_DOMAIN) unless domain = __domain
 
-      raise "invalid fee for the action sell: minimum fee is #{Core::Scars.fee("scars_sell")}" if fee < Core::Scars.fee("scars_sell")
+      if fee < Core::DApps::BuildIn::Scars.fee("scars_sell")
+        raise "invalid fee for the action sell: minimum fee is #{Core::DApps::BuildIn::Scars.fee("scars_sell")}"
+      end
 
       resolved = resolve_internal(node, domain, false)
 
@@ -118,7 +122,7 @@ module ::Sushi::Interface::Sushi
         amount:  price,
       })
 
-      add_transaction(node, wallet, "scars_sell", senders, recipients, domain)
+      add_transaction(node, wallet, "scars_sell", senders, recipients, domain, TOKEN_DEFAULT)
     end
 
     def sales

@@ -65,6 +65,10 @@ module ::Sushi::Core
         raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
 
         transactions.each_with_index do |transaction, idx|
+          puts "---- transaction.valid? ----"
+          puts idx
+          puts transaction
+
           transaction.valid?(blockchain, @index, idx == 0, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
         end
 

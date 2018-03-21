@@ -1,5 +1,7 @@
-module ::Sushi::Core::DApps
+module ::Sushi::Core::DApps::BuildIn
   class UTXO < DApp
+    DEFAULT = "SHARI"
+
     @utxo_internal : Array(Hash(String, Int64)) = Array(Hash(String, Int64)).new
 
     def get(address : String) : Int64
@@ -48,6 +50,9 @@ module ::Sushi::Core::DApps
     end
 
     def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
+      # ignore if the token is not SHARI
+      return true if transaction.token != DEFAULT
+
       raise "recipients have to be less than one" if transaction.recipients.size > 1
 
       sender = transaction.senders[0]

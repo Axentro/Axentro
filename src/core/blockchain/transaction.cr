@@ -1,6 +1,7 @@
 module ::Sushi::Core
   class Transaction
     MESSAGE_SIZE_LIMIT = 512
+    TOKEN_SIZE_LIMIT = 16
 
     JSON.mapping(
       id: String,
@@ -8,6 +9,7 @@ module ::Sushi::Core
       senders: Models::Senders,
       recipients: Models::Recipients,
       message: String,
+      token: String,
       prev_hash: String,
       sign_r: String,
       sign_s: String,
@@ -21,6 +23,7 @@ module ::Sushi::Core
       @senders : Models::Senders,
       @recipients : Models::Recipients,
       @message : String,
+      @token : String,
       @prev_hash : String,
       @sign_r : String,
       @sign_s : String
@@ -39,8 +42,10 @@ module ::Sushi::Core
     end
 
     def valid?(blockchain : Blockchain, block_index : Int64, is_coinbase : Bool, transactions : Array(Transaction)) : Bool
+      puts "is_coinbase: #{is_coinbase}"
       raise "length of transaction id have to be 64: #{@id}" if @id.size != 64
       raise "message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
+      raise "token size exceeds: #{self.token.bytesize} for #{TOKEN_SIZE_LIMIT}" if self.token.bytesize > TOKEN_SIZE_LIMIT
 
       @senders.each do |sender|
         raise "invalid checksum for sender's address: #{sender[:address]}" unless Keys::Address.from(sender[:address], "sender")
@@ -79,8 +84,12 @@ module ::Sushi::Core
           dapp.valid?(self, transactions) if dapp.related?(@action)
         end
       else
+        puts "--------- COINBASE -----------"
+        puts "TOKEN: #{@token}"
+        puts "------------------------------"
         raise "actions has to be 'head' for coinbase transaction " if @action != "head"
         raise "message has to be '0' for coinbase transaction" if @message != "0"
+        raise "token has to be #{Core::DApps::BuildIn::UTXO::DEFAULT} for coinbase transaction" if @token != Core::DApps::BuildIn::UTXO::DEFAULT
         raise "there should be no Sender for a coinbase transaction" if @senders.size != 0
         raise "prev_hash of coinbase transaction has to be '0'" if @prev_hash != "0"
         raise "sign_r of coinbase transaction has to be '0'" if @sign_r != "0"
@@ -103,6 +112,7 @@ module ::Sushi::Core
         self.senders,
         self.recipients,
         self.message,
+        self.token,
         self.prev_hash,
         sign_r,
         sign_s,
@@ -116,6 +126,7 @@ module ::Sushi::Core
         self.senders,
         self.recipients,
         self.message,
+        self.token,
         "0",
         "0",
         "0",

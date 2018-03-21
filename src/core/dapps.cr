@@ -1,7 +1,5 @@
-module ::Sushi::Core
-  # todo:
-  # plugin sample
-  # token sample
+module ::Sushi::Core::DApps
+  # todo: plugin sample, token sample
   abstract class DApp
     abstract def actions : Array(String)
     abstract def related?(action : String) : Bool
@@ -36,3 +34,16 @@ end
 
 require "./*"
 require "./dapps/*"
+
+module ::Sushi::Core::DApps
+  getter dapps : Array(DApp) = [] of DApp
+
+  def setup_dapps
+    {% for dapp in BUILD_IN_DAPPS %}
+      @{{ dapp.id.underscore }} = {{ dapp.id }}.new(self)
+      @dapps.push(@{{ dapp.id.underscore }}.not_nil!)
+    {% end %}
+  end
+
+  include BuildIn
+end

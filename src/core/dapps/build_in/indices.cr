@@ -1,4 +1,4 @@
-module ::Sushi::Core::DApps
+module ::Sushi::Core::DApps::BuildIn
   class Indices < DApp
     @indices : Array(Hash(String, Int64)) = Array(Hash(String, Int64)).new
 

@@ -1,4 +1,4 @@
-module ::Sushi::Core::DApps
+module ::Sushi::Core::DApps::BuildIn
   class Rejects < DApp
     @rejects : Hash(String, String) = Hash(String, String).new
 

@@ -1,24 +1,14 @@
 require "./blockchain/consensus"
 require "./blockchain/*"
+require "./dapps"
 
 module ::Sushi::Core
   class Blockchain
+    TOKEN_DEFAULT = Core::DApps::BuildIn::UTXO::DEFAULT
+
     getter chain : Models::Chain = Models::Chain.new
     getter transaction_pool = [] of Transaction
     getter wallet : Wallet
-
-    # todo: loading during runtime
-    DAPPS = %w(BlockchainInfo UTXO Scars Indices Rejects)
-
-    getter dapps : Array(DApp) = [] of DApp
-
-    {% for dapp in DAPPS %}
-      @{{ dapp.id.underscore }} : {{ dapp.id }}?
-
-      def {{ dapp.id.underscore }} : {{ dapp.id }}
-        @{{ dapp.id.underscore }}.not_nil!
-      end
-    {% end %}
 
     @coinbase_transaction : Transaction?
 
@@ -32,13 +22,6 @@ module ::Sushi::Core
       @coinbase_transaction = create_coinbase_transaction([] of Models::Miner)
 
       setup_dapps
-    end
-
-    def setup_dapps
-      {% for dapp in DAPPS %}
-        @{{ dapp.id.underscore }} = {{ dapp.id }}.new(self)
-        @dapps.push(@{{ dapp.id.underscore }}.not_nil!)
-      {% end %}
     end
 
     def coinbase_transaction : Transaction
@@ -230,10 +213,11 @@ module ::Sushi::Core
         "head",
         senders,
         [node_reccipient] + miners_recipients,
-        "0", # message
-        "0", # prev_hash
-        "0", # sign_r
-        "0", # sign_s
+        "0",           # message
+        TOKEN_DEFAULT, # token
+        "0",           # prev_hash
+        "0",           # sign_r
+        "0",           # sign_s
       )
     end
 
@@ -244,13 +228,14 @@ module ::Sushi::Core
       @chain[-1].transactions[1..-1].reduce(0_i64) { |fees, transaction| fees + transaction.calculate_fee }
     end
 
-    def create_unsigned_transaction(action, senders, recipients, message) : Transaction
+    def create_unsigned_transaction(action, senders, recipients, message, token) : Transaction
       Transaction.new(
         Transaction.create_id,
         action,
         senders,
         recipients,
         message,
+        token,
         "0", # prev_hash
         "0", # sign_r
         "0", # sign_s
@@ -286,5 +271,6 @@ module ::Sushi::Core
     include Logger
     include Hashes
     include Consensus
+    include DApps
   end
 end

@@ -1,4 +1,4 @@
-module ::Sushi::Core::DApps
+module ::Sushi::Core::DApps::BuildIn
   class BlockchainInfo < DApp
     def actions : Array(String)
       [] of String

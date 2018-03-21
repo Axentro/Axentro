@@ -36,16 +36,18 @@ module ::Sushi::Core::Controllers
     end
 
     def create_unsigned_transaction(json, context, params)
-      action = json["action"].to_s
+      action = json["action"].as_s
       senders = Models::Senders.from_json(json["senders"].to_json)
       recipients = Models::Recipients.from_json(json["recipients"].to_json)
-      message = json["message"].to_s
+      message = json["message"].as_s
+      token = json["token"].as_s
 
       transaction = @blockchain.create_unsigned_transaction(
         action,
         senders,
         recipients,
         message,
+        token,
       )
 
       fee = transaction.calculate_fee

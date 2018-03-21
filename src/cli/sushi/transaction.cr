@@ -65,7 +65,9 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_FEE) unless fee = __fee
       puts_help(HELP_ADDRESS_DOMAIN_RECIPIENT) if __address.nil? && __domain.nil?
 
-      raise "invalid fee for the action send: minimum fee is #{Core::UTXO.fee("send")}" if fee < Core::UTXO.fee("send")
+      if fee < Core::DApps::BuildIn::UTXO.fee("send")
+        raise "invalid fee for the action send: minimum fee is #{Core::DApps::BuildIn::UTXO.fee("send")}"
+      end
 
       recipient_address = if address = __address
                             address
@@ -97,7 +99,7 @@ module ::Sushi::Interface::Sushi
         }
       )
 
-      add_transaction(node, wallet, "send", senders, recipients, __message)
+      add_transaction(node, wallet, "send", senders, recipients, __message, TOKEN_DEFAULT)
     end
 
     def transactions
@@ -173,17 +175,18 @@ module ::Sushi::Interface::Sushi
       end
     end
 
+    # todo: avoid hardcoding
     def fees
       unless __json
         puts_success("showing fees for each action.")
-        puts_info("send       : #{Core::UTXO.fee("send")}")
-        puts_info("scars_buy  : #{Core::Scars.fee("scars_buy")}")
-        puts_info("scars_sell : #{Core::Scars.fee("scars_sell")}")
+        puts_info("send       : #{Core::DApps::BuildIn::UTXO.fee("send")}")
+        puts_info("scars_buy  : #{Core::DApps::BuildIn::Scars.fee("scars_buy")}")
+        puts_info("scars_sell : #{Core::DApps::BuildIn::Scars.fee("scars_sell")}")
       else
         json = {
-          send:       Core::UTXO.fee("send"),
-          scars_buy:  Core::Scars.fee("scars_buy"),
-          scars_sell: Core::Scars.fee("scars_sell"),
+          send:       Core::DApps::BuildIn::UTXO.fee("send"),
+          scars_buy:  Core::DApps::BuildIn::Scars.fee("scars_buy"),
+          scars_sell: Core::DApps::BuildIn::Scars.fee("scars_sell"),
         }.to_json
         puts json
       end

@@ -11,6 +11,8 @@ require "./cli/modules"
 module ::Sushi::Interface
   alias SushiAction = NamedTuple(name: String, desc: String)
 
+  TOKEN_DEFAULT = Core::DApps::BuildIn::UTXO::DEFAULT
+
   abstract class CLI
     def initialize(
       @action : SushiAction,
@@ -132,9 +134,10 @@ module ::Sushi::Interface
                         action : String,
                         senders : Core::Models::Senders,
                         recipients : Core::Models::Recipients,
-                        message : String)
+                        message : String,
+                        token : String)
       unsigned_transaction =
-        create_unsigned_transaction(node, action, senders, recipients, message)
+        create_unsigned_transaction(node, action, senders, recipients, message, token)
 
       signed_transaction = sign(wallet, unsigned_transaction)
 
@@ -157,13 +160,15 @@ module ::Sushi::Interface
                                     action : String,
                                     senders : Core::Models::Senders,
                                     recipients : Core::Models::Recipients,
-                                    message : String)
+                                    message : String,
+                                    token : String)
       payload = {
         call:       "create_unsigned_transaction",
         action:     action,
         senders:    senders,
         recipients: recipients,
         message:    message,
+        token:      token,
       }.to_json
 
       body = rpc(node, payload)
