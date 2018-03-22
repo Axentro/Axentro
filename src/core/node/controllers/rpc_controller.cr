@@ -11,8 +11,8 @@ module ::Sushi::Core::Controllers
       end
 
       @blockchain.dapps.each do |dapp|
-        next unless res_context = dapp.rpc?(call, json, context, params)
-        return res_context
+        next unless result_context = dapp.rpc?(call, json, context, params)
+        return result_context
       end
 
       unpermitted_call(call, context)

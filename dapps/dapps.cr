@@ -1,5 +1,5 @@
 module ::Sushi::Core::DApps::User
-  USER_DAPPS = %w()
+  USER_DAPPS = %w(HelloWorld)
 
   {% for dapp in USER_DAPPS %}
     @{{ dapp.id.underscore }} : {{ dapp.id }}?
