@@ -500,7 +500,7 @@ module ::Sushi::Core
       current_latest_index = @blockchain.latest_index
 
       if @blockchain.replace_chain(chain)
-        info "chain updated: #{current_latest_index} -> #{@blockchain.latest_index}"
+        info "chain updated: #{light_green(current_latest_index)} -> #{light_green(@blockchain.latest_index)}"
         flag_unset(FLAG_BLOCKCHAIN_SYNCING)
 
         broadcast_to_miners

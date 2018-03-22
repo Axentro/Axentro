@@ -30,6 +30,3 @@ We are discussing many things everyday in [Slack](https://goo.gl/MnBKcy).
 - [@tbrand](https://github.com/tbrand) Taichiro Suzuki - creator, maintainer
 - [@kingsleyh](https://github.com/kingsleyh)
 - [@watzon](https://github.com/watzon)
-
-# todo
-- `the nonce is invalid` when new node coming

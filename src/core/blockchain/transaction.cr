@@ -42,7 +42,6 @@ module ::Sushi::Core
     end
 
     def valid?(blockchain : Blockchain, block_index : Int64, is_coinbase : Bool, transactions : Array(Transaction)) : Bool
-      puts "is_coinbase: #{is_coinbase}"
       raise "length of transaction id have to be 64: #{@id}" if @id.size != 64
       raise "message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
       raise "token size exceeds: #{self.token.bytesize} for #{TOKEN_SIZE_LIMIT}" if self.token.bytesize > TOKEN_SIZE_LIMIT
@@ -84,9 +83,6 @@ module ::Sushi::Core
           dapp.valid?(self, transactions) if dapp.related?(@action)
         end
       else
-        puts "--------- COINBASE -----------"
-        puts "TOKEN: #{@token}"
-        puts "------------------------------"
         raise "actions has to be 'head' for coinbase transaction " if @action != "head"
         raise "message has to be '0' for coinbase transaction" if @message != "0"
         raise "token has to be #{Core::DApps::BuildIn::UTXO::DEFAULT} for coinbase transaction" if @token != Core::DApps::BuildIn::UTXO::DEFAULT

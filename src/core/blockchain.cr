@@ -13,6 +13,8 @@ module ::Sushi::Core
     @coinbase_transaction : Transaction?
 
     def initialize(@wallet : Wallet, @database : Database? = nil)
+      setup_dapps
+
       if database = @database
         restore_from_database(database)
       else
@@ -20,8 +22,6 @@ module ::Sushi::Core
       end
 
       @coinbase_transaction = create_coinbase_transaction([] of Models::Miner)
-
-      setup_dapps
     end
 
     def coinbase_transaction : Transaction
@@ -41,6 +41,7 @@ module ::Sushi::Core
     end
 
     def restore_from_database(database : Database)
+      info "start loding blockchain from #{database.path}"
       current_index = 0_i64
 
       loop do
@@ -51,19 +52,20 @@ module ::Sushi::Core
 
         @chain.push(block)
 
+        @dapps.each do |dapp|
+          dapp.record(@chain)
+        end
+
         current_index += 1
       end
     rescue e : Exception
       error "an error happens during restoring a blockchain from database"
       error e.message.not_nil! if e.message
 
-      database.delete_blocks(current_index.not_nil!)
+      exit -1
+      # database.delete_blocks(current_index.not_nil!)
     ensure
       set_genesis if @chain.size == 0
-
-      @dapps.each do |dapp|
-        dapp.record(@chain)
-      end
     end
 
     def update_coinbase_transaction(miners : Models::Miners)

@@ -14,6 +14,8 @@ module ::Sushi::Core::DApps::BuildIn
       0_i64
     end
 
+    # todo:
+    # get_unconfirmed should return a minimum value of the blocks
     def get_unconfirmed(address : String, transactions : Array(Transaction)) : Int64
       utxos_transactions = 0_i64
 
@@ -50,8 +52,16 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-      # ignore if the token is not SHARI
+      # todo:
+      # currently ignore if the token is not SHARI
       return true if transaction.token != DEFAULT
+
+      if @utxo_internal.size > 0
+        puts "---- #{@utxo_internal.size} ----"
+        puts @utxo_internal[-1]
+      else
+        puts "@utxo_internal.size == 0"
+      end
 
       raise "recipients have to be less than one" if transaction.recipients.size > 1
 
@@ -65,6 +75,8 @@ module ::Sushi::Core::DApps::BuildIn
                          else
                            0_i64
                          end
+
+      puts "debug(#{prev_transactions.size}): #{senders_amount} + #{recipient_amount} - #{sender[:amount]} - #{sender[:fee]} < 0"
 
       if senders_amount + recipient_amount - sender[:amount] - sender[:fee] < 0_i64
         raise "sender has not enough tokens: #{sender[:address]} (#{senders_amount})"
