@@ -7,8 +7,8 @@ module ::Sushi::Core
     TOKEN_DEFAULT = Core::DApps::BuildIn::UTXO::DEFAULT
 
     getter chain : Models::Chain = Models::Chain.new
-    getter transaction_pool = [] of Transaction
     getter wallet : Wallet
+    getter transaction_pool = [] of Transaction
 
     @coinbase_transaction : Transaction?
 
@@ -62,8 +62,7 @@ module ::Sushi::Core
       error "an error happens during restoring a blockchain from database"
       error e.message.not_nil! if e.message
 
-      exit -1
-      # database.delete_blocks(current_index.not_nil!)
+      database.delete_blocks(current_index.not_nil!)
     ensure
       set_genesis if @chain.size == 0
     end

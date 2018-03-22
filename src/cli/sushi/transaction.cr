@@ -175,20 +175,29 @@ module ::Sushi::Interface::Sushi
       end
     end
 
-    # todo: avoid hardcoding
     def fees
+      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+
+      payload = {call: "fees"}.to_json
+
+      body = rpc(node, payload)
+      json = JSON.parse(body)
+
       unless __json
-        puts_success("showing fees for each action.")
-        puts_info("send       : #{Core::DApps::BuildIn::UTXO.fee("send")}")
-        puts_info("scars_buy  : #{Core::DApps::BuildIn::Scars.fee("scars_buy")}")
-        puts_info("scars_sell : #{Core::DApps::BuildIn::Scars.fee("scars_sell")}")
+        puts_success("\n  showing fees for each action.\n")
+
+        puts_info("  + %20s - %20s +" % ["-" * 20, "-" * 20])
+        puts_info("  | %20s | %20s |" % ["action", "fee"])
+        puts_info("  | %20s | %20s |" % ["-" * 20, "-" * 20])
+
+        json.each do |action, fee|
+          puts_info("  | %20s | %20s |" % [action, fee])
+        end
+
+        puts_info("  + %20s - %20s +" % ["-" * 20, "-" * 20])
+        puts_info("")
       else
-        json = {
-          send:       Core::DApps::BuildIn::UTXO.fee("send"),
-          scars_buy:  Core::DApps::BuildIn::Scars.fee("scars_buy"),
-          scars_sell: Core::DApps::BuildIn::Scars.fee("scars_sell"),
-        }.to_json
-        puts json
+        puts_info body
       end
     end
 

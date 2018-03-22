@@ -2,21 +2,19 @@ module ::Sushi::Core::DApps::BuildIn
   class UTXO < DApp
     DEFAULT = "SHARI"
 
-    @utxo_internal : Array(Hash(String, Int64)) = Array(Hash(String, Int64)).new
+    @utxo_internal : Array(Hash(String, Hash(String, Int64))) = Array(Hash(String, Hash(String, Int64))).new
 
-    def get(address : String) : Int64
+    def get(address : String, token = DEFAULT) : Int64
       return 0_i64 if @utxo_internal.size < CONFIRMATION
 
       @utxo_internal.reverse[(CONFIRMATION - 1)..-1].each do |utxo_internal|
-        return utxo_internal[address] if utxo_internal[address]?
+        return utxo_internal[token][address] if utxo_internal[token]? && utxo_internal[token][address]?
       end
 
       0_i64
     end
 
-    # todo:
-    # get_unconfirmed should return a minimum value of the blocks
-    def get_unconfirmed(address : String, transactions : Array(Transaction)) : Int64
+    def get_unconfirmed(address : String, transactions : Array(Transaction), token = DEFAULT) : Int64
       utxos_transactions = 0_i64
 
       transactions.each do |transaction|
@@ -28,16 +26,16 @@ module ::Sushi::Core::DApps::BuildIn
         utxos_transactions = utxos_transactions + utxos_transaction
       end
 
-      unconfirmed_recorded = get_unconfirmed_recorded(address)
+      unconfirmed_recorded = get_unconfirmed_recorded(address, token)
 
       utxos_transactions + unconfirmed_recorded
     end
 
-    def get_unconfirmed_recorded(address : String) : Int64
+    def get_unconfirmed_recorded(address : String, token = DEFAULT) : Int64
       return 0_i64 if @utxo_internal.size == 0
 
       @utxo_internal.reverse.each do |utxo_internal|
-        return utxo_internal[address] if utxo_internal[address]?
+        return utxo_internal[token][address] if utxo_internal[token]? && utxo_internal[token][address]?
       end
 
       0_i64
@@ -52,17 +50,6 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-      # todo:
-      # currently ignore if the token is not SHARI
-      return true if transaction.token != DEFAULT
-
-      if @utxo_internal.size > 0
-        puts "---- #{@utxo_internal.size} ----"
-        puts @utxo_internal[-1]
-      else
-        puts "@utxo_internal.size == 0"
-      end
-
       raise "recipients have to be less than one" if transaction.recipients.size > 1
 
       sender = transaction.senders[0]
@@ -76,8 +63,6 @@ module ::Sushi::Core::DApps::BuildIn
                            0_i64
                          end
 
-      puts "debug(#{prev_transactions.size}): #{senders_amount} + #{recipient_amount} - #{sender[:amount]} - #{sender[:fee]} < 0"
-
       if senders_amount + recipient_amount - sender[:amount] - sender[:fee] < 0_i64
         raise "sender has not enough tokens: #{sender[:address]} (#{senders_amount})"
       end
@@ -85,7 +70,7 @@ module ::Sushi::Core::DApps::BuildIn
       true
     end
 
-    def calculate_for_transaction(transaction : Transaction) : Hash(String, Int64)
+    def calculate_for_transaction(transaction : Transaction) : NamedTuple(token: String, utxo: Hash(String, Int64))
       utxo = Hash(String, Int64).new
 
       transaction.senders.each do |sender|
@@ -98,17 +83,18 @@ module ::Sushi::Core::DApps::BuildIn
         utxo[recipient[:address]] = utxo[recipient[:address]] + recipient[:amount]
       end
 
-      utxo
+      {token: transaction.token, utxo: utxo}
     end
 
-    def calculate_for_block(block : Block) : Hash(String, Int64)
-      utxo = Hash(String, Int64).new
+    def calculate_for_block(block : Block) : Hash(String, Hash(String, Int64))
+      utxo = Hash(String, Hash(String, Int64)).new
 
       block.transactions.each_with_index do |transaction, i|
         utxo_transaction = calculate_for_transaction(transaction)
-        utxo_transaction.each do |address, amount|
-          utxo[address] ||= 0_i64
-          utxo[address] = utxo[address] + amount
+        utxo_transaction[:utxo].each do |address, amount|
+          utxo[utxo_transaction[:token]] ||= Hash(String, Int64).new
+          utxo[utxo_transaction[:token]][address] ||= 0_i64
+          utxo[utxo_transaction[:token]][address] += amount
         end
       end
 
@@ -119,12 +105,15 @@ module ::Sushi::Core::DApps::BuildIn
       return if @utxo_internal.size >= chain.size
 
       chain[@utxo_internal.size..-1].each do |block|
-        @utxo_internal.push(Hash(String, Int64).new)
+        @utxo_internal.push(Hash(String, Hash(String, Int64)).new)
 
         utxo_block = calculate_for_block(block)
-        utxo_block.each do |address, amount|
-          @utxo_internal[-1][address] ||= get_unconfirmed_recorded(address)
-          @utxo_internal[-1][address] = @utxo_internal[-1][address] + amount
+        utxo_block.each do |token, utxo|
+          utxo.each do |address, amount|
+            @utxo_internal[-1][token] ||= Hash(String, Int64).new
+            @utxo_internal[-1][token][address] ||= get_unconfirmed_recorded(address)
+            @utxo_internal[-1][token][address] = @utxo_internal[-1][token][address] + amount
+          end
         end
       end
     end
