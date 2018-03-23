@@ -2,6 +2,7 @@ module ::Sushi::Core::DApps::BuildIn
   class UTXO < DApp
     DEFAULT = "SHARI"
 
+    # todo: fix fee is fixed as SHARI
     @utxo_internal : Array(Hash(String, Hash(String, Int64))) = Array(Hash(String, Hash(String, Int64))).new
 
     def get(address : String, token = DEFAULT) : Int64
@@ -53,37 +54,49 @@ module ::Sushi::Core::DApps::BuildIn
       raise "recipients have to be less than one" if transaction.recipients.size > 1
 
       sender = transaction.senders[0]
-      senders_amount = get_unconfirmed(sender[:address], prev_transactions)
 
-      sender_as_recipient = transaction.recipients.select { |recipient| recipient[:address] == sender[:address] }
+      amount_token = get_unconfirmed(sender[:address], prev_transactions, transaction.token)
+      amount_default = transaction.token == DEFAULT ? amount_token : get_unconfirmed(sender[:address], prev_transactions)
 
-      recipient_amount = if sender_as_recipient.size > 0
-                           sender_as_recipient.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
-                         else
-                           0_i64
-                         end
+      as_recipients = transaction.recipients.select { |recipient| recipient[:address] == sender[:address] }
+      amount_token_as_recipients = as_recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
+      amount_default_as_recipients = transaction.token == DEFAULT ? amount_token_as_recipients : 0
 
-      if senders_amount + recipient_amount - sender[:amount] - sender[:fee] < 0_i64
-        raise "sender has not enough tokens: #{sender[:address]} (#{senders_amount})"
+      pay_token = sender[:amount]
+      pay_default = (transaction.token == DEFAULT ? sender[:amount] : 0_i64) + sender[:fee]
+
+      if amount_token + amount_token_as_recipients - pay_token < 0
+        raise "sender has not enough token(#{transaction.token}). sender has #{amount_token} + #{amount_token_as_recipients} but try to pay #{pay_token}"
+      end
+
+      if amount_default + amount_default_as_recipients - pay_default < 0
+        raise "sender has not enough token(#{DEFAULT}). sender has #{amount_default} + #{amount_default_as_recipients} but try to pay #{pay_default}"
       end
 
       true
     end
 
-    def calculate_for_transaction(transaction : Transaction) : NamedTuple(token: String, utxo: Hash(String, Int64))
-      utxo = Hash(String, Int64).new
+    def calculate_for_transaction(transaction : Transaction) : Hash(String, Hash(String, Int64))
+      utxo = Hash(String, Hash(String, Int64)).new
+      utxo[transaction.token] = Hash(String, Int64).new
+      utxo[DEFAULT] ||= Hash(String, Int64).new
 
       transaction.senders.each do |sender|
-        utxo[sender[:address]] ||= 0_i64
-        utxo[sender[:address]] = utxo[sender[:address]] - sender[:amount] - sender[:fee]
+        utxo[transaction.token][sender[:address]] ||= 0_i64
+        utxo[transaction.token][sender[:address]] -= sender[:amount]
+        utxo[DEFAULT][sender[:address]] ||= 0_i64
+        utxo[DEFAULT][sender[:address]] -= sender[:fee]
       end
 
       transaction.recipients.each do |recipient|
-        utxo[recipient[:address]] ||= 0_i64
-        utxo[recipient[:address]] = utxo[recipient[:address]] + recipient[:amount]
+        utxo[transaction.token][recipient[:address]] ||= 0_i64
+        utxo[transaction.token][recipient[:address]] += recipient[:amount]
       end
 
-      {token: transaction.token, utxo: utxo}
+      puts "----- calculate_for_transaction"
+      p utxo
+
+      utxo
     end
 
     def calculate_for_block(block : Block) : Hash(String, Hash(String, Int64))
@@ -91,12 +104,18 @@ module ::Sushi::Core::DApps::BuildIn
 
       block.transactions.each_with_index do |transaction, i|
         utxo_transaction = calculate_for_transaction(transaction)
-        utxo_transaction[:utxo].each do |address, amount|
-          utxo[utxo_transaction[:token]] ||= Hash(String, Int64).new
-          utxo[utxo_transaction[:token]][address] ||= 0_i64
-          utxo[utxo_transaction[:token]][address] += amount
+        utxo_transaction.each do |token, address_amount|
+          utxo[token] ||= Hash(String, Int64).new
+
+          address_amount.each do |address, amount|
+            utxo[token][address] ||= 0_i64
+            utxo[token][address] += amount
+          end
         end
       end
+
+      puts "----- calculate_for_block"
+      p utxo
 
       utxo
     end
