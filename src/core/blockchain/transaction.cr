@@ -85,7 +85,7 @@ module ::Sushi::Core
       else
         raise "actions has to be 'head' for coinbase transaction " if @action != "head"
         raise "message has to be '0' for coinbase transaction" if @message != "0"
-        raise "token has to be #{Core::DApps::BuildIn::UTXO::DEFAULT} for coinbase transaction" if @token != Core::DApps::BuildIn::UTXO::DEFAULT
+        raise "token has to be #{TOKEN_DEFAULT} for coinbase transaction" if @token != TOKEN_DEFAULT
         raise "there should be no Sender for a coinbase transaction" if @senders.size != 0
         raise "prev_hash of coinbase transaction has to be '0'" if @prev_hash != "0"
         raise "sign_r of coinbase transaction has to be '0'" if @sign_r != "0"

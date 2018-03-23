@@ -1,5 +1,6 @@
 module ::Sushi::Core::DApps::BuildIn
   # SushiChain Address Resolution System
+  # todo: cancel selling
 
   # valid suffixes
   SUFFIX = %w(sc)

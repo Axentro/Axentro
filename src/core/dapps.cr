@@ -22,8 +22,9 @@ module ::Sushi::Core::DApps
       valid_impl?(transaction, prev_transactions)
     end
 
+    # Default fee is 1 SHARI
     def self.fee(action : String) : Int64
-      0_i64
+      1_i64
     end
 
     private def blockchain : Blockchain
