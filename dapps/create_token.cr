@@ -19,7 +19,7 @@
 #    - recipient: me
 #    - token: MAGURO
 #
-#    UTXO will not record the amount into the account, so we cannot use(send) them. 
+#    UTXO will not record the amount into the account, so we cannot use(send) them.
 #
 module ::Sushi::Core::DApps::User
   class CreateToken < DApp
@@ -40,7 +40,7 @@ module ::Sushi::Core::DApps::User
     end
 
     def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-      raise "the token is already created "if @token_is_created
+      raise "the token is already created " if @token_is_created
 
       prev_transactions.each do |prev_transaction|
         raise "the token is already created" if prev_transaction.action == "create_maguro"
@@ -53,7 +53,7 @@ module ::Sushi::Core::DApps::User
       return if @token_is_created
       return if chain.size < @latest_block_index
 
-      chain[@latest_block_index .. -1].each do |block|
+      chain[@latest_block_index..-1].each do |block|
         block.transactions.each do |transaction|
           if transaction.action == "create_maguro"
             @token_is_created = true

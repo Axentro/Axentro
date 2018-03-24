@@ -6,11 +6,11 @@ module ::Sushi::Core::DApps
     abstract def record(chain : Models::Chain)
     abstract def clear
     abstract def rpc?(
-                   call : String,
-                   json : JSON::Any,
-                   context : HTTP::Server::Context,
-                   params : Hash(String, String)
-                 ) : HTTP::Server::Context?
+      call : String,
+      json : JSON::Any,
+      context : HTTP::Server::Context,
+      params : Hash(String, String)
+    ) : HTTP::Server::Context?
 
     def initialize(@blockchain : Blockchain)
     end

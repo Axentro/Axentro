@@ -107,7 +107,7 @@ module ::Sushi::Core::DApps::BuildIn
       raise "price mismatch for scars_sell: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
       raise "the selling price must be 0 or higher" if price < 0
 
-      true      
+      true
     end
 
     def valid_cancel?(transaction : Transaction, transactions : Array(Transaction)) : Bool
@@ -173,10 +173,9 @@ RULE
       domain_map = DomainMap.new
 
       transactions.each do |transaction|
-        next if
-          transaction.action != "scars_buy" &&
-          transaction.action != "scars_sell" &&
-          transaction.action != "scars_cancel"
+        next if transaction.action != "scars_buy" &&
+                transaction.action != "scars_sell" &&
+                transaction.action != "scars_cancel"
 
         domain_name = transaction.message
         address = transaction.senders[0][:address]
