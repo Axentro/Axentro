@@ -51,11 +51,13 @@ module ::Sushi::Core::DApps::BuildIn
       pay_default = (transaction.token == DEFAULT ? sender[:amount] : 0_i64) + sender[:fee]
 
       if amount_token + amount_token_as_recipients - pay_token < 0
-        raise "sender has not enough token(#{transaction.token}). sender has #{amount_token} + #{amount_token_as_recipients} but try to pay #{pay_token}"
+        raise "sender has not enough token(#{transaction.token}). " +
+              "sender has #{amount_token} + #{amount_token_as_recipients} but try to pay #{pay_token}"
       end
 
       if amount_default + amount_default_as_recipients - pay_default < 0
-        raise "sender has not enough token(#{DEFAULT}). sender has #{amount_default} + #{amount_default_as_recipients} but try to pay #{pay_default}"
+        raise "sender has not enough token(#{DEFAULT}). " +
+              "sender has #{amount_default} + #{amount_default_as_recipients} but try to pay #{pay_default}"
       end
 
       true
@@ -78,9 +80,6 @@ module ::Sushi::Core::DApps::BuildIn
         utxo[transaction.token][recipient[:address]] += recipient[:amount]
       end
 
-      puts "----- calculate_for_transaction"
-      p utxo
-
       utxo
     end
 
@@ -98,9 +97,6 @@ module ::Sushi::Core::DApps::BuildIn
           end
         end
       end
-
-      puts "----- calculate_for_transactions (block)"
-      p utxo
 
       utxo
     end

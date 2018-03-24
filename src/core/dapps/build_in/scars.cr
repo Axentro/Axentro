@@ -1,7 +1,7 @@
 module ::Sushi::Core::DApps::BuildIn
+  #
   # SushiChain Address Resolution System
-  # todo: cancel selling
-
+  #
   # valid suffixes
   SUFFIX = %w(sc)
 
@@ -39,7 +39,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def actions : Array(String)
-      ["scars_buy", "scars_sell"]
+      ["scars_buy", "scars_sell", "scars_cancel"]
     end
 
     def related?(action : String) : Bool
@@ -52,6 +52,8 @@ module ::Sushi::Core::DApps::BuildIn
         return valid_buy?(transaction, prev_transactions)
       when "scars_sell"
         return valid_sell?(transaction, prev_transactions)
+      when "scars_cancel"
+        return valid_cancel?(transaction, prev_transactions)
       end
 
       false
@@ -94,13 +96,37 @@ module ::Sushi::Core::DApps::BuildIn
       address = sender[:address]
       price = sender[:amount]
 
+      valid_domain?(domain_name)
+
       recipient = transaction.recipients[0]
 
       raise "domain #{domain_name} not found" unless domain = resolve_unconfirmed(domain_name, transactions)
+      raise "domain #{domain_name} is already for sale now" if domain[:status] == Models::DomainStatus::ForSale
       raise "domain address mismatch: expected #{address} but got #{domain[:address]}" unless address == domain[:address]
       raise "address mismatch for scars_sell: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
       raise "price mismatch for scars_sell: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
       raise "the selling price must be 0 or higher" if price < 0
+
+      true      
+    end
+
+    def valid_cancel?(transaction : Transaction, transactions : Array(Transaction)) : Bool
+      raise "you have to set one recipient" if transaction.recipients.size != 1
+
+      sender = transaction.senders[0]
+      domain_name = transaction.message
+      address = sender[:address]
+      price = sender[:amount]
+
+      valid_domain?(domain_name)
+
+      recipient = transaction.recipients[0]
+
+      raise "domain #{domain_name} not found" unless domain = resolve_unconfirmed(domain_name, transactions)
+      raise "domain #{domain_name} is not for sale" if domain[:status] != Models::DomainStatus::ForSale
+      raise "domain address mismatch: expected #{address} but got #{domain[:address]}" unless address == domain[:address]
+      raise "address mismatch for scars_sell: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
+      raise "price mismatch for scars_sell: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
 
       true
     end
@@ -147,7 +173,10 @@ RULE
       domain_map = DomainMap.new
 
       transactions.each do |transaction|
-        next if transaction.action != "scars_buy" && transaction.action != "scars_sell"
+        next if
+          transaction.action != "scars_buy" &&
+          transaction.action != "scars_sell" &&
+          transaction.action != "scars_cancel"
 
         domain_name = transaction.message
         address = transaction.senders[0][:address]
@@ -168,6 +197,13 @@ RULE
             price:       price,
             status:      Models::DomainStatus::ForSale,
           }
+        when "scars_cancel"
+          domain_map[domain_name] = {
+            domain_name: domain_name,
+            address:     address,
+            price:       price,
+            status:      Models::DomainStatus::Acquired,
+          }
         end
       end
 
@@ -180,6 +216,8 @@ RULE
         return 100_i64
       when "scars_sell"
         return 10_i64
+      when "scars_cancel"
+        return 1_i64
       end
 
       raise "got unknown action #{action} during getting a fee for scars"

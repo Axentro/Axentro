@@ -1,3 +1,10 @@
+#
+# An example for SushiChain's dApps
+#
+# - Hello World!
+#
+#   It just show a message "Hello world! from SushiChain :)"
+#
 module ::Sushi::Core::DApps::User
   class HelloWorld < DApp
     def actions : Array(String)
