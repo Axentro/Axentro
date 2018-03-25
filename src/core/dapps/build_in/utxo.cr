@@ -101,6 +101,17 @@ module ::Sushi::Core::DApps::BuildIn
       utxo
     end
 
+    def create_token(address : String, amount : Int64, token : String)
+      utxo_token = Hash(String, Hash(String, Int64)).new
+      utxo_token[token] = Hash(String, Int64).new
+      utxo_token[token][address] = amount
+
+      @utxo_internal.push(utxo_token)
+
+      puts "utxo_internal"
+      p @utxo_internal
+    end
+
     def record(chain : Models::Chain)
       return if @utxo_internal.size >= chain.size
 

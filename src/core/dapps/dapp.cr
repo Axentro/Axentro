@@ -29,7 +29,7 @@ module ::Sushi::Core::DApps
     #
     # Default fee is 1 SHARI
     # All thrid party dApps cannot override here.
-    # Otherwise, the transactions will be rejected from other nodes.
+    # Otherwise the transactions will be rejected from other nodes.
     #
     def self.fee(action : String) : Int64
       1_i64
