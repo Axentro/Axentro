@@ -16,7 +16,6 @@
 #
 module ::Sushi::Core::DApps::BuildIn
   class Token < DApp
-
     @tokens : Array(String) = ["SHARI"]
 
     def actions : Array(String)
