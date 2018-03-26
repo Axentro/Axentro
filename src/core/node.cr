@@ -83,6 +83,12 @@ module ::Sushi::Core
         warning "no connecting node has been specified"
         warning "so this node is standalone from other network"
       end
+
+      set_node(@blockchain)
+    end
+
+    private def set_node(blockchain : Blockchain)
+      blockchain.set_node(self)
     end
 
     private def connect(connect_host : String, connect_port : Int32)

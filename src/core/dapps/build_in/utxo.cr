@@ -2,7 +2,6 @@ module ::Sushi::Core::DApps::BuildIn
   class UTXO < DApp
     DEFAULT = "SHARI"
 
-    # todo: sample for 'If you send me xxx TOKEN, I'll return you yyy TOKEN'
     @utxo_internal : Array(Hash(String, Hash(String, Int64))) = Array(Hash(String, Hash(String, Int64))).new
 
     def get_for(address : String, utxo : Array(Hash(String, Hash(String, Int64))), token : String) : Int64

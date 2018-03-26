@@ -10,6 +10,7 @@ module ::Sushi::Core
     getter wallet : Wallet
     getter transaction_pool = [] of Transaction
 
+    @node : Node?
     @coinbase_transaction : Transaction?
 
     def initialize(@wallet : Wallet, @database : Database? = nil)
@@ -22,6 +23,13 @@ module ::Sushi::Core
       end
 
       @coinbase_transaction = create_coinbase_transaction([] of Models::Miner)
+    end
+
+    def set_node(@node : Node)
+    end
+
+    def node
+      @node.not_nil
     end
 
     def coinbase_transaction : Transaction
@@ -263,10 +271,6 @@ module ::Sushi::Core
         transaction.senders.any? { |sender| sender[:address] == address } ||
           transaction.recipients.any? { |recipient| recipient[:address] == address }
       }
-    end
-
-    def available_actions : Array(String)
-      @dapps.map { |dapp| dapp.actions }.flatten
     end
 
     include Logger

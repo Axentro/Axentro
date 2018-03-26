@@ -55,7 +55,6 @@ module ::Sushi::Core
       end
 
       if !is_coinbase
-        raise "unknown action: #{@action}" unless blockchain.available_actions.includes?(@action)
         raise "sender have to be only one currently" if @senders.size != 1
         raise "There must be some transactions" if transactions.size < 1
 
