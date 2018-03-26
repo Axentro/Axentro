@@ -34,8 +34,8 @@ module ::Sushi::Core::DApps::User
           transaction.token == "SHARI" &&
           transaction.senders.size == 1 &&
           transaction.recipients.size == 1 &&
-          transaction.recipients[0].address == FOUNDER_ADDRESS &&
-          transaction.amount == 100
+          transaction.recipients[0][:address] == FOUNDER_ADDRESS &&
+          transaction.senders[0][:amount] == 100
       }
 
       # blockchain.node.broadcast_transaction()
