@@ -1,22 +1,8 @@
-#
-# Transaction structure
-#
-# - action: "create_token"
-# - senders:
-#     address: deposit address
-#     amount: first deposit amount
-#     fee: 1000
-# - recipients:
-#     address: deposit address
-#     amount: first deposit amount
-# - message: Ignored
-# - token: token name
-#
-# todo: create a cli
-#
 module ::Sushi::Core::DApps::BuildIn
   class Token < DApp
-    @tokens : Array(String) = ["SHARI"]
+    getter tokens : Array(String) = ["SHARI"]
+
+    @latest_recorded_index = 0
 
     def actions : Array(String)
       ["create_token"]
@@ -27,8 +13,8 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-      raise "sender must be one for 'create_token'" if transaction.senders.size != 1
-      raise "recipient must  be one for 'create_token'" if transaction.recipients.size != 1
+      raise "number of specified senders must be one for 'create_token'" if transaction.senders.size != 1
+      raise "number of specified recipients must be one for 'create_token'" if transaction.recipients.size != 1
 
       sender = transaction.senders[0]
       sender_address = sender[:address]
@@ -57,8 +43,17 @@ module ::Sushi::Core::DApps::BuildIn
       true
     end
 
-    # todo
     def self.valid_token_name?(token : String) : Bool
+      unless token =~ /^[A-Z0-9]{1,20}$/
+        token_rule = <<-RULE
+You token '#{token}' is not valid
+
+1. token name must contain only uppercase letters or numbers
+2. token name length must be between 1 and 20 characters
+RULE
+        raise token_rule
+      end
+
       true
     end
 
@@ -67,7 +62,9 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def record(chain : Models::Chain)
-      chain.each do |block|
+      return if chain.size < @latest_recorded_index
+
+      chain[@latest_recorded_index..-1].each do |block|
         block.transactions.each do |transaction|
           next unless transaction.action == "create_token"
 
@@ -83,20 +80,22 @@ module ::Sushi::Core::DApps::BuildIn
           if !@tokens.includes?(transaction.token)
             @tokens << transaction.token
 
-            # todo: check
             blockchain.utxo.create_token(address, amount, token)
           end
         end
       end
+
+      @latest_recorded_index = chain.size
     end
 
     def clear
       @tokens.clear
+      @tokens << "SHARI"
     end
 
     def rpc?(call, json, context, params)
       case call
-      when "list"
+      when "token_list"
         return list(json, context, params)
       end
 

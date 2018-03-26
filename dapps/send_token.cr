@@ -1,17 +1,18 @@
 #
 # An example for SushiChain's dApps
 #
-# - Hello World!
+# - Send token
 #
-#   It just show a message "Hello world! from SushiChain :)"
+#   A behavior of this example is like this;
 #
-# todo: create cli `./bin/sushi sample helloworld`
+#   "If you send a token AAA (amount: 100) to BBB I send a token CCC (amount: 100) to DDD"
+#
 module ::Sushi::Core::DApps::User
-  class HelloWorld < DApp
+  class SendToken < DApp
     def actions : Array(String)
       [] of String
     end
-
+ 
     def related?(action : String) : Bool
       false
     end
@@ -21,23 +22,13 @@ module ::Sushi::Core::DApps::User
     end
 
     def record(chain : Models::Chain)
+      
     end
 
     def clear
     end
 
     def rpc?(call, json, context, params)
-      case call
-      when "hello"
-        return hello_world(json, context, params)
-      end
-
-      nil
-    end
-
-    def hello_world(json, context, params)
-      context.response.print "Hello world! from SushiChain :)"
-      context
     end
   end
 end

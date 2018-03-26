@@ -136,13 +136,13 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def self.valid_domain?(domain_name : String) : Bool
-      unless domain_name =~ /^[a-zA-z0-9]{1,20}\.(#{SUFFIX.join("|")})$/
+      unless domain_name =~ /^[a-zA-Z0-9]{1,20}\.(#{SUFFIX.join("|")})$/
         domain_rule = <<-RULE
 Your domain '#{domain_name}' is not valid
 
 1. domain name must contain only alphanumerics
 2. domain name must end with one of these suffixes: #{SUFFIX}
-3. domain length must be between 1 and 20 characters (excluding suffix)
+3. domain name length must be between 1 and 20 characters (excluding suffix)
 RULE
         raise domain_rule
       end

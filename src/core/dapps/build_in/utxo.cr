@@ -102,13 +102,10 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def create_token(address : String, amount : Int64, token : String)
-      utxo_token = Hash(String, Hash(String, Int64)).new
-      utxo_token[token] = Hash(String, Int64).new
-      utxo_token[token][address] = amount
+      @utxo_internal[-1][token] ||= Hash(String, Int64).new
+      @utxo_internal[-1][token][address] = amount
 
-      @utxo_internal.push(utxo_token)
-
-      puts "utxo_internal"
+      puts "--- utxo_internal ---"
       p @utxo_internal
     end
 
@@ -143,12 +140,28 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def amount(json, context, params)
-      address = json["address"].to_s
+      puts "-- amount"
+      puts "   #{json}"
+
+      address = json["address"].as_s
       unconfirmed = json["unconfirmed"].as_bool
+      specified_token = json["token"].as_s
 
-      amount = unconfirmed ? get_unconfirmed(address, Array(Transaction).new, DEFAULT) : get(address, DEFAULT)
+      result = [] of NamedTuple(token: String, amount: Int64)
 
-      json = {amount: amount, address: address, unconfirmed: unconfirmed}.to_json
+      tokens = blockchain.token.tokens
+      puts "   tokens: #{tokens}"
+
+      tokens.each do |token|
+        next if token != specified_token && specified_token != "all"
+
+        amount = unconfirmed ? get_unconfirmed(address, Array(Transaction).new, token) : get(address, token)
+        result << {token: token, amount: amount}
+      end
+
+      json = {unconfirmed: unconfirmed, result: result}.to_json
+
+      puts "   res: #{json}"
 
       context.response.print json
       context

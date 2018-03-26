@@ -33,6 +33,8 @@ module ::Sushi::Interface
     @price : Int64?
     @domain : String?
 
+    @token : String?
+
     module Options
       # common options
       CONNECT_NODE    = 0
@@ -65,6 +67,8 @@ module ::Sushi::Interface
       # for scars
       PRICE  = 21
       DOMAIN = 22
+      # for tokens
+      TOKEN = 23
     end
 
     def create_option_parser(actives : Array(Int32)) : OptionParser
@@ -136,7 +140,7 @@ module ::Sushi::Interface
           @address = address
         } if is_active?(actives, Options::ADDRESS)
 
-        parser.on("-m AMOUNT", "--amount=AMOUNT", "the amount of sending tokens") { |amount|
+        parser.on("-m AMOUNT", "--amount=AMOUNT", "the amount of tokens") { |amount|
           @amount = amount.to_i64
         } if is_active?(actives, Options::AMOUNT)
 
@@ -179,6 +183,10 @@ module ::Sushi::Interface
         parser.on("--domain=DOMAIN", "specify a domain for SCARS") { |domain|
           @domain = domain
         } if is_active?(actives, Options::DOMAIN)
+
+        parser.on("--token=TOKEN", "specify a target token") { |token|
+          @token = token
+        } if is_active?(actives, Options::TOKEN)
       end
     end
 
@@ -294,6 +302,10 @@ module ::Sushi::Interface
 
     def __domain : String?
       @domain
+    end
+
+    def __token : String?
+      @token
     end
 
     def cm

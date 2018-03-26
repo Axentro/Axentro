@@ -14,5 +14,7 @@ module ::Sushi::Interface
     HELP_FEE                              = "please specify transaction fee: -f [fee]. you can check minimum fee by `sushi tx fees`"
     HELP_PRICE                            = "please specify a price for scars --price=[PRICE]"
     HELP_DOMAIN                           = "please specify a domain for scars: --domain=[DOMAIN]"
+    HELP_TOKEN                            = "please specify a token name: --token=[TOKEN]"
+    HELP_TOKEN_AMOUNT                     = "please specify the token amount: -m [amount]"
   end
 end

@@ -38,6 +38,7 @@ module ::Sushi::Interface::Sushi
         Options::TRANSACTION_ID,
         Options::FEE,
         Options::DOMAIN,
+        Options::TOKEN,
       ])
     end
 
@@ -99,7 +100,7 @@ module ::Sushi::Interface::Sushi
         }
       )
 
-      add_transaction(node, wallet, "send", senders, recipients, __message, TOKEN_DEFAULT)
+      add_transaction(node, wallet, "send", senders, recipients, __message, __token || TOKEN_DEFAULT)
     end
 
     def transactions
