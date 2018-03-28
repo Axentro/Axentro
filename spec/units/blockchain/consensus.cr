@@ -5,6 +5,9 @@ include Sushi::Core::Models
 include Sushi::Core::Consensus
 
 describe Consensus do
+
+  ENV.delete("UT")
+
   describe "#valid?, #valid_scryptn?" do
     it "should return true when is valid" do
       valid?(1_i64, "block_hash", 656_u64, 2).should be_true
