@@ -4,6 +4,7 @@ require "./../../utils"
 include Sushi::Core
 include Sushi::Core::Models
 include Units::Utils
+include Sushi::Core::DApps::BuildIn
 
 describe UTXO do
   describe "#get" do
