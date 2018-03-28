@@ -120,7 +120,7 @@ module ::Sushi::Interface::Sushi
       body = rpc(node, payload)
 
       puts_success(success_message) unless __json
-      puts_info(body)
+      puts body
     end
 
     def transaction
@@ -134,7 +134,7 @@ module ::Sushi::Interface::Sushi
 
       if json["found"].as_bool
         puts_success("show the transaction #{transaction_id}") unless __json
-        puts_info(body)
+        puts body
       else
         # the transaction is not found in each block
         # try to find the rejected reason
@@ -172,7 +172,7 @@ module ::Sushi::Interface::Sushi
         puts_info("confirmations: #{json["confirmations"]}")
         puts_info("threshold: #{json["threshold"]}")
       else
-        puts_info(body)
+        puts body
       end
     end
 
@@ -198,7 +198,7 @@ module ::Sushi::Interface::Sushi
         puts_info("  + %20s - %20s +" % ["-" * 20, "-" * 20])
         puts_info("")
       else
-        puts_info body
+        puts body
       end
     end
 

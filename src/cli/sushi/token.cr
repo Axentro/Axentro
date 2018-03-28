@@ -80,7 +80,7 @@ module ::Sushi::Interface::Sushi
           puts_info "- #{token}"
         end
       else
-        puts_info body
+        puts body
       end
     end
 

@@ -6,7 +6,7 @@ module ::Sushi::Core::DApps::BuildIn
   SUFFIX = %w(sc)
 
   class Scars < DApp
-    @domains_internal : Array(DomainMap) = Array(DomainMap).new
+    @domains_internal : Array(Models::DomainMap) = Array(Models::DomainMap).new
 
     def sales : Array(Models::Domain)
       domain_all = DomainMap.new
