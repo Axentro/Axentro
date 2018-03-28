@@ -26,7 +26,7 @@ module ::Units::Utils::ChainGenerator
       @blockchain = Blockchain.new(node_wallet)
       @miner = {address: miner_wallet.address, socket: MockWebSocket.new, nonces: [] of UInt64}
       @transaction_factory = TransactionFactory.new(@node_wallet)
-      ENV["UT"] = "unit test"
+      enable_ut
     end
 
     def addBlock
@@ -46,11 +46,20 @@ module ::Units::Utils::ChainGenerator
     end
 
     def chain
+      remove_ut
       @blockchain.chain
     end
 
     def sub_chain
       @blockchain.chain.reject! { |b| b.prev_hash == "genesis" }
+    end
+
+    def remove_ut
+      ENV.delete("UT")
+    end
+
+    def enable_ut
+      ENV["UT"] = "unit tests"
     end
   end
 
@@ -71,6 +80,7 @@ module ::Units::Utils::ChainGenerator
         [a_sender(sender_wallet, sender_amount)],
         [a_recipient(recipient_wallet, sender_amount)],
         "0", # message
+        TOKEN_DEFAULT, # token
         "0", # prev_hash
         "0", # sign_r
         "0", # sign_s
@@ -92,6 +102,7 @@ module ::Units::Utils::ChainGenerator
         [a_sender(sender_wallet, sender_amount)],
         [a_recipient(recipient_wallet, sender_amount)],
         "0",       # message
+        TOKEN_DEFAULT, # token
         prev_hash, # prev_hash
         "0",       # sign_r
         "0",       # sign_s
@@ -108,6 +119,7 @@ module ::Units::Utils::ChainGenerator
         [a_sender(sender_wallet, sender_amount, 100_i64)],
         [] of Recipient,
         domain, # message
+        TOKEN_DEFAULT, # token
         "0",    # prev_hash
         "0",    # sign_r
         "0",    # sign_s
@@ -124,6 +136,7 @@ module ::Units::Utils::ChainGenerator
         [a_sender(recipient_wallet, recipient_amount, 100_i64)],
         [a_recipient(@sender_wallet, 100_i64)],
         domain, # message
+        TOKEN_DEFAULT, # token
         "0",    # prev_hash
         "0",    # sign_r
         "0",    # sign_s
@@ -140,6 +153,7 @@ module ::Units::Utils::ChainGenerator
         [a_sender(recipient_wallet, recipient_amount, 100_i64)],
         recipients,
         domain, # message
+        TOKEN_DEFAULT, # token
         "0",    # prev_hash
         "0",    # sign_r
         "0",    # sign_s
@@ -156,6 +170,7 @@ module ::Units::Utils::ChainGenerator
         [a_sender(sender_wallet, sender_amount, 100_i64)],
         [a_recipient(sender_wallet, sender_amount)],
         domain, # message
+        TOKEN_DEFAULT, # token
         "0",    # prev_hash
         "0",    # sign_r
         "0",    # sign_s
@@ -172,6 +187,7 @@ module ::Units::Utils::ChainGenerator
         [a_sender(sender_wallet, sender_amount, 100_i64)],
         recipients,
         domain, # message
+        TOKEN_DEFAULT, # token
         "0",    # prev_hash
         "0",    # sign_r
         "0",    # sign_s

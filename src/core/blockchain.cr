@@ -273,6 +273,10 @@ module ::Sushi::Core
       }
     end
 
+    def available_actions : Array(String)
+      @dapps.map { |dapp| dapp.actions }.flatten
+    end
+
     include Logger
     include Hashes
     include Consensus

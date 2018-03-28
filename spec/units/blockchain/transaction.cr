@@ -21,10 +21,11 @@ describe Transaction do
       "send", # action
       [a_sender(sender_wallet, 1000_i64)],
       [a_recipient(recipient_wallet, 10_i64)],
-      "0", # message
-      "0", # prev_hash
-      "0", # sign_r
-      "0", # sign_s
+      "0",           # message
+      TOKEN_DEFAULT, # token
+      "0",           # prev_hash
+      "0",           # sign_r
+      "0",           # sign_s
     )
 
     transaction.action.should eq("send")
@@ -69,10 +70,11 @@ describe Transaction do
           "send", # action
           [] of Sender,
           [] of Recipient,
-          "0", # message
-          "0", # prev_hash
-          "0", # sign_r
-          "0", # sign_s
+          "0",           # message
+          TOKEN_DEFAULT, # token
+          "0",           # prev_hash
+          "0",           # sign_r
+          "0",           # sign_s
         )
 
         expect_raises(Exception, "length of transaction id have to be 64: too-short-id") do
@@ -105,6 +107,7 @@ describe Transaction do
           [] of Sender,
           [] of Recipient,
           ("exceeds"*100), # message
+          TOKEN_DEFAULT,   # token
           "0",             # prev_hash
           "0",             # sign_r
           "0",             # sign_s
@@ -122,12 +125,13 @@ describe Transaction do
         transaction = Transaction.new(
           Transaction.create_id,
           "not-valid-action", # action
-          [] of Sender,
+          [a_sender(sender_wallet, 1000_i64)],
           [] of Recipient,
-          "0", # message
-          "0", # prev_hash
-          "0", # sign_r
-          "0", # sign_s
+          "0",           # message
+          TOKEN_DEFAULT, # token
+          "0",           # prev_hash
+          "0",           # sign_r
+          "0",           # sign_s
         )
 
         expect_raises(Exception, "unknown action: not-valid-action") do
@@ -151,10 +155,11 @@ describe Transaction do
           "send", # action
           [invalid_sender],
           [] of Recipient,
-          "0", # message
-          "0", # prev_hash
-          "0", # sign_r
-          "0", # sign_s
+          "0",           # message
+          TOKEN_DEFAULT, # token
+          "0",           # prev_hash
+          "0",           # sign_r
+          "0",           # sign_s
         )
 
         expect_raises(Exception, "invalid sender address checksum for: VDBpbnZhbGlkLXdhbGxldC1hZGRyZXNz") do
@@ -176,10 +181,11 @@ describe Transaction do
           "send", # action
           [a_sender(sender_wallet, 1000_i64)],
           [invalid_recipient],
-          "0", # message
-          "0", # prev_hash
-          "0", # sign_r
-          "0", # sign_s
+          "0",           # message
+          TOKEN_DEFAULT, # token
+          "0",           # prev_hash
+          "0",           # sign_r
+          "0",           # sign_s
         )
 
         expect_raises(Exception, "invalid recipient address checksum for: VDBpbnZhbGlkLXdhbGxldC1hZGRyZXNz") do
@@ -196,10 +202,11 @@ describe Transaction do
           "send", # action
           [] of Sender,
           [] of Recipient,
-          "0", # message
-          "0", # prev_hash
-          "0", # sign_r
-          "0", # sign_s
+          "0",           # message
+          TOKEN_DEFAULT, # token
+          "0",           # prev_hash
+          "0",           # sign_r
+          "0",           # sign_s
         )
 
         expect_raises(Exception, "sender have to be only one currently") do
@@ -216,10 +223,11 @@ describe Transaction do
           "send", # action
           [a_sender(sender_wallet, 1000_i64)],
           [] of Recipient,
-          "0", # message
-          "0", # prev_hash
-          "0", # sign_r
-          "0", # sign_s
+          "0",           # message
+          TOKEN_DEFAULT, # token
+          "0",           # prev_hash
+          "0",           # sign_r
+          "0",           # sign_s
         )
 
         expect_raises(Exception, "There must be some transactions") do
@@ -255,10 +263,11 @@ describe Transaction do
           "head", # action
           [] of Sender,
           [a_recipient(recipient_wallet, 10000_i64)],
-          "0", # message
-          "0", # prev_hash
-          "0", # sign_r
-          "0", # sign_s
+          "0",           # message
+          TOKEN_DEFAULT, # token
+          "0",           # prev_hash
+          "0",           # sign_r
+          "0",           # sign_s
         )
 
         blockchain = Blockchain.new(sender_wallet)
@@ -274,10 +283,11 @@ describe Transaction do
           "head", # action
           [] of Sender,
           [] of Recipient,
-          "1", # message
-          "0", # prev_hash
-          "0", # sign_r
-          "0", # sign_s
+          "1",           # message
+          TOKEN_DEFAULT, # token
+          "0",           # prev_hash
+          "0",           # sign_r
+          "0",           # sign_s
         )
 
         expect_raises(Exception, "message has to be '0' for coinbase transaction") do
@@ -294,10 +304,11 @@ describe Transaction do
           "send", # action
           [] of Sender,
           [] of Recipient,
-          "0", # message
-          "0", # prev_hash
-          "0", # sign_r
-          "0", # sign_s
+          "0",           # message
+          TOKEN_DEFAULT, # token
+          "0",           # prev_hash
+          "0",           # sign_r
+          "0",           # sign_s
         )
 
         expect_raises(Exception, "actions has to be 'head' for coinbase transaction") do
@@ -314,10 +325,11 @@ describe Transaction do
           "head", # action
           [a_sender(sender_wallet, 10001_i64)],
           [] of Recipient,
-          "0", # message
-          "0", # prev_hash
-          "0", # sign_r
-          "0", # sign_s
+          "0",           # message
+          TOKEN_DEFAULT, # token
+          "0",           # prev_hash
+          "0",           # sign_r
+          "0",           # sign_s
         )
 
         expect_raises(Exception, "there should be no Sender for a coinbase transaction") do
@@ -334,10 +346,11 @@ describe Transaction do
           "head", # action
           [] of Sender,
           [] of Recipient,
-          "0", # message
-          "1", # prev_hash
-          "0", # sign_r
-          "0", # sign_s
+          "0",           # message
+          TOKEN_DEFAULT, # token
+          "1",           # prev_hash
+          "0",           # sign_r
+          "0",           # sign_s
         )
 
         expect_raises(Exception, "prev_hash of coinbase transaction has to be '0'") do
@@ -354,10 +367,11 @@ describe Transaction do
           "head", # action
           [] of Sender,
           [] of Recipient,
-          "0", # message
-          "0", # prev_hash
-          "1", # sign_r
-          "0", # sign_s
+          "0",           # message
+          TOKEN_DEFAULT, # token
+          "0",           # prev_hash
+          "1",           # sign_r
+          "0",           # sign_s
         )
 
         expect_raises(Exception, "sign_r of coinbase transaction has to be '0'") do
@@ -374,10 +388,11 @@ describe Transaction do
           "head", # action
           [] of Sender,
           [] of Recipient,
-          "0", # message
-          "0", # prev_hash
-          "0", # sign_r
-          "1", # sign_s
+          "0",           # message
+          TOKEN_DEFAULT, # token
+          "0",           # prev_hash
+          "0",           # sign_r
+          "1",           # sign_s
         )
 
         expect_raises(Exception, "sign_s of coinbase transaction has to be '0'") do
@@ -395,10 +410,11 @@ describe Transaction do
           "head", # action
           [] of Sender,
           [a_recipient(recipient_wallet, 10_i64)],
-          "0", # message
-          "0", # prev_hash
-          "0", # sign_r
-          "0", # sign_s
+          "0",           # message
+          TOKEN_DEFAULT, # token
+          "0",           # prev_hash
+          "0",           # sign_r
+          "0",           # sign_s
         )
 
         expect_raises(Exception, "invalid served amount for coinbase transaction: expected 10000 but got 10") do
@@ -416,10 +432,11 @@ describe Transaction do
       "send", # action
       [] of Sender,
       [] of Recipient,
-      "0", # message
-      "0", # prev_hash
-      "0", # sign_r
-      "0", # sign_s
+      "0",           # message
+      TOKEN_DEFAULT, # token
+      "0",           # prev_hash
+      "0",           # sign_r
+      "0",           # sign_s
     )
 
     blockchain = Blockchain.new(sender_wallet)
@@ -438,10 +455,11 @@ describe Transaction do
       "send", # action
       [] of Sender,
       [] of Recipient,
-      "0", # message
-      "0", # prev_hash
-      "0", # sign_r
-      "0", # sign_s
+      "0",           # message
+      TOKEN_DEFAULT, # token
+      "0",           # prev_hash
+      "0",           # sign_r
+      "0",           # sign_s
     )
 
     blockchain = Blockchain.new(sender_wallet)
@@ -466,10 +484,11 @@ describe Transaction do
       "send", # action
       [a_sender(sender_wallet, 10_i64)],
       [a_recipient(recipient_wallet, 10_i64)],
-      "0", # message
-      "0", # prev_hash
-      "0", # sign_r
-      "0", # sign_s
+      "0",           # message
+      TOKEN_DEFAULT, # token
+      "0",           # prev_hash
+      "0",           # sign_r
+      "0",           # sign_s
     )
 
     transaction.sender_total_amount.should eq(10_i64)
@@ -485,10 +504,11 @@ describe Transaction do
       "send", # action
       [a_sender(sender_wallet, 10_i64)],
       [a_recipient(recipient_wallet, 10_i64)],
-      "0", # message
-      "0", # prev_hash
-      "0", # sign_r
-      "0", # sign_s
+      "0",           # message
+      TOKEN_DEFAULT, # token
+      "0",           # prev_hash
+      "0",           # sign_r
+      "0",           # sign_s
     )
 
     transaction.recipient_total_amount.should eq(10_i64)
@@ -504,10 +524,11 @@ describe Transaction do
       "send", # action
       [a_sender(sender_wallet, 11_i64)],
       [a_recipient(recipient_wallet, 10_i64)],
-      "0", # message
-      "0", # prev_hash
-      "0", # sign_r
-      "0", # sign_s
+      "0",           # message
+      TOKEN_DEFAULT, # token
+      "0",           # prev_hash
+      "0",           # sign_r
+      "0",           # sign_s
     )
 
     transaction.calculate_fee.should eq(1_i64)
