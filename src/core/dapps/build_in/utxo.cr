@@ -103,9 +103,6 @@ module ::Sushi::Core::DApps::BuildIn
     def create_token(address : String, amount : Int64, token : String)
       @utxo_internal[-1][token] ||= Hash(String, Int64).new
       @utxo_internal[-1][token][address] = amount
-
-      puts "--- utxo_internal ---"
-      p @utxo_internal
     end
 
     def record(chain : Models::Chain)
@@ -139,9 +136,6 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def amount(json, context, params)
-      puts "-- amount"
-      puts "   #{json}"
-
       address = json["address"].as_s
       unconfirmed = json["unconfirmed"].as_bool
       specified_token = json["token"].as_s
@@ -149,8 +143,6 @@ module ::Sushi::Core::DApps::BuildIn
       result = [] of NamedTuple(token: String, amount: Int64)
 
       tokens = blockchain.token.tokens
-      puts "   tokens: #{tokens}"
-
       tokens.each do |token|
         next if token != specified_token && specified_token != "all"
 
@@ -159,8 +151,6 @@ module ::Sushi::Core::DApps::BuildIn
       end
 
       json = {unconfirmed: unconfirmed, result: result}.to_json
-
-      puts "   res: #{json}"
 
       context.response.print json
       context

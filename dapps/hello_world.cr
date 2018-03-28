@@ -4,8 +4,11 @@
 # - Hello World!
 #
 #   It just show a message "Hello world! from SushiChain :)"
+#   Execute following command
+#   ```
+#   curl -XPOST http://[your node]/rpc -d "{\"call\": \"hello\"}"
+#   ```
 #
-# todo: create cli `./bin/sushi sample helloworld`
 module ::Sushi::Core::DApps::User
   class HelloWorld < DApp
     def actions : Array(String)

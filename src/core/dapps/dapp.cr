@@ -38,6 +38,10 @@ module ::Sushi::Core::DApps
     private def blockchain : Blockchain
       @blockchain
     end
+
+    private def node : Node
+      @blockchain.node
+    end
   end
 end
 

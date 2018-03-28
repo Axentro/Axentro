@@ -60,6 +60,8 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def valid_buy?(transaction : Transaction, transactions : Array(Transaction)) : Bool
+      raise "you must pay by #{UTXO::DEFAULT} for SCARS" unless transaction.token == UTXO::DEFAULT
+
       sender = transaction.senders[0]
       recipients = transaction.recipients
       domain_name = transaction.message

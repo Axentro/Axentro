@@ -72,11 +72,6 @@ RULE
           amount = transaction.senders[0][:amount]
           token = transaction.token
 
-          puts "--- create token"
-          puts "    address: #{address}"
-          puts "    amount:  #{amount}"
-          puts "    token:   #{token}"
-
           if !@tokens.includes?(transaction.token)
             @tokens << transaction.token
 
