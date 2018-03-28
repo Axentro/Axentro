@@ -71,8 +71,17 @@ module ::Sushi::Interface::Sushi
       payload = {call: "token_list"}.to_json
 
       body = rpc(node, payload)
+      json = JSON.parse(body)
 
-      puts_success body
+      unless __json
+        puts_success "show a list of evenry tokens on SushiChain"
+
+        json.each do |token|
+          puts_info "- #{token}"
+        end
+      else
+        puts_info body
+      end
     end
 
     include GlobalOptionParser
