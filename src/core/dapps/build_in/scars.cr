@@ -227,7 +227,7 @@ RULE
       raise "got unknown action #{action} during getting a fee for scars"
     end
 
-    def rpc?(call, json, context, params)
+    def define_rpc?(call, json, context, params)
       case call
       when "scars_resolve"
         return scars_resolve(json, context, params)

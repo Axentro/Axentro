@@ -129,7 +129,7 @@ module ::Sushi::Core::DApps::BuildIn
       @utxo_internal.clear
     end
 
-    def rpc?(call, json, context, params)
+    def define_rpc?(call, json, context, params)
       case call
       when "amount"
         return amount(json, context, params)

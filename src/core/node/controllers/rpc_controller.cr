@@ -4,7 +4,7 @@ module ::Sushi::Core::Controllers
       call = json["call"].to_s
 
       @blockchain.dapps.each do |dapp|
-        next unless result_context = dapp.rpc?(call, json, context, params)
+        next unless result_context = dapp.define_rpc?(call, json, context, params)
         return result_context
       end
 

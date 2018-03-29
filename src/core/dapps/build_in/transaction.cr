@@ -21,7 +21,7 @@ module ::Sushi::Core::DApps::BuildIn
     def clear
     end
 
-    def rpc?(call, json, context, params)
+    def define_rpc?(call, json, context, params)
       case call
       when "create_unsigned_transaction"
         return create_unsigned_transaction(json, context, params)

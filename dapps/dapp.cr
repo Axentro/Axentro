@@ -1,6 +1,5 @@
 module ::Sushi::Core::DApps::User
   # todo: remove end
-  # todo: `create_transaction` duplication (original and uniq id for dApps)
   # todo: write doc on top
   #
   # This is a super class of every user defined dApps.
@@ -12,11 +11,11 @@ module ::Sushi::Core::DApps::User
   # When you create a dApp, you have to override 6 functions.
   # You can read the details of each functions below.
   #
-  class UserDApp < DApp
+  abstract class UserDApp < DApp
     #
     # It's "SHARI"
     #
-    alias TOKEN_DEFAULT = BuildIn::UTXO::DEFAULT
+    TOKEN_DEFAULT = BuildIn::UTXO::DEFAULT
 
     #
     # This is required when you want to create transactions in your dApps.
@@ -32,7 +31,6 @@ module ::Sushi::Core::DApps::User
     # ```
     #
     abstract def valid_addresses : Array(String)
-    end
 
     #
     # You can define the network types which your dApps will be activated on.
@@ -48,8 +46,7 @@ module ::Sushi::Core::DApps::User
     # ["testnet", "mainnet"]
     # ```
     #
-    abstract def valid_network : Array(String)
-    end
+    abstract def valid_networks : Array(String)
 
     #
     # Every transactions have "action" field to determine "which transaction is related to which dApps?".
@@ -61,7 +58,6 @@ module ::Sushi::Core::DApps::User
     # ```
     #
     abstract def related_transaction_actions : Array(String)
-    end
 
     #
     # You can check the related transaction is valid or not for your dApps.
@@ -86,7 +82,6 @@ module ::Sushi::Core::DApps::User
     # ```
     #
     abstract def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-    end
 
     #
     # This function is called when new block is mined and broadcasted.
@@ -97,13 +92,14 @@ module ::Sushi::Core::DApps::User
     # ```
     # block.transactions.each do |transaction|
     #   if transaction.action == "some_action"
+    #     id = sha256(transaction.to_hash)
     #     action = "send"
     #     sender = create_sender(5_i64)
     #     recipient = create_recipient(transaction.recipients[0][:address], 5_i64)
     #     message = "I'll back you 5 SHARI"
     #     token = TOKEN_DEFAULT
     #      
-    #     create_transaction(action, sender, recipient, message, token)
+    #     create_transaction(id, action, sender, recipient, message, token)
     #   end
     # end
     # ```
@@ -111,7 +107,6 @@ module ::Sushi::Core::DApps::User
     # (You can see the details of `create_sender`, `create_recipient` and `create_transaction` below.)
     #
     abstract def new_block(block : Block)
-    end
 
     #
     # You can define a RPC (Remote Procedure Call) to your node
@@ -125,8 +120,7 @@ module ::Sushi::Core::DApps::User
     # end
     # ```
     #
-    abstract def define_rpc(call : String, json : JSON::Any, context : HTTP::Server::Context) : HTTP::Server::Context?
-    end
+    abstract def define_rpc?(call : String, json : JSON::Any, context : HTTP::Server::Context) : HTTP::Server::Context?
 
     #
     # This is a wrapper method that you can create a sender
@@ -164,7 +158,12 @@ module ::Sushi::Core::DApps::User
     # The process of signing to the transaction is in it.
     # You can create a `senders` and `recipients` by `create_sender` and `create_recipient`
     #
+    # The id is important field that guarantee that the action will be executed only once for uniq id,
+    # even if you create multiple transactions from multiple nodes.
+    # `sha256` is useful for creating the id.
+    #
     def create_transaction(
+          id : String,
           action : String,
           senders : Models::Senders,
           recipients : Models::Recipients,
@@ -177,6 +176,7 @@ module ::Sushi::Core::DApps::User
         recipients,
         message,
         token,
+        id,
       )
 
       secp256k1 = Core::ECDSA::Secp256k1.new
@@ -193,6 +193,45 @@ module ::Sushi::Core::DApps::User
       )
 
       node.broadcast_transaction(signed_transaction)
+    end
+
+    #
+    # !!!!!!!!!!!!!!!!!!!!!!!!!
+    # Do not modify below codes
+    # !!!!!!!!!!!!!!!!!!!!!!!!!
+    #
+    def setup
+      unless valid_addresses.includes?(blockchain.wallet.address)
+        raise "#{self.class} cannot activate with #{blockchain.wallet.address}. available: #{valid_addresses}"
+      end
+
+      unless valid_network.includes?(node.network_type)
+        raise "node must run on #{valid_networks} for #{self.class}"
+      end
+    end
+
+    def transaction_actions : Array(String)
+      related_transaction_actions
+    end
+
+    def transaction_related?(action : String) : Bool
+      related_transaction_actions.includes?(action)
+    end
+
+    @latest_loaded_block_index = 0
+
+    def record(chain : Models::Chain)
+      return if chain.size < @latest_loaded_block_index
+
+      chain[@latest_loaded_block_index..-1].each do |block|
+        new_block(block)
+      end
+
+      @latest_loaded_block_index = chain.size
+    end
+
+    def clear
+      @latest_loaded_block_index = 0
     end
   end
 end
