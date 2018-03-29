@@ -29,15 +29,15 @@ module ::Sushi::Core::DApps::BuildIn
       utxo_unconfirmed
     end
 
-    def actions : Array(String)
+    def transaction_actions : Array(String)
       ["send"]
     end
 
-    def related?(action : String) : Bool
+    def transaction_related?(action : String) : Bool
       true
     end
 
-    def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
+    def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
       raise "recipients have to be less than one" if transaction.recipients.size > 1
 
       sender = transaction.senders[0]

@@ -22,15 +22,15 @@ module ::Sushi::Core::DApps::User
       end
     end
 
-    def actions : Array(String)
+    def transaction_actions : Array(String)
       ["create_transaction_sample"]
     end
 
-    def related?(action : String) : Bool
+    def transaction_related?(action : String) : Bool
       action == "create_transaction_sample"
     end
 
-    def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
+    def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
       raise "invalid transaction message for create_transaction_sample" unless transaction.message.includes?(":")
 
       target_transaction_id = transaction.message.split(":")[0]

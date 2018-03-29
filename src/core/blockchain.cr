@@ -238,9 +238,9 @@ module ::Sushi::Core
       @chain[-1].transactions[1..-1].reduce(0_i64) { |fees, transaction| fees + transaction.calculate_fee }
     end
 
-    def create_unsigned_transaction(action, senders, recipients, message, token) : Transaction
+    def create_unsigned_transaction(action, senders, recipients, message, token, id = Transaction.create_id) : Transaction
       Transaction.new(
-        Transaction.create_id,
+        id,
         action,
         senders,
         recipients,

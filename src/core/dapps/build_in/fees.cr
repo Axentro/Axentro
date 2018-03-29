@@ -3,15 +3,15 @@ module ::Sushi::Core::DApps::BuildIn
     def setup
     end
 
-    def actions : Array(String)
+    def transaction_actions : Array(String)
       [] of String
     end
 
-    def related?(action : String) : Bool
+    def transaction_related?(action : String) : Bool
       false
     end
 
-    def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
+    def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
       true
     end
 
@@ -34,7 +34,7 @@ module ::Sushi::Core::DApps::BuildIn
       fees = Hash(String, Int64).new
 
       blockchain.dapps.each do |dapp|
-        dapp.actions.each do |action|
+        dapp.transaction_actions.each do |action|
           fees[action] = dapp.class.fee(action) if dapp.class.fee(action) > 0
         end
       end

@@ -1,10 +1,9 @@
 module ::Sushi::Core::DApps
   abstract class DApp
-    # todo: rename each method if it's neede
     abstract def setup
-    abstract def actions : Array(String)
-    abstract def related?(action : String) : Bool
-    abstract def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
+    abstract def transaction_actions : Array(String)
+    abstract def transaction_related?(action : String) : Bool
+    abstract def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
     abstract def record(chain : Models::Chain)
     abstract def clear
     abstract def rpc?(
@@ -25,7 +24,7 @@ module ::Sushi::Core::DApps
         raise "not enough fee, should be #{sender[:fee]} >= #{self.class.fee(transaction.action)}"
       end
 
-      valid_impl?(transaction, prev_transactions)
+      valid_transaction?(transaction, prev_transactions)
     end
 
     #
