@@ -1,14 +1,17 @@
 module ::Sushi::Core::DApps::BuildIn
   class BlockchainInfo < DApp
-    def actions : Array(String)
+    def setup
+    end
+
+    def transaction_actions : Array(String)
       [] of String
     end
 
-    def related?(action : String) : Bool
+    def transaction_related?(action : String) : Bool
       false
     end
 
-    def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
+    def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
       true
     end
 

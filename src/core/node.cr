@@ -3,9 +3,9 @@ require "./node/*"
 module ::Sushi::Core
   class Node
     getter id : String
+    getter network_type : String
 
     @blockchain : Blockchain
-    @network_type : String
     @flag : Int32
     @nodes : Models::Nodes
     @miners : Models::Miners
@@ -84,11 +84,11 @@ module ::Sushi::Core
         warning "so this node is standalone from other network"
       end
 
-      set_node(@blockchain)
+      setup(@blockchain)
     end
 
-    private def set_node(blockchain : Blockchain)
-      blockchain.set_node(self)
+    private def setup(blockchain : Blockchain)
+      blockchain.setup(self)
     end
 
     private def connect(connect_host : String, connect_port : Int32)

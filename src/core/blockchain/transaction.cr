@@ -80,7 +80,7 @@ module ::Sushi::Core
                                    )
 
         blockchain.dapps.each do |dapp|
-          dapp.valid?(self, transactions) if dapp.related?(@action)
+          dapp.valid?(self, transactions) if dapp.transaction_related?(@action)
         end
       else
         raise "actions has to be 'head' for coinbase transaction " if @action != "head"

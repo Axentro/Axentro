@@ -8,6 +8,9 @@ module ::Sushi::Core::DApps::BuildIn
   class Scars < DApp
     @domains_internal : Array(Models::DomainMap) = Array(Models::DomainMap).new
 
+    def setup
+    end
+
     def sales : Array(Models::Domain)
       domain_all = DomainMap.new
 
@@ -38,15 +41,15 @@ module ::Sushi::Core::DApps::BuildIn
       resolve_for(domain_name, tmp_domains_internal.reverse)
     end
 
-    def actions : Array(String)
+    def transaction_actions : Array(String)
       ["scars_buy", "scars_sell", "scars_cancel"]
     end
 
-    def related?(action : String) : Bool
+    def transaction_related?(action : String) : Bool
       action.starts_with?("scars_")
     end
 
-    def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
+    def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
       case transaction.action
       when "scars_buy"
         return valid_buy?(transaction, prev_transactions)

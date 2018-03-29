@@ -4,15 +4,18 @@ module ::Sushi::Core::DApps::BuildIn
 
     @latest_recorded_index = 0
 
-    def actions : Array(String)
+    def setup
+    end
+
+    def transaction_actions : Array(String)
       ["create_token"]
     end
 
-    def related?(action : String) : Bool
+    def transaction_related?(action : String) : Bool
       action == "create_token"
     end
 
-    def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
+    def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
       raise "number of specified senders must be one for 'create_token'" if transaction.senders.size != 1
       raise "number of specified recipients must be one for 'create_token'" if transaction.recipients.size != 1
 

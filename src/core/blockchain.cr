@@ -14,7 +14,7 @@ module ::Sushi::Core
     @coinbase_transaction : Transaction?
 
     def initialize(@wallet : Wallet, @database : Database? = nil)
-      setup_dapps
+      initialize_dapps
 
       if database = @database
         restore_from_database(database)
@@ -25,11 +25,12 @@ module ::Sushi::Core
       @coinbase_transaction = create_coinbase_transaction([] of Models::Miner)
     end
 
-    def set_node(@node : Node)
+    def setup(@node : Node)
+      setup_dapps
     end
 
     def node
-      @node.not_nil
+      @node.not_nil!
     end
 
     def coinbase_transaction : Transaction
@@ -237,9 +238,9 @@ module ::Sushi::Core
       @chain[-1].transactions[1..-1].reduce(0_i64) { |fees, transaction| fees + transaction.calculate_fee }
     end
 
-    def create_unsigned_transaction(action, senders, recipients, message, token) : Transaction
+    def create_unsigned_transaction(action, senders, recipients, message, token, id = Transaction.create_id) : Transaction
       Transaction.new(
-        Transaction.create_id,
+        id,
         action,
         senders,
         recipients,

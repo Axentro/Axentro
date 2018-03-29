@@ -2,6 +2,9 @@ module ::Sushi::Core::DApps::BuildIn
   class Indices < DApp
     @indices : Array(Hash(String, Int64)) = Array(Hash(String, Int64)).new
 
+    def setup
+    end
+
     def get(transaction_id : String) : Int64?
       @indices.reverse.each do |indices|
         return indices[transaction_id] if indices[transaction_id]?
@@ -10,15 +13,15 @@ module ::Sushi::Core::DApps::BuildIn
       nil
     end
 
-    def actions : Array(String)
+    def transaction_actions : Array(String)
       [] of String
     end
 
-    def related?(action : String) : Bool
+    def transaction_related?(action : String) : Bool
       false
     end
 
-    def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
+    def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
       true
     end
 
