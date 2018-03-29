@@ -4,18 +4,43 @@ require "./dapps/dapp"
 module ::Sushi::Core::DApps
   getter dapps : Array(DApp) = [] of DApp
 
-  def setup_dapps
+  def initialize_dapps
     {% for dapp in BUILD_IN_DAPPS %}
+      info "initializing {{dapp.id}}... (build in)"
       @{{ dapp.id.underscore }} = {{ dapp.id }}.new(self)
       @dapps.push(@{{ dapp.id.underscore }}.not_nil!)
     {% end %}
 
     {% for dapp in USER_DAPPS %}
+      info "initializing {{dapp.id}}... (user)"
       @{{ dapp.id.underscore }} = {{ dapp.id }}.new(self)
       @dapps.push(@{{ dapp.id.underscore }}.not_nil!)
     {% end %}
+  rescue e : Exception
+    error "error happens during initializing dApps"
+    error "reason:"
+    error e.message.not_nil!
+
+    exit -1
   end
 
+  def setup_dapps
+    {% for dapp in BUILD_IN_DAPPS %}
+      @{{ dapp.id.underscore }}.not_nil!.setup
+    {% end %}
+
+    {% for dapp in USER_DAPPS %}
+      @{{ dapp.id.underscore }}.not_nil!.setup
+    {% end %}
+  rescue e : Exception
+    error "error happens during setup dApps"
+    error "reason:"
+    error e.message.not_nil!
+
+    exit -1
+  end
+
+  include Logger
   include BuildIn
   include User
 end

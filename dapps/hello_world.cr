@@ -11,6 +11,9 @@
 #
 module ::Sushi::Core::DApps::User
   class HelloWorld < DApp
+    def setup
+    end
+
     def actions : Array(String)
       [] of String
     end

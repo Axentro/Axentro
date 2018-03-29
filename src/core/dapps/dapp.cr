@@ -1,5 +1,7 @@
 module ::Sushi::Core::DApps
   abstract class DApp
+    # todo: rename each method if it's neede
+    abstract def setup
     abstract def actions : Array(String)
     abstract def related?(action : String) : Bool
     abstract def valid_impl?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
@@ -42,6 +44,8 @@ module ::Sushi::Core::DApps
     private def node : Node
       @blockchain.node
     end
+
+    include Logger
   end
 end
 

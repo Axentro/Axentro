@@ -4,6 +4,9 @@ module ::Sushi::Core::DApps::BuildIn
 
     @latest_recorded_index = 0
 
+    def setup
+    end
+
     def actions : Array(String)
       ["create_token"]
     end

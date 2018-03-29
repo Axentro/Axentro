@@ -8,6 +8,9 @@ module ::Sushi::Core::DApps::BuildIn
   class Scars < DApp
     @domains_internal : Array(DomainMap) = Array(DomainMap).new
 
+    def setup
+    end
+
     def sales : Array(Models::Domain)
       domain_all = DomainMap.new
 

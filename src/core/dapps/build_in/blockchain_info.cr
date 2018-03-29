@@ -1,5 +1,8 @@
 module ::Sushi::Core::DApps::BuildIn
   class BlockchainInfo < DApp
+    def setup
+    end
+
     def actions : Array(String)
       [] of String
     end

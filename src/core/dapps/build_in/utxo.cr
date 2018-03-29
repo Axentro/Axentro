@@ -4,6 +4,9 @@ module ::Sushi::Core::DApps::BuildIn
 
     @utxo_internal : Array(Hash(String, Hash(String, Int64))) = Array(Hash(String, Hash(String, Int64))).new
 
+    def setup
+    end
+
     def get_for(address : String, utxo : Array(Hash(String, Hash(String, Int64))), token : String) : Int64
       utxo.each do |u|
         return u[token][address] if u[token]? && u[token][address]?

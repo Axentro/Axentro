@@ -2,6 +2,9 @@ module ::Sushi::Core::DApps::BuildIn
   class Indices < DApp
     @indices : Array(Hash(String, Int64)) = Array(Hash(String, Int64)).new
 
+    def setup
+    end
+
     def get(transaction_id : String) : Int64?
       @indices.reverse.each do |indices|
         return indices[transaction_id] if indices[transaction_id]?

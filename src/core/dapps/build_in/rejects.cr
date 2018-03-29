@@ -2,6 +2,9 @@ module ::Sushi::Core::DApps::BuildIn
   class Rejects < DApp
     @rejects : Hash(String, String) = Hash(String, String).new
 
+    def setup
+    end
+
     def actions : Array(String)
       [] of String
     end
