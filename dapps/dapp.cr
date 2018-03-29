@@ -98,7 +98,7 @@ module ::Sushi::Core::DApps::User
     #     recipient = create_recipient(transaction.recipients[0][:address], 5_i64)
     #     message = "I'll back you 5 SHARI"
     #     token = TOKEN_DEFAULT
-    #      
+    #
     #     create_transaction(id, action, sender, recipient, message, token)
     #   end
     # end
@@ -132,11 +132,11 @@ module ::Sushi::Core::DApps::User
     def create_sender(amount : Int64) : Models::Senders
       senders = Models::Senders.new
       senders.push({
-                     address: blockchain.wallet.address,
-                     public_key: blockchain.wallet.public_key,
-                     amount: amount,
-                     fee: 1_i64,
-                   })
+        address:    blockchain.wallet.address,
+        public_key: blockchain.wallet.public_key,
+        amount:     amount,
+        fee:        1_i64,
+      })
       senders
     end
 
@@ -147,9 +147,9 @@ module ::Sushi::Core::DApps::User
     def create_recipient(address : String, amount : Int64) : Models::Recipients
       recipients = Models::Recipients.new
       recipients.push({
-                        address: address,
-                        amount: amount,
-                      })
+        address: address,
+        amount:  amount,
+      })
       recipients
     end
 
@@ -163,13 +163,13 @@ module ::Sushi::Core::DApps::User
     # `sha256` is useful for creating the id.
     #
     def create_transaction(
-          id : String,
-          action : String,
-          senders : Models::Senders,
-          recipients : Models::Recipients,
-          message : String,
-          token : String)
-
+      id : String,
+      action : String,
+      senders : Models::Senders,
+      recipients : Models::Recipients,
+      message : String,
+      token : String
+    )
       unsigned_transaction = blockchain.create_unsigned_transaction(
         action,
         senders,

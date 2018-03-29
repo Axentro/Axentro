@@ -65,7 +65,7 @@ module ::Sushi::Core::DApps::BuildIn
     rescue e : Exception
       context.response.status_code = 403
       context.response.print e.message.not_nil!
-      context      
+      context
     end
   end
 end
