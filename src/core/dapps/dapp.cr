@@ -6,7 +6,7 @@ module ::Sushi::Core::DApps
     abstract def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
     abstract def record(chain : Models::Chain)
     abstract def clear
-    abstract def rpc?(
+    abstract def define_rpc?(
       call : String,
       json : JSON::Any,
       context : HTTP::Server::Context,

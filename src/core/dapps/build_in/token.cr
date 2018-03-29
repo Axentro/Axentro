@@ -91,7 +91,7 @@ RULE
       @tokens << "SHARI"
     end
 
-    def rpc?(call, json, context, params)
+    def define_rpc?(call, json, context, params)
       case call
       when "token_list"
         return list(json, context, params)

@@ -29,7 +29,7 @@ module ::Sushi::Core::DApps::BuildIn
       @rejects.clear
     end
 
-    def rpc?(call, json, context, params)
+    def define_rpc?(call, json, context, params)
       case call
       when "rejects"
         return rejects?(json, context, params)

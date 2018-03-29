@@ -21,7 +21,7 @@ module ::Sushi::Core::DApps::BuildIn
     def clear
     end
 
-    def rpc?(call, json, context, params)
+    def define_rpc?(call, json, context, params)
       case call
       when "blockchain_size"
         return blockchain_size(json, context, params)
