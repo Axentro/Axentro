@@ -72,7 +72,7 @@ module ::Units::Utils::ChainGenerator
       @recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
     end
 
-    def make_send(sender_amount : Int64, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
+    def make_send(sender_amount : Int64, token : String = TOKEN_DEFAULT, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
         transaction_id,
@@ -80,7 +80,7 @@ module ::Units::Utils::ChainGenerator
         [a_sender(sender_wallet, sender_amount)],
         [a_recipient(recipient_wallet, sender_amount)],
         "0",           # message
-        TOKEN_DEFAULT, # token
+        token, # token
         "0",           # prev_hash
         "0",           # sign_r
         "0",           # sign_s

@@ -38,9 +38,9 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-      raise "recipients have to be less than one" if transaction.recipients.size > 1
+      raise "there must be 1 or less recipients" if transaction.recipients.size > 1
+      raise "there must be 1 sender" if transaction.senders.size != 1
 
-# TODO - kings - raise if no senders
       sender = transaction.senders[0]
 
       amount_token = get_unconfirmed(sender[:address], prev_transactions, transaction.token)
