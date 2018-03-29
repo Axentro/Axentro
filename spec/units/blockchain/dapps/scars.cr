@@ -70,26 +70,26 @@ describe Scars do
       end
     end
 
-    describe "#actions" do
+    describe "#transaction_actions" do
       it "should return scars actions" do
         with_factory do |block_factory, transaction_factory|
           scars = Scars.new(Blockchain.new(transaction_factory.sender_wallet))
-          scars.actions.should eq(["scars_buy", "scars_sell", "scars_cancel"])
+          scars.transaction_actions.should eq(["scars_buy", "scars_sell", "scars_cancel"])
         end
       end
     end
 
-    describe "#related" do
+    describe "#transaction_related" do
       it "should return true if action is a scars related action" do
         with_factory do |block_factory, transaction_factory|
           scars = Scars.new(Blockchain.new(transaction_factory.sender_wallet))
-          scars.related?("scars_buy").should be_true
+          scars.transaction_related?("scars_buy").should be_true
         end
       end
       it "should return false if the action is not a scars related action" do
         with_factory do |block_factory, transaction_factory|
           scars = Scars.new(Blockchain.new(transaction_factory.sender_wallet))
-          scars.related?("not_related").should be_false
+          scars.transaction_related?("not_related").should be_false
         end
       end
     end
@@ -297,17 +297,105 @@ describe Scars do
     end
 
     pending "#valid_cancel" do
+      it "should return true on valid cancel" do
+        with_factory do |block_factory, transaction_factory|
+          txns = [transaction_factory.make_buy_domain_from_platform("domain1.sc", 0_i64)]
+
+          tx1 = transaction_factory.make_sell_domain("domain1.sc", 500_i64)
+          scars = Scars.new(Blockchain.new(transaction_factory.sender_wallet))
+          scars.valid_cancel?(tx1, txns).should be_true
+        end
+      end
+
+      it "should return error when no recipient set" do
+        with_factory do |block_factory, transaction_factory|
+          txns = [transaction_factory.make_buy_domain_from_platform("domain1.sc", 0_i64)]
+
+          tx1 = transaction_factory.make_sell_domain("domain1.sc", 500_i64, [] of Recipient)
+          scars = Scars.new(Blockchain.new(transaction_factory.sender_wallet))
+          expect_raises(Exception, "you have to set one recipient") do
+            scars.valid_cancel?(tx1, txns)
+          end
+        end
+      end
+
+      it "should return error when recipient set does not match address of sender" do
+        with_factory do |block_factory, transaction_factory|
+          txns = [transaction_factory.make_buy_domain_from_platform("domain1.sc", 0_i64)]
+
+          recipients = [a_recipient(transaction_factory.recipient_wallet, 100_i64)]
+          tx1 = transaction_factory.make_sell_domain("domain1.sc", 500_i64, recipients)
+          actual = transaction_factory.sender_wallet.address
+          expected = transaction_factory.recipient_wallet.address
+          scars = Scars.new(Blockchain.new(transaction_factory.sender_wallet))
+          expect_raises(Exception, "address mismatch for scars_sell: expected #{actual} but got #{expected}") do
+            scars.valid_cancel?(tx1, txns)
+          end
+        end
+      end
+
+      it "should return error when recipient price does not match sender price" do
+        with_factory do |block_factory, transaction_factory|
+          txns = [transaction_factory.make_buy_domain_from_platform("domain1.sc", 0_i64)]
+
+          recipients = [a_recipient(transaction_factory.sender_wallet, 200_i64)]
+          tx1 = transaction_factory.make_sell_domain("domain1.sc", 500_i64, recipients)
+          scars = Scars.new(Blockchain.new(transaction_factory.sender_wallet))
+
+          expect_raises(Exception, "price mismatch for scars_sell: expected 500 but got 200") do
+            scars.valid_cancel?(tx1, txns)
+          end
+        end
+      end
+
+      it "should return error when domain name not found" do
+        with_factory do |block_factory, transaction_factory|
+          tx1 = transaction_factory.make_sell_domain("domain1.sc", 500_i64)
+          scars = Scars.new(Blockchain.new(transaction_factory.sender_wallet))
+
+          expect_raises(Exception, "domain domain1.sc not found") do
+            scars.valid_cancel?(tx1, [] of Transaction)
+          end
+        end
+      end
+
+      it "should return error when setting the wrong address for the domain owner" do
+        with_factory do |block_factory, transaction_factory|
+          txns = [transaction_factory.make_buy_domain_from_platform("domain1.sc", 0_i64)]
+          recipients = [a_recipient(transaction_factory.sender_wallet, 100_i64)]
+
+          tx1 = transaction_factory.make_sell_domain("domain1.sc", 100_i64, recipients, transaction_factory.recipient_wallet)
+          actual = transaction_factory.recipient_wallet.address
+          expected = transaction_factory.sender_wallet.address
+          scars = Scars.new(Blockchain.new(transaction_factory.sender_wallet))
+          expect_raises(Exception, "domain address mismatch: expected #{actual} but got #{expected}") do
+            scars.valid_cancel?(tx1, txns)
+          end
+        end
+      end
+
+      it "should return error when selling price is not greater than 0" do
+        with_factory do |block_factory, transaction_factory|
+          txns = [transaction_factory.make_buy_domain_from_platform("domain1.sc", 0_i64)]
+          tx1 = transaction_factory.make_sell_domain("domain1.sc", -1_i64)
+          scars = Scars.new(Blockchain.new(transaction_factory.sender_wallet))
+
+          expect_raises(Exception, "the selling price must be 0 or higher") do
+            scars.valid_cancel?(tx1, txns)
+          end
+        end
+      end
     end
 
     pending "#rpc" do
     end
 
-    describe "#valid_impl?" do
+    describe "#valid_transaction?" do
       it "should return true when domain is a valid buy from platform" do
         with_factory do |block_factory, transaction_factory|
           tx1 = transaction_factory.make_buy_domain_from_platform("domain1.sc", 0_i64)
           scars = Scars.new(Blockchain.new(transaction_factory.sender_wallet))
-          scars.valid_impl?(tx1, [] of Transaction)
+          scars.valid_transaction?(tx1, [] of Transaction)
         end
       end
       it "should return true on valid sell" do
@@ -316,14 +404,14 @@ describe Scars do
 
           tx1 = transaction_factory.make_sell_domain("domain1.sc", 500_i64)
           scars = Scars.new(Blockchain.new(transaction_factory.sender_wallet))
-          scars.valid_impl?(tx1, txns).should be_true
+          scars.valid_transaction?(tx1, txns).should be_true
         end
       end
       it "should return false when neither buy or sell" do
         with_factory do |block_factory, transaction_factory|
           tx1 = transaction_factory.make_send(100_i64)
           scars = Scars.new(Blockchain.new(transaction_factory.sender_wallet))
-          scars.valid_impl?(tx1, [] of Transaction).should be_false
+          scars.valid_transaction?(tx1, [] of Transaction).should be_false
         end
       end
     end
