@@ -1,15 +1,13 @@
 module ::Sushi::Core::DApps::User
-  # todo: remove end
-  # todo: write doc on top
   #
   # This is a super class of every user defined dApps.
   #
-  # You can access blockchain by `blockchain` and node by `node` from you dApp.
-  # But if you chage the data on it manually, your node will be rejected from other nodes.
+  # You can access blockchain by `blockchain` and node by `node` from your dApp.
+  # But if you change the data on it manually, your node will be rejected from other nodes.
   # So basically they are read-only.
   #
   # When you create a dApp, you have to override 6 functions.
-  # You can read the details of each functions below.
+  # You can read the details of each function below.
   #
   abstract class UserDApp < DApp
     #
@@ -18,7 +16,8 @@ module ::Sushi::Core::DApps::User
     TOKEN_DEFAULT = BuildIn::UTXO::DEFAULT
 
     #
-    # This is required when you want to create transactions in your dApps.
+    # This method is required when you want to create transactions in your dApps.
+    # As a restriction of dApps on SushiChain, you have to host a node to create transactions in your dApps.
     #
     # Hard code valid addresses and return it as a array of strings.
     # ```

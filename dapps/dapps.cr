@@ -1,5 +1,6 @@
 module ::Sushi::Core::DApps::User
   #
+  # todo: fix here
   # If you want to activate 'CreateTransaction' sample app,
   # fix here like this.
   # ```
