@@ -213,7 +213,7 @@ module ::Sushi::Interface::Sushi
         puts_success "status   : #{status}"
         puts_success "price    : #{resolved["domain"]["price"]}"
       else
-        puts_info resolved.to_json
+        puts resolved.to_json
       end
     end
 

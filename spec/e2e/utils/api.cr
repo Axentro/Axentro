@@ -30,7 +30,7 @@ module ::E2E::Utils::API
 
     res = `#{sushi(args)}`
 
-    JSON.parse(res)["amount"].to_s.to_i64
+    JSON.parse(res)["result"][0]["amount"].to_s.to_i64
   end
 
   def create(port : Int32, n_sender : Int32, n_recipient : Int32) : String?

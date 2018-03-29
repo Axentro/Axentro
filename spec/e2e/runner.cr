@@ -73,8 +73,8 @@ module ::E2E
     end
 
     def latest_confirmed_block_index : Int32
-      return 0 if latest_block_index < ::Sushi::Core::UTXO::CONFIRMATION - 1
-      latest_block_index - (::Sushi::Core::UTXO::CONFIRMATION - 1)
+      return 0 if latest_block_index < ::Sushi::Core::Consensus::CONFIRMATION - 1
+      latest_block_index - (::Sushi::Core::Consensus::CONFIRMATION - 1)
     end
 
     def verify_latest_confirmed_block

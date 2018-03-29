@@ -15,15 +15,15 @@ module ::Sushi::Interface::Sushi
 
     def option_parser
       create_option_parser([
-                             Options::CONNECT_NODE,
-                             Options::WALLET_PATH,
-                             Options::WALLET_PASSWORD,
-                             Options::JSON,
-                             Options::AMOUNT,
-                             Options::FEE,
-                             Options::PRICE,
-                             Options::TOKEN,
-                           ])
+        Options::CONNECT_NODE,
+        Options::WALLET_PATH,
+        Options::WALLET_PASSWORD,
+        Options::JSON,
+        Options::AMOUNT,
+        Options::FEE,
+        Options::PRICE,
+        Options::TOKEN,
+      ])
     end
 
     def run_impl(action_name)
@@ -50,17 +50,17 @@ module ::Sushi::Interface::Sushi
 
       senders = Core::Models::Senders.new
       senders.push({
-                     address: wallet.address,
-                     public_key: wallet.public_key,
-                     amount: amount,
-                     fee: fee,
-                   })
+        address:    wallet.address,
+        public_key: wallet.public_key,
+        amount:     amount,
+        fee:        fee,
+      })
 
       recipients = Core::Models::Recipients.new
       recipients.push({
-                        address: wallet.address,
-                        amount: amount,
-                      })
+        address: wallet.address,
+        amount:  amount,
+      })
 
       add_transaction(node, wallet, "create_token", senders, recipients, "", token)
     end
@@ -80,7 +80,7 @@ module ::Sushi::Interface::Sushi
           puts_info "- #{token}"
         end
       else
-        puts_info body
+        puts body
       end
     end
 

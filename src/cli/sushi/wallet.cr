@@ -177,7 +177,7 @@ module ::Sushi::Interface::Sushi
         puts_info("  + %20s - %20s +" % ["-" * 20, "-" * 20])
         puts_info("")
       else
-        puts_info body
+        puts body
       end
     end
 
