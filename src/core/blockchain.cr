@@ -40,9 +40,7 @@ module ::Sushi::Core
     def set_genesis
       @chain.push(genesis_block)
 
-      @dapps.each do |dapp|
-        dapp.record(@chain)
-      end
+      dapps_record
 
       if database = @database
         database.push_block(genesis_block)
@@ -61,9 +59,7 @@ module ::Sushi::Core
 
         @chain.push(block)
 
-        @dapps.each do |dapp|
-          dapp.record(@chain)
-        end
+        dapps_record
 
         current_index += 1
       end
@@ -104,9 +100,7 @@ module ::Sushi::Core
 
       @chain.push(block)
 
-      @dapps.each do |dapp|
-        dapp.record(@chain)
-      end
+      dapps_record
 
       if database = @database
         database.push_block(block)
@@ -122,18 +116,22 @@ module ::Sushi::Core
       return false if subchain[0].index == 0
 
       first_index = subchain[0].index - 1
-      prev_block = @chain[first_index]
+
+      @chain = @chain[0..first_index]
+
+      dapps_clear_record
 
       subchain.each do |block|
-        return false unless block.valid_for?(prev_block)
-        prev_block = block
-      end
+        block.valid_as_latest?(self)
+        @chain << block
 
-      @chain = @chain[0..first_index].concat(subchain)
+        dapps_record
+      rescue e : Exception
+        error "found invalid block while syncing a blocks"
+        error "the reason:"
+        error e.message.not_nil!
 
-      @dapps.each do |dapp|
-        dapp.clear
-        dapp.record(@chain)
+        break
       end
 
       if database = @database
@@ -276,6 +274,19 @@ module ::Sushi::Core
 
     def available_actions : Array(String)
       @dapps.map { |dapp| dapp.transaction_actions }.flatten
+    end
+
+    private def dapps_record
+      @dapps.each do |dapp|
+        dapp.record(@chain)
+      end
+    end
+
+    private def dapps_clear_record
+      @dapps.each do |dapp|
+        dapp.clear
+        dapp.record(@chain)
+      end
     end
 
     include Logger

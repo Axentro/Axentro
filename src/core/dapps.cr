@@ -26,17 +26,30 @@ module ::Sushi::Core::DApps
 
   def setup_dapps
     {% for dapp in BUILD_IN_DAPPS %}
-      @{{ dapp.id.underscore }}.not_nil!.setup
+      begin
+        @{{ dapp.id.underscore }}.not_nil!.setup
+      rescue e : Exception
+        warning "error happens during setup dApps"
+        warning "reason:"
+        warning e.message.not_nil!
+        warning "the dApp will be removed and be ignored"
+
+        @dapps.delete(@{{ dapp.id.underscore }}.not_nil!)
+      end
     {% end %}
 
     {% for dapp in USER_DAPPS %}
-      @{{ dapp.id.underscore }}.not_nil!.setup
+      begin
+        @{{ dapp.id.underscore }}.not_nil!.setup
+      rescue e : Exception
+        warning "error happens during setup dApps"
+        warning "reason:"
+        warning e.message.not_nil!
+        warning "the dApp will be removed and be ignored"
+
+        @dapps.delete(@{{ dapp.id.underscore }}.not_nil!)
+      end
     {% end %}
-  rescue e : Exception
-    warning "error happens during setup dApps"
-    warning "reason:"
-    warning e.message.not_nil!
-    warning "the dApp will be removed and be ignored"
   end
 
   include Logger

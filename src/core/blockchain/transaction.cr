@@ -55,7 +55,6 @@ module ::Sushi::Core
       end
 
       if !is_coinbase
-        raise "unknown action: #{@action}" unless blockchain.available_actions.includes?(@action)
         raise "sender have to be only one currently" if @senders.size != 1
         raise "There must be some transactions" if transactions.size < 1
 
@@ -65,6 +64,10 @@ module ::Sushi::Core
 
         if blockchain.indices.get(@id)
           raise "the transaction #{@id} is already included in #{blockchain.indices.get(@id)}"
+        end
+
+        if transactions.select { |transaction| transaction.id == @id }.size > 0
+          raise "the transaction #{@id} is already included in the same block (#{block_index})"
         end
 
         network = Keys::Address.from(@senders.first[:address]).network
