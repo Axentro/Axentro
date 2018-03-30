@@ -1,16 +1,8 @@
 module ::Sushi::Core::DApps::User
   #
-  # todo: fix here
-  # If you want to activate 'CreateTransaction' sample app,
-  # fix here like this.
-  # ```
-  # USER_APPS = %w(HelloWorld CreateTransaction)
-  # ```
+  # please add your dApps into the 'USER_DAPPS'
   #
-  # The CreateTransaction sample is hosted by `wallets/testnet-0.json`,
-  # so you have to specify the wallet when you launch a node.
-  #
-  USER_DAPPS = %w()
+  USER_DAPPS = %w(HelloWorld CreateTransaction)
 
   {% for dapp in USER_DAPPS %}
     @{{ dapp.id.underscore }} : {{ dapp.id }}?
@@ -21,4 +13,4 @@ module ::Sushi::Core::DApps::User
   {% end %}
 end
 
-require "./*"
+require "./dapp"

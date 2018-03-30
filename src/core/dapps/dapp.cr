@@ -49,4 +49,4 @@ module ::Sushi::Core::DApps
 end
 
 require "./build_in"
-require "../../../dapps/*"
+require "../../../dapps/dapps"

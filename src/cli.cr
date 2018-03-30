@@ -15,7 +15,7 @@ module ::Sushi::Interface
 
   abstract class CLI
     def initialize(
-      @action : SushiAction,
+      @sushi_action : SushiAction,
       @parents : Array(SushiAction)
     )
     end
@@ -29,7 +29,7 @@ module ::Sushi::Interface
       messages = message.split("\n").map { |m| white_bg(black(" %-#{message_size}s " % m)) }
 
       puts "\n" +
-           "#{light_magenta("> " + command_line)} | #{@action[:desc]}\n\n" +
+           "#{light_magenta("> " + command_line)} | #{@sushi_action[:desc]}\n\n" +
            "#{white_bg(black(" " + "-" * message_size + " "))}\n" +
            messages.join("\n") + "\n" +
            "#{white_bg(black(" " + "-" * message_size + " "))}\n\n" +
@@ -60,12 +60,12 @@ module ::Sushi::Interface
     end
 
     def command_line
-      return @action[:name] if @parents.size == 0
-      @parents.map { |a| a[:name] }.join(" ") + " " + @action[:name]
+      return @sushi_action[:name] if @parents.size == 0
+      @parents.map { |a| a[:name] }.join(" ") + " " + @sushi_action[:name]
     end
 
     def next_parents : Array(SushiAction)
-      @parents.concat([@action])
+      @parents.concat([@sushi_action])
     end
 
     def sub_action_names : Array(String)

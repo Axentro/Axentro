@@ -33,11 +33,10 @@ module ::Sushi::Core::DApps
       @{{ dapp.id.underscore }}.not_nil!.setup
     {% end %}
   rescue e : Exception
-    error "error happens during setup dApps"
-    error "reason:"
-    error e.message.not_nil!
-
-    exit -1
+    warning "error happens during setup dApps"
+    warning "reason:"
+    warning e.message.not_nil!
+    warning "the dApp will be removed and be ignored"
   end
 
   include Logger

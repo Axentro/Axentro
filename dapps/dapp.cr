@@ -9,6 +9,10 @@ module ::Sushi::Core::DApps::User
   # When you create a dApp, you have to override 6 functions.
   # You can read the details of each function below.
   #
+  # **********************************************************************
+  # Note that you have to modify a dapps.cr as well to activate your dApps
+  # **********************************************************************
+  #
   abstract class UserDApp < DApp
     #
     # It's "SHARI"
@@ -54,6 +58,11 @@ module ::Sushi::Core::DApps::User
     # For example, if your dApp related to the transactions which have "some_action" action, return this.
     # ```
     # ["some_action"]
+    # ```
+    #
+    # If you don't have to validate any transcations, you can return an empty array of strings.
+    # ```
+    # [] of String
     # ```
     #
     abstract def related_transaction_actions : Array(String)
@@ -168,7 +177,13 @@ module ::Sushi::Core::DApps::User
       recipients : Models::Recipients,
       message : String,
       token : String
-    )
+    ) : Bool
+
+      if blockchain.indices.get(id)
+        info "skip creating transaction #{id}"
+        return false
+      end
+      
       unsigned_transaction = blockchain.create_unsigned_transaction(
         action,
         senders,
@@ -192,6 +207,8 @@ module ::Sushi::Core::DApps::User
       )
 
       node.broadcast_transaction(signed_transaction)
+
+      true
     end
 
     #
@@ -200,11 +217,11 @@ module ::Sushi::Core::DApps::User
     # !!!!!!!!!!!!!!!!!!!!!!!!!
     #
     def setup
-      unless valid_addresses.includes?(blockchain.wallet.address)
+      if !valid_addresses.empty? && !valid_addresses.includes?(blockchain.wallet.address)
         raise "#{self.class} cannot activate with #{blockchain.wallet.address}. available: #{valid_addresses}"
       end
 
-      unless valid_network.includes?(node.network_type)
+      unless valid_networks.includes?(node.network_type)
         raise "node must run on #{valid_networks} for #{self.class}"
       end
     end
@@ -232,5 +249,11 @@ module ::Sushi::Core::DApps::User
     def clear
       @latest_loaded_block_index = 0
     end
+
+    def define_rpc?(call : String, json : JSON::Any, context : HTTP::Server::Context, params : Hash(String, String)) : HTTP::Server::Context?
+      define_rpc?(call, json, context)
+    end
   end
 end
+
+require "./*"

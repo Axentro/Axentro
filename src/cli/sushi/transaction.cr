@@ -3,8 +3,8 @@ module ::Sushi::Interface::Sushi
     def sub_actions
       [
         {
-          name: "send",
-          desc: "send Sushi tokens to a specified address",
+          name: "create",
+          desc: "create a transaction. basically it's used for sending tokens. you can specify other actions. (the default action is 'send')",
         },
         {
           name: "transactions",
@@ -33,6 +33,7 @@ module ::Sushi::Interface::Sushi
         Options::JSON,
         Options::ADDRESS,
         Options::AMOUNT,
+        Options::ACTION,
         Options::MESSAGE,
         Options::BLOCK_INDEX,
         Options::TRANSACTION_ID,
@@ -44,8 +45,8 @@ module ::Sushi::Interface::Sushi
 
     def run_impl(action_name)
       case action_name
-      when "send"
-        return send
+      when "create"
+        return create
       when "transactions", "txs"
         return transactions
       when "transaction", "tx"
@@ -59,15 +60,17 @@ module ::Sushi::Interface::Sushi
       specify_sub_action!(action_name)
     end
 
-    def send
+    def create
       puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
       puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
       puts_help(HELP_AMOUNT) unless amount = __amount
       puts_help(HELP_FEE) unless fee = __fee
       puts_help(HELP_ADDRESS_DOMAIN_RECIPIENT) if __address.nil? && __domain.nil?
 
-      if fee < Core::DApps::BuildIn::UTXO.fee("send")
-        raise "invalid fee for the action send: minimum fee is #{Core::DApps::BuildIn::UTXO.fee("send")}"
+      action = __action || "send"
+
+      if fee < Core::DApps::BuildIn::UTXO.fee(action)
+        raise "invalid fee for the action #{action}: minimum fee is #{Core::DApps::BuildIn::UTXO.fee("action")}"
       end
 
       recipient_address = if address = __address
@@ -100,7 +103,7 @@ module ::Sushi::Interface::Sushi
         }
       )
 
-      add_transaction(node, wallet, "send", senders, recipients, __message, __token || TOKEN_DEFAULT)
+      add_transaction(node, wallet, action, senders, recipients, __message, __token || TOKEN_DEFAULT)
     end
 
     def transactions

@@ -19,6 +19,7 @@ module ::Sushi::Interface
 
     @address : String?
     @amount : Int64?
+    @action : String?
     @message : String = ""
     @block_index : Int32?
     @transaction_id : String?
@@ -54,21 +55,22 @@ module ::Sushi::Interface
       # for transaction
       ADDRESS        = 12
       AMOUNT         = 13
-      MESSAGE        = 14
-      BLOCK_INDEX    = 15
-      TRANSACTION_ID = 16
-      FEE            = 17
+      ACTION         = 14
+      MESSAGE        = 15
+      BLOCK_INDEX    = 16
+      TRANSACTION_ID = 17
+      FEE            = 18
       # for blockchain
-      HEADER = 18
+      HEADER = 19
       # for miners
-      THREADS = 19
+      THREADS = 20
       # for wallet
-      ENCRYPTED = 20
+      ENCRYPTED = 21
       # for scars
-      PRICE  = 21
-      DOMAIN = 22
+      PRICE  = 22
+      DOMAIN = 23
       # for tokens
-      TOKEN = 23
+      TOKEN = 24
     end
 
     def create_option_parser(actives : Array(Int32)) : OptionParser
@@ -143,6 +145,10 @@ module ::Sushi::Interface
         parser.on("-m AMOUNT", "--amount=AMOUNT", "the amount of tokens") { |amount|
           @amount = amount.to_i64
         } if is_active?(actives, Options::AMOUNT)
+
+        parser.on("--action=ACTION", "specify an action name of the transaction") { |action|
+          @action = action
+        } if is_active?(actives, Options::ACTION)
 
         parser.on("--message=MESSAGE", "add message into transaction") { |message|
           @message = message
@@ -262,6 +268,10 @@ module ::Sushi::Interface
 
     def __amount : Int64?
       @amount
+    end
+
+    def __action : String?
+      @action
     end
 
     def __message : String
