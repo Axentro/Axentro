@@ -1,7 +1,6 @@
 module ::Sushi::Core::DApps::User
   class CreateTransaction < UserDApp
     #
-    # todo: bug remaining: amount will be 9 (not 5)
     # The target action name in transaction's field
     #
     TARGET_ACTION = "create_transaction_sample"

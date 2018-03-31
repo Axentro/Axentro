@@ -136,7 +136,6 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
       puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
       puts_help(HELP_FEE) unless fee = __fee
-      puts_help(HELP_PRICE) unless price = __price
       puts_help(HELP_DOMAIN) unless domain = __domain
 
       if fee < Core::DApps::BuildIn::Scars.fee("scars_cancel")
@@ -154,14 +153,14 @@ module ::Sushi::Interface::Sushi
       senders.push({
         address:    wallet.address,
         public_key: wallet.public_key,
-        amount:     price,
+        amount:     1_i64,
         fee:        fee,
       })
 
       recipients = Core::Models::Recipients.new
       recipients.push({
         address: wallet.address,
-        amount:  price,
+        amount:  1_i64,
       })
 
       add_transaction(node, wallet, "scars_cancel", senders, recipients, domain, TOKEN_DEFAULT)

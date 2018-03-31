@@ -130,8 +130,8 @@ module ::Sushi::Core::DApps::BuildIn
       raise "domain #{domain_name} not found" unless domain = resolve_unconfirmed(domain_name, transactions)
       raise "domain #{domain_name} is not for sale" if domain[:status] != Models::DomainStatus::ForSale
       raise "domain address mismatch: expected #{address} but got #{domain[:address]}" unless address == domain[:address]
-      raise "address mismatch for scars_sell: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
-      raise "price mismatch for scars_sell: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
+      raise "address mismatch for scars_cancel: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
+      raise "price mismatch for scars_cancel: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
 
       true
     end

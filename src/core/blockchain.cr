@@ -11,30 +11,23 @@ module ::Sushi::Core
     getter transaction_pool = [] of Transaction
 
     @node : Node?
-    @coinbase_transaction : Transaction?
 
     def initialize(@wallet : Wallet, @database : Database? = nil)
       initialize_dapps
+    end
+
+    def setup(@node : Node)
+      setup_dapps
 
       if database = @database
         restore_from_database(database)
       else
         set_genesis
       end
-
-      @coinbase_transaction = create_coinbase_transaction([] of Models::Miner)
-    end
-
-    def setup(@node : Node)
-      setup_dapps
     end
 
     def node
       @node.not_nil!
-    end
-
-    def coinbase_transaction : Transaction
-      @coinbase_transaction.not_nil!
     end
 
     def set_genesis
@@ -72,8 +65,7 @@ module ::Sushi::Core
       set_genesis if @chain.size == 0
     end
 
-    def update_coinbase_transaction(miners : Models::Miners)
-      @coinbase_transaction = create_coinbase_transaction(miners)
+    def clean_transactions
       @transaction_pool.reject! { |transaction| indices.get(transaction.id) }
     end
 
@@ -81,6 +73,8 @@ module ::Sushi::Core
       return nil unless latest_block.valid_nonce?(nonce)
 
       index = @chain.size.to_i64
+
+      coinbase_transaction = create_coinbase_transaction(miners)
 
       transactions = [coinbase_transaction] + @transaction_pool
       transactions = align_transactions(transactions)
@@ -106,8 +100,7 @@ module ::Sushi::Core
         database.push_block(block)
       end
 
-      update_coinbase_transaction(miners)
-
+      clean_transactions
       block
     end
 

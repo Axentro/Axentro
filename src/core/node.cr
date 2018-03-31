@@ -32,8 +32,8 @@ module ::Sushi::Core
       @public_host : String?,
       @public_port : Int32?,
       @ssl : Bool?,
-      connect_host : String?,
-      connect_port : Int32?,
+      @connect_host : String?,
+      @connect_port : Int32?,
       @wallet : Wallet,
       @database : Database?,
       @conn_min : Int32,
@@ -49,15 +49,6 @@ module ::Sushi::Core
       info "connecting node is using ssl?: #{light_green(@use_ssl)}"
 
       @blockchain = Blockchain.new(@wallet, @database)
-
-      info "loaded blockchain's size: #{light_cyan(@blockchain.chain.size)}"
-
-      if @database
-        @latest_unknown = @blockchain.latest_index + 1
-      else
-        warning "no database has been specified"
-      end
-
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @nodes = Models::Nodes.new
       @miners = Models::Miners.new
@@ -65,7 +56,6 @@ module ::Sushi::Core
 
       @rpc_controller = Controllers::RPCController.new(@blockchain)
       @handshake_controller = Controllers::HandshakeController.new(@blockchain)
-
       @latest_nonces = Array(UInt64).new
 
       wallet_network = Wallet.address_network_type(@wallet.address)
@@ -77,18 +67,26 @@ module ::Sushi::Core
         exit -1
       end
 
-      if connect_host && connect_port
-        connect(connect_host.not_nil!, connect_port.not_nil!)
-      else
-        warning "no connecting node has been specified"
-        warning "so this node is standalone from other network"
-      end
-
       setup(@blockchain)
     end
 
     private def setup(blockchain : Blockchain)
       blockchain.setup(self)
+
+      info "loaded blockchain's size: #{light_cyan(@blockchain.chain.size)}"
+
+      if @database
+        @latest_unknown = @blockchain.latest_index + 1
+      else
+        warning "no database has been specified"
+      end
+
+      if @connect_host && @connect_port
+        connect(@connect_host.not_nil!, @connect_port.not_nil!)
+      else
+        warning "no connecting node has been specified"
+        warning "so this node is standalone from other network"
+      end
     end
 
     private def connect(connect_host : String, connect_port : Int32)
