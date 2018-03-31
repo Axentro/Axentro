@@ -331,7 +331,7 @@ describe Scars do
           actual = transaction_factory.sender_wallet.address
           expected = transaction_factory.recipient_wallet.address
           scars = Scars.new(Blockchain.new(transaction_factory.sender_wallet))
-          expect_raises(Exception, "address mismatch for scars_sell: expected #{actual} but got #{expected}") do
+          expect_raises(Exception, "address mismatch for scars_cancel: expected #{actual} but got #{expected}") do
             scars.valid_cancel?(tx1, txns)
           end
         end
@@ -346,7 +346,7 @@ describe Scars do
           tx1 = transaction_factory.make_cancel_domain("domain1.sc", 500_i64, recipients)
           scars = Scars.new(Blockchain.new(transaction_factory.sender_wallet))
 
-          expect_raises(Exception, "price mismatch for scars_sell: expected 500 but got 200") do
+          expect_raises(Exception, "price mismatch for scars_cancel: expected 500 but got 200") do
             scars.valid_cancel?(tx1, txns)
           end
         end

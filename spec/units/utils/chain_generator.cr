@@ -23,7 +23,9 @@ module ::Units::Utils::ChainGenerator
     def initialize
       @node_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @miner_wallet = Wallet.from_json(Wallet.create(true).to_json)
+      @node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, nil, 1_i32, false)
       @blockchain = Blockchain.new(node_wallet)
+      @blockchain.setup(@node)
       @miner = {address: miner_wallet.address, socket: MockWebSocket.new, nonces: [] of UInt64}
       @transaction_factory = TransactionFactory.new(@node_wallet)
       enable_ut

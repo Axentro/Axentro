@@ -118,27 +118,6 @@ describe Transaction do
         end
       end
 
-      it "should raise unknown action error if supplied action is not in the list of valid actions" do
-        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
-        blockchain = Blockchain.new(sender_wallet)
-
-        transaction = Transaction.new(
-          Transaction.create_id,
-          "not-valid-action", # action
-          [a_sender(sender_wallet, 1000_i64)],
-          [] of Recipient,
-          "0",           # message
-          TOKEN_DEFAULT, # token
-          "0",           # prev_hash
-          "0",           # sign_r
-          "0",           # sign_s
-        )
-
-        expect_raises(Exception, "unknown action: not-valid-action") do
-          transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
-        end
-      end
-
       it "should raise invalid senders address checksum error if supplied sender address is invalid" do
         sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
         blockchain = Blockchain.new(sender_wallet)
