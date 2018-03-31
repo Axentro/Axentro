@@ -5,7 +5,6 @@ include Sushi::Core::Models
 include Sushi::Core::Consensus
 
 describe Consensus do
-
   ENV.delete("UT")
 
   describe "#valid?, #valid_scryptn?" do

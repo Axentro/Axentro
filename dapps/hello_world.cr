@@ -10,7 +10,6 @@
 #
 module ::Sushi::Core::DApps::User
   class HelloWorld < UserDApp
-
     def valid_addresses
       [] of String
     end

@@ -79,11 +79,11 @@ module ::Units::Utils::ChainGenerator
         "send", # action
         [a_sender(sender_wallet, sender_amount)],
         [a_recipient(recipient_wallet, sender_amount)],
-        "0",           # message
+        "0",   # message
         token, # token
-        "0",           # prev_hash
-        "0",           # sign_r
-        "0",           # sign_s
+        "0",   # prev_hash
+        "0",   # sign_r
+        "0",   # sign_s
       )
       signature = sign(sender_wallet, unsigned_transaction)
       unsigned_transaction.signed(signature[:r], signature[:s])
