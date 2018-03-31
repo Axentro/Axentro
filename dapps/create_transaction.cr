@@ -41,11 +41,16 @@ module ::Sushi::Core::DApps::User
           recipient = create_recipient(transaction.senders[0][:address], 5_i64)
 
           #
-          # Note that the id of the transaction must be uniq for each transaction.
-          # On the other hand, every node must create same id for the same transactions.
-          # In this case, sha256 is useful for the purpose.
+          # You can create an id for a target transaction by
+          # `create_id_for_transaction`
           #
-          id = sha256(TARGET_ACTION + transaction.to_hash)
+          # If you create it manually, note that every node must create same id for an action.
+          # Otherwise, duplicated transactions for 1 action will be accepted,
+          # if you run the dApp on multiple nodes.
+          #
+          # `sha256` is useful method to create an id.
+          #
+          id = create_id_for_transaction(transaction)
 
           created = create_transaction(
             id,                                                       # id

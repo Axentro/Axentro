@@ -210,6 +210,15 @@ module ::Sushi::Core::DApps::User
       true
     end
 
+    def create_id_for_transaction(transaction : Transaction) : String
+      sha256(
+        valid_addresses.join("") +
+        valid_networks.join("") +
+        related_transaction_actions.join("") +
+        transaction.to_hash
+      )
+    end
+
     #
     # !!!!!!!!!!!!!!!!!!!!!!!!!
     # Do not modify below codes
