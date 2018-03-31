@@ -42,7 +42,7 @@ module ::E2E::Utils::API
 
     recipient_address = ::Sushi::Core::Wallet.from_path("wallets/testnet-#{n_recipient}.json").address
 
-    args = ["transaction", "send", "-w", "wallets/testnet-#{n_sender}.json", "-a", recipient_address, "-m", a, "-n", "http://127.0.0.1:#{port}", "--message='E2E Test'", "-f", "1", "--json"]
+    args = ["transaction", "create", "-w", "wallets/testnet-#{n_sender}.json", "-a", recipient_address, "-m", a, "-n", "http://127.0.0.1:#{port}", "--message='E2E Test'", "-f", "1", "--json"]
 
     res = `#{sushi(args)}`
 
