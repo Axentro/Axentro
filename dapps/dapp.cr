@@ -100,7 +100,7 @@ module ::Sushi::Core::DApps::User
     # ```
     # block.transactions.each do |transaction|
     #   if transaction.action == "some_action"
-    #     id = sha256(transaction.to_hash)
+    #     id = create_transaction_id(block, transaction)
     #     action = "send"
     #     sender = create_sender(5_i64)
     #     recipient = create_recipient(transaction.recipients[0][:address], 5_i64)
