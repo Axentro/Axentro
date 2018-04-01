@@ -178,6 +178,7 @@ module ::Sushi::Core::DApps::User
       message : String,
       token : String
     ) : Bool
+
       if blockchain.indices.get(id)
         info "skip creating transaction #{id}"
         return false
@@ -210,11 +211,12 @@ module ::Sushi::Core::DApps::User
       true
     end
 
-    def create_id_for_transaction(transaction : Transaction) : String
+    def create_transaction_id(block : Block, transaction : Transaction) : String
       sha256(
         valid_addresses.join("") +
         valid_networks.join("") +
         related_transaction_actions.join("") +
+        block.to_hash +
         transaction.to_hash
       )
     end
