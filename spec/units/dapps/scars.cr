@@ -1,5 +1,5 @@
-require "./../../../spec_helper.cr"
-require "./../../utils"
+require "./../../spec_helper"
+require "./../utils"
 
 include Sushi::Core::Models
 include Sushi::Core
