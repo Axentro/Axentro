@@ -5,7 +5,7 @@ module ::Units::Utils::ChainGenerator
 
   def with_factory(&block)
     block_factory = BlockFactory.new
-    yield block_factory, block_factory.transaction_factory, block_factory.node
+    yield block_factory, block_factory.transaction_factory
   end
 
   class MockWebSocket < HTTP::WebSocket
@@ -19,7 +19,6 @@ module ::Units::Utils::ChainGenerator
     property node_wallet : Wallet
     property miner_wallet : Wallet
     property transaction_factory : TransactionFactory
-    property node : Sushi::Core::Node
 
     def initialize
       @node_wallet = Wallet.from_json(Wallet.create(true).to_json)

@@ -50,7 +50,7 @@ describe Transaction do
   describe "#valid?" do
     context "when not coinbase" do
       it "should be valid" do
-        with_factory do |block_factory, transaction_factory, node|
+        with_factory do |block_factory, transaction_factory|
           signed_transaction1 = transaction_factory.make_send(100_i64)
           signed_transaction2 = transaction_factory.make_send(200_i64)
           signed_transaction2 = transaction_factory.align_transaction(signed_transaction2, signed_transaction1.to_hash)
@@ -84,7 +84,7 @@ describe Transaction do
       end
 
       it "should raise error: transaction already included in indices" do
-        with_factory do |block_factory, transaction_factory, node|
+        with_factory do |block_factory, transaction_factory|
           transaction1 = transaction_factory.make_send(100_i64)
           transaction2 = transaction_factory.make_send(200_i64)
           chain = block_factory.addBlock.addBlock([transaction1, transaction2]).sub_chain
