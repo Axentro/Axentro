@@ -1,7 +1,8 @@
 module ::Sushi::Core::Logger
   def debug(msg : String)
     return if ENV.has_key?("UNIT") || ENV.has_key?("E2E")
-    log_out("Debug", msg, :light_gray)
+    return unless ENV.has_key?("DEBUG")
+    log_out("Debug", msg, :dark_gray)
   end
 
   def info(msg : String)
