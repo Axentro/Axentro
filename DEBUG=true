@@ -1,0 +1,58 @@
+come here! 0
+come here! 1
+come here! 2
+come here! 3
+come here! 4
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] core version: [92m1[0m
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] id: [92m4a596b56647bce17b30818d41b546851[0m
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] is_private: [92mfalse[0m
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] public url: [92m127.0.0.1[0m:[92m3002[0m
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] connecting node is using ssl?: [92mfalse[0m
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] initializing BlockchainInfo... (build in)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] initializing TransactionCreator... (build in)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] initializing UTXO... (build in)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] initializing Scars... (build in)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] initializing Token... (build in)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] initializing Indices... (build in)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] initializing Rejects... (build in)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] initializing Fees... (build in)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] initializing HelloWorld... (user)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] initializing CreateTransaction... (user)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] connecting to [92mlocalhost[0m:[92m3000[0m
+come here! 5
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] start running Sushi's node on [92m0.0.0.0[0m:[92m3002[0m
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] network type: [92mtestnet[0m
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] connection hash as client 21ed97b7280b9a6029dae49af82dd374c914de30671e31ed7ac9dcc5ac016a03
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] successfully connected: 9a0a1c89fa6122d3bd82d959e805980b (1)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] connecting nodes... (0)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] current connection (1) is less than the min connection (5).
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] requesting new nodes (4) (1)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] connecting to [92m127.0.0.1[0m:[92m3001[0m
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] recieved new nodes (1)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] connecting nodes... (1)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] connection hash as client 792c7d0693e879164a50666d7bd9edf79e888400d6ab411e590cabef808dbfca
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] successfully connected: b5aa3318e6a656b683e47e6af37a1589 (2)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] connecting nodes... (0)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] current connection (2) is less than the min connection (5).
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] requesting new nodes (3) (2)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] recieved new nodes (0)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] connecting nodes... (0)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] current connection (2) is less than the min connection (5).
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] requesting new nodes (3) (3)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] recieved new nodes (0)
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] connecting nodes... (0)
+[ 2018-04-01 16:53:59 -- [33mWarning[0m ] the connection number (2) might be less then the min connection (5).
+[ 2018-04-01 16:53:59 -- [33mWarning[0m ] but we proceed the setup since there might be not enough nodes.
+[ 2018-04-01 16:53:59 -- [33mWarning[0m ] error happens during setup dApps
+[ 2018-04-01 16:53:59 -- [33mWarning[0m ] reason:
+[ 2018-04-01 16:53:59 -- [33mWarning[0m ] Sushi::Core::DApps::User::CreateTransaction cannot activate with VDA4N2VjZDQ2ODQ5NDVkMDk3YTkxOGEyNGE0MGE0YTZkMjNkYjBmNDdhOGMzOTVl. available: ["VDAxMjJmMTcyNWE1NmE0MjExZTk0ZThkMGRiYmM2ZjE1YTQ5OWRmODM1MzliYmUy"]
+[ 2018-04-01 16:53:59 -- [33mWarning[0m ] the dApp will be removed and be ignored
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] loaded blockchain's size: [96m1[0m
+[ 2018-04-01 16:53:59 -- [33mWarning[0m ] no database has been specified
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] recieved chain's size: 38
+[ 2018-04-01 16:53:59 -- [31m  Error[0m ] found invalid block while syncing a blocks
+[ 2018-04-01 16:53:59 -- [31m  Error[0m ] the reason:
+[ 2018-04-01 16:53:59 -- [31m  Error[0m ] the nonce is invalid: 11685487511719244749
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] chain updated: [92m0[0m -> [92m0[0m
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] broadcast a block to miners
+[ 2018-04-01 16:53:59 -- [92m   Info[0m ] successfully setup the node.

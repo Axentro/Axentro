@@ -104,7 +104,8 @@ module ::Sushi::Core
       block
     end
 
-    def replace_chain(subchain : Models::Chain) : Bool
+    def replace_chain(_subchain : Models::Chain?) : Bool
+      return false unless subchain = _subchain
       return false if subchain.size == 0
       return false if subchain[0].index == 0
 
@@ -168,7 +169,7 @@ module ::Sushi::Core
       latest_block.index
     end
 
-    def subchain(from : Int64)
+    def subchain(from : Int64) : Models::Chain?
       return nil if @chain.size < from
 
       @chain[from..-1]
