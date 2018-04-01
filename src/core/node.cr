@@ -540,8 +540,8 @@ module ::Sushi::Core
       node_list_all = @nodes.map { |n|
         (
           n[:context][:id] == @id ||
-          n[:context][:is_private] ||
-          _known_nodes.includes?(n[:context])
+            n[:context][:is_private] ||
+            _known_nodes.includes?(n[:context])
         ) ? nil : n[:context]
       }.compact
 
@@ -670,17 +670,17 @@ module ::Sushi::Core
             @flag = FLAG_BLOCKCHAIN_LOADING
             proceed_setup
           elsif @requested_nodes < 3 && @nodes.size > 0
-              @requested_nodes += 1
+            @requested_nodes += 1
 
-              socket = @nodes.sample[:socket]
+            socket = @nodes.sample[:socket]
 
-              info "current connection (#{@nodes.size}) is less than the min connection (#{@conn_min})."
-              info "requesting new nodes (#{@conn_min - @nodes.size}) (#{@requested_nodes})"
+            info "current connection (#{@nodes.size}) is less than the min connection (#{@conn_min})."
+            info "requesting new nodes (#{@conn_min - @nodes.size}) (#{@requested_nodes})"
 
-              send(socket, M_TYPE_REQUEST_NODES, {
-                     known_nodes:       known_nodes,
-                     request_nodes_num: @conn_min - @nodes.size,
-                   })
+            send(socket, M_TYPE_REQUEST_NODES, {
+              known_nodes:       known_nodes,
+              request_nodes_num: @conn_min - @nodes.size,
+            })
           else
             warning "the connection number (#{@nodes.size}) might be less then the min connection (#{@conn_min})."
             warning "but we proceed the setup since there might be not enough nodes."
