@@ -168,7 +168,8 @@ module ::Sushi::Core::DApps::User
     #
     # The id is important field that guarantee that the action will be executed only once for uniq id,
     # even if you create multiple transactions from multiple nodes.
-    # `sha256` is useful for creating the id.
+    # You can create the id by `create_transaction_id` to be uniq for each block and transaction.
+    # If you create it manually (it's not recommended), `sha256` is useful for creating the id.
     #
     def create_transaction(
       id : String,
@@ -210,6 +211,12 @@ module ::Sushi::Core::DApps::User
       true
     end
 
+    #
+    # Create a transaction id to be uniq for each block and transaction.
+    # As you can see, the `valid_addresses`, `valid_networks` and related_transaction_actions`
+    # are used to create it.
+    # So if you will change it, the id also be changed.
+    #
     def create_transaction_id(block : Block, transaction : Transaction) : String
       sha256(
         valid_addresses.join("") +
