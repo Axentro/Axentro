@@ -178,7 +178,6 @@ module ::Sushi::Core::DApps::User
       message : String,
       token : String
     ) : Bool
-
       if blockchain.indices.get(id)
         info "skip creating transaction #{id}"
         return false
