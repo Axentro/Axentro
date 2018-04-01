@@ -108,6 +108,7 @@ module ::Sushi::Core
       return false unless subchain = _subchain
       return false if subchain.size == 0
       return false if subchain[0].index == 0
+      return false if @chain.size == 0
 
       first_index = subchain[0].index - 1
 
