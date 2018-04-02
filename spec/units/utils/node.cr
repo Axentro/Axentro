@@ -26,6 +26,13 @@ module ::Units::Utils::NodeHelper
     end
   end
 
+  def blockchain_node(wallet : Wallet) : Blockchain
+    blockchain = Blockchain.new(wallet)
+    node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, wallet, nil, 1_i32, false)
+    blockchain.setup(node)
+    blockchain
+  end
+
   def with_node(&block)
     sender_wallet = wallet_1
     recipient_wallet = wallet_2

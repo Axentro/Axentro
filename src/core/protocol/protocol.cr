@@ -130,7 +130,7 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_RECIEVE_CHAIN
     JSON.mapping({
-      chain: Models::Chain,
+      chain: Models::Chain?,
     })
   end
 
@@ -157,7 +157,10 @@ module ::Sushi::Core::Protocol
 
   # ### Flags for node status ####
 
-  FLAG_NONE               = 0b00000000
-  FLAG_REQUESTING_NODES   = 0b00000001
-  FLAG_BLOCKCHAIN_SYNCING = 0b00000010
+  FLAG_NONE               = 0
+  FLAG_CONNECTING_NODES   = 1
+  FLAG_BLOCKCHAIN_LOADING = 2
+  FLAG_BLOCKCHAIN_SYNCING = 3
+  FLAG_SETUP_PRE_DONE     = 4
+  FLAG_SETUP_DONE         = 5
 end

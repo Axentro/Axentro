@@ -15,7 +15,7 @@ module ::Sushi::Core
     def pow(thread : Int32) : UInt64
       nonce : UInt64 = Random.rand(UInt64::MAX)
 
-      info "starting nonce from #{light_cyan(nonce)} (thread: #{thread + 1})"
+      info "starting nonce from #{light_green(nonce)} (thread: #{thread + 1})"
 
       latest_nonce = nonce
       latest_time = Time.now
@@ -50,7 +50,7 @@ module ::Sushi::Core
         error "for hash: #{@latest_hash}"
       end
 
-      info "found new nonce(#{@difficulty}): #{light_cyan(nonce)} (thread: #{thread + 1})"
+      info "found new nonce(#{@difficulty}): #{light_green(nonce)} (thread: #{thread + 1})"
 
       nonce
     end

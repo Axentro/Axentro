@@ -1,46 +1,39 @@
 require "./blockchain/consensus"
 require "./blockchain/*"
+require "./dapps"
 
 module ::Sushi::Core
   class Blockchain
+    TOKEN_DEFAULT = Core::DApps::BuildIn::UTXO::DEFAULT
+
     getter chain : Models::Chain = Models::Chain.new
-    getter transaction_pool = [] of Transaction
     getter wallet : Wallet
+    getter transaction_pool = [] of Transaction
 
-    DAPPS = %w(UTXO Scars Indices Rejects)
-
-    getter dapps : Array(DApp) = [] of DApp
-
-    {% for dapp in DAPPS %}
-      getter {{ dapp.id.underscore }} : {{ dapp.id }} = {{ dapp.id }}.new
-    {% end %}
-
-    @coinbase_transaction : Transaction?
+    @node : Node?
 
     def initialize(@wallet : Wallet, @database : Database? = nil)
-      {% for dapp in DAPPS %}
-        @dapps.push(@{{ dapp.id.underscore }})
-      {% end %}
+      initialize_dapps
+    end
+
+    def setup(@node : Node)
+      setup_dapps
 
       if database = @database
         restore_from_database(database)
       else
         set_genesis
       end
-
-      @coinbase_transaction = create_coinbase_transaction([] of Models::Miner)
     end
 
-    def coinbase_transaction : Transaction
-      @coinbase_transaction.not_nil!
+    def node
+      @node.not_nil!
     end
 
     def set_genesis
       @chain.push(genesis_block)
 
-      @dapps.each do |dapp|
-        dapp.record(@chain)
-      end
+      dapps_record
 
       if database = @database
         database.push_block(genesis_block)
@@ -48,6 +41,7 @@ module ::Sushi::Core
     end
 
     def restore_from_database(database : Database)
+      info "start loding blockchain from #{database.path}"
       current_index = 0_i64
 
       loop do
@@ -58,9 +52,7 @@ module ::Sushi::Core
 
         @chain.push(block)
 
-        @dapps.each do |dapp|
-          dapp.record(@chain)
-        end
+        dapps_record
 
         current_index += 1
       end
@@ -73,8 +65,7 @@ module ::Sushi::Core
       set_genesis if @chain.size == 0
     end
 
-    def update_coinbase_transaction(miners : Models::Miners)
-      @coinbase_transaction = create_coinbase_transaction(miners)
+    def clean_transactions
       @transaction_pool.reject! { |transaction| indices.get(transaction.id) }
     end
 
@@ -82,6 +73,8 @@ module ::Sushi::Core
       return nil unless latest_block.valid_nonce?(nonce)
 
       index = @chain.size.to_i64
+
+      coinbase_transaction = create_coinbase_transaction(miners)
 
       transactions = [coinbase_transaction] + @transaction_pool
       transactions = align_transactions(transactions)
@@ -101,36 +94,39 @@ module ::Sushi::Core
 
       @chain.push(block)
 
-      @dapps.each do |dapp|
-        dapp.record(@chain)
-      end
+      dapps_record
 
       if database = @database
         database.push_block(block)
       end
 
-      update_coinbase_transaction(miners)
-
+      clean_transactions
       block
     end
 
-    def replace_chain(subchain : Models::Chain) : Bool
+    def replace_chain(_subchain : Models::Chain?) : Bool
+      return false unless subchain = _subchain
       return false if subchain.size == 0
       return false if subchain[0].index == 0
+      return false if @chain.size == 0
 
       first_index = subchain[0].index - 1
-      prev_block = @chain[first_index]
+
+      @chain = @chain[0..first_index]
+
+      dapps_clear_record
 
       subchain.each do |block|
-        return false unless block.valid_for?(prev_block)
-        prev_block = block
-      end
+        block.valid_as_latest?(self)
+        @chain << block
 
-      @chain = @chain[0..first_index].concat(subchain)
+        dapps_record
+      rescue e : Exception
+        error "found invalid block while syncing a blocks"
+        error "the reason:"
+        error e.message.not_nil!
 
-      @dapps.each do |dapp|
-        dapp.clear
-        dapp.record(@chain)
+        break
       end
 
       if database = @database
@@ -174,7 +170,7 @@ module ::Sushi::Core
       latest_block.index
     end
 
-    def subchain(from : Int64)
+    def subchain(from : Int64) : Models::Chain?
       return nil if @chain.size < from
 
       @chain[from..-1]
@@ -220,10 +216,11 @@ module ::Sushi::Core
         "head",
         senders,
         [node_reccipient] + miners_recipients,
-        "0", # message
-        "0", # prev_hash
-        "0", # sign_r
-        "0", # sign_s
+        "0",           # message
+        TOKEN_DEFAULT, # token
+        "0",           # prev_hash
+        "0",           # sign_r
+        "0",           # sign_s
       )
     end
 
@@ -234,13 +231,14 @@ module ::Sushi::Core
       @chain[-1].transactions[1..-1].reduce(0_i64) { |fees, transaction| fees + transaction.calculate_fee }
     end
 
-    def create_unsigned_transaction(action, senders, recipients, message) : Transaction
+    def create_unsigned_transaction(action, senders, recipients, message, token, id = Transaction.create_id) : Transaction
       Transaction.new(
-        Transaction.create_id,
+        id,
         action,
         senders,
         recipients,
         message,
+        token,
         "0", # prev_hash
         "0", # sign_r
         "0", # sign_s
@@ -270,11 +268,25 @@ module ::Sushi::Core
     end
 
     def available_actions : Array(String)
-      @dapps.map { |dapp| dapp.actions }.flatten
+      @dapps.map { |dapp| dapp.transaction_actions }.flatten
+    end
+
+    private def dapps_record
+      @dapps.each do |dapp|
+        dapp.record(@chain)
+      end
+    end
+
+    private def dapps_clear_record
+      @dapps.each do |dapp|
+        dapp.clear
+        dapp.record(@chain)
+      end
     end
 
     include Logger
     include Hashes
     include Consensus
+    include DApps
   end
 end

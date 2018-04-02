@@ -30,35 +30,37 @@ describe Block do
     it "should calculate merkle tree root when coinbase transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
       block = Block.new(1_i64, [coinbase_transaction], 1_u64, "prev_hash")
-      block.calcluate_merkle_tree_root.should eq("d8d522eb329b5adb18c6873952f516cee3e2fef7")
+      block.calcluate_merkle_tree_root.should eq("873737b4bd5e83a3c255db15476b3af8892dadf4")
     end
 
     it "should calculate merkle tree root when 2 transactions (first is coinbase)" do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = Block.new(1_i64, [coinbase_transaction, transaction1], 1_u64, "prev_hash")
-      block.calcluate_merkle_tree_root.should eq("76c1ec02abe869508c71ff91908f3d5f11b475d7")
+      block.calcluate_merkle_tree_root.should eq("b1c08f72e02ca7cf35c3eaa095f04a4c5561ca9d")
     end
   end
 
   describe "#valid_nonce?" do
     it "should return true when valid" do
-      coinbase_transaction = a_fixed_coinbase_transaction
-      block = Block.new(1_i64, [coinbase_transaction], 1_u64, "08101ac35b72e68db9670e1afc6b4566bc99a2c7df2772f6c03d18d39a3a5dce")
-      block.valid_nonce?(116_u64, 2).should be_true
+      with_factory do |block_factory|
+        block = block_factory.addBlock.chain.first
+        block.valid_nonce?(67_u64, 2).should be_true
+      end
     end
 
     it "should return false when invalid" do
-      coinbase_transaction = a_fixed_coinbase_transaction
-      block = Block.new(1_i64, [coinbase_transaction], 1_u64, "prev_hash")
-      block.valid_nonce?(1_u64).should be_false
+      with_factory do |block_factory|
+        block = block_factory.addBlock.chain.first
+        block.valid_nonce?(68_u64, 2).should be_false
+      end
     end
   end
 
   describe "#valid_as_latest?" do
     context "when not a genesis block" do
       it "should be valid" do
-        blockchain = Blockchain.new(a_fixed_sender_wallet)
+        blockchain = blockchain_node(a_fixed_sender_wallet)
         prev_hash = blockchain.chain[0].to_hash
         coinbase_transaction = a_fixed_coinbase_transaction
         block = Block.new(1_i64, [coinbase_transaction], 60127_u64, prev_hash)
@@ -66,7 +68,7 @@ describe Block do
       end
 
       it "should raise an error: invalid index" do
-        blockchain = Blockchain.new(a_fixed_sender_wallet)
+        blockchain = blockchain_node(a_fixed_sender_wallet)
         prev_hash = blockchain.chain[0].to_hash
         block = Block.new(2_i64, [a_fixed_signed_transaction], 0_u64, prev_hash)
         expect_raises(Exception, "invalid index, 2 have to be 1") do
@@ -75,7 +77,7 @@ describe Block do
       end
 
       it "should raise an error: invalid transaction" do
-        blockchain = Blockchain.new(a_fixed_sender_wallet)
+        blockchain = blockchain_node(a_fixed_sender_wallet)
         prev_hash = blockchain.chain[0].to_hash
         block = Block.new(1_i64, [a_fixed_signed_transaction], 0_u64, prev_hash)
         expect_raises(Exception, "actions has to be 'head' for coinbase transaction") do
@@ -86,13 +88,13 @@ describe Block do
 
     context "when a genesis block" do
       it "should be valid" do
-        blockchain = Blockchain.new(a_fixed_sender_wallet)
+        blockchain = blockchain_node(a_fixed_sender_wallet)
         block = Block.new(0_i64, [] of Transaction, 0_u64, "genesis")
         block.valid_as_latest?(blockchain).should be_true
       end
 
       it "should raise an error: transactions have to be empty" do
-        blockchain = Blockchain.new(a_fixed_sender_wallet)
+        blockchain = blockchain_node(a_fixed_sender_wallet)
         block = Block.new(0_i64, [a_fixed_signed_transaction], 0_u64, "genesis")
         expect_raises(Exception, /transactions have to be empty for genesis block/) do
           block.valid_as_latest?(blockchain)
@@ -100,7 +102,7 @@ describe Block do
       end
 
       it "should raise an error: nonce has to be '0'" do
-        blockchain = Blockchain.new(a_fixed_sender_wallet)
+        blockchain = blockchain_node(a_fixed_sender_wallet)
         block = Block.new(0_i64, [] of Transaction, 1_u64, "genesis")
         expect_raises(Exception, "nonce has to be '0' for genesis block: 1") do
           block.valid_as_latest?(blockchain)
@@ -108,7 +110,7 @@ describe Block do
       end
 
       it "should raise an error: prev_hash has to be 'genesis'" do
-        blockchain = Blockchain.new(a_fixed_sender_wallet)
+        blockchain = blockchain_node(a_fixed_sender_wallet)
         block = Block.new(0_i64, [] of Transaction, 0_u64, "not-genesis")
         expect_raises(Exception, "prev_hash has to be 'genesis' for genesis block: not-genesis") do
           block.valid_as_latest?(blockchain)
@@ -119,10 +121,15 @@ describe Block do
 
   describe "#valid_for?" do
     it "should return true when valid" do
-      prev_block = block_1
-      prev_hash = prev_block.to_hash
-      block = block_2
-      block.valid_for?(prev_block).should be_true
+      with_factory do |block_factory|
+        chain = block_factory.addBlocks(2).chain
+        block_factory.enable_ut
+        block1 = chain[1]
+        block2 = chain[2]
+
+        block2.valid_for?(block1).should be_true
+        block_factory.remove_ut
+      end
     end
 
     it "should raise an error: mismatch index" do
@@ -147,21 +154,33 @@ describe Block do
 
     it "should raise an error: nonce is invalid" do
       transaction1 = a_fixed_signed_transaction
-      prev_block = Block.new(1_i64, [transaction1], 0_u64, "prev_hash_1")
+      prev_block = Block.new(1_i64, [transaction1], 10_u64, "prev_hash_1")
       prev_hash = prev_block.to_hash
-      block = Block.new(2_i64, [transaction1], 0_u64, prev_hash)
-      expect_raises(Exception, "the nonce is invalid: 0") do
+      block = Block.new(2_i64, [transaction1], 99_u64, prev_hash)
+
+      expect_raises(Exception, "the nonce is invalid: 99") do
         block.valid_for?(prev_block)
       end
     end
 
     it "should raise an error: Invalid merkle tree root" do
-      # someone changed the amount from 2500 to 12500
-      # between block_2 and block_2_invalid
-      block_2.valid_for?(block_1).should eq(true)
+      # someone tried to add into block2 a duplicate of a transaction already in block 1 - but with a different amount
+      with_factory do |block_factory, transaction_factory|
+        chain = block_factory.addBlocks(2).chain
+        block_factory.enable_ut
+        block1 = chain[1]
+        block2 = chain[2]
 
-      expect_raises(Exception, "invalid merkle tree root: #{block_2_invalid.calcluate_merkle_tree_root} != #{block_2.merkle_tree_root}") do
-        block_2_invalid.valid_for?(block_1)
+        block2.valid_for?(block1).should eq(true)
+
+        source_recipient = block2.transactions.first.recipients.first
+        target_recipient = a_recipient_with_address(source_recipient["address"], source_recipient["amount"] + 12500_i64)
+        block2.transactions.first.recipients = [target_recipient]
+
+        expect_raises(Exception, "invalid merkle tree root: #{block2.calcluate_merkle_tree_root} != #{block2.merkle_tree_root}") do
+          block2.valid_for?(block1)
+          block_factory.remove_ut
+        end
       end
     end
   end
@@ -193,10 +212,11 @@ def a_fixed_coinbase_transaction
     "head", # action
     [] of Sender,
     [recipient1, recipient2, recipient3],
-    "0", # message
-    "0", # prev_hash
-    "0", # sign_r
-    "0", # sign_s
+    "0",           # message
+    TOKEN_DEFAULT, # token
+    "0",           # prev_hash
+    "0",           # sign_r
+    "0",           # sign_s
   )
 end
 
@@ -208,7 +228,7 @@ end
 def a_fixed_sender_wallet
   Wallet.new("f3df738b74757c81499e0780e93a43a7e6fca21909709163cf3f90223b350c55dc203ab377fef06529cfa9a471ba4bec3e8cbd91ab811728614524adbc1aa6c3",
     "TTBkN2I1YmMwZDI0YTYxNDRiZDQ5YWZmMmYyMDIzMGNkZDBlMWMwZDVlNzdiZjc3MzhhZGU0N2I4YjZhYzZmYWQ5OGIyNWQ0",
-    "TTBiNGY0YzQzMDZhNzY0YmI5NjBiMWQxZGNjZGQxZDY0ODM5Nzk0YWI1Nzc4MzU3")
+    "VDAyNTk0YjdlMTc4N2FkODRmYTU0YWZmODM1YzQzOTA2YTEzY2NjYmMyNjdkYjVm")
 end
 
 def a_fixed_signed_transaction
@@ -223,10 +243,11 @@ def a_fixed_signed_transaction
     "send", # action
     [a_sender(sender_wallet, 1000_i64)],
     [a_recipient(recipient_wallet, 10_i64)],
-    "0", # message
-    "0", # prev_hash
-    "0", # sign_r
-    "0", # sign_s
+    "0",           # message
+    TOKEN_DEFAULT, # token
+    "0",           # prev_hash
+    "0",           # sign_r
+    "0",           # sign_s
   )
 
   unsigned_transaction.signed("cd5927cdc4cf789af690fb5dcd8fd8ec64e9155d9cb025ed93962d686b5d823a", "ef991d40c9a74079ae64c3a351f733134fc50fe92628f66f3b97a42610521c06")

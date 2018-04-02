@@ -3,8 +3,8 @@ module ::Sushi::Interface::Sushi
     def sub_actions
       [
         {
-          name: "send",
-          desc: "send Sushi tokens to a specified address",
+          name: "create",
+          desc: "create a transaction. basically it's used for sending tokens. you can specify other actions. (the default action is 'send')",
         },
         {
           name: "transactions",
@@ -33,18 +33,20 @@ module ::Sushi::Interface::Sushi
         Options::JSON,
         Options::ADDRESS,
         Options::AMOUNT,
+        Options::ACTION,
         Options::MESSAGE,
         Options::BLOCK_INDEX,
         Options::TRANSACTION_ID,
         Options::FEE,
         Options::DOMAIN,
+        Options::TOKEN,
       ])
     end
 
     def run_impl(action_name)
       case action_name
-      when "send"
-        return send
+      when "create"
+        return create
       when "transactions", "txs"
         return transactions
       when "transaction", "tx"
@@ -58,14 +60,18 @@ module ::Sushi::Interface::Sushi
       specify_sub_action!(action_name)
     end
 
-    def send
+    def create
       puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
       puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
       puts_help(HELP_AMOUNT) unless amount = __amount
       puts_help(HELP_FEE) unless fee = __fee
       puts_help(HELP_ADDRESS_DOMAIN_RECIPIENT) if __address.nil? && __domain.nil?
 
-      raise "invalid fee for the action send: minimum fee is #{Core::UTXO.fee("send")}" if fee < Core::UTXO.fee("send")
+      action = __action || "send"
+
+      if fee < Core::DApps::BuildIn::UTXO.fee(action)
+        raise "invalid fee for the action #{action}: minimum fee is #{Core::DApps::BuildIn::UTXO.fee("action")}"
+      end
 
       recipient_address = if address = __address
                             address
@@ -97,7 +103,7 @@ module ::Sushi::Interface::Sushi
         }
       )
 
-      add_transaction(node, wallet, "send", senders, recipients, __message)
+      add_transaction(node, wallet, action, senders, recipients, __message, __token || TOKEN_DEFAULT)
     end
 
     def transactions
@@ -117,7 +123,7 @@ module ::Sushi::Interface::Sushi
       body = rpc(node, payload)
 
       puts_success(success_message) unless __json
-      puts_info(body)
+      puts body
     end
 
     def transaction
@@ -127,9 +133,27 @@ module ::Sushi::Interface::Sushi
       payload = {call: "transaction", transaction_id: transaction_id}.to_json
 
       body = rpc(node, payload)
+      json = JSON.parse(body)
 
-      puts_success("show the transaction #{transaction_id}") unless __json
-      puts_info(body)
+      if json["found"].as_bool
+        puts_success("show the transaction #{transaction_id}") unless __json
+        puts body
+      else
+        # the transaction is not found in each block
+        # try to find the rejected reason
+        payload = {call: "rejects", transaction_id: transaction_id}.to_json
+
+        body = rpc(node, payload)
+        json = JSON.parse(body)
+
+        if json["rejected"].as_bool
+          puts_error "transaction #{transaction_id} was rejected for a reason:"
+          puts_error json["reason"].as_s
+          exit -1
+        else
+          raise "transaction #{transaction_id} was not found"
+        end
+      end
     end
 
     def confirmation
@@ -151,23 +175,33 @@ module ::Sushi::Interface::Sushi
         puts_info("confirmations: #{json["confirmations"]}")
         puts_info("threshold: #{json["threshold"]}")
       else
-        puts_info(body)
+        puts body
       end
     end
 
     def fees
+      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+
+      payload = {call: "fees"}.to_json
+
+      body = rpc(node, payload)
+      json = JSON.parse(body)
+
       unless __json
-        puts_success("showing fees for each action.")
-        puts_info("send       : #{Core::UTXO.fee("send")}")
-        puts_info("scars_buy  : #{Core::Scars.fee("scars_buy")}")
-        puts_info("scars_sell : #{Core::Scars.fee("scars_sell")}")
+        puts_success("\n  showing fees for each action.\n")
+
+        puts_info("  + %20s - %20s +" % ["-" * 20, "-" * 20])
+        puts_info("  | %20s | %20s |" % ["action", "fee"])
+        puts_info("  | %20s | %20s |" % ["-" * 20, "-" * 20])
+
+        json.each do |action, fee|
+          puts_info("  | %20s | %20s |" % [action, fee])
+        end
+
+        puts_info("  + %20s - %20s +" % ["-" * 20, "-" * 20])
+        puts_info("")
       else
-        json = {
-          send:       Core::UTXO.fee("send"),
-          scars_buy:  Core::Scars.fee("scars_buy"),
-          scars_sell: Core::Scars.fee("scars_sell"),
-        }.to_json
-        puts json
+        puts body
       end
     end
 

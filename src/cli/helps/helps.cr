@@ -5,7 +5,7 @@ module ::Sushi::Interface
     HELP_WALLET_ALREADY_EXISTS            = "the wallet at %s already exists, specify another path"
     HELP_WALLET_PASSWORD                  = "please specify the password for this wallet"
     HELP_ADDRESS_DOMAIN_RECIPIENT         = "please specify a recipient's address or domain: -a [public address] or --domain=[domain]"
-    HELP_AMOUNT                           = "please specify sending amount: -m [amount]"
+    HELP_AMOUNT                           = "please specify amount of token: -m [amount]"
     HELP_CONNECTING_NODE                  = "please specify a connecting node: -n http://[host]:[port]"
     HELP_BLOCK_INDEX_OR_ADDRESS           = "please specify a block index or an address: -i [block index] or -a [address]"
     HELP_BLOCK_INDEX_OR_TRANSACTION_ID    = "please specify a block index or transaction id: -i [block index] or -t [transaction id]"
@@ -14,6 +14,7 @@ module ::Sushi::Interface
     HELP_FEE                              = "please specify transaction fee: -f [fee]. you can check minimum fee by `sushi tx fees`"
     HELP_PRICE                            = "please specify a price for scars --price=[PRICE]"
     HELP_DOMAIN                           = "please specify a domain for scars: --domain=[DOMAIN]"
-    HELP_DOMAIN_NOT_RESOLVED              = "the domain %s is not resolved"
+    HELP_TOKEN                            = "please specify a token name: --token=[TOKEN]"
+    HELP_TOKEN_AMOUNT                     = "please specify the token amount: -m [amount]"
   end
 end

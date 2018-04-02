@@ -3,9 +3,9 @@ require "./node/*"
 module ::Sushi::Core
   class Node
     getter id : String
+    getter network_type : String
 
     @blockchain : Blockchain
-    @network_type : String
     @flag : Int32
     @nodes : Models::Nodes
     @miners : Models::Miners
@@ -23,6 +23,8 @@ module ::Sushi::Core
     @c3 : Int32 = 0
 
     @connection_salt : String
+    @connecting_nodes : Int32 = 0
+    @requested_nodes : Int32 = 0
 
     def initialize(
       @is_private : Bool,
@@ -32,8 +34,8 @@ module ::Sushi::Core
       @public_host : String?,
       @public_port : Int32?,
       @ssl : Bool?,
-      connect_host : String?,
-      connect_port : Int32?,
+      @connect_host : String?,
+      @connect_port : Int32?,
       @wallet : Wallet,
       @database : Database?,
       @conn_min : Int32,
@@ -44,20 +46,12 @@ module ::Sushi::Core
 
       info "core version: #{light_green(Core::CORE_VERSION)}"
       info "id: #{light_green(@id)}"
-      info "is_private: #{light_green(@is_private)}"
-      info "public url: #{light_green(@public_host)}:#{light_green(@public_port)}" unless @is_private
-      info "connecting node is using ssl?: #{light_green(@use_ssl)}"
+
+      debug "is_private: #{light_green(@is_private)}"
+      debug "public url: #{light_green(@public_host)}:#{light_green(@public_port)}" unless @is_private
+      debug "connecting node is using ssl?: #{light_green(@use_ssl)}"
 
       @blockchain = Blockchain.new(@wallet, @database)
-
-      info "loaded blockchain's size: #{light_cyan(@blockchain.chain.size)}"
-
-      if @database
-        @latest_unknown = @blockchain.latest_index + 1
-      else
-        warning "no database has been specified"
-      end
-
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @nodes = Models::Nodes.new
       @miners = Models::Miners.new
@@ -65,7 +59,6 @@ module ::Sushi::Core
 
       @rpc_controller = Controllers::RPCController.new(@blockchain)
       @handshake_controller = Controllers::HandshakeController.new(@blockchain)
-
       @latest_nonces = Array(UInt64).new
 
       wallet_network = Wallet.address_network_type(@wallet.address)
@@ -77,17 +70,15 @@ module ::Sushi::Core
         exit -1
       end
 
-      if connect_host && connect_port
-        connect(connect_host.not_nil!, connect_port.not_nil!)
-      else
-        warning "no connecting node has been specified"
-        warning "so this node is standalone from other network"
-      end
+      proceed_setup
     end
 
     private def connect(connect_host : String, connect_port : Int32)
-      info "connecting to #{light_green(connect_host)}:#{light_green(connect_port)}"
-      info "detected an https connecting node - switching to SSL" if @use_ssl
+      @connecting_nodes += 1
+
+      info "connecting to #{light_green(connect_host)}:#{light_green(connect_port)} (#{@connecting_nodes})"
+
+      debug "detected an https connecting node - switching to SSL" if @use_ssl
 
       socket = HTTP::WebSocket.new(connect_host, "/peer", connect_port, @use_ssl)
 
@@ -102,6 +93,9 @@ module ::Sushi::Core
       connect_async(socket)
     rescue e : Exception
       handle_exception(socket.not_nil!, e, true) if socket
+
+      @connecting_nodes -= 1
+      proceed_setup
     end
 
     private def connect_async(socket)
@@ -109,14 +103,44 @@ module ::Sushi::Core
         socket.run
       rescue e : Exception
         handle_exception(socket, e, true)
+
+        @connecting_nodes -= 1
+        proceed_setup
+      end
+    end
+
+    private def sync_chain(_socket = nil)
+      socket = if __socket = _socket
+                 __socket
+               elsif @nodes.size > 0
+                 @nodes.sample[:socket]
+               else
+                 nil
+               end
+
+      if socket
+        send(
+          socket.not_nil!,
+          M_TYPE_REQUEST_CHAIN,
+          {latest_index: @latest_unknown ? @latest_unknown.not_nil! - 1 : 0}
+        )
+
+        @latest_unknown = nil
+      else
+        warning "no nodes have been specified, so skip syncking blockchain from other nodes."
+
+        @flag = FLAG_SETUP_PRE_DONE if @flag == FLAG_BLOCKCHAIN_SYNCING
+        proceed_setup
       end
     end
 
     private def draw_routes!
       options "/rpc" do |context|
         context.response.headers["Allow"] = "HEAD,GET,PUT,POST,DELETE,OPTIONS"
-        context.response.headers["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Cache-Control, Accept"
         context.response.headers["Access-Control-Allow-Origin"] = "*"
+        context.response.headers["Access-Control-Allow-Headers"] =
+          "X-Requested-With, X-HTTP-Method-Override, Content-Type, Cache-Control, Accept"
+
         context.response.status_code = 200
         context.response.print ""
         context
@@ -135,7 +159,8 @@ module ::Sushi::Core
       draw_routes!
 
       info "start running Sushi's node on #{light_green(@bind_host)}:#{light_green(@bind_port)}"
-      info "network type: #{light_green(@network_type)}"
+
+      debug "network type: #{light_green(@network_type)}"
 
       node = HTTP::Server.new(@bind_host, @bind_port, handlers)
       node.listen
@@ -214,19 +239,6 @@ module ::Sushi::Core
         error "remove the connection from the pool"
         reject!(socket, nil)
       end
-
-      @flag = FLAG_NONE
-    end
-
-    private def sync_chain(socket)
-      flag_set(FLAG_BLOCKCHAIN_SYNCING)
-
-      if latest_unknown = @latest_unknown
-        send(socket, M_TYPE_REQUEST_CHAIN, {latest_index: latest_unknown - 1})
-        @latest_unknown = nil
-      else
-        send(socket, M_TYPE_REQUEST_CHAIN, {latest_index: 0})
-      end
     end
 
     private def analytics
@@ -235,7 +247,7 @@ module ::Sushi::Core
     end
 
     private def _handshake_miner(socket, _content)
-      return if flag_get?(FLAG_BLOCKCHAIN_SYNCING)
+      return unless @flag == FLAG_SETUP_DONE
 
       _m_content = M_CONTENT_HANDSHAKE_MINER.from_json(_content)
 
@@ -274,7 +286,7 @@ module ::Sushi::Core
     end
 
     private def _handshake_node(socket, _content)
-      return if flag_get?(FLAG_BLOCKCHAIN_SYNCING) || flag_get?(FLAG_REQUESTING_NODES)
+      return unless @flag == FLAG_SETUP_DONE
 
       _m_content = M_CONTENT_HANDSHAKE_NODE.from_json(_content)
 
@@ -302,7 +314,7 @@ module ::Sushi::Core
         })
       end
 
-      info "connection hash as server #{connection_hash}"
+      debug "connection hash as server #{connection_hash}"
 
       send(socket, M_TYPE_HANDSHAKE_NODE_ACCEPTED, {
         context:         context,
@@ -316,30 +328,31 @@ module ::Sushi::Core
     end
 
     private def _handshake_node_accepted(socket, _content)
+      @connecting_nodes -= 1
+
       _m_content = M_CONTENT_HANDSHAKE_NODE_ACCEPTED.from_json(_content)
 
       node_context = _m_content.context
       latest_index = _m_content.latest_index
       connection_hash = _m_content.connection_hash
 
-      info "connection hash as client #{connection_hash}"
+      debug "connection hash as client #{connection_hash}"
 
       asserted_connection_hash = http_handshake(node_context)
 
-      if asserted_connection_hash != connection_hash
-        raise "invalid connection hash: expected #{connection_hash} but got #{asserted_connection_hash}"
+      if asserted_connection_hash == connection_hash
+        @nodes << {socket: socket, context: node_context}
+        info "successfully connected: #{node_context[:id]} (#{node_context[:host]}:#{node_context[:port]}) (#{@nodes.size}, #{@connecting_nodes})"
+      else
+        error "invalid connection hash: expected #{connection_hash} but got #{asserted_connection_hash}"
       end
 
-      @nodes << {socket: socket, context: node_context}
-
-      info "successfully connected: #{node_context[:id]} (#{@nodes.size})"
-
-      connect_nodes?
-
-      sync_chain(socket) if latest_index > @blockchain.latest_index && !flag_get?(FLAG_BLOCKCHAIN_SYNCING)
+      proceed_setup
     end
 
     private def _handshake_node_rejected(socket, _content)
+      @connecting_nodes -= 1
+
       _m_content = M_CONTENT_HANDSHAKE_NODE_REJECTED.from_json(_content)
 
       node_context = _m_content.context
@@ -348,10 +361,12 @@ module ::Sushi::Core
       error "handshake with #{node_context[:id]} was rejected for the readson;"
       error reason
       error "please check your network type and restart node"
+
+      proceed_setup
     end
 
     private def _found_nonce(socket, _content)
-      return if flag_get?(FLAG_BLOCKCHAIN_SYNCING)
+      return unless @flag == FLAG_SETUP_DONE
 
       _m_content = M_CONTENT_FOUND_NONCE.from_json(_content)
 
@@ -399,7 +414,7 @@ module ::Sushi::Core
     end
 
     private def _broadcast_transaction(socket, _content)
-      return if flag_get?(FLAG_BLOCKCHAIN_SYNCING)
+      return unless @flag == FLAG_SETUP_DONE
 
       _m_content = M_CONTENT_BROADCAST_TRANSACTION.from_json(_content)
 
@@ -425,14 +440,14 @@ module ::Sushi::Core
     end
 
     private def _broadcast_block(socket, _content)
+      return unless @flag == FLAG_SETUP_DONE
+
       _m_content = M_CONTENT_BROADCAST_BLOCK.from_json(_content)
 
       block = _m_content.block
       known_nodes = _m_content.known_nodes
 
       @cc += 1
-
-      return analytics if flag_get?(FLAG_BLOCKCHAIN_SYNCING)
 
       if @blockchain.latest_index + 1 == block.index
         @c0 += 1
@@ -481,6 +496,8 @@ module ::Sushi::Core
     end
 
     private def _request_chain(socket, _content)
+      return unless @flag == FLAG_SETUP_DONE
+
       _m_content = M_CONTENT_REQUEST_CHAIN.from_json(_content)
 
       latest_index = _m_content.latest_index
@@ -495,29 +512,37 @@ module ::Sushi::Core
 
       chain = _m_content.chain
 
-      info "recieved chain's size: #{chain.size}"
+      if _chain = chain
+        info "recieved chain's size: #{_chain.size}"
+      else
+        info "recieved empty chain."
+      end
 
       current_latest_index = @blockchain.latest_index
 
       if @blockchain.replace_chain(chain)
-        info "chain updated: #{current_latest_index} -> #{@blockchain.latest_index}"
-        flag_unset(FLAG_BLOCKCHAIN_SYNCING)
-
+        info "chain updated: #{light_green(current_latest_index)} -> #{light_green(@blockchain.latest_index)}"
         broadcast_to_miners
-      else
-        error "error while syncing chain, retrying..."
-        sync_chain(socket)
       end
+
+      @flag = FLAG_SETUP_PRE_DONE if @flag == FLAG_BLOCKCHAIN_SYNCING
+      proceed_setup
     end
 
     private def _request_nodes(socket, _content)
+      return unless @flag == FLAG_SETUP_DONE
+
       _m_content = M_CONTENT_REQUEST_NODES.from_json(_content)
 
       _known_nodes = _m_content.known_nodes
       request_nodes_num = _m_content.request_nodes_num
 
       node_list_all = @nodes.map { |n|
-        (n[:context][:id] == @id || n[:context][:is_private] || _known_nodes.includes?(n[:context])) ? nil : n[:context]
+        (
+          n[:context][:id] == @id ||
+            n[:context][:is_private] ||
+            _known_nodes.includes?(n[:context])
+        ) ? nil : n[:context]
       }.compact
 
       node_list = if node_list_all.size == 0
@@ -532,19 +557,24 @@ module ::Sushi::Core
     private def _recieve_nodes(socket, _content)
       _m_content = M_CONTENT_RECIEVE_NODES.from_json(_content)
 
-      flag_unset(FLAG_REQUESTING_NODES)
+      node_contexts = @nodes.map { |node| node[:context] }
 
       node_list = _m_content.node_list
+      node_list.reject! { |nc| node_contexts.includes?(nc) }
 
-      info "recieved new nodes #{node_list.size}"
+      info "recieved new nodes (#{node_list.size})"
 
-      node_list.each { |nc| connect(nc[:host], nc[:port]) }
+      if node_list.size > 0
+        connect_node = node_list.sample
+        connect(connect_node[:host], connect_node[:port])
+      end
+
+      proceed_setup
     end
 
     private def reject!(socket : HTTP::WebSocket, _e : Exception?)
       if reject_node?(socket)
         info "a node has been removed. (#{@nodes.size})"
-        connect_nodes?
       end
 
       info "a miner has been removed. (#{@miners.size})" if reject_miner?(socket)
@@ -615,38 +645,76 @@ module ::Sushi::Core
       _known_nodes
     end
 
-    private def connect_nodes?
-      return if @nodes.size == 0
+    private def proceed_setup
+      return if @flag == FLAG_SETUP_DONE
 
-      socket = @nodes.sample[:socket]
+      case @flag
+      when FLAG_NONE
+        if @connect_host && @connect_port
+          @flag = FLAG_CONNECTING_NODES
 
-      if @nodes.size < @conn_min && !flag_get?(FLAG_REQUESTING_NODES)
-        flag_set(FLAG_REQUESTING_NODES)
+          connect(@connect_host.not_nil!, @connect_port.not_nil!)
+        else
+          warning "no connecting node has been specified"
+          warning "so this node is standalone from other network"
 
-        info "current connection (#{@nodes.size}) is less than the min connection (#{@conn_min})."
-        info "requesting new nodes (#{@conn_min - @nodes.size})"
+          @flag = FLAG_BLOCKCHAIN_LOADING
 
-        send(socket, M_TYPE_REQUEST_NODES, {
-          known_nodes:       known_nodes,
-          request_nodes_num: @conn_min - @nodes.size,
-        })
+          proceed_setup
+        end
+      when FLAG_CONNECTING_NODES
+        debug "connecting nodes... (#{@connecting_nodes})"
+
+        if @connecting_nodes == 0
+          if @nodes.size >= @conn_min
+            @flag = FLAG_BLOCKCHAIN_LOADING
+            proceed_setup
+          elsif @requested_nodes < 3 && @nodes.size > 0
+            @requested_nodes += 1
+
+            socket = @nodes.sample[:socket]
+
+            info "current connection (#{@nodes.size}) is less than the min connection (#{@conn_min})."
+            info "requesting new nodes (#{@conn_min - @nodes.size}) (#{@requested_nodes})"
+
+            send(socket, M_TYPE_REQUEST_NODES, {
+              known_nodes:       known_nodes,
+              request_nodes_num: @conn_min - @nodes.size,
+            })
+          else
+            warning "the connection number (#{@nodes.size}) might be less then the min connection (#{@conn_min})."
+            warning "but we proceed the setup since there might be not enough nodes."
+
+            @flag = FLAG_BLOCKCHAIN_LOADING
+            proceed_setup
+          end
+        end
+      when FLAG_BLOCKCHAIN_LOADING
+        @blockchain.setup(self)
+
+        info "loaded blockchain's size: #{light_cyan(@blockchain.chain.size)}"
+
+        if @database
+          @latest_unknown = @blockchain.latest_index + 1
+        else
+          warning "no database has been specified"
+        end
+
+        @flag = FLAG_BLOCKCHAIN_SYNCING
+
+        proceed_setup
+      when FLAG_BLOCKCHAIN_SYNCING
+        sync_chain
+      when FLAG_SETUP_PRE_DONE
+        info "successfully setup the node."
+        @flag = FLAG_SETUP_DONE
       end
     end
 
-    private def flag_set(new_flag)
-      @flag = @flag | new_flag
-    end
-
-    private def flag_unset(new_flag)
-      @flag = @flag & ~new_flag
-    end
-
-    private def flag_get?(flag) : Bool
-      (@flag & flag) == flag
-    end
-
     private def http_handshake(context : Models::NodeContext) : String
-      res = HTTP::Client.get("#{context[:ssl] ? "https" : "http"}://#{context[:host]}:#{context[:port]}/handshake/#{@connection_salt}")
+      res = HTTP::Client.get(
+        "#{context[:ssl] ? "https" : "http"}://#{context[:host]}:#{context[:port]}/handshake/#{@connection_salt}"
+      )
       res.body
     end
 

@@ -1,6 +1,7 @@
 module ::Sushi::Core
   class Transaction
     MESSAGE_SIZE_LIMIT = 512
+    TOKEN_SIZE_LIMIT   =  16
 
     JSON.mapping(
       id: String,
@@ -8,6 +9,7 @@ module ::Sushi::Core
       senders: Models::Senders,
       recipients: Models::Recipients,
       message: String,
+      token: String,
       prev_hash: String,
       sign_r: String,
       sign_s: String,
@@ -21,6 +23,7 @@ module ::Sushi::Core
       @senders : Models::Senders,
       @recipients : Models::Recipients,
       @message : String,
+      @token : String,
       @prev_hash : String,
       @sign_r : String,
       @sign_s : String
@@ -41,6 +44,7 @@ module ::Sushi::Core
     def valid?(blockchain : Blockchain, block_index : Int64, is_coinbase : Bool, transactions : Array(Transaction)) : Bool
       raise "length of transaction id have to be 64: #{@id}" if @id.size != 64
       raise "message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
+      raise "token size exceeds: #{self.token.bytesize} for #{TOKEN_SIZE_LIMIT}" if self.token.bytesize > TOKEN_SIZE_LIMIT
 
       @senders.each do |sender|
         raise "invalid checksum for sender's address: #{sender[:address]}" unless Keys::Address.from(sender[:address], "sender")
@@ -51,16 +55,19 @@ module ::Sushi::Core
       end
 
       if !is_coinbase
-        raise "unknown action: #{@action}" unless blockchain.available_actions.includes?(@action)
         raise "sender have to be only one currently" if @senders.size != 1
         raise "There must be some transactions" if transactions.size < 1
 
         if @prev_hash != transactions[-1].to_hash
-          raise "invalid prev_hash #{@prev_hash} vs #{transactions[-1].to_hash}"
+          raise "invalid prev_hash: expected #{transactions[-1].to_hash} but got #{@prev_hash}"
         end
 
         if blockchain.indices.get(@id)
           raise "the transaction #{@id} is already included in #{blockchain.indices.get(@id)}"
+        end
+
+        if transactions.select { |transaction| transaction.id == @id }.size > 0
+          raise "the transaction #{@id} is already included in the same block (#{block_index})"
         end
 
         network = Keys::Address.from(@senders.first[:address]).network
@@ -76,11 +83,12 @@ module ::Sushi::Core
                                    )
 
         blockchain.dapps.each do |dapp|
-          dapp.valid?(self, transactions) if dapp.related?(@action)
+          dapp.valid?(self, transactions) if dapp.transaction_related?(@action)
         end
       else
         raise "actions has to be 'head' for coinbase transaction " if @action != "head"
         raise "message has to be '0' for coinbase transaction" if @message != "0"
+        raise "token has to be #{TOKEN_DEFAULT} for coinbase transaction" if @token != TOKEN_DEFAULT
         raise "there should be no Sender for a coinbase transaction" if @senders.size != 0
         raise "prev_hash of coinbase transaction has to be '0'" if @prev_hash != "0"
         raise "sign_r of coinbase transaction has to be '0'" if @sign_r != "0"
@@ -103,6 +111,7 @@ module ::Sushi::Core
         self.senders,
         self.recipients,
         self.message,
+        self.token,
         self.prev_hash,
         sign_r,
         sign_s,
@@ -116,6 +125,7 @@ module ::Sushi::Core
         self.senders,
         self.recipients,
         self.message,
+        self.token,
         "0",
         "0",
         "0",

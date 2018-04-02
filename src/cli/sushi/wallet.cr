@@ -36,6 +36,7 @@ module ::Sushi::Interface::Sushi
         Options::UNCONFIRMED,
         Options::ADDRESS,
         Options::DOMAIN,
+        Options::TOKEN,
       ])
     end
 
@@ -136,6 +137,12 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_WALLET_PATH_OR_ADDRESS_OR_DOMAIN) if __wallet_path.nil? && __address.nil? && __domain.nil?
       puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
 
+      token = if _token = __token
+                _token
+              else
+                "all"
+              end
+
       address = if wallet_path = __wallet_path
                   wallet = get_wallet(wallet_path, __wallet_password)
                   wallet.address
@@ -149,14 +156,26 @@ module ::Sushi::Interface::Sushi
                   puts_help(HELP_WALLET_PATH_OR_ADDRESS_OR_DOMAIN)
                 end
 
-      payload = {call: "amount", address: address, unconfirmed: __unconfirmed}.to_json
+      payload = {call: "amount", address: address, unconfirmed: __unconfirmed, token: token}.to_json
 
       body = rpc(node, payload)
+      json = JSON.parse(body)
 
       unless __json
-        json = JSON.parse(body)
-        puts_success("show Sushi tokens amount of #{address}")
-        puts_info(json["amount"].to_s)
+        puts_success("\n  showing amount of each token for #{address}.")
+        puts_success("  confirmed: #{!__unconfirmed}\n")
+
+        puts_info("  + %20s - %20s +" % ["-" * 20, "-" * 20])
+        puts_info("  | %20s | %20s |" % ["token", "amount"])
+        puts_info("  | %20s | %20s |" % ["-" * 20, "-" * 20])
+
+        json["result"].each do |result|
+          next if result["amount"].as_i == 0
+          puts_info("  | %20s | %20s |" % [result["token"], result["amount"]])
+        end
+
+        puts_info("  + %20s - %20s +" % ["-" * 20, "-" * 20])
+        puts_info("")
       else
         puts body
       end

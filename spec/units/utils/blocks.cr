@@ -30,6 +30,7 @@ module ::Units::Utils::BlockHelper
           }
         ],
         "message": "0",
+        "token": "#{TOKEN_DEFAULT}",
         "prev_hash": "0",
         "sign_r": "0",
         "sign_s": "0"
@@ -63,6 +64,7 @@ module ::Units::Utils::BlockHelper
           }
         ],
         "message": "0",
+        "token": "#{TOKEN_DEFAULT}",
         "prev_hash": "0",
         "sign_r": "0",
         "sign_s": "0"
@@ -96,6 +98,7 @@ module ::Units::Utils::BlockHelper
           }
         ],
         "message": "0",
+        "token": "#{TOKEN_DEFAULT}",
         "prev_hash": "0",
         "sign_r": "0",
         "sign_s": "0"

@@ -2,7 +2,7 @@ require "./../../spec_helper"
 require "./../utils"
 
 include Sushi::Core
-include Sushi::Core::BlowFish
+include Sushi::Core::Keys
 
 describe BlowFish do
   it "should encrypt and decrypt" do

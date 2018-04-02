@@ -23,10 +23,12 @@ module ::Units::Utils::ChainGenerator
     def initialize
       @node_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @miner_wallet = Wallet.from_json(Wallet.create(true).to_json)
+      @node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, nil, 1_i32, false)
       @blockchain = Blockchain.new(node_wallet)
+      @blockchain.setup(@node)
       @miner = {address: miner_wallet.address, socket: MockWebSocket.new, nonces: [] of UInt64}
       @transaction_factory = TransactionFactory.new(@node_wallet)
-      ENV["UT"] = "unit test"
+      enable_ut
     end
 
     def addBlock
@@ -46,11 +48,20 @@ module ::Units::Utils::ChainGenerator
     end
 
     def chain
+      remove_ut
       @blockchain.chain
     end
 
     def sub_chain
       @blockchain.chain.reject! { |b| b.prev_hash == "genesis" }
+    end
+
+    def remove_ut
+      ENV.delete("UT")
+    end
+
+    def enable_ut
+      ENV["UT"] = "unit tests"
     end
   end
 
@@ -63,17 +74,18 @@ module ::Units::Utils::ChainGenerator
       @recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
     end
 
-    def make_send(sender_amount : Int64, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
+    def make_send(sender_amount : Int64, token : String = TOKEN_DEFAULT, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
         transaction_id,
         "send", # action
         [a_sender(sender_wallet, sender_amount)],
         [a_recipient(recipient_wallet, sender_amount)],
-        "0", # message
-        "0", # prev_hash
-        "0", # sign_r
-        "0", # sign_s
+        "0",   # message
+        token, # token
+        "0",   # prev_hash
+        "0",   # sign_r
+        "0",   # sign_s
       )
       signature = sign(sender_wallet, unsigned_transaction)
       unsigned_transaction.signed(signature[:r], signature[:s])
@@ -91,10 +103,11 @@ module ::Units::Utils::ChainGenerator
         "send", # action
         [a_sender(sender_wallet, sender_amount)],
         [a_recipient(recipient_wallet, sender_amount)],
-        "0",       # message
-        prev_hash, # prev_hash
-        "0",       # sign_r
-        "0",       # sign_s
+        "0",           # message
+        TOKEN_DEFAULT, # token
+        prev_hash,     # prev_hash
+        "0",           # sign_r
+        "0",           # sign_s
       )
       signature = sign(sender_wallet, unsigned_transaction)
       unsigned_transaction.signed(signature[:r], signature[:s])
@@ -107,10 +120,11 @@ module ::Units::Utils::ChainGenerator
         "scars_buy", # action
         [a_sender(sender_wallet, sender_amount, 100_i64)],
         [] of Recipient,
-        domain, # message
-        "0",    # prev_hash
-        "0",    # sign_r
-        "0",    # sign_s
+        domain,        # message
+        TOKEN_DEFAULT, # token
+        "0",           # prev_hash
+        "0",           # sign_r
+        "0",           # sign_s
       )
       signature = sign(sender_wallet, unsigned_transaction)
       unsigned_transaction.signed(signature[:r], signature[:s])
@@ -123,10 +137,11 @@ module ::Units::Utils::ChainGenerator
         "scars_buy", # action
         [a_sender(recipient_wallet, recipient_amount, 100_i64)],
         [a_recipient(@sender_wallet, 100_i64)],
-        domain, # message
-        "0",    # prev_hash
-        "0",    # sign_r
-        "0",    # sign_s
+        domain,        # message
+        TOKEN_DEFAULT, # token
+        "0",           # prev_hash
+        "0",           # sign_r
+        "0",           # sign_s
       )
       signature = sign(sender_wallet, unsigned_transaction)
       unsigned_transaction.signed(signature[:r], signature[:s])
@@ -139,10 +154,11 @@ module ::Units::Utils::ChainGenerator
         "scars_buy", # action
         [a_sender(recipient_wallet, recipient_amount, 100_i64)],
         recipients,
-        domain, # message
-        "0",    # prev_hash
-        "0",    # sign_r
-        "0",    # sign_s
+        domain,        # message
+        TOKEN_DEFAULT, # token
+        "0",           # prev_hash
+        "0",           # sign_r
+        "0",           # sign_s
       )
       signature = sign(sender_wallet, unsigned_transaction)
       unsigned_transaction.signed(signature[:r], signature[:s])
@@ -155,10 +171,11 @@ module ::Units::Utils::ChainGenerator
         "scars_sell", # action
         [a_sender(sender_wallet, sender_amount, 100_i64)],
         [a_recipient(sender_wallet, sender_amount)],
-        domain, # message
-        "0",    # prev_hash
-        "0",    # sign_r
-        "0",    # sign_s
+        domain,        # message
+        TOKEN_DEFAULT, # token
+        "0",           # prev_hash
+        "0",           # sign_r
+        "0",           # sign_s
       )
       signature = sign(sender_wallet, unsigned_transaction)
       unsigned_transaction.signed(signature[:r], signature[:s])
@@ -171,10 +188,45 @@ module ::Units::Utils::ChainGenerator
         "scars_sell", # action
         [a_sender(sender_wallet, sender_amount, 100_i64)],
         recipients,
-        domain, # message
-        "0",    # prev_hash
-        "0",    # sign_r
-        "0",    # sign_s
+        domain,        # message
+        TOKEN_DEFAULT, # token
+        "0",           # prev_hash
+        "0",           # sign_r
+        "0",           # sign_s
+      )
+      signature = sign(sender_wallet, unsigned_transaction)
+      unsigned_transaction.signed(signature[:r], signature[:s])
+    end
+
+    def make_cancel_domain(domain : String, sender_amount : Int64, sender_wallet : Wallet = @sender_wallet) : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        "scars_cancel", # action
+        [a_sender(sender_wallet, sender_amount, 100_i64)],
+        [a_recipient(sender_wallet, sender_amount)],
+        domain,        # message
+        TOKEN_DEFAULT, # token
+        "0",           # prev_hash
+        "0",           # sign_r
+        "0",           # sign_s
+      )
+      signature = sign(sender_wallet, unsigned_transaction)
+      unsigned_transaction.signed(signature[:r], signature[:s])
+    end
+
+    def make_cancel_domain(domain : String, sender_amount : Int64, recipients : Array(Recipient), sender_wallet : Wallet = @sender_wallet) : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        "scars_cancel", # action
+        [a_sender(sender_wallet, sender_amount, 100_i64)],
+        recipients,
+        domain,        # message
+        TOKEN_DEFAULT, # token
+        "0",           # prev_hash
+        "0",           # sign_r
+        "0",           # sign_s
       )
       signature = sign(sender_wallet, unsigned_transaction)
       unsigned_transaction.signed(signature[:r], signature[:s])

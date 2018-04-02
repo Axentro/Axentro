@@ -11,6 +11,10 @@ module ::Sushi::Interface::Sushi
           desc: "sell your domain",
         },
         {
+          name: "cancel",
+          desc: "cancel selling",
+        },
+        {
           name: "resolve",
           desc: "show an address of the domain if it's registered",
         },
@@ -38,6 +42,8 @@ module ::Sushi::Interface::Sushi
       case action_name
       when "buy"
         return buy
+      when "cancel"
+        return cancel
       when "sell"
         return sell
       when "resolve"
@@ -56,9 +62,11 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_PRICE) unless price = __price
       puts_help(HELP_DOMAIN) unless domain = __domain
 
-      raise "invalid fee for the action buy: minimum fee is #{Core::Scars.fee("scars_buy")}" if fee < Core::Scars.fee("scars_buy")
+      if fee < Core::DApps::BuildIn::Scars.fee("scars_buy")
+        raise "invalid fee for the action buy: minimum fee is #{Core::DApps::BuildIn::Scars.fee("scars_buy")}"
+      end
 
-      Core::Scars.valid_domain?(domain)
+      Core::DApps::BuildIn::Scars.valid_domain?(domain)
 
       resolved = resolve_internal(node, domain, false)
 
@@ -86,7 +94,7 @@ module ::Sushi::Interface::Sushi
         })
       end
 
-      add_transaction(node, wallet, "scars_buy", senders, recipients, domain)
+      add_transaction(node, wallet, "scars_buy", senders, recipients, domain, TOKEN_DEFAULT)
     end
 
     def sell
@@ -96,11 +104,14 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_PRICE) unless price = __price
       puts_help(HELP_DOMAIN) unless domain = __domain
 
-      raise "invalid fee for the action sell: minimum fee is #{Core::Scars.fee("scars_sell")}" if fee < Core::Scars.fee("scars_sell")
+      if fee < Core::DApps::BuildIn::Scars.fee("scars_sell")
+        raise "invalid fee for the action sell: minimum fee is #{Core::DApps::BuildIn::Scars.fee("scars_sell")}"
+      end
 
       resolved = resolve_internal(node, domain, false)
 
-      puts_help(HELP_DOMAIN_NOT_RESOLVED % domain) unless resolved["resolved"].as_bool
+      raise "the domain #{domain} is not resolved" unless resolved["resolved"].as_bool
+      raise "the domain #{domain} is already for sale" if resolved["domain"]["status"] == Core::Models::DomainStatus::ForSale
 
       wallet = get_wallet(wallet_path, __wallet_password)
 
@@ -118,7 +129,41 @@ module ::Sushi::Interface::Sushi
         amount:  price,
       })
 
-      add_transaction(node, wallet, "scars_sell", senders, recipients, domain)
+      add_transaction(node, wallet, "scars_sell", senders, recipients, domain, TOKEN_DEFAULT)
+    end
+
+    def cancel
+      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+      puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
+      puts_help(HELP_FEE) unless fee = __fee
+      puts_help(HELP_DOMAIN) unless domain = __domain
+
+      if fee < Core::DApps::BuildIn::Scars.fee("scars_cancel")
+        raise "invalid fee for the action sell: minimum fee is #{Core::DApps::BuildIn::Scars.fee("scars_sell")}"
+      end
+
+      resolved = resolve_internal(node, domain, false)
+
+      raise "the domain #{domain} is not resolved" unless resolved["resolved"].as_bool
+      raise "the domain #{domain} is not for sale" unless resolved["domain"]["status"] == Core::Models::DomainStatus::ForSale
+
+      wallet = get_wallet(wallet_path, __wallet_password)
+
+      senders = Core::Models::Senders.new
+      senders.push({
+        address:    wallet.address,
+        public_key: wallet.public_key,
+        amount:     1_i64,
+        fee:        fee,
+      })
+
+      recipients = Core::Models::Recipients.new
+      recipients.push({
+        address: wallet.address,
+        amount:  1_i64,
+      })
+
+      add_transaction(node, wallet, "scars_cancel", senders, recipients, domain, TOKEN_DEFAULT)
     end
 
     def sales
@@ -167,7 +212,7 @@ module ::Sushi::Interface::Sushi
         puts_success "status   : #{status}"
         puts_success "price    : #{resolved["domain"]["price"]}"
       else
-        puts_info resolved.to_json
+        puts resolved.to_json
       end
     end
 

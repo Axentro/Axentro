@@ -69,12 +69,12 @@ module ::E2E
       latest_block_index = @node_ports.map { |port|
         size = blockchain_size(port)
         size - 1
-      }.max
+      }.min
     end
 
     def latest_confirmed_block_index : Int32
-      return 0 if latest_block_index < ::Sushi::Core::UTXO::CONFIRMATION - 1
-      latest_block_index - (::Sushi::Core::UTXO::CONFIRMATION - 1)
+      return 0 if latest_block_index < ::Sushi::Core::Consensus::CONFIRMATION - 1
+      latest_block_index - (::Sushi::Core::Consensus::CONFIRMATION - 1)
     end
 
     def verify_latest_confirmed_block
