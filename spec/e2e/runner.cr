@@ -69,7 +69,7 @@ module ::E2E
       latest_block_index = @node_ports.map { |port|
         size = blockchain_size(port)
         size - 1
-      }.max
+      }.min
     end
 
     def latest_confirmed_block_index : Int32
