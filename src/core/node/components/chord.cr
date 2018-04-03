@@ -30,7 +30,7 @@ module ::Sushi::Core::NodeComponents
     def stabilize_process
       spawn do
         loop do
-          sleep 5
+          sleep 3
 
           if successor = @successor
             debug "successor: #{successor[:context][:host]}:#{successor[:context][:port]}"
@@ -49,7 +49,7 @@ module ::Sushi::Core::NodeComponents
               {
                 predecessor_context: context,
               }
-            )
+            ) unless successor[:socket].closed?
           end
         end
       end
@@ -170,6 +170,7 @@ module ::Sushi::Core::NodeComponents
       _context = _m_content.successor_context
 
       if successor = @successor
+
         successor_node_id = NodeID.create_from(successor[:context][:id])
 
         if @node_id > successor_node_id &&
@@ -177,13 +178,17 @@ module ::Sushi::Core::NodeComponents
              @node_id < _context[:id] ||
              successor_node_id > _context[:id]
            )
+
           debug "new successor found: #{_context[:host]}:#{_context[:port]}"
           @successor = {socket: socket, context: _context}
+
         elsif @node_id < successor_node_id &&
               @node_id < _context[:id] &&
               successor_node_id > _context[:id]
+
           debug "new successor found: #{_context[:host]}:#{_context[:port]}"
           @successor = {socket: socket, context: _context}
+
         else
           debug "current successor is correct"
         end

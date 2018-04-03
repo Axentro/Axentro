@@ -179,9 +179,6 @@ module ::Sushi::Core
         message_content = message_json["content"].to_s
 
         case message_type
-        #
-        # MinersManager
-        #
         when M_TYPE_HANDSHAKE_MINER
           @miners_manager.handshake(self, @blockchain, socket, message_content)
         when M_TYPE_FOUND_NONCE
