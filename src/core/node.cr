@@ -49,8 +49,8 @@ module ::Sushi::Core
     )
       @id = Random::Secure.hex(16)
 
-      info "core version: #{light_green(Core::CORE_VERSION)}"
       info "id: #{light_green(@id)}"
+      info "core version: #{light_green(Core::CORE_VERSION)}"
 
       debug "is_private: #{light_green(@is_private)}"
       debug "public url: #{light_green(@public_host)}:#{light_green(@public_port)}" unless @is_private
@@ -63,7 +63,6 @@ module ::Sushi::Core
       @flag = FLAG_NONE
 
       @rpc_controller = Controllers::RPCController.new(@blockchain)
-      @latest_nonces = Array(UInt64).new
 
       wallet_network = Wallet.address_network_type(@wallet.address)
 
