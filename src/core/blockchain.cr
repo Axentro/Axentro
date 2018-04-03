@@ -86,10 +86,10 @@ module ::Sushi::Core
         latest_block.to_hash,
       )
 
-      push_block?(block, miners, true)
+      push_block?(block, true)
     end
 
-    def push_block?(block : Block, miners : Models::Miners, internal : Bool = false) : Block?
+    def push_block?(block : Block, internal : Bool = false) : Block?
       return nil if !internal && !block.valid_as_latest?(self)
 
       @chain.push(block)

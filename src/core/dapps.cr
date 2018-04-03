@@ -6,13 +6,13 @@ module ::Sushi::Core::DApps
 
   def initialize_dapps
     {% for dapp in BUILD_IN_DAPPS %}
-      info "initializing {{dapp.id}}... (build in)"
+      debug "initializing {{dapp.id}}... (build in)"
       @{{ dapp.id.underscore }} = {{ dapp.id }}.new(self)
       @dapps.push(@{{ dapp.id.underscore }}.not_nil!)
     {% end %}
 
     {% for dapp in USER_DAPPS %}
-      info "initializing {{dapp.id}}... (user)"
+      debug "initializing {{dapp.id}}... (user)"
       @{{ dapp.id.underscore }} = {{ dapp.id }}.new(self)
       @dapps.push(@{{ dapp.id.underscore }}.not_nil!)
     {% end %}

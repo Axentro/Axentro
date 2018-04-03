@@ -1,19 +1,26 @@
 require "./node/*"
 
+#
+# todo: (sorry for japenese)
+#
+# ルール: コードは削除しない
+#
+# 1. handshakeを取り除く <- Done.
+# 2. component作成 <- Done.
+# 3. miner分離 (接続確認まで) <- Done.
+
 module ::Sushi::Core
   class Node
     getter id : String
+    getter flag : Int32
     getter network_type : String
 
     @blockchain : Blockchain
-    @flag : Int32
     @nodes : Models::Nodes
-    @miners : Models::Miners
+    @miners_manager : MinersManager
 
     @rpc_controller : Controllers::RPCController
-    @handshake_controller : Controllers::HandshakeController
 
-    @latest_nonces : Array(UInt64)
     @latest_unknown : Int64? = nil
 
     @cc : Int32 = 0
@@ -22,7 +29,6 @@ module ::Sushi::Core
     @c2 : Int32 = 0
     @c3 : Int32 = 0
 
-    @connection_salt : String
     @connecting_nodes : Int32 = 0
     @requested_nodes : Int32 = 0
 
@@ -42,7 +48,6 @@ module ::Sushi::Core
       @use_ssl : Bool = false
     )
       @id = Random::Secure.hex(16)
-      @connection_salt = Random::Secure.hex(16)
 
       info "core version: #{light_green(Core::CORE_VERSION)}"
       info "id: #{light_green(@id)}"
@@ -54,11 +59,10 @@ module ::Sushi::Core
       @blockchain = Blockchain.new(@wallet, @database)
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @nodes = Models::Nodes.new
-      @miners = Models::Miners.new
+      @miners_manager = MinersManager.new
       @flag = FLAG_NONE
 
       @rpc_controller = Controllers::RPCController.new(@blockchain)
-      @handshake_controller = Controllers::HandshakeController.new(@blockchain)
       @latest_nonces = Array(UInt64).new
 
       wallet_network = Wallet.address_network_type(@wallet.address)
@@ -87,7 +91,6 @@ module ::Sushi::Core
       send(socket, M_TYPE_HANDSHAKE_NODE, {
         version:         Core::CORE_VERSION,
         context:         context,
-        connection_salt: @connection_salt,
       })
 
       connect_async(socket)
@@ -149,12 +152,10 @@ module ::Sushi::Core
         context.response.headers["Access-Control-Allow-Origin"] = "*"
         @rpc_controller.exec(context, params)
       end
-      get "/handshake/:salt" { |context, params| @handshake_controller.exec(context, params) }
     end
 
     def run!
       @rpc_controller.set_node(self)
-      @handshake_controller.set_node(self)
 
       draw_routes!
 
@@ -177,16 +178,20 @@ module ::Sushi::Core
         message_content = message_json["content"].to_s
 
         case message_type
+        #
+        # MinersManager
+        #
         when M_TYPE_HANDSHAKE_MINER
-          _handshake_miner(socket, message_content)
+          @miners_manager.handshake(self, @blockchain, socket, message_content)
+        when M_TYPE_FOUND_NONCE
+          @miners_manager.found_nonce(self, @blockchain, socket, message_content)
+
         when M_TYPE_HANDSHAKE_NODE
           _handshake_node(socket, message_content)
         when M_TYPE_HANDSHAKE_NODE_ACCEPTED
           _handshake_node_accepted(socket, message_content)
         when M_TYPE_HANDSHAKE_NODE_REJECTED
           _handshake_node_rejected(socket, message_content)
-        when M_TYPE_FOUND_NONCE
-          _found_nonce(socket, message_content)
         when M_TYPE_BROADCAST_TRANSACTION
           _broadcast_transaction(socket, message_content)
         when M_TYPE_BROADCAST_BLOCK
@@ -246,45 +251,6 @@ module ::Sushi::Core
            "conflict: #{light_cyan(@c1)}, sync chain: #{light_cyan(@c2)}, older block: #{light_cyan(@c3)}"
     end
 
-    private def _handshake_miner(socket, _content)
-      return unless @flag == FLAG_SETUP_DONE
-
-      _m_content = M_CONTENT_HANDSHAKE_MINER.from_json(_content)
-
-      version = _m_content.version
-      address = _m_content.address
-
-      if Core::CORE_VERSION > version
-        return send(socket,
-          M_TYPE_HANDSHAKE_MINER_REJECTED,
-          {
-            reason: "your sushim is out of date, please update it  (node version: #{Core::CORE_VERSION}, miner version: #{version})",
-          })
-      end
-
-      miner_network = Wallet.address_network_type(address)[:name]
-
-      if miner_network != @network_type
-        warning "mismatch network type with miner #{address}"
-
-        return send(socket, M_TYPE_HANDSHAKE_MINER_REJECTED, {
-          reason: "network type mismatch",
-        })
-      end
-
-      miner = {socket: socket, address: address, nonces: [] of UInt64}
-
-      @miners << miner
-
-      info "new miner: #{light_green(miner[:address])} (#{@miners.size})"
-
-      send(socket, M_TYPE_HANDSHAKE_MINER_ACCEPTED, {
-        version:    Core::CORE_VERSION,
-        block:      @blockchain.latest_block,
-        difficulty: miner_difficulty_at(@blockchain.latest_index),
-      })
-    end
-
     private def _handshake_node(socket, _content)
       return unless @flag == FLAG_SETUP_DONE
 
@@ -292,8 +258,6 @@ module ::Sushi::Core
 
       version = _m_content.version
       node_context = _m_content.context
-      connection_salt = _m_content.connection_salt
-      connection_hash = sha256(connection_salt + @id)
 
       if Core::CORE_VERSION > version
         return send(socket,
@@ -314,12 +278,9 @@ module ::Sushi::Core
         })
       end
 
-      debug "connection hash as server #{connection_hash}"
-
       send(socket, M_TYPE_HANDSHAKE_NODE_ACCEPTED, {
         context:         context,
         latest_index:    @blockchain.latest_index,
-        connection_hash: connection_hash,
       })
 
       @nodes << {socket: socket, context: node_context}
@@ -334,18 +295,6 @@ module ::Sushi::Core
 
       node_context = _m_content.context
       latest_index = _m_content.latest_index
-      connection_hash = _m_content.connection_hash
-
-      debug "connection hash as client #{connection_hash}"
-
-      asserted_connection_hash = http_handshake(node_context)
-
-      if asserted_connection_hash == connection_hash
-        @nodes << {socket: socket, context: node_context}
-        info "successfully connected: #{node_context[:id]} (#{node_context[:host]}:#{node_context[:port]}) (#{@nodes.size}, #{@connecting_nodes})"
-      else
-        error "invalid connection hash: expected #{connection_hash} but got #{asserted_connection_hash}"
-      end
 
       proceed_setup
     end
@@ -363,54 +312,6 @@ module ::Sushi::Core
       error "please check your network type and restart node"
 
       proceed_setup
-    end
-
-    private def _found_nonce(socket, _content)
-      return unless @flag == FLAG_SETUP_DONE
-
-      _m_content = M_CONTENT_FOUND_NONCE.from_json(_content)
-
-      nonce = _m_content.nonce
-
-      if miner = get_miner?(socket)
-        if !@latest_nonces.includes?(nonce) &&
-           @blockchain.latest_block.valid_nonce?(nonce, miner_difficulty_at(@blockchain.latest_block.index))
-          miner[:nonces].push(nonce)
-          @latest_nonces.push(nonce)
-
-          info "miner #{miner[:address]} found nonce (#{miner[:nonces].size})"
-        else
-          warning "nonce #{nonce} has already been discoverd" if @latest_nonces.includes?(nonce)
-
-          if !@blockchain.latest_block.valid_nonce?(nonce, miner_difficulty_at(@blockchain.latest_block.index))
-            warning "recieved nonce is invalid, try to update latest block"
-
-            send(miner[:socket], M_TYPE_BLOCK_UPDATE, {
-              block:      @blockchain.latest_block,
-              difficulty: miner_difficulty_at(@blockchain.latest_index),
-            })
-          end
-        end
-      end
-
-      return unless block = @blockchain.push_block?(nonce, @miners)
-
-      info "found new nonce: #{light_green(nonce)} (#{@blockchain.latest_index})"
-
-      known_nodes = @nodes.map { |node| node[:context] }
-      known_nodes << context
-
-      @nodes.each do |n|
-        send(n[:socket], M_TYPE_BROADCAST_BLOCK, {block: block, known_nodes: known_nodes})
-      end
-
-      @miners.each do |m|
-        m[:nonces].clear
-      end
-
-      @latest_nonces.clear
-
-      broadcast_to_miners
     end
 
     private def _broadcast_transaction(socket, _content)
@@ -452,7 +353,7 @@ module ::Sushi::Core
       if @blockchain.latest_index + 1 == block.index
         @c0 += 1
 
-        unless @blockchain.push_block?(block, @miners)
+        unless @blockchain.push_block?(block)
           if node = get_node?(socket)
             error "pushed block is invalid coming from #{node[:context][:host]}:#{node[:context][:port]}"
           end
@@ -470,7 +371,7 @@ module ::Sushi::Core
           send(node[:socket], M_TYPE_BROADCAST_BLOCK, {block: block, known_nodes: known_nodes})
         end
 
-        broadcast_to_miners
+        @miners_manager.broadcast_latest_block(@blockchain)
       elsif @blockchain.latest_index == block.index
         @c1 += 1
 
@@ -522,7 +423,7 @@ module ::Sushi::Core
 
       if @blockchain.replace_chain(chain)
         info "chain updated: #{light_green(current_latest_index)} -> #{light_green(@blockchain.latest_index)}"
-        broadcast_to_miners
+        @miners_manager.broadcast_latest_block(@blockchain)
       end
 
       @flag = FLAG_SETUP_PRE_DONE if @flag == FLAG_BLOCKCHAIN_SYNCING
@@ -577,7 +478,7 @@ module ::Sushi::Core
         info "a node has been removed. (#{@nodes.size})"
       end
 
-      info "a miner has been removed. (#{@miners.size})" if reject_miner?(socket)
+      info "a miner has been removed. (#{@miners_manager.size})" if @miners_manager.reject?(socket)
 
       if e = _e
         if error_message = e.message
@@ -592,33 +493,12 @@ module ::Sushi::Core
       nodes_size != @nodes.size
     end
 
-    private def reject_miner?(socket : HTTP::WebSocket)
-      miners_size = @miners.size
-      @miners.reject! { |miner| miner[:socket] == socket }
-      miners_size != @miners.size
-    end
-
-    private def broadcast_to_miners
-      info "broadcast a block to miners"
-
-      @miners.each do |miner|
-        send(miner[:socket], M_TYPE_BLOCK_UPDATE, {
-          block:      @blockchain.latest_block,
-          difficulty: miner_difficulty_at(@blockchain.latest_index),
-        })
-      end
-    end
-
     private def get_node?(socket : HTTP::WebSocket) : Models::Node?
       node = @nodes.find { |n| n[:socket] == socket }
     end
 
     private def get_node?(id : String) : Models::Node?
       node = @nodes.find { |n| n[:context][:id] == id }
-    end
-
-    private def get_miner?(socket) : Models::Miner?
-      miner = @miners.find { |m| m[:socket] == socket }
     end
 
     private def handlers
@@ -711,17 +591,10 @@ module ::Sushi::Core
       end
     end
 
-    private def http_handshake(context : Models::NodeContext) : String
-      res = HTTP::Client.get(
-        "#{context[:ssl] ? "https" : "http"}://#{context[:host]}:#{context[:port]}/handshake/#{@connection_salt}"
-      )
-      res.body
-    end
-
     include Logger
     include Router
     include Protocol
-    include Consensus
     include Common::Color
+    include NodeComponents
   end
 end

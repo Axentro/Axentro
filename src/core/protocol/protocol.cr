@@ -65,7 +65,6 @@ module ::Sushi::Core::Protocol
     JSON.mapping({
       version:         Int32,
       context:         Models::NodeContext,
-      connection_salt: String,
     })
   end
 
@@ -77,7 +76,6 @@ module ::Sushi::Core::Protocol
     JSON.mapping({
       context:         Models::NodeContext,
       latest_index:    Int64,
-      connection_hash: String,
     })
   end
 
