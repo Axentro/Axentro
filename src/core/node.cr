@@ -195,7 +195,7 @@ module ::Sushi::Core
         when M_TYPE_CHORD_STABILIZE_SUCCESSOR
           @chord.stabilize_as_successor(socket, message_content)
         when M_TYPE_CHORD_STABILIZE_PREDECESSOR
-          @chord.stabilize_as_predecessor(socket, message_content)
+          @chord.stabilize_as_predecessor(self, socket, message_content)
 
         # when M_TYPE_HANDSHAKE_NODE
         #   _handshake_node(socket, message_content)

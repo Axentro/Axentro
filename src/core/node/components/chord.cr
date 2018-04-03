@@ -33,15 +33,19 @@ module ::Sushi::Core::NodeComponents
           sleep 3
 
           if successor = @successor
-            debug "successor: #{successor[:context][:host]}:#{successor[:context][:port]}"
+            debug "successor   : #{successor[:context][:host]}:#{successor[:context][:port]}"
+          else
+            debug "successor   : Not found"
           end
 
           if predecessor = @predecessor
-            debug "predecessor: #{predecessor[:context][:host]}:#{predecessor[:context][:port]}"
+            debug "predecessor : #{predecessor[:context][:host]}:#{predecessor[:context][:port]}"
+          else
+            debug "predecessor : Not found"
           end
 
           if successor = @successor
-            debug "stabilize successor PUSH: #{successor[:context][:host]}:#{successor[:context][:port]}"
+            debug "request to check predecessor for #{successor[:context][:host]}:#{successor[:context][:port]}"
 
             send(
               successor[:socket],
@@ -69,11 +73,16 @@ module ::Sushi::Core::NodeComponents
       search_successor(_context)
     end
 
-    def connect_to_successor(node, _content)
+    # todo: refactoring
+    def connect_to_successor(node, _content : String)
       _m_content = M_CONTENT_CHORD_FOUND_SUCCESSOR.from_json(_content)
 
       _context = _m_content.context
 
+      connect_to_successor(node, _context)
+    end
+
+    def connect_to_successor(node, _context : NodeContext)
       info "successor found: #{_context[:host]}:#{_context[:port]}"
 
       socket = HTTP::WebSocket.new(_context[:host], "/peer", _context[:port], @use_ssl)
@@ -110,7 +119,7 @@ module ::Sushi::Core::NodeComponents
     end
 
     def join_to(connect_host : String, connect_port : Int32)
-      debug "joining network => #{connect_host}:#{connect_port}"
+      debug "joining network: #{connect_host}:#{connect_port}"
 
       send_chord(
         connect_host,
@@ -122,14 +131,12 @@ module ::Sushi::Core::NodeComponents
         })
     end
 
-    # _contentのsuccessorがselfな状態でここにくる
-    # 今のpredecessorよりも_contentの方がpredecessorとして正しければ修正する
     def stabilize_as_successor(socket, _content : String)
       _m_content = M_CONTENT_CHORD_STABILIZE_SCCESSOR.from_json(_content)
 
       _context = _m_content.predecessor_context
 
-      info "stabilize successor coming: #{_context[:host]}:#{_context[:port]}"
+      info "be asked to check predecessor by #{_context[:host]}:#{_context[:port]}"
 
       if predecessor = @predecessor
 
@@ -148,7 +155,7 @@ module ::Sushi::Core::NodeComponents
           debug "new predecessor found: #{_context[:host]}:#{_context[:port]}"
           @predecessor = {socket: socket, context: _context}
         else
-          debug "current predecessor is correct"
+          debug "current predecessor #{predecessor[:context][:host]}:#{predecessor[:context][:port]} is correct"
         end
       else
         debug "new predecessor found: #{_context[:host]}:#{_context[:port]}"
@@ -164,7 +171,7 @@ module ::Sushi::Core::NodeComponents
       )
     end
 
-    def stabilize_as_predecessor(socket, _content : String)
+    def stabilize_as_predecessor(node, socket, _content : String)
       _m_content = M_CONTENT_CHORD_STABILIZE_PREDECESSOR.from_json(_content)
 
       _context = _m_content.successor_context
@@ -180,17 +187,22 @@ module ::Sushi::Core::NodeComponents
            )
 
           debug "new successor found: #{_context[:host]}:#{_context[:port]}"
-          @successor = {socket: socket, context: _context}
+
+          # @successor = {socket: socket, context: _context}
+
+          connect_to_successor(node, _context)
 
         elsif @node_id < successor_node_id &&
               @node_id < _context[:id] &&
               successor_node_id > _context[:id]
 
           debug "new successor found: #{_context[:host]}:#{_context[:port]}"
-          @successor = {socket: socket, context: _context}
 
+          # @successor = {socket: socket, context: _context}
+
+          connect_to_successor(node, _context)          
         else
-          debug "current successor is correct"
+          debug "current successor #{successor[:context][:host]}:#{successor[:context][:port]} is correct"
         end
       else
         debug "not coming here for sure..."
