@@ -1,6 +1,5 @@
 module ::Sushi::Core::NodeComponents
   class NodeID
-
     getter id : String
 
     def self.create_from(id : String)

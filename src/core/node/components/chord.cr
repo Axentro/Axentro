@@ -1,4 +1,5 @@
 require "./node_id"
+
 #
 # todo: think about private nodes
 # todo: is_successor?, is_predecessor?を実装した方が良いかも
@@ -7,21 +8,19 @@ require "./node_id"
 #
 module ::Sushi::Core::NodeComponents
   class Chord
-
     @node_id : NodeID
 
     @successor : Models::Node?
     @predecessor : Models::Node?
 
     def initialize(
-          @public_host : String?,
-          @public_port : Int32?,
-          @ssl : Bool?,
-          @network_type : String,
-          @is_private : Bool,
-          @use_ssl : Bool,
-        )
-
+      @public_host : String?,
+      @public_port : Int32?,
+      @ssl : Bool?,
+      @network_type : String,
+      @is_private : Bool,
+      @use_ssl : Bool
+    )
       @node_id = NodeID.new
 
       stabilize_process
@@ -93,7 +92,7 @@ module ::Sushi::Core::NodeComponents
         socket.run
       end
 
-      @successor = { socket: socket, context: _context }
+      @successor = {socket: socket, context: _context}
 
       send(
         socket,
@@ -139,7 +138,6 @@ module ::Sushi::Core::NodeComponents
       info "be asked to check predecessor by #{_context[:host]}:#{_context[:port]}"
 
       if predecessor = @predecessor
-
         predecessor_node_id = NodeID.create_from(predecessor[:context][:id])
 
         if @node_id < predecessor_node_id &&
@@ -177,7 +175,6 @@ module ::Sushi::Core::NodeComponents
       _context = _m_content.successor_context
 
       if successor = @successor
-
         successor_node_id = NodeID.create_from(successor[:context][:id])
 
         if @node_id > successor_node_id &&
@@ -185,22 +182,19 @@ module ::Sushi::Core::NodeComponents
              @node_id < _context[:id] ||
              successor_node_id > _context[:id]
            )
-
           debug "new successor found: #{_context[:host]}:#{_context[:port]}"
 
           # @successor = {socket: socket, context: _context}
 
           connect_to_successor(node, _context)
-
         elsif @node_id < successor_node_id &&
               @node_id < _context[:id] &&
               successor_node_id > _context[:id]
-
           debug "new successor found: #{_context[:host]}:#{_context[:port]}"
 
           # @successor = {socket: socket, context: _context}
 
-          connect_to_successor(node, _context)          
+          connect_to_successor(node, _context)
         else
           debug "current successor #{successor[:context][:host]}:#{successor[:context][:port]} is correct"
         end
@@ -230,7 +224,6 @@ module ::Sushi::Core::NodeComponents
              @node_id < _context[:id] ||
              successor_node_id > _context[:id]
            )
-
           # successorは自分のsuccessor
           debug "chord: pattern 0-0"
 
@@ -241,11 +234,9 @@ module ::Sushi::Core::NodeComponents
               context: successor[:context],
             }
           )
-
         elsif successor_node_id > @node_id &&
               successor_node_id > _context[:id] &&
               @node_id < _context[:id]
-
           # successorは自分のsuccessor
           debug "chord: pattern 0-1"
 
@@ -256,7 +247,6 @@ module ::Sushi::Core::NodeComponents
               context: successor[:context],
             }
           )
-
         else
           # successorの探索依頼をsuccessorにお願いする
           debug "chord: pattern 1"
@@ -267,7 +257,7 @@ module ::Sushi::Core::NodeComponents
             {
               context: _context,
             }
-          ) 
+          )
         end
       else
         # 自分

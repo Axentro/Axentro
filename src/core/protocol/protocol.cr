@@ -63,49 +63,49 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_CHORD_JOIN
     JSON.mapping({
-                   version: Int32,
-                   context: Models::NodeContext,
-                 })
+      version: Int32,
+      context: Models::NodeContext,
+    })
   end
 
   M_TYPE_CHORD_FOUND_SUCCESSOR = 0x1002
 
   struct M_CONTENT_CHORD_FOUND_SUCCESSOR
     JSON.mapping({
-                   context: Models::NodeContext,
-                 })
+      context: Models::NodeContext,
+    })
   end
 
   M_TYPE_CHORD_SEARCH_SUCCESSOR = 0x1003
 
   struct M_CONTENT_CHORD_SEARCH_SUCCESSOR
     JSON.mapping({
-                   context: Models::NodeContext,
-                 })
+      context: Models::NodeContext,
+    })
   end
 
   M_TYPE_CHORD_IM_SUCCESSOR = 0x1004
 
   struct M_CONTENT_CHORD_IM_SUCCESSOR
     JSON.mapping({
-                   context: Models::NodeContext,
-                 })
+      context: Models::NodeContext,
+    })
   end
 
   M_TYPE_CHORD_STABILIZE_SUCCESSOR = 0x1005
 
   struct M_CONTENT_CHORD_STABILIZE_SCCESSOR
     JSON.mapping({
-                   predecessor_context: Models::NodeContext,
-                 })
+      predecessor_context: Models::NodeContext,
+    })
   end
 
   M_TYPE_CHORD_STABILIZE_PREDECESSOR = 0x1006
 
   struct M_CONTENT_CHORD_STABILIZE_PREDECESSOR
     JSON.mapping({
-                   successor_context: Models::NodeContext,
-                 })
+      successor_context: Models::NodeContext,
+    })
   end
 
   ##########
@@ -114,8 +114,8 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_HANDSHAKE_NODE
     JSON.mapping({
-      version:         Int32,
-      context:         Models::NodeContext,
+      version: Int32,
+      context: Models::NodeContext,
     })
   end
 
@@ -125,8 +125,8 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_HANDSHAKE_NODE_ACCEPTED
     JSON.mapping({
-      context:         Models::NodeContext,
-      latest_index:    Int64,
+      context:      Models::NodeContext,
+      latest_index: Int64,
     })
   end
 

@@ -17,34 +17,34 @@ module ::Sushi::Core::NodeComponents
 
       if Core::CORE_VERSION > version
         return send(socket,
-                    M_TYPE_HANDSHAKE_MINER_REJECTED,
-                    {
-                      reason: "your sushim is out of date, please update it" +
-                        "(node version: #{Core::CORE_VERSION}, miner version: #{version})",
-                    })
+          M_TYPE_HANDSHAKE_MINER_REJECTED,
+          {
+            reason: "your sushim is out of date, please update it" +
+                    "(node version: #{Core::CORE_VERSION}, miner version: #{version})",
+          })
       end
 
       miner_network = Wallet.address_network_type(address)[:name]
 
       if miner_network != node.network_type
         warning "mismatch network type with miner #{address}"
-        
+
         return send(socket, M_TYPE_HANDSHAKE_MINER_REJECTED, {
-                      reason: "network type mismatch",
-                    })
+          reason: "network type mismatch",
+        })
       end
-      
+
       miner = {socket: socket, address: address, nonces: [] of UInt64}
-      
+
       @miners << miner
-      
+
       info "new miner: #{light_green(miner[:address])} (#{@miners.size})"
-      
+
       send(socket, M_TYPE_HANDSHAKE_MINER_ACCEPTED, {
-             version:    Core::CORE_VERSION,
-             block:      blockchain.latest_block,
-             difficulty: miner_difficulty_at(blockchain.latest_index),
-           })
+        version:    Core::CORE_VERSION,
+        block:      blockchain.latest_block,
+        difficulty: miner_difficulty_at(blockchain.latest_index),
+      })
     end
 
     def found_nonce(node, blockchain, socket, _content)
@@ -56,16 +56,15 @@ module ::Sushi::Core::NodeComponents
       found = false
 
       if miner = find?(socket)
-
         if @latest_nonces.includes?(nonce)
           warning "nonce #{nonce} has already been discoverd"
         elsif !blockchain.latest_block.valid_nonce?(nonce, miner_difficulty_at(blockchain.latest_block.index))
           warning "recieved nonce is invalid, try to update latest block"
 
           send(miner[:socket], M_TYPE_BLOCK_UPDATE, {
-                 block:      blockchain.latest_block,
-                 difficulty: miner_difficulty_at(blockchain.latest_index),
-               })
+            block:      blockchain.latest_block,
+            difficulty: miner_difficulty_at(blockchain.latest_index),
+          })
         else
           info "miner #{miner[:address]} found nonce (nonces: #{miner[:nonces].size})"
 
@@ -84,7 +83,7 @@ module ::Sushi::Core::NodeComponents
       # todo:
       # known_nodes = @nodes.map { |node| node[:context] }
       # known_nodes << context
-      #  
+      #
       # @nodes.each do |n|
       #   send(n[:socket], M_TYPE_BROADCAST_BLOCK, {block: block, known_nodes: known_nodes})
       # end
@@ -101,9 +100,9 @@ module ::Sushi::Core::NodeComponents
     def broadcast_latest_block(blockchain)
       @miners.each do |miner|
         send(miner[:socket], M_TYPE_BLOCK_UPDATE, {
-               block:      blockchain.latest_block,
-               difficulty: miner_difficulty_at(blockchain.latest_index),
-             })
+          block:      blockchain.latest_block,
+          difficulty: miner_difficulty_at(blockchain.latest_index),
+        })
       end
     end
 

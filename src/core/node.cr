@@ -91,8 +91,8 @@ module ::Sushi::Core
       peer(socket)
 
       send(socket, M_TYPE_HANDSHAKE_NODE, {
-        version:         Core::CORE_VERSION,
-        context:         context,
+        version: Core::CORE_VERSION,
+        context: context,
       })
 
       connect_async(socket)
@@ -183,7 +183,6 @@ module ::Sushi::Core
           @miners_manager.handshake(self, @blockchain, socket, message_content)
         when M_TYPE_FOUND_NONCE
           @miners_manager.found_nonce(self, @blockchain, socket, message_content)
-
         when M_TYPE_CHORD_JOIN
           @chord.join_from(self, message_content)
         when M_TYPE_CHORD_FOUND_SUCCESSOR
@@ -196,25 +195,24 @@ module ::Sushi::Core
           @chord.stabilize_as_successor(socket, message_content)
         when M_TYPE_CHORD_STABILIZE_PREDECESSOR
           @chord.stabilize_as_predecessor(self, socket, message_content)
-
-        # when M_TYPE_HANDSHAKE_NODE
-        #   _handshake_node(socket, message_content)
-        # when M_TYPE_HANDSHAKE_NODE_ACCEPTED
-        #   _handshake_node_accepted(socket, message_content)
-        # when M_TYPE_HANDSHAKE_NODE_REJECTED
-        #   _handshake_node_rejected(socket, message_content)
-        # when M_TYPE_BROADCAST_TRANSACTION
-        #   _broadcast_transaction(socket, message_content)
-        # when M_TYPE_BROADCAST_BLOCK
-        #   _broadcast_block(socket, message_content)
-        # when M_TYPE_REQUEST_CHAIN
-        #   _request_chain(socket, message_content)
-        # when M_TYPE_RECIEVE_CHAIN
-        #   _recieve_chain(socket, message_content)
-        # when M_TYPE_REQUEST_NODES
-        #   _request_nodes(socket, message_content)
-        # when M_TYPE_RECIEVE_NODES
-        #   _recieve_nodes(socket, message_content)
+          # when M_TYPE_HANDSHAKE_NODE
+          #   _handshake_node(socket, message_content)
+          # when M_TYPE_HANDSHAKE_NODE_ACCEPTED
+          #   _handshake_node_accepted(socket, message_content)
+          # when M_TYPE_HANDSHAKE_NODE_REJECTED
+          #   _handshake_node_rejected(socket, message_content)
+          # when M_TYPE_BROADCAST_TRANSACTION
+          #   _broadcast_transaction(socket, message_content)
+          # when M_TYPE_BROADCAST_BLOCK
+          #   _broadcast_block(socket, message_content)
+          # when M_TYPE_REQUEST_CHAIN
+          #   _request_chain(socket, message_content)
+          # when M_TYPE_RECIEVE_CHAIN
+          #   _recieve_chain(socket, message_content)
+          # when M_TYPE_REQUEST_NODES
+          #   _request_nodes(socket, message_content)
+          # when M_TYPE_RECIEVE_NODES
+          #   _recieve_nodes(socket, message_content)
         end
       rescue e : Exception
         handle_exception(socket, e)
@@ -290,8 +288,8 @@ module ::Sushi::Core
       end
 
       send(socket, M_TYPE_HANDSHAKE_NODE_ACCEPTED, {
-        context:         context,
-        latest_index:    @blockchain.latest_index,
+        context:      context,
+        latest_index: @blockchain.latest_index,
       })
 
       @nodes << {socket: socket, context: node_context}
@@ -529,7 +527,7 @@ module ::Sushi::Core
     #     is_private: @is_private,
     #   }
     # end
-    #  
+    #
     # private def known_nodes : Models::NodeContexts
     #   _known_nodes = @nodes.map { |node| node[:context] }
     #   _known_nodes << context
