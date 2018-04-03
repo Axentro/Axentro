@@ -11,13 +11,14 @@ require "./node/*"
 
 module ::Sushi::Core
   class Node
-    getter id : String
+    # getter id : String
     getter flag : Int32
     getter network_type : String
 
     @blockchain : Blockchain
     @nodes : Models::Nodes
     @miners_manager : MinersManager
+    @chord : Chord
 
     @rpc_controller : Controllers::RPCController
 
@@ -47,20 +48,22 @@ module ::Sushi::Core
       @conn_min : Int32,
       @use_ssl : Bool = false
     )
-      @id = Random::Secure.hex(16)
+      # @id = Random::Secure.hex(16)
+      # info "id: #{light_green(@id)}"
 
-      info "id: #{light_green(@id)}"
+      @blockchain = Blockchain.new(@wallet, @database)
+      @network_type = @is_testnet ? "testnet" : "mainnet"
+      @nodes = Models::Nodes.new
+      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl)
+      @miners_manager = MinersManager.new
+      @flag = FLAG_NONE
+
       info "core version: #{light_green(Core::CORE_VERSION)}"
 
       debug "is_private: #{light_green(@is_private)}"
       debug "public url: #{light_green(@public_host)}:#{light_green(@public_port)}" unless @is_private
       debug "connecting node is using ssl?: #{light_green(@use_ssl)}"
-
-      @blockchain = Blockchain.new(@wallet, @database)
-      @network_type = @is_testnet ? "testnet" : "mainnet"
-      @nodes = Models::Nodes.new
-      @miners_manager = MinersManager.new
-      @flag = FLAG_NONE
+      debug "network type: #{light_green(@network_type)}"
 
       @rpc_controller = Controllers::RPCController.new(@blockchain)
 
@@ -73,7 +76,7 @@ module ::Sushi::Core
         exit -1
       end
 
-      proceed_setup
+      spawn proceed_setup2
     end
 
     private def connect(connect_host : String, connect_port : Int32)
@@ -147,6 +150,7 @@ module ::Sushi::Core
         context.response.print ""
         context
       end
+
       post "/rpc" do |context, params|
         context.response.headers["Access-Control-Allow-Origin"] = "*"
         @rpc_controller.exec(context, params)
@@ -160,8 +164,6 @@ module ::Sushi::Core
 
       info "start running Sushi's node on #{light_green(@bind_host)}:#{light_green(@bind_port)}"
 
-      debug "network type: #{light_green(@network_type)}"
-
       node = HTTP::Server.new(@bind_host, @bind_port, handlers)
       node.listen
     end
@@ -170,7 +172,7 @@ module ::Sushi::Core
       WebSocketHandler.new("/peer") { |socket, context| peer(socket) }
     end
 
-    private def peer(socket : HTTP::WebSocket)
+    def peer(socket : HTTP::WebSocket)
       socket.on_message do |message|
         message_json = JSON.parse(message)
         message_type = message_json["type"].as_i
@@ -185,24 +187,37 @@ module ::Sushi::Core
         when M_TYPE_FOUND_NONCE
           @miners_manager.found_nonce(self, @blockchain, socket, message_content)
 
-        when M_TYPE_HANDSHAKE_NODE
-          _handshake_node(socket, message_content)
-        when M_TYPE_HANDSHAKE_NODE_ACCEPTED
-          _handshake_node_accepted(socket, message_content)
-        when M_TYPE_HANDSHAKE_NODE_REJECTED
-          _handshake_node_rejected(socket, message_content)
-        when M_TYPE_BROADCAST_TRANSACTION
-          _broadcast_transaction(socket, message_content)
-        when M_TYPE_BROADCAST_BLOCK
-          _broadcast_block(socket, message_content)
-        when M_TYPE_REQUEST_CHAIN
-          _request_chain(socket, message_content)
-        when M_TYPE_RECIEVE_CHAIN
-          _recieve_chain(socket, message_content)
-        when M_TYPE_REQUEST_NODES
-          _request_nodes(socket, message_content)
-        when M_TYPE_RECIEVE_NODES
-          _recieve_nodes(socket, message_content)
+        when M_TYPE_CHORD_JOIN
+          @chord.join_from(self, message_content)
+        when M_TYPE_CHORD_FOUND_SUCCESSOR
+          @chord.connect_to_successor(self, message_content)
+        when M_TYPE_CHORD_SEARCH_SUCCESSOR
+          @chord.search_successor(message_content)
+        when M_TYPE_CHORD_IM_SUCCESSOR
+          @chord.connect_from_successor(socket, message_content)
+        when M_TYPE_CHORD_STABILIZE_SUCCESSOR
+          @chord.stabilize_as_successor(socket, message_content)
+        when M_TYPE_CHORD_STABILIZE_PREDECESSOR
+          @chord.stabilize_as_predecessor(socket, message_content)
+
+        # when M_TYPE_HANDSHAKE_NODE
+        #   _handshake_node(socket, message_content)
+        # when M_TYPE_HANDSHAKE_NODE_ACCEPTED
+        #   _handshake_node_accepted(socket, message_content)
+        # when M_TYPE_HANDSHAKE_NODE_REJECTED
+        #   _handshake_node_rejected(socket, message_content)
+        # when M_TYPE_BROADCAST_TRANSACTION
+        #   _broadcast_transaction(socket, message_content)
+        # when M_TYPE_BROADCAST_BLOCK
+        #   _broadcast_block(socket, message_content)
+        # when M_TYPE_REQUEST_CHAIN
+        #   _request_chain(socket, message_content)
+        # when M_TYPE_RECIEVE_CHAIN
+        #   _recieve_chain(socket, message_content)
+        # when M_TYPE_REQUEST_NODES
+        #   _request_nodes(socket, message_content)
+        # when M_TYPE_RECIEVE_NODES
+        #   _recieve_nodes(socket, message_content)
         end
       rescue e : Exception
         handle_exception(socket, e)
@@ -220,12 +235,12 @@ module ::Sushi::Core
 
       @blockchain.add_transaction(transaction)
 
-      @nodes.each do |node|
-        send(node[:socket], M_TYPE_BROADCAST_TRANSACTION, {
-          transaction: transaction,
-          known_nodes: known_nodes,
-        })
-      end
+      # @nodes.each do |node|
+      #   send(node[:socket], M_TYPE_BROADCAST_TRANSACTION, {
+      #     transaction: transaction,
+      #     known_nodes: known_nodes,
+      #   })
+      # end
     end
 
     private def handle_exception(socket : HTTP::WebSocket, e : Exception, reject_node : Bool = false)
@@ -507,21 +522,42 @@ module ::Sushi::Core
       ]
     end
 
-    private def context : Models::NodeContext
-      {
-        id:         @id,
-        host:       @public_host || "",
-        port:       @public_port || -1,
-        ssl:        @ssl || false,
-        type:       @network_type,
-        is_private: @is_private,
-      }
-    end
+    # private def context : Models::NodeContext
+    #   {
+    #     id:         @id,
+    #     host:       @public_host || "",
+    #     port:       @public_port || -1,
+    #     ssl:        @ssl || false,
+    #     type:       @network_type,
+    #     is_private: @is_private,
+    #   }
+    # end
+    #  
+    # private def known_nodes : Models::NodeContexts
+    #   _known_nodes = @nodes.map { |node| node[:context] }
+    #   _known_nodes << context
+    #   _known_nodes
+    # end
 
-    private def known_nodes : Models::NodeContexts
-      _known_nodes = @nodes.map { |node| node[:context] }
-      _known_nodes << context
-      _known_nodes
+    private def proceed_setup2
+      return if @flag == FLAG_SETUP_DONE
+
+      case @flag
+      when FLAG_NONE
+        if @connect_host && @connect_port
+          @flag = FLAG_CONNECTING_NODES
+
+          @chord.join_to(@connect_host.not_nil!, @connect_port.not_nil!)
+        else
+          warning "no connecting node has been specified"
+          warning "so this node is standalone from other network"
+
+          # @flag = FLAG_BLOCKCHAIN_LOADING
+          @flag = FLAG_SETUP_DONE
+
+          # proceed_setup2
+        end
+      end
     end
 
     private def proceed_setup

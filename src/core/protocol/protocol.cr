@@ -59,6 +59,57 @@ module ::Sushi::Core::Protocol
 
   ##########
 
+  M_TYPE_CHORD_JOIN = 0x1001
+
+  struct M_CONTENT_CHORD_JOIN
+    JSON.mapping({
+                   version: Int32,
+                   context: Models::NodeContext,
+                 })
+  end
+
+  M_TYPE_CHORD_FOUND_SUCCESSOR = 0x1002
+
+  struct M_CONTENT_CHORD_FOUND_SUCCESSOR
+    JSON.mapping({
+                   context: Models::NodeContext,
+                 })
+  end
+
+  M_TYPE_CHORD_SEARCH_SUCCESSOR = 0x1003
+
+  struct M_CONTENT_CHORD_SEARCH_SUCCESSOR
+    JSON.mapping({
+                   context: Models::NodeContext,
+                 })
+  end
+
+  M_TYPE_CHORD_IM_SUCCESSOR = 0x1004
+
+  struct M_CONTENT_CHORD_IM_SUCCESSOR
+    JSON.mapping({
+                   context: Models::NodeContext,
+                 })
+  end
+
+  M_TYPE_CHORD_STABILIZE_SUCCESSOR = 0x1005
+
+  struct M_CONTENT_CHORD_STABILIZE_SCCESSOR
+    JSON.mapping({
+                   predecessor_context: Models::NodeContext,
+                 })
+  end
+
+  M_TYPE_CHORD_STABILIZE_PREDECESSOR = 0x1006
+
+  struct M_CONTENT_CHORD_STABILIZE_PREDECESSOR
+    JSON.mapping({
+                   successor_context: Models::NodeContext,
+                 })
+  end
+
+  ##########
+
   M_TYPE_HANDSHAKE_NODE = 0x0011
 
   struct M_CONTENT_HANDSHAKE_NODE

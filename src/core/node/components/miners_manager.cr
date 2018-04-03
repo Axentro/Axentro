@@ -1,5 +1,4 @@
 module ::Sushi::Core::NodeComponents
-
   class MinersManager
     @miners : Models::Miners
     @latest_nonces : Array(UInt64) = [] of UInt64
