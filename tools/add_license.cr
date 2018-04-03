@@ -10,6 +10,10 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
+if !Dir.entries.include?("add_license.cr")
+  puts "Error: you must execute this file from the tools directory - please cd to the tools dir and run crystal run add_license.cr"
+end
+
 LICENSE = <<-LIC
 # Copyright © 2017-2018 The SushiChain Core developers
 #

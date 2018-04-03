@@ -11,7 +11,9 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "./blockchain/*"
+require "./blowfish/*"
 require "./node/*"
 require "./ecdsa/*"
 require "./keys/*"
 require "./dapps/*"
+require "./license_spec.cr"

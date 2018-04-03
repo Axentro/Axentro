@@ -11,16 +11,15 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "./../../spec_helper"
-require "./../utils"
 
-include Sushi::Core
-include Sushi::Core::Keys
-
-describe BlowFish do
-  it "should encrypt and decrypt" do
-    encrypted = BlowFish.encrypt("password", "some-data")
-    decrypted = BlowFish.decrypt("password", encrypted[:data], encrypted[:salt])
-    decrypted.should eq("some-data")
+describe "License" do
+  it "should have a license at the top of every crystal file" do
+    Dir["**/*.cr"].reject { |f| f.starts_with?("lib") }.each do |file_path|
+      # if this fails uncomment the line below to see the failed file
+      # to fix: cd tools then crystal run add_license.cr
+      # puts "file: #{file_path}"
+      File.read_lines(file_path).first.should eq("# Copyright © 2017-2018 The SushiChain Core developers")
+    end
   end
-  STDERR.puts "< BlowFish"
+  STDERR.puts "< License"
 end
