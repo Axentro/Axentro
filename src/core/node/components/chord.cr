@@ -149,7 +149,7 @@ module ::Sushi::Core::NodeComponents
         elsif @node_id > predecessor_node_id &&
               @node_id > _context[:id] &&
               predecessor_node_id < _context[:id]
-          info  "new predecessor found: #{_context[:host]}:#{_context[:port]}"
+          info "new predecessor found: #{_context[:host]}:#{_context[:port]}"
           @predecessor = {socket: socket, context: _context}
         else
           debug "current predecessor #{predecessor[:context][:host]}:#{predecessor[:context][:port]} is correct"
