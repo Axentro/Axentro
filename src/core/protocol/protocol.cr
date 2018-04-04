@@ -105,8 +105,8 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_CHORD_AS_SUCCESSOR
     JSON.mapping({
-                   context: Models::NodeContext,
-                 })
+      context: Models::NodeContext,
+    })
   end
 
   ##########

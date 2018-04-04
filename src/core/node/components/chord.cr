@@ -216,7 +216,7 @@ module ::Sushi::Core::NodeComponents
             }
           )
 
-        # todo:
+          # todo:
           # 自分のsuccessorをここで_contextに更新？
         elsif successor_node_id > @node_id &&
               successor_node_id > _context[:id] &&
@@ -229,8 +229,8 @@ module ::Sushi::Core::NodeComponents
             }
           )
 
-        # todo:
-        # 自分のsuccessorをここで_contextに更新？
+          # todo:
+          # 自分のsuccessorをここで_contextに更新？
         else
           send(
             successor[:socket],

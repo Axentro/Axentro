@@ -189,8 +189,8 @@ module ::Sushi::Core
           @chord.search_successor(message_content)
         when M_TYPE_CHORD_FOUND_SUCCESSOR
           @chord.connect_to_successor(self, message_content)
-        # when M_TYPE_CHORD_IM_SUCCESSOR
-        #   @chord.connect_from_successor(socket, message_content)
+          # when M_TYPE_CHORD_IM_SUCCESSOR
+          #   @chord.connect_from_successor(socket, message_content)
         when M_TYPE_CHORD_STABILIZE_AS_SUCCESSOR
           @chord.stabilize_as_successor(self, socket, message_content)
         when M_TYPE_CHORD_STABILIZE_AS_PREDECESSOR
