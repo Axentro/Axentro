@@ -13,12 +13,11 @@
 
 All documents are written on [wiki](https://github.com/SushiChain/SushiChain/wiki)
 
-* [What is SushiCoin?](https://github.com/SushiChain/SushiChain/wiki/What-is-SushiCoin%3F)
-* [How to build SushiCoin?](https://github.com/SushiChain/SushiChain/wiki/How-to-build-SushiCoin%3F)
-* [QuickStart guide!](https://github.com/SushiChain/SushiChain/wiki/SushiCoin-QuickStart)
-* [I want to do mining SushiCoin!](https://github.com/SushiChain/SushiChain/wiki/Mining-SushiCoin)
-* [I want to build my SushiCoin's node!](https://github.com/SushiChain/SushiChain/wiki/Build-SushiCoin's-node)
-* [I want to build an app with SushiCoin!](https://github.com/SushiChain/SushiChain/wiki/SushiCoin's-API)
+* [What is SushiChain?](https://github.com/SushiChain/SushiChain/wiki/What-is-SushiChain%3F)
+* [How to build SushiChain?](https://github.com/SushiChain/SushiChain/wiki/How-to-build-SushiChain%3F)
+* [QuickStart guide!](https://github.com/SushiChain/SushiChain/wiki/SushiChain-QuickStart)
+* [I want to do mining on SushiChain!](https://github.com/SushiChain/SushiChain/wiki/Mining-SushiChain)
+* [I want to build a SushiChain node!](https://github.com/SushiChain/SushiChain/wiki/Build-a-SushiChain-node)
 
 ## Community
 
@@ -27,5 +26,5 @@ We are discussing many things everyday in [Slack](https://goo.gl/MnBKcy).
 🍣 We are welcome your joining! 🍣
 
 ## Contributors
-- [@tbrand](https://github.com/tbrand) Taichiro Suzuki - creator, maintainer
-- [@kingsleyh](https://github.com/kingsleyh)
+- [@tbrand](https://github.com/tbrand) Taichiro Suzuki - core developer, founder
+- [@kingsleyh](https://github.com/kingsleyh) Kingsley Hendrickse - core developer, co-creator
