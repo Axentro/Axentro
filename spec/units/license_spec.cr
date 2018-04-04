@@ -10,15 +10,16 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Core::Controllers
-  class HealthController < Controller
-    def exec_internal_get(context, params) : HTTP::Server::Context
-      context.response.status_code == 200
-      context
-    end
+require "./../../spec_helper"
 
-    def exec_internal_post(json, context, params) : HTTP::Server::Context
-      unpermitted_method(context)
+describe "License" do
+  it "should have a license at the top of every crystal file" do
+    Dir["**/*.cr"].reject { |f| f.starts_with?("lib") }.each do |file_path|
+      # if this fails uncomment the line below to see the failed file
+      # to fix: cd tools then crystal run add_license.cr
+      # puts "file: #{file_path}"
+      File.read_lines(file_path).first.should eq("# Copyright © 2017-2018 The SushiChain Core developers")
     end
   end
+  STDERR.puts "< License"
 end
