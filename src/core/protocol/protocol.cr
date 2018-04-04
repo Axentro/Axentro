@@ -92,17 +92,17 @@ module ::Sushi::Core::Protocol
     })
   end
 
-  M_TYPE_CHORD_STABILIZE_SUCCESSOR = 0x1005
+  M_TYPE_CHORD_STABILIZE_AS_SUCCESSOR = 0x1005
 
-  struct M_CONTENT_CHORD_STABILIZE_SCCESSOR
+  struct M_CONTENT_CHORD_STABILIZE_AS_SCCESSOR
     JSON.mapping({
       predecessor_context: Models::NodeContext,
     })
   end
 
-  M_TYPE_CHORD_STABILIZE_PREDECESSOR = 0x1006
+  M_TYPE_CHORD_STABILIZE_AS_PREDECESSOR = 0x1006
 
-  struct M_CONTENT_CHORD_STABILIZE_PREDECESSOR
+  struct M_CONTENT_CHORD_STABILIZE_AS_PREDECESSOR
     JSON.mapping({
       successor_context: Models::NodeContext,
     })

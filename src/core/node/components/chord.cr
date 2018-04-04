@@ -48,7 +48,7 @@ module ::Sushi::Core::NodeComponents
 
             send(
               successor[:socket],
-              M_TYPE_CHORD_STABILIZE_SUCCESSOR,
+              M_TYPE_CHORD_STABILIZE_AS_SUCCESSOR,
               {
                 predecessor_context: context,
               }
@@ -130,7 +130,7 @@ module ::Sushi::Core::NodeComponents
     end
 
     def stabilize_as_successor(socket, _content : String)
-      _m_content = M_CONTENT_CHORD_STABILIZE_SCCESSOR.from_json(_content)
+      _m_content = M_CONTENT_CHORD_STABILIZE_AS_SCCESSOR.from_json(_content)
 
       _context = _m_content.predecessor_context
 
@@ -161,7 +161,7 @@ module ::Sushi::Core::NodeComponents
 
       send(
         socket,
-        M_TYPE_CHORD_STABILIZE_PREDECESSOR,
+        M_TYPE_CHORD_STABILIZE_AS_PREDECESSOR,
         {
           successor_context: @predecessor.not_nil![:context],
         }
@@ -169,7 +169,7 @@ module ::Sushi::Core::NodeComponents
     end
 
     def stabilize_as_predecessor(node, socket, _content : String)
-      _m_content = M_CONTENT_CHORD_STABILIZE_PREDECESSOR.from_json(_content)
+      _m_content = M_CONTENT_CHORD_STABILIZE_AS_PREDECESSOR.from_json(_content)
 
       _context = _m_content.successor_context
 
@@ -221,6 +221,9 @@ module ::Sushi::Core::NodeComponents
               context: successor[:context],
             }
           )
+
+        # todo:
+          # 自分のsuccessorをここで_contextに更新？
         elsif successor_node_id > @node_id &&
               successor_node_id > _context[:id] &&
               @node_id < _context[:id]
@@ -231,6 +234,9 @@ module ::Sushi::Core::NodeComponents
               context: successor[:context],
             }
           )
+
+        # todo:
+        # 自分のsuccessorをここで_contextに更新？
         else
           send(
             successor[:socket],
@@ -248,6 +254,9 @@ module ::Sushi::Core::NodeComponents
             context: context,
           }
         )
+
+        # todo:
+        # 自分のsuccessorをここで_contextに更新？
       end
     end
 

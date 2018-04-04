@@ -185,15 +185,15 @@ module ::Sushi::Core
           @miners_manager.found_nonce(self, @blockchain, socket, message_content)
         when M_TYPE_CHORD_JOIN
           @chord.join_from(self, message_content)
-        when M_TYPE_CHORD_FOUND_SUCCESSOR
-          @chord.connect_to_successor(self, message_content)
         when M_TYPE_CHORD_SEARCH_SUCCESSOR
           @chord.search_successor(message_content)
+        when M_TYPE_CHORD_FOUND_SUCCESSOR
+          @chord.connect_to_successor(self, message_content)
         when M_TYPE_CHORD_IM_SUCCESSOR
           @chord.connect_from_successor(socket, message_content)
-        when M_TYPE_CHORD_STABILIZE_SUCCESSOR
+        when M_TYPE_CHORD_STABILIZE_AS_SUCCESSOR
           @chord.stabilize_as_successor(socket, message_content)
-        when M_TYPE_CHORD_STABILIZE_PREDECESSOR
+        when M_TYPE_CHORD_STABILIZE_AS_PREDECESSOR
           @chord.stabilize_as_predecessor(self, socket, message_content)
           # when M_TYPE_HANDSHAKE_NODE
           #   _handshake_node(socket, message_content)
