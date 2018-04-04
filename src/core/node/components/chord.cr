@@ -10,7 +10,7 @@ module ::Sushi::Core::NodeComponents
   class Chord
     @node_id : NodeID
 
-    @successor : Models::Node?
+    @successor_list : Models::Nodes = Models::Nodes.new
     @predecessor : Models::Node?
 
     def initialize(
@@ -31,10 +31,8 @@ module ::Sushi::Core::NodeComponents
         loop do
           sleep 3
 
-          if successor = @successor
-            debug "successor   : #{successor[:context][:host]}:#{successor[:context][:port]}"
-          else
-            debug "successor   : Not found"
+          @successor_list.each do |successor|
+            debug "-> successor : #{successor[:context][:host]}:#{successor[:context][:port]}"
           end
 
           if predecessor = @predecessor
@@ -43,8 +41,11 @@ module ::Sushi::Core::NodeComponents
             debug "predecessor : Not found"
           end
 
-          if successor = @successor
-            debug "request to check predecessor for #{successor[:context][:host]}:#{successor[:context][:port]}"
+          if @successor_list.size > 0
+            successor = @successor_list[0]
+
+            debug "request to check predecessor for " +
+                  "#{successor[:context][:host]}:#{successor[:context][:port]}"
 
             send(
               successor[:socket],
@@ -52,7 +53,7 @@ module ::Sushi::Core::NodeComponents
               {
                 predecessor_context: context,
               }
-            ) unless successor[:socket].closed?
+            )
           end
         end
       end
@@ -92,27 +93,11 @@ module ::Sushi::Core::NodeComponents
         socket.run
       end
 
-      @successor = {socket: socket, context: _context}
-
-      send(
-        socket,
-        M_TYPE_CHORD_IM_SUCCESSOR,
-        {
-          context: context,
-        }
-      )
-    end
-
-    def connect_from_successor(socket, _content)
-      _m_content = M_CONTENT_CHORD_IM_SUCCESSOR.from_json(_content)
-
-      _context = _m_content.context
-
-      # todo: check it's valid or not?
-      info "new predecessor found: #{_context[:host]}:#{_context[:port]}"
-
-      unless @successor
-        @successor = {socket: socket, context: _context}
+      # todo: refactoring?
+      if @successor_list.size > 0
+        @successor_list[0] = {socket: socket, context: _context}
+      else
+        @successor_list.push({socket: socket, context: _context})
       end
     end
 
@@ -129,7 +114,7 @@ module ::Sushi::Core::NodeComponents
         })
     end
 
-    def stabilize_as_successor(socket, _content : String)
+    def stabilize_as_successor(node, socket, _content : String)
       _m_content = M_CONTENT_CHORD_STABILIZE_AS_SCCESSOR.from_json(_content)
 
       _context = _m_content.predecessor_context
@@ -166,6 +151,10 @@ module ::Sushi::Core::NodeComponents
           successor_context: @predecessor.not_nil![:context],
         }
       )
+
+      if @successor_list.size == 0
+        connect_to_successor(node, @predecessor.not_nil![:context])
+      end
     end
 
     def stabilize_as_predecessor(node, socket, _content : String)
@@ -173,7 +162,8 @@ module ::Sushi::Core::NodeComponents
 
       _context = _m_content.successor_context
 
-      if successor = @successor
+      if @successor_list.size > 0
+        successor = @successor_list[0]
         successor_node_id = NodeID.create_from(successor[:context][:id])
 
         if @node_id > successor_node_id &&
@@ -193,6 +183,9 @@ module ::Sushi::Core::NodeComponents
         else
           debug "current successor #{successor[:context][:host]}:#{successor[:context][:port]} is correct"
         end
+      else
+        # todo: remove here
+        error "coming here (for debugging)"
       end
     end
 
@@ -206,7 +199,8 @@ module ::Sushi::Core::NodeComponents
     def search_successor(_context : Models::NodeContext)
       debug "search successor for #{_context[:host]}:#{_context[:port]}"
 
-      if successor = @successor
+      if @successor_list.size > 0
+        successor = @successor_list[0]
         successor_node_id = NodeID.create_from(successor[:context][:id])
 
         if @node_id > successor_node_id &&
@@ -275,6 +269,7 @@ module ::Sushi::Core::NodeComponents
       send_chord(_context[:host], _context[:port], _t, _content)
     end
 
+    # todo: rescue
     def send_chord(connect_host : String, connect_port : Int32, _t : Int32, _content)
       _socket = HTTP::WebSocket.new(connect_host, "/peer", connect_port, @use_ssl)
       send(_socket, _t, _content)

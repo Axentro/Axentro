@@ -84,14 +84,6 @@ module ::Sushi::Core::Protocol
     })
   end
 
-  M_TYPE_CHORD_IM_SUCCESSOR = 0x1004
-
-  struct M_CONTENT_CHORD_IM_SUCCESSOR
-    JSON.mapping({
-      context: Models::NodeContext,
-    })
-  end
-
   M_TYPE_CHORD_STABILIZE_AS_SUCCESSOR = 0x1005
 
   struct M_CONTENT_CHORD_STABILIZE_AS_SCCESSOR
@@ -106,6 +98,15 @@ module ::Sushi::Core::Protocol
     JSON.mapping({
       successor_context: Models::NodeContext,
     })
+  end
+
+  # todo
+  M_TYPE_CHORD_ASK_SUCCESSOR = 0x1007
+
+  struct M_CONTENT_CHORD_AS_SUCCESSOR
+    JSON.mapping({
+                   context: Models::NodeContext,
+                 })
   end
 
   ##########
