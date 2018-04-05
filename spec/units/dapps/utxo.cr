@@ -17,6 +17,7 @@ include Sushi::Core
 include Sushi::Core::Models
 include Units::Utils
 include Sushi::Core::DApps::BuildIn
+include Sushi::Core::Controllers
 
 describe UTXO do
   describe "#get" do
@@ -301,10 +302,32 @@ describe UTXO do
     end
   end
 
-  pending "#define_rpc?" do
-  end
+  describe "#define_rpc?" do
+    describe "#amount" do
+      it "should return the unconfirmed amount" do
+        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          recipient_address = chain.last.transactions.first.recipients.first[:address]
+          payload = {call: "amount", address: recipient_address, unconfirmed: true, token: TOKEN_DEFAULT}.to_json
+          json = JSON.parse(payload)
 
-  pending "#amount" do
+          with_rpc_exec_internal_post(rpc, json) do |result|
+            result.should eq(%{{"unconfirmed":true,"result":[{"token":"SHARI","amount":100000}]}})
+          end
+        end
+      end
+
+      it "should return the confirmed amount" do
+        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          recipient_address = chain.last.transactions.first.recipients.first[:address]
+          payload = {call: "amount", address: recipient_address, unconfirmed: false, token: TOKEN_DEFAULT}.to_json
+          json = JSON.parse(payload)
+
+          with_rpc_exec_internal_post(rpc, json) do |result|
+            result.should eq(%{{"unconfirmed":false,"result":[{"token":"SHARI","amount":10000}]}})
+          end
+        end
+      end
+    end
   end
 
   it "should return fee when calling #Self.fee" do
