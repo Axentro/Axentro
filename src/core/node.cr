@@ -213,6 +213,9 @@ module ::Sushi::Core
           #   _request_nodes(socket, message_content)
           # when M_TYPE_RECIEVE_NODES
           #   _recieve_nodes(socket, message_content)
+        else
+          # todo: remove here
+          puts "unknown message: #{message_content}"
         end
       rescue e : Exception
         handle_exception(socket, e)

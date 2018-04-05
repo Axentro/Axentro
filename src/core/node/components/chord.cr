@@ -2,7 +2,7 @@ require "./node_id"
 
 #
 # todo: think about private nodes
-# todo: miner cannot be launched
+# todo: miner cannot be launched *****
 #
 module ::Sushi::Core::NodeComponents
   class Chord
