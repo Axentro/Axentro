@@ -65,6 +65,8 @@ module ::Sushi::Interface::Sushi
       end
 
       specify_sub_action!
+    rescue e : Exception
+      puts_error e.message  
     end
 
     def buy
