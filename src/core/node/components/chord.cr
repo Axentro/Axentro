@@ -8,6 +8,8 @@ require "./node_id"
 #
 module ::Sushi::Core::NodeComponents
   class Chord
+    SUCCESSOR_LIST_SIZE = 3
+
     @node_id : NodeID
 
     @successor_list : Models::Nodes = Models::Nodes.new
@@ -31,8 +33,12 @@ module ::Sushi::Core::NodeComponents
         loop do
           sleep 3
 
-          @successor_list.each do |successor|
-            debug "-> successor : #{successor[:context][:host]}:#{successor[:context][:port]}"
+          if @successor_list.size > 0
+            @successor_list.each do |successor|
+              debug "-> successor : #{successor[:context][:host]}:#{successor[:context][:port]}"
+            end
+          else
+            debug "successor   : Not found"
           end
 
           if predecessor = @predecessor
@@ -41,13 +47,14 @@ module ::Sushi::Core::NodeComponents
             debug "predecessor : Not found"
           end
 
+          ping_all
+
+          align_successors
+
           if @successor_list.size > 0
             successor = @successor_list[0]
 
-            debug "request to check predecessor for " +
-                  "#{successor[:context][:host]}:#{successor[:context][:port]}"
-
-            send(
+            send_overlay(
               successor[:socket],
               M_TYPE_CHORD_STABILIZE_AS_SUCCESSOR,
               {
@@ -57,6 +64,19 @@ module ::Sushi::Core::NodeComponents
           end
         end
       end
+    end
+
+    def join_to(connect_host : String, connect_port : Int32)
+      debug "joining network: #{connect_host}:#{connect_port}"
+
+      send_once(
+        connect_host,
+        connect_port,
+        M_TYPE_CHORD_JOIN,
+        {
+          version: Core::CORE_VERSION,
+          context: context,
+        })
     end
 
     def join_from(node, _content)
@@ -83,8 +103,6 @@ module ::Sushi::Core::NodeComponents
     end
 
     def connect_to_successor(node, _context : NodeContext)
-      info "successor found: #{_context[:host]}:#{_context[:port]}"
-
       socket = HTTP::WebSocket.new(_context[:host], "/peer", _context[:port], @use_ssl)
 
       node.peer(socket)
@@ -101,25 +119,10 @@ module ::Sushi::Core::NodeComponents
       end
     end
 
-    def join_to(connect_host : String, connect_port : Int32)
-      debug "joining network: #{connect_host}:#{connect_port}"
-
-      send_chord(
-        connect_host,
-        connect_port,
-        M_TYPE_CHORD_JOIN,
-        {
-          version: Core::CORE_VERSION,
-          context: context,
-        })
-    end
-
     def stabilize_as_successor(node, socket, _content : String)
       _m_content = M_CONTENT_CHORD_STABILIZE_AS_SCCESSOR.from_json(_content)
 
       _context = _m_content.predecessor_context
-
-      debug "be asked to check predecessor by #{_context[:host]}:#{_context[:port]}"
 
       if predecessor = @predecessor
         predecessor_node_id = NodeID.create_from(predecessor[:context][:id])
@@ -136,15 +139,13 @@ module ::Sushi::Core::NodeComponents
               predecessor_node_id < _context[:id]
           info "new predecessor found: #{_context[:host]}:#{_context[:port]}"
           @predecessor = {socket: socket, context: _context}
-        else
-          debug "current predecessor #{predecessor[:context][:host]}:#{predecessor[:context][:port]} is correct"
         end
       else
         info "new predecessor found: #{_context[:host]}:#{_context[:port]}"
         @predecessor = {socket: socket, context: _context}
       end
 
-      send(
+      send_overlay(
         socket,
         M_TYPE_CHORD_STABILIZE_AS_PREDECESSOR,
         {
@@ -180,12 +181,7 @@ module ::Sushi::Core::NodeComponents
           info "new successor found: #{_context[:host]}:#{_context[:port]}"
 
           connect_to_successor(node, _context)
-        else
-          debug "current successor #{successor[:context][:host]}:#{successor[:context][:port]} is correct"
         end
-      else
-        # todo: remove here
-        error "coming here (for debugging)"
       end
     end
 
@@ -197,8 +193,6 @@ module ::Sushi::Core::NodeComponents
     end
 
     def search_successor(_context : Models::NodeContext)
-      debug "search successor for #{_context[:host]}:#{_context[:port]}"
-
       if @successor_list.size > 0
         successor = @successor_list[0]
         successor_node_id = NodeID.create_from(successor[:context][:id])
@@ -208,7 +202,7 @@ module ::Sushi::Core::NodeComponents
              @node_id < _context[:id] ||
              successor_node_id > _context[:id]
            )
-          send_chord(
+          send_once(
             _context,
             M_TYPE_CHORD_FOUND_SUCCESSOR,
             {
@@ -221,7 +215,7 @@ module ::Sushi::Core::NodeComponents
         elsif successor_node_id > @node_id &&
               successor_node_id > _context[:id] &&
               @node_id < _context[:id]
-          send_chord(
+          send_once(
             _context,
             M_TYPE_CHORD_FOUND_SUCCESSOR,
             {
@@ -232,7 +226,7 @@ module ::Sushi::Core::NodeComponents
           # todo:
           # 自分のsuccessorをここで_contextに更新？
         else
-          send(
+          send_overlay(
             successor[:socket],
             M_TYPE_CHORD_SEARCH_SUCCESSOR,
             {
@@ -241,7 +235,7 @@ module ::Sushi::Core::NodeComponents
           )
         end
       else
-        send_chord(
+        send_once(
           _context,
           M_TYPE_CHORD_FOUND_SUCCESSOR,
           {
@@ -265,15 +259,80 @@ module ::Sushi::Core::NodeComponents
       }
     end
 
-    def send_chord(_context : Models::NodeContext, _t : Int32, _content)
-      send_chord(_context[:host], _context[:port], _t, _content)
+    def align_successors
+      @successor_list = @successor_list.compact
+
+      if @successor_list.size > SUCCESSOR_LIST_SIZE
+        removed_successors = @successor_list[SUCCESSOR_LIST_SIZE..-1]
+        removed_successors.each do |successor|
+          successor[:socket].close
+        end
+
+        @successor_list = @successor_list[0..SUCCESSOR_LIST_SIZE-1]
+      end
     end
 
-    # todo: rescue
-    def send_chord(connect_host : String, connect_port : Int32, _t : Int32, _content)
-      _socket = HTTP::WebSocket.new(connect_host, "/peer", connect_port, @use_ssl)
-      send(_socket, _t, _content)
-      _socket.close
+    def send_once(_context : Models::NodeContext, t : Int32, content)
+      send_once(_context[:host], _context[:port], t, content)
+    end
+
+    def send_once(connect_host : String, connect_port : Int32, t : Int32, content)
+      socket = HTTP::WebSocket.new(connect_host, "/peer", connect_port, @use_ssl)
+
+      send_once(socket, t, content)
+    end
+
+    def send_once(socket, t, content)
+      send_overlay(socket, t, content)
+
+      socket.close
+
+      clean_connection(socket)
+    end
+
+    def send_overlay(socket, t, content)
+      send(socket, t, content)
+    rescue e : Exception
+      clean_connection(socket)
+    end
+
+    def ping_all
+      @successor_list.each do |successor|
+        ping(successor[:socket])
+      end
+
+      if predecessor = @predecessor
+        ping(predecessor[:socket])
+      end
+    end
+
+    def ping(socket : HTTP::WebSocket)
+      socket.ping
+    rescue e : Exception
+      clean_connection(socket)
+    end
+
+    def clean_connection(socket : HTTP::WebSocket)
+      @successor_list.each do |successor|
+        if successor[:socket] == socket
+          current_successors = @successor_list.size
+
+          @successor_list.delete(successor)
+
+          debug "successor has been removed from successor list."
+          debug "#{current_successors} => #{@successor_list.size}"
+
+          break
+        end
+      end
+
+      if predecessor = @predecessor
+        if predecessor[:socket] == socket
+          debug "predecessor has been removed"
+
+          @predecessor = nil
+        end
+      end
     end
 
     include Logger
