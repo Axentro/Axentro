@@ -63,18 +63,18 @@ module ::Sushi::Core
         message_content = message_json["content"].to_s
 
         case message_type
-        when M_TYPE_HANDSHAKE_MINER_ACCEPTED
+        when M_TYPE_MINER_HANDSHAKE_ACCEPTED
           _handshake_miner_accepted(socket, message_content)
-        when M_TYPE_HANDSHAKE_MINER_REJECTED
+        when M_TYPE_MINER_HANDSHAKE_REJECTED
           _handshake_miner_rejected(socket, message_content)
-        when M_TYPE_BLOCK_UPDATE
+        when M_TYPE_MINER_BLOCK_UPDATE
           _block_update(socket, message_content)
         end
       end
 
       info "core version: #{light_green(Core::CORE_VERSION)}"
 
-      send(socket, M_TYPE_HANDSHAKE_MINER, {
+      send(socket, M_TYPE_MINER_HANDSHAKE, {
         version: Core::CORE_VERSION,
         address: @wallet.address,
       })
@@ -82,7 +82,7 @@ module ::Sushi::Core
       @num_threads.times do |thread|
         @threads << Thread.new do
           while nonce = pow(thread)
-            send(socket, M_TYPE_FOUND_NONCE, {nonce: nonce}) unless socket.closed?
+            send(socket, M_TYPE_MINER_FOUND_NONCE, {nonce: nonce}) unless socket.closed?
           end
         end
       end
@@ -91,7 +91,7 @@ module ::Sushi::Core
     end
 
     private def _handshake_miner_accepted(socket, _content)
-      _m_content = M_CONTENT_HANDSHAKE_MINER_ACCEPTED.from_json(_content)
+      _m_content = M_CONTENT_MINER_HANDSHAKE_ACCEPTED.from_json(_content)
 
       @latest_block = _m_content.block
       @latest_hash = _m_content.block.to_hash
@@ -103,7 +103,7 @@ module ::Sushi::Core
     end
 
     private def _handshake_miner_rejected(socket, _content)
-      _m_content = M_CONTENT_HANDSHAKE_MINER_REJECTED.from_json(_content)
+      _m_content = M_CONTENT_MINER_HANDSHAKE_REJECTED.from_json(_content)
 
       reason = _m_content.reason
 
@@ -112,7 +112,7 @@ module ::Sushi::Core
     end
 
     private def _block_update(socket, _content)
-      _m_content = M_CONTENT_BLOCK_UPDATE.from_json(_content)
+      _m_content = M_CONTENT_MINER_BLOCK_UPDATE.from_json(_content)
 
       @latest_block = _m_content.block
       @latest_hash = _m_content.block.to_hash

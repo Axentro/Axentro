@@ -10,14 +10,14 @@ module ::Sushi::Core::NodeComponents
     def handshake(node, blockchain, socket, _content)
       return unless node.flag == FLAG_SETUP_DONE
 
-      _m_content = M_CONTENT_HANDSHAKE_MINER.from_json(_content)
+      _m_content = M_CONTENT_MINER_HANDSHAKE.from_json(_content)
 
       version = _m_content.version
       address = _m_content.address
 
       if Core::CORE_VERSION > version
         return send(socket,
-          M_TYPE_HANDSHAKE_MINER_REJECTED,
+          M_TYPE_MINER_HANDSHAKE_REJECTED,
           {
             reason: "your sushim is out of date, please update it" +
                     "(node version: #{Core::CORE_VERSION}, miner version: #{version})",
@@ -29,7 +29,7 @@ module ::Sushi::Core::NodeComponents
       if miner_network != node.network_type
         warning "mismatch network type with miner #{address}"
 
-        return send(socket, M_TYPE_HANDSHAKE_MINER_REJECTED, {
+        return send(socket, M_TYPE_MINER_HANDSHAKE_REJECTED, {
           reason: "network type mismatch",
         })
       end
@@ -40,7 +40,7 @@ module ::Sushi::Core::NodeComponents
 
       info "new miner: #{light_green(miner[:address])} (#{@miners.size})"
 
-      send(socket, M_TYPE_HANDSHAKE_MINER_ACCEPTED, {
+      send(socket, M_TYPE_MINER_HANDSHAKE_ACCEPTED, {
         version:    Core::CORE_VERSION,
         block:      blockchain.latest_block,
         difficulty: miner_difficulty_at(blockchain.latest_index),
@@ -50,7 +50,7 @@ module ::Sushi::Core::NodeComponents
     def found_nonce(node, blockchain, socket, _content)
       return unless node.flag == FLAG_SETUP_DONE
 
-      _m_content = M_CONTENT_FOUND_NONCE.from_json(_content)
+      _m_content = M_CONTENT_MINER_FOUND_NONCE.from_json(_content)
 
       nonce = _m_content.nonce
       found = false
@@ -61,7 +61,7 @@ module ::Sushi::Core::NodeComponents
         elsif !blockchain.latest_block.valid_nonce?(nonce, miner_difficulty_at(blockchain.latest_block.index))
           warning "recieved nonce is invalid, try to update latest block"
 
-          send(miner[:socket], M_TYPE_BLOCK_UPDATE, {
+          send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
             block:      blockchain.latest_block,
             difficulty: miner_difficulty_at(blockchain.latest_index),
           })
@@ -99,7 +99,7 @@ module ::Sushi::Core::NodeComponents
 
     def broadcast_latest_block(blockchain)
       @miners.each do |miner|
-        send(miner[:socket], M_TYPE_BLOCK_UPDATE, {
+        send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
           block:      blockchain.latest_block,
           difficulty: miner_difficulty_at(blockchain.latest_index),
         })

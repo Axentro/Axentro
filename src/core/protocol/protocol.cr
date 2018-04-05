@@ -5,9 +5,9 @@ module ::Sushi::Core::Protocol
 
   ##########
 
-  M_TYPE_HANDSHAKE_MINER = 0x0001
+  M_TYPE_MINER_HANDSHAKE = 0x0001
 
-  struct M_CONTENT_HANDSHAKE_MINER
+  struct M_CONTENT_MINER_HANDSHAKE
     JSON.mapping({
       version: Int32,
       address: String,
@@ -16,9 +16,9 @@ module ::Sushi::Core::Protocol
 
   ##########
 
-  M_TYPE_HANDSHAKE_MINER_ACCEPTED = 0x0002
+  M_TYPE_MINER_HANDSHAKE_ACCEPTED = 0x0002
 
-  struct M_CONTENT_HANDSHAKE_MINER_ACCEPTED
+  struct M_CONTENT_MINER_HANDSHAKE_ACCEPTED
     JSON.mapping({
       version:    Int32,
       block:      Block,
@@ -28,9 +28,9 @@ module ::Sushi::Core::Protocol
 
   ##########
 
-  M_TYPE_HANDSHAKE_MINER_REJECTED = 0x0003
+  M_TYPE_MINER_HANDSHAKE_REJECTED = 0x0003
 
-  struct M_CONTENT_HANDSHAKE_MINER_REJECTED
+  struct M_CONTENT_MINER_HANDSHAKE_REJECTED
     JSON.mapping({
       reason: String,
     })
@@ -38,9 +38,9 @@ module ::Sushi::Core::Protocol
 
   ##########
 
-  M_TYPE_FOUND_NONCE = 0x0004
+  M_TYPE_MINER_FOUND_NONCE = 0x0004
 
-  struct M_CONTENT_FOUND_NONCE
+  struct M_CONTENT_MINER_FOUND_NONCE
     JSON.mapping({
       nonce: UInt64,
     })
@@ -48,9 +48,9 @@ module ::Sushi::Core::Protocol
 
   ##########
 
-  M_TYPE_BLOCK_UPDATE = 0x0005
+  M_TYPE_MINER_BLOCK_UPDATE = 0x0005
 
-  struct M_CONTENT_BLOCK_UPDATE
+  struct M_CONTENT_MINER_BLOCK_UPDATE
     JSON.mapping({
       block:      Block,
       difficulty: Int32,

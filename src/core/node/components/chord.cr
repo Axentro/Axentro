@@ -2,9 +2,7 @@ require "./node_id"
 
 #
 # todo: think about private nodes
-# todo: is_successor?, is_predecessor?を実装した方が良いかも
-# todo: when change the successor or predecessor, the sockets should be disconnected then.
-# todo: check socket.close?
+# todo: miner cannot be launched
 #
 module ::Sushi::Core::NodeComponents
   class Chord
@@ -79,7 +77,7 @@ module ::Sushi::Core::NodeComponents
         })
     end
 
-    def join_from(node, _content)
+    def join(node, _content)
       _m_content = M_CONTENT_CHORD_JOIN.from_json(_content)
 
       _version = _m_content.version
@@ -93,30 +91,12 @@ module ::Sushi::Core::NodeComponents
       search_successor(_context)
     end
 
-    # todo: refactoring
-    def connect_to_successor(node, _content : String)
+    def found_successor(node, _content : String)
       _m_content = M_CONTENT_CHORD_FOUND_SUCCESSOR.from_json(_content)
 
       _context = _m_content.context
 
       connect_to_successor(node, _context)
-    end
-
-    def connect_to_successor(node, _context : NodeContext)
-      socket = HTTP::WebSocket.new(_context[:host], "/peer", _context[:port], @use_ssl)
-
-      node.peer(socket)
-
-      spawn do
-        socket.run
-      end
-
-      # todo: refactoring?
-      if @successor_list.size > 0
-        @successor_list[0] = {socket: socket, context: _context}
-      else
-        @successor_list.push({socket: socket, context: _context})
-      end
     end
 
     def stabilize_as_successor(node, socket, _content : String)
@@ -248,15 +228,21 @@ module ::Sushi::Core::NodeComponents
       end
     end
 
-    def context
-      {
-        id:         @node_id.id,
-        host:       @public_host || "",
-        port:       @public_port || -1,
-        ssl:        @ssl || false,
-        type:       @network_type,
-        is_private: @is_private,
-      }
+    def connect_to_successor(node, _context : NodeContext)
+      socket = HTTP::WebSocket.new(_context[:host], "/peer", _context[:port], @use_ssl)
+
+      node.peer(socket)
+
+      spawn do
+        socket.run
+      end
+
+      # todo: refactoring?
+      if @successor_list.size > 0
+        @successor_list[0] = {socket: socket, context: _context}
+      else
+        @successor_list.push({socket: socket, context: _context})
+      end
     end
 
     def align_successors
@@ -333,6 +319,17 @@ module ::Sushi::Core::NodeComponents
           @predecessor = nil
         end
       end
+    end
+
+    def context
+      {
+        id:         @node_id.id,
+        host:       @public_host || "",
+        port:       @public_port || -1,
+        ssl:        @ssl || false,
+        type:       @network_type,
+        is_private: @is_private,
+      }
     end
 
     include Logger

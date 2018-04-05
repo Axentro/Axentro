@@ -179,18 +179,18 @@ module ::Sushi::Core
         message_content = message_json["content"].to_s
 
         case message_type
-        when M_TYPE_HANDSHAKE_MINER
+
+        when M_TYPE_MINER_HANDSHAKE
           @miners_manager.handshake(self, @blockchain, socket, message_content)
-        when M_TYPE_FOUND_NONCE
+        when M_TYPE_MINER_FOUND_NONCE
           @miners_manager.found_nonce(self, @blockchain, socket, message_content)
+
         when M_TYPE_CHORD_JOIN
-          @chord.join_from(self, message_content)
+          @chord.join(self, message_content)
         when M_TYPE_CHORD_SEARCH_SUCCESSOR
           @chord.search_successor(message_content)
         when M_TYPE_CHORD_FOUND_SUCCESSOR
-          @chord.connect_to_successor(self, message_content)
-          # when M_TYPE_CHORD_IM_SUCCESSOR
-          #   @chord.connect_from_successor(socket, message_content)
+          @chord.found_successor(self, message_content)
         when M_TYPE_CHORD_STABILIZE_AS_SUCCESSOR
           @chord.stabilize_as_successor(self, socket, message_content)
         when M_TYPE_CHORD_STABILIZE_AS_PREDECESSOR
