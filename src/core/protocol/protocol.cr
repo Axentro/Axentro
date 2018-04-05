@@ -100,7 +100,7 @@ module ::Sushi::Core::Protocol
     })
   end
 
-  # todo
+  # todo: implement successor_list
   M_TYPE_CHORD_ASK_SUCCESSOR = 0x1007
 
   struct M_CONTENT_CHORD_AS_SUCCESSOR

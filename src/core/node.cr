@@ -11,8 +11,8 @@ require "./node/*"
 
 module ::Sushi::Core
   class Node
-    # getter id : String
-    getter flag : Int32
+    property flag : Int32
+
     getter network_type : String
 
     @blockchain : Blockchain
@@ -79,40 +79,40 @@ module ::Sushi::Core
       spawn proceed_setup2
     end
 
-    private def connect(connect_host : String, connect_port : Int32)
-      @connecting_nodes += 1
-
-      info "connecting to #{light_green(connect_host)}:#{light_green(connect_port)} (#{@connecting_nodes})"
-
-      debug "detected an https connecting node - switching to SSL" if @use_ssl
-
-      socket = HTTP::WebSocket.new(connect_host, "/peer", connect_port, @use_ssl)
-
-      peer(socket)
-
-      send(socket, M_TYPE_HANDSHAKE_NODE, {
-        version: Core::CORE_VERSION,
-        context: context,
-      })
-
-      connect_async(socket)
-    rescue e : Exception
-      handle_exception(socket.not_nil!, e, true) if socket
-
-      @connecting_nodes -= 1
-      proceed_setup
-    end
-
-    private def connect_async(socket)
-      spawn do
-        socket.run
-      rescue e : Exception
-        handle_exception(socket, e, true)
-
-        @connecting_nodes -= 1
-        proceed_setup
-      end
-    end
+    # private def connect(connect_host : String, connect_port : Int32)
+    #   @connecting_nodes += 1
+    #  
+    #   info "connecting to #{light_green(connect_host)}:#{light_green(connect_port)} (#{@connecting_nodes})"
+    #  
+    #   debug "detected an https connecting node - switching to SSL" if @use_ssl
+    #  
+    #   socket = HTTP::WebSocket.new(connect_host, "/peer", connect_port, @use_ssl)
+    #  
+    #   peer(socket)
+    #  
+    #   send(socket, M_TYPE_HANDSHAKE_NODE, {
+    #     version: Core::CORE_VERSION,
+    #     context: context,
+    #   })
+    #  
+    #   connect_async(socket)
+    # rescue e : Exception
+    #   handle_exception(socket.not_nil!, e, true) if socket
+    #  
+    #   @connecting_nodes -= 1
+    #   proceed_setup
+    # end
+    #  
+    # private def connect_async(socket)
+    #   spawn do
+    #     socket.run
+    #   rescue e : Exception
+    #     handle_exception(socket, e, true)
+    #  
+    #     @connecting_nodes -= 1
+    #     proceed_setup
+    #   end
+    # end
 
     private def sync_chain(_socket = nil)
       socket = if __socket = _socket
@@ -180,7 +180,10 @@ module ::Sushi::Core
 
         case message_type
 
+        # todo
+        # 分割？
         when M_TYPE_MINER_HANDSHAKE
+          puts "come here!!"
           @miners_manager.handshake(self, @blockchain, socket, message_content)
         when M_TYPE_MINER_FOUND_NONCE
           @miners_manager.found_nonce(self, @blockchain, socket, message_content)
@@ -188,13 +191,14 @@ module ::Sushi::Core
         when M_TYPE_CHORD_JOIN
           @chord.join(self, message_content)
         when M_TYPE_CHORD_SEARCH_SUCCESSOR
-          @chord.search_successor(message_content)
+          @chord.search_successor(self, message_content)
         when M_TYPE_CHORD_FOUND_SUCCESSOR
           @chord.found_successor(self, message_content)
         when M_TYPE_CHORD_STABILIZE_AS_SUCCESSOR
           @chord.stabilize_as_successor(self, socket, message_content)
         when M_TYPE_CHORD_STABILIZE_AS_PREDECESSOR
           @chord.stabilize_as_predecessor(self, socket, message_content)
+
           # when M_TYPE_HANDSHAKE_NODE
           #   _handshake_node(socket, message_content)
           # when M_TYPE_HANDSHAKE_NODE_ACCEPTED
@@ -213,9 +217,6 @@ module ::Sushi::Core
           #   _request_nodes(socket, message_content)
           # when M_TYPE_RECIEVE_NODES
           #   _recieve_nodes(socket, message_content)
-        else
-          # todo: remove here
-          puts "unknown message: #{message_content}"
         end
       rescue e : Exception
         handle_exception(socket, e)
@@ -233,6 +234,7 @@ module ::Sushi::Core
 
       @blockchain.add_transaction(transaction)
 
+      # todo:
       # @nodes.each do |node|
       #   send(node[:socket], M_TYPE_BROADCAST_TRANSACTION, {
       #     transaction: transaction,
@@ -247,6 +249,8 @@ module ::Sushi::Core
       else
         error "unknown error"
       end
+
+      error e.backtrace.not_nil!.join("\n")
 
       if node = get_node?(socket)
         error "on: #{node[:context][:host]}:#{node[:context][:port]}"

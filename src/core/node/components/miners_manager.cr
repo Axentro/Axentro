@@ -8,7 +8,9 @@ module ::Sushi::Core::NodeComponents
     end
 
     def handshake(node, blockchain, socket, _content)
+      puts "phase 0"
       return unless node.flag == FLAG_SETUP_DONE
+      puts "phase 1"
 
       _m_content = M_CONTENT_MINER_HANDSHAKE.from_json(_content)
 
