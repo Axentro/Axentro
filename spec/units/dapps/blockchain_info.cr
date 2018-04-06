@@ -253,4 +253,5 @@ describe BlockchainInfo do
       end
     end
   end
+  STDERR.puts "< dApps::BlockChainInfo"
 end

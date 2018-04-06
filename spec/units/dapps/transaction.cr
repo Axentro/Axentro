@@ -156,4 +156,5 @@ describe TransactionCreator do
       end
     end
   end
+    STDERR.puts "< dApps::TransactionCreator"
 end
