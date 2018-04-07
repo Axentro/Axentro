@@ -8,9 +8,7 @@ module ::Sushi::Core::NodeComponents
     end
 
     def handshake(node, blockchain, socket, _content)
-      puts "phase 0"
       return unless node.flag == FLAG_SETUP_DONE
-      puts "phase 1"
 
       _m_content = M_CONTENT_MINER_HANDSHAKE.from_json(_content)
 
@@ -40,7 +38,7 @@ module ::Sushi::Core::NodeComponents
 
       @miners << miner
 
-      info "new miner: #{light_green(miner[:address])} (#{@miners.size})"
+      info "new miner: #{light_green(miner[:address][0..7])} (#{@miners.size})"
 
       send(socket, M_TYPE_MINER_HANDSHAKE_ACCEPTED, {
         version:    Core::CORE_VERSION,
@@ -68,7 +66,7 @@ module ::Sushi::Core::NodeComponents
             difficulty: miner_difficulty_at(blockchain.latest_index),
           })
         else
-          info "miner #{miner[:address]} found nonce (nonces: #{miner[:nonces].size})"
+          info "miner #{miner[:address][0..7]} found nonce (nonces: #{miner[:nonces].size})"
 
           miner[:nonces].push(nonce)
           @latest_nonces.push(nonce)
@@ -82,13 +80,7 @@ module ::Sushi::Core::NodeComponents
 
       info "found new nonce: #{light_green(nonce)} (block: #{blockchain.latest_index})"
 
-      # todo:
-      # known_nodes = @nodes.map { |node| node[:context] }
-      # known_nodes << context
-      #
-      # @nodes.each do |n|
-      #   send(n[:socket], M_TYPE_BROADCAST_BLOCK, {block: block, known_nodes: known_nodes})
-      # end
+      node.send_block(block)
 
       @miners.each do |m|
         m[:nonces].clear
@@ -112,10 +104,11 @@ module ::Sushi::Core::NodeComponents
       @miners.find { |m| m[:socket] == socket }
     end
 
-    def reject?(socket) : Bool
+    def clean_connection(socket)
       current_size = @miners.size
       @miners.reject! { |miner| miner[:socket] == socket }
-      current_size > @miners.size
+
+      info "a miner has been removed. (#{@miners.size})" if current_size > @miners.size
     end
 
     def size

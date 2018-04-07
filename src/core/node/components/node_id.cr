@@ -32,6 +32,14 @@ module ::Sushi::Core::NodeComponents
       @id_num <= BigInt.new(other.id, base: 16)
     end
 
+    def ==(other : NodeID)
+      @id_num == BigInt.new(other.id, base: 16)
+    end
+
+    def !=(other : NodeID)
+      @id_num != BigInt.new(other.id, base: 16)
+    end
+
     def >(other : String)
       @id_num > BigInt.new(other, base: 16)
     end
@@ -46,6 +54,14 @@ module ::Sushi::Core::NodeComponents
 
     def <=(other : String)
       @id_num <= BigInt.new(other, base: 16)
+    end
+
+    def ==(other : String)
+      @id_num == BigInt.new(other, base: 16)
+    end
+
+    def !=(other : String)
+      @id_num != BigInt.new(other, base: 16)
     end
 
     def to_s : String

@@ -2,7 +2,6 @@ require "./node_id"
 
 #
 # todo: think about private nodes
-# todo: miner cannot be launched *****
 #
 module ::Sushi::Core::NodeComponents
   class Chord
@@ -12,6 +11,8 @@ module ::Sushi::Core::NodeComponents
 
     @successor_list : Models::Nodes = Models::Nodes.new
     @predecessor : Models::Node?
+
+    @show_network = 0
 
     def initialize(
       @public_host : String?,
@@ -59,8 +60,8 @@ module ::Sushi::Core::NodeComponents
 
       connect_to_successor(node, _context)
 
-      # todo: may be should be FLAG_BLOCKCHAIN_LOADING
-      node.flag = FLAG_SETUP_DONE
+      node.flag = FLAG_BLOCKCHAIN_LOADING
+      node.proceed_setup2
     end
 
     def stabilize_as_successor(node, socket, _content : String)
@@ -125,23 +126,35 @@ module ::Sushi::Core::NodeComponents
       end
     end
 
+    def debug_table_line(col0 : String, col1 : String, delimiter = "|")
+      debug "#{delimiter} %20s #{delimiter} %20s #{delimiter}" % [col0, col1]
+    end
+
     def stabilize_process
       spawn do
         loop do
-          sleep 3
+          sleep Random.rand
 
-          if @successor_list.size > 0
-            @successor_list.each do |successor|
-              debug "-> successor : #{successor[:context][:host]}:#{successor[:context][:port]}"
+          if (@show_network += 1) % 20 == 0
+            debug_table_line("-" * 20, "-" * 20, "+")
+
+            if @successor_list.size > 0
+              @successor_list.each_with_index do |successor, i|
+                debug_table_line "successor (#{i})",
+                                 "#{successor[:context][:host]}:#{successor[:context][:port]}"
+              end
+            else
+              debug_table_line "successor", "Not found"
             end
-          else
-            debug "successor   : Not found"
-          end
 
-          if predecessor = @predecessor
-            debug "predecessor : #{predecessor[:context][:host]}:#{predecessor[:context][:port]}"
-          else
-            debug "predecessor : Not found"
+            if predecessor = @predecessor
+              debug_table_line "predecessor",
+                               "#{predecessor[:context][:host]}:#{predecessor[:context][:port]}"
+            else
+              debug_table_line "predecessor", "Not found"
+            end
+
+            debug_table_line("-" * 20, "-" * 20, "+")
           end
 
           ping_all
@@ -151,7 +164,6 @@ module ::Sushi::Core::NodeComponents
       end
     end
 
-    # todo: refactoring
     def search_successor(node, _content : String)
       _m_content = M_CONTENT_CHORD_SEARCH_SUCCESSOR.from_json(_content)
 
@@ -176,8 +188,6 @@ module ::Sushi::Core::NodeComponents
             }
           )
 
-          # todo:
-          # 自分のsuccessorをここで_contextに更新？
           connect_to_successor(node, _context)
         elsif successor_node_id > @node_id &&
               successor_node_id > _context[:id] &&
@@ -190,8 +200,6 @@ module ::Sushi::Core::NodeComponents
             }
           )
 
-          # todo:
-          # 自分のsuccessorをここで_contextに更新？
           connect_to_successor(node, _context)
         else
           send_overlay(
@@ -211,10 +219,14 @@ module ::Sushi::Core::NodeComponents
           }
         )
 
-        # todo:
-        # 自分のsuccessorをここで_contextに更新？
         connect_to_successor(node, _context)
       end
+    end
+
+    def find_successor? : Models::Node?
+      return nil if @successor_list.size == 0
+
+      @successor_list[0]
     end
 
     def connect_to_successor(node, _context : NodeContext)
@@ -228,8 +240,8 @@ module ::Sushi::Core::NodeComponents
         socket.run
       end
 
-      # todo: refactoring?
       if @successor_list.size > 0
+        @successor_list[0][:socket].close
         @successor_list[0] = {socket: socket, context: _context}
       else
         @successor_list.push({socket: socket, context: _context})
