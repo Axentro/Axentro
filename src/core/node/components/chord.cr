@@ -12,6 +12,8 @@ module ::Sushi::Core::NodeComponents
     @successor_list : Models::Nodes = Models::Nodes.new
     @predecessor : Models::Node?
 
+    @private_nodes : Models::Nodes = Models::Nodes.new
+
     @show_network = 0
 
     def initialize(
@@ -24,21 +26,7 @@ module ::Sushi::Core::NodeComponents
     )
       @node_id = NodeID.new
 
-      stabilize_process
-    end
-
-    def join(node, _content)
-      _m_content = M_CONTENT_CHORD_JOIN.from_json(_content)
-
-      _version = _m_content.version
-      _context = _m_content.context
-
-      debug "#{_context[:host]}:#{_context[:port]} try to join SushiChain"
-
-      # todo: version check
-      # todo: network type check
-
-      search_successor(node, _context)
+      stabilize_process unless @is_private
     end
 
     def join_to(connect_host : String, connect_port : Int32)
@@ -54,6 +42,82 @@ module ::Sushi::Core::NodeComponents
         })
     end
 
+    def join_to_private(node, connect_host : String, connect_port : Int32)
+      debug "joining network: #{connect_host}:#{connect_port} (private)"
+
+      socket = HTTP::WebSocket.new(connect_host, "/peer", connect_port, @use_ssl)
+
+      node.peer(socket)
+
+      spawn do
+        socket.run
+      end
+
+      send(
+        socket,
+        M_TYPE_CHORD_JOIN_PRIVATE,
+        {
+          version: Core::CORE_VERSION,
+          context: context,
+        }
+      )
+    end
+
+    def join(node, socket, _content)
+      _m_content = M_CONTENT_CHORD_JOIN.from_json(_content)
+
+      _version = _m_content.version
+      _context = _m_content.context
+
+      debug "#{_context[:host]}:#{_context[:port]} try to join SushiChain"
+
+      # todo: version check
+      # todo: network type check
+
+      search_successor(node, _context)
+    end
+
+    def join_private(node, socket, _content)
+      _m_content = M_CONTENT_CHORD_JOIN_PRIVATE.from_json(_content)
+
+      _version = _m_content.version
+      _context = _m_content.context
+
+      debug "private ndoe try to join SushiChain"
+
+      # todo: version check
+      # todo: network type check
+
+      @private_nodes << {
+          socket: socket,
+          context: _context,
+        }
+
+      send(
+        socket,
+        M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED,
+        {
+          context: context,
+        }
+      )
+    end
+
+    def join_private_accepted(node, socket, _content)
+      _m_content = M_CONTENT_CHORD_JOIN_PRIVATE_ACCEPTED.from_json(_content)
+
+      _context = _m_content.context
+
+      debug "successfully joined to the network"
+
+      @successor_list.push({
+                             socket: socket,
+                             context: _context,
+                           })
+
+      node.flag = FLAG_BLOCKCHAIN_LOADING
+      node.proceed_setup
+    end
+
     def found_successor(node, _content : String)
       _m_content = M_CONTENT_CHORD_FOUND_SUCCESSOR.from_json(_content)
       _context = _m_content.context
@@ -61,7 +125,7 @@ module ::Sushi::Core::NodeComponents
       connect_to_successor(node, _context)
 
       node.flag = FLAG_BLOCKCHAIN_LOADING
-      node.proceed_setup2
+      node.proceed_setup
     end
 
     def stabilize_as_successor(node, socket, _content : String)
@@ -154,6 +218,10 @@ module ::Sushi::Core::NodeComponents
               debug_table_line "predecessor", "Not found"
             end
 
+            if @private_nodes.size > 0
+              debug_table_line "private nodes", @private_nodes.size.to_s
+            end
+
             debug_table_line("-" * 20, "-" * 20, "+")
           end
 
@@ -223,10 +291,17 @@ module ::Sushi::Core::NodeComponents
       end
     end
 
-    def find_successor? : Models::Node?
+    def find_node? : Models::Node?
       return nil if @successor_list.size == 0
 
       @successor_list[0]
+    end
+
+    def find_nodes : NamedTuple(successor: Models::Node?, private_nodes: Models::Nodes)
+      {
+        successor: @successor_list.size > 0 ? @successor_list[0] : nil,
+        private_nodes: @private_nodes,
+      }
     end
 
     def connect_to_successor(node, _context : NodeContext)

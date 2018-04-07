@@ -58,7 +58,7 @@ module ::Sushi::Core
         exit -1
       end
 
-      spawn proceed_setup2
+      spawn proceed_setup
     end
 
     def run!
@@ -78,7 +78,6 @@ module ::Sushi::Core
         context.response.headers["Access-Control-Allow-Origin"] = "*"
         context.response.headers["Access-Control-Allow-Headers"] =
           "X-Requested-With, X-HTTP-Method-Override, Content-Type, Cache-Control, Accept"
-
         context.response.status_code = 200
         context.response.print ""
         context
@@ -93,7 +92,7 @@ module ::Sushi::Core
     private def sync_chain
       info "start synching blockchain."
 
-      if successor = @chord.find_successor?
+      if successor = @chord.find_node?
         send(
           successor[:socket],
           M_TYPE_NODE_REQUEST_CHAIN,
@@ -106,7 +105,7 @@ module ::Sushi::Core
 
         if @flag == FLAG_BLOCKCHAIN_SYNCING
           @flag = FLAG_SETUP_PRE_DONE
-          proceed_setup2
+          proceed_setup
         end
       end
     end
@@ -127,7 +126,11 @@ module ::Sushi::Core
         when M_TYPE_MINER_FOUND_NONCE
           @miners_manager.found_nonce(self, @blockchain, socket, message_content)
         when M_TYPE_CHORD_JOIN
-          @chord.join(self, message_content)
+          @chord.join(self, socket, message_content)
+        when M_TYPE_CHORD_JOIN_PRIVATE
+          @chord.join_private(self, socket, message_content)
+        when M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED
+          @chord.join_private_accepted(self, socket, message_content)
         when M_TYPE_CHORD_SEARCH_SUCCESSOR
           @chord.search_successor(self, message_content)
         when M_TYPE_CHORD_FOUND_SUCCESSOR
@@ -156,42 +159,48 @@ module ::Sushi::Core
       handle_exception(socket, e)
     end
 
+    def broadcast(t : Int32, content, from : NodeContext?)
+      return if @is_private
+
+      _nodes = @chord.find_nodes
+      _nodes[:private_nodes].each do |private_node|
+        send(private_node[:socket], t, content)
+      end
+
+      if successor = _nodes[:successor]
+        if !from.nil? && from.not_nil![:id] == successor[:context][:id]
+          debug "successfully broadcasted! (#{t})"
+          return
+        end
+
+        send(successor[:socket], t, content)
+      end
+    end
+
     def broadcast_transaction(transaction : Transaction, from : NodeContext? = nil)
       info "new transaction coming: #{transaction.id}"
 
       @blockchain.add_transaction(transaction)
 
-      if successor = @chord.find_successor?
-        if !from.nil? && from.not_nil![:id] == successor[:context][:id]
-          debug "successfully broadcasted transaction!"
-          return
-        end
-
-        send(
-          successor[:socket],
-          M_TYPE_NODE_BROADCAST_TRANSACTION,
-          {
-            transaction: transaction,
-            from:        from || @chord.context,
-          }
-        )
-      end
+      broadcast(
+        M_TYPE_NODE_BROADCAST_TRANSACTION,
+        {
+          transaction: transaction,
+          from: from || @chord.context,
+        },
+        from,
+      )
     end
 
     def send_block(block : Block, from : NodeContext? = nil)
-      if successor = @chord.find_successor?
-        debug "send block (#{block.index}) to #{successor[:context][:host]}:#{successor[:context][:port]}"
-        send(
-          successor[:socket],
-          M_TYPE_NODE_BROADCAST_BLOCK,
-          {
-            block: block,
-            from:  from || @chord.context,
-          }
-        )
-      else
-        warning "successor not found. skip sending a block"
-      end
+      broadcast(
+        M_TYPE_NODE_BROADCAST_BLOCK,
+        {
+          block: block,
+          from: from || @chord.context,
+        },
+        from,
+      )
     end
 
     def broadcast_block(block : Block, from : NodeContext? = nil)
@@ -204,11 +213,7 @@ module ::Sushi::Core
 
         info "new block coming: #{light_cyan(@blockchain.chain.size)}"
 
-        if successor = @chord.find_successor?
-          if !from.nil? && from.not_nil![:id] != successor[:context][:id]
-            send_block(block, from)
-          end
-        end
+        send_block(block, from)
       elsif @blockchain.latest_index == block.index
         @c1 += 1
 
@@ -300,7 +305,7 @@ module ::Sushi::Core
 
       if @flag == FLAG_BLOCKCHAIN_SYNCING
         @flag = FLAG_SETUP_PRE_DONE
-        proceed_setup2
+        proceed_setup
       end
     end
 
@@ -322,7 +327,7 @@ module ::Sushi::Core
       ]
     end
 
-    def proceed_setup2
+    def proceed_setup
       return if @flag == FLAG_SETUP_DONE
 
       case @flag
@@ -330,14 +335,18 @@ module ::Sushi::Core
         if @connect_host && @connect_port
           @flag = FLAG_CONNECTING_NODES
 
-          @chord.join_to(@connect_host.not_nil!, @connect_port.not_nil!)
+          unless @is_private
+            @chord.join_to(@connect_host.not_nil!, @connect_port.not_nil!)
+          else
+            @chord.join_to_private(self, @connect_host.not_nil!, @connect_port.not_nil!)
+          end
         else
           warning "no connecting node has been specified"
           warning "so this node is standalone from other network"
 
           @flag = FLAG_BLOCKCHAIN_LOADING
 
-          proceed_setup2
+          proceed_setup
         end
       when FLAG_BLOCKCHAIN_LOADING
         @blockchain.setup(self)
@@ -352,7 +361,7 @@ module ::Sushi::Core
 
         @flag = FLAG_BLOCKCHAIN_SYNCING
 
-        proceed_setup2
+        proceed_setup
       when FLAG_BLOCKCHAIN_SYNCING
         sync_chain
       when FLAG_SETUP_PRE_DONE

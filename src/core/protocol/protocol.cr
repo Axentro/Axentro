@@ -64,7 +64,24 @@ module ::Sushi::Core::Protocol
     })
   end
 
-  M_TYPE_CHORD_FOUND_SUCCESSOR = 0x0012
+  M_TYPE_CHORD_JOIN_PRIVATE = 0x0012
+
+  struct M_CONTENT_CHORD_JOIN_PRIVATE
+    JSON.mapping({
+      version: Int32,
+      context: Models::NodeContext,
+    })
+  end
+
+  M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED = 0x0013
+
+  struct M_CONTENT_CHORD_JOIN_PRIVATE_ACCEPTED
+    JSON.mapping({
+                   context: Models::NodeContext,
+                 })
+  end
+
+  M_TYPE_CHORD_FOUND_SUCCESSOR = 0x0014
 
   struct M_CONTENT_CHORD_FOUND_SUCCESSOR
     JSON.mapping({
@@ -72,7 +89,7 @@ module ::Sushi::Core::Protocol
     })
   end
 
-  M_TYPE_CHORD_SEARCH_SUCCESSOR = 0x0013
+  M_TYPE_CHORD_SEARCH_SUCCESSOR = 0x0015
 
   struct M_CONTENT_CHORD_SEARCH_SUCCESSOR
     JSON.mapping({
@@ -80,7 +97,7 @@ module ::Sushi::Core::Protocol
     })
   end
 
-  M_TYPE_CHORD_STABILIZE_AS_SUCCESSOR = 0x0014
+  M_TYPE_CHORD_STABILIZE_AS_SUCCESSOR = 0x0016
 
   struct M_CONTENT_CHORD_STABILIZE_AS_SCCESSOR
     JSON.mapping({
@@ -88,7 +105,7 @@ module ::Sushi::Core::Protocol
     })
   end
 
-  M_TYPE_CHORD_STABILIZE_AS_PREDECESSOR = 0x0015
+  M_TYPE_CHORD_STABILIZE_AS_PREDECESSOR = 0x0017
 
   struct M_CONTENT_CHORD_STABILIZE_AS_PREDECESSOR
     JSON.mapping({
