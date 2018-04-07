@@ -122,12 +122,10 @@ module ::Sushi::Core
         message_content = message_json["content"].to_s
 
         case message_type
-
         when M_TYPE_MINER_HANDSHAKE
           @miners_manager.handshake(self, @blockchain, socket, message_content)
         when M_TYPE_MINER_FOUND_NONCE
           @miners_manager.found_nonce(self, @blockchain, socket, message_content)
-
         when M_TYPE_CHORD_JOIN
           @chord.join(self, message_content)
         when M_TYPE_CHORD_SEARCH_SUCCESSOR
@@ -138,7 +136,6 @@ module ::Sushi::Core
           @chord.stabilize_as_successor(self, socket, message_content)
         when M_TYPE_CHORD_STABILIZE_AS_PREDECESSOR
           @chord.stabilize_as_predecessor(self, socket, message_content)
-
         when M_TYPE_NODE_REQUEST_CHAIN
           _request_chain(socket, message_content)
         when M_TYPE_NODE_RECIEVE_CHAIN
@@ -165,7 +162,6 @@ module ::Sushi::Core
       @blockchain.add_transaction(transaction)
 
       if successor = @chord.find_successor?
-
         if !from.nil? && from.not_nil![:id] == successor[:context][:id]
           debug "successfully broadcasted transaction!"
           return
@@ -176,7 +172,7 @@ module ::Sushi::Core
           M_TYPE_NODE_BROADCAST_TRANSACTION,
           {
             transaction: transaction,
-            from: from || @chord.context,
+            from:        from || @chord.context,
           }
         )
       end
@@ -190,7 +186,7 @@ module ::Sushi::Core
           M_TYPE_NODE_BROADCAST_BLOCK,
           {
             block: block,
-            from: from || @chord.context,
+            from:  from || @chord.context,
           }
         )
       else

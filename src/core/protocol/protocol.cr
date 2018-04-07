@@ -104,18 +104,18 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_NODE_BROADCAST_TRANSACTION
     JSON.mapping({
-                   transaction: Transaction,
-                   from: NodeContext,
-                 })
+      transaction: Transaction,
+      from:        NodeContext,
+    })
   end
 
   M_TYPE_NODE_BROADCAST_BLOCK = 0x0102
 
   struct M_CONTENT_NODE_BROADCAST_BLOCK
     JSON.mapping({
-                   block: Block,
-                   from:  NodeContext,
-                 })
+      block: Block,
+      from:  NodeContext,
+    })
   end
 
   M_TYPE_NODE_REQUEST_CHAIN = 0x0103

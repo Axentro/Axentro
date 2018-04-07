@@ -141,7 +141,7 @@ module ::Sushi::Core::NodeComponents
             if @successor_list.size > 0
               @successor_list.each_with_index do |successor, i|
                 debug_table_line "successor (#{i})",
-                                 "#{successor[:context][:host]}:#{successor[:context][:port]}"
+                  "#{successor[:context][:host]}:#{successor[:context][:port]}"
               end
             else
               debug_table_line "successor", "Not found"
@@ -149,7 +149,7 @@ module ::Sushi::Core::NodeComponents
 
             if predecessor = @predecessor
               debug_table_line "predecessor",
-                               "#{predecessor[:context][:host]}:#{predecessor[:context][:port]}"
+                "#{predecessor[:context][:host]}:#{predecessor[:context][:port]}"
             else
               debug_table_line "predecessor", "Not found"
             end
@@ -257,7 +257,7 @@ module ::Sushi::Core::NodeComponents
           successor[:socket].close
         end
 
-        @successor_list = @successor_list[0..SUCCESSOR_LIST_SIZE-1]
+        @successor_list = @successor_list[0..SUCCESSOR_LIST_SIZE - 1]
       end
 
       if @successor_list.size > 0
