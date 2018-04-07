@@ -77,8 +77,8 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_CHORD_JOIN_PRIVATE_ACCEPTED
     JSON.mapping({
-                   context: Models::NodeContext,
-                 })
+      context: Models::NodeContext,
+    })
   end
 
   M_TYPE_CHORD_FOUND_SUCCESSOR = 0x0014

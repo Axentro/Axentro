@@ -89,9 +89,9 @@ module ::Sushi::Core::NodeComponents
       # todo: network type check
 
       @private_nodes << {
-          socket: socket,
-          context: _context,
-        }
+        socket:  socket,
+        context: _context,
+      }
 
       send(
         socket,
@@ -110,9 +110,9 @@ module ::Sushi::Core::NodeComponents
       debug "successfully joined to the network"
 
       @successor_list.push({
-                             socket: socket,
-                             context: _context,
-                           })
+        socket:  socket,
+        context: _context,
+      })
 
       node.flag = FLAG_BLOCKCHAIN_LOADING
       node.proceed_setup
@@ -299,7 +299,7 @@ module ::Sushi::Core::NodeComponents
 
     def find_nodes : NamedTuple(successor: Models::Node?, private_nodes: Models::Nodes)
       {
-        successor: @successor_list.size > 0 ? @successor_list[0] : nil,
+        successor:     @successor_list.size > 0 ? @successor_list[0] : nil,
         private_nodes: @private_nodes,
       }
     end
