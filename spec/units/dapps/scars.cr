@@ -393,12 +393,16 @@ describe Scars do
     end
 
     describe "#define_rpc" do
-      pending "should handle scars_resolve" do
-        with_factory do |block_factory, transaction_factory|
-          json = {domain_name: "domain.sc", confirmed: true}.to_json
-          scars = Scars.new(blockchain_node(transaction_factory.sender_wallet))
-          # a = scars.define_rpc?("scars_resolve", json, MockContext.new(""), nil)
-          # p a
+      describe "#scars_resolve" do
+        pending "should return the resolved address for the domain" do
+          # with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+          #   payload = {call: "fees"}.to_json
+          #   json = JSON.parse(payload)
+          #
+          #   with_rpc_exec_internal_post(rpc, json) do |result|
+          #     result.should eq("{\"send\":1,\"scars_buy\":100,\"scars_sell\":10,\"scars_cancel\":1,\"create_token\":1000}")
+          #   end
+          # end
         end
       end
     end
