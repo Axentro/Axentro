@@ -175,8 +175,8 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_NODE_ASK_REQUEST_CHAIN
     JSON.mapping({
-                   latest_index: Int64,
-                 })
+      latest_index: Int64,
+    })
   end
 
   FLAG_NONE               = 0
