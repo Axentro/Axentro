@@ -113,6 +113,14 @@ module ::Sushi::Core::Protocol
     })
   end
 
+  M_TYPE_CHORD_JOIN_REJECTED = 0x0018
+
+  struct M_CONTENT_CHORD_JOIN_REJECTED
+    JSON.mapping({
+                   reason: String,
+                 })
+  end
+
   ######################################
   # NODE
   ######################################

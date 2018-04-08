@@ -1,8 +1,5 @@
 require "./node_id"
 
-#
-# todo: think about private nodes
-#
 module ::Sushi::Core::NodeComponents
   class Chord
     SUCCESSOR_LIST_SIZE = 3
@@ -71,8 +68,16 @@ module ::Sushi::Core::NodeComponents
 
       debug "#{_context[:host]}:#{_context[:port]} try to join SushiChain"
 
-      # todo: version check
-      # todo: network type check
+      unless _context[:type] == @network_type
+        return send_once(
+          socket,
+          M_TYPE_CHORD_JOIN_REJECTED,
+          {
+            reason: "network type mismatch. " +
+              "your network: #{_context[:type]}, our network: #{@network_type}"
+          }
+        )
+      end
 
       search_successor(node, _context)
     end
@@ -85,8 +90,16 @@ module ::Sushi::Core::NodeComponents
 
       debug "private ndoe try to join SushiChain"
 
-      # todo: version check
-      # todo: network type check
+      unless _context[:type] == @network_type
+        return send(
+          socket,
+          M_TYPE_CHORD_JOIN_REJECTED,
+          {
+            reason: "network type mismatch. " +
+              "your network: #{_context[:type]}, our network: #{@network_type}"
+          }
+        )
+      end
 
       @private_nodes << {
         socket:  socket,
@@ -116,6 +129,18 @@ module ::Sushi::Core::NodeComponents
 
       node.flag = FLAG_BLOCKCHAIN_LOADING
       node.proceed_setup
+    end
+
+    def join_rejected(node, socket, _content)
+      _m_content = M_CONTENT_CHORD_JOIN_REJECTED.from_json(_content)
+
+      _reason = _m_content.reason
+
+      error "joining network was rejected."
+      error "the reason: #{_reason}"
+      error "the node will be exitted with -1."
+
+      exit -1
     end
 
     def found_successor(node, _content : String)

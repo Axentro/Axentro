@@ -131,6 +131,8 @@ module ::Sushi::Core
           @chord.join_private(self, socket, message_content)
         when M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED
           @chord.join_private_accepted(self, socket, message_content)
+        when M_TYPE_CHORD_JOIN_REJECTED
+          @chord.join_rejected(self, socket, message_content)
         when M_TYPE_CHORD_SEARCH_SUCCESSOR
           @chord.search_successor(self, message_content)
         when M_TYPE_CHORD_FOUND_SUCCESSOR
@@ -165,6 +167,8 @@ module ::Sushi::Core
       _nodes = @chord.find_nodes
       _nodes[:private_nodes].each do |private_node|
         send(private_node[:socket], t, content)
+      rescue e : Exception
+        handle_exception(private_node[:socket], e)
       end
 
       if successor = _nodes[:successor]
@@ -173,7 +177,11 @@ module ::Sushi::Core
           return
         end
 
-        send(successor[:socket], t, content)
+        begin
+          send(successor[:socket], t, content)
+        rescue e : Exception
+          handle_exception(successor[:socket], e)
+        end
       end
     end
 
