@@ -171,6 +171,14 @@ module ::Sushi::Core::Protocol
     })
   end
 
+  M_TYPE_NODE_ASK_REQUEST_CHAIN = 0x0105
+
+  struct M_CONTENT_NODE_ASK_REQUEST_CHAIN
+    JSON.mapping({
+                   latest_index: Int64,
+                 })
+  end
+
   FLAG_NONE               = 0
   FLAG_CONNECTING_NODES   = 1
   FLAG_BLOCKCHAIN_LOADING = 2

@@ -100,7 +100,7 @@ module ::Sushi::Core::NodeComponents
       _version = _m_content.version
       _context = _m_content.context
 
-      debug "private ndoe try to join SushiChain"
+      debug "private node try to join SushiChain"
 
       unless _context[:type] == @network_type
         return send(
@@ -328,10 +328,14 @@ module ::Sushi::Core::NodeComponents
       end
     end
 
-    def find_node? : Models::Node?
+    def find_successor? : Models::Node?
       return nil if @successor_list.size == 0
 
       @successor_list[0]
+    end
+
+    def find_predecessor? : Models::Node?
+      @predecessor
     end
 
     def find_nodes : NamedTuple(successor: Models::Node?, private_nodes: Models::Nodes)

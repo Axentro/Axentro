@@ -101,17 +101,27 @@ module ::Sushi::Core
       end
     end
 
-    private def sync_chain
+    private def sync_chain(socket : HTTP::WebSocket? = nil)
       info "start synching blockchain."
 
-      if successor = @chord.find_node?
-        send(
-          successor[:socket],
-          M_TYPE_NODE_REQUEST_CHAIN,
-          {
-            latest_index: @latest_unknown ? @latest_unknown.not_nil! - 1 : 0,
-          }
-        )
+      s = if _socket = socket
+            _socket
+          elsif successor = @chord.find_successor?
+            successor[:socket]
+          end
+
+      if _s = s
+        begin
+          send(
+            _s,
+            M_TYPE_NODE_REQUEST_CHAIN,
+            {
+              latest_index: @latest_unknown ? @latest_unknown.not_nil! - 1 : 0,
+            }
+          )
+        rescue e : Exception
+          handle_exception(_s, e)
+        end
       else
         warning "successor not found. skip synching blockchain."
 
@@ -161,6 +171,8 @@ module ::Sushi::Core
           _broadcast_transaction(socket, message_content)
         when M_TYPE_NODE_BROADCAST_BLOCK
           _broadcast_block(socket, message_content)
+        when M_TYPE_NODE_ASK_REQUEST_CHAIN
+          _ask_request_chain(socket, message_content)
         end
       rescue e : Exception
         handle_exception(socket, e)
@@ -241,16 +253,36 @@ module ::Sushi::Core
         warning "ignore the block. (#{light_cyan(@blockchain.chain.size)})"
 
         @latest_unknown ||= block.index
+
+        send_block(block, from)
       elsif @blockchain.latest_index + 1 < block.index
         @c2 += 1
 
         warning "required new chain: #{@blockchain.latest_block.index} for #{block.index}"
 
         sync_chain
+
+        send_block(block, from)
       else
         @c3 += 1
 
         warning "recieved old block, will be ignored"
+
+        send_block(block, from)
+
+        if predecessor = @chord.find_predecessor?
+          begin
+            send(
+              predecessor[:socket],
+              M_TYPE_NODE_ASK_REQUEST_CHAIN,
+              {
+                latest_index: @blockchain.latest_block.index,
+              }
+            )
+          rescue e : Exception
+            handle_exception(predecessor[:socket], e)
+          end
+        end
       end
 
       analytics
@@ -303,6 +335,10 @@ module ::Sushi::Core
       info "requested new chain: #{latest_index}"
 
       send(socket, M_TYPE_NODE_RECIEVE_CHAIN, {chain: @blockchain.subchain(latest_index + 1)})
+
+      sync_chain(socket) if latest_index > @blockchain.latest_block.index
+    rescue e : Exception
+      handle_exception(socket, e)
     end
 
     private def _recieve_chain(socket, _content)
@@ -326,6 +362,19 @@ module ::Sushi::Core
       if @flag == FLAG_BLOCKCHAIN_SYNCING
         @flag = FLAG_SETUP_PRE_DONE
         proceed_setup
+      end
+    end
+
+    private def _ask_request_chain(socket, _content)
+      _m_content = M_CONTENT_NODE_ASK_REQUEST_CHAIN.from_json(_content)
+
+      _latest_index = _m_content.latest_index
+
+      debug "be asked to request new chain"
+      debug "requested: #{_latest_index}, yours #{@blockchain.latest_block.index}"
+
+      if _latest_index > @blockchain.latest_block.index
+        sync_chain(socket)
       end
     end
 
