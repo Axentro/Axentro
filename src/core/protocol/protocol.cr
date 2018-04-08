@@ -117,8 +117,8 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_CHORD_JOIN_REJECTED
     JSON.mapping({
-                   reason: String,
-                 })
+      reason: String,
+    })
   end
 
   ######################################
