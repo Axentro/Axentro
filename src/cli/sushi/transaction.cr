@@ -71,7 +71,7 @@ module ::Sushi::Interface::Sushi
 
       specify_sub_action!(action_name)
     rescue e : Exception
-      puts_error e.message   
+      puts_error e.message
     end
 
     def create

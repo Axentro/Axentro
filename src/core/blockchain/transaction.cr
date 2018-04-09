@@ -59,11 +59,15 @@ module ::Sushi::Core
       raise "token size exceeds: #{self.token.bytesize} for #{TOKEN_SIZE_LIMIT}" if self.token.bytesize > TOKEN_SIZE_LIMIT
 
       @senders.each do |sender|
-        raise "invalid checksum for sender's address: #{sender[:address]}" unless Keys::Address.from(sender[:address], "sender")
+        unless Keys::Address.from(sender[:address], "sender")
+          raise "invalid checksum for sender's address: #{sender[:address]}"
+        end
       end
 
       @recipients.each do |recipient|
-        raise "invalid checksum for recipient's address: #{recipient[:address]}" unless Keys::Address.from(recipient[:address], "recipient")
+        unless Keys::Address.from(recipient[:address], "recipient")
+          raise "invalid checksum for recipient's address: #{recipient[:address]}"
+        end
       end
 
       if !is_coinbase
@@ -109,7 +113,8 @@ module ::Sushi::Core
         served_sum = @recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
 
         if served_sum != blockchain.served_amount(block_index)
-          raise "invalid served amount for coinbase transaction: expected #{blockchain.served_amount(block_index)} but got #{served_sum}"
+          raise "invalid served amount for coinbase transaction: " +
+                "expected #{blockchain.served_amount(block_index)} but got #{served_sum}"
         end
       end
 
