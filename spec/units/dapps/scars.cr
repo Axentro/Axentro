@@ -17,6 +17,7 @@ include Sushi::Core::Models
 include Sushi::Core
 include Units::Utils
 include Sushi::Core::DApps::BuildIn
+include Sushi::Core::Controllers
 
 describe Scars do
   describe "#resolve" do
@@ -394,15 +395,77 @@ describe Scars do
 
     describe "#define_rpc" do
       describe "#scars_resolve" do
-        pending "should return the resolved address for the domain" do
-          # with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
-          #   payload = {call: "fees"}.to_json
-          #   json = JSON.parse(payload)
-          #
-          #   with_rpc_exec_internal_post(rpc, json) do |result|
-          #     result.should eq("{\"send\":1,\"scars_buy\":100,\"scars_sell\":10,\"scars_cancel\":1,\"create_token\":1000}")
-          #   end
-          # end
+        it "should return the resolved address for the domain when confirmed" do
+          with_factory do |block_factory, transaction_factory|
+            domain = "awesome.sc"
+            chain = block_factory.addBlock([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).addBlocks(10).chain
+            block_factory.blockchain.replace_chain(chain)
+            rpc = RPCController.new(block_factory.blockchain)
+            rpc.set_node(block_factory.node)
+
+            payload = {call: "scars_resolve", domain_name: domain, confirmed: true}.to_json
+            json = JSON.parse(payload)
+
+            with_rpc_exec_internal_post(rpc, json) do |result|
+              result.should eq("{\"resolved\":true,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":0,\"price\":0}}")
+            end
+          end
+        end
+
+        it "should return the resolved address for the domain when unconfirmed" do
+          with_factory do |block_factory, transaction_factory|
+            domain = "awesome.sc"
+            chain = block_factory.addBlock([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).chain
+            block_factory.blockchain.replace_chain(chain)
+            rpc = RPCController.new(block_factory.blockchain)
+            rpc.set_node(block_factory.node)
+
+            payload = {call: "scars_resolve", domain_name: domain, confirmed: false}.to_json
+            json = JSON.parse(payload)
+
+            with_rpc_exec_internal_post(rpc, json) do |result|
+              result.should eq("{\"resolved\":true,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":0,\"price\":0}}")
+            end
+          end
+        end
+
+        it "should not resolve the address if the domain does not exist" do
+          with_factory do |block_factory, transaction_factory|
+            domain = "awesome.sc"
+            chain = block_factory.addBlock.chain
+            block_factory.blockchain.replace_chain(chain)
+            rpc = RPCController.new(block_factory.blockchain)
+            rpc.set_node(block_factory.node)
+
+            payload = {call: "scars_resolve", domain_name: domain, confirmed: false}.to_json
+            json = JSON.parse(payload)
+
+            with_rpc_exec_internal_post(rpc, json) do |result|
+              result.should eq("{\"resolved\":false,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"\",\"status\":-1,\"price\":0}}")
+            end
+          end
+        end
+      end
+
+      describe "#scars_sales" do
+        it "should list domains for sale" do
+          with_factory do |block_factory, transaction_factory|
+            domain = "awesome.sc"
+            chain = block_factory.addBlock([
+              transaction_factory.make_buy_domain_from_platform(domain, 0_i64),
+              transaction_factory.make_sell_domain(domain, 1_i64),
+            ]).chain
+            block_factory.blockchain.replace_chain(chain)
+            rpc = RPCController.new(block_factory.blockchain)
+            rpc.set_node(block_factory.node)
+
+            payload = {call: "scars_for_sale"}.to_json
+            json = JSON.parse(payload)
+
+            with_rpc_exec_internal_post(rpc, json) do |result|
+              result.should eq("[{\"domain_name\":\"awesome.sc\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":1,\"price\":1}]")
+            end
+          end
         end
       end
     end

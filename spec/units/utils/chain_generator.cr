@@ -31,6 +31,8 @@ module ::Units::Utils::ChainGenerator
     property node_wallet : Wallet
     property miner_wallet : Wallet
     property transaction_factory : TransactionFactory
+    property blockchain : Blockchain
+    property node : Sushi::Core::Node
 
     def initialize
       @node_wallet = Wallet.from_json(Wallet.create(true).to_json)
