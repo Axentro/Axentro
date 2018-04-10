@@ -29,13 +29,13 @@ LICENSE = <<-LIC
 
 LIC
 
-Dir["../**/*.cr"].reject{|f| f.starts_with?("../lib")}.each do |file_path|
-   lines = File.read_lines(file_path)
-   if lines.first.starts_with?("# Copyright")
-     puts "Good : #{file_path}"
-   else
-     puts "Amending : #{file_path}"
-     content = [LICENSE] + lines
-     File.open(file_path, "w"){|file| file.puts content.join("\n")}
-   end
+Dir["../**/*.cr"].reject { |f| f.starts_with?("../lib") }.each do |file_path|
+  lines = File.read_lines(file_path)
+  if lines.first.starts_with?("# Copyright")
+    puts "Good : #{file_path}"
+  else
+    puts "Amending : #{file_path}"
+    content = [LICENSE] + lines
+    File.open(file_path, "w") { |file| file.puts content.join("\n") }
+  end
 end
