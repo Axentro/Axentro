@@ -31,6 +31,8 @@ module ::Units::Utils::ChainGenerator
     property node_wallet : Wallet
     property miner_wallet : Wallet
     property transaction_factory : TransactionFactory
+    property blockchain : Blockchain
+    property node : Sushi::Core::Node
 
     def initialize
       @node_wallet = Wallet.from_json(Wallet.create(true).to_json)
@@ -243,5 +245,40 @@ module ::Units::Utils::ChainGenerator
       signature = sign(sender_wallet, unsigned_transaction)
       unsigned_transaction.signed(signature[:r], signature[:s])
     end
+
+    def make_create_token(token : String, sender_amount : Int64, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        "create_token", # action
+        [a_sender(sender_wallet, sender_amount, 1000_i64)],
+        [a_recipient(sender_wallet, sender_amount)],
+        "0",   # message
+        token, # token
+        "0",   # prev_hash
+        "0",   # sign_r
+        "0",   # sign_s
+      )
+      signature = sign(sender_wallet, unsigned_transaction)
+      unsigned_transaction.signed(signature[:r], signature[:s])
+    end
+
+    def make_create_token(token : String, senders : Array(Sender), recipients : Array(Recipient)) : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        "create_token", # action
+        senders,
+        recipients,
+        "0",   # message
+        token, # token
+        "0",   # prev_hash
+        "0",   # sign_r
+        "0",   # sign_s
+      )
+      signature = sign(sender_wallet, unsigned_transaction)
+      unsigned_transaction.signed(signature[:r], signature[:s])
+    end
+
   end
 end

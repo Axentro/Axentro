@@ -49,18 +49,20 @@ module ::Units::Utils::NodeHelper
     sender_wallet = wallet_1
     recipient_wallet = wallet_2
 
-    chain = [block_1, block_2, block_3, block_4, block_5, block_6, block_7, block_8, block_9, block_10]
+    block_factory = BlockFactory.new
+    chain = block_factory.addBlocks(10).sub_chain
     blockchain = Blockchain.new(sender_wallet)
+    node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, sender_wallet, nil, 1_i32, false)
+    blockchain.setup(node)
     blockchain.replace_chain(chain)
 
     rpc = RPCController.new(blockchain)
-    node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, sender_wallet, nil, 1_i32, false)
     rpc.set_node(node)
     yield sender_wallet, recipient_wallet, chain, blockchain, rpc
   end
 
   def with_rpc_exec_internal_post(rpc, json, status_code = 200, &block)
-    res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), nil)
+    res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), {} of String => String)
     res.response.output.flush
     res.response.output.close
     output = res.response.output
@@ -76,7 +78,7 @@ module ::Units::Utils::NodeHelper
   end
 
   def with_rpc_exec_internal_get(rpc, status_code = 200, &block)
-    res = rpc.exec_internal_get(MockContext.new("GET").unsafe_as(HTTP::Server::Context), nil)
+    res = rpc.exec_internal_get(MockContext.new("GET").unsafe_as(HTTP::Server::Context), {} of String => String)
     res.response.output.flush
     res.response.output.close
     output = res.response.output
