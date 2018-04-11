@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/SushiChain/SushiChain/master/imgs/sushicoin.png" width="150" height="150" />
+  <img src="https://raw.githubusercontent.com/SushiChain/SushiChain/master/imgs/sushichain.png" width="150" height="150" />
 </p1>
 
 <p align="center">🍣 <i>An awesome developable blockchain implementation.</i> 🍣</p>
