@@ -11,7 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::Keys
-
   class PrivateKey
     getter network : Core::Node::Network
 

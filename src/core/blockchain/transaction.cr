@@ -16,16 +16,16 @@ module ::Sushi::Core
     TOKEN_SIZE_LIMIT   =  16
 
     alias Recipient = NamedTuple(
-            address: String,
-            amount: Int64,
-          )
+      address: String,
+      amount: Int64,
+    )
 
     alias Sender = NamedTuple(
-            address: String,
-            public_key: String,
-            amount: Int64,
-            fee: Int64,
-          )
+      address: String,
+      public_key: String,
+      amount: Int64,
+      fee: Int64,
+    )
 
     alias Recipients = Array(Recipient)
     alias Senders = Array(Sender)

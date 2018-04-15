@@ -278,6 +278,5 @@ module ::Units::Utils::ChainGenerator
       signature = sign(sender_wallet, unsigned_transaction)
       unsigned_transaction.signed(signature[:r], signature[:s])
     end
-
   end
 end

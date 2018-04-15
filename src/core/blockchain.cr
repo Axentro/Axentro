@@ -20,11 +20,11 @@ module ::Sushi::Core
 
     alias Chain = Array(Block)
     alias Header = NamedTuple(
-            index: Int64,
-            nonce: UInt64,
-            prev_hash: String,
-            merkle_tree_root: String,
-          )
+      index: Int64,
+      nonce: UInt64,
+      prev_hash: String,
+      merkle_tree_root: String,
+    )
 
     getter chain : Chain = Chain.new
     getter wallet : Wallet

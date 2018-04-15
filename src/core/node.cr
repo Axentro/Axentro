@@ -15,9 +15,9 @@ require "./node/*"
 module ::Sushi::Core
   class Node
     alias Network = NamedTuple(
-            prefix: String,
-            name: String,
-          )
+      prefix: String,
+      name: String,
+    )
 
     property flag : Int32
 
