@@ -138,47 +138,7 @@ describe BlockchainInfo do
         end
       end
     end
-
-    # describe "#transaction" do
-    #   it "should return a transaction for the supplied transaction id" do
-    #     with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
-    #       payload = {call: "transaction", transaction_id: block_2.transactions.first.id}.to_json
-    #       json = JSON.parse(payload)
-    #
-    #       with_rpc_exec_internal_post(rpc, json) do |result|
-    #         result.should eq(expected_transaction)
-    #       end
-    #     end
-    #   end
-    #
-    #   it "should raise an error: transaction not found in any block" do
-    #     with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
-    #       payload = {call: "transaction", transaction_id: "invalid-transaction-id"}.to_json
-    #       json = JSON.parse(payload)
-    #
-    #       expect_raises(Exception, "failed to find a block for the transaction invalid-transaction-id") do
-    #         rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), {} of String => String)
-    #       end
-    #     end
-    #   end
-    # end
-
-    # describe "#confirmation" do
-    #   it "should return confirmation info for the supplied transaction id" do
-    #     with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
-    #       payload = {call: "confirmation", transaction_id: block_2.transactions.first.id}.to_json
-    #       json = JSON.parse(payload)
-    #
-    #       with_rpc_exec_internal_post(rpc, json) do |result|
-    #         json_result = JSON.parse(result)
-    #         json_result["confirmed"].as_bool.should be_false
-    #         json_result["confirmations"].as_i.should eq(8)
-    #         json_result["threshold"].as_i.should eq(10)
-    #       end
-    #     end
-    #   end
-    # end
-
+    
     describe "#block" do
       it "should return the block specified by the supplied block index" do
         with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
