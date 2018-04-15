@@ -34,7 +34,7 @@ module ::Sushi::Core::DApps::BuildIn
       @rejects[transaction_id] ||= error_message
     end
 
-    def record(chain : Models::Chain)
+    def record(chain : Blockchain::Chain)
     end
 
     def clear

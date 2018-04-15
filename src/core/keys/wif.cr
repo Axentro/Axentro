@@ -12,7 +12,6 @@
 
 module ::Sushi::Core::Keys
   include Hashes
-  include Sushi::Core::Models
 
   class Wif
     def initialize(wif_hex : String)
@@ -24,7 +23,7 @@ module ::Sushi::Core::Keys
       @hex
     end
 
-    def self.from(private_key : PrivateKey, network : Network = MAINNET) : Wif
+    def self.from(private_key : PrivateKey, network : Core::Node::Network = MAINNET) : Wif
       wif = KeyUtils.to_wif(private_key, network)
       raise "invalid wif: #{wif.as_hex}" unless wif.is_valid?
       wif
@@ -38,7 +37,7 @@ module ::Sushi::Core::Keys
       KeyUtils.from_wif(self)[:private_key].public_key
     end
 
-    def network : Network
+    def network : Core::Node::Network
       KeyUtils.from_wif(self)[:network]
     end
 

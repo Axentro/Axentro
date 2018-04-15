@@ -13,7 +13,6 @@
 require "./../../spec_helper"
 require "./../utils"
 
-include Sushi::Core::Models
 include Sushi::Core
 include Units::Utils
 include Sushi::Core::DApps::BuildIn
@@ -62,8 +61,8 @@ describe Token do
     end
     it "should raise an error when no senders" do
       with_factory do |block_factory, transaction_factory|
-        senders = [] of Sender
-        recipients = [] of Recipient
+        senders = [] of Transaction::Sender
+        recipients = [] of Transaction::Recipient
         transaction = transaction_factory.make_create_token("KINGS", senders, recipients)
         chain = block_factory.addBlocks(10).chain
         token = Token.new(blockchain_node(transaction_factory.sender_wallet))

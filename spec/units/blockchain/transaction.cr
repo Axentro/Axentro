@@ -13,7 +13,6 @@
 require "./../../spec_helper"
 require "./../utils"
 
-include Sushi::Core::Models
 include Units::Utils
 include Sushi::Core
 include Hashes
@@ -81,8 +80,8 @@ describe Transaction do
         transaction = Transaction.new(
           "too-short-id",
           "send", # action
-          [] of Sender,
-          [] of Recipient,
+          [] of Transaction::Sender,
+          [] of Transaction::Recipient,
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -117,8 +116,8 @@ describe Transaction do
         transaction = Transaction.new(
           Transaction.create_id,
           "send", # action
-          [] of Sender,
-          [] of Recipient,
+          [] of Transaction::Sender,
+          [] of Transaction::Recipient,
           ("exceeds"*100), # message
           TOKEN_DEFAULT,   # token
           "0",             # prev_hash
@@ -146,7 +145,7 @@ describe Transaction do
           Transaction.create_id,
           "send", # action
           [invalid_sender],
-          [] of Recipient,
+          [] of Transaction::Recipient,
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -192,8 +191,8 @@ describe Transaction do
         transaction = Transaction.new(
           Transaction.create_id,
           "send", # action
-          [] of Sender,
-          [] of Recipient,
+          [] of Transaction::Sender,
+          [] of Transaction::Recipient,
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -214,7 +213,7 @@ describe Transaction do
           Transaction.create_id,
           "send", # action
           [a_sender(sender_wallet, 1000_i64)],
-          [] of Recipient,
+          [] of Transaction::Recipient,
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -252,7 +251,7 @@ describe Transaction do
         unsigned_transaction = Transaction.new(
           Transaction.create_id,
           "head", # action
-          [] of Sender,
+          [] of Transaction::Sender,
           [a_recipient(recipient_wallet, 10000_i64)],
           "0",           # message
           TOKEN_DEFAULT, # token
@@ -272,8 +271,8 @@ describe Transaction do
         transaction = Transaction.new(
           Transaction.create_id,
           "head", # action
-          [] of Sender,
-          [] of Recipient,
+          [] of Transaction::Sender,
+          [] of Transaction::Recipient,
           "1",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -293,8 +292,8 @@ describe Transaction do
         transaction = Transaction.new(
           Transaction.create_id,
           "send", # action
-          [] of Sender,
-          [] of Recipient,
+          [] of Transaction::Sender,
+          [] of Transaction::Recipient,
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -315,7 +314,7 @@ describe Transaction do
           Transaction.create_id,
           "head", # action
           [a_sender(sender_wallet, 10001_i64)],
-          [] of Recipient,
+          [] of Transaction::Recipient,
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -335,8 +334,8 @@ describe Transaction do
         transaction = Transaction.new(
           Transaction.create_id,
           "head", # action
-          [] of Sender,
-          [] of Recipient,
+          [] of Transaction::Sender,
+          [] of Transaction::Recipient,
           "0",           # message
           TOKEN_DEFAULT, # token
           "1",           # prev_hash
@@ -356,8 +355,8 @@ describe Transaction do
         transaction = Transaction.new(
           Transaction.create_id,
           "head", # action
-          [] of Sender,
-          [] of Recipient,
+          [] of Transaction::Sender,
+          [] of Transaction::Recipient,
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -377,8 +376,8 @@ describe Transaction do
         transaction = Transaction.new(
           Transaction.create_id,
           "head", # action
-          [] of Sender,
-          [] of Recipient,
+          [] of Transaction::Sender,
+          [] of Transaction::Recipient,
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -399,7 +398,7 @@ describe Transaction do
         transaction = Transaction.new(
           Transaction.create_id,
           "head", # action
-          [] of Sender,
+          [] of Transaction::Sender,
           [a_recipient(recipient_wallet, 10_i64)],
           "0",           # message
           TOKEN_DEFAULT, # token
@@ -421,8 +420,8 @@ describe Transaction do
     unsigned_transaction = Transaction.new(
       Transaction.create_id,
       "send", # action
-      [] of Sender,
-      [] of Recipient,
+      [] of Transaction::Sender,
+      [] of Transaction::Recipient,
       "0",           # message
       TOKEN_DEFAULT, # token
       "0",           # prev_hash
@@ -444,8 +443,8 @@ describe Transaction do
     unsigned_transaction = Transaction.new(
       Transaction.create_id,
       "send", # action
-      [] of Sender,
-      [] of Recipient,
+      [] of Transaction::Sender,
+      [] of Transaction::Recipient,
       "0",           # message
       TOKEN_DEFAULT, # token
       "0",           # prev_hash

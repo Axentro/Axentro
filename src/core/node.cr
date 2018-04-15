@@ -14,6 +14,11 @@ require "./node/*"
 
 module ::Sushi::Core
   class Node
+    alias Network = NamedTuple(
+            prefix: String,
+            name: String,
+          )
+
     property flag : Int32
 
     getter network_type : String
@@ -185,7 +190,7 @@ module ::Sushi::Core
       handle_exception(socket, e)
     end
 
-    def broadcast(t : Int32, content, from : NodeContext?)
+    def broadcast(t : Int32, content, from : Chord::NodeContext?)
       return if @is_private
 
       _nodes = @chord.find_nodes
@@ -209,7 +214,7 @@ module ::Sushi::Core
       end
     end
 
-    def broadcast_transaction(transaction : Transaction, from : NodeContext? = nil)
+    def broadcast_transaction(transaction : Transaction, from : Chord::NodeContext? = nil)
       info "new transaction coming: #{transaction.id}"
 
       @blockchain.add_transaction(transaction)
@@ -224,7 +229,7 @@ module ::Sushi::Core
       )
     end
 
-    def send_block(block : Block, from : NodeContext? = nil)
+    def send_block(block : Block, from : Chord::NodeContext? = nil)
       broadcast(
         M_TYPE_NODE_BROADCAST_BLOCK,
         {
@@ -235,7 +240,7 @@ module ::Sushi::Core
       )
     end
 
-    def broadcast_block(block : Block, from : NodeContext? = nil)
+    def broadcast_block(block : Block, from : Chord::NodeContext? = nil)
       @cc += 1
 
       if @blockchain.latest_index + 1 == block.index

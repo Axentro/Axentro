@@ -72,7 +72,7 @@ module ::Sushi::Core::Protocol
   struct M_CONTENT_CHORD_JOIN
     JSON.mapping({
       version: Int32,
-      context: Models::NodeContext,
+      context: Core::NodeComponents::Chord::NodeContext,
     })
   end
 
@@ -81,7 +81,7 @@ module ::Sushi::Core::Protocol
   struct M_CONTENT_CHORD_JOIN_PRIVATE
     JSON.mapping({
       version: Int32,
-      context: Models::NodeContext,
+      context: Core::NodeComponents::Chord::NodeContext,
     })
   end
 
@@ -89,7 +89,7 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_CHORD_JOIN_PRIVATE_ACCEPTED
     JSON.mapping({
-      context: Models::NodeContext,
+      context: Core::NodeComponents::Chord::NodeContext,
     })
   end
 
@@ -97,7 +97,7 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_CHORD_FOUND_SUCCESSOR
     JSON.mapping({
-      context: Models::NodeContext,
+      context: Core::NodeComponents::Chord::NodeContext,
     })
   end
 
@@ -105,7 +105,7 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_CHORD_SEARCH_SUCCESSOR
     JSON.mapping({
-      context: Models::NodeContext,
+      context: Core::NodeComponents::Chord::NodeContext,
     })
   end
 
@@ -113,7 +113,7 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_CHORD_STABILIZE_AS_SCCESSOR
     JSON.mapping({
-      predecessor_context: Models::NodeContext,
+      predecessor_context: Core::NodeComponents::Chord::NodeContext,
     })
   end
 
@@ -121,7 +121,7 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_CHORD_STABILIZE_AS_PREDECESSOR
     JSON.mapping({
-      successor_context: Models::NodeContext,
+      successor_context: Core::NodeComponents::Chord::NodeContext,
     })
   end
 
@@ -142,7 +142,7 @@ module ::Sushi::Core::Protocol
   struct M_CONTENT_NODE_BROADCAST_TRANSACTION
     JSON.mapping({
       transaction: Transaction,
-      from:        NodeContext,
+      from:        Core::NodeComponents::Chord::NodeContext,
     })
   end
 
@@ -151,7 +151,7 @@ module ::Sushi::Core::Protocol
   struct M_CONTENT_NODE_BROADCAST_BLOCK
     JSON.mapping({
       block: Block,
-      from:  NodeContext,
+      from:  Core::NodeComponents::Chord::NodeContext,
     })
   end
 
@@ -167,7 +167,7 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_NODE_RECIEVE_CHAIN
     JSON.mapping({
-      chain: Models::Chain?,
+      chain: Blockchain::Chain?,
     })
   end
 

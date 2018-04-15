@@ -121,7 +121,7 @@ module ::Sushi::Core::DApps::BuildIn
       @utxo_internal[-1][token][address] = amount
     end
 
-    def record(chain : Models::Chain)
+    def record(chain : Blockchain::Chain)
       return if @utxo_internal.size >= chain.size
 
       chain[@utxo_internal.size..-1].each do |block|

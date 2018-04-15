@@ -36,7 +36,7 @@ module ::Sushi::Core
       sha256(string)
     end
 
-    def to_header : Models::Header
+    def to_header : Blockchain::Header
       {
         index:            @index,
         nonce:            @nonce,

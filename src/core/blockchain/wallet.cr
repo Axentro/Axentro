@@ -74,7 +74,7 @@ module ::Sushi::Core
       Keys.is_valid?(public_key, wif, address)
     end
 
-    def self.address_network_type(address : String) : Models::Network
+    def self.address_network_type(address : String) : Core::Node::Network
       Address.from(address).network
     end
 

@@ -11,21 +11,20 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::Keys
-  include Sushi::Core::Models
 
   class PublicKey
-    getter network : Network
+    getter network : Core::Node::Network
 
-    def initialize(public_key_hex : String, @network : Network = MAINNET)
+    def initialize(public_key_hex : String, @network : Core::Node::Network = MAINNET)
       @hex = public_key_hex
       raise "invalid public key: #{@hex}" unless is_valid?
     end
 
-    def self.from(hex : String, network : Network = MAINNET) : PublicKey
+    def self.from(hex : String, network : Core::Node::Network = MAINNET) : PublicKey
       PublicKey.new(hex, network)
     end
 
-    def self.from(bytes : Bytes, network : Network = MAINNET) : PublicKey
+    def self.from(bytes : Bytes, network : Core::Node::Network = MAINNET) : PublicKey
       PublicKey.new(KeyUtils.to_hex(bytes), network)
     end
 

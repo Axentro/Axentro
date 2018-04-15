@@ -16,7 +16,7 @@ module ::Sushi::Core::DApps
     abstract def transaction_actions : Array(String)
     abstract def transaction_related?(action : String) : Bool
     abstract def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-    abstract def record(chain : Models::Chain)
+    abstract def record(chain : Blockchain::Chain)
     abstract def clear
     abstract def define_rpc?(
       call : String,

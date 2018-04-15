@@ -27,7 +27,7 @@ module ::Sushi::Core::DApps::BuildIn
       true
     end
 
-    def record(chain : Models::Chain)
+    def record(chain : Blockchain::Chain)
     end
 
     def clear
@@ -46,8 +46,8 @@ module ::Sushi::Core::DApps::BuildIn
 
     def create_unsigned_transaction(json, context, params)
       action = json["action"].as_s
-      senders = Models::Senders.from_json(json["senders"].to_json)
-      recipients = Models::Recipients.from_json(json["recipients"].to_json)
+      senders = Core::Transaction::Senders.from_json(json["senders"].to_json)
+      recipients = Core::Transaction::Recipients.from_json(json["recipients"].to_json)
       message = json["message"].as_s
       token = json["token"].as_s
 

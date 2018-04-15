@@ -28,7 +28,6 @@ require "openssl/digest"
 
 require "./common"
 require "./core/modules"
-require "./core/models"
 require "./core/protocol"
 require "./core/keys"
 require "./core/*"

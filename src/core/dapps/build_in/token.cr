@@ -76,7 +76,7 @@ RULE
       Token.valid_token_name?(token)
     end
 
-    def record(chain : Models::Chain)
+    def record(chain : Blockchain::Chain)
       return if chain.size < @latest_recorded_index
 
       chain[@latest_recorded_index..-1].each do |block|

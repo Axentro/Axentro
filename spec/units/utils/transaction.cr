@@ -13,12 +13,12 @@
 module ::Units::Utils::TransactionHelper
   include Sushi::Core
 
-  def a_recipient(wallet : Wallet, amount : Int64) : Recipient
+  def a_recipient(wallet : Wallet, amount : Int64) : Transaction::Recipient
     {address: wallet.address,
      amount:  amount}
   end
 
-  def a_sender(wallet : Wallet, amount : Int64, fee : Int64 = 1_i64) : Sender
+  def a_sender(wallet : Wallet, amount : Int64, fee : Int64 = 1_i64) : Transaction::Sender
     {address:    wallet.address,
      public_key: wallet.public_key,
      amount:     amount,

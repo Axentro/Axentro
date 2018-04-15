@@ -16,7 +16,6 @@ require "./../utils"
 include Sushi::Core
 include Hashes
 include Units::Utils
-include Sushi::Core::Models
 
 describe Block do
   it "should create a genesis block (new block with no transactions)" do
@@ -222,7 +221,7 @@ def a_fixed_coinbase_transaction
   Transaction.new(
     "4db42cdfcffc85c86734dc1bc00adcc21aae274a3137d6a16a31162a8d6ea7b2",
     "head", # action
-    [] of Sender,
+    [] of Transaction::Sender,
     [recipient1, recipient2, recipient3],
     "0",           # message
     TOKEN_DEFAULT, # token

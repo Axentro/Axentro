@@ -11,7 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::Keys
-  include Sushi::Core::Models
   include Sushi::Core::Hashes
 
   MAINNET = {prefix: "M0", name: "mainnet"}
@@ -26,7 +25,7 @@ module ::Sushi::Core::Keys
     def initialize(@private_key : PrivateKey, @public_key : PublicKey, @wif : Wif, @address : Address)
     end
 
-    def self.generate(network : Network = MAINNET)
+    def self.generate(network : Core::Node::Network = MAINNET)
       secp256k1 = ECDSA::Secp256k1.new
       key_pair = secp256k1.create_key_pair
       private_key = PrivateKey.new(key_pair[:secret_key].to_s(16), network)

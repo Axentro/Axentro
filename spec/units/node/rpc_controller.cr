@@ -15,7 +15,6 @@ require "./../utils"
 
 include Sushi::Core
 include Units::Utils
-include Sushi::Core::Models
 include Sushi::Core::Controllers
 include Sushi::Core::Keys
 

@@ -31,6 +31,11 @@ module ::Sushi::Core::Logger
     log_out("Error", msg, :red)
   end
 
+  def progress(msg : String)
+    return if ENV.has_key?("UNIT") || ENV.has_key?("E2E")
+    print msg
+  end
+
   private def log_out(t : String, msg : String, color : Symbol)
     puts "[ #{ftime} -- #{tag(t, color)} ] #{msg}"
   end
