@@ -48,7 +48,6 @@ module ::Sushi::Core
       @connect_port : Int32?,
       @wallet : Wallet,
       @database : Database?,
-      @conn_min : Int32,
       @use_ssl : Bool = false
     )
       @blockchain = Blockchain.new(@wallet, @database)

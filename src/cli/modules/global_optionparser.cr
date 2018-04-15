@@ -27,7 +27,6 @@ module ::Sushi::Interface
     @bind_port : Int32 = 3000
     @public_url : String?
     @database_path : String?
-    @conn_min : Int32 = 5
 
     @address : String?
     @amount : Int64?
@@ -63,7 +62,6 @@ module ::Sushi::Interface
       BIND_PORT     =  8
       PUBLIC_URL    =  9
       DATABASE_PATH = 10
-      CONN_MIN      = 11
       # for transaction
       ADDRESS        = 12
       AMOUNT         = 13
@@ -145,10 +143,6 @@ module ::Sushi::Interface
         parser.on("-d DATABASE", "--database=DATABASE", "path to a database (SQLite3)") { |database_path|
           @database_path = database_path
         } if is_active?(actives, Options::DATABASE_PATH)
-
-        parser.on("--conn_min=CONN_MIN", "min # of the first connections when you launch a node. the number is not guaranteed when there are not enough node.") { |conn_min|
-          @conn_min = conn_min.to_i
-        } if is_active?(actives, Options::CONN_MIN)
 
         parser.on("-a ADDRESS", "--address=ADDRESS", "public address") { |address|
           @address = address
@@ -266,12 +260,6 @@ module ::Sushi::Interface
     def __database_path : String?
       return @database_path if @database_path
       cm.get_s("database_path")
-    end
-
-    def __conn_min : Int32
-      return @conn_min if @conn_min != 5
-      return cm.get_i32("conn_min").not_nil! if cm.get_i32("conn_min")
-      @conn_min
     end
 
     def __address : String?

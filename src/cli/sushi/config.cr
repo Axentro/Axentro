@@ -42,7 +42,6 @@ module ::Sushi::Interface::Sushi
         Options::BIND_PORT,
         Options::PUBLIC_URL,
         Options::DATABASE_PATH,
-        Options::CONN_MIN,
         # Options::ADDRESS,
         # Options::AMOUNT,
         # Options::MESSAGE,
@@ -78,7 +77,6 @@ module ::Sushi::Interface::Sushi
       cm.set("bind_port", __bind_port)
       cm.set("public_url", __public_url)
       cm.set("database_path", __database_path)
-      cm.set("conn_min", __conn_min)
       cm.set("threads", __threads)
       cm.set("encrypted", __encrypted)
       cm.save

@@ -40,7 +40,7 @@ module ::Units::Utils::NodeHelper
 
   def blockchain_node(wallet : Wallet) : Blockchain
     blockchain = Blockchain.new(wallet)
-    node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, wallet, nil, 1_i32, false)
+    node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, wallet, nil, false)
     blockchain.setup(node)
     blockchain
   end
@@ -52,7 +52,7 @@ module ::Units::Utils::NodeHelper
     block_factory = BlockFactory.new
     chain = block_factory.addBlocks(10).sub_chain
     blockchain = Blockchain.new(sender_wallet)
-    node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, sender_wallet, nil, 1_i32, false)
+    node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, sender_wallet, nil, false)
     blockchain.setup(node)
     blockchain.replace_chain(chain)
 
