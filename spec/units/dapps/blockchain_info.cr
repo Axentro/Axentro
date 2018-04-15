@@ -138,7 +138,7 @@ describe BlockchainInfo do
         end
       end
     end
-    
+
     describe "#block" do
       it "should return the block specified by the supplied block index" do
         with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
