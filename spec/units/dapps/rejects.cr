@@ -13,7 +13,6 @@
 require "./../../spec_helper"
 require "./../utils"
 
-include Sushi::Core::Models
 include Sushi::Core
 include Units::Utils
 include Sushi::Core::DApps::BuildIn
