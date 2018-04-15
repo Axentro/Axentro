@@ -13,7 +13,6 @@
 require "./../../spec_helper"
 
 include Sushi::Core
-include Sushi::Core::Models
 include Sushi::Core::Consensus
 
 describe Consensus do

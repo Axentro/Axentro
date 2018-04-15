@@ -99,7 +99,7 @@ module ::Sushi::Interface::Sushi
 
       wallet = get_wallet(wallet_path, __wallet_password)
 
-      senders = Core::Models::Senders.new
+      senders = Core::Transaction::Senders.new
       senders.push(
         {
           address:    wallet.address,
@@ -109,7 +109,7 @@ module ::Sushi::Interface::Sushi
         }
       )
 
-      recipients = Core::Models::Recipients.new
+      recipients = Core::Transaction::Recipients.new
       recipients.push(
         {
           address: to_address.as_hex,

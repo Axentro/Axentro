@@ -32,7 +32,7 @@ module ::Sushi::Core
       @db.exec "delete from blocks where idx >= ?", [from]
     end
 
-    def replace_chain(chain : Models::Chain)
+    def replace_chain(chain : Blockchain::Chain)
       delete_blocks(chain[0].index)
 
       chain.each do |block|

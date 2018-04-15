@@ -13,7 +13,6 @@
 require "./../../spec_helper"
 require "./../utils"
 
-include Sushi::Core::Models
 include Sushi::Core
 include Units::Utils
 include Sushi::Core::DApps::BuildIn
@@ -160,7 +159,7 @@ describe Scars do
             transaction_factory.make_sell_domain("domain1.sc", 500_i64),
           ]
 
-          tx1 = transaction_factory.make_buy_domain_from_seller("domain1.sc", 500_i64, [] of Recipient)
+          tx1 = transaction_factory.make_buy_domain_from_seller("domain1.sc", 500_i64, [] of Transaction::Recipient)
           scars = Scars.new(blockchain_node(transaction_factory.sender_wallet))
           expect_raises(Exception, "you have to the set a domain owner as a recipient") do
             scars.valid_buy?(tx1, txns)
@@ -233,7 +232,7 @@ describe Scars do
         with_factory do |block_factory, transaction_factory|
           txns = [transaction_factory.make_buy_domain_from_platform("domain1.sc", 0_i64)]
 
-          tx1 = transaction_factory.make_sell_domain("domain1.sc", 500_i64, [] of Recipient)
+          tx1 = transaction_factory.make_sell_domain("domain1.sc", 500_i64, [] of Transaction::Recipient)
           scars = Scars.new(blockchain_node(transaction_factory.sender_wallet))
           expect_raises(Exception, "you have to set one recipient") do
             scars.valid_sell?(tx1, txns)
@@ -326,7 +325,7 @@ describe Scars do
           txns = [transaction_factory.make_buy_domain_from_platform("domain1.sc", 0_i64),
                   transaction_factory.make_sell_domain("domain1.sc", 500_i64)]
 
-          tx1 = transaction_factory.make_cancel_domain("domain1.sc", 500_i64, [] of Recipient)
+          tx1 = transaction_factory.make_cancel_domain("domain1.sc", 500_i64, [] of Transaction::Recipient)
           scars = Scars.new(blockchain_node(transaction_factory.sender_wallet))
           expect_raises(Exception, "you have to set one recipient") do
             scars.valid_cancel?(tx1, txns)

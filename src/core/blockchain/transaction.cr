@@ -15,11 +15,26 @@ module ::Sushi::Core
     MESSAGE_SIZE_LIMIT = 512
     TOKEN_SIZE_LIMIT   =  16
 
+    alias Recipient = NamedTuple(
+      address: String,
+      amount: Int64,
+    )
+
+    alias Sender = NamedTuple(
+      address: String,
+      public_key: String,
+      amount: Int64,
+      fee: Int64,
+    )
+
+    alias Recipients = Array(Recipient)
+    alias Senders = Array(Sender)
+
     JSON.mapping(
       id: String,
       action: String,
-      senders: Models::Senders,
-      recipients: Models::Recipients,
+      senders: Senders,
+      recipients: Recipients,
       message: String,
       token: String,
       prev_hash: String,
@@ -32,8 +47,8 @@ module ::Sushi::Core
     def initialize(
       @id : String,
       @action : String,
-      @senders : Models::Senders,
-      @recipients : Models::Recipients,
+      @senders : Senders,
+      @recipients : Recipients,
       @message : String,
       @token : String,
       @prev_hash : String,

@@ -149,8 +149,8 @@ module ::Sushi::Core::DApps::User
     # So, in this method, you only have to specify the sending amount of the token.
     # Also the fee is fixed as 1 SHARI.
     #
-    def create_sender(amount : Int64) : Models::Senders
-      senders = Models::Senders.new
+    def create_sender(amount : Int64) : Core::Transaction::Senders
+      senders = Core::Transaction::Senders.new
       senders.push({
         address:    blockchain.wallet.address,
         public_key: blockchain.wallet.public_key,
@@ -164,8 +164,8 @@ module ::Sushi::Core::DApps::User
     # This is a wrapper method that you can create a recipient.
     # You can specify a recipient's public address and amount of the token.
     #
-    def create_recipient(address : String, amount : Int64) : Models::Recipients
-      recipients = Models::Recipients.new
+    def create_recipient(address : String, amount : Int64) : Core::Transaction::Recipients
+      recipients = Core::Transaction::Recipients.new
       recipients.push({
         address: address,
         amount:  amount,
@@ -186,8 +186,8 @@ module ::Sushi::Core::DApps::User
     def create_transaction(
       id : String,
       action : String,
-      senders : Models::Senders,
-      recipients : Models::Recipients,
+      senders : Core::Transaction::Senders,
+      recipients : Core::Transaction::Recipients,
       message : String,
       token : String
     ) : Bool
@@ -264,7 +264,7 @@ module ::Sushi::Core::DApps::User
 
     @latest_loaded_block_index = 0
 
-    def record(chain : Models::Chain)
+    def record(chain : Blockchain::Chain)
       return if chain.size < @latest_loaded_block_index
 
       chain[@latest_loaded_block_index..-1].each do |block|

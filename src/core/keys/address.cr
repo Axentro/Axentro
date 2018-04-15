@@ -12,12 +12,11 @@
 
 module ::Sushi::Core::Keys
   include Hashes
-  include Sushi::Core::Models
 
   class Address
-    getter network : Network
+    getter network : Core::Node::Network
 
-    def initialize(hex_address : String, @network : Network = MAINNET, name : String = "generic")
+    def initialize(hex_address : String, @network : Core::Node::Network = MAINNET, name : String = "generic")
       @hex = hex_address
       raise "invalid #{name} address checksum for: #{@hex}" unless is_valid?
     end
@@ -40,7 +39,7 @@ module ::Sushi::Core::Keys
       checksum == hashed_address[0..5]
     end
 
-    def self.get_network_from_address(hex_address) : Network
+    def self.get_network_from_address(hex_address) : Core::Node::Network
       decoded_address = Base64.decode_string(hex_address)
 
       case decoded_address[0..1]

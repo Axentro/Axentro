@@ -12,11 +12,19 @@
 
 module ::Sushi::Core::NodeComponents
   class MinersManager
-    @miners : Models::Miners
+    alias Miner = NamedTuple(
+      address: String,
+      socket: HTTP::WebSocket,
+      nonces: Array(UInt64),
+    )
+
+    alias Miners = Array(Miner)
+
+    @miners : Miners
     @latest_nonces : Array(UInt64) = [] of UInt64
 
     def initialize
-      @miners = Models::Miners.new
+      @miners = Miners.new
     end
 
     def handshake(node, blockchain, socket, _content)
@@ -112,7 +120,7 @@ module ::Sushi::Core::NodeComponents
       end
     end
 
-    def find?(socket : HTTP::WebSocket) : Models::Miner?
+    def find?(socket : HTTP::WebSocket) : Miner?
       @miners.find { |m| m[:socket] == socket }
     end
 

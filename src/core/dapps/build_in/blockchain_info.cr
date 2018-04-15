@@ -27,7 +27,7 @@ module ::Sushi::Core::DApps::BuildIn
       true
     end
 
-    def record(chain : Models::Chain)
+    def record(chain : Blockchain::Chain)
     end
 
     def clear

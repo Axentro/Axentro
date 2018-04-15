@@ -18,7 +18,15 @@ module ::Sushi::Core
   class Blockchain
     TOKEN_DEFAULT = Core::DApps::BuildIn::UTXO::DEFAULT
 
-    getter chain : Models::Chain = Models::Chain.new
+    alias Chain = Array(Block)
+    alias Header = NamedTuple(
+      index: Int64,
+      nonce: UInt64,
+      prev_hash: String,
+      merkle_tree_root: String,
+    )
+
+    getter chain : Chain = Chain.new
     getter wallet : Wallet
     getter transaction_pool = [] of Transaction
 
@@ -67,6 +75,8 @@ module ::Sushi::Core
         dapps_record
 
         current_index += 1
+
+        progress "  #{current_index} blocks are loaded\r"
       end
     rescue e : Exception
       error "an error happens during restoring a blockchain from database"
@@ -81,7 +91,7 @@ module ::Sushi::Core
       @transaction_pool.reject! { |transaction| indices.get(transaction.id) }
     end
 
-    def push_block?(nonce : UInt64, miners : Models::Miners) : Block?
+    def push_block?(nonce : UInt64, miners : NodeComponents::MinersManager::Miners) : Block?
       return nil unless latest_block.valid_nonce?(nonce)
 
       index = @chain.size.to_i64
@@ -116,7 +126,7 @@ module ::Sushi::Core
       block
     end
 
-    def replace_chain(_subchain : Models::Chain?) : Bool
+    def replace_chain(_subchain : Chain?) : Bool
       return false unless subchain = _subchain
       return false if subchain.size == 0
       return false if subchain[0].index == 0
@@ -131,6 +141,8 @@ module ::Sushi::Core
       subchain.each do |block|
         block.valid_as_latest?(self)
         @chain << block
+
+        progress "  block ##{block.index} was imported\r"
 
         dapps_record
       rescue e : Exception
@@ -182,7 +194,7 @@ module ::Sushi::Core
       latest_block.index
     end
 
-    def subchain(from : Int64) : Models::Chain?
+    def subchain(from : Int64) : Chain?
       return nil if @chain.size < from
 
       @chain[from..-1]
@@ -202,7 +214,7 @@ module ::Sushi::Core
       )
     end
 
-    def create_coinbase_transaction(miners : Models::Miners) : Transaction
+    def create_coinbase_transaction(miners : NodeComponents::MinersManager::Miners) : Transaction
       rewards_total = served_amount(latest_index)
 
       miners_nonces_size = miners.reduce(0) { |sum, m| sum + m[:nonces].size }
@@ -221,7 +233,7 @@ module ::Sushi::Core
         amount:  rewards_total - miners_recipients.reduce(0_i64) { |sum, m| sum + m[:amount] },
       }
 
-      senders = [] of Models::Sender # No senders
+      senders = [] of Transaction::Sender # No senders
 
       Transaction.new(
         Transaction.create_id,

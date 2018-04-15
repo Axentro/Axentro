@@ -29,7 +29,6 @@ module ::Sushi::Interface::SushiD
         Options::BIND_PORT,
         Options::PUBLIC_URL,
         Options::DATABASE_PATH,
-        Options::CONN_MIN,
       ])
     end
 
@@ -65,9 +64,9 @@ module ::Sushi::Interface::SushiD
                  end
 
       node = if has_first_connection
-               Core::Node.new(__is_private, __is_testnet, __bind_host, __bind_port, public_host, public_port, ssl, connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, __conn_min, use_ssl)
+               Core::Node.new(__is_private, __is_testnet, __bind_host, __bind_port, public_host, public_port, ssl, connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, use_ssl)
              else
-               Core::Node.new(__is_private, __is_testnet, __bind_host, __bind_port, public_host, public_port, ssl, nil, nil, wallet, database, __conn_min, use_ssl)
+               Core::Node.new(__is_private, __is_testnet, __bind_host, __bind_port, public_host, public_port, ssl, nil, nil, wallet, database, use_ssl)
              end
       node.run!
     end

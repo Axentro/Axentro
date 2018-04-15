@@ -16,12 +16,30 @@ module ::Sushi::Core::NodeComponents
   class Chord
     SUCCESSOR_LIST_SIZE = 3
 
+    alias NodeContext = NamedTuple(
+      id: String,
+      host: String,
+      port: Int32,
+      ssl: Bool,
+      type: String,
+      is_private: Bool,
+    )
+
+    alias NodeContexts = Array(NodeContext)
+
+    alias Node = NamedTuple(
+      context: NodeContext,
+      socket: HTTP::WebSocket,
+    )
+
+    alias Nodes = Array(Node)
+
     @node_id : NodeID
 
-    @successor_list : Models::Nodes = Models::Nodes.new
-    @predecessor : Models::Node?
+    @successor_list : Nodes = Nodes.new
+    @predecessor : Node?
 
-    @private_nodes : Models::Nodes = Models::Nodes.new
+    @private_nodes : Nodes = Nodes.new
 
     @show_network = 0
 
@@ -275,7 +293,7 @@ module ::Sushi::Core::NodeComponents
       search_successor(node, _m_content.context)
     end
 
-    def search_successor(node, _context : Models::NodeContext)
+    def search_successor(node, _context : NodeContext)
       if @successor_list.size > 0
         successor = @successor_list[0]
         successor_node_id = NodeID.create_from(successor[:context][:id])
@@ -328,17 +346,17 @@ module ::Sushi::Core::NodeComponents
       end
     end
 
-    def find_successor? : Models::Node?
+    def find_successor? : Node?
       return nil if @successor_list.size == 0
 
       @successor_list[0]
     end
 
-    def find_predecessor? : Models::Node?
+    def find_predecessor? : Node?
       @predecessor
     end
 
-    def find_nodes : NamedTuple(successor: Models::Node?, private_nodes: Models::Nodes)
+    def find_nodes : NamedTuple(successor: Node?, private_nodes: Nodes)
       {
         successor:     @successor_list.size > 0 ? @successor_list[0] : nil,
         private_nodes: @private_nodes,
@@ -389,7 +407,7 @@ module ::Sushi::Core::NodeComponents
       end
     end
 
-    def send_once(_context : Models::NodeContext, t : Int32, content)
+    def send_once(_context : NodeContext, t : Int32, content)
       send_once(_context[:host], _context[:port], t, content)
     end
 

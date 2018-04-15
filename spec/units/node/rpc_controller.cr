@@ -15,7 +15,6 @@ require "./../utils"
 
 include Sushi::Core
 include Units::Utils
-include Sushi::Core::Models
 include Sushi::Core::Controllers
 include Sushi::Core::Keys
 
@@ -33,7 +32,7 @@ describe RPCController do
             senders:    senders,
             recipients: recipients,
             message:    "",
-            token:      TOKEN_DEFAULT
+            token:      TOKEN_DEFAULT,
           }.to_json
 
           json = JSON.parse(payload)
@@ -51,9 +50,6 @@ describe RPCController do
         end
       end
     end
-
-
-  
 
     describe "#unpermitted_call" do
       it "should raise an error: Missing hash key call" do

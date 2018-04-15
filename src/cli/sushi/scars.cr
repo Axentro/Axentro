@@ -86,7 +86,7 @@ module ::Sushi::Interface::Sushi
 
       wallet = get_wallet(wallet_path, __wallet_password)
 
-      senders = Core::Models::Senders.new
+      senders = Core::Transaction::Senders.new
       senders.push({
         address:    wallet.address,
         public_key: wallet.public_key,
@@ -94,7 +94,7 @@ module ::Sushi::Interface::Sushi
         fee:        fee,
       })
 
-      recipients = Core::Models::Recipients.new
+      recipients = Core::Transaction::Recipients.new
 
       if resolved["resolved"].as_bool
         resolved_price = resolved["domain"]["price"].as_i64
@@ -125,11 +125,14 @@ module ::Sushi::Interface::Sushi
       resolved = resolve_internal(node, domain, false)
 
       raise "the domain #{domain} is not resolved" unless resolved["resolved"].as_bool
-      raise "the domain #{domain} is already for sale" if resolved["domain"]["status"] == Core::Models::DomainStatus::ForSale
+
+      if resolved["domain"]["status"] == Core::DApps::BuildIn::Scars::Status::ForSale
+        raise "the domain #{domain} is already for sale"
+      end
 
       wallet = get_wallet(wallet_path, __wallet_password)
 
-      senders = Core::Models::Senders.new
+      senders = Core::Transaction::Senders.new
       senders.push({
         address:    wallet.address,
         public_key: wallet.public_key,
@@ -137,7 +140,7 @@ module ::Sushi::Interface::Sushi
         fee:        fee,
       })
 
-      recipients = Core::Models::Recipients.new
+      recipients = Core::Transaction::Recipients.new
       recipients.push({
         address: wallet.address,
         amount:  price,
@@ -159,11 +162,14 @@ module ::Sushi::Interface::Sushi
       resolved = resolve_internal(node, domain, false)
 
       raise "the domain #{domain} is not resolved" unless resolved["resolved"].as_bool
-      raise "the domain #{domain} is not for sale" unless resolved["domain"]["status"] == Core::Models::DomainStatus::ForSale
+
+      unless resolved["domain"]["status"] == Core::DApps::BuildIn::Scars::Status::ForSale
+        raise "the domain #{domain} is not for sale"
+      end
 
       wallet = get_wallet(wallet_path, __wallet_password)
 
-      senders = Core::Models::Senders.new
+      senders = Core::Transaction::Senders.new
       senders.push({
         address:    wallet.address,
         public_key: wallet.public_key,
@@ -171,7 +177,7 @@ module ::Sushi::Interface::Sushi
         fee:        fee,
       })
 
-      recipients = Core::Models::Recipients.new
+      recipients = Core::Transaction::Recipients.new
       recipients.push({
         address: wallet.address,
         amount:  1_i64,
@@ -214,11 +220,11 @@ module ::Sushi::Interface::Sushi
         puts_success "resolved : #{resolved["resolved"]}"
 
         status = case resolved["domain"]["status"].as_i
-                 when Core::Models::DomainStatus::Acquired
+                 when Core::DApps::BuildIn::Scars::Status::Acquired
                    "acquired"
-                 when Core::Models::DomainStatus::ForSale
+                 when Core::DApps::BuildIn::Scars::Status::ForSale
                    "for sale"
-                 when Core::Models::DomainStatus::NotFound
+                 when Core::DApps::BuildIn::Scars::Status::NotFound
                    "not found"
                  end
 

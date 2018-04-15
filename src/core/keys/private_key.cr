@@ -11,21 +11,19 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::Keys
-  include Sushi::Core::Models
-
   class PrivateKey
-    getter network : Network
+    getter network : Core::Node::Network
 
-    def initialize(private_key_hex : String, @network : Network = MAINNET)
+    def initialize(private_key_hex : String, @network : Core::Node::Network = MAINNET)
       @hex = private_key_hex
       raise "invalid private key: #{@hex}" unless is_valid?
     end
 
-    def self.from(hex : String, network : Network = MAINNET) : PrivateKey
+    def self.from(hex : String, network : Core::Node::Network = MAINNET) : PrivateKey
       PrivateKey.new(hex, network)
     end
 
-    def self.from(bytes : Bytes, network : Network = MAINNET) : PrivateKey
+    def self.from(bytes : Bytes, network : Core::Node::Network = MAINNET) : PrivateKey
       PrivateKey.new(KeyUtils.to_hex(bytes), network)
     end
 

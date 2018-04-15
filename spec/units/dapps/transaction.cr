@@ -13,7 +13,6 @@
 require "./../../spec_helper"
 require "./../utils"
 
-include Sushi::Core::Models
 include Sushi::Core
 include Units::Utils
 include Sushi::Core::DApps::BuildIn
@@ -156,5 +155,5 @@ describe TransactionCreator do
       end
     end
   end
-    STDERR.puts "< dApps::TransactionCreator"
+  STDERR.puts "< dApps::TransactionCreator"
 end

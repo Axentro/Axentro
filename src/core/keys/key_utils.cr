@@ -12,7 +12,6 @@
 
 module ::Sushi::Core::Keys
   include Sushi::Core::Hashes
-  include Sushi::Core::Models
 
   class KeyUtils
     def self.to_hex(bytes : Bytes) : String
@@ -31,7 +30,7 @@ module ::Sushi::Core::Keys
       Base64.strict_encode(network_address + checksum)
     end
 
-    def self.to_wif(key : PrivateKey, network : Network) : Wif
+    def self.to_wif(key : PrivateKey, network : Core::Node::Network) : Wif
       private_key = key.as_hex
       network_key = network[:prefix] + private_key
       hashed_key = sha256(sha256(network_key))
@@ -40,7 +39,7 @@ module ::Sushi::Core::Keys
       Wif.new(encoded_key)
     end
 
-    def self.from_wif(wif : Wif) : {private_key: PrivateKey, network: Network}
+    def self.from_wif(wif : Wif) : {private_key: PrivateKey, network: Core::Node::Network}
       decoded_wif = Base64.decode_string(wif.as_hex)
       network_prefix = decoded_wif[0..1]
       network = network_prefix == "M0" ? MAINNET : TESTNET

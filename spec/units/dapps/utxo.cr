@@ -14,7 +14,6 @@ require "./../../spec_helper"
 require "./../utils"
 
 include Sushi::Core
-include Sushi::Core::Models
 include Units::Utils
 include Sushi::Core::DApps::BuildIn
 include Sushi::Core::Controllers
@@ -195,7 +194,7 @@ describe UTXO do
         transaction2 = transaction_factory.make_send(200_i64)
         chain = block_factory.addBlock.chain
         utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
-        transaction2.senders = [] of Sender
+        transaction2.senders = [] of Transaction::Sender
         utxo.record(chain)
         expect_raises(Exception, "there must be 1 sender") do
           utxo.valid_transaction?(transaction2, [transaction1])

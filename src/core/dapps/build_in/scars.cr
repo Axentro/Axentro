@@ -18,12 +18,21 @@ module ::Sushi::Core::DApps::BuildIn
   SUFFIX = %w(sc)
 
   class Scars < DApp
-    @domains_internal : Array(Models::DomainMap) = Array(Models::DomainMap).new
+    module Status
+      Acquired =  0
+      ForSale  =  1
+      NotFound = -1
+    end
+
+    alias Domain = NamedTuple(domain_name: String, address: String, status: Int32, price: Int64)
+    alias DomainMap = Hash(String, Domain)
+
+    @domains_internal : Array(DomainMap) = Array(DomainMap).new
 
     def setup
     end
 
-    def sales : Array(Models::Domain)
+    def sales : Array(Domain)
       domain_all = DomainMap.new
 
       @domains_internal.reverse.each do |domain_map|
@@ -33,18 +42,18 @@ module ::Sushi::Core::DApps::BuildIn
       end
 
       domain_for_sale = domain_all
-        .select { |domain_name, domain| domain[:status] == Models::DomainStatus::ForSale }
+        .select { |domain_name, domain| domain[:status] == Status::ForSale }
         .map { |domain_name, domain| domain }
 
       domain_for_sale
     end
 
-    def resolve(domain_name : String) : Models::Domain?
+    def resolve(domain_name : String) : Domain?
       return nil if @domains_internal.size < CONFIRMATION
       resolve_for(domain_name, @domains_internal.reverse[(CONFIRMATION - 1)..-1])
     end
 
-    def resolve_unconfirmed(domain_name : String, transactions : Array(Transaction)) : Models::Domain?
+    def resolve_unconfirmed(domain_name : String, transactions : Array(Transaction)) : Domain?
       domain_map = create_domain_map_for_transactions(transactions)
 
       tmp_domains_internal = @domains_internal.dup
@@ -86,7 +95,7 @@ module ::Sushi::Core::DApps::BuildIn
       valid_domain?(domain_name)
 
       sale_price = if domain = resolve_unconfirmed(domain_name, transactions)
-                     raise "domain #{domain_name} is not for sale now" unless domain[:status] == Models::DomainStatus::ForSale
+                     raise "domain #{domain_name} is not for sale now" unless domain[:status] == Status::ForSale
                      raise "you have to the set a domain owner as a recipient" if recipients.size == 0
                      raise "you cannot set multiple recipients" if recipients.size > 1
 
@@ -118,7 +127,7 @@ module ::Sushi::Core::DApps::BuildIn
       recipient = transaction.recipients[0]
 
       raise "domain #{domain_name} not found" unless domain = resolve_unconfirmed(domain_name, transactions)
-      raise "domain #{domain_name} is already for sale now" if domain[:status] == Models::DomainStatus::ForSale
+      raise "domain #{domain_name} is already for sale now" if domain[:status] == Status::ForSale
       raise "domain address mismatch: expected #{address} but got #{domain[:address]}" unless address == domain[:address]
       raise "address mismatch for scars_sell: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
       raise "price mismatch for scars_sell: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
@@ -140,7 +149,7 @@ module ::Sushi::Core::DApps::BuildIn
       recipient = transaction.recipients[0]
 
       raise "domain #{domain_name} not found" unless domain = resolve_unconfirmed(domain_name, transactions)
-      raise "domain #{domain_name} is not for sale" if domain[:status] != Models::DomainStatus::ForSale
+      raise "domain #{domain_name} is not for sale" if domain[:status] != Status::ForSale
       raise "domain address mismatch: expected #{address} but got #{domain[:address]}" unless address == domain[:address]
       raise "address mismatch for scars_cancel: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
       raise "price mismatch for scars_cancel: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
@@ -178,7 +187,7 @@ RULE
       @domains_internal.clear
     end
 
-    private def resolve_for(domain_name : String, domains : Array(DomainMap)) : Models::Domain?
+    private def resolve_for(domain_name : String, domains : Array(DomainMap)) : Domain?
       domains.each do |domains_internal|
         return domains_internal[domain_name] if domains_internal[domain_name]?
       end
@@ -204,21 +213,21 @@ RULE
             domain_name: domain_name,
             address:     address,
             price:       price,
-            status:      Models::DomainStatus::Acquired,
+            status:      Status::Acquired,
           }
         when "scars_sell"
           domain_map[domain_name] = {
             domain_name: domain_name,
             address:     address,
             price:       price,
-            status:      Models::DomainStatus::ForSale,
+            status:      Status::ForSale,
           }
         when "scars_cancel"
           domain_map[domain_name] = {
             domain_name: domain_name,
             address:     address,
             price:       price,
-            status:      Models::DomainStatus::Acquired,
+            status:      Status::Acquired,
           }
         end
       end
@@ -259,7 +268,7 @@ RULE
       response = if domain
                    {resolved: true, domain: domain}.to_json
                  else
-                   default_domain = {domain_name: domain_name, address: "", status: Models::DomainStatus::NotFound, price: 0}
+                   default_domain = {domain_name: domain_name, address: "", status: Status::NotFound, price: 0}
                    {resolved: false, domain: default_domain}.to_json
                  end
 
