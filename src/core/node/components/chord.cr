@@ -121,14 +121,20 @@ module ::Sushi::Core::NodeComponents
       debug "private node try to join SushiChain"
 
       unless _context[:type] == @network_type
-        return send(
-          socket,
-          M_TYPE_CHORD_JOIN_REJECTED,
-          {
-            reason: "network type mismatch. " +
-                    "your network: #{_context[:type]}, our network: #{@network_type}",
-          }
-        )
+        begin
+          return send(
+            socket,
+            M_TYPE_CHORD_JOIN_REJECTED,
+            {
+              reason: "network type mismatch. " +
+                      "your network: #{_context[:type]}, our network: #{@network_type}",
+            }
+          )
+        rescue e : Exception
+          warning "failed to accept new node (disconnected)"
+
+          clean_connection(socket)
+        end
       end
 
       @private_nodes << {
@@ -136,13 +142,19 @@ module ::Sushi::Core::NodeComponents
         context: _context,
       }
 
-      send(
-        socket,
-        M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED,
-        {
-          context: context,
-        }
-      )
+      begin
+        send(
+          socket,
+          M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED,
+          {
+            context: context,
+          }
+        )
+      rescue e : Exception
+        warning "failed to accept new node (disconnected)"
+
+        clean_connection(socket)
+      end
     end
 
     def join_private_accepted(node, socket, _content)

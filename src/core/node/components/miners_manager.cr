@@ -65,6 +65,11 @@ module ::Sushi::Core::NodeComponents
         block:      blockchain.latest_block,
         difficulty: miner_difficulty_at(blockchain.latest_index),
       })
+    rescue e : Exception
+      warning "failed to execute handshake with new miner (disconnected)"
+      warning e.message.not_nil! if e.message
+
+      clean_connection(socket)
     end
 
     def found_nonce(node, blockchain, socket, _content)
@@ -81,10 +86,16 @@ module ::Sushi::Core::NodeComponents
         elsif !blockchain.latest_block.valid_nonce?(nonce, miner_difficulty_at(blockchain.latest_block.index))
           warning "recieved nonce is invalid, try to update latest block"
 
-          send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
-            block:      blockchain.latest_block,
-            difficulty: miner_difficulty_at(blockchain.latest_index),
-          })
+          begin
+            send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
+              block:      blockchain.latest_block,
+              difficulty: miner_difficulty_at(blockchain.latest_index),
+            })
+          rescue e : Exception
+            warning "failed to update the block for a miner (disconnected)"
+
+            clean_connection(miner[:socket])
+          end
         else
           info "miner #{miner[:address][0..7]} found nonce (nonces: #{miner[:nonces].size})"
 
@@ -113,10 +124,16 @@ module ::Sushi::Core::NodeComponents
 
     def broadcast_latest_block(blockchain)
       @miners.each do |miner|
-        send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
-          block:      blockchain.latest_block,
-          difficulty: miner_difficulty_at(blockchain.latest_index),
-        })
+        begin
+          send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
+            block:      blockchain.latest_block,
+            difficulty: miner_difficulty_at(blockchain.latest_index),
+          })
+        rescue e : Exception
+          warning "failed to update the block for a miner (disconnected)"
+
+          clean_connection(miner[:socket])
+        end
       end
     end
 

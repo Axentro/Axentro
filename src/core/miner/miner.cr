@@ -94,12 +94,22 @@ module ::Sushi::Core
       @num_threads.times do |thread|
         @threads << Thread.new do
           while nonce = pow(thread)
-            send(socket, M_TYPE_MINER_FOUND_NONCE, {nonce: nonce}) unless socket.closed?
+            begin
+              send(socket, M_TYPE_MINER_FOUND_NONCE, {nonce: nonce}) unless socket.closed?
+            rescue e : Exception
+              warning "failed to send the nonce."
+              warning e.message.not_nil! if e.message
+            end
           end
         end
       end
 
       socket.run
+    rescue e : Exception
+      error "failed to start mining prosess"
+      error e.message.not_nil!
+
+      exit -1
     end
 
     private def _handshake_miner_accepted(socket, _content)
