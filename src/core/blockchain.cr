@@ -252,7 +252,7 @@ module ::Sushi::Core
       return 0_i64 if @chain.size == 0
       return 0_i64 if @chain[-1].transactions.size < 2
 
-      @chain[-1].transactions[1..-1].reduce(0_i64) { |fees, transaction| fees + transaction.calculate_fee }
+      latest_block.transactions[1..-1].reduce(0_i64) { |fees, transaction| fees + transaction.calculate_fee }
     end
 
     def create_unsigned_transaction(action, senders, recipients, message, token, id = Transaction.create_id) : Transaction
