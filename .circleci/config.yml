@@ -6,7 +6,7 @@ jobs:
       - image: crystallang/crystal:0.24.2
     steps:
       - checkout
-      - exec_tests:
+      - run:
           crystal spec
 
   e2e-tests:
@@ -14,7 +14,7 @@ jobs:
       - image: crystallang/crystal:0.24.2
     steps:
       - checkout
-      - exec_tests:
+      - run:
           crystal spec/e2e/e2e.cr
 
   deploy-docker:
@@ -23,11 +23,9 @@ jobs:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
-      - login: |
+      - run: |
           docker login -u $DOCKER_USER -p $DOCKER_PASS
-      - build: |
           docker build -t sushichain/sushichain:$TAG
-      - push: |
           docker push sushichain/sushichain:$TAG
 
 workflows:
