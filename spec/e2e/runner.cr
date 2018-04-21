@@ -43,7 +43,7 @@ module ::E2E
 
       node_ports_public = [@node_ports[0]]
 
-      sleep 1
+      sleep 5
 
       @node_ports[1..-1].each_with_index do |node_port, idx|
         is_private = Random.rand(10) < 2
@@ -51,7 +51,7 @@ module ::E2E
 
         node(node_port, is_private, connecting_port, idx + 1)
         node_ports_public.push(node_port) unless is_private
-        sleep 1
+        sleep 5
       end
     end
 
@@ -133,7 +133,7 @@ module ::E2E
 
       node(5000, true, nil, 5, @db_name, false)
 
-      sleep 180
+      sleep 60
 
       size1 = blockchain_size(5000)
 
@@ -182,7 +182,7 @@ module ::E2E
 
       launch_client
 
-      sleep 300
+      sleep 600
 
       kill_client
 
