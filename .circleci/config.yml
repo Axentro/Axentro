@@ -6,7 +6,8 @@ jobs:
       - image: crystallang/crystal:0.24.2
     steps:
       - checkout
-      - run:
+      - run: |
+          crystal deps
           crystal spec
 
   e2e-tests:
@@ -14,7 +15,8 @@ jobs:
       - image: crystallang/crystal:0.24.2
     steps:
       - checkout
-      - run:
+      - run: |
+          crystal deps
           crystal spec/e2e/e2e.cr
 
   deploy-docker:
