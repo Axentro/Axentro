@@ -7,6 +7,8 @@ jobs:
     steps:
       - checkout
       - run: |
+          apt-get update && apt-get install curl -y
+      - run: |
           crystal deps
           crystal spec
 
@@ -15,6 +17,8 @@ jobs:
       - image: crystallang/crystal:0.24.2
     steps:
       - checkout
+      - run: |
+          apt-get update && apt-get install curl -y
       - run: |
           crystal deps
           crystal spec/e2e/e2e.cr
