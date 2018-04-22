@@ -25,7 +25,16 @@ jobs:
           crystal deps
           crystal spec/e2e/e2e.cr
 
-  deploy-docker:
+  docker-build:
+    machine: true
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run: |
+          docker build -t sushichain/sushichain:$TAG
+
+  docker-deploy:
     machine: true
     steps:
       - checkout
@@ -33,8 +42,8 @@ jobs:
           docker_layer_caching: true
       - run: |
           docker login -u $DOCKER_USER -p $DOCKER_PASS
-          docker build -t sushichain/sushichain:$TAG
-          docker push sushichain/sushichain:$TAG
+          docker build -t sushichain/sushichain
+          docker push sushichain/sushichain
 
 workflows:
   version: 2
@@ -44,10 +53,12 @@ workflows:
     jobs:
       - unit-tests
       - e2e-tests
-      - deploy:
+      - docker-build
+      - docker-deploy:
           requires:
             - unit-tests
             - e2e-tests
+            - docker-build
           filters:
             branches:
               only: master

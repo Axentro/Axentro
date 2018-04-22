@@ -18,7 +18,7 @@ require "./runner"
 include ::Sushi::Common::Color
 
 num_nodes = ENV.has_key?("NUM_NODES") ? ENV["NUM_NODES"].to_i : 3
-num_miners = ENV.has_key?("NUM_MINERS") ? ENV["NUM_MINERS"].to_i : 3
+num_miners = ENV.has_key?("NUM_MINERS") ? ENV["NUM_MINERS"].to_i : 5
 
 runner = ::E2E::Runner.new(num_nodes, num_miners)
 runner.run!
