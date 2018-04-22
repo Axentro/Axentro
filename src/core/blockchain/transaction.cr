@@ -129,7 +129,8 @@ module ::Sushi::Core
 
         if served_sum != blockchain.served_amount(block_index)
           raise "invalid served amount for coinbase transaction: " +
-                "expected #{blockchain.served_amount(block_index)} but got #{served_sum}"
+                "expected #{blockchain.served_amount(block_index)} but got #{served_sum} " +
+                "(received block index: #{block_index}, latest block index: #{blockchain.latest_block.index})"
         end
       end
 

@@ -43,7 +43,7 @@ module ::E2E
 
       node_ports_public = [@node_ports[0]]
 
-      sleep 1
+      sleep 5
 
       @node_ports[1..-1].each_with_index do |node_port, idx|
         is_private = Random.rand(10) < 2
@@ -51,7 +51,7 @@ module ::E2E
 
         node(node_port, is_private, connecting_port, idx + 1)
         node_ports_public.push(node_port) unless is_private
-        sleep 1
+        sleep 5
       end
     end
 
@@ -77,26 +77,32 @@ module ::E2E
       @client.kill
     end
 
+    def block_sizes : Array(NamedTuple(port: Int32, size: Int32))
+      @node_ports.map { |port| {port: port, size: blockchain_size(port)} }
+    end
+
     def latest_block_index : Int32
-      latest_block_index = @node_ports.map { |port|
-        size = blockchain_size(port)
-        size - 1
-      }.min
+      block_sizes.min_by { |port_size| port_size[:size] }[:size] - 1
     end
 
     def latest_confirmed_block_index : Int32
-      return 0 if latest_block_index < ::Sushi::Core::Consensus::CONFIRMATION - 1
+      if latest_block_index < ::Sushi::Core::Consensus::CONFIRMATION - 1
+        return 1 if latest_block_index > 1
+        return 0
+      end
       latest_block_index - (::Sushi::Core::Consensus::CONFIRMATION - 1)
     end
 
     def verify_latest_confirmed_block
-      STDERR.puts
-      STDERR.puts "verifying: #{green("latest confirmed block")} #{green(latest_confirmed_block_index)}..."
+      _latest_confirmed_block_index = latest_confirmed_block_index
 
-      block_json = block(@node_ports[0], latest_confirmed_block_index)
+      STDERR.puts
+      STDERR.puts "verifying: #{green("latest confirmed block")} #{green(_latest_confirmed_block_index)}..."
+
+      block_json = block(@node_ports[0], _latest_confirmed_block_index)
 
       @node_ports[1..-1].each do |node_port|
-        _block_json = block(node_port, latest_confirmed_block_index)
+        _block_json = block(node_port, _latest_confirmed_block_index)
         raise "difference block #{block_json} vs #{_block_json}" if block_json != _block_json
         STDERR.print "."
       end
@@ -133,7 +139,7 @@ module ::E2E
 
       node(5000, true, nil, 5, @db_name, false)
 
-      sleep 180
+      sleep 60
 
       size1 = blockchain_size(5000)
 
@@ -152,14 +158,25 @@ module ::E2E
       STDERR.puts "- result        : #{light_green(@client.num_transactions/@client.duration)} [transactions/sec]"
       STDERR.puts "- nodes         : #{@num_nodes}"
       STDERR.puts "- miners        : #{@num_miners}"
+
+      STDERR.puts "**************** #{light_yellow("status")} ****************"
+
+      @node_ports.each do |port|
+        size = blockchain_size(port)
+        STDERR.puts "> blocks on port #{port} (size: #{size})"
+
+        size.times do |i|
+          block = block(port, i)
+
+          STDERR.puts "%2d --- %s" % [i, block["prev_hash"].as_s]
+        end
+      end
     end
 
     def assertion!
       verify_latest_confirmed_block
       verify_all_addresses_have_non_negative_amount
       verify_blockchain_can_be_restored_from_database
-
-      benchmark_result
     end
 
     def clean_db
@@ -182,7 +199,7 @@ module ::E2E
 
       launch_client
 
-      sleep 300
+      sleep 540
 
       kill_client
 
@@ -194,6 +211,8 @@ module ::E2E
 
       assertion!
     ensure
+      benchmark_result
+
       kill_nodes
 
       clean_db

@@ -1,0 +1,10 @@
+.circleci
+.editorconfig
+.git
+.gitignore
+.shards
+.travis.yml
+
+bin
+imgs
+lib

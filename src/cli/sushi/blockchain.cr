@@ -76,8 +76,12 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
-      puts_success("show current blockchain")
-      puts_info(body)
+      unless __json
+        puts_success("show current blockchain")
+        puts_info(body)
+      else
+        puts body
+      end
     end
 
     def block
@@ -96,8 +100,12 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
-      puts_success(success_message)
-      puts_info(body)
+      unless __json
+        puts_success(success_message)
+        puts_info(body)
+      else
+        puts body
+      end
     end
 
     include GlobalOptionParser

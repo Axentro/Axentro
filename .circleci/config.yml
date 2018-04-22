@@ -1,0 +1,60 @@
+version: 2
+jobs:
+
+  unit-tests:
+    docker:
+      - image: crystallang/crystal:0.24.2
+    steps:
+      - checkout
+      - run: |
+          apt-get update
+          apt-get install curl libsqlite3-dev -y
+      - run: |
+          crystal deps
+          crystal spec
+
+  e2e-tests:
+    docker:
+      - image: crystallang/crystal:0.24.2
+    steps:
+      - checkout
+      - run: |
+          apt-get update
+          apt-get install curl libsqlite3-dev -y
+      - run: |
+          crystal deps
+          crystal spec/e2e/e2e.cr
+
+  docker-build:
+    machine: true
+    steps:
+      - checkout
+      - run: |
+          docker build -t sushichain/sushichain .
+
+  docker-deploy:
+    machine: true
+    steps:
+      - checkout
+      - run: |
+          docker login -u $DOCKER_USER -p $DOCKER_PASS
+          docker build -t sushichain/sushichain .
+          docker push sushichain/sushichain
+
+workflows:
+  version: 2
+
+  sushi_workflow:
+
+    jobs:
+      - unit-tests
+      - e2e-tests
+      - docker-build
+      - docker-deploy:
+          requires:
+            - unit-tests
+            - e2e-tests
+            - docker-build
+          filters:
+            branches:
+              only: master

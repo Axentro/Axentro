@@ -239,7 +239,7 @@ module ::Sushi::Core
       )
     end
 
-    def broadcast_block(block : Block, from : Chord::NodeContext? = nil)
+    def broadcast_block(socket : HTTP::WebSocket, block : Block, from : Chord::NodeContext? = nil)
       @cc += 1
 
       if @blockchain.latest_index + 1 == block.index
@@ -264,7 +264,7 @@ module ::Sushi::Core
 
         warning "required new chain: #{@blockchain.latest_block.index} for #{block.index}"
 
-        sync_chain
+        sync_chain(socket)
 
         send_block(block, from)
       else
@@ -307,6 +307,8 @@ module ::Sushi::Core
     private def analytics
       info "recieved block >> total: #{light_cyan(@cc)}, new block: #{light_cyan(@c0)}, " +
            "conflict: #{light_cyan(@c1)}, sync chain: #{light_cyan(@c2)}, older block: #{light_cyan(@c3)}"
+
+      nil
     end
 
     private def _broadcast_transaction(socket, _content)
@@ -328,7 +330,7 @@ module ::Sushi::Core
       block = _m_content.block
       from = _m_content.from
 
-      broadcast_block(block, from)
+      broadcast_block(socket, block, from)
     end
 
     private def _request_chain(socket, _content)
