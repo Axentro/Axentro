@@ -193,7 +193,7 @@ module ::E2E
 
       launch_client
 
-      sleep 600
+      sleep 540
 
       kill_client
 
