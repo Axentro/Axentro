@@ -29,11 +29,12 @@ module ::E2E::Utils::API
     JSON.parse(res)["size"].as_i
   end
 
-  def block(port : Int32, index : Int32) : String
+  def block(port : Int32, index : Int32) : JSON::Any
     args = ["blockchain", "block", "-n", "http://127.0.0.1:#{port}", "-i", index, "--json"]
 
     res = `#{sushi(args)}`
-    res
+
+    JSON.parse(res)
   end
 
   def amount(port : Int32, num : Int32, unconfirmed = false) : Int64

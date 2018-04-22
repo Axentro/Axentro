@@ -151,11 +151,6 @@ module ::E2E
     end
 
     def benchmark_result
-      STDERR.puts "**************** #{light_yellow("status")} ****************"
-      block_sizes.each do |port_size|
-        STDERR.puts "- chain length  : #{port_size[:size]} at #{port_size[:port]}"
-      end
-
       STDERR.puts
       STDERR.puts "**************** #{light_yellow("benchmark")} ****************"
       STDERR.puts "- transactions  : #{@client.num_transactions}"
@@ -163,14 +158,25 @@ module ::E2E
       STDERR.puts "- result        : #{light_green(@client.num_transactions/@client.duration)} [transactions/sec]"
       STDERR.puts "- nodes         : #{@num_nodes}"
       STDERR.puts "- miners        : #{@num_miners}"
+
+      STDERR.puts "**************** #{light_yellow("status")} ****************"
+
+      @node_ports.each do |port|
+        size = blockchain_size(port)
+        STDERR.puts "> blocks on port #{port} (size: #{size})"
+
+        size.times do |i|
+          block = block(port, i)
+
+          STDERR.puts "%2d --- %s" % [i, block["prev_hash"].as_s]
+        end
+      end
     end
 
     def assertion!
       verify_latest_confirmed_block
       verify_all_addresses_have_non_negative_amount
       verify_blockchain_can_be_restored_from_database
-
-      benchmark_result
     end
 
     def clean_db
@@ -205,6 +211,8 @@ module ::E2E
 
       assertion!
     ensure
+      benchmark_result
+
       kill_nodes
 
       clean_db
