@@ -30,7 +30,7 @@ jobs:
     steps:
       - checkout
       - run: |
-          docker build -t sushichain/sushichain:$TAG .
+          docker build -t sushichain/sushichain .
 
   docker-deploy:
     machine: true
