@@ -4,7 +4,7 @@
 
 <p align="center">🍣 <i>An awesome developable blockchain implementation.</i> 🍣</p>
 
-<p align="center"><a href="https://travis-ci.org/SushiChain/SushiChain"><img src="https://travis-ci.org/SushiChain/SushiChain.svg?branch=master"></a>
+<p align="center"><a href="https://circleci.com/gh/SushiChain/SushiChain/tree/master"><img src="https://circleci.com/gh/SushiChain/SushiChain/tree/master.png?circle-token=099c1a2ed8be9aebf10eb09f79d65dfa4b05cf8e"></a>
 <a href="https://sushicoin.xyz/viewType.html?buildTypeId=SushiChain_1MainBuild&guest=1">
 <img src="https://sushicoin.xyz/app/rest/builds/buildType:(id:SushiChain_1MainBuild)/statusIcon"/></a>
 <a href="https://bit.ly/2HJBu1z"><img src="https://img.shields.io/badge/slack-join-orange.svg"></a>  <a href="https://github.com/SushiChain/SushiChain/wiki"><img src="https://img.shields.io/badge/document-wiki-yellow.svg"></a></p>
