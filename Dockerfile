@@ -16,4 +16,4 @@ RUN ln -s /usr/local/SushiChain/bin/sushid /usr/local/bin/sushid
 RUN ln -s /usr/local/SushiChain/bin/sushim /usr/local/bin/sushim
 RUN ln -s /usr/local/SushiChain/bin/sushi  /usr/local/bin/sushi
 
-EXPOSE 3000
+EXPOSE 3000 3443
