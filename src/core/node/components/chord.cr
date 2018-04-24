@@ -53,7 +53,7 @@ module ::Sushi::Core::NodeComponents
     )
       @node_id = NodeID.new
 
-      stabilize_process unless @is_private
+      stabilize_process
     end
 
     def join_to(connect_host : String, connect_port : Int32)
@@ -168,6 +168,8 @@ module ::Sushi::Core::NodeComponents
         socket:  socket,
         context: _context,
       })
+
+      @predecessor = {socket: socket, context: _context}
 
       node.flag = FLAG_BLOCKCHAIN_LOADING
       node.proceed_setup
@@ -409,13 +411,15 @@ module ::Sushi::Core::NodeComponents
       if @successor_list.size > 0
         successor = @successor_list[0]
 
-        send_overlay(
-          successor[:socket],
-          M_TYPE_CHORD_STABILIZE_AS_SUCCESSOR,
-          {
-            predecessor_context: context,
-          }
-        )
+        unless @is_private
+          send_overlay(
+            successor[:socket],
+            M_TYPE_CHORD_STABILIZE_AS_SUCCESSOR,
+            {
+              predecessor_context: context,
+            }
+          )
+        end
       end
     end
 

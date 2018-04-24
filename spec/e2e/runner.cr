@@ -46,7 +46,9 @@ module ::E2E
       sleep 5
 
       @node_ports[1..-1].each_with_index do |node_port, idx|
-        is_private = Random.rand(10) < 2
+        # todo:
+        # is_private = Random.rand(10) < 2
+        is_private = idx % 2 == 0
         connecting_port = node_ports_public.sample
 
         node(node_port, is_private, connecting_port, idx + 1)
@@ -61,7 +63,8 @@ module ::E2E
 
     def launch_miners
       @num_miners.times do |i|
-        mining(@node_ports.sample, Random.rand(@num_miners))
+        # mining(@node_ports.sample, Random.rand(@num_miners))
+        mining(4001, Random.rand(@num_miners))
       end
     end
 
@@ -105,6 +108,25 @@ module ::E2E
         _block_json = block(node_port, _latest_confirmed_block_index)
         raise "difference block #{block_json} vs #{_block_json}" if block_json != _block_json
         STDERR.print "."
+      end
+
+      STDERR.puts
+      STDERR.puts light_green("-> PASSED!")
+    end
+
+    def verify_blockchain_sizes_are_almost_same
+      STDERR.puts
+      STDERR.puts "verifying: #{green("latest blockchain sizes")}..."
+
+      min_size = blockchain_size(@node_ports[0])
+
+      @node_ports[1..-1].each do |node_port|
+        size = blockchain_size(node_port)
+
+        raise "blockchain size is completely different. (#{min_size} vs #{size})" if (size - min_size).abs > 2
+        STDERR.print "."
+
+        min_size = size if size < min_size
       end
 
       STDERR.puts
@@ -175,6 +197,7 @@ module ::E2E
 
     def assertion!
       verify_latest_confirmed_block
+      verify_blockchain_sizes_are_almost_same
       verify_all_addresses_have_non_negative_amount
       verify_blockchain_can_be_restored_from_database
     end
@@ -199,7 +222,8 @@ module ::E2E
 
       launch_client
 
-      sleep 540
+      # sleep 540
+      sleep 60
 
       kill_client
 

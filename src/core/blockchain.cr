@@ -129,12 +129,15 @@ module ::Sushi::Core
     def replace_chain(_subchain : Chain?) : Bool
       return false unless subchain = _subchain
       return false if subchain.size == 0
-      return false if subchain[0].index == 0
       return false if @chain.size == 0
 
-      first_index = subchain[0].index - 1
+      first_index = subchain[0].index
 
-      @chain = @chain[0..first_index]
+      if first_index == 0
+        @chain = [] of Block
+      else
+        @chain = @chain[0..first_index-1]
+      end
 
       dapps_clear_record
 

@@ -22,7 +22,7 @@ module ::Sushi::Core
     property flag : Int32
 
     getter network_type : String
-    getter latest_unknown : Int64? = nil
+    getter latest_unknown : Int64 = 0_i64
 
     @blockchain : Blockchain
     @miners_manager : MinersManager
@@ -110,6 +110,8 @@ module ::Sushi::Core
 
       s = if _socket = socket
             _socket
+          elsif predecessor = @chord.find_predecessor?
+            predecessor[:socket]
           elsif successor = @chord.find_successor?
             successor[:socket]
           end
@@ -120,7 +122,7 @@ module ::Sushi::Core
             _s,
             M_TYPE_NODE_REQUEST_CHAIN,
             {
-              latest_index: @latest_unknown ? @latest_unknown.not_nil! - 1 : 0,
+              latest_index: @latest_unknown,
             }
           )
         rescue e : Exception
@@ -190,8 +192,6 @@ module ::Sushi::Core
     end
 
     def broadcast(t : Int32, content, from : Chord::NodeContext?)
-      return if @is_private
-
       _nodes = @chord.find_nodes
       _nodes[:private_nodes].each do |private_node|
         send(private_node[:socket], t, content)
@@ -199,18 +199,44 @@ module ::Sushi::Core
         handle_exception(private_node[:socket], e)
       end
 
+      debug "before overwrite: #{from}"
+      #
+      # overwrite `from` for private nodes.
+      # otherwise the broadcast will not be stopped.
+      #
+      _from = if from.nil? || from[:is_private]
+                @chord.context
+              else
+                from.not_nil!
+              end
+      debug "after overwrite: #{from}"
+      #  
+      # # 1. is_private: true
+      # # 2. successorがnilでなく、fromもsuccessorではない
       if successor = _nodes[:successor]
-        if !from.nil? && from.not_nil![:id] == successor[:context][:id]
+        if _from[:is_private] || (_from[:id] != successor[:context][:id])
+          begin
+            send(successor[:socket], t, content)
+          rescue e : Exception
+            handle_exception(successor[:socket], e)
+          end
+        else
           debug "successfully broadcasted! (#{t})"
-          return
-        end
-
-        begin
-          send(successor[:socket], t, content)
-        rescue e : Exception
-          handle_exception(successor[:socket], e)
         end
       end
+
+      # if successor = _nodes[:successor]
+      #   if !from.nil? && from.not_nil![:id] == successor[:context][:id]
+      #     debug "successfully broadcasted! (#{t})"
+      #     return
+      #   end
+      #  
+      #   begin
+      #     send(successor[:socket], t, content)
+      #   rescue e : Exception
+      #     handle_exception(successor[:socket], e)
+      #   end
+      # end
     end
 
     def broadcast_transaction(transaction : Transaction, from : Chord::NodeContext? = nil)
@@ -229,6 +255,11 @@ module ::Sushi::Core
     end
 
     def send_block(block : Block, from : Chord::NodeContext? = nil)
+      info "come here 2"
+      info "send block #{block.index}"
+      info "from:"
+      info from.to_s
+
       broadcast(
         M_TYPE_NODE_BROADCAST_BLOCK,
         {
@@ -256,7 +287,7 @@ module ::Sushi::Core
         warning "blockchain conflicted"
         warning "ignore the block. (#{light_cyan(@blockchain.chain.size)})"
 
-        @latest_unknown ||= block.index
+        @latest_unknown = block.index if @latest_unknown > block.index
 
         send_block(block, from)
       elsif @blockchain.latest_index + 1 < block.index
@@ -340,7 +371,7 @@ module ::Sushi::Core
 
       info "requested new chain: #{latest_index}"
 
-      send(socket, M_TYPE_NODE_RECIEVE_CHAIN, {chain: @blockchain.subchain(latest_index + 1)})
+      send(socket, M_TYPE_NODE_RECIEVE_CHAIN, {chain: @blockchain.subchain(latest_index)})
 
       sync_chain(socket) if latest_index > @blockchain.latest_block.index
     rescue e : Exception
@@ -429,7 +460,7 @@ module ::Sushi::Core
         info "loaded blockchain's size: #{light_cyan(@blockchain.chain.size)}"
 
         if @database
-          @latest_unknown = @blockchain.latest_index + 1
+          @latest_unknown = @blockchain.latest_index + 1_i64
         else
           warning "no database has been specified"
         end
