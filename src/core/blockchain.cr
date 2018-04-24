@@ -136,7 +136,7 @@ module ::Sushi::Core
       if first_index == 0
         @chain = [] of Block
       else
-        @chain = @chain[0..first_index-1]
+        @chain = @chain[0..first_index - 1]
       end
 
       dapps_clear_record

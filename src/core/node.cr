@@ -210,7 +210,7 @@ module ::Sushi::Core
                 from.not_nil!
               end
       debug "after overwrite: #{from}"
-      #  
+      #
       # # 1. is_private: true
       # # 2. successorがnilでなく、fromもsuccessorではない
       if successor = _nodes[:successor]
@@ -230,7 +230,7 @@ module ::Sushi::Core
       #     debug "successfully broadcasted! (#{t})"
       #     return
       #   end
-      #  
+      #
       #   begin
       #     send(successor[:socket], t, content)
       #   rescue e : Exception
