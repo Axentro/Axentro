@@ -110,7 +110,6 @@ module ::Sushi::Core::NodeComponents
       return unless block = blockchain.push_block?(nonce, @miners)
 
       info "found new nonce: #{light_green(nonce)} (block: #{blockchain.latest_index})"
-      info "come here 0"
 
       node.send_block(block)
 

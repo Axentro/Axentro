@@ -1,4 +1,4 @@
-version: 2
+2version: 2
 jobs:
 
   unit-tests:
@@ -13,7 +13,7 @@ jobs:
           crystal deps
           crystal spec
 
-  e2e-tests:
+  e2e-tests-all-public:
     docker:
       - image: crystallang/crystal:0.24.2
     steps:
@@ -22,8 +22,32 @@ jobs:
           apt-get update
           apt-get install curl libsqlite3-dev -y
       - run: |
-          crystal deps
-          crystal spec/e2e/e2e.cr
+          shards build
+          bin/e2e --mode=all_public
+
+  e2e-tests-all-private:
+    docker:
+      - image: crystallang/crystal:0.24.2
+    steps:
+      - checkout
+      - run: |
+          apt-get update
+          apt-get install curl libsqlite3-dev -y
+      - run: |
+          shards build
+          bin/e2e --mode=all_private
+
+  e2e-tests-one-private:
+    docker:
+      - image: crystallang/crystal:0.24.2
+    steps:
+      - checkout
+      - run: |
+          apt-get update
+          apt-get install curl libsqlite3-dev -y
+      - run: |
+          shards build
+          bin/e2e --mode=one_private
 
   docker-build:
     machine: true
@@ -48,12 +72,16 @@ workflows:
 
     jobs:
       - unit-tests
-      - e2e-tests
+      - e2e-tests-all-public
+      - e2e-tests-all-private
+      - e2e-tests-one-private
       - docker-build
       - docker-deploy:
           requires:
             - unit-tests
-            - e2e-tests
+            - e2e-tests-all-public
+            - e2e-tests-all-private
+            - e2e-tests-one-private
             - docker-build
           filters:
             branches:

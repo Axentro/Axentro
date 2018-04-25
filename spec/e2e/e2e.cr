@@ -17,8 +17,22 @@ require "./runner"
 
 include ::Sushi::Common::Color
 
-num_nodes = ENV.has_key?("NUM_NODES") ? ENV["NUM_NODES"].to_i : 3
-num_miners = ENV.has_key?("NUM_MINERS") ? ENV["NUM_MINERS"].to_i : 5
+mode = if _mode_arg = ARGV.find { |arg| arg.starts_with?("--mode=") }
+         _mode = _mode_arg.split("=")[1]
 
-runner = ::E2E::Runner.new(num_nodes, num_miners)
+         case _mode
+         when "all_public"
+           E2E::ALL_PUBLIC
+         when "all_private"
+           E2E::ALL_PRIVATE
+         when "one_private"
+           E2E::ONE_PRIVATE
+         else
+           E2E::ALL_PUBLIC
+         end
+       else
+         E2E::ALL_PUBLIC
+       end
+
+runner = ::E2E::Runner.new(mode)
 runner.run!

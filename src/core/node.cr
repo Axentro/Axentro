@@ -191,15 +191,14 @@ module ::Sushi::Core
       handle_exception(socket, e)
     end
 
-    def broadcast(t : Int32, content, from : Chord::NodeContext?)
+    def broadcast(t : Int32, content, from : Chord::NodeContext? = nil)
       _nodes = @chord.find_nodes
       _nodes[:private_nodes].each do |private_node|
+        next if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
         send(private_node[:socket], t, content)
       rescue e : Exception
         handle_exception(private_node[:socket], e)
       end
-
-      debug "before overwrite: #{from}"
       #
       # overwrite `from` for private nodes.
       # otherwise the broadcast will not be stopped.
@@ -209,10 +208,7 @@ module ::Sushi::Core
               else
                 from.not_nil!
               end
-      debug "after overwrite: #{from}"
-      #
-      # # 1. is_private: true
-      # # 2. successorがnilでなく、fromもsuccessorではない
+
       if successor = _nodes[:successor]
         if _from[:is_private] || (_from[:id] != successor[:context][:id])
           begin
@@ -224,19 +220,6 @@ module ::Sushi::Core
           debug "successfully broadcasted! (#{t})"
         end
       end
-
-      # if successor = _nodes[:successor]
-      #   if !from.nil? && from.not_nil![:id] == successor[:context][:id]
-      #     debug "successfully broadcasted! (#{t})"
-      #     return
-      #   end
-      #
-      #   begin
-      #     send(successor[:socket], t, content)
-      #   rescue e : Exception
-      #     handle_exception(successor[:socket], e)
-      #   end
-      # end
     end
 
     def broadcast_transaction(transaction : Transaction, from : Chord::NodeContext? = nil)
@@ -255,11 +238,6 @@ module ::Sushi::Core
     end
 
     def send_block(block : Block, from : Chord::NodeContext? = nil)
-      info "come here 2"
-      info "send block #{block.index}"
-      info "from:"
-      info from.to_s
-
       broadcast(
         M_TYPE_NODE_BROADCAST_BLOCK,
         {
@@ -284,7 +262,7 @@ module ::Sushi::Core
       elsif @blockchain.latest_index == block.index
         @c1 += 1
 
-        warning "blockchain conflicted"
+        warning "blockchain conflicted at #{block.index}"
         warning "ignore the block. (#{light_cyan(@blockchain.chain.size)})"
 
         @latest_unknown = block.index if @latest_unknown > block.index
