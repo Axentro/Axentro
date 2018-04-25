@@ -12,7 +12,8 @@
 
 ENV["E2E"] = "true"
 
-require "../spec_helper"
+require "../../src/common"
+require "../../src/core"
 require "./runner"
 
 include ::Sushi::Common::Color
