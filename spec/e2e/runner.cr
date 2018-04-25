@@ -239,7 +239,8 @@ module ::E2E
       step kill_miners, 0, "kill existing miners"
       step launch_nodes, 1, "launch nodes"
       step launch_miners, 1, "launch miners"
-      step launch_client, 540, "launch client"
+      # step launch_client, 540, "launch client"
+      step launch_client, 120, "launch client"
       step kill_client, 10, "kill client"
       step kill_miners, 10, "kill miners"
       step assertion!, 0, "start assertion"
@@ -249,7 +250,7 @@ module ::E2E
     ensure
       step benchmark_result, 0, "show benchmark result"
       step kill_nodes, 0, "kill nodes"
-      step clean_db, 0, "clean database"
+      step clean_db, 3, "clean database"
     end
 
     include Utils
