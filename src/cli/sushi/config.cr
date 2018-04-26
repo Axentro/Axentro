@@ -33,7 +33,7 @@ module ::Sushi::Interface::Sushi
       create_option_parser([
         Options::CONNECT_NODE,
         Options::WALLET_PATH,
-        # Options::WALLET_PASSWORD,
+        Options::WALLET_PASSWORD,
         Options::IS_TESTNET,
         Options::IS_PRIVATE,
         # Options::JSON,
@@ -70,7 +70,7 @@ module ::Sushi::Interface::Sushi
 
     def save
       cm.set("connect_node", __connect_node)
-      cm.set("wallet_path", __wallet_path)
+      cm.set("wallet_path", absolute_path(__wallet_path))
       cm.set("is_testnet", __is_testnet)
       cm.set("is_private", __is_private)
       cm.set("bind_host", __bind_host)
@@ -79,6 +79,7 @@ module ::Sushi::Interface::Sushi
       cm.set("database_path", __database_path)
       cm.set("threads", __threads)
       cm.set("encrypted", __encrypted)
+      cm.set("wallet_password", __wallet_password)
       cm.save
 
       puts_success "saved the configuration at #{cm.config_path}"
@@ -103,6 +104,15 @@ module ::Sushi::Interface::Sushi
     def clean
       puts_success "delete configuration at #{cm.config_path}"
       cm.clean
+    end
+
+    private def absolute_path(file)
+      case file
+      when String
+        File.expand_path(file)
+      else
+        nil
+      end
     end
 
     include GlobalOptionParser
