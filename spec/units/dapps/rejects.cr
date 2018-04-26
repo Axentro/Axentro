@@ -133,5 +133,5 @@ describe Rejects do
       end
     end
   end
-  STDERR.puts "< dApps::Indices"
+  STDERR.puts "< dApps::Rejects"
 end
