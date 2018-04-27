@@ -217,7 +217,8 @@ module ::Sushi::Interface
     end
 
     def __wallet_password : String?
-      @wallet_password
+      return @wallet_password if @wallet_password
+      cm.get_s("wallet_password")
     end
 
     def __is_testnet : Bool
