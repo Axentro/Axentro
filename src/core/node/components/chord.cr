@@ -53,8 +53,10 @@ module ::Sushi::Core::NodeComponents
     )
       @node_id = NodeID.new
 
+      info "node id: #{light_green(@node_id.to_s)}"
+
       # todo
-      STDERR.puts "node_id: #{@node_id.to_s}"
+      STDERR.puts "node id: #{light_green(@node_id.to_s)}"
 
       stabilize_process
     end

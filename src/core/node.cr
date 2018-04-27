@@ -22,13 +22,14 @@ module ::Sushi::Core
     property flag : Int32
 
     getter network_type : String
-    getter latest_unknown : Int64 = 0_i64
 
     @blockchain : Blockchain
     @miners_manager : MinersManager
     @chord : Chord
 
     @rpc_controller : Controllers::RPCController
+
+    @last_conflicted : Int64 = 0_i64
 
     @cc : Int32 = 0
     @c0 : Int32 = 0
@@ -108,11 +109,17 @@ module ::Sushi::Core
     private def sync_chain(socket : HTTP::WebSocket? = nil)
       info "start synching blockchain."
 
+      # todo
+      STDERR.puts "    start synching blockchain"
+
       s = if _socket = socket
+            STDERR.puts "    point 0"
             _socket
           elsif predecessor = @chord.find_predecessor?
+            STDERR.puts "    point 1"
             predecessor[:socket]
           elsif successor = @chord.find_successor?
+            STDERR.puts "    point 2"
             successor[:socket]
           end
 
@@ -122,7 +129,7 @@ module ::Sushi::Core
             _s,
             M_TYPE_NODE_REQUEST_CHAIN,
             {
-              latest_index: @latest_unknown,
+              latest_index: @last_conflicted,
             }
           )
         rescue e : Exception
@@ -181,7 +188,7 @@ module ::Sushi::Core
           _ask_request_chain(socket, message_content)
         end
       rescue e : Exception
-        handle_exception(socket, e)
+        handle_exception(socket, e, false, false)
       end
 
       socket.on_close do |_|
@@ -191,176 +198,66 @@ module ::Sushi::Core
       handle_exception(socket, e)
     end
 
-    # def broadcast(t : Int32, content, from : Chord::NodeContext? = nil)
-    #   if @is_private && !from.nil? && !from.not_nil![:is_private]
-    #     STDERR.puts "successfully reached to private node"
-    #     return
-    #   end
-    #  
-    #   #
-    #   # todo
-    #   # from と _from がめちゃくちゃわかりづらいので、refactoringする
-    #   #
-    #   _from = if from.nil? || from[:is_private]
-    #             @chord.context
-    #           else
-    #             from.not_nil!
-    #           end
-    #  
-    #   _content = case t
-    #              when M_TYPE_NODE_BROADCAST_BLOCK
-    #                {
-    #                  block: content.as(NamedTuple(block: Block, from: String))[:block],
-    #                  from: _from,
-    #                }
-    #              when M_TYPE_NODE_BROADCAST_TRANSACTION
-    #                {
-    #                  transaction: content.as(NamedTuple(transaction: Transaction, from: String))[:transaction],
-    #                  fronm: _from
-    #                }
-    #              else
-    #                raise "unexpected message type #{t} for broadcast"
-    #              end
-    #  
-    #   _nodes = @chord.find_nodes
-    #   _nodes[:private_nodes].each do |private_node|
-    #     if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
-    #       STDERR.puts "skip sending block for private node (#{private_node[:context][:id]})"
-    #       next
-    #     end
-    #  
-    #     STDERR.puts "send a block to #{private_node[:context][:id]}"
-    #  
-    #     send(private_node[:socket], t, _content)
-    #   rescue e : Exception
-    #     handle_exception(private_node[:socket], e)
-    #   end
-    #  
-    #   if successor = _nodes[:successor]
-    #     if _from[:is_private] || (_from[:id] != successor[:context][:id])
-    #       begin
-    #         send(successor[:socket], t, _content)
-    #       rescue e : Exception
-    #         handle_exception(successor[:socket], e)
-    #       end
-    #     else
-    #       debug "successfully broadcasted! (#{t})"
-    #  
-    #       # todo
-    #       STDERR.puts "successfully broadcasted!"
-    #     end
-    #   end
-    # end
-
     def broadcast_transaction(transaction : Transaction, from : Chord::NodeContext? = nil)
       info "new transaction coming: #{transaction.id}"
 
       @blockchain.add_transaction(transaction)
 
-      # broadcast(
-      #   M_TYPE_NODE_BROADCAST_TRANSACTION,
-      #   {
-      #     transaction: transaction,
-      #     from:        from || @chord.context,
-      #   },
-      #   from,
-      # )
+      content = { transaction: transaction, from: from || @chord.context }
 
-      #  #content = {
-      #    transaction: transaction,
-      #    from: from || @chord.context,
-      #  }
-      #  #
-      #  # 自分がprivateでpublicから来た場合は終了
-      #  #
-      #  if @is_private && !from.nil? && !from[:is_private]
-      #    STDERR.puts "successfully reached to private node (broadcast transaction)"
-      #  end
-      #   
-      #  _nodes = @chord.find_nodes
-      #   
-      #  unless @is_private
-      #    if !from.nil? && from[:is_private]
-      #      #
-      #      # 自分がpublicでprivateから来た場合はcontentを書き換える
-      #      #
-      #      STDERR.puts "rewrite content for transaction"
-      #      content = {
-      #        transaction: transaction,
-      #        from: @chord.context,
-      #      }
-      #    end
-      #   
-      #    _nodes[:private_nodes].each do |private_node|
-      #      if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
-      #        STDERR.puts "skip sending transaction for private node (#{private_node[:context][:id]})"
-      #        next
-      #      end
-      #   
-      #      STDERR.puts "send a transaction to #{private_node[:context][:id]}"
-      #      send(private_node[:socket], M_TYPE_NODE_BROADCAST_TRANSACTION, content)
-      #    rescue e : Exception
-      #      handle_exception(private_node[:socket], e)
-      #    end
-      #   
-      #    if successor = _nodes[:successor]
-      #      begin
-      #        send(successor[:socket], M_TYPE_NODE_BROADCAST_TRANSACTION, content)
-      #      rescue e : Exception
-      #        handle_exception(successor[:socket], e)
-      #      end
-      #    end
-      #  else
-      #    #
-      #    # 自分がprivateで、自分発信の場合
-      #    #
-      #    if successor = _nodes[:successor]
-      #      begin
-      #        send(successor[:socket], M_TYPE_NODE_BROADCAST_TRANSACTION, content)
-      #      rescue e : Exception
-      #        handle_exception(successor[:socket], e)
-      #      end
-      #    end
-      #  end
+      _nodes = @chord.find_nodes
+
+      unless @is_private
+        if !from.nil? && from[:is_private]
+          content = { transaction: transaction, from: @chord.context }
+        end
+
+        _nodes[:private_nodes].each do |private_node|
+          next if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
+
+          send(private_node[:socket], M_TYPE_NODE_BROADCAST_TRANSACTION, content)
+        rescue e : Exception
+          handle_exception(private_node[:socket], e)
+        end
+
+        if successor = _nodes[:successor]
+          begin
+            send(successor[:socket], M_TYPE_NODE_BROADCAST_TRANSACTION, content)
+          rescue e : Exception
+            handle_exception(successor[:socket], e)
+          end
+        end
+      else
+        if from.nil? || from[:is_private]
+          if successor = _nodes[:successor]
+            begin
+              send(successor[:socket], M_TYPE_NODE_BROADCAST_TRANSACTION, content)
+            rescue e : Exception
+              handle_exception(successor[:socket], e)
+            end
+          end
+        end
+      end
     end
 
     def send_block(block : Block, from : Chord::NodeContext? = nil)
-      # todo
-      STDERR.puts "send block! from #{from.nil? ? "me" : from.not_nil![:id]}"
-
-      # broadcast(
-      #   M_TYPE_NODE_BROADCAST_BLOCK,
-      #   {
-      #     block: block,
-      #     from:  from || @chord.context,
-      #   },
-      #   from,
-      # )
-
       content = { block: block, from: from || @chord.context }
 
       _nodes = @chord.find_nodes
 
       unless @is_private
         if !from.nil? && from[:is_private]
-          #
-          # 自分がpublicでprivateから来た場合はcontentを書き換える
-          #
           content = {
             block: block,
             from: @chord.context,
           }
-
-          STDERR.puts "rewrite content for block (from: #{@chord.context[:id]})"
         end
 
         _nodes[:private_nodes].each do |private_node|
-          if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
-            STDERR.puts "skip sending block for private node (#{private_node[:context][:id]})"
-            next
-          end
+          next if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
 
-          STDERR.puts "send a block to #{private_node[:context][:id]}"
+          # todo
+          STDERR.puts "  <- send 0"
           send(private_node[:socket], M_TYPE_NODE_BROADCAST_BLOCK, content)
         rescue e : Exception
           handle_exception(private_node[:socket], e)
@@ -368,23 +265,19 @@ module ::Sushi::Core
 
         if successor = _nodes[:successor]
           begin
+            # todo
+            STDERR.puts "  <- send 1"
             send(successor[:socket], M_TYPE_NODE_BROADCAST_BLOCK, content)
           rescue e : Exception
             handle_exception(successor[:socket], e)
           end
         end
       else
-        #
-        # 自分がprivateでpublicから来た場合は終了
-        #
-        if !from.nil? && !from[:is_private]
-          STDERR.puts "successfully reached to private node (broadcast block)"
-        else
-          #
-          # 自分がprivateで、自分発信の場合
-          #
+        if from.nil? || from[:is_private]
           if successor = _nodes[:successor]
             begin
+              # todo
+              STDERR.puts "  <- send 2"
               send(successor[:socket], M_TYPE_NODE_BROADCAST_BLOCK, content)
             rescue e : Exception
               handle_exception(successor[:socket], e)
@@ -395,37 +288,44 @@ module ::Sushi::Core
     end
 
     def broadcast_block(socket : HTTP::WebSocket, block : Block, from : Chord::NodeContext? = nil)
+      # todo: just debugging
+      unless from.nil?
+        STDERR.puts "Received new block from #{from[:id]} (current latest: #{@blockchain.latest_index}, received block #{block.index})"
+      end
+
       @cc += 1
 
       if @blockchain.latest_index + 1 == block.index
         @c0 += 1
 
-        return analytics unless @blockchain.push_block?(block)
+        begin
+          info "new block coming: #{light_cyan(@blockchain.chain.size)}"
 
-        info "new block coming: #{light_cyan(@blockchain.chain.size)}"
-        # todo
-        STDERR.puts "new block coming: #{light_cyan(@blockchain.chain.size)} from #{from.nil? ? "me" : from.not_nil![:id]}"
-
-        send_block(block, from)
+          @blockchain.push_block?(block)
+        rescue e : Exception
+          warning "coming block has been rejected for the reason: #{e.message}"
+        ensure
+          send_block(block, from)
+        end
       elsif @blockchain.latest_index == block.index
         @c1 += 1
 
         # todo
-        STDERR.puts "blockchain conflicted at #{block.index} with #{from.nil? ? from.not_nil![:id] : "unknown"}"
+        STDERR.puts "blockchain conflicted at #{block.index} with #{from.nil? ? "unknown" : from.not_nil![:id]}"
 
         warning "blockchain conflicted at #{block.index}"
         warning "ignore the block. (#{light_cyan(@blockchain.chain.size)})"
 
-        @latest_unknown = block.index if @latest_unknown > block.index
+        @last_conflicted = block.index
 
         send_block(block, from)
       elsif @blockchain.latest_index + 1 < block.index
         @c2 += 1
 
-        warning "required new chain: #{@blockchain.latest_block.index} for #{block.index}"
+        warning "require new chain: #{@blockchain.latest_block.index} for #{block.index}"
 
         # todo
-        STDERR.puts "required new chain: #{@blockchain.latest_block.index} for #{block.index}"
+        STDERR.puts "require new chain: #{@blockchain.latest_block.index} for #{block.index}"
 
         sync_chain(socket)
 
@@ -436,7 +336,7 @@ module ::Sushi::Core
         warning "recieved old block, will be ignored"
 
         # todo
-        STDERR.puts "recieved old block, will be ignored"
+        STDERR.puts "recieved old block"
 
         send_block(block, from)
 
@@ -458,16 +358,16 @@ module ::Sushi::Core
       analytics
     end
 
-    private def handle_exception(socket : HTTP::WebSocket, e : Exception, reject_node : Bool = false)
+    private def handle_exception(socket : HTTP::WebSocket, e : Exception, reject : Bool = true, show_backtrace : Bool = true)
       if error_message = e.message
         error error_message
       else
         error "unknown error"
       end
 
-      reject!(socket, e)
+      reject!(socket, e) if reject
 
-      error e.backtrace.not_nil!.join("\n")
+      error e.backtrace.not_nil!.join("\n") if show_backtrace
     end
 
     private def analytics
@@ -505,6 +405,8 @@ module ::Sushi::Core
       latest_index = _m_content.latest_index
 
       info "requested new chain: #{latest_index}"
+      # todo
+      STDERR.puts "    requested new chain: #{latest_index}"
 
       send(socket, M_TYPE_NODE_RECIEVE_CHAIN, {chain: @blockchain.subchain(latest_index)})
 
@@ -519,8 +421,12 @@ module ::Sushi::Core
       chain = _m_content.chain
 
       if _chain = chain
+        # todo
+        STDERR.puts "recieved chain: #{_chain.size}"
         info "recieved chain's size: #{_chain.size}"
       else
+        # todo
+        STDERR.puts "recieved chain: empty"
         info "recieved empty chain."
       end
 
@@ -528,6 +434,8 @@ module ::Sushi::Core
 
       if @blockchain.replace_chain(chain)
         info "chain updated: #{light_green(current_latest_index)} -> #{light_green(@blockchain.latest_index)}"
+        # todo
+        STDERR.puts "    chain updated: #{light_green(current_latest_index)} -> #{light_green(@blockchain.latest_index)}"
         @miners_manager.broadcast_latest_block(@blockchain)
       end
 
@@ -594,9 +502,7 @@ module ::Sushi::Core
 
         info "loaded blockchain's size: #{light_cyan(@blockchain.chain.size)}"
 
-        if @database
-          @latest_unknown = @blockchain.latest_index + 1_i64
-        else
+        if !@database
           warning "no database has been specified"
         end
 

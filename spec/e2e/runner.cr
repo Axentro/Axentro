@@ -21,20 +21,23 @@ module ::E2E
   ONE_PRIVATE = 2
 
   class Runner
-    NUM_NODES = 5
-    NUM_MINERS = 5
-
     @client : Client
     @db_name : String
 
     @node_ports : Array(Int32)
     @node_ports_public : Array(Int32) = [] of Int32
 
-    def initialize(@mode : Int32)
-      @node_ports = (4000..4000 + (NUM_NODES - 1)).to_a
+    def initialize(@mode : Int32, @num_nodes : Int32, @num_miners : Int32, @time : Int32)
+      @node_ports = (4000..4000 + (@num_nodes - 1)).to_a
 
-      @client = Client.new(@node_ports, NUM_MINERS)
+      @client = Client.new(@node_ports, @num_miners)
       @db_name = Random.new.hex
+    end
+
+    def create_wallets
+      [@num_nodes, @num_miners].max.times do |idx|
+        create_wallet(idx)
+      end
     end
 
     def launch_node(node_port, is_private, connecting_port, idx, db = nil)
@@ -73,9 +76,12 @@ module ::E2E
     end
 
     def launch_miners
-      NUM_MINERS.times do |i|
-        port = @node_ports.sample
-        step mining(port, Random.rand(NUM_MINERS)), 1, "launch miner for #{port}"
+      @num_miners.times do |i|
+        # todo
+        port = i%2 == 0 ? 4000 : 4001
+        # port = @node_ports.sample
+        # todo
+        step mining(port, Random.rand(@num_miners)), 1, "launch miner for #{port}"
       end
     end
 
@@ -149,7 +155,7 @@ module ::E2E
       STDERR.puts "verifying: #{green("all addresses have non-negative amount")}"
 
       @node_ports.each do |node_port|
-        NUM_MINERS.times do |num|
+        @num_miners.times do |num|
           a = amount(node_port, num)
           raise "amount of #{num} is #{a} on #{node_port}" if a < 0
           STDERR.print "."
@@ -170,7 +176,8 @@ module ::E2E
 
       size0 = blockchain_size(4000)
 
-      step launch_node(5000, true, nil, 5, @db_name), 10, ""
+      step create_wallet(100), 0, ""
+      step launch_node(5000, true, nil, 100, @db_name), 10, ""
 
       size1 = blockchain_size(5000)
 
@@ -187,8 +194,8 @@ module ::E2E
       STDERR.puts "- transactions  : #{@client.num_transactions}"
       STDERR.puts "- duration      : #{@client.duration} [sec]"
       STDERR.puts "- result        : #{light_green(@client.num_transactions/@client.duration)} [transactions/sec]"
-      STDERR.puts "- # of nodes    : #{NUM_NODES}"
-      STDERR.puts "- # of miners   : #{NUM_MINERS}"
+      STDERR.puts "- # of nodes    : #{@num_nodes}"
+      STDERR.puts "- # of miners   : #{@num_miners}"
       STDERR.puts "**************** #{light_yellow("status")} ****************"
 
       @node_ports.each do |port|
@@ -211,7 +218,21 @@ module ::E2E
     end
 
     def clean_db
-      FileUtils.rm_rf(File.expand_path("../db/#{@db_name}.db", __FILE__))
+      Dir.glob(File.expand_path("../db/*.db", __FILE__)) do |db|
+        FileUtils.rm_rf db
+      end
+    end
+
+    def clean_wallets
+      Dir.glob(File.expand_path("../wallets/*.json", __FILE__)) do |wallet|
+        FileUtils.rm_rf wallet
+      end
+    end
+
+    def clean_logs
+      Dir.glob(File.expand_path("../logs/*.log", __FILE__)) do |log|
+        FileUtils.rm_rf log
+      end
     end
 
     macro step(func, interval, desc)
@@ -237,10 +258,11 @@ module ::E2E
 
       step kill_nodes, 0, "kill existing nodes"
       step kill_miners, 0, "kill existing miners"
+      step clean_logs, 0, "clean logs"
+      step create_wallets, 0, "create wallets"
       step launch_nodes, 1, "launch nodes"
       step launch_miners, 1, "launch miners"
-      # step launch_client, 540, "launch client"
-      step launch_client, 120, "launch client"
+      step launch_client, @time, "launch client"
       step kill_client, 10, "kill client"
       step kill_miners, 10, "kill miners"
       step assertion!, 0, "start assertion"
@@ -250,7 +272,8 @@ module ::E2E
     ensure
       step benchmark_result, 0, "show benchmark result"
       step kill_nodes, 0, "kill nodes"
-      step clean_db, 3, "clean database"
+      step clean_db, 2, "clean database"
+      step clean_wallets, 2, "clean wallets"
     end
 
     include Utils
