@@ -84,7 +84,7 @@ module ::Sushi::Core::NodeComponents
         if @latest_nonces.includes?(nonce)
           warning "nonce #{nonce} has already been discoverd"
         elsif !blockchain.latest_block.valid_nonce?(nonce, miner_difficulty_at(blockchain.latest_block.index))
-          warning "recieved nonce is invalid, try to update latest block"
+          warning "received nonce is invalid, try to update latest block"
 
           begin
             send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {

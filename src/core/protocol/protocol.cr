@@ -163,9 +163,9 @@ module ::Sushi::Core::Protocol
     })
   end
 
-  M_TYPE_NODE_RECIEVE_CHAIN = 0x0104
+  M_TYPE_NODE_RECEIVE_CHAIN = 0x0104
 
-  struct M_CONTENT_NODE_RECIEVE_CHAIN
+  struct M_CONTENT_NODE_RECEIVE_CHAIN
     JSON.mapping({
       chain: Blockchain::Chain?,
     })

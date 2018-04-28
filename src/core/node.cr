@@ -29,6 +29,7 @@ module ::Sushi::Core
 
     @rpc_controller : Controllers::RPCController
 
+    # todo
     @last_conflicted : Int64 = 0_i64
 
     @cc : Int32 = 0
@@ -178,8 +179,8 @@ module ::Sushi::Core
           @chord.stabilize_as_predecessor(self, socket, message_content)
         when M_TYPE_NODE_REQUEST_CHAIN
           _request_chain(socket, message_content)
-        when M_TYPE_NODE_RECIEVE_CHAIN
-          _recieve_chain(socket, message_content)
+        when M_TYPE_NODE_RECEIVE_CHAIN
+          _receive_chain(socket, message_content)
         when M_TYPE_NODE_BROADCAST_TRANSACTION
           _broadcast_transaction(socket, message_content)
         when M_TYPE_NODE_BROADCAST_BLOCK
@@ -316,7 +317,8 @@ module ::Sushi::Core
         warning "blockchain conflicted at #{block.index}"
         warning "ignore the block. (#{light_cyan(@blockchain.chain.size)})"
 
-        @last_conflicted = block.index
+        # todo
+        # @last_conflicted = block.index
 
         send_block(block, from)
       elsif @blockchain.latest_index + 1 < block.index
@@ -333,10 +335,10 @@ module ::Sushi::Core
       else
         @c3 += 1
 
-        warning "recieved old block, will be ignored"
+        warning "received old block, will be ignored"
 
         # todo
-        STDERR.puts "recieved old block"
+        STDERR.puts "received old block"
 
         send_block(block, from)
 
@@ -371,7 +373,7 @@ module ::Sushi::Core
     end
 
     private def analytics
-      info "recieved block >> total: #{light_cyan(@cc)}, new block: #{light_cyan(@c0)}, " +
+      info "received block >> total: #{light_cyan(@cc)}, new block: #{light_cyan(@c0)}, " +
            "conflict: #{light_cyan(@c1)}, sync chain: #{light_cyan(@c2)}, older block: #{light_cyan(@c3)}"
 
       nil
@@ -408,26 +410,26 @@ module ::Sushi::Core
       # todo
       STDERR.puts "    requested new chain: #{latest_index}"
 
-      send(socket, M_TYPE_NODE_RECIEVE_CHAIN, {chain: @blockchain.subchain(latest_index)})
+      send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {chain: @blockchain.subchain(latest_index)})
 
       sync_chain(socket) if latest_index > @blockchain.latest_block.index
     rescue e : Exception
       handle_exception(socket, e)
     end
 
-    private def _recieve_chain(socket, _content)
-      _m_content = M_CONTENT_NODE_RECIEVE_CHAIN.from_json(_content)
+    private def _receive_chain(socket, _content)
+      _m_content = M_CONTENT_NODE_RECEIVE_CHAIN.from_json(_content)
 
       chain = _m_content.chain
 
       if _chain = chain
         # todo
-        STDERR.puts "recieved chain: #{_chain.size}"
-        info "recieved chain's size: #{_chain.size}"
+        STDERR.puts "received chain: #{_chain.size}"
+        info "received chain's size: #{_chain.size}"
       else
         # todo
-        STDERR.puts "recieved chain: empty"
-        info "recieved empty chain."
+        STDERR.puts "received chain: empty"
+        info "received empty chain."
       end
 
       current_latest_index = @blockchain.latest_index

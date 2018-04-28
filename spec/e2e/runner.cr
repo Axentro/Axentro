@@ -235,8 +235,11 @@ module ::E2E
       end
     end
 
+    def running
+    end
+
     macro step(func, interval, desc)
-      STDERR.puts "__ step __ (sleep: {{interval.id}}) " + {{desc}} if {{desc}}.size > 0
+      STDERR.puts "__ step __ (sleep: #{{{interval.id}}}) " + {{desc}} if {{desc}}.size > 0
 
       {{func.id}}
       sleep {{interval.id}}
@@ -262,7 +265,15 @@ module ::E2E
       step create_wallets, 0, "create wallets"
       step launch_nodes, 1, "launch nodes"
       step launch_miners, 1, "launch miners"
-      step launch_client, @time, "launch client"
+      step launch_client, 1, "launch client"
+
+      running_steps = @time/300
+      running_steps.times do |i|
+        step running, 300, "running..."
+      end
+
+      step running, @time%300, "running..."
+
       step kill_client, 10, "kill client"
       step kill_miners, 10, "kill miners"
       step assertion!, 0, "start assertion"
