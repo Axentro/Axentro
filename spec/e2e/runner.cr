@@ -16,7 +16,7 @@ require "./utils"
 require "./client"
 
 module ::E2E
-  ALL_PUBLIC = 0
+  ALL_PUBLIC  = 0
   ALL_PRIVATE = 1
   ONE_PRIVATE = 2
 
@@ -67,7 +67,7 @@ module ::E2E
         connecting_port = @node_ports_public.sample
 
         step launch_node(node_port, is_private, connecting_port, idx + 1), 5,
-             "launch node on port #{node_port} connect to #{connecting_port} #{is_private ? "(private)": "(public)"}"
+          "launch node on port #{node_port} connect to #{connecting_port} #{is_private ? "(private)" : "(public)"}"
       end
     end
 
@@ -78,7 +78,7 @@ module ::E2E
     def launch_miners
       @num_miners.times do |i|
         # todo
-        port = i%2 == 0 ? 4000 : 4001
+        port = i % 2 == 0 ? 4000 : 4001
         # port = @node_ports.sample
         # todo
         step mining(port, Random.rand(@num_miners)), 1, "launch miner for #{port}"
@@ -272,7 +272,7 @@ module ::E2E
         step running, 300, "running..."
       end
 
-      step running, @time%300, "running..."
+      step running, @time % 300, "running..."
 
       step kill_client, 10, "kill client"
       step kill_miners, 10, "kill miners"

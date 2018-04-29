@@ -111,9 +111,6 @@ module ::Sushi::Core::NodeComponents
 
       info "found new nonce: #{light_green(nonce)} (block: #{blockchain.latest_index})"
 
-      # todo:
-      STDERR.puts "found new block! (#{block.index})"
-
       node.send_block(block)
 
       @miners.each do |m|

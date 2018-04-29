@@ -91,7 +91,42 @@ module ::Sushi::Core
       @transaction_pool.reject! { |transaction| indices.get(transaction.id) }
     end
 
-    def push_block?(nonce : UInt64, miners : NodeComponents::MinersManager::Miners) : Block?
+    # def push_block?(nonce : UInt64, miners : NodeComponents::MinersManager::Miners) : Block?
+    #   return nil unless latest_block.valid_nonce?(nonce)
+    #  
+    #   index = @chain.size.to_i64
+    #  
+    #   coinbase_transaction = create_coinbase_transaction(miners)
+    #  
+    #   transactions = [coinbase_transaction] + @transaction_pool
+    #   transactions = align_transactions(transactions)
+    #  
+    #   block = Block.new(
+    #     index,
+    #     transactions,
+    #     nonce,
+    #     latest_block.to_hash,
+    #   )
+    #  
+    #   push_block?(block, true)
+    # end
+    #  
+    # def push_block?(block : Block, internal : Bool = false) : Block?
+    #   return nil if !internal && !block.valid_as_latest?(self)
+    #  
+    #   @chain.push(block)
+    #  
+    #   dapps_record
+    #  
+    #   if database = @database
+    #     database.push_block(block)
+    #   end
+    #  
+    #   clean_transactions
+    #   block
+    # end
+
+    def valid_block?(nonce : UInt64, miners : NodeComponents::MinersManager::Miners) : Block?
       return nil unless latest_block.valid_nonce?(nonce)
 
       index = @chain.size.to_i64
@@ -101,19 +136,21 @@ module ::Sushi::Core
       transactions = [coinbase_transaction] + @transaction_pool
       transactions = align_transactions(transactions)
 
-      block = Block.new(
+      Block.new(
         index,
         transactions,
         nonce,
         latest_block.to_hash,
       )
-
-      push_block?(block, true)
     end
 
-    def push_block?(block : Block, internal : Bool = false) : Block?
-      return nil if !internal && !block.valid_as_latest?(self)
+    def valid_block?(block : Block) : Block?
+      return nil unless block.valid_as_latest?(self)
 
+      block
+    end
+
+    def push_block(block : Block)
       @chain.push(block)
 
       dapps_record
@@ -125,6 +162,21 @@ module ::Sushi::Core
       clean_transactions
       block
     end
+
+    # def valid_block?(block : Block, internal : Bool = false) : Block?
+    #   return nil if !internal && !block.valid_as_latest?(self)
+    #  
+    #   @chain.push(block)
+    #  
+    #   dapps_record
+    #  
+    #   if database = @database
+    #     database.push_block(block)
+    #   end
+    #  
+    #   clean_transactions
+    #   block
+    # end
 
     def replace_chain(_subchain : Chain?) : Bool
       return false unless subchain = _subchain

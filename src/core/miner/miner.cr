@@ -82,6 +82,8 @@ module ::Sushi::Core
         when M_TYPE_MINER_BLOCK_UPDATE
           _block_update(socket, message_content)
         end
+      rescue e : Exception
+        warning "receive invalid message, will be ignored"
       end
 
       info "core version: #{light_green(Core::CORE_VERSION)}"

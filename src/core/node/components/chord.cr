@@ -55,9 +55,6 @@ module ::Sushi::Core::NodeComponents
 
       info "node id: #{light_green(@node_id.to_s)}"
 
-      # todo
-      STDERR.puts "node id: #{light_green(@node_id.to_s)}"
-
       stabilize_process
     end
 
