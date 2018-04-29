@@ -10,15 +10,27 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Core
-  class BlockQueue
+module ::Sushi::Core::BlockQueue
+
+  class Queue
+    @@block_queue : Queue?
+
+    def self.create_instance(blockchain : Blockchain) : Queue
+      @@block_queue ||= Queue.new(blockchain)
+      @@block_queue.not_nil!.run
+      @@block_queue.not_nil!
+    end
+
+    def self.get_instance : Queue
+      @@block_queue.not_nil!
+    end
+
+    getter blockchain : Blockchain
+
     @queue : Array(Task) = [] of Task
     @processing : Bool = false
 
-    record Task, block : Block
-
-    def initialize(@blockchain)
-      
+    def initialize(@blockchain : Blockchain)
     end
 
     def enqueue(task : Task)
@@ -30,14 +42,10 @@ module ::Sushi::Core
         loop do
           sleep 0.5
 
-          STDERR.puts "BuildQueue main loop ..."
-
           next if @processing
           next if @queue.empty?
 
-          STDERR.puts "--- next task"
-
-          task = @queue.shift
+          @queue.shift.exec
         end
       end
     end

@@ -31,12 +31,15 @@ module ::Sushi::Core
     getter transaction_pool = [] of Transaction
 
     @node : Node?
+    @queue : BlockQueue::Queue?
 
     def initialize(@wallet : Wallet, @database : Database? = nil)
       initialize_dapps
     end
 
     def setup(@node : Node)
+      @queue = BlockQueue::Queue.create_instance(self)
+
       setup_dapps
 
       if database = @database
@@ -48,6 +51,10 @@ module ::Sushi::Core
 
     def node
       @node.not_nil!
+    end
+
+    def queue
+      @queue.not_nil!
     end
 
     def set_genesis
@@ -91,41 +98,6 @@ module ::Sushi::Core
       @transaction_pool.reject! { |transaction| indices.get(transaction.id) }
     end
 
-    # def push_block?(nonce : UInt64, miners : NodeComponents::MinersManager::Miners) : Block?
-    #   return nil unless latest_block.valid_nonce?(nonce)
-    #  
-    #   index = @chain.size.to_i64
-    #  
-    #   coinbase_transaction = create_coinbase_transaction(miners)
-    #  
-    #   transactions = [coinbase_transaction] + @transaction_pool
-    #   transactions = align_transactions(transactions)
-    #  
-    #   block = Block.new(
-    #     index,
-    #     transactions,
-    #     nonce,
-    #     latest_block.to_hash,
-    #   )
-    #  
-    #   push_block?(block, true)
-    # end
-    #  
-    # def push_block?(block : Block, internal : Bool = false) : Block?
-    #   return nil if !internal && !block.valid_as_latest?(self)
-    #  
-    #   @chain.push(block)
-    #  
-    #   dapps_record
-    #  
-    #   if database = @database
-    #     database.push_block(block)
-    #   end
-    #  
-    #   clean_transactions
-    #   block
-    # end
-
     def valid_block?(nonce : UInt64, miners : NodeComponents::MinersManager::Miners) : Block?
       return nil unless latest_block.valid_nonce?(nonce)
 
@@ -162,21 +134,6 @@ module ::Sushi::Core
       clean_transactions
       block
     end
-
-    # def valid_block?(block : Block, internal : Bool = false) : Block?
-    #   return nil if !internal && !block.valid_as_latest?(self)
-    #  
-    #   @chain.push(block)
-    #  
-    #   dapps_record
-    #  
-    #   if database = @database
-    #     database.push_block(block)
-    #   end
-    #  
-    #   clean_transactions
-    #   block
-    # end
 
     def replace_chain(_subchain : Chain?) : Bool
       return false unless subchain = _subchain

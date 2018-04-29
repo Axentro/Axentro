@@ -77,10 +77,7 @@ module ::E2E
 
     def launch_miners
       @num_miners.times do |i|
-        # todo
-        port = i % 2 == 0 ? 4000 : 4001
-        # port = @node_ports.sample
-        # todo
+        port = @node_ports.sample
         step mining(port, Random.rand(@num_miners)), 1, "launch miner for #{port}"
       end
     end

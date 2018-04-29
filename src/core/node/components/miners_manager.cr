@@ -20,14 +20,12 @@ module ::Sushi::Core::NodeComponents
 
     alias Miners = Array(Miner)
 
-    @miners : Miners
-    @latest_nonces : Array(UInt64) = [] of UInt64
+    getter miners : Miners = Miners.new
 
-    def initialize
-      @miners = Miners.new
+    def initialize(@blockchain : Blockchain)
     end
 
-    def handshake(node, blockchain, socket, _content)
+    def handshake(node, socket, _content)
       return unless node.flag == FLAG_SETUP_DONE
 
       _m_content = M_CONTENT_MINER_HANDSHAKE.from_json(_content)
@@ -62,8 +60,8 @@ module ::Sushi::Core::NodeComponents
 
       send(socket, M_TYPE_MINER_HANDSHAKE_ACCEPTED, {
         version:    Core::CORE_VERSION,
-        block:      blockchain.latest_block,
-        difficulty: miner_difficulty_at(blockchain.latest_index),
+        block:      @blockchain.latest_block,
+        difficulty: miner_difficulty_at(@blockchain.latest_index),
       })
     rescue e : Exception
       warning "failed to execute handshake with new miner (disconnected)"
@@ -72,7 +70,7 @@ module ::Sushi::Core::NodeComponents
       clean_connection(socket)
     end
 
-    def found_nonce(node, blockchain, socket, _content)
+    def found_nonce(node, socket, _content)
       return unless node.flag == FLAG_SETUP_DONE
 
       _m_content = M_CONTENT_MINER_FOUND_NONCE.from_json(_content)
@@ -81,15 +79,15 @@ module ::Sushi::Core::NodeComponents
       found = false
 
       if miner = find?(socket)
-        if @latest_nonces.includes?(nonce)
+        if @miners.map { |m| m[:nonces] }.flatten.includes?(nonce)
           warning "nonce #{nonce} has already been discoverd"
-        elsif !blockchain.latest_block.valid_nonce?(nonce, miner_difficulty_at(blockchain.latest_block.index))
+        elsif !@blockchain.latest_block.valid_nonce?(nonce, miner_difficulty_at(@blockchain.latest_block.index))
           warning "received nonce is invalid, try to update latest block"
 
           begin
             send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
-              block:      blockchain.latest_block,
-              difficulty: miner_difficulty_at(blockchain.latest_index),
+              block:      @blockchain.latest_block,
+              difficulty: miner_difficulty_at(@blockchain.latest_index),
             })
           rescue e : Exception
             warning "failed to update the block for a miner (disconnected)"
@@ -100,34 +98,31 @@ module ::Sushi::Core::NodeComponents
           info "miner #{miner[:address][0..7]} found nonce (nonces: #{miner[:nonces].size})"
 
           miner[:nonces].push(nonce)
-          @latest_nonces.push(nonce)
 
           found = true
         end
       end
 
-      return unless found
-      return unless block = blockchain.push_block?(nonce, @miners)
+      @blockchain.queue.enqueue(BlockQueue::TaskFoundNonce.new(self, nonce, @miners)) if found
+    end
 
-      info "found new nonce: #{light_green(nonce)} (block: #{blockchain.latest_index})"
-
-      node.send_block(block)
+    def callback_from_queue(block)
+      @blockchain.push_block(block)
+      @blockchain.node.send_block(block)
 
       @miners.each do |m|
         m[:nonces].clear
       end
 
-      @latest_nonces.clear
-
-      broadcast_latest_block(blockchain)
+      broadcast_latest_block
     end
 
-    def broadcast_latest_block(blockchain)
+    def broadcast_latest_block
       @miners.each do |miner|
         begin
           send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
-            block:      blockchain.latest_block,
-            difficulty: miner_difficulty_at(blockchain.latest_index),
+            block:      @blockchain.latest_block,
+            difficulty: miner_difficulty_at(@blockchain.latest_index),
           })
         rescue e : Exception
           warning "failed to update the block for a miner (disconnected)"

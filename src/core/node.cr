@@ -49,7 +49,7 @@ module ::Sushi::Core
       @blockchain = Blockchain.new(@wallet, @database)
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl)
-      @miners_manager = MinersManager.new
+      @miners_manager = MinersManager.new(@blockchain)
       @flag = FLAG_NONE
 
       info "core version: #{light_green(Core::CORE_VERSION)}"
@@ -146,9 +146,9 @@ module ::Sushi::Core
 
         case message_type
         when M_TYPE_MINER_HANDSHAKE
-          @miners_manager.handshake(self, @blockchain, socket, message_content)
+          @miners_manager.handshake(self, socket, message_content)
         when M_TYPE_MINER_FOUND_NONCE
-          @miners_manager.found_nonce(self, @blockchain, socket, message_content)
+          @miners_manager.found_nonce(self, socket, message_content)
         when M_TYPE_CHORD_JOIN
           @chord.join(self, socket, message_content)
         when M_TYPE_CHORD_JOIN_PRIVATE
@@ -221,7 +221,7 @@ module ::Sushi::Core
             end
           end
         end
-      end      
+      end
     end
 
     def broadcast_transaction(transaction : Transaction, from : Chord::NodeContext? = nil)
@@ -272,17 +272,17 @@ module ::Sushi::Core
       end
     end
 
+    def callback_from_queue(block)
+      @blockchain.push_block(block)
+    end
+
     def broadcast_block(socket : HTTP::WebSocket, block : Block, from : Chord::NodeContext? = nil)
       if @blockchain.latest_index + 1 == block.index
-        begin
-          info "new block coming: #{light_cyan(@blockchain.chain.size)}"
+        info "new block coming: #{light_cyan(@blockchain.chain.size)}"
 
-          @blockchain.push_block?(block)
-        rescue e : Exception
-          warning "coming block has been rejected for the reason: #{e.message}"
-        ensure
-          send_block(block, from)
-        end
+        @blockchain.queue.enqueue(BlockQueue::TaskReceiveBlock.new(self, block))
+
+        send_block(block, from)
       elsif @blockchain.latest_index == block.index
         warning "blockchain conflicted at #{block.index}"
         warning "ignore the block. (#{light_cyan(@blockchain.chain.size)})"
@@ -381,7 +381,7 @@ module ::Sushi::Core
 
       if @blockchain.replace_chain(chain)
         info "chain updated: #{light_green(current_latest_index)} -> #{light_green(@blockchain.latest_index)}"
-        @miners_manager.broadcast_latest_block(@blockchain)
+        @miners_manager.broadcast_latest_block
       end
 
       if @flag == FLAG_BLOCKCHAIN_SYNCING
