@@ -11,7 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::BlockQueue
-
   class Queue
     @@block_queue : Queue?
 

@@ -13,10 +13,10 @@
 module ::Sushi::Core::BlockQueue
   class TaskFoundNonce < Task
     def initialize(
-         @callback : NodeComponents::MinersManager,
-         @nonce : UInt64,
-         @miners : NodeComponents::MinersManager::Miners
-       )
+      @callback : NodeComponents::MinersManager,
+      @nonce : UInt64,
+      @miners : NodeComponents::MinersManager::Miners
+    )
     end
 
     def exec
