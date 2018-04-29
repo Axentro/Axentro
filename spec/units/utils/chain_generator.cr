@@ -45,7 +45,7 @@ module ::Units::Utils::ChainGenerator
     end
 
     def addBlock
-      @blockchain.push_block?(1_u64, [@miner])
+      add_valid_block(1_u64, [@miner])
       self
     end
 
@@ -56,7 +56,7 @@ module ::Units::Utils::ChainGenerator
 
     def addBlock(transactions : Array(Transaction))
       transactions.each { |txn| @blockchain.add_transaction(txn) }
-      @blockchain.push_block?(1_u64, [@miner])
+      add_valid_block(1_u64, [@miner])
       self
     end
 
@@ -75,6 +75,16 @@ module ::Units::Utils::ChainGenerator
 
     def enable_ut
       ENV["UT"] = "unit tests"
+    end
+
+    private def add_valid_block(nonce : UInt64, miners : Array(NodeComponents::MinersManager::Miner))
+      valid_block = @blockchain.valid_block?(nonce, miners)
+      case valid_block
+      when Block
+        @blockchain.push_block(valid_block)
+      else
+        raise "error could not push block onto blockchain - block was not valid"
+      end
     end
   end
 
