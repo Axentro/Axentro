@@ -41,6 +41,8 @@ module ::Units::Utils::ChainGenerator
       @blockchain.setup(@node)
       @miner = {address: miner_wallet.address, socket: MockWebSocket.new, nonces: [] of UInt64}
       @transaction_factory = TransactionFactory.new(@node_wallet)
+      @rpc = RPCController.new(@blockchain)
+      @rpc.set_node(@node)
       enable_ut
     end
 
@@ -77,11 +79,19 @@ module ::Units::Utils::ChainGenerator
       ENV["UT"] = "unit tests"
     end
 
+    def rpc
+      @rpc
+    end
+
     private def add_valid_block(nonce : UInt64, miners : Array(NodeComponents::MinersManager::Miner))
       valid_block = @blockchain.valid_block?(nonce, miners)
       case valid_block
       when Block
+        # mm = NodeComponents::MinersManager.new(@blockchain)
         @blockchain.push_block(valid_block)
+        # @blockchain.queue.enqueue(BlockQueue::TaskFoundNonce.new(mm, nonce, miners))
+        # p @blockchain.queue.run
+        # @blockchain.node.send_block(valid_block)
       else
         raise "error could not push block onto blockchain - block was not valid"
       end
