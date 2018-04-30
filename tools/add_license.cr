@@ -10,8 +10,8 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-if !Dir.entries.include?("add_license.cr")
-  puts "Error: you must execute this file from the tools directory - please cd to the tools dir and run crystal run add_license.cr"
+if !Dir.entries(".").includes?("add_license.cr")
+  raise "Error: you must execute this file from the tools directory - please cd to the tools dir and run crystal run add_license.cr"
 end
 
 LICENSE = <<-LIC
