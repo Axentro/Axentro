@@ -10,14 +10,18 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::E2E::Utils::Wallet
-  def create_wallet(num : Int32) : String
-    `#{sushi(["wt", "create", "-w", wallet(num), "--testnet"])}`
-  end
+module ::Sushi::Core::BlockQueue
+  class TaskReceiveBlock < Task
+    def initialize(@callback : Node, @block : Block)
+    end
 
-  def wallet(num : Int32) : String
-    File.expand_path("../../wallets/testnet-#{num}.json", __FILE__)
+    def exec
+      if block = queue.blockchain.valid_block?(@block)
+        info "received block at #{@block.index} is valid. import the block."
+        @callback.callback_from_queue(block)
+      end
+    rescue e : Exception
+      warning "coming block at #{@block.index} has been rejected for the reason: #{e.message}"
+    end
   end
-
-  include ::E2E::Utils::API
 end

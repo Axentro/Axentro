@@ -90,16 +90,13 @@ describe Rejects do
       it "should return a reject true with a reason for the supplied transaction id" do
         with_factory do |block_factory, transaction_factory|
           transaction = transaction_factory.make_send(1000000000_i64)
-          chain = block_factory.addBlock([transaction]).chain
-          block_factory.blockchain.replace_chain(chain)
-          rpc = RPCController.new(block_factory.blockchain)
-          rpc.set_node(block_factory.node)
+          block_factory.addBlocks(1).addBlock([transaction])
 
           payload = {call: "rejects", transaction_id: transaction.id}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |result|
-            result.should eq("{\"rejected\":true,\"reason\":\"sender has not enough token(SHARI). sender has 10000 + 0 but try to pay 1000000000\"}")
+          with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
+            result.should eq("{\"rejected\":true,\"reason\":\"sender has not enough token(SHARI). sender has 20000 + 0 but try to pay 1000000000\"}")
           end
         end
       end
@@ -107,15 +104,12 @@ describe Rejects do
       it "should return a reject false for the supplied transaction id" do
         with_factory do |block_factory, transaction_factory|
           transaction = transaction_factory.make_send(1_i64)
-          chain = block_factory.addBlock([transaction]).chain
-          block_factory.blockchain.replace_chain(chain)
-          rpc = RPCController.new(block_factory.blockchain)
-          rpc.set_node(block_factory.node)
+          block_factory.addBlock([transaction])
 
           payload = {call: "rejects", transaction_id: transaction.id}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |result|
+          with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
             result.should eq("{\"rejected\":false,\"reason\":\"\"}")
           end
         end

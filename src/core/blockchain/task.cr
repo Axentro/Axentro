@@ -10,14 +10,4 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::E2E::Utils::Wallet
-  def create_wallet(num : Int32) : String
-    `#{sushi(["wt", "create", "-w", wallet(num), "--testnet"])}`
-  end
-
-  def wallet(num : Int32) : String
-    File.expand_path("../../wallets/testnet-#{num}.json", __FILE__)
-  end
-
-  include ::E2E::Utils::API
-end
+require "./task/*"

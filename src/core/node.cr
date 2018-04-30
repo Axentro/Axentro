@@ -22,7 +22,6 @@ module ::Sushi::Core
     property flag : Int32
 
     getter network_type : String
-    getter latest_unknown : Int64? = nil
 
     @blockchain : Blockchain
     @miners_manager : MinersManager
@@ -30,11 +29,7 @@ module ::Sushi::Core
 
     @rpc_controller : Controllers::RPCController
 
-    @cc : Int32 = 0
-    @c0 : Int32 = 0
-    @c1 : Int32 = 0
-    @c2 : Int32 = 0
-    @c3 : Int32 = 0
+    @last_conflicted : Int64? = nil
 
     def initialize(
       @is_private : Bool,
@@ -53,7 +48,7 @@ module ::Sushi::Core
       @blockchain = Blockchain.new(@wallet, @database)
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl)
-      @miners_manager = MinersManager.new
+      @miners_manager = MinersManager.new(@blockchain)
       @flag = FLAG_NONE
 
       info "core version: #{light_green(Core::CORE_VERSION)}"
@@ -110,6 +105,8 @@ module ::Sushi::Core
 
       s = if _socket = socket
             _socket
+          elsif predecessor = @chord.find_predecessor?
+            predecessor[:socket]
           elsif successor = @chord.find_successor?
             successor[:socket]
           end
@@ -120,7 +117,7 @@ module ::Sushi::Core
             _s,
             M_TYPE_NODE_REQUEST_CHAIN,
             {
-              latest_index: @latest_unknown ? @latest_unknown.not_nil! - 1 : 0,
+              latest_index: @last_conflicted.nil? ? 0 : @last_conflicted.not_nil!,
             }
           )
         rescue e : Exception
@@ -142,15 +139,27 @@ module ::Sushi::Core
 
     def peer(socket : HTTP::WebSocket)
       socket.on_message do |message|
-        message_json = JSON.parse(message)
+        _message_json : JSON::Any? = begin
+          JSON.parse(message)
+        rescue e : Exception
+          handle_exception(socket, e)
+
+          error "original message"
+          error message
+
+          nil
+        end
+
+        next unless message_json = _message_json
+
         message_type = message_json["type"].as_i
         message_content = message_json["content"].to_s
 
         case message_type
         when M_TYPE_MINER_HANDSHAKE
-          @miners_manager.handshake(self, @blockchain, socket, message_content)
+          @miners_manager.handshake(self, socket, message_content)
         when M_TYPE_MINER_FOUND_NONCE
-          @miners_manager.found_nonce(self, @blockchain, socket, message_content)
+          @miners_manager.found_nonce(self, socket, message_content)
         when M_TYPE_CHORD_JOIN
           @chord.join(self, socket, message_content)
         when M_TYPE_CHORD_JOIN_PRIVATE
@@ -169,8 +178,8 @@ module ::Sushi::Core
           @chord.stabilize_as_predecessor(self, socket, message_content)
         when M_TYPE_NODE_REQUEST_CHAIN
           _request_chain(socket, message_content)
-        when M_TYPE_NODE_RECIEVE_CHAIN
-          _recieve_chain(socket, message_content)
+        when M_TYPE_NODE_RECEIVE_CHAIN
+          _receive_chain(socket, message_content)
         when M_TYPE_NODE_BROADCAST_TRANSACTION
           _broadcast_transaction(socket, message_content)
         when M_TYPE_NODE_BROADCAST_BLOCK
@@ -183,34 +192,53 @@ module ::Sushi::Core
       end
 
       socket.on_close do |_|
-        reject!(socket, nil)
+        reject!(socket)
       end
     rescue e : Exception
       handle_exception(socket, e)
     end
 
-    def broadcast(t : Int32, content, from : Chord::NodeContext?)
-      return if @is_private
-
+    def send_on_chord(message_type, content, from : Chord::NodeContext? = nil)
       _nodes = @chord.find_nodes
-      _nodes[:private_nodes].each do |private_node|
-        send(private_node[:socket], t, content)
-      rescue e : Exception
-        handle_exception(private_node[:socket], e)
-      end
 
-      if successor = _nodes[:successor]
-        if !from.nil? && from.not_nil![:id] == successor[:context][:id]
-          debug "successfully broadcasted! (#{t})"
-          return
-        end
-
-        begin
-          send(successor[:socket], t, content)
+      unless @is_private
+        _nodes[:private_nodes].each do |private_node|
+          next if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
+          send(private_node[:socket], message_type, content)
         rescue e : Exception
-          handle_exception(successor[:socket], e)
+          handle_exception(private_node[:socket], e)
+        end
+
+        if successor = _nodes[:successor]
+          if successor[:context][:id] != content[:from][:id]
+            begin
+              send(successor[:socket], message_type, content)
+            rescue e : Exception
+              handle_exception(successor[:socket], e)
+            end
+          end
+        end
+      else
+        if from.nil? || from[:is_private]
+          if successor = _nodes[:successor]
+            begin
+              send(successor[:socket], message_type, content)
+            rescue e : Exception
+              handle_exception(successor[:socket], e)
+            end
+          end
         end
       end
+    end
+
+    def send_transaction(transaction : Transaction, from : Chord::NodeContext? = nil)
+      content = if from.nil? || (!from.nil? && from[:is_private])
+                  {transaction: transaction, from: @chord.context}
+                else
+                  {transaction: transaction, from: from}
+                end
+
+      send_on_chord(M_TYPE_NODE_BROADCAST_TRANSACTION, content, from)
     end
 
     def broadcast_transaction(transaction : Transaction, from : Chord::NodeContext? = nil)
@@ -218,59 +246,40 @@ module ::Sushi::Core
 
       @blockchain.add_transaction(transaction)
 
-      broadcast(
-        M_TYPE_NODE_BROADCAST_TRANSACTION,
-        {
-          transaction: transaction,
-          from:        from || @chord.context,
-        },
-        from,
-      )
+      send_transaction(transaction, from)
     end
 
     def send_block(block : Block, from : Chord::NodeContext? = nil)
-      broadcast(
-        M_TYPE_NODE_BROADCAST_BLOCK,
-        {
-          block: block,
-          from:  from || @chord.context,
-        },
-        from,
-      )
+      content = if from.nil? || (!from.nil? && from[:is_private])
+                  {block: block, from: @chord.context}
+                else
+                  {block: block, from: from}
+                end
+
+      send_on_chord(M_TYPE_NODE_BROADCAST_BLOCK, content, from)
     end
 
     def broadcast_block(socket : HTTP::WebSocket, block : Block, from : Chord::NodeContext? = nil)
-      @cc += 1
-
       if @blockchain.latest_index + 1 == block.index
-        @c0 += 1
-
-        return analytics unless @blockchain.push_block?(block)
-
         info "new block coming: #{light_cyan(@blockchain.chain.size)}"
+
+        @blockchain.queue.enqueue(BlockQueue::TaskReceiveBlock.new(self, block))
 
         send_block(block, from)
       elsif @blockchain.latest_index == block.index
-        @c1 += 1
+        warning "blockchain conflicted at #{block.index} (#{light_cyan(@blockchain.chain.size)})"
 
-        warning "blockchain conflicted"
-        warning "ignore the block. (#{light_cyan(@blockchain.chain.size)})"
-
-        @latest_unknown ||= block.index
+        @last_conflicted ||= block.index
 
         send_block(block, from)
       elsif @blockchain.latest_index + 1 < block.index
-        @c2 += 1
-
-        warning "required new chain: #{@blockchain.latest_block.index} for #{block.index}"
+        warning "require new chain: #{@blockchain.latest_block.index} for #{block.index}"
 
         sync_chain(socket)
 
         send_block(block, from)
       else
-        @c3 += 1
-
-        warning "recieved old block, will be ignored"
+        warning "received old block, will be ignored"
 
         send_block(block, from)
 
@@ -288,27 +297,28 @@ module ::Sushi::Core
           end
         end
       end
-
-      analytics
     end
 
-    private def handle_exception(socket : HTTP::WebSocket, e : Exception, reject_node : Bool = false)
+    def callback_from_queue(block)
+      @blockchain.push_block(block)
+    end
+
+    private def handle_exception(socket : HTTP::WebSocket, e : Exception)
       if error_message = e.message
         error error_message
       else
         error "unknown error"
       end
 
-      reject!(socket, e)
+      if backtrace = e.backtrace
+        error backtrace.join("\n")
+      end
 
-      error e.backtrace.not_nil!.join("\n")
-    end
+      if socket.closed?
+        warning "the socket seems being closed (node)"
 
-    private def analytics
-      info "recieved block >> total: #{light_cyan(@cc)}, new block: #{light_cyan(@c0)}, " +
-           "conflict: #{light_cyan(@c1)}, sync chain: #{light_cyan(@c2)}, older block: #{light_cyan(@c3)}"
-
-      nil
+        reject!(socket)
+      end
     end
 
     private def _broadcast_transaction(socket, _content)
@@ -340,29 +350,31 @@ module ::Sushi::Core
 
       info "requested new chain: #{latest_index}"
 
-      send(socket, M_TYPE_NODE_RECIEVE_CHAIN, {chain: @blockchain.subchain(latest_index + 1)})
+      send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {chain: @blockchain.subchain(latest_index)})
 
       sync_chain(socket) if latest_index > @blockchain.latest_block.index
     rescue e : Exception
       handle_exception(socket, e)
     end
 
-    private def _recieve_chain(socket, _content)
-      _m_content = M_CONTENT_NODE_RECIEVE_CHAIN.from_json(_content)
+    private def _receive_chain(socket, _content)
+      _m_content = M_CONTENT_NODE_RECEIVE_CHAIN.from_json(_content)
 
       chain = _m_content.chain
 
       if _chain = chain
-        info "recieved chain's size: #{_chain.size}"
+        info "received chain's size: #{_chain.size}"
       else
-        info "recieved empty chain."
+        info "received empty chain."
       end
 
       current_latest_index = @blockchain.latest_index
 
       if @blockchain.replace_chain(chain)
         info "chain updated: #{light_green(current_latest_index)} -> #{light_green(@blockchain.latest_index)}"
-        @miners_manager.broadcast_latest_block(@blockchain)
+        @miners_manager.broadcast_latest_block
+
+        @last_conflicted = nil
       end
 
       if @flag == FLAG_BLOCKCHAIN_SYNCING
@@ -384,15 +396,9 @@ module ::Sushi::Core
       end
     end
 
-    private def reject!(socket : HTTP::WebSocket, _e : Exception?)
-      @chord.clean_connection(socket)
-      @miners_manager.clean_connection(socket)
-
-      if e = _e
-        if error_message = e.message
-          error error_message
-        end
-      end
+    private def reject!(socket : HTTP::WebSocket)
+      @chord.handle_socket(socket)
+      @miners_manager.handle_socket(socket)
     end
 
     private def handlers
@@ -428,9 +434,7 @@ module ::Sushi::Core
 
         info "loaded blockchain's size: #{light_cyan(@blockchain.chain.size)}"
 
-        if @database
-          @latest_unknown = @blockchain.latest_index + 1
-        else
+        if !@database
           warning "no database has been specified"
         end
 

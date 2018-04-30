@@ -21,9 +21,7 @@ module ::E2E::Utils::Node
     "#{bin} #{_args}"
   end
 
-  def node(port : Int32, is_private : Bool, connect_port : Int32?, num : Int32, _db_name : String? = nil, print = true)
-    STDERR.puts "#{light_yellow("launch node")}: port(#{port}) is_private(#{is_private}) connect_port(#{connect_port}) num(#{num}) db_name(#{_db_name})" if print
-
+  def node(port : Int32, is_private : Bool, connect_port : Int32?, num : Int32, _db_name : String? = nil)
     args = ["-p", port, "-w", wallet(num), "--testnet"]
     args << "-n http://127.0.0.1:#{connect_port}" if connect_port
 
@@ -41,7 +39,7 @@ module ::E2E::Utils::Node
     bin = sushid(args)
 
     spawn do
-      system("#{bin} &> #{log_path(num)}")
+      system("rm -rf #{log_path(num, "node")} && #{bin} &> #{log_path(num, "node")}")
     end
   end
 end

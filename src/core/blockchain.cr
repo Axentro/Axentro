@@ -31,12 +31,15 @@ module ::Sushi::Core
     getter transaction_pool = [] of Transaction
 
     @node : Node?
+    @queue : BlockQueue::Queue?
 
     def initialize(@wallet : Wallet, @database : Database? = nil)
       initialize_dapps
     end
 
     def setup(@node : Node)
+      @queue = BlockQueue::Queue.create_instance(self)
+
       setup_dapps
 
       if database = @database
@@ -48,6 +51,10 @@ module ::Sushi::Core
 
     def node
       @node.not_nil!
+    end
+
+    def queue
+      @queue.not_nil!
     end
 
     def set_genesis
@@ -91,7 +98,7 @@ module ::Sushi::Core
       @transaction_pool.reject! { |transaction| indices.get(transaction.id) }
     end
 
-    def push_block?(nonce : UInt64, miners : NodeComponents::MinersManager::Miners) : Block?
+    def valid_block?(nonce : UInt64, miners : NodeComponents::MinersManager::Miners) : Block?
       return nil unless latest_block.valid_nonce?(nonce)
 
       index = @chain.size.to_i64
@@ -101,19 +108,21 @@ module ::Sushi::Core
       transactions = [coinbase_transaction] + @transaction_pool
       transactions = align_transactions(transactions)
 
-      block = Block.new(
+      Block.new(
         index,
         transactions,
         nonce,
         latest_block.to_hash,
       )
-
-      push_block?(block, true)
     end
 
-    def push_block?(block : Block, internal : Bool = false) : Block?
-      return nil if !internal && !block.valid_as_latest?(self)
+    def valid_block?(block : Block) : Block?
+      return nil unless block.valid_as_latest?(self)
 
+      block
+    end
+
+    def push_block(block : Block)
       @chain.push(block)
 
       dapps_record
@@ -129,12 +138,15 @@ module ::Sushi::Core
     def replace_chain(_subchain : Chain?) : Bool
       return false unless subchain = _subchain
       return false if subchain.size == 0
-      return false if subchain[0].index == 0
       return false if @chain.size == 0
 
-      first_index = subchain[0].index - 1
+      first_index = subchain[0].index
 
-      @chain = @chain[0..first_index]
+      if first_index == 0
+        @chain = [] of Block
+      else
+        @chain = @chain[0..first_index - 1]
+      end
 
       dapps_clear_record
 

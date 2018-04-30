@@ -10,14 +10,15 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::E2E::Utils::Wallet
-  def create_wallet(num : Int32) : String
-    `#{sushi(["wt", "create", "-w", wallet(num), "--testnet"])}`
-  end
+module ::Sushi::Core::BlockQueue
+  abstract class Task
+    abstract def exec
 
-  def wallet(num : Int32) : String
-    File.expand_path("../../wallets/testnet-#{num}.json", __FILE__)
-  end
+    def queue
+      Queue.get_instance
+    end
 
-  include ::E2E::Utils::API
+    include Logger
+    include Common::Color
+  end
 end

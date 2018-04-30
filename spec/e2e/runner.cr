@@ -16,42 +16,60 @@ require "./utils"
 require "./client"
 
 module ::E2E
+  ALL_PUBLIC  = 0
+  ALL_PRIVATE = 1
+  ONE_PRIVATE = 2
+
   class Runner
     @client : Client
     @db_name : String
 
     @node_ports : Array(Int32)
+    @node_ports_public : Array(Int32) = [] of Int32
 
-    def initialize(@num_nodes : Int32, @num_miners : Int32)
-      raise "@num_nodes has to be grater than 0" if @num_nodes < 0
-      raise "@num_nodes of E2E::Runner has to be less than 5" if @num_nodes > 5
-      raise "@num_miners of E2E::Runner has to be less than 6" if @num_miners > 6
+    getter exit_code : Int32 = 0
 
+    def initialize(@mode : Int32, @num_nodes : Int32, @num_miners : Int32, @time : Int32)
       @node_ports = (4000..4000 + (@num_nodes - 1)).to_a
 
       @client = Client.new(@node_ports, @num_miners)
       @db_name = Random.new.hex
     end
 
-    def pre_build
-      raise "build failed" unless system("shards build")
+    def create_wallets
+      [@num_nodes, @num_miners].max.times do |idx|
+        create_wallet(idx)
+      end
+    end
+
+    def launch_node(node_port, is_private, connecting_port, idx, db = nil)
+      node(node_port, is_private, connecting_port, idx, db)
+      @node_ports_public.push(node_port) unless is_private
+    end
+
+    def launch_first_node
+      launch_node(@node_ports[0], false, nil, 0, @db_name)
     end
 
     def launch_nodes
-      # genesis node
-      node(@node_ports[0], false, nil, 0, @db_name)
-
-      node_ports_public = [@node_ports[0]]
-
-      sleep 5
+      step launch_first_node, 5, "launch first node"
 
       @node_ports[1..-1].each_with_index do |node_port, idx|
-        is_private = Random.rand(10) < 2
-        connecting_port = node_ports_public.sample
+        is_private = case @mode
+                     when E2E::ALL_PUBLIC
+                       false
+                     when E2E::ALL_PRIVATE
+                       true
+                     when E2E::ONE_PRIVATE
+                       idx == 0
+                     else
+                       false
+                     end
 
-        node(node_port, is_private, connecting_port, idx + 1)
-        node_ports_public.push(node_port) unless is_private
-        sleep 5
+        connecting_port = @node_ports_public.sample
+
+        step launch_node(node_port, is_private, connecting_port, idx + 1), 5,
+          "launch node on port #{node_port} connect to #{connecting_port} #{is_private ? "(private)" : "(public)"}"
       end
     end
 
@@ -61,7 +79,8 @@ module ::E2E
 
     def launch_miners
       @num_miners.times do |i|
-        mining(@node_ports.sample, Random.rand(@num_miners))
+        port = @node_ports.sample
+        step mining(port, Random.rand(@num_miners)), 1, "launch miner for #{port}"
       end
     end
 
@@ -111,6 +130,25 @@ module ::E2E
       STDERR.puts light_green("-> PASSED!")
     end
 
+    def verify_blockchain_sizes_are_almost_same
+      STDERR.puts
+      STDERR.puts "verifying: #{green("latest blockchain sizes")}..."
+
+      min_size = blockchain_size(@node_ports[0])
+
+      @node_ports[1..-1].each do |node_port|
+        size = blockchain_size(node_port)
+
+        raise "blockchain size is completely different. (#{min_size} vs #{size})" if (size - min_size).abs > 2
+        STDERR.print "."
+
+        min_size = size if size < min_size
+      end
+
+      STDERR.puts
+      STDERR.puts light_green("-> PASSED!")
+    end
+
     def verify_all_addresses_have_non_negative_amount
       STDERR.puts
       STDERR.puts "verifying: #{green("all addresses have non-negative amount")}"
@@ -137,9 +175,8 @@ module ::E2E
 
       size0 = blockchain_size(4000)
 
-      node(5000, true, nil, 5, @db_name, false)
-
-      sleep 60
+      step create_wallet(100), 0, ""
+      step launch_node(5000, true, nil, 100, @db_name), 10, ""
 
       size1 = blockchain_size(5000)
 
@@ -156,9 +193,8 @@ module ::E2E
       STDERR.puts "- transactions  : #{@client.num_transactions}"
       STDERR.puts "- duration      : #{@client.duration} [sec]"
       STDERR.puts "- result        : #{light_green(@client.num_transactions/@client.duration)} [transactions/sec]"
-      STDERR.puts "- nodes         : #{@num_nodes}"
-      STDERR.puts "- miners        : #{@num_miners}"
-
+      STDERR.puts "- # of nodes    : #{@num_nodes}"
+      STDERR.puts "- # of miners   : #{@num_miners}"
       STDERR.puts "**************** #{light_yellow("status")} ****************"
 
       @node_ports.each do |port|
@@ -166,7 +202,10 @@ module ::E2E
         STDERR.puts "> blocks on port #{port} (size: #{size})"
 
         size.times do |i|
-          block = block(port, i)
+          unless block = block(port, i)
+            STDERR.puts "%2d --- %s" % [i, "failed to get block at #{i} on #{port}"]
+            next
+          end
 
           STDERR.puts "%2d --- %s" % [i, block["prev_hash"].as_s]
         end
@@ -175,47 +214,81 @@ module ::E2E
 
     def assertion!
       verify_latest_confirmed_block
+      verify_blockchain_sizes_are_almost_same
       verify_all_addresses_have_non_negative_amount
       verify_blockchain_can_be_restored_from_database
     end
 
     def clean_db
-      FileUtils.rm_rf(File.expand_path("../db/#{@db_name}.db", __FILE__))
+      Dir.glob(File.expand_path("../db/*.db", __FILE__)) do |db|
+        FileUtils.rm_rf db
+      end
+    end
+
+    def clean_wallets
+      Dir.glob(File.expand_path("../wallets/*.json", __FILE__)) do |wallet|
+        FileUtils.rm_rf wallet
+      end
+    end
+
+    def clean_logs
+      Dir.glob(File.expand_path("../logs/*.log", __FILE__)) do |log|
+        FileUtils.rm_rf log
+      end
+    end
+
+    def running
+    end
+
+    macro step(func, interval, desc)
+      STDERR.puts "__ step __ (sleep: #{{{interval.id}}}) " + {{desc}} if {{desc}}.size > 0
+
+      {{func.id}}
+      sleep {{interval.id}}
     end
 
     def run!
-      kill_nodes
-      kill_miners
+      mode_str = case @mode
+                 when E2E::ALL_PUBLIC
+                   "ALL_PUBLIC"
+                 when E2E::ALL_PRIVATE
+                   "ALL_RPIVATE"
+                 when E2E::ONE_PRIVATE
+                   "ONE_PRIVATE"
+                 else
+                   "UNKNOWN"
+                 end
 
-      pre_build
+      STDERR.puts "start E2E tests with #{light_green(mode_str)} mode"
 
-      launch_nodes
+      step kill_nodes, 0, "kill existing nodes"
+      step kill_miners, 0, "kill existing miners"
+      step clean_logs, 0, "clean logs"
+      step create_wallets, 0, "create wallets"
+      step launch_nodes, 1, "launch nodes"
+      step launch_miners, 1, "launch miners"
+      step launch_client, 1, "launch client"
 
-      sleep 1
+      running_steps = @time/300
+      running_steps.times do |i|
+        step running, 300, "running..."
+      end
 
-      launch_miners
+      step running, @time % 300, "running..."
 
-      sleep 1
+      step kill_client, 10, "kill client"
+      step kill_miners, 10, "kill miners"
+      step assertion!, 0, "start assertion"
+    rescue e : Exception
+      STDERR.puts "-> FAILED!"
+      STDERR.puts "   the reason: #{e.message}"
 
-      launch_client
-
-      sleep 540
-
-      kill_client
-
-      sleep 10
-
-      kill_miners
-
-      sleep 10
-
-      assertion!
+      @exit_code = -1
     ensure
-      benchmark_result
-
-      kill_nodes
-
-      clean_db
+      step benchmark_result, 0, "show benchmark result"
+      step kill_nodes, 0, "kill nodes"
+      step clean_db, 2, "clean database"
+      step clean_wallets, 2, "clean wallets"
     end
 
     include Utils

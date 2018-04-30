@@ -80,9 +80,7 @@ module ::Sushi::Core
           transaction.valid?(blockchain, @index, idx == 0, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
         end
 
-        prev_block = blockchain.chain[-1]
-
-        return valid_for?(prev_block)
+        return valid_for?(blockchain.latest_block)
       else
         raise "index has to be '0' for genesis block: #{@index}" if @index != 0
         raise "transactions have to be empty for genesis block: #{@transactions}" if !@transactions.empty?
