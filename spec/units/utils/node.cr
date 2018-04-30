@@ -45,22 +45,6 @@ module ::Units::Utils::NodeHelper
     blockchain
   end
 
-  def with_node(&block)
-    sender_wallet = wallet_1
-    recipient_wallet = wallet_2
-
-    block_factory = BlockFactory.new
-    chain = block_factory.addBlocks(10).sub_chain
-    blockchain = Blockchain.new(sender_wallet)
-    node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, sender_wallet, nil, false)
-    blockchain.setup(node)
-    blockchain.replace_chain(chain)
-
-    rpc = RPCController.new(blockchain)
-    rpc.set_node(node)
-    yield sender_wallet, recipient_wallet, chain, blockchain, rpc
-  end
-
   def with_rpc_exec_internal_post(rpc, json, status_code = 200, &block)
     res = rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), {} of String => String)
     res.response.output.flush

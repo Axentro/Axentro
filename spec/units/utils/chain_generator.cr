@@ -13,6 +13,7 @@
 module ::Units::Utils::ChainGenerator
   include Sushi::Core
   include Sushi::Core::Keys
+  include Sushi::Core::Controllers
 
   def with_factory(&block)
     block_factory = BlockFactory.new
@@ -87,11 +88,7 @@ module ::Units::Utils::ChainGenerator
       valid_block = @blockchain.valid_block?(nonce, miners)
       case valid_block
       when Block
-        # mm = NodeComponents::MinersManager.new(@blockchain)
         @blockchain.push_block(valid_block)
-        # @blockchain.queue.enqueue(BlockQueue::TaskFoundNonce.new(mm, nonce, miners))
-        # p @blockchain.queue.run
-        # @blockchain.node.send_block(valid_block)
       else
         raise "error could not push block onto blockchain - block was not valid"
       end
