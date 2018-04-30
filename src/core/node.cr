@@ -29,8 +29,7 @@ module ::Sushi::Core
 
     @rpc_controller : Controllers::RPCController
 
-    # todo
-    @last_conflicted : Int64 = 0_i64
+    @last_conflicted : Int64? = nil
 
     def initialize(
       @is_private : Bool,
@@ -118,11 +117,11 @@ module ::Sushi::Core
             _s,
             M_TYPE_NODE_REQUEST_CHAIN,
             {
-              latest_index: @last_conflicted,
+              latest_index: @last_conflicted.nil? ? 0 : @last_conflicted.not_nil!,
             }
           )
         rescue e : Exception
-          handle_exception("sync_chain", _s, e)
+          handle_exception(_s, e)
         end
       else
         warning "successor not found. skip synching blockchain."
@@ -141,11 +140,11 @@ module ::Sushi::Core
     def peer(socket : HTTP::WebSocket)
       socket.on_message do |message|
         _message_json : JSON::Any? = begin
-                                       JSON.parse(message)
-                                     rescue e : Exception
-                                       handle_exception("JSON.parse in peer", socket, e, false, false)
-                                       nil
-                                     end
+          JSON.parse(message)
+        rescue e : Exception
+          handle_exception(socket, e)
+          nil
+        end
 
         next unless message_json = _message_json
 
@@ -185,14 +184,14 @@ module ::Sushi::Core
           _ask_request_chain(socket, message_content)
         end
       rescue e : Exception
-        handle_exception("socket.on_message", socket, e)
+        handle_exception(socket, e)
       end
 
       socket.on_close do |_|
-        reject!(socket, nil)
+        reject!(socket)
       end
     rescue e : Exception
-      handle_exception("peer", socket, e)
+      handle_exception(socket, e)
     end
 
     def send_transaction(transaction : Transaction, from : Chord::NodeContext? = nil)
@@ -209,14 +208,14 @@ module ::Sushi::Core
           next if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
           send(private_node[:socket], M_TYPE_NODE_BROADCAST_TRANSACTION, content)
         rescue e : Exception
-          handle_exception("send_transaction send to private", private_node[:socket], e)
+          handle_exception(private_node[:socket], e)
         end
 
         if successor = _nodes[:successor]
           begin
             send(successor[:socket], M_TYPE_NODE_BROADCAST_TRANSACTION, content)
           rescue e : Exception
-            handle_exception("send_transaction send to successor", successor[:socket], e)
+            handle_exception(successor[:socket], e)
           end
         end
       else
@@ -225,7 +224,7 @@ module ::Sushi::Core
             begin
               send(successor[:socket], M_TYPE_NODE_BROADCAST_TRANSACTION, content)
             rescue e : Exception
-              handle_exception("send_transaction send to successor from private", successor[:socket], e)
+              handle_exception(successor[:socket], e)
             end
           end
         end
@@ -257,14 +256,14 @@ module ::Sushi::Core
           next if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
           send(private_node[:socket], M_TYPE_NODE_BROADCAST_BLOCK, content)
         rescue e : Exception
-          handle_exception("send_block send to private", private_node[:socket], e)
+          handle_exception(private_node[:socket], e)
         end
 
         if successor = _nodes[:successor]
           begin
             send(successor[:socket], M_TYPE_NODE_BROADCAST_BLOCK, content)
           rescue e : Exception
-            handle_exception("send_block send to successor", successor[:socket], e)
+            handle_exception(successor[:socket], e)
           end
         end
       else
@@ -273,7 +272,7 @@ module ::Sushi::Core
             begin
               send(successor[:socket], M_TYPE_NODE_BROADCAST_BLOCK, content)
             rescue e : Exception
-              handle_exception("send_block send to successor from private", successor[:socket], e)
+              handle_exception(successor[:socket], e)
             end
           end
         end
@@ -295,8 +294,7 @@ module ::Sushi::Core
         warning "blockchain conflicted at #{block.index}"
         warning "ignore the block. (#{light_cyan(@blockchain.chain.size)})"
 
-        # todo
-        # @last_conflicted = block.index
+        @last_conflicted ||= block.index
 
         send_block(block, from)
       elsif @blockchain.latest_index + 1 < block.index
@@ -320,24 +318,24 @@ module ::Sushi::Core
               }
             )
           rescue e : Exception
-            handle_exception("broadcast_block received old block", predecessor[:socket], e)
+            handle_exception(predecessor[:socket], e)
           end
         end
       end
     end
 
-    private def handle_exception(debug_symbol : String, socket : HTTP::WebSocket, e : Exception, reject : Bool = true, show_backtrace : Bool = true)
-      error "handle_exception -- symbol => #{debug_symbol}"
-
+    private def handle_exception(socket : HTTP::WebSocket, e : Exception)
       if error_message = e.message
         error error_message
       else
         error "unknown error"
       end
 
-      reject!(socket, e) if reject
+      if backtrace = e.backtrace
+        error backtrace.join("\n")
+      end
 
-      error e.backtrace.not_nil!.join("\n") if show_backtrace
+      reject!(socket) if socket.closed?
     end
 
     private def _broadcast_transaction(socket, _content)
@@ -373,7 +371,7 @@ module ::Sushi::Core
 
       sync_chain(socket) if latest_index > @blockchain.latest_block.index
     rescue e : Exception
-      handle_exception("request chain", socket, e)
+      handle_exception(socket, e)
     end
 
     private def _receive_chain(socket, _content)
@@ -392,6 +390,8 @@ module ::Sushi::Core
       if @blockchain.replace_chain(chain)
         info "chain updated: #{light_green(current_latest_index)} -> #{light_green(@blockchain.latest_index)}"
         @miners_manager.broadcast_latest_block
+
+        @last_conflicted = nil
       end
 
       if @flag == FLAG_BLOCKCHAIN_SYNCING
@@ -413,15 +413,9 @@ module ::Sushi::Core
       end
     end
 
-    private def reject!(socket : HTTP::WebSocket, _e : Exception?)
-      @chord.clean_connection(socket)
-      @miners_manager.clean_connection(socket)
-
-      if e = _e
-        if error_message = e.message
-          error error_message
-        end
-      end
+    private def reject!(socket : HTTP::WebSocket)
+      @chord.handle_socket(socket)
+      @miners_manager.handle_socket(socket)
     end
 
     private def handlers

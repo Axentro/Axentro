@@ -90,9 +90,9 @@ module ::Sushi::Core::NodeComponents
               difficulty: miner_difficulty_at(@blockchain.latest_index),
             })
           rescue e : Exception
-            warning "failed to update the block for a miner (disconnected)"
+            warning "failed to update the block for a miner"
 
-            clean_connection(miner[:socket])
+            handle_socket(miner[:socket])
           end
         else
           info "miner #{miner[:address][0..7]} found nonce (nonces: #{miner[:nonces].size})"
@@ -125,9 +125,9 @@ module ::Sushi::Core::NodeComponents
             difficulty: miner_difficulty_at(@blockchain.latest_index),
           })
         rescue e : Exception
-          warning "failed to update the block for a miner (disconnected)"
+          warning "failed to update the block for a miner"
 
-          clean_connection(miner[:socket])
+          handle_socket(miner[:socket])
         end
       end
     end
@@ -136,11 +136,15 @@ module ::Sushi::Core::NodeComponents
       @miners.find { |m| m[:socket] == socket }
     end
 
+    def handle_socket(socket)
+      clean_connection(socket) if socket.closed?
+    end
+
     def clean_connection(socket)
       current_size = @miners.size
       @miners.reject! { |miner| miner[:socket] == socket }
 
-      info "a miner has been removed. (#{@miners.size})" if current_size > @miners.size
+      info "a miner has been removed. (#{current_size} -> #{@miners.size})" if current_size > @miners.size
     end
 
     def size

@@ -446,7 +446,7 @@ module ::Sushi::Core::NodeComponents
     def send_overlay(socket, t, content)
       send(socket, t, content)
     rescue e : Exception
-      clean_connection(socket)
+      handle_socket(socket)
     end
 
     def ping_all
@@ -462,7 +462,11 @@ module ::Sushi::Core::NodeComponents
     def ping(socket : HTTP::WebSocket)
       socket.ping
     rescue e : Exception
-      clean_connection(socket)
+      handle_socket(socket)
+    end
+
+    def handle_socket(socket : HTTP::WebSocket)
+      clean_connection(socket) if socket.closed?
     end
 
     def clean_connection(socket : HTTP::WebSocket)
