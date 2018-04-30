@@ -75,6 +75,8 @@ class SushiChainE2E
 
     runner = ::E2E::Runner.new(runner_mode, @num_nodes, @num_miners, @time)
     runner.run!
+
+    exit runner.exit_code
   end
 end
 

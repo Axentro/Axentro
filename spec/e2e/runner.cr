@@ -27,6 +27,8 @@ module ::E2E
     @node_ports : Array(Int32)
     @node_ports_public : Array(Int32) = [] of Int32
 
+    getter exit_code : Int32 = 0
+
     def initialize(@mode : Int32, @num_nodes : Int32, @num_miners : Int32, @time : Int32)
       @node_ports = (4000..4000 + (@num_nodes - 1)).to_a
 
@@ -277,6 +279,8 @@ module ::E2E
     rescue e : Exception
       STDERR.puts "-> FAILED!"
       STDERR.puts "   the reason: #{e.message}"
+
+      @exit_code = -1
     ensure
       step benchmark_result, 0, "show benchmark result"
       step kill_nodes, 0, "kill nodes"
