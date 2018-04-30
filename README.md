@@ -21,7 +21,7 @@ All documents are written on [wiki](https://github.com/SushiChain/SushiChain/wik
 
 ## Community
 
-We are discussing many things everyday in [Slack](https://goo.gl/MnBKcy).
+We are discussing many things everyday in [Slack](https://bit.ly/2HJBu1z).
 
 🍣 We are welcome your joining! 🍣
 
