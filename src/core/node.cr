@@ -198,41 +198,47 @@ module ::Sushi::Core
       handle_exception(socket, e)
     end
 
-    def send_transaction(transaction : Transaction, from : Chord::NodeContext? = nil)
-      content = {transaction: transaction, from: from || @chord.context}
-
+    def send_on_chord(message_type, content, from : Chord::NodeContext? = nil)
       _nodes = @chord.find_nodes
 
       unless @is_private
-        if !from.nil? && from[:is_private]
-          content = {transaction: transaction, from: @chord.context}
-        end
-
         _nodes[:private_nodes].each do |private_node|
           next if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
-          send(private_node[:socket], M_TYPE_NODE_BROADCAST_TRANSACTION, content)
+          send(private_node[:socket], message_type, content)
         rescue e : Exception
           handle_exception(private_node[:socket], e)
         end
 
         if successor = _nodes[:successor]
-          begin
-            send(successor[:socket], M_TYPE_NODE_BROADCAST_TRANSACTION, content)
-          rescue e : Exception
-            handle_exception(successor[:socket], e)
+          if successor[:context][:id] != content[:from][:id]
+            begin
+              send(successor[:socket], message_type, content)
+            rescue e : Exception
+              handle_exception(successor[:socket], e)
+            end
           end
         end
       else
         if from.nil? || from[:is_private]
           if successor = _nodes[:successor]
             begin
-              send(successor[:socket], M_TYPE_NODE_BROADCAST_TRANSACTION, content)
+              send(successor[:socket], message_type, content)
             rescue e : Exception
               handle_exception(successor[:socket], e)
             end
           end
         end
       end
+    end
+
+    def send_transaction(transaction : Transaction, from : Chord::NodeContext? = nil)
+      content = if from.nil? || (!from.nil? && from[:is_private])
+                  {transaction: transaction, from: @chord.context}
+                else
+                  {transaction: transaction, from: from}
+                end
+
+      send_on_chord(M_TYPE_NODE_BROADCAST_TRANSACTION, content, from)
     end
 
     def broadcast_transaction(transaction : Transaction, from : Chord::NodeContext? = nil)
@@ -244,47 +250,13 @@ module ::Sushi::Core
     end
 
     def send_block(block : Block, from : Chord::NodeContext? = nil)
-      content = {block: block, from: from || @chord.context}
+      content = if from.nil? || (!from.nil? && from[:is_private])
+                  {block: block, from: @chord.context}
+                else
+                  {block: block, from: from}
+                end
 
-      _nodes = @chord.find_nodes
-
-      unless @is_private
-        if !from.nil? && from[:is_private]
-          content = {
-            block: block,
-            from:  @chord.context,
-          }
-        end
-
-        _nodes[:private_nodes].each do |private_node|
-          next if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
-          send(private_node[:socket], M_TYPE_NODE_BROADCAST_BLOCK, content)
-        rescue e : Exception
-          handle_exception(private_node[:socket], e)
-        end
-
-        if successor = _nodes[:successor]
-          begin
-            send(successor[:socket], M_TYPE_NODE_BROADCAST_BLOCK, content)
-          rescue e : Exception
-            handle_exception(successor[:socket], e)
-          end
-        end
-      else
-        if from.nil? || from[:is_private]
-          if successor = _nodes[:successor]
-            begin
-              send(successor[:socket], M_TYPE_NODE_BROADCAST_BLOCK, content)
-            rescue e : Exception
-              handle_exception(successor[:socket], e)
-            end
-          end
-        end
-      end
-    end
-
-    def callback_from_queue(block)
-      @blockchain.push_block(block)
+      send_on_chord(M_TYPE_NODE_BROADCAST_BLOCK, content, from)
     end
 
     def broadcast_block(socket : HTTP::WebSocket, block : Block, from : Chord::NodeContext? = nil)
@@ -295,8 +267,7 @@ module ::Sushi::Core
 
         send_block(block, from)
       elsif @blockchain.latest_index == block.index
-        warning "blockchain conflicted at #{block.index}"
-        warning "ignore the block. (#{light_cyan(@blockchain.chain.size)})"
+        warning "blockchain conflicted at #{block.index} (#{light_cyan(@blockchain.chain.size)})"
 
         @last_conflicted ||= block.index
 
@@ -326,6 +297,10 @@ module ::Sushi::Core
           end
         end
       end
+    end
+
+    def callback_from_queue(block)
+      @blockchain.push_block(block)
     end
 
     private def handle_exception(socket : HTTP::WebSocket, e : Exception)

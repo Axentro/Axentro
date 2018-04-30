@@ -466,11 +466,7 @@ module ::Sushi::Core::NodeComponents
     end
 
     def handle_socket(socket : HTTP::WebSocket)
-      if socket.closed?
-        warning "the socket seems being closed (chord)"
-
-        clean_connection(socket)
-      end
+      clean_connection(socket) if socket.closed?
     end
 
     def clean_connection(socket : HTTP::WebSocket)

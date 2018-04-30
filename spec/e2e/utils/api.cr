@@ -42,13 +42,13 @@ module ::E2E::Utils::API
   end
 
   def amount(port : Int32, num : Int32, unconfirmed = false) : Int64
-    args = ["wallet", "amount", "-w", "wallets/testnet-#{num}.json", "-n", "http://127.0.0.1:#{port}", "--json"]
+    args = ["wallet", "amount", "-w", wallet(num), "-n", "http://127.0.0.1:#{port}", "--json"]
     args << "-u" if unconfirmed
 
     res = `#{sushi(args)}`
 
     if json = parse_json(res)
-      json["result"][0]["amount"].to_s.to_i64
+      return json["result"][0]["amount"].to_s.to_i64
     end
 
     0_i64
@@ -61,9 +61,9 @@ module ::E2E::Utils::API
 
     a = Random.rand(a/10000) + 1
 
-    recipient_address = ::Sushi::Core::Wallet.from_path("wallets/testnet-#{n_recipient}.json").address
+    recipient_address = ::Sushi::Core::Wallet.from_path(wallet(n_recipient)).address
 
-    args = ["transaction", "create", "-w", "wallets/testnet-#{n_sender}.json", "-a", recipient_address, "-m", a, "-n", "http://127.0.0.1:#{port}", "--message='E2E Test'", "-f", "1", "--json"]
+    args = ["transaction", "create", "-w", wallet(n_sender), "-a", recipient_address, "-m", a, "-n", "http://127.0.0.1:#{port}", "--message='E2E Test'", "-f", "1", "--json"]
 
     res = `#{sushi(args)}`
 
@@ -82,10 +82,12 @@ module ::E2E::Utils::API
   end
 
   def parse_json(command_res : String) : JSON::Any?
-    JSON.parse(command_res)
+    return JSON.parse(command_res)
   rescue e : Exception
     STDERR.puts "invalid json found during executing API"
     STDERR.puts "original message"
     STDERR.puts command_res
+
+    nil
   end
 end

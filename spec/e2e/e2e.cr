@@ -19,9 +19,9 @@ include ::Sushi::Common::Color
 
 class SushiChainE2E
   @mode : String = "all_public"
-  @num_nodes : Int32 = 5
-  @num_miners : Int32 = 5
-  @time : Int32 = 540
+  @num_nodes : Int32 = 4
+  @num_miners : Int32 = 4
+  @time : Int32 = 300
 
   def initialize
     ENV["E2E"] = "true"
@@ -39,15 +39,15 @@ class SushiChainE2E
         @mode = mode
       end
 
-      parser.on("--num_nodes=NUM", "# of nodes (default is 5)") do |num|
+      parser.on("--num_nodes=NUM", "# of nodes (default is 4)") do |num|
         @num_nodes = num.to_i
       end
 
-      parser.on("--num_miners=NUM", "# of miners (default is 5)") do |num|
+      parser.on("--num_miners=NUM", "# of miners (default is 4)") do |num|
         @num_miners = num.to_i
       end
 
-      parser.on("--time=TIME", "execution time in sec (default is 540 )") do |time|
+      parser.on("--time=TIME", "execution time in sec (default is 300 )") do |time|
         @time = time.to_i
       end
 
