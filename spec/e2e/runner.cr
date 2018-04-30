@@ -202,7 +202,10 @@ module ::E2E
         STDERR.puts "> blocks on port #{port} (size: #{size})"
 
         size.times do |i|
-          block = block(port, i)
+          unless block = block(port, i)
+            STDERR.puts "%2d --- %s" % [i, "failed to get block at #{i} on #{port}"]
+            next
+          end
 
           STDERR.puts "%2d --- %s" % [i, block["prev_hash"].as_s]
         end

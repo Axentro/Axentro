@@ -137,7 +137,11 @@ module ::Sushi::Core::NodeComponents
     end
 
     def handle_socket(socket)
-      clean_connection(socket) if socket.closed?
+      if socket.closed?
+        warning "the socket seems being closed (miner_manager)"
+
+        clean_connection(socket)
+      end
     end
 
     def clean_connection(socket)

@@ -143,6 +143,10 @@ module ::Sushi::Core
           JSON.parse(message)
         rescue e : Exception
           handle_exception(socket, e)
+
+          error "original message"
+          error message
+
           nil
         end
 
@@ -335,7 +339,11 @@ module ::Sushi::Core
         error backtrace.join("\n")
       end
 
-      reject!(socket) if socket.closed?
+      if socket.closed?
+        warning "the socket seems being closed (node)"
+
+        reject!(socket)
+      end
     end
 
     private def _broadcast_transaction(socket, _content)

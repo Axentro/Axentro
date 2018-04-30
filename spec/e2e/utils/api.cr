@@ -26,15 +26,19 @@ module ::E2E::Utils::API
 
     res = `#{sushi(args)}`
 
-    JSON.parse(res)["size"].as_i
+    if json = parse_json(res)
+      return json["size"].as_i
+    end
+
+    0
   end
 
-  def block(port : Int32, index : Int32) : JSON::Any
+  def block(port : Int32, index : Int32) : JSON::Any?
     args = ["blockchain", "block", "-n", "http://127.0.0.1:#{port}", "-i", index, "--json"]
 
     res = `#{sushi(args)}`
 
-    JSON.parse(res)
+    parse_json(res)
   end
 
   def amount(port : Int32, num : Int32, unconfirmed = false) : Int64
@@ -43,7 +47,11 @@ module ::E2E::Utils::API
 
     res = `#{sushi(args)}`
 
-    JSON.parse(res)["result"][0]["amount"].to_s.to_i64
+    if json = parse_json(res)
+      json["result"][0]["amount"].to_s.to_i64
+    end
+
+    0_i64
   end
 
   def create(port : Int32, n_sender : Int32, n_recipient : Int32) : String?
@@ -59,7 +67,11 @@ module ::E2E::Utils::API
 
     res = `#{sushi(args)}`
 
-    JSON.parse(res)["id"].to_s
+    if json = parse_json(res)
+      return json["id"].to_s
+    end
+
+    nil
   end
 
   def transaction(port : Int32, transaction_id : String)
@@ -67,5 +79,13 @@ module ::E2E::Utils::API
 
     res = `#{sushi(args)}`
     res
+  end
+
+  def parse_json(command_res : String) : JSON::Any?
+    JSON.parse(command_res)
+  rescue e : Exception
+    STDERR.puts "invalid json found during executing API"
+    STDERR.puts "original message"
+    STDERR.puts command_res
   end
 end
