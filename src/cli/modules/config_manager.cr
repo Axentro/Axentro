@@ -33,6 +33,11 @@ module ::Sushi::Interface
       @config_map[name] = value
     end
 
+    def unsettable(name : String, value : Configurable)
+      return if value.is_a?(Nil)
+      value.to_s.ends_with?("!") ? @config_map.delete(name) : (@config_map[name] = value)
+    end
+
     def get_config : YAML::Any?
       return nil unless File.exists?(config_path)
 

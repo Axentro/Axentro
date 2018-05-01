@@ -69,8 +69,8 @@ module ::Sushi::Interface::Sushi
     end
 
     def save
-      cm.set("connect_node", __connect_node)
-      cm.set("wallet_path", absolute_path(__wallet_path))
+      cm.unsettable("connect_node", __connect_node)
+      cm.unsettable("wallet_path", absolute_path(__wallet_path))
       cm.set("is_testnet", __is_testnet)
       cm.set("is_private", __is_private)
       cm.set("bind_host", __bind_host)
@@ -79,7 +79,7 @@ module ::Sushi::Interface::Sushi
       cm.set("database_path", __database_path)
       cm.set("threads", __threads)
       cm.set("encrypted", __encrypted)
-      cm.set("wallet_password", __wallet_password)
+      cm.unsettable("wallet_password", __wallet_password)
       cm.save
 
       puts_success "saved the configuration at #{cm.config_path}"
