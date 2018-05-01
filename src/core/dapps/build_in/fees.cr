@@ -51,7 +51,7 @@ module ::Sushi::Core::DApps::BuildIn
         end
       end
 
-      context.response.print fees.to_json
+      context.response.print api_success(fees)
       context
     end
   end

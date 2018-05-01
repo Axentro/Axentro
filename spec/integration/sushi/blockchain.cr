@@ -10,14 +10,16 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-require "./spec_helper"
+describe "sushi blockchain" do
+  it "size" do
+    
+  end
 
-include ::Sushi::Common::Color
+  it "all" do
+    
+  end
 
-ENV["UNIT"] = "true"
-
-# puts light_cyan("> unit tests")
-# require "./units/units"
-
-puts light_cyan("> integration tests")
-require "./integration/integration"
+  it "block" do
+    
+  end
+end

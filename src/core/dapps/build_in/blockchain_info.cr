@@ -51,17 +51,15 @@ module ::Sushi::Core::DApps::BuildIn
     def blockchain_size(json, context, params)
       size = blockchain.chain.size
 
-      json = {size: size}.to_json
-
-      context.response.print json
+      context.response.print api_success({size: size})
       context
     end
 
     def blockchain(json, context, params)
       if json["header"].as_bool
-        context.response.print blockchain.headers.to_json
+        context.response.print api_success(blockchain.headers)
       else
-        context.response.print blockchain.chain.to_json
+        context.response.print api_success(blockchain.chain)
       end
 
       context
@@ -70,7 +68,7 @@ module ::Sushi::Core::DApps::BuildIn
     def block(json, context, params)
       block = if index = json["index"]?
                 if index.as_i > blockchain.chain.size - 1
-                  raise "invalid index #{index} (Blockchain size is #{blockchain.chain.size})"
+                  raise "invalid index #{index} (blockchain size is #{blockchain.chain.size})"
                 end
 
                 blockchain.chain[index.as_i]
@@ -85,9 +83,9 @@ module ::Sushi::Core::DApps::BuildIn
               end
 
       if json["header"].as_bool
-        context.response.print block.to_header.to_json
+        context.response.print api_success(block.to_header)
       else
-        context.response.print block.to_json
+        context.response.print api_success(block)
       end
 
       context
@@ -98,10 +96,10 @@ module ::Sushi::Core::DApps::BuildIn
         if index.as_i > blockchain.chain.size - 1
           raise "invalid index #{index.as_i} (Blockchain size is #{blockchain.chain.size})"
         end
-        context.response.print blockchain.chain[index.as_i].transactions.to_json
+        context.response.print api_success(blockchain.chain[index.as_i].transactions)
       elsif address = json["address"]?
         transactions = blockchain.transactions_for_address(address.as_s)
-        context.response.print transactions.to_json
+        context.response.print api_success(transactions)
       else
         raise "please specify a block index or an address"
       end

@@ -113,7 +113,7 @@ RULE
     end
 
     def list(json, context, params)
-      context.response.print @tokens.to_json
+      context.response.print api_success(@tokens)
       context
     end
 

@@ -266,20 +266,18 @@ RULE
       domain = confirmed ? resolve(domain_name) : resolve_unconfirmed(domain_name, [] of Transaction)
 
       response = if domain
-                   {resolved: true, domain: domain}.to_json
+                   {resolved: true, domain: domain}
                  else
                    default_domain = {domain_name: domain_name, address: "", status: Status::NotFound, price: 0}
-                   {resolved: false, domain: default_domain}.to_json
+                   {resolved: false, domain: default_domain}
                  end
 
-      context.response.print response
+      context.response.print api_success(response)
       context
     end
 
     def scars_for_sale(json, context, params)
-      domain_for_sale = sales
-
-      context.response.print domain_for_sale.to_json
+      context.response.print api_success(sales)
       context
     end
 

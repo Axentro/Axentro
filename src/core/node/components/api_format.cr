@@ -10,14 +10,20 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-require "./spec_helper"
+module ::Sushi::Core::NodeComponents
+  module APIFormat
+    def api_success(content) : String
+      {
+        status: "success",
+        result: content,
+      }.to_json
+    end
 
-include ::Sushi::Common::Color
-
-ENV["UNIT"] = "true"
-
-# puts light_cyan("> unit tests")
-# require "./units/units"
-
-puts light_cyan("> integration tests")
-require "./integration/integration"
+    def api_error(reason : String) : String
+      {
+        status: "error",
+        reason: reason,
+      }.to_json
+    end
+  end
+end

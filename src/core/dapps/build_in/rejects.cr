@@ -65,7 +65,7 @@ module ::Sushi::Core::DApps::BuildIn
                  }
                end
 
-      context.response.print result.to_json
+      context.response.print api_success(result)
       context
     end
   end

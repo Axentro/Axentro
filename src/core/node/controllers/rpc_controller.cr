@@ -29,7 +29,7 @@ module ::Sushi::Core::Controllers
 
     def unpermitted_call(call, context) : HTTP::Server::Context
       context.response.status_code = 403
-      context.response.print "unpermitted call: #{call}"
+      context.response.print api_error("unpermitted call: #{call}")
       context
     end
   end

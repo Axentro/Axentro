@@ -10,14 +10,4 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-require "./spec_helper"
-
-include ::Sushi::Common::Color
-
-ENV["UNIT"] = "true"
-
-# puts light_cyan("> unit tests")
-# require "./units/units"
-
-puts light_cyan("> integration tests")
-require "./integration/integration"
+require "./utils/utils"

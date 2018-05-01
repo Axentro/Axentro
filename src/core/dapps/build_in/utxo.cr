@@ -156,19 +156,17 @@ module ::Sushi::Core::DApps::BuildIn
       unconfirmed = json["unconfirmed"].as_bool
       specified_token = json["token"].as_s
 
-      result = [] of NamedTuple(token: String, amount: Int64)
+      pairs = [] of NamedTuple(token: String, amount: Int64)
 
       tokens = blockchain.token.tokens
       tokens.each do |token|
         next if token != specified_token && specified_token != "all"
 
         amount = unconfirmed ? get_unconfirmed(address, Array(Transaction).new, token) : get(address, token)
-        result << {token: token, amount: amount}
+        pairs << {token: token, amount: amount}
       end
 
-      json = {unconfirmed: unconfirmed, result: result}.to_json
-
-      context.response.print json
+      context.response.print api_success({unconfirmed: unconfirmed, pairs: pairs})
       context
     end
 

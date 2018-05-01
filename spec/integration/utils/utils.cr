@@ -10,14 +10,16 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-require "./spec_helper"
+module ::Utils::Integration
+  def bin
+    File.expand_path("../../../../bin", __FILE__)
+  end
 
-include ::Sushi::Common::Color
+  def exec_sushi(args : Array(String)) : String
+    `#{bin}/sushi #{args.join(" ")}`
+  end
 
-ENV["UNIT"] = "true"
-
-# puts light_cyan("> unit tests")
-# require "./units/units"
-
-puts light_cyan("> integration tests")
-require "./integration/integration"
+  def wallet(num : Int32) : String
+    File.expand_path("../../wallets/testnet-#{num}.json", __FILE__)
+  end
+end

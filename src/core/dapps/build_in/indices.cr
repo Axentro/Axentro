@@ -77,7 +77,7 @@ module ::Sushi::Core::DApps::BuildIn
                  {found: false}
                end
 
-      context.response.print result.to_json
+      context.response.print api_success(result)
       context
     end
 
@@ -94,9 +94,9 @@ module ::Sushi::Core::DApps::BuildIn
         confirmed:     (latest_index - block_index) >= UTXO::CONFIRMATION,
         confirmations: latest_index - block_index,
         threshold:     UTXO::CONFIRMATION,
-      }.to_json
+      }
 
-      context.response.print result
+      context.response.print api_success(result)
       context
     end
   end

@@ -57,6 +57,7 @@ module ::Sushi::Core::DApps
     end
 
     include Logger
+    include NodeComponents::APIFormat
   end
 end
 
