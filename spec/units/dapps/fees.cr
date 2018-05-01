@@ -67,11 +67,11 @@ describe Fees do
   describe "#define_rpc?" do
     describe "#fees" do
       it "should return the fees" do
-        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+        with_factory do |block_factory, transaction_factory|
           payload = {call: "fees"}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |result|
+          with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
             result.should eq("{\"send\":1,\"scars_buy\":100,\"scars_sell\":10,\"scars_cancel\":1,\"create_token\":1000}")
           end
         end

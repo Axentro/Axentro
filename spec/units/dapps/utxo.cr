@@ -304,25 +304,27 @@ describe UTXO do
   describe "#define_rpc?" do
     describe "#amount" do
       it "should return the unconfirmed amount" do
-        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
-          recipient_address = chain.last.transactions.first.recipients.first[:address]
+        with_factory do |block_factory, transaction_factory|
+          block_factory.addBlocks(10)
+          recipient_address = block_factory.chain.last.transactions.first.recipients.first[:address]
           payload = {call: "amount", address: recipient_address, unconfirmed: true, token: TOKEN_DEFAULT}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |result|
-            result.should eq(%{{"unconfirmed":true,"result":[{"token":"SHARI","amount":100000}]}})
+          with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
+            result.should eq(%{{"unconfirmed":true,"pairs":[{"token":"SHARI","amount":100000}]}})
           end
         end
       end
 
       it "should return the confirmed amount" do
-        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
-          recipient_address = chain.last.transactions.first.recipients.first[:address]
+        with_factory do |block_factory, transaction_factory|
+          block_factory.addBlocks(10)
+          recipient_address = block_factory.chain.last.transactions.first.recipients.first[:address]
           payload = {call: "amount", address: recipient_address, unconfirmed: false, token: TOKEN_DEFAULT}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |result|
-            result.should eq(%{{"unconfirmed":false,"result":[{"token":"SHARI","amount":10000}]}})
+          with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
+            result.should eq(%{{"unconfirmed":false,"pairs":[{"token":"SHARI","amount":10000}]}})
           end
         end
       end

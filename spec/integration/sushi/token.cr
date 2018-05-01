@@ -10,20 +10,14 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-require "./spec_helper"
+describe "sushi token" do
+  it "create" do
+    system_sushi(["tk", "create", "-n", node, "-w", wallet(0), "-f", "1000", "-m", "1000000", "--token=TESTTOKEN"]).should be_true
+    system_sushi(["tk", "create", "-n", node, "-w", wallet(0), "-f", "1000", "-m", "1000000", "--token=TESTTOKEN2", "--json"]).should be_true
+  end
 
-include ::Sushi::Common::Color
-
-ENV["UNIT"] = "true"
-
-# puts light_cyan("> unit tests")
-# require "./units/units"
-
-ENV.delete("UNIT")
-
-ENV["INTEGRATION"] = "true"
-
-puts light_cyan("> integration tests")
-require "./integration/integration"
-
-ENV.delete("INTEGRATION")
+  it "list" do
+    system_sushi(["tk", "list", "-n", node]).should be_true
+    system_sushi(["tk", "list", "-n", node, "--json"]).should be_true
+  end
+end

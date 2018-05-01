@@ -88,23 +88,24 @@ describe Indices do
   describe "#define_rpc?" do
     describe "#transaction" do
       it "should return a transaction for the supplied transaction id" do
-        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
-          transaction = chain[2].transactions.first
+        with_factory do |block_factory, transaction_factory|
+          block_factory.addBlocks(10)
+          transaction = block_factory.chain[2].transactions.first
           payload = {call: "transaction", transaction_id: transaction.id}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |result|
+          with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
             result.should eq("{\"found\":true,\"transaction\":#{transaction.to_json}}")
           end
         end
       end
 
       it "should return transaction not found in any block" do
-        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+        with_factory do |block_factory, transaction_factory|
           payload = {call: "transaction", transaction_id: "invalid-transaction-id"}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |result|
+          with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
             result.should eq("{\"found\":false}")
           end
         end
@@ -113,11 +114,12 @@ describe Indices do
 
     describe "#confirmation" do
       it "should return confirmation info for the supplied transaction id" do
-        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
-          payload = {call: "confirmation", transaction_id: chain[2].transactions.first.id}.to_json
+        with_factory do |block_factory, transaction_factory|
+          block_factory.addBlocks(9)
+          payload = {call: "confirmation", transaction_id: block_factory.chain[2].transactions.first.id}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |result|
+          with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
             json_result = JSON.parse(result)
             json_result["confirmed"].as_bool.should be_false
             json_result["confirmations"].as_i.should eq(8)
@@ -126,12 +128,12 @@ describe Indices do
         end
       end
       it "should go go" do
-        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+        with_factory do |block_factory, transaction_factory|
           payload = {call: "confirmation", transaction_id: "non-existing-transaction-id"}.to_json
           json = JSON.parse(payload)
 
-          expect_raises(Exception, "failed to find a block for the transaction non-existing-transaction-id") do
-            with_rpc_exec_internal_post(rpc, json) { }
+          with_rpc_exec_internal_post(block_factory.rpc, json) do |res|
+            res.includes?("failed to find a block for the transaction non-existing-transaction-id")
           end
         end
       end

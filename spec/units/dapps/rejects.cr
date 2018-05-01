@@ -116,11 +116,11 @@ describe Rejects do
       end
 
       it "should return a reject false when transaction not found" do
-        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
+        with_factory do |block_factory, transaction_factory|
           payload = {call: "rejects", transaction_id: "invalid-transaction-id"}.to_json
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |result|
+          with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
             result.should eq("{\"rejected\":false,\"reason\":\"\"}")
           end
         end

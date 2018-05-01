@@ -94,7 +94,7 @@ module ::Sushi::Core::DApps::BuildIn
     def transactions(json, context, params)
       if index = json["index"]?
         if index.as_i > blockchain.chain.size - 1
-          raise "invalid index #{index.as_i} (Blockchain size is #{blockchain.chain.size})"
+          raise "invalid index #{index.as_i} (blockchain size is #{blockchain.chain.size})"
         end
         context.response.print api_success(blockchain.chain[index.as_i].transactions)
       elsif address = json["address"]?

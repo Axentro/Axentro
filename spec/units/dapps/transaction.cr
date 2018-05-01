@@ -67,9 +67,9 @@ describe TransactionCreator do
   describe "#define_rpc?" do
     describe "#create_unsigned_transaction" do
       it "should return the transaction as json when valid" do
-        with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
-          senders = [a_sender(sender_wallet, 1000_i64)]
-          recipients = [a_recipient(recipient_wallet, 10_i64)]
+        with_factory do |block_factory, transaction_factory|
+          senders = [a_sender(transaction_factory.sender_wallet, 1000_i64)]
+          recipients = [a_recipient(transaction_factory.recipient_wallet, 10_i64)]
 
           payload = {
             call:       "create_unsigned_transaction",
@@ -82,7 +82,7 @@ describe TransactionCreator do
 
           json = JSON.parse(payload)
 
-          with_rpc_exec_internal_post(rpc, json) do |result|
+          with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
             transaction = Transaction.from_json(result)
             transaction.action.should eq("send")
             transaction.prev_hash.should eq("0")
@@ -97,9 +97,9 @@ describe TransactionCreator do
 
       describe "#create_transaction" do
         it "should return a signed transaction when valid" do
-          with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
-            senders = [a_sender(sender_wallet, 1000_i64)]
-            recipients = [a_recipient(recipient_wallet, 100_i64)]
+          with_factory do |block_factory, transaction_factory|
+            senders = [a_sender(transaction_factory.sender_wallet, 1000_i64)]
+            recipients = [a_recipient(transaction_factory.recipient_wallet, 100_i64)]
 
             unsigned_transaction = Transaction.new(
               Transaction.create_id,
@@ -113,7 +113,7 @@ describe TransactionCreator do
               "0",           # sign_s
             )
 
-            signature = sign(sender_wallet, unsigned_transaction)
+            signature = sign(transaction_factory.sender_wallet, unsigned_transaction)
             signed_transaction = unsigned_transaction.signed(signature[:r], signature[:s])
 
             payload = {
@@ -123,7 +123,7 @@ describe TransactionCreator do
 
             json = JSON.parse(payload)
 
-            with_rpc_exec_internal_post(rpc, json) do |result|
+            with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
               transaction = Transaction.from_json(result)
               transaction.action.should eq("send")
               transaction.prev_hash.should eq("0")
@@ -136,9 +136,9 @@ describe TransactionCreator do
         end
 
         it "should return a 403 when an Exception occurs" do
-          with_node do |sender_wallet, recipient_wallet, chain, blockchain, rpc|
-            senders = [a_sender(sender_wallet, 1000_i64)]
-            recipients = [a_recipient(recipient_wallet, 100_i64)]
+          with_factory do |block_factory, transaction_factory|
+            senders = [a_sender(transaction_factory.sender_wallet, 1000_i64)]
+            recipients = [a_recipient(transaction_factory.recipient_wallet, 100_i64)]
 
             payload = {
               call:    "create_transaction",
@@ -147,7 +147,7 @@ describe TransactionCreator do
 
             json = JSON.parse(payload)
 
-            with_rpc_exec_internal_post(rpc, json, 403) do |res|
+            with_rpc_exec_internal_post(block_factory.rpc, json, 403) do |res|
               res.includes?(%{Missing hash key: "transaction"}).should be_true
             end
           end

@@ -12,14 +12,20 @@
 
 describe "sushi blockchain" do
   it "size" do
-    
+    system_sushi(["bc", "size", "-n", node]).should be_true
+    system_sushi(["bc", "size", "-n", node, "--json"]).should be_true
   end
 
   it "all" do
-    
+    system_sushi(["bc", "all", "-n", node]).should be_true
+    system_sushi(["bc", "all", "-n", node, "--json"]).should be_true
   end
 
   it "block" do
-    
+    system_sushi(["bc", "block", "-n", node, "-i", "0"]).should be_true
+    system_sushi(["bc", "block", "-n", node, "-i", "0", "--json"]).should be_true
+
+    # todo:
+    # show a block for transaction
   end
 end

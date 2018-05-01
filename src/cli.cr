@@ -140,7 +140,10 @@ module ::Sushi::Interface
 
       json = JSON.parse(body)
 
-      raise json["reason"].as_s if json["status"].as_s == "error"
+      if json["status"].as_s == "error"
+        puts_error json["reason"].as_s
+        exit -1
+      end
 
       json["result"].to_json
     end
