@@ -29,4 +29,6 @@ describe "sushi wallet" do
     system_sushi(["wt", "amount", "-n", node, "-a", address, "--token=SHARI"]).should be_true
     system_sushi(["wt", "amount", "-n", node, "-a", address, "--token=SHARI", "--json"]).should be_true
   end
+
+  STDERR.puts "< sushi wallet"
 end

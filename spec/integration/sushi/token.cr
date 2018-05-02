@@ -20,4 +20,6 @@ describe "sushi token" do
     system_sushi(["tk", "list", "-n", node]).should be_true
     system_sushi(["tk", "list", "-n", node, "--json"]).should be_true
   end
+
+  STDERR.puts "< sushi token"
 end

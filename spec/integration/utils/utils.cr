@@ -16,8 +16,7 @@ module ::Utils::Integration
   end
 
   def system_sushi(args : Array(String)) : Bool
-    # system("#{bin}/sushi #{args.join(" ")} 1>&2 > /dev/null")
-    system("#{bin}/sushi #{args.join(" ")}")
+    system("#{bin}/sushi #{args.join(" ")} 1>&2 > /dev/null")
   end
 
   def exec_sushi(args : Array(String)) : String

@@ -45,4 +45,6 @@ describe "sushi scars" do
     system_sushi(["sc", "sales", "-n", node]).should be_true
     system_sushi(["sc", "sales", "-n", node, "--json"]).should be_true
   end
+
+  STDERR.puts "< sushi scars"
 end

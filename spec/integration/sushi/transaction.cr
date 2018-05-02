@@ -39,4 +39,6 @@ describe "sushi transaction" do
     system_sushi(["tx", "fees", "-n", node]).should be_true
     system_sushi(["tx", "fees", "-n", node, "--json"]).should be_true
   end
+
+  STDERR.puts "< sushi transaction"
 end

@@ -28,4 +28,6 @@ describe "sushi blockchain" do
     # todo:
     # show a block for transaction
   end
+
+  STDERR.puts "< sushi blockchain"
 end
