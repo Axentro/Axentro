@@ -10,9 +10,6 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-# todo
-`shards build`
-
 require "./utils"
 
 include ::Utils::Integration
@@ -79,5 +76,7 @@ kill_miner
 require "./sushi/blockchain"
 require "./sushi/scars"
 require "./sushi/token"
+require "./sushi/transaction"
+require "./sushi/wallet"
 
 kill_all

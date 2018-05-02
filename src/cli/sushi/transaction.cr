@@ -165,7 +165,8 @@ module ::Sushi::Interface::Sushi
           puts_error json["reason"].as_s
           exit -1
         else
-          raise "transaction #{transaction_id} was not found"
+          puts_error "transaction #{transaction_id} was not found"
+          exit -1
         end
       end
     end
