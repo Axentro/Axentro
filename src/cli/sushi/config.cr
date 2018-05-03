@@ -118,7 +118,7 @@ module ::Sushi::Interface::Sushi
     def show
       with_config do |configs, current_config|
         if __name.nil?
-          puts_success "current configuration is for: '#{cm.config.current_config}' in file #{cm.config_path}"
+          puts_success "current configuration is for: '#{current_config.name}' in file #{cm.config_path}"
           puts_info current_config.to_s
         else
           with_name(__name, configs) do |config, name|
@@ -158,18 +158,21 @@ module ::Sushi::Interface::Sushi
     end
 
     def list
-      configs = cm.get_configs
-      if configs.keys.empty?
-        puts_error "there are no configurations yet - to create, exec `sushi config save [your_options]`"
-      else
-        puts_success "the following configs exist at #{cm.config_path}"
-        configs.keys.each { |config| puts_info config }
+      with_config do |configs, current_config|
+        puts_info "configuration is #{current_config.status}"
+        if configs.keys.empty?
+          puts_error "there are no configurations yet - to create, exec `sushi config save [your_options]`"
+        else
+          puts_success "the following configs exist at #{cm.config_path}"
+          configs.keys.each { |config| puts_info config }
+        end
       end
     end
 
     def enabled(status : ConfigStatus)
       with_config do |configs, current_config|
         cm.set_enabled_state(status)
+        puts_success "configuration has been #{status} - #{cm.config_path}"
       end
     end
 

@@ -33,12 +33,12 @@ module ::Sushi::Interface
       @config_map[name] = value
     end
 
-    def get_config : Hash(String, Configurable)?
+    def get_config : ConfigItem?
       return nil unless File.exists?(config_path)
       @config ||= Config.from_yaml(File.read(config_path))
-      return nil if @config.nil?
-      # raise "configuration is currently disabled - exec `sushi config enable` to enable it" if @config.not_nil!.config_status == ConfigStatus::Disabled
-      @config.not_nil!.configs[@config.not_nil!.current_config]
+      return nil unless config = @config
+      current_config = config.configs[config.current_config]
+      ConfigItem.new(config.current_config, config.config_status, current_config)
     end
 
     def get_configs : Hash(String, Hash(String, ConfigManager::Configurable))
@@ -47,46 +47,41 @@ module ::Sushi::Interface
       config.configs
     end
 
-    def set_enabled_state(state : ConfigStatus)
-      config = Config.from_yaml(File.read(config_path))
-      config.config_status = state
-      File.write(config_path, config.to_yaml)
-    end
-
-    def config
-      @config.not_nil!
-    end
-
     def release_config
       @config = nil
     end
 
-    def get_s(name : String) : String?
-      return nil unless config = get_config
+    private def with_config_for(name, &block)
+      return nil unless config_item = get_config
+      return nil unless config = config_item.config
       return nil unless config[name]?
+      return nil unless config_item.is_enabled?
 
-      config[name].to_s
+      yield config[name]
+    end
+
+    def get_s(name : String) : String?
+      with_config_for(name) do |config_name|
+        config_name.to_s
+      end
     end
 
     def get_i32(name : String) : Int32?
-      return nil unless config = get_config
-      return nil unless config[name]?
-
-      config[name].to_s.to_i32
+      with_config_for(name) do |config_name|
+        config_name.to_s.to_i32
+      end
     end
 
     def get_i64(name : String) : Int64?
-      return nil unless config = get_config
-      return nil unless config[name]?
-
-      config[name].to_i64
+      with_config_for(name) do |config_name|
+        config_name.to_i64
+      end
     end
 
     def get_bool(name : String) : Bool?
-      return nil unless config = get_config
-      return nil unless config[name]?
-
-      config[name].to_s == "true"
+      with_config_for(name) do |config_name|
+        config_name.to_s == "true"
+      end
     end
 
     def save(name : String?, update_name_only : Bool = false)
@@ -94,6 +89,12 @@ module ::Sushi::Interface
       config = File.exists?(config_path) ? Config.from_yaml(File.read(config_path)) : Config.new(config_name, ConfigStatus::Enabled, {config_name => @config_map})
       config.current_config = config_name
       config.configs[config_name] = @config_map unless update_name_only
+      File.write(config_path, config.to_yaml)
+    end
+
+    def set_enabled_state(state : ConfigStatus)
+      config = Config.from_yaml(File.read(config_path))
+      config.config_status = state
       File.write(config_path, config.to_yaml)
     end
 
@@ -118,6 +119,24 @@ end
 enum ConfigStatus
   Enabled
   Disabled
+end
+
+struct ConfigItem
+  property name : String
+  property status : ConfigStatus
+  property config : Hash(String, ConfigManager::Configurable)
+
+  def initialize(@name : String, @status : ConfigStatus, @config : Hash(String, ConfigManager::Configurable))
+  end
+
+  def is_enabled?
+    @status == ConfigStatus::Enabled
+  end
+
+  def to_s
+    details = @config.map{|k,v| "#{k}:\t#{v}"}.join("\n")
+   "configuration is #{@status} \n--------------------\n#{details}"
+  end
 end
 
 class Config
