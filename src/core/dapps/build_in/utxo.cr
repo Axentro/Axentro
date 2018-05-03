@@ -153,21 +153,25 @@ module ::Sushi::Core::DApps::BuildIn
 
     def amount(json, context, params)
       address = json["address"].as_s
-      unconfirmed = json["unconfirmed"].as_bool
-      specified_token = json["token"].as_s
+      confirmed = json["confirmed"].as_bool
+      token = json["token"].as_s
 
+      context.response.print api_success(amount_impl(address, confirmed, token))
+      context
+    end
+
+    def amount_impl(address, confirmed, token)
       pairs = [] of NamedTuple(token: String, amount: Int64)
 
       tokens = blockchain.token.tokens
-      tokens.each do |token|
-        next if token != specified_token && specified_token != "all"
+      tokens.each do |_token|
+        next if _token != token && token != "all"
 
-        amount = unconfirmed ? get_unconfirmed(address, Array(Transaction).new, token) : get(address, token)
-        pairs << {token: token, amount: amount}
+        amount = confirmed ? get(address, _token) : get_unconfirmed(address, Array(Transaction).new, _token)
+        pairs << {token: _token, amount: amount}
       end
 
-      context.response.print api_success({unconfirmed: unconfirmed, pairs: pairs})
-      context
+      {confirmed: confirmed, pairs: pairs}
     end
 
     def self.fee(action : String) : Int64

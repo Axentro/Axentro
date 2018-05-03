@@ -95,18 +95,18 @@ describe Indices do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq("{\"found\":true,\"transaction\":#{transaction.to_json}}")
+            result.should eq(transaction.to_json)
           end
         end
       end
 
-      it "should return transaction not found in any block" do
+      it "should raise an exception for the invalid transaction id" do
         with_factory do |block_factory, transaction_factory|
           payload = {call: "transaction", transaction_id: "invalid-transaction-id"}.to_json
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq("{\"found\":false}")
+            result.should eq("failed to find a transaction for the transaction id invalid-transaction-id")
           end
         end
       end

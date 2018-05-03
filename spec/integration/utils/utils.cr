@@ -16,7 +16,11 @@ module ::Utils::Integration
   end
 
   def system_sushi(args : Array(String)) : Bool
-    system("#{bin}/sushi #{args.join(" ")} 1>&2 > /dev/null")
+    system("#{bin}/sushi #{args.join(" ")} >/dev/null 2>&1")
+  end
+
+  def system_curl(path : String) : Bool
+    system("curl #{node}/#{path} >/dev/null 2>&1")
   end
 
   def exec_sushi(args : Array(String)) : String

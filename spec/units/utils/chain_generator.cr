@@ -43,7 +43,6 @@ module ::Units::Utils::ChainGenerator
       @miner = {address: miner_wallet.address, socket: MockWebSocket.new, nonces: [] of UInt64}
       @transaction_factory = TransactionFactory.new(@node_wallet)
       @rpc = RPCController.new(@blockchain)
-      @rpc.set_node(@node)
       enable_ut
     end
 

@@ -15,11 +15,8 @@ module ::Sushi::Core::Controllers
     def initialize(@blockchain : Blockchain)
     end
 
-    def set_node(@node : Node)
-    end
-
     def node
-      @node.not_nil!
+      @blockchain.node
     end
 
     def exec(context, params) : HTTP::Server::Context

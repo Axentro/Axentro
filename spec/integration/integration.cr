@@ -36,6 +36,10 @@ describe "for preparation" do
     end
   end
 
+  describe "checking `curl` existance" do
+    system("which curl 1>&2 > /dev/null").should be_true
+  end
+
   STDERR.puts "< Preparation"
 end
 
@@ -78,5 +82,6 @@ require "./sushi/scars"
 require "./sushi/token"
 require "./sushi/transaction"
 require "./sushi/wallet"
+require "./rest"
 
 kill_all

@@ -96,7 +96,7 @@ describe Rejects do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq("{\"rejected\":true,\"reason\":\"sender has not enough token(SHARI). sender has 20000 + 0 but try to pay 1000000000\"}")
+            result.should eq("{\"reason\":\"sender has not enough token(SHARI). sender has 20000 + 0 but try to pay 1000000000\"}")
           end
         end
       end
@@ -110,7 +110,7 @@ describe Rejects do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq("{\"rejected\":false,\"reason\":\"\"}")
+            result.should eq("{\"reason\":\"\"}")
           end
         end
       end
@@ -121,7 +121,7 @@ describe Rejects do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq("{\"rejected\":false,\"reason\":\"\"}")
+            result.should eq("{\"reason\":\"\"}")
           end
         end
       end

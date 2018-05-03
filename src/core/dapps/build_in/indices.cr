@@ -55,6 +55,7 @@ module ::Sushi::Core::DApps::BuildIn
 
     def define_rpc?(call, json, context, params)
       case call
+
       when "transaction"
         return transaction(json, context, params)
       when "confirmation"
@@ -67,37 +68,41 @@ module ::Sushi::Core::DApps::BuildIn
     def transaction(json, context, params)
       transaction_id = json["transaction_id"].as_s
 
-      result = if block_index = get(transaction_id)
-                 if transaction = blockchain.chain[block_index].find_transaction(transaction_id)
-                   {found: true, transaction: transaction}
-                 else
-                   {found: false}
-                 end
-               else
-                 {found: false}
-               end
-
-      context.response.print api_success(result)
+      context.response.print api_success(transaction_impl(transaction_id))
       context
+    end
+
+    def transaction_impl(transaction_id : String)
+      if block_index = get(transaction_id)
+        if transaction = blockchain.chain[block_index].find_transaction(transaction_id)
+          transaction
+        else
+          raise "failed to find a transaction for the transaction id #{transaction_id}"
+        end
+      else
+        raise "failed to find a transaction for the transaction id #{transaction_id}"
+      end
     end
 
     def confirmation(json, context, params)
       transaction_id = json["transaction_id"].as_s
 
+      context.response.print api_success(confirmation_impl(transaction_id))
+      context
+    end
+
+    def confirmation_impl(transaction_id : String)
       unless block_index = get(transaction_id)
         raise "failed to find a block for the transaction #{transaction_id}"
       end
 
       latest_index = @indices.size
 
-      result = {
+      {
         confirmed:     (latest_index - block_index) >= UTXO::CONFIRMATION,
         confirmations: latest_index - block_index,
         threshold:     UTXO::CONFIRMATION,
       }
-
-      context.response.print api_success(result)
-      context
     end
   end
 end

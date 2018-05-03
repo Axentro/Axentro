@@ -146,25 +146,23 @@ module ::Sushi::Interface::Sushi
 
       payload = {call: "transaction", transaction_id: transaction_id}.to_json
 
-      body = rpc(node, payload)
-      json = JSON.parse(body)
-
-      if json["found"].as_bool
-        puts_success("show the transaction #{transaction_id}") unless __json
-        puts body
-      else
-        # the transaction is not found in each block
-        # try to find the rejected reason
-        payload = {call: "rejects", transaction_id: transaction_id}.to_json
-
+      begin
         body = rpc(node, payload)
         json = JSON.parse(body)
 
-        if json["rejected"].as_bool
+        puts_success("show the transaction #{transaction_id}") unless __json
+        puts body
+      rescue e : Exception
+        begin
+          payload = {call: "rejects", transaction_id: transaction_id}.to_json
+
+          body = rpc(node, payload)
+          json = JSON.parse(body)
+
           puts_error "transaction #{transaction_id} was rejected for a reason:"
           puts_error json["reason"].as_s
           exit -1
-        else
+        rescue e : Exception
           puts_error "transaction #{transaction_id} was not found"
           exit -1
         end

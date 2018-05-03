@@ -170,7 +170,7 @@ module ::Sushi::Interface::Sushi
                   puts_help(HELP_WALLET_PATH_OR_ADDRESS_OR_DOMAIN)
                 end
 
-      payload = {call: "amount", address: address, unconfirmed: __unconfirmed, token: token}.to_json
+      payload = {call: "amount", address: address, confirmed: !__unconfirmed, token: token}.to_json
 
       body = rpc(node, payload)
       json = JSON.parse(body)
