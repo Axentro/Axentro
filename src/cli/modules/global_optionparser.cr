@@ -47,6 +47,8 @@ module ::Sushi::Interface
 
     @token : String?
 
+    @config_name : String?
+
     module Options
       # common options
       CONNECT_NODE    = 0
@@ -81,6 +83,8 @@ module ::Sushi::Interface
       DOMAIN = 23
       # for tokens
       TOKEN = 24
+      # for config
+      CONFIG_NAME = 25
     end
 
     def create_option_parser(actives : Array(Int32)) : OptionParser
@@ -199,6 +203,10 @@ module ::Sushi::Interface
         parser.on("--token=TOKEN", "specify a target token") { |token|
           @token = token
         } if is_active?(actives, Options::TOKEN)
+
+        parser.on("--name=CONFIG_NAME", "specify a config name") { |name|
+          @config_name = name
+        } if is_active?(actives, Options::CONFIG_NAME)
       end
     end
 
@@ -317,6 +325,10 @@ module ::Sushi::Interface
 
     def __token : String?
       @token
+    end
+
+    def __name : String?
+      @config_name
     end
 
     def cm

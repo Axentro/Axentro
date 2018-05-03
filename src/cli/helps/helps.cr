@@ -28,5 +28,6 @@ module ::Sushi::Interface
     HELP_DOMAIN                           = "please specify a domain for scars: --domain=[DOMAIN]"
     HELP_TOKEN                            = "please specify a token name: --token=[TOKEN]"
     HELP_TOKEN_AMOUNT                     = "please specify the token amount: -m [amount]"
+    HELP_CONFIG_NAME                      = "please specify the config name: --name=[name]"
   end
 end

@@ -22,7 +22,7 @@ module ::Sushi::Interface
     end
 
     @config_map : Hash(String, Configurable)
-    @config_yaml : YAML::Any?
+    @config : Config?
 
     def initialize
       @config_map = Hash(String, Configurable).new
@@ -33,36 +33,53 @@ module ::Sushi::Interface
       @config_map[name] = value
     end
 
-    def get_config : YAML::Any?
+    def get_config : Hash(String, Configurable)?
       return nil unless File.exists?(config_path)
+      @config ||= Config.from_yaml(File.read(config_path))
+      return nil if @config.nil?
+      # raise "configuration is currently disabled - exec `sushi config enable` to enable it" if @config.not_nil!.config_status == ConfigStatus::Disabled
+      @config.not_nil!.configs[@config.not_nil!.current_config]
+    end
 
-      @config_yaml ||= YAML.parse(File.read(config_path))
-      @config_yaml.not_nil!
+    def get_configs : Hash(String, Hash(String, ConfigManager::Configurable))
+      raise "no configuration file found at: #{config_path} - to create, exec `sushi config save [your_options]" unless File.exists?(config_path)
+      config = Config.from_yaml(File.read(config_path))
+      config.configs
+    end
+
+    def set_enabled_state(state : ConfigStatus)
+      config = Config.from_yaml(File.read(config_path))
+      config.config_status = state
+      File.write(config_path, config.to_yaml)
+    end
+
+    def config
+      @config.not_nil!
     end
 
     def release_config
-      @config_yaml = nil
+      @config = nil
     end
 
     def get_s(name : String) : String?
       return nil unless config = get_config
       return nil unless config[name]?
 
-      config[name].as_s
+      config[name].to_s
     end
 
     def get_i32(name : String) : Int32?
       return nil unless config = get_config
       return nil unless config[name]?
 
-      config[name].as_i
+      config[name].to_s.to_i32
     end
 
     def get_i64(name : String) : Int64?
       return nil unless config = get_config
       return nil unless config[name]?
 
-      config[name].as_i64
+      config[name].to_i64
     end
 
     def get_bool(name : String) : Bool?
@@ -72,12 +89,22 @@ module ::Sushi::Interface
       config[name].to_s == "true"
     end
 
-    def save
-      File.write(config_path, YAML.dump(@config_map))
+    def save(name : String?, update_name_only : Bool = false)
+      config_name = name ? name : "config"
+      config = File.exists?(config_path) ? Config.from_yaml(File.read(config_path)) : Config.new(config_name, ConfigStatus::Enabled, {config_name => @config_map})
+      config.current_config = config_name
+      config.configs[config_name] = @config_map unless update_name_only
+      File.write(config_path, config.to_yaml)
     end
 
-    def clean
+    def remove_all
       FileUtils.rm_rf(config_path)
+    end
+
+    def remove_config(name : String)
+      config = Config.from_yaml(File.read(config_path))
+      config.configs.delete(name)
+      File.write(config_path, config.to_yaml)
     end
 
     def config_path : String
@@ -85,5 +112,17 @@ module ::Sushi::Interface
       FileUtils.mkdir_p("#{home}/.sushi")
       "#{home}/.sushi/config"
     end
+  end
+end
+
+enum ConfigStatus
+  Enabled
+  Disabled
+end
+
+class Config
+  YAML.mapping(current_config: String, config_status: ConfigStatus, configs: Hash(String, Hash(String, ConfigManager::Configurable)))
+
+  def initialize(@current_config : String, @config_status : ConfigStatus, @configs : Hash(String, Hash(String, ConfigManager::Configurable)))
   end
 end
