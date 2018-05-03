@@ -272,7 +272,8 @@ module ::Sushi::Interface
     end
 
     def __address : String?
-      @address
+      return @address if @address
+      cm.get_s("address")
     end
 
     def __amount : Int64?
@@ -320,7 +321,8 @@ module ::Sushi::Interface
     end
 
     def __domain : String?
-      @domain
+      return @domain if @domain
+      cm.get_s("domain")
     end
 
     def __token : String?

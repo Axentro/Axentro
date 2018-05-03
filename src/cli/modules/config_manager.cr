@@ -35,7 +35,7 @@ module ::Sushi::Interface
 
     def get_config : ConfigItem?
       return nil unless File.exists?(config_path)
-      @config ||= Config.from_yaml(File.read(config_path))
+      @config = Config.from_yaml(File.read(config_path))
       return nil unless config = @config
       current_config = config.configs[config.current_config]
       ConfigItem.new(config.current_config, config.config_status, current_config)

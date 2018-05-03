@@ -58,7 +58,8 @@ module ::Sushi::Interface::Sushi
         Options::BIND_PORT,
         Options::PUBLIC_URL,
         Options::DATABASE_PATH,
-        # Options::ADDRESS,
+        Options::ADDRESS,
+        Options::DOMAIN,
         # Options::AMOUNT,
         # Options::MESSAGE,
         # Options::BLOCK_INDEX,
@@ -94,6 +95,7 @@ module ::Sushi::Interface::Sushi
     end
 
     def save
+      cm.set_enabled_state(ConfigStatus::Disabled)
       cm.set("connect_node", __connect_node)
       cm.set("wallet_path", absolute_path(__wallet_path))
       cm.set("is_testnet", __is_testnet)
@@ -105,14 +107,15 @@ module ::Sushi::Interface::Sushi
       cm.set("threads", __threads)
       cm.set("encrypted", __encrypted)
       cm.set("wallet_password", __wallet_password)
+      cm.set("address", __address)
+      cm.set("domain", __domain)
       cm.save(__name)
+      cm.set_enabled_state(ConfigStatus::Enabled)
 
       puts_success "saved the configuration at #{cm.config_path}"
 
       cm.release_config
-      if config = cm.get_config
-        puts_info config.to_s
-      end
+      show_config
     end
 
     def show
@@ -123,7 +126,7 @@ module ::Sushi::Interface::Sushi
         else
           with_name(__name, configs) do |config, name|
             puts_success "showing configuration for: '#{name}' in file #{cm.config_path}"
-            puts_info config.to_s
+            puts_info ConfigItem.new(name, current_config.status, config).to_s
           end
         end
       end
@@ -131,18 +134,7 @@ module ::Sushi::Interface::Sushi
 
     def remove
       with_config do |configs, current_config|
-        if __name.nil?
-          remove_all
-        else
-          with_name(__name, configs) do |config, name|
-            if configs.keys.size > 1
-              puts_success "removed configuration for: '#{name}' in file #{cm.config_path}"
-              cm.remove_config(name)
-            else
-              remove_all
-            end
-          end
-        end
+        __name.nil? ? remove_all : with_name(__name, configs) { |config, name| configs.keys.size > 1 ? remove_config(name, current_config.name) : remove_all }
       end
     end
 
@@ -152,7 +144,7 @@ module ::Sushi::Interface::Sushi
         with_name(name, configs) do
           cm.save(name, true)
           puts_success "using configuration '#{name}' at #{cm.config_path}"
-          puts_info current_config.to_s
+          show_config
         end
       end
     end
@@ -205,6 +197,18 @@ module ::Sushi::Interface::Sushi
     private def remove_all
       puts_success "removed all configurations at #{cm.config_path}"
       cm.remove_all
+    end
+
+    private def remove_config(name, current_config)
+      raise "sorry you cannot remove a config you are currently using" if name == current_config
+      puts_success "removed configuration for: '#{name}' in file #{cm.config_path}"
+      cm.remove_config(name)
+    end
+
+    private def show_config
+      if config = cm.get_config
+        puts_info config.to_s
+      end
     end
 
     include GlobalOptionParser
