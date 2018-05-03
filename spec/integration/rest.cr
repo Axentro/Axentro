@@ -34,7 +34,7 @@ describe "REST APIs" do
       system_curl("v1/transaction/#{tx["id"]}/block").should be_true
       system_curl("v1/transaction/#{tx["id"]}/block/header").should be_true
       system_curl("v1/transaction/#{tx["id"]}/confirmations").should be_true
-      system_curl("v1/transaction/fees").should be_true      
+      system_curl("v1/transaction/fees").should be_true
     end
 
     it "address" do

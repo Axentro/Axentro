@@ -55,7 +55,6 @@ module ::Sushi::Core::DApps::BuildIn
 
     def define_rpc?(call, json, context, params)
       case call
-
       when "transaction"
         return transaction(json, context, params)
       when "confirmation"

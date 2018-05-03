@@ -59,10 +59,10 @@ module ::Sushi::Core::DApps::BuildIn
 
     def rejects_impl(transaction_id : String)
       if rejected_reason = @rejects[transaction_id]?
-        { reason: rejected_reason }
+        {reason: rejected_reason}
       else
-        { reason: "" }
-      end      
+        {reason: ""}
+      end
     end
   end
 end

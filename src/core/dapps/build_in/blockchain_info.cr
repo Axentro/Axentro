@@ -72,8 +72,8 @@ module ::Sushi::Core::DApps::BuildIn
 
     def block(json, context, params)
       context.response.print api_success(
-                         block_impl(json["header"].as_bool, json["index"]?, json["transaction_id"]?)
-                       )
+        block_impl(json["header"].as_bool, json["index"]?, json["transaction_id"]?)
+      )
       context
     end
 
