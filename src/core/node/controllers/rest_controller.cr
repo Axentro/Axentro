@@ -73,6 +73,11 @@ module ::Sushi::Core::Controllers
       get "/v1/address/:address/confirmed/:token" { |context, params| __v1_address_confirmed_token(context, params) }
       get "/v1/address/:address/unconfirmed" { |context, params| __v1_address_unconfirmed(context, params) }
       get "/v1/address/:address/unconfirmed/:token" { |context, params| __v1_address_unconfirmed_token(context, params) }
+      get "/v1/domain/:domain/transactions" { |context, params| __v1_domain_transactions(context, params) }
+      get "/v1/domain/:domain/confirmed" { |context, params| __v1_domain_confirmed(context, params) }
+      get "/v1/domain/:domain/confirmed/:token" { |context, params| __v1_domain_confirmed_token(context, params) }
+      get "/v1/domain/:domain/unconfirmed" { |context, params| __v1_domain_unconfirmed(context, params) }
+      get "/v1/domain/:domain/unconfirmed/:token" { |context, params| __v1_domain_unconfirmed_token(context, params) }
       get "/v1/scars/sales" { |context, params| __v1_scars_sales(context, params) }
       get "/v1/scars/:domain/confirmed" { |context, params| __v1_scars_confirmed(context, params) }
       get "/v1/scars/:domain/unconfirmed" { |context, params| __v1_scars_unconfirmed(context, params) }
@@ -190,6 +195,48 @@ module ::Sushi::Core::Controllers
       end
     end
 
+    def __v1_domain_transactions(context, params)
+      with_response(context) do
+        domain = params["domain"]
+        address = convert_domain_to_address(domain)
+        @blockchain.blockchain_info.transactions_impl(address)
+      end
+    end
+
+    def __v1_domain_confirmed(context, params)
+      with_response(context) do
+        domain = params["domain"]
+        address = convert_domain_to_address(domain)
+        @blockchain.utxo.amount_impl(address, true, "all")
+      end
+    end
+
+    def __v1_domain_confirmed_token(context, params)
+      with_response(context) do
+        domain = params["domain"]
+        token = params["token"]
+        address = convert_domain_to_address(domain)
+        @blockchain.utxo.amount_impl(address, true, token)
+      end
+    end
+
+    def __v1_domain_unconfirmed(context, params)
+      with_response(context) do
+        domain = params["domain"]
+        address = convert_domain_to_address(domain)
+        @blockchain.utxo.amount_impl(address, false, "all")
+      end
+    end
+
+    def __v1_domain_unconfirmed_token(context, params)
+      with_response(context) do
+        domain = params["domain"]
+        token = params["token"]
+        address = convert_domain_to_address(domain)
+        @blockchain.utxo.amount_impl(address, false, token)
+      end
+    end
+
     def __v1_scars_sales(context, params)
       with_response(context) do
         @blockchain.scars.scars_for_sale_impl
@@ -219,7 +266,7 @@ module ::Sushi::Core::Controllers
       rest_error(context, e)
     end
 
-    def rest_error(context, e : Exception)
+    private def rest_error(context, e : Exception)
       error_message = if message = e.message
                         message
                       else
@@ -228,6 +275,13 @@ module ::Sushi::Core::Controllers
 
       context.response.print api_error(error_message)
       context
+    end
+
+    private def convert_domain_to_address(domain : String) : String
+      resolved = @blockchain.scars.scars_resolve_impl(domain, true)
+      raise "the domain #{domain} is not resolved" unless resolved[:resolved]
+
+      resolved[:domain][:address]
     end
 
     include Router

@@ -47,6 +47,16 @@ describe "REST APIs" do
       system_curl("v1/address/#{address}/unconfirmed/SHARI").should be_true
     end
 
+    it "domain" do
+      domain = "test.sc"
+
+      system_curl("v1/domain/#{domain}/transactions").should be_true
+      system_curl("v1/domain/#{domain}/confirmed").should be_true
+      system_curl("v1/domain/#{domain}/confirmed/SHARI").should be_true
+      system_curl("v1/domain/#{domain}/unconfirmed").should be_true
+      system_curl("v1/domain/#{domain}/unconfirmed/SHARI").should be_true
+    end
+
     it "scars" do
       domain = "test.sc"
 
