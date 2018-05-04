@@ -86,14 +86,14 @@ module ::Sushi::Interface
 
     def save(name : String?, update_name_only : Bool = false)
       config_name = name ? name : "config"
-      config = File.exists?(config_path) ? Config.from_yaml(File.read(config_path)) : Config.new(config_name, ConfigStatus::Enabled, {config_name => @config_map})
+      config = Config.from_yaml(File.read(config_path))
       config.current_config = config_name
       config.configs[config_name] = @config_map unless update_name_only
       File.write(config_path, config.to_yaml)
     end
 
     def set_enabled_state(state : ConfigStatus)
-      config = Config.from_yaml(File.read(config_path))
+      config = File.exists?(config_path) ? Config.from_yaml(File.read(config_path)) : Config.new("config", state, {"config" => @config_map})
       config.config_status = state
       File.write(config_path, config.to_yaml)
     end
