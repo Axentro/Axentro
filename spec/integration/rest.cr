@@ -46,6 +46,14 @@ describe "REST APIs" do
       system_curl("v1/address/#{address}/unconfirmed").should be_true
       system_curl("v1/address/#{address}/unconfirmed/SHARI").should be_true
     end
+
+    it "scars" do
+      domain = "test.sc"
+
+      system_curl("v1/scars/sales").should be_true
+      system_curl("v1/scars/#{domain}/confirmed").should be_true
+      system_curl("v1/scars/#{domain}/unconfirmed").should be_true
+    end
   end
 
   STDERR.puts "< REST API"

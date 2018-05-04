@@ -42,6 +42,12 @@ module ::Sushi::Core::Controllers
   # [GET] v1/address/{:address}/unconfirmed           | unconfirmed amount for address for all tokens
   # [GET] v1/address/{:address}/unconfirmed/{:token}  | unconfirmed amount for address for all tokens for the token
   #
+  # --- scars
+  #
+  # [GET] v1/scars/sales                              | get all scars's domains for sales
+  # [GET] v1/scars/{:domain}/confirmed                | get the confirmed status of the domain
+  # [GET] v1/scars/{:domain}/unconfirmed              | get the unconfirmed status of the domain
+  #
   class RESTController
     def initialize(@blockchain : Blockchain)
     end
@@ -67,6 +73,9 @@ module ::Sushi::Core::Controllers
       get "/v1/address/:address/confirmed/:token" { |context, params| __v1_address_confirmed_token(context, params) }
       get "/v1/address/:address/unconfirmed" { |context, params| __v1_address_unconfirmed(context, params) }
       get "/v1/address/:address/unconfirmed/:token" { |context, params| __v1_address_unconfirmed_token(context, params) }
+      get "/v1/scars/sales" { |context, params| __v1_scars_sales(context, params) }
+      get "/v1/scars/:domain/confirmed" { |context, params| __v1_scars_confirmed(context, params) }
+      get "/v1/scars/:domain/unconfirmed" { |context, params| __v1_scars_unconfirmed(context, params) }
 
       route_handler
     end
@@ -178,6 +187,28 @@ module ::Sushi::Core::Controllers
         address = params["address"]
         token = params["token"]
         @blockchain.utxo.amount_impl(address, false, token)
+      end
+    end
+
+    def __v1_scars_sales(context, params)
+      with_response(context) do
+        @blockchain.scars.scars_for_sale_impl
+      end
+    end
+
+    def __v1_scars_confirmed(context, params)
+      domain = params["domain"]
+
+      with_response(context) do
+        @blockchain.scars.scars_resolve_impl(domain, true)
+      end
+    end
+
+    def __v1_scars_unconfirmed(context, params)
+      domain = params["domain"]
+
+      with_response(context) do
+        @blockchain.scars.scars_resolve_impl(domain, false)
       end
     end
 
