@@ -13,7 +13,7 @@
 require "./node_id"
 
 module ::Sushi::Core::NodeComponents
-  class Chord
+  class Chord < HandleSocket
     SUCCESSOR_LIST_SIZE = 3
 
     alias NodeContext = NamedTuple(
@@ -123,20 +123,14 @@ module ::Sushi::Core::NodeComponents
       debug "private node try to join SushiChain"
 
       unless _context[:type] == @network_type
-        begin
-          return send(
-            socket,
-            M_TYPE_CHORD_JOIN_REJECTED,
-            {
-              reason: "network type mismatch. " +
-                      "your network: #{_context[:type]}, our network: #{@network_type}",
-            }
-          )
-        rescue e : Exception
-          warning "failed to accept new node (disconnected)"
-
-          clean_connection(socket)
-        end
+        return send(
+          socket,
+          M_TYPE_CHORD_JOIN_REJECTED,
+          {
+            reason: "network type mismatch. " +
+              "your network: #{_context[:type]}, our network: #{@network_type}",
+          }
+        )
       end
 
       @private_nodes << {
@@ -144,19 +138,13 @@ module ::Sushi::Core::NodeComponents
         context: _context,
       }
 
-      begin
-        send(
-          socket,
-          M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED,
-          {
-            context: context,
-          }
-        )
-      rescue e : Exception
-        warning "failed to accept new node (disconnected)"
-
-        clean_connection(socket)
-      end
+      send(
+        socket,
+        M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED,
+        {
+          context: context,
+        }
+      )
     end
 
     def join_private_accepted(node, socket, _content)
@@ -445,8 +433,6 @@ module ::Sushi::Core::NodeComponents
 
     def send_overlay(socket, t, content)
       send(socket, t, content)
-    rescue e : Exception
-      handle_socket(socket)
     end
 
     def ping_all
@@ -461,12 +447,8 @@ module ::Sushi::Core::NodeComponents
 
     def ping(socket : HTTP::WebSocket)
       socket.ping
-    rescue e : Exception
-      handle_socket(socket)
-    end
-
-    def handle_socket(socket : HTTP::WebSocket)
-      clean_connection(socket) if socket.closed?
+    rescue i : IO::Error
+      clean_connection(socket)
     end
 
     def clean_connection(socket : HTTP::WebSocket)
@@ -503,7 +485,6 @@ module ::Sushi::Core::NodeComponents
       }
     end
 
-    include Logger
     include Protocol
     include Consensus
     include Common::Color

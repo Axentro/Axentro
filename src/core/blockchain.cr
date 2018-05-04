@@ -235,7 +235,7 @@ module ::Sushi::Core
                             miners.map { |m|
                               amount = (miners_rewards_total * m[:nonces].size) / miners_nonces_size
                               {address: m[:address], amount: amount}
-                            }
+                            }.reject { |m| m[:amount] == 0 }
                           else
                             [] of NamedTuple(address: String, amount: Int64)
                           end
