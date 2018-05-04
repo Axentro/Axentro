@@ -14,17 +14,17 @@ require "./spec_helper"
 
 include ::Sushi::Common::Color
 
-ENV["UNIT"] = "true"
+ENV["SC_UNIT"] = "true"
 
 puts light_cyan("> unit tests")
 require "./units/units"
 
-ENV.delete("UNIT")
+ENV.delete("SC_UNIT")
 
-ENV["INTEGRATION"] = "true"
+ENV["SC_INTEGRATION"] = "true"
 
 puts ""
 puts light_cyan("> integration tests")
 require "./integration/integration"
 
-ENV.delete("INTEGRATION")
+ENV.delete("SC_INTEGRATION")

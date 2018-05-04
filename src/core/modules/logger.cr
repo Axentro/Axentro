@@ -12,18 +12,18 @@
 
 module ::Sushi::Core::Logger
   def debug(msg : String)
-    return if ENV.has_key?("UNIT") || ENV.has_key?("INTEGRATION") || ENV.has_key?("E2E")
-    return unless ENV.has_key?("DEBUG")
+    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E")
+    return unless ENV.has_key?("SC_DEBUG")
     log_out("Debug", msg, :dark_gray)
   end
 
   def info(msg : String)
-    return if ENV.has_key?("UNIT") || ENV.has_key?("INTEGRATION") || ENV.has_key?("E2E")
+    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E")
     log_out("Info", msg, :light_green)
   end
 
   def warning(msg : String)
-    return if ENV.has_key?("UNIT") || ENV.has_key?("INTEGRATION")
+    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION")
     log_out("Warning", msg, :yellow)
   end
 
@@ -32,7 +32,7 @@ module ::Sushi::Core::Logger
   end
 
   def progress(msg : String)
-    return if ENV.has_key?("UNIT") || ENV.has_key?("E2E")
+    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_E2E")
     print msg
   end
 

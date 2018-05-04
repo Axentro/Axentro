@@ -24,7 +24,7 @@ class SushiChainE2E
   @time : Int32 = 300
 
   def initialize
-    ENV["E2E"] = "true"
+    ENV["SC_E2E"] = "true"
   end
 
   def parse_option!

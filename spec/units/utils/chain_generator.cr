@@ -43,7 +43,7 @@ module ::Units::Utils::ChainGenerator
       @miner = {address: miner_wallet.address, socket: MockWebSocket.new, nonces: [] of UInt64}
       @transaction_factory = TransactionFactory.new(@node_wallet)
       @rpc = RPCController.new(@blockchain)
-      enable_ut
+      enable_difficulty
     end
 
     def addBlock
@@ -63,7 +63,7 @@ module ::Units::Utils::ChainGenerator
     end
 
     def chain
-      remove_ut
+      remove_difficulty
       @blockchain.chain
     end
 
@@ -71,12 +71,12 @@ module ::Units::Utils::ChainGenerator
       @blockchain.chain.reject! { |b| b.prev_hash == "genesis" }
     end
 
-    def remove_ut
-      ENV.delete("SET_DIFFICULTY")
+    def remove_difficulty
+      ENV.delete("SC_SET_DIFFICULTY")
     end
 
-    def enable_ut
-      ENV["SET_DIFFICULTY"] = "0"
+    def enable_difficulty
+      ENV["SC_SET_DIFFICULTY"] = "0"
     end
 
     def rpc

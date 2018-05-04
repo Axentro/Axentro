@@ -134,12 +134,12 @@ describe Block do
     it "should return true when valid" do
       with_factory do |block_factory|
         chain = block_factory.addBlocks(2).chain
-        block_factory.enable_ut
+        block_factory.enable_difficulty
         block1 = chain[1]
         block2 = chain[2]
 
         block2.valid_for?(block1).should be_true
-        block_factory.remove_ut
+        block_factory.remove_difficulty
       end
     end
 
@@ -178,7 +178,7 @@ describe Block do
       # someone tried to add into block2 a duplicate of a transaction already in block 1 - but with a different amount
       with_factory do |block_factory, transaction_factory|
         chain = block_factory.addBlocks(2).chain
-        block_factory.enable_ut
+        block_factory.enable_difficulty
         block1 = chain[1]
         block2 = chain[2]
 
@@ -190,7 +190,7 @@ describe Block do
 
         expect_raises(Exception, "invalid merkle tree root: #{block2.calcluate_merkle_tree_root} != #{block2.merkle_tree_root}") do
           block2.valid_for?(block1)
-          block_factory.remove_ut
+          block_factory.remove_difficulty
         end
       end
     end
