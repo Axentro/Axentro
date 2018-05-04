@@ -137,6 +137,10 @@ module ::Sushi::Core
       WebSocketHandler.new("/peer") { |socket, context| peer(socket) }
     end
 
+    private def v1_api_documentation_handler : ApiDocumentationHandler
+      ApiDocumentationHandler.new("/docs/api/v1","api/v1/index.html")
+    end
+
     def peer(socket : HTTP::WebSocket)
       socket.on_message do |message|
         _message_json : JSON::Any? = begin
@@ -406,6 +410,7 @@ module ::Sushi::Core
         peer_handler,
         route_handler,
         @rest_controller.get_handler,
+        v1_api_documentation_handler,
       ]
     end
 
