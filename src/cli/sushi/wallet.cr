@@ -81,7 +81,7 @@ module ::Sushi::Interface::Sushi
       wallet = Core::Wallet.from_json(Core::Wallet.create(__is_testnet).to_json)
 
       if __encrypted
-        puts_help(HELP_WALLET_PASSWORD) unless wallet_password = (__wallet_password || ENV["WALLET_PASSWORD"]?)
+        puts_help(HELP_WALLET_PASSWORD) unless wallet_password = (__wallet_password || ENV["SC_WALLET_PASSWORD"]?)
 
         encrypted_wallet = Core::Wallet.encrypt(wallet_password, wallet)
 

@@ -32,7 +32,7 @@ module ::Utils::Integration
   end
 
   def exec_sushid(args : Array(String)) : String
-    `SET_DIFFICULTY=1 #{bin}/sushid #{args.join(" ")}`
+    `SC_SET_DIFFICULTY=1 #{bin}/sushid #{args.join(" ")}`
   end
 
   def wallet(num : Int32) : String
