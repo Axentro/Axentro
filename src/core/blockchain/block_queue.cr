@@ -44,17 +44,7 @@ module ::Sushi::Core::BlockQueue
           next if @processing
           next if @queue.empty?
 
-          channel = Channel(Nil).new
-
-          #
-          # double spawn to avoid blocking
-          #
-          spawn do
-            @queue.shift.exec
-            channel.send(nil)
-          end
-
-          channel.receive
+          @queue.shift.exec
         end
       end
     end
