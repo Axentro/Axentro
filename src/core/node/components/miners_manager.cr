@@ -62,7 +62,7 @@ module ::Sushi::Core::NodeComponents
         version:    Core::CORE_VERSION,
         block:      @blockchain.latest_block,
         difficulty: miner_difficulty_at(@blockchain.latest_index),
-       })
+      })
     end
 
     def found_nonce(node, socket, _content)
@@ -82,7 +82,7 @@ module ::Sushi::Core::NodeComponents
           send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
             block:      @blockchain.latest_block,
             difficulty: miner_difficulty_at(@blockchain.latest_index),
-           })
+          })
         else
           info "miner #{miner[:address][0..7]} found nonce (nonces: #{miner[:nonces].size})"
 
@@ -108,10 +108,10 @@ module ::Sushi::Core::NodeComponents
 
     def broadcast_latest_block
       @miners.each do |miner|
-          send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
-            block:      @blockchain.latest_block,
-            difficulty: miner_difficulty_at(@blockchain.latest_index),
-          })
+        send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
+          block:      @blockchain.latest_block,
+          difficulty: miner_difficulty_at(@blockchain.latest_index),
+        })
       end
     end
 

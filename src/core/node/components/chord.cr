@@ -128,7 +128,7 @@ module ::Sushi::Core::NodeComponents
           M_TYPE_CHORD_JOIN_REJECTED,
           {
             reason: "network type mismatch. " +
-              "your network: #{_context[:type]}, our network: #{@network_type}",
+                    "your network: #{_context[:type]}, our network: #{@network_type}",
           }
         )
       end

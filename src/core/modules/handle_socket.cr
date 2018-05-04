@@ -14,7 +14,6 @@ require "./logger"
 
 module ::Sushi::Core
   abstract class HandleSocket
-
     def send(socket, t, content)
       socket.send({type: t, content: content.to_json}.to_json)
     rescue e : Exception
