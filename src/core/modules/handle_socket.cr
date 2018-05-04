@@ -24,16 +24,30 @@ module ::Sushi::Core
       case e
       when IO::Error
         clean_connection(socket)
-      else
+      when Errno
         if error_message = e.message
-          error error_message
+          if error_message == "Error writing to socket: Broken pipe"
+            clean_connection(socket)
+          else
+            show_exception(e)
+          end
         else
-          error "unknown error"
+          show_exception(e)
         end
+      else
+        show_exception(e)
+      end
+    end
 
-        if backtrace = e.backtrace
-          error backtrace.join("\n")
-        end
+    def show_exception(e : Exception)
+      if error_message = e.message
+        error error_message
+      else
+        error "unknown error"
+      end
+
+      if backtrace = e.backtrace
+        error backtrace.join("\n")
       end
     end
 
