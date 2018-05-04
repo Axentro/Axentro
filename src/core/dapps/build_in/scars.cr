@@ -263,24 +263,28 @@ RULE
       domain_name = json["domain_name"].as_s
       confirmed = json["confirmed"].as_bool
 
-      domain = confirmed ? resolve(domain_name) : resolve_unconfirmed(domain_name, [] of Transaction)
-
-      response = if domain
-                   {resolved: true, domain: domain}.to_json
-                 else
-                   default_domain = {domain_name: domain_name, address: "", status: Status::NotFound, price: 0}
-                   {resolved: false, domain: default_domain}.to_json
-                 end
-
-      context.response.print response
+      context.response.print api_success(scars_resolve_impl(domain_name, confirmed))
       context
     end
 
-    def scars_for_sale(json, context, params)
-      domain_for_sale = sales
+    def scars_resolve_impl(domain_name : String, confirmed : Bool)
+      domain = confirmed ? resolve(domain_name) : resolve_unconfirmed(domain_name, [] of Transaction)
 
-      context.response.print domain_for_sale.to_json
+      if domain
+        {resolved: true, domain: domain}
+      else
+        default_domain = {domain_name: domain_name, address: "", status: Status::NotFound, price: 0}
+        {resolved: false, domain: default_domain}
+      end
+    end
+
+    def scars_for_sale(json, context, params)
+      context.response.print api_success(scars_for_sale_impl)
       context
+    end
+
+    def scars_for_sale_impl
+      sales
     end
 
     include Consensus

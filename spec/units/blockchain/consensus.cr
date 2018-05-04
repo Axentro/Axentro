@@ -42,11 +42,21 @@ describe Consensus do
 
   describe "difficulty" do
     it "should return the #difficulty_at for the blockchain" do
+      current_env = ENV["SET_DIFFICULTY"]?
+      ENV.delete("SET_DIFFICULTY")
+
       difficulty_at(0_i64).should eq(4)
+
+      ENV["SET_DIFFICULTY"] = current_env
     end
 
     it "should return the #miner_difficulty_at for the miners" do
+      current_env = ENV["SET_DIFFICULTY"]?
+      ENV.delete("SET_DIFFICULTY")
+
       miner_difficulty_at(0_i64).should eq(3)
+
+      ENV["SET_DIFFICULTY"] = current_env
     end
   end
 

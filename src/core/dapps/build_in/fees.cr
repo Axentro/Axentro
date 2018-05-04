@@ -43,6 +43,11 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def fees(json, context, params)
+      context.response.print api_success(fees_impl)
+      context
+    end
+
+    def fees_impl
       fees = Hash(String, Int64).new
 
       blockchain.dapps.each do |dapp|
@@ -51,8 +56,7 @@ module ::Sushi::Core::DApps::BuildIn
         end
       end
 
-      context.response.print fees.to_json
-      context
+      fees
     end
   end
 end

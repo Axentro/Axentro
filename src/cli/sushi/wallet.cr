@@ -170,7 +170,7 @@ module ::Sushi::Interface::Sushi
                   puts_help(HELP_WALLET_PATH_OR_ADDRESS_OR_DOMAIN)
                 end
 
-      payload = {call: "amount", address: address, unconfirmed: __unconfirmed, token: token}.to_json
+      payload = {call: "amount", address: address, confirmed: !__unconfirmed, token: token}.to_json
 
       body = rpc(node, payload)
       json = JSON.parse(body)
@@ -183,9 +183,9 @@ module ::Sushi::Interface::Sushi
         puts_info("  | %20s | %20s |" % ["token", "amount"])
         puts_info("  | %20s | %20s |" % ["-" * 20, "-" * 20])
 
-        json["result"].each do |result|
-          next if result["amount"].as_i == 0
-          puts_info("  | %20s | %20s |" % [result["token"], result["amount"]])
+        json["pairs"].each do |pair|
+          next if pair["token"] != TOKEN_DEFAULT && pair["amount"].as_i == 0
+          puts_info("  | %20s | %20s |" % [pair["token"], pair["amount"]])
         end
 
         puts_info("  + %20s - %20s +" % ["-" * 20, "-" * 20])

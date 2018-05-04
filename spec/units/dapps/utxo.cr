@@ -307,11 +307,11 @@ describe UTXO do
         with_factory do |block_factory, transaction_factory|
           block_factory.addBlocks(10)
           recipient_address = block_factory.chain.last.transactions.first.recipients.first[:address]
-          payload = {call: "amount", address: recipient_address, unconfirmed: true, token: TOKEN_DEFAULT}.to_json
+          payload = {call: "amount", address: recipient_address, confirmed: false, token: TOKEN_DEFAULT}.to_json
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq(%{{"unconfirmed":true,"result":[{"token":"SHARI","amount":100000}]}})
+            result.should eq(%{{"confirmed":false,"pairs":[{"token":"SHARI","amount":100000}]}})
           end
         end
       end
@@ -320,11 +320,11 @@ describe UTXO do
         with_factory do |block_factory, transaction_factory|
           block_factory.addBlocks(10)
           recipient_address = block_factory.chain.last.transactions.first.recipients.first[:address]
-          payload = {call: "amount", address: recipient_address, unconfirmed: false, token: TOKEN_DEFAULT}.to_json
+          payload = {call: "amount", address: recipient_address, confirmed: true, token: TOKEN_DEFAULT}.to_json
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq(%{{"unconfirmed":false,"result":[{"token":"SHARI","amount":10000}]}})
+            result.should eq(%{{"confirmed":true,"pairs":[{"token":"SHARI","amount":10000}]}})
           end
         end
       end

@@ -138,7 +138,7 @@ describe BlockchainInfo do
           payload = {call: "transactions", index: 99}.to_json
           json = JSON.parse(payload)
 
-          expect_raises(Exception, "invalid index 99 (Blockchain size is 11)") do
+          expect_raises(Exception, "invalid index 99 (blockchain size is 11)") do
             block_factory.rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), {} of String => String)
           end
         end
@@ -205,7 +205,7 @@ describe BlockchainInfo do
           payload = {call: "block", index: 99, header: false}.to_json
           json = JSON.parse(payload)
 
-          expect_raises(Exception, "invalid index 99 (Blockchain size is 11)") do
+          expect_raises(Exception, "invalid index 99 (blockchain size is 11)") do
             block_factory.rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), {} of String => String)
           end
         end
