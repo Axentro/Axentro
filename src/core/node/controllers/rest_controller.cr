@@ -72,138 +72,117 @@ module ::Sushi::Core::Controllers
     end
 
     def __v1_blockchain(context, params)
-      context.response.print api_success(@blockchain.blockchain_info.blockchain_impl(false))
-      context
-    rescue e : Exception
-      rest_error(context, e)
+      with_response(context) do
+        @blockchain.blockchain_info.blockchain_impl(false)
+      end
     end
 
     def __v1_blockchain_header(context, params)
-      context.response.print api_success(@blockchain.blockchain_info.blockchain_impl(true))
-      context
-    rescue e : Exception
-      rest_error(context, e)
+      with_response(context) do
+        @blockchain.blockchain_info.blockchain_impl(true)
+      end
     end
 
     def __v1_blockchain_size(context, params)
-      context.response.print api_success(@blockchain.blockchain_info.blockchain_size_impl)
-      context
-    rescue e : Exception
-      rest_error(context, e)
+      with_response(context) do
+        @blockchain.blockchain_info.blockchain_size_impl
+      end
     end
 
     def __v1_block_index(context, params)
-      index = params["index"].to_i64
-
-      context.response.print api_success(@blockchain.blockchain_info.block_impl(false, index))
-      context
-    rescue e : Exception
-      rest_error(context, e)
+      with_response(context) do
+        index = params["index"].to_i64
+        @blockchain.blockchain_info.block_impl(false, index)
+      end
     end
 
     def __v1_block_index_header(context, params)
-      index = params["index"].to_i64
-
-      context.response.print api_success(@blockchain.blockchain_info.block_impl(true, index))
-      context
-    rescue e : Exception
-      rest_error(context, e)
+      with_response(context) do
+        index = params["index"].to_i64
+        @blockchain.blockchain_info.block_impl(true, index)
+      end
     end
 
     def __v1_block_index_transactions(context, params)
-      index = params["index"].to_i64
-
-      context.response.print api_success(@blockchain.blockchain_info.transactions_impl(index))
-      context
-    rescue e : Exception
-      rest_error(context, e)
+      with_response(context) do
+        index = params["index"].to_i64
+        @blockchain.blockchain_info.transactions_impl(index)
+      end
     end
 
     def __v1_transaction_id(context, params)
-      id = params["id"]
-
-      context.response.print api_success(@blockchain.indices.transaction_impl(id))
-      context
-    rescue e : Exception
-      rest_error(context, e)
+      with_response(context) do
+        id = params["id"]
+        @blockchain.indices.transaction_impl(id)
+      end
     end
 
     def __v1_transaction_id_block(context, params)
-      id = params["id"]
-
-      context.response.print api_success(@blockchain.blockchain_info.block_impl(false, id))
-      context
-    rescue e : Exception
-      rest_error(context, e)
+      with_response(context) do
+        id = params["id"]
+        @blockchain.blockchain_info.block_impl(false, id)
+      end
     end
 
     def __v1_transaction_id_block_header(context, params)
-      id = params["id"]
-
-      context.response.print api_success(@blockchain.blockchain_info.block_impl(true, id))
-      context
-    rescue e : Exception
-      rest_error(context, e)
+      with_response(context) do
+        id = params["id"]
+        @blockchain.blockchain_info.block_impl(true, id)
+      end
     end
 
     def __v1_transaction_id_confirmations(context, params)
-      id = params["id"]
-
-      context.response.print api_success(@blockchain.indices.confirmation_impl(id))
-      context
-    rescue e : Exception
-      rest_error(context, e)
+      with_response(context) do
+        id = params["id"]
+        @blockchain.indices.confirmation_impl(id)
+      end
     end
 
     def __v1_transaction_fees(context, params)
-      context.response.print api_success(@blockchain.fees.fees_impl)
-      context
-    rescue e : Exception
-      rest_error(context, e)
+      with_response(context) do
+        @blockchain.fees.fees_impl
+      end
     end
 
     def __v1_address_transactions(context, params)
-      address = params["address"]
-
-      context.response.print api_success(@blockchain.blockchain_info.transactions_impl(address))
-      context
-    rescue e : Exception
-      rest_error(context, e)
+      with_response(context) do
+        address = params["address"]
+        @blockchain.blockchain_info.transactions_impl(address)
+      end
     end
 
     def __v1_address_confirmed(context, params)
-      address = params["address"]
-
-      context.response.print api_success(@blockchain.utxo.amount_impl(address, true, "all"))
-      context
-    rescue e : Exception
-      rest_error(context, e)
+      with_response(context) do
+        address = params["address"]
+        @blockchain.utxo.amount_impl(address, true, "all")
+      end
     end
 
     def __v1_address_confirmed_token(context, params)
-      address = params["address"]
-      token = params["token"]
-
-      context.response.print api_success(@blockchain.utxo.amount_impl(address, true, token))
-      context
-    rescue e : Exception
-      rest_error(context, e)
+      with_response(context) do
+        address = params["address"]
+        token = params["token"]
+        @blockchain.utxo.amount_impl(address, true, token)
+      end
     end
 
     def __v1_address_unconfirmed(context, params)
-      address = params["address"]
-
-      context.response.print api_success(@blockchain.utxo.amount_impl(address, false, "all"))
-      context
-    rescue e : Exception
-      rest_error(context, e)
+      with_response(context) do
+        address = params["address"]
+        @blockchain.utxo.amount_impl(address, false, "all")
+      end
     end
 
     def __v1_address_unconfirmed_token(context, params)
-      address = params["address"]
-      token = params["token"]
+      with_response(context) do
+        address = params["address"]
+        token = params["token"]
+        @blockchain.utxo.amount_impl(address, false, token)
+      end
+    end
 
-      context.response.print api_success(@blockchain.utxo.amount_impl(address, false, token))
+    private def with_response(context, &block)
+      context.response.print api_success(yield)
       context
     rescue e : Exception
       rest_error(context, e)
