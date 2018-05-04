@@ -23,8 +23,24 @@ module ::Sushi::Interface::Sushi
           desc: "show current default configuration",
         },
         {
-          name: "clean",
-          desc: "clean the default configuration",
+          name: "remove",
+          desc: "remove the default configuration",
+        },
+        {
+          name: "use",
+          desc: "use the specified configuration",
+        },
+        {
+          name: "list",
+          desc: "list the available configurations",
+        },
+        {
+          name: "enable",
+          desc: "enable configurations",
+        },
+        {
+          name: "disable",
+          desc: "disable configurations",
         },
       ]
     end
@@ -42,7 +58,8 @@ module ::Sushi::Interface::Sushi
         Options::BIND_PORT,
         Options::PUBLIC_URL,
         Options::DATABASE_PATH,
-        # Options::ADDRESS,
+        Options::ADDRESS,
+        Options::DOMAIN,
         # Options::AMOUNT,
         # Options::MESSAGE,
         # Options::BLOCK_INDEX,
@@ -50,6 +67,7 @@ module ::Sushi::Interface::Sushi
         # Options::HEADER,
         Options::THREADS,
         Options::ENCRYPTED,
+        Options::CONFIG_NAME,
       ])
     end
 
@@ -59,8 +77,16 @@ module ::Sushi::Interface::Sushi
         return save
       when "show"
         return show
-      when "clean"
-        return clean
+      when "remove"
+        return remove
+      when "use"
+        return use
+      when "list"
+        return list
+      when "disable"
+        return enabled(ConfigStatus::Disabled)
+      when "enable"
+        return enabled(ConfigStatus::Enabled)
       end
 
       specify_sub_action!(action_name)
@@ -69,6 +95,7 @@ module ::Sushi::Interface::Sushi
     end
 
     def save
+      cm.set_enabled_state(ConfigStatus::Disabled)
       cm.set("connect_node", __connect_node)
       cm.set("wallet_path", absolute_path(__wallet_path))
       cm.set("is_testnet", __is_testnet)
@@ -80,30 +107,65 @@ module ::Sushi::Interface::Sushi
       cm.set("threads", __threads)
       cm.set("encrypted", __encrypted)
       cm.set("wallet_password", __wallet_password)
-      cm.save
+      cm.set("address", __address)
+      cm.set("domain", __domain)
+      cm.save(__name)
+      cm.set_enabled_state(ConfigStatus::Enabled)
 
       puts_success "saved the configuration at #{cm.config_path}"
 
       cm.release_config
-
-      if config = cm.get_config
-        puts_info config.to_s
-      end
+      show_config
     end
 
     def show
-      if config = cm.get_config
-        puts_success "show current configuration at #{cm.config_path}"
-        puts_info config.to_s
-      else
-        puts_error "no configuration found at #{cm.config_path}"
-        puts_error "to create a configuration, exec `sushi config save [your_options]`"
+      with_config do |configs, current_config|
+        if __name.nil?
+          puts_success "current configuration is for: '#{current_config.name}' in file #{cm.config_path}"
+          puts_info current_config.to_s
+        else
+          with_name(__name, configs) do |config, name|
+            puts_success "showing configuration for: '#{name}' in file #{cm.config_path}"
+            puts_info ConfigItem.new(name, current_config.status, config).to_s
+          end
+        end
       end
     end
 
-    def clean
-      puts_success "delete configuration at #{cm.config_path}"
-      cm.clean
+    def remove
+      with_config do |configs, current_config|
+        __name.nil? ? remove_all : with_name(__name, configs) { |config, name| configs.keys.size > 1 ? remove_config(name, current_config.name) : remove_all }
+      end
+    end
+
+    def use
+      puts_help(HELP_CONFIG_NAME) unless name = __name
+      with_config do |configs, current_config|
+        with_name(name, configs) do
+          cm.save(name, true)
+          puts_success "using configuration '#{name}' at #{cm.config_path}"
+          show_config
+        end
+      end
+    end
+
+    def list
+      with_config do |configs, current_config|
+        puts_info "configuration is #{current_config.status}"
+        if configs.keys.empty?
+          puts_error "there are no configurations yet - to create, exec `sushi config save [your_options]`"
+        else
+          puts_success "the following configs exist at #{cm.config_path}"
+          configs.keys.each { |config| puts_info config }
+        end
+      end
+    end
+
+    def enabled(status : ConfigStatus)
+      with_config do |configs, current_config|
+        cm.set_enabled_state(status)
+        puts_success "configuration has been #{status} - #{cm.config_path}"
+      end
     end
 
     private def absolute_path(file)
@@ -112,6 +174,40 @@ module ::Sushi::Interface::Sushi
         File.expand_path(file)
       else
         nil
+      end
+    end
+
+    private def with_name(name, configs, &block)
+      if configs.keys.includes?(name)
+        yield configs[name], name.not_nil!
+      else
+        puts_error "no configuration found for '#{name}' at #{cm.config_path}"
+      end
+    end
+
+    private def with_config(&block)
+      configs = cm.get_configs
+      current_config = cm.get_config
+      if configs.keys.empty? || current_config.nil?
+        raise "no configuration file found at: #{cm.config_path} - to create, exec `sushi config save [your_options]"
+      end
+      yield configs, current_config
+    end
+
+    private def remove_all
+      puts_success "removed all configurations at #{cm.config_path}"
+      cm.remove_all
+    end
+
+    private def remove_config(name, current_config)
+      raise "sorry you cannot remove a config you are currently using" if name == current_config
+      puts_success "removed configuration for: '#{name}' in file #{cm.config_path}"
+      cm.remove_config(name)
+    end
+
+    private def show_config
+      if config = cm.get_config
+        puts_info config.to_s
       end
     end
 
