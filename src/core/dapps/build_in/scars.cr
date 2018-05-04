@@ -275,7 +275,7 @@ RULE
       else
         default_domain = {domain_name: domain_name, address: "", status: Status::NotFound, price: 0}
         {resolved: false, domain: default_domain}
-      end      
+      end
     end
 
     def scars_for_sale(json, context, params)
