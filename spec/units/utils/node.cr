@@ -54,11 +54,18 @@ module ::Units::Utils::NodeHelper
     when IO
       res.response.status_code.should eq(status_code)
       http_res = res.response.unsafe_as(MockResponse).content
-      json_result = http_res.split("\n")[4].chomp
-      yield json_result
+      json_result = JSON.parse(http_res.split("\n")[4].chomp)
+
+      if json_result["status"].as_s == "success"
+        yield json_result["result"].to_json
+      else
+        yield json_result["reason"].as_s
+      end
     else
       fail "expected an io response"
     end
+  rescue e : Exception
+    yield e.message.not_nil!
   end
 
   def with_rpc_exec_internal_get(rpc, status_code = 200, &block)
@@ -70,10 +77,17 @@ module ::Units::Utils::NodeHelper
     when IO
       res.response.status_code.should eq(status_code)
       http_res = res.response.unsafe_as(MockResponse).content
-      json_result = http_res.split("\n")[4].chomp
-      yield json_result
+      json_result = JSON.parse(http_res.split("\n")[4].chomp)
+
+      if json_result["status"].as_s == "success"
+        yield json_result["result"].to_json
+      else
+        yield json_result["reason"].as_s
+      end
     else
       fail "expected an io response"
     end
+  rescue e : Exception
+    yield e.message.not_nil!
   end
 end

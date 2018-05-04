@@ -63,7 +63,7 @@ module ::Sushi::Core::DApps::BuildIn
 
       raise "invalid fee #{fee} for the action #{action}" if fee <= 0.0
 
-      context.response.print transaction.to_json
+      context.response.print api_success(transaction)
       context
     end
 
@@ -72,11 +72,7 @@ module ::Sushi::Core::DApps::BuildIn
 
       node.broadcast_transaction(transaction)
 
-      context.response.print transaction.to_json
-      context
-    rescue e : Exception
-      context.response.status_code = 403
-      context.response.print e.message.not_nil!
+      context.response.print api_success(transaction)
       context
     end
   end

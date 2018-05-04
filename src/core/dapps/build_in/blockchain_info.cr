@@ -49,64 +49,87 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def blockchain_size(json, context, params)
-      size = blockchain.chain.size
-
-      json = {size: size}.to_json
-
-      context.response.print json
+      context.response.print api_success(blockchain_size_impl)
       context
+    end
+
+    def blockchain_size_impl
+      {size: blockchain.chain.size}
     end
 
     def blockchain(json, context, params)
-      if json["header"].as_bool
-        context.response.print blockchain.headers.to_json
-      else
-        context.response.print blockchain.chain.to_json
-      end
-
+      context.response.print api_success(blockchain_impl(json["header"].as_bool))
       context
+    end
+
+    def blockchain_impl(header : Bool)
+      if header
+        blockchain.headers
+      else
+        blockchain.chain
+      end
     end
 
     def block(json, context, params)
-      block = if index = json["index"]?
-                if index.as_i > blockchain.chain.size - 1
-                  raise "invalid index #{index} (Blockchain size is #{blockchain.chain.size})"
-                end
-
-                blockchain.chain[index.as_i]
-              elsif transaction_id = json["transaction_id"]?
-                unless block_index = blockchain.indices.get(transaction_id.to_s)
-                  raise "failed to find a block for the transaction #{transaction_id}"
-                end
-
-                blockchain.chain[block_index]
-              else
-                raise "please specify block index or transaction id"
-              end
-
-      if json["header"].as_bool
-        context.response.print block.to_header.to_json
-      else
-        context.response.print block.to_json
-      end
-
+      context.response.print api_success(
+        block_impl(json["header"].as_bool, json["index"]?, json["transaction_id"]?)
+      )
       context
     end
 
+    def block_impl(header : Bool, _index, _transaction_id)
+      if index = _index
+        block_impl(header, index.as_i64)
+      elsif transaction_id = _transaction_id
+        block_impl(header, transaction_id.as_s)
+      else
+        raise "please specify block index or transaction id"
+      end
+    end
+
+    def block_impl(header : Bool, index : Int64)
+      if index > blockchain.chain.size - 1
+        raise "invalid index #{index} (blockchain size is #{blockchain.chain.size})"
+      end
+
+      block = blockchain.chain[index]
+
+      header ? block.to_header : block
+    end
+
+    def block_impl(header : Bool, transaction_id : String)
+      unless block_index = blockchain.indices.get(transaction_id)
+        raise "failed to find a block for the transaction #{transaction_id}"
+      end
+
+      header ? blockchain.chain[block_index].to_header : blockchain.chain[block_index]
+    end
+
     def transactions(json, context, params)
-      if index = json["index"]?
-        if index.as_i > blockchain.chain.size - 1
-          raise "invalid index #{index.as_i} (Blockchain size is #{blockchain.chain.size})"
-        end
-        context.response.print blockchain.chain[index.as_i].transactions.to_json
-      elsif address = json["address"]?
-        transactions = blockchain.transactions_for_address(address.as_s)
-        context.response.print transactions.to_json
+      context.response.print api_success(transactions_impl(json["index"]?, json["address"]?))
+      context
+    end
+
+    def transactions_impl(_index, _address)
+      if index = _index
+        transactions_impl(index.as_i64)
+      elsif address = _address
+        transactions_impl(address.as_s)
       else
         raise "please specify a block index or an address"
       end
+    end
 
-      context
+    def transactions_impl(index : Int64)
+      if index > blockchain.chain.size - 1
+        raise "invalid index #{index} (blockchain size is #{blockchain.chain.size})"
+      end
+
+      blockchain.chain[index].transactions
+    end
+
+    def transactions_impl(address : String)
+      blockchain.transactions_for_address(address)
     end
   end
 end

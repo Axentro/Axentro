@@ -138,7 +138,14 @@ module ::Sushi::Interface
         exit -1
       end
 
-      body
+      json = JSON.parse(body)
+
+      if json["status"].as_s == "error"
+        puts_error json["reason"].as_s
+        exit -1
+      end
+
+      json["result"].to_json
     end
 
     def add_transaction(node : String,
@@ -208,7 +215,6 @@ module ::Sushi::Interface
       payload = {call: "scars_resolve", domain_name: domain, confirmed: confirmed}.to_json
 
       body = rpc(node, payload)
-
       JSON.parse(body)
     end
 

@@ -44,29 +44,25 @@ module ::Sushi::Core::DApps::BuildIn
     def define_rpc?(call, json, context, params)
       case call
       when "rejects"
-        return rejects?(json, context, params)
+        return rejects(json, context, params)
       end
 
       nil
     end
 
-    def rejects?(json, context, params)
+    def rejects(json, context, params)
       transaction_id = json["transaction_id"].as_s
 
-      result = if rejected_reason = @rejects[transaction_id]?
-                 {
-                   rejected: true,
-                   reason:   rejected_reason,
-                 }
-               else
-                 {
-                   rejected: false,
-                   reason:   "",
-                 }
-               end
-
-      context.response.print result.to_json
+      context.response.print api_success(rejects_impl(transaction_id))
       context
+    end
+
+    def rejects_impl(transaction_id : String)
+      if rejected_reason = @rejects[transaction_id]?
+        {reason: rejected_reason}
+      else
+        {reason: ""}
+      end
     end
   end
 end

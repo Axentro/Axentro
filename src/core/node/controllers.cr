@@ -15,11 +15,8 @@ module ::Sushi::Core::Controllers
     def initialize(@blockchain : Blockchain)
     end
 
-    def set_node(@node : Node)
-    end
-
     def node
-      @node.not_nil!
+      @blockchain.node
     end
 
     def exec(context, params) : HTTP::Server::Context
@@ -34,7 +31,7 @@ module ::Sushi::Core::Controllers
     rescue e : Exception
       if error_message = e.message
         context.response.status_code = 403
-        context.response.print error_message
+        context.response.print api_error(error_message)
       else
         context.response.status_code = 500
       end
@@ -57,12 +54,14 @@ module ::Sushi::Core::Controllers
 
     def unpermitted_method(context) : HTTP::Server::Context
       context.response.status_code = 403
-      context.response.print "unpermitted method: #{context.request.method}"
+      context.response.print api_error("unpermitted method: #{context.request.method}")
       context
     end
 
     abstract def exec_internal_get(context, params) : HTTP::Server::Context
     abstract def exec_internal_post(json, context, params) : HTTP::Server::Context
+
+    include NodeComponents::APIFormat
   end
 end
 

@@ -28,6 +28,7 @@ module ::Sushi::Core
     @chord : Chord
 
     @rpc_controller : Controllers::RPCController
+    @rest_controller : Controllers::RESTController
 
     @last_conflicted : Int64? = nil
 
@@ -59,6 +60,7 @@ module ::Sushi::Core
       debug "network type: #{light_green(@network_type)}"
 
       @rpc_controller = Controllers::RPCController.new(@blockchain)
+      @rest_controller = Controllers::RESTController.new(@blockchain)
 
       wallet_network = Wallet.address_network_type(@wallet.address)
 
@@ -73,8 +75,6 @@ module ::Sushi::Core
     end
 
     def run!
-      @rpc_controller.set_node(self)
-
       draw_routes!
 
       info "start running Sushi's node on #{light_green(@bind_host)}:#{light_green(@bind_port)}"
@@ -405,6 +405,7 @@ module ::Sushi::Core
       [
         peer_handler,
         route_handler,
+        @rest_controller.get_handler,
       ]
     end
 

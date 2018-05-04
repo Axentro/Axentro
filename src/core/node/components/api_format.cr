@@ -10,10 +10,20 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-require "./blockchain/*"
-require "./blowfish/*"
-require "./node/*"
-require "./ecdsa/*"
-require "./keys/*"
-require "./dapps/*"
-require "./license"
+module ::Sushi::Core::NodeComponents
+  module APIFormat
+    def api_success(content) : String
+      {
+        status: "success",
+        result: content,
+      }.to_json
+    end
+
+    def api_error(reason : String) : String
+      {
+        status: "error",
+        reason: reason,
+      }.to_json
+    end
+  end
+end

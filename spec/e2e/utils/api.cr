@@ -48,7 +48,7 @@ module ::E2E::Utils::API
     res = `#{sushi(args)}`
 
     if json = parse_json(res)
-      return json["result"][0]["amount"].to_s.to_i64
+      return json["pairs"][0]["amount"].to_s.to_i64
     end
 
     0_i64
