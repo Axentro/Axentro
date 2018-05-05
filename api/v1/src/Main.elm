@@ -132,7 +132,8 @@ menu model =
         |> Navbar.brand [ href "#" ] [ text "SushiChain API" ]
         |> Navbar.items
             [ Navbar.itemLink [ href "#getting-started" ] [ text "Getting started" ]
---            , Navbar.itemLink [ href "#modules" ] [ text "Modules" ]
+
+            --            , Navbar.itemLink [ href "#modules" ] [ text "Modules" ]
             , Navbar.itemLink [ href "#api-overview" ] [ text "Api Overview" ]
             ]
         |> Navbar.view model.navState
@@ -173,50 +174,57 @@ pageApiOverview model =
     ]
 
 
+
 --overviewBlockChainSection
+
+
 overviewBlockChainSection =
     [ h3 [] [ text "Blockchain" ]
-               , apiOverviewTable
-                   (Table.tbody []
-                       [ Table.tr []
-                           [ Table.td [] [ Html.text "GET" ]
-                           , Table.td [] [ a [ href "" ] [ Html.text "v1/blockchain" ] ]
-                           , Table.td [] [ Html.text "full blockchain" ]
-                           ]
-                       , Table.tr []
-                           [ Table.td [] [ Html.text "GET" ]
-                           , Table.td [] [ a [ href "" ] [  Html.text "v1/blockchain/headers" ] ]
-                           , Table.td [] [ Html.text "blockchain headers" ]
-                           ]
-                       , Table.tr []
-                           [ Table.td [] [ Html.text "GET" ]
-                           , Table.td [] [ a [ href "" ] [  Html.text "v1/blockchain/size" ] ]
-                           , Table.td [] [ Html.text "blockchain size" ]
-                           ]
-                       ]
-                   ) ]
+    , apiOverviewTable
+        (Table.tbody []
+            [ Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "" ] [ Html.text "v1/blockchain" ] ]
+                , Table.td [] [ Html.text "full blockchain" ]
+                ]
+            , Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "" ] [ Html.text "v1/blockchain/headers" ] ]
+                , Table.td [] [ Html.text "blockchain headers" ]
+                ]
+            , Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "" ] [ Html.text "v1/blockchain/size" ] ]
+                , Table.td [] [ Html.text "blockchain size" ]
+                ]
+            ]
+        )
+    ]
+
 
 overviewBlockSection =
-    [ hr [] [], h3 [] [ text "Block" ]
-               , apiOverviewTable
-                   (Table.tbody []
-                       [ Table.tr []
-                           [ Table.td [] [ Html.text "GET" ]
-                           , Table.td [] [ a [ href "" ] [ Html.text "v1/block{:index}" ] ]
-                           , Table.td [] [ Html.text "full block at index" ]
-                           ]
-                       , Table.tr []
-                           [ Table.td [] [ Html.text "GET" ]
-                           , Table.td [] [ a [ href "" ] [  Html.text "v1/block/{:index}/header" ] ]
-                           , Table.td [] [ Html.text "block header at index" ]
-                           ]
-                       , Table.tr []
-                           [ Table.td [] [ Html.text "GET" ]
-                           , Table.td [] [ a [ href "" ] [  Html.text "v1/block/{:index}/transactions" ] ]
-                           , Table.td [] [ Html.text "transactions in block" ]
-                           ]
-                       ]
-                   ) ]
+    [ hr [] []
+    , h3 [] [ text "Block" ]
+    , apiOverviewTable
+        (Table.tbody []
+            [ Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "" ] [ Html.text "v1/block{:index}" ] ]
+                , Table.td [] [ Html.text "full block at index" ]
+                ]
+            , Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "" ] [ Html.text "v1/block/{:index}/header" ] ]
+                , Table.td [] [ Html.text "block header at index" ]
+                ]
+            , Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "" ] [ Html.text "v1/block/{:index}/transactions" ] ]
+                , Table.td [] [ Html.text "transactions in block" ]
+                ]
+            ]
+        )
+    ]
 
 
 apiOverviewTable : Table.TBody msg -> Html.Html msg
