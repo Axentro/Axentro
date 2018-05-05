@@ -10,7 +10,7 @@
 <a href="https://bit.ly/2HJBu1z"><img src="https://img.shields.io/badge/slack-join-orange.svg"></a>
 <a href="https://discord.gg/qBqfJPv"><img src="https://img.shields.io/discord/441519469810941953.svg"></a>
 <a href="https://gitter.im/SushiChain/Lobby"><img src="https://img.shields.io/gitter/room/nwjs/nw.js.svg"></a>
-<a href="https://web.telegram.org/#/im?p=g255265671"><img src="https://img.shields.io/badge/telegram-join-blue.svg"></a>
+<a href="https://t.me/joinchat/Inebcg83C4ccxydPkzTdSw"><img src="https://img.shields.io/badge/telegram-join-blue.svg"></a>
 <a href="https://github.com/SushiChain/SushiChain/wiki"><img src="https://img.shields.io/badge/document-wiki-yellow.svg"></a></p>
 
 ## Document
@@ -25,7 +25,7 @@ All documents are written on [wiki](https://github.com/SushiChain/SushiChain/wik
 
 ## Communities
 
-We are discussing many things everyday in [Slack](https://bit.ly/2HJBu1z), [Discord](https://discord.gg/qBqfJPv), [Gitter](https://gitter.im/SushiChain/Lobby) and [Telegram](https://web.telegram.org/#/im?p=g255265671).
+We are discussing many things everyday in [Slack](https://bit.ly/2HJBu1z), [Discord](https://discord.gg/qBqfJPv), [Gitter](https://gitter.im/SushiChain/Lobby) and [Telegram](https://t.me/joinchat/Inebcg83C4ccxydPkzTdSw).
 
 These channels are bridged each other.
 
