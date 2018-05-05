@@ -7,7 +7,11 @@
 <p align="center"><a href="https://circleci.com/gh/SushiChain/SushiChain/tree/master"><img src="https://circleci.com/gh/SushiChain/SushiChain/tree/master.png?circle-token=099c1a2ed8be9aebf10eb09f79d65dfa4b05cf8e"></a>
 <a href="https://sushicoin.xyz/viewType.html?buildTypeId=SushiChain_1MainBuild&guest=1">
 <img src="https://sushicoin.xyz/app/rest/builds/buildType:(id:SushiChain_1MainBuild)/statusIcon"/></a>
-<a href="https://bit.ly/2HJBu1z"><img src="https://img.shields.io/badge/slack-join-orange.svg"></a>  <a href="https://github.com/SushiChain/SushiChain/wiki"><img src="https://img.shields.io/badge/document-wiki-yellow.svg"></a></p>
+<a href="https://bit.ly/2HJBu1z"><img src="https://img.shields.io/badge/slack-join-orange.svg"></a>>
+<a href="https://discord.gg/qBqfJPv"><img src="https://img.shields.io/discord/441519469810941953.svg"></a>
+<a href="https://gitter.im/SushiChain/Lobby"><img src="https://img.shields.io/gitter/room/nwjs/nw.js.svg"></a>
+<a href="https://web.telegram.org/#/im?p=g255265671"><img src=""></a>
+<a href="https://github.com/SushiChain/SushiChain/wiki"><img src="https://img.shields.io/badge/document-wiki-yellow.svg"></a></p>
 
 ## Document
 
@@ -19,9 +23,11 @@ All documents are written on [wiki](https://github.com/SushiChain/SushiChain/wik
 * [I want to do mining on SushiChain!](https://github.com/SushiChain/SushiChain/wiki/Mining-SushiChain)
 * [I want to build a SushiChain node!](https://github.com/SushiChain/SushiChain/wiki/Build-a-SushiChain-node)
 
-## Community
+## Communities
 
-We are discussing many things everyday in [Slack](https://bit.ly/2HJBu1z).
+We are discussing many things everyday in [Slack](https://bit.ly/2HJBu1z), [Discord](https://discord.gg/qBqfJPv), [Gitter](https://gitter.im/SushiChain/Lobby) and [Telegram](https://web.telegram.org/#/im?p=g255265671).
+
+These channels are bridged each other.
 
 🍣 We are welcome your joining! 🍣
 
