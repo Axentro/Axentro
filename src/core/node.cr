@@ -13,7 +13,7 @@
 require "./node/*"
 
 module ::Sushi::Core
-  class Node
+  class Node < HandleSocket
     alias Network = NamedTuple(
       prefix: String,
       name: String,
@@ -30,7 +30,7 @@ module ::Sushi::Core
     @rpc_controller : Controllers::RPCController
     @rest_controller : Controllers::RESTController
 
-    @last_conflicted : Int64? = nil
+    @latest_confirmed_index : Int64? = nil
 
     def initialize(
       @is_private : Bool,
@@ -112,17 +112,13 @@ module ::Sushi::Core
           end
 
       if _s = s
-        begin
-          send(
-            _s,
-            M_TYPE_NODE_REQUEST_CHAIN,
-            {
-              latest_index: @last_conflicted.nil? ? 0 : @last_conflicted.not_nil!,
-            }
-          )
-        rescue e : Exception
-          handle_exception(_s, e)
-        end
+        send(
+          _s,
+          M_TYPE_NODE_REQUEST_CHAIN,
+          {
+            latest_index: @latest_confirmed_index.nil? ? 0 : @latest_confirmed_index.not_nil!,
+          }
+        )
       else
         warning "successor not found. skip synching blockchain."
 
@@ -139,19 +135,7 @@ module ::Sushi::Core
 
     def peer(socket : HTTP::WebSocket)
       socket.on_message do |message|
-        _message_json : JSON::Any? = begin
-          JSON.parse(message)
-        rescue e : Exception
-          handle_exception(socket, e)
-
-          error "original message"
-          error message
-
-          nil
-        end
-
-        next unless message_json = _message_json
-
+        message_json = JSON.parse(message)
         message_type = message_json["type"].as_i
         message_content = message_json["content"].to_s
 
@@ -192,7 +176,7 @@ module ::Sushi::Core
       end
 
       socket.on_close do |_|
-        reject!(socket)
+        clean_connection(socket)
       end
     rescue e : Exception
       handle_exception(socket, e)
@@ -205,27 +189,17 @@ module ::Sushi::Core
         _nodes[:private_nodes].each do |private_node|
           next if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
           send(private_node[:socket], message_type, content)
-        rescue e : Exception
-          handle_exception(private_node[:socket], e)
         end
 
         if successor = _nodes[:successor]
           if successor[:context][:id] != content[:from][:id]
-            begin
-              send(successor[:socket], message_type, content)
-            rescue e : Exception
-              handle_exception(successor[:socket], e)
-            end
+            send(successor[:socket], message_type, content)
           end
         end
       else
         if from.nil? || from[:is_private]
           if successor = _nodes[:successor]
-            begin
-              send(successor[:socket], message_type, content)
-            rescue e : Exception
-              handle_exception(successor[:socket], e)
-            end
+            send(successor[:socket], message_type, content)
           end
         end
       end
@@ -269,7 +243,7 @@ module ::Sushi::Core
       elsif @blockchain.latest_index == block.index
         warning "blockchain conflicted at #{block.index} (#{light_cyan(@blockchain.chain.size)})"
 
-        @last_conflicted ||= block.index
+        @latest_confirmed_index ||= block.index
 
         send_block(block, from)
       elsif @blockchain.latest_index + 1 < block.index
@@ -284,17 +258,13 @@ module ::Sushi::Core
         send_block(block, from)
 
         if predecessor = @chord.find_predecessor?
-          begin
-            send(
-              predecessor[:socket],
-              M_TYPE_NODE_ASK_REQUEST_CHAIN,
-              {
-                latest_index: @blockchain.latest_block.index,
-              }
-            )
-          rescue e : Exception
-            handle_exception(predecessor[:socket], e)
-          end
+          send(
+            predecessor[:socket],
+            M_TYPE_NODE_ASK_REQUEST_CHAIN,
+            {
+              latest_index: @blockchain.latest_block.index,
+            }
+          )
         end
       end
     end
@@ -303,22 +273,9 @@ module ::Sushi::Core
       @blockchain.push_block(block)
     end
 
-    private def handle_exception(socket : HTTP::WebSocket, e : Exception)
-      if error_message = e.message
-        error error_message
-      else
-        error "unknown error"
-      end
-
-      if backtrace = e.backtrace
-        error backtrace.join("\n")
-      end
-
-      if socket.closed?
-        warning "the socket seems being closed (node)"
-
-        reject!(socket)
-      end
+    def clean_connection(socket : HTTP::WebSocket)
+      @chord.clean_connection(socket)
+      @miners_manager.clean_connection(socket)
     end
 
     private def _broadcast_transaction(socket, _content)
@@ -353,8 +310,6 @@ module ::Sushi::Core
       send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {chain: @blockchain.subchain(latest_index)})
 
       sync_chain(socket) if latest_index > @blockchain.latest_block.index
-    rescue e : Exception
-      handle_exception(socket, e)
     end
 
     private def _receive_chain(socket, _content)
@@ -374,7 +329,7 @@ module ::Sushi::Core
         info "chain updated: #{light_green(current_latest_index)} -> #{light_green(@blockchain.latest_index)}"
         @miners_manager.broadcast_latest_block
 
-        @last_conflicted = nil
+        @latest_confirmed_index = nil
       end
 
       if @flag == FLAG_BLOCKCHAIN_SYNCING
@@ -394,11 +349,6 @@ module ::Sushi::Core
       if _latest_index > @blockchain.latest_block.index
         sync_chain(socket)
       end
-    end
-
-    private def reject!(socket : HTTP::WebSocket)
-      @chord.handle_socket(socket)
-      @miners_manager.handle_socket(socket)
     end
 
     private def handlers
@@ -435,7 +385,9 @@ module ::Sushi::Core
 
         info "loaded blockchain's size: #{light_cyan(@blockchain.chain.size)}"
 
-        if !@database
+        if @database
+          @latest_confirmed_index = @blockchain.latest_index
+        else
           warning "no database has been specified"
         end
 
@@ -451,7 +403,6 @@ module ::Sushi::Core
       end
     end
 
-    include Logger
     include Router
     include Protocol
     include Common::Color

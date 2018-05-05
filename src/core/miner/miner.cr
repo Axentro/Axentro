@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core
-  class Miner
+  class Miner < HandleSocket
     @wallet : Wallet
     @difficulty : Int32 = 0
     @latest_block : Block?
@@ -97,7 +97,7 @@ module ::Sushi::Core
         @threads << Thread.new do
           while nonce = pow(thread)
             begin
-              send(socket, M_TYPE_MINER_FOUND_NONCE, {nonce: nonce}) unless socket.closed?
+              send(socket, M_TYPE_MINER_FOUND_NONCE, {nonce: nonce})
             rescue e : Exception
               warning "failed to send the nonce."
               warning e.message.not_nil! if e.message
@@ -152,6 +152,12 @@ module ::Sushi::Core
       return "#{(work_rate/1000.0).to_i} [KWork/s]" if work_rate / 1000000.0 <= 1.0
       return "#{(work_rate/1000000.0).to_i} [MWork/s]" if work_rate / 1000000000.0 <= 1.0
       "#{(work_rate/1000000000.0).to_i} [GWork/s]"
+    end
+
+    def clean_connection(socket)
+      error "the connection to the node has been closed"
+      error "exit the mining process with -1"
+      exit -1
     end
 
     include Logger
