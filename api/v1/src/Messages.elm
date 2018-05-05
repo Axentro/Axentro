@@ -1,14 +1,17 @@
 module Messages exposing (..)
 
-type ViewState = EntryView
-               | CreateNewWallet1
-               | CreateNewWallet2
+import Bootstrap.Navbar as Navbar
+import Navigation exposing (Location)
 
-type Msg = NoOp
-          | ChangeViewState ViewState
-          | SetWalletName String
-          | SetWalletPassword String
-          | SetWalletPasswordConfirm String
-          | Acknowledge1
+type Msg
+    = UrlChange Location
+    | NavMsg Navbar.State
+    | CloseModal
+    | ShowModal
 
-
+type Page
+    = Home
+    | GettingStarted
+    | Modules
+    | NotFound
+    | ApiOverview

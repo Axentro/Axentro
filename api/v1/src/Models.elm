@@ -1,31 +1,9 @@
 module Models exposing (..)
 
-import Messages exposing (ViewState(..))
-
-
-type alias NewWalletModel =
-    { name : String
-    , password : String
-    , passwordConfirm : String
-    }
-
-
-emptyNewWallet : NewWalletModel
-emptyNewWallet =
-    { name = ""
-     , password = ""
-     , passwordConfirm = ""
-     }
-
+import Messages exposing (Page)
+import Bootstrap.Navbar as Navbar
 
 type alias Model =
-    { currentViewState : ViewState
-    , newWalletModel : NewWalletModel
-    }
-
-
-newModel : Model
-newModel =
-    { currentViewState = EntryView
-    , newWalletModel = emptyNewWallet
+    { page : Page
+    , navState : Navbar.State
     }
