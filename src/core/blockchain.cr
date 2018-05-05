@@ -83,7 +83,7 @@ module ::Sushi::Core
 
         current_index += 1
 
-        progress "  #{current_index} blocks are loaded\r"
+        progress "  block ##{current_index} was imported\r"
       end
     rescue e : Exception
       error "an error happens during restoring a blockchain from database"

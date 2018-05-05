@@ -101,6 +101,8 @@ RULE
     def clear
       @tokens.clear
       @tokens << "SHARI"
+
+      @latest_recorded_index = 0
     end
 
     def define_rpc?(call, json, context, params)
