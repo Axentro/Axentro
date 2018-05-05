@@ -14,6 +14,9 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Messages exposing (Msg(..), Page(..))
 import Models exposing (Model)
+import Views.ApiOverview exposing (pageApiOverview)
+import Views.ApiBlockChain exposing (pageApiBlockChain)
+import Views.ApiBlockChainHeader exposing (pageApiBlockChainHeader)
 
 view : Model -> Html Msg
 view model =
@@ -42,14 +45,26 @@ mainContent : Model -> Html Msg
 mainContent model =
     Grid.container [] <|
         case model.page of
-            Home ->
-                pageHome model
-
             GettingStarted ->
                 pageGettingStarted model
 
             ApiOverview ->
                 pageApiOverview model
+
+            ApiBlockchain ->
+               pageApiBlockChain model
+
+            ApiBlockchainHeader ->
+               pageApiBlockChainHeader model
+
+            ApiBlockchainSize ->
+             pageGettingStarted model
+            ApiBlock ->
+             pageGettingStarted model
+            ApiBlockHeader ->
+             pageGettingStarted model
+            ApiBlockTransactions ->
+               pageGettingStarted model
 
             NotFound ->
                 pageNotFound
@@ -59,4 +74,17 @@ pageNotFound : List (Html Msg)
 pageNotFound =
     [ h1 [] [ text "Not found" ]
     , text "SOrry couldn't find that page"
+    ]
+
+
+pageGettingStarted : Model -> List (Html Msg)
+pageGettingStarted model =
+    [ h2 [] [ text "Getting started" ]
+--    , Button.button
+--        [ Button.success
+--        , Button.large
+--        , Button.block
+--        , Button.attrs [ onClick ShowModal ]
+--        ]
+--        [ text "Click me" ]
     ]

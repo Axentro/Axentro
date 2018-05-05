@@ -3,6 +3,7 @@ module Navi exposing (..)
 import Messages exposing (Msg, Page(..))
 import Models exposing (Model)
 import Navigation exposing (Location)
+import UrlParser
 
 urlUpdate : Navigation.Location -> Model -> ( Model, Cmd Msg )
 urlUpdate location model =
@@ -22,8 +23,13 @@ decode location =
 routeParser : UrlParser.Parser (Page -> a) a
 routeParser =
     UrlParser.oneOf
-        [ UrlParser.map Home UrlParser.top
+        [ UrlParser.map ApiOverview UrlParser.top
         , UrlParser.map GettingStarted (UrlParser.s "getting-started")
-        , UrlParser.map Modules (UrlParser.s "modules")
         , UrlParser.map ApiOverview (UrlParser.s "api-overview")
+        , UrlParser.map ApiBlockchain (UrlParser.s "api-blockchain")
+        , UrlParser.map ApiBlockchainHeader (UrlParser.s "api-blockchain-header")
+        , UrlParser.map ApiBlockchainSize (UrlParser.s "api-blockchain-size")
+        , UrlParser.map ApiBlock (UrlParser.s "api-block")
+        , UrlParser.map ApiBlockHeader (UrlParser.s "api-block-header")
+        , UrlParser.map ApiBlockTransactions (UrlParser.s "api-block-transactions")
         ]

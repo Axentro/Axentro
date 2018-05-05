@@ -3,7 +3,7 @@ module Main exposing (main)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Messages exposing (Msg(..))
+import Messages exposing (Msg(..),Page(..))
 import Navi exposing (urlUpdate)
 import Navigation exposing (Location)
 import Update exposing (update)
@@ -40,7 +40,7 @@ init location =
             Navbar.initialState NavMsg
 
         ( model, urlCmd ) =
-            urlUpdate location { navState = navState, page = Home, modalVisibility = Modal.hidden }
+            urlUpdate location { navState = navState, page = ApiOverview }
     in
         ( model, Cmd.batch [ urlCmd, navCmd ] )
 
@@ -48,19 +48,6 @@ init location =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Navbar.subscriptions model.navState NavMsg
-
-
-pageGettingStarted : Model -> List (Html Msg)
-pageGettingStarted model =
-    [ h2 [] [ text "Getting started" ]
-    , Button.button
-        [ Button.success
-        , Button.large
-        , Button.block
-        , Button.attrs [ onClick ShowModal ]
-        ]
-        [ text "Click me" ]
-    ]
 
 
 

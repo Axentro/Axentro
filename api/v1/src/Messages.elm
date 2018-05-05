@@ -6,12 +6,14 @@ import Navigation exposing (Location)
 type Msg
     = UrlChange Location
     | NavMsg Navbar.State
-    | CloseModal
-    | ShowModal
 
 type Page
-    = Home
-    | GettingStarted
-    | Modules
+    = GettingStarted
     | NotFound
     | ApiOverview
+    | ApiBlockchain
+    | ApiBlockchainHeader
+    | ApiBlockchainSize
+    | ApiBlock
+    | ApiBlockHeader
+    | ApiBlockTransactions
