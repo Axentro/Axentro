@@ -17,7 +17,7 @@ module ::Sushi::Core
     @db : DB::Database
 
     def initialize(@path : String)
-      @db = DB.open("sqlite3://#{path}")
+      @db = DB.open("sqlite3://#{File.expand_path(path)}")
       @db.exec "create table if not exists blocks (idx integer primary key, json text)"
     end
 

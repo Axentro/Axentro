@@ -126,7 +126,7 @@ describe BlockchainInfo do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            transactions_for_the_address = block_factory.chain.flat_map { |blk| blk.transactions }.select { |txn| txn.recipients.map { |r| r["address"] }.includes?(address) }.to_json
+            transactions_for_the_address = block_factory.chain.reverse.flat_map { |blk| blk.transactions }.select { |txn| txn.recipients.map { |r| r["address"] }.includes?(address) }.first(20).to_json
             result.should eq(transactions_for_the_address)
           end
         end

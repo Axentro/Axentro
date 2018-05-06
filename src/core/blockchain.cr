@@ -293,14 +293,15 @@ module ::Sushi::Core
       @chain.map { |block| block.to_header }
     end
 
-    def transactions_for_address(address : String) : Array(Transaction)
+    def transactions_for_address(address : String, page : Int32 = 0, page_size : Int32 = 20) : Array(Transaction)
       @chain
+        .reverse
         .map { |block| block.transactions }
         .flatten
         .select { |transaction|
         transaction.senders.any? { |sender| sender[:address] == address } ||
           transaction.recipients.any? { |recipient| recipient[:address] == address }
-      }
+      }.skip(page*page_size).first(page_size)
     end
 
     def available_actions : Array(String)
