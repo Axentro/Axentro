@@ -18,9 +18,9 @@ module ::Sushi::Interface::Sushi
 
     def option_parser
       create_option_parser([
-                             Options::CONNECT_NODE,
-                             Options::JSON,
-                           ])
+        Options::CONNECT_NODE,
+        Options::JSON,
+      ])
     end
 
     def puts_line
