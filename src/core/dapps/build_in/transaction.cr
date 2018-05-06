@@ -58,12 +58,12 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def create_unsigned_transaction_impl(
-         action : String,
-         senders : Core::Transaction::Senders,
-         recipients : Core::Transaction::Recipients,
-         message : String,
-         token : String,
-       )
+      action : String,
+      senders : Core::Transaction::Senders,
+      recipients : Core::Transaction::Recipients,
+      message : String,
+      token : String
+    )
       transaction = blockchain.create_unsigned_transaction(
         action,
         senders,
