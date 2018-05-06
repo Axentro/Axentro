@@ -29,6 +29,7 @@ module ::Sushi::Core
 
     @rpc_controller : Controllers::RPCController
     @rest_controller : Controllers::RESTController
+    @pubsub_controller : Controllers::PubsubController
 
     @latest_confirmed_index : Int64? = nil
 
@@ -61,6 +62,7 @@ module ::Sushi::Core
 
       @rpc_controller = Controllers::RPCController.new(@blockchain)
       @rest_controller = Controllers::RESTController.new(@blockchain)
+      @pubsub_controller = Controllers::PubsubController.new
 
       wallet_network = Wallet.address_network_type(@wallet.address)
 
@@ -75,29 +77,10 @@ module ::Sushi::Core
     end
 
     def run!
-      draw_routes!
-
       info "start running Sushi's node on #{light_green(@bind_host)}:#{light_green(@bind_port)}"
 
       node = HTTP::Server.new(@bind_host, @bind_port, handlers)
       node.listen
-    end
-
-    private def draw_routes!
-      options "/rpc" do |context|
-        context.response.headers["Allow"] = "HEAD,GET,PUT,POST,DELETE,OPTIONS"
-        context.response.headers["Access-Control-Allow-Origin"] = "*"
-        context.response.headers["Access-Control-Allow-Headers"] =
-          "X-Requested-With, X-HTTP-Method-Override, Content-Type, Cache-Control, Accept"
-        context.response.status_code = 200
-        context.response.print ""
-        context
-      end
-
-      post "/rpc" do |context, params|
-        context.response.headers["Access-Control-Allow-Origin"] = "*"
-        @rpc_controller.exec(context, params)
-      end
     end
 
     private def sync_chain(socket : HTTP::WebSocket? = nil)
@@ -231,6 +214,8 @@ module ::Sushi::Core
                 end
 
       send_on_chord(M_TYPE_NODE_BROADCAST_BLOCK, content, from)
+
+      @pubsub_controller.broadcast(block)
     end
 
     def broadcast_block(socket : HTTP::WebSocket, block : Block, from : Chord::NodeContext? = nil)
@@ -354,8 +339,9 @@ module ::Sushi::Core
     private def handlers
       [
         peer_handler,
-        route_handler,
+        @rpc_controller.get_handler,
         @rest_controller.get_handler,
+        @pubsub_controller.get_handler,
       ]
     end
 
@@ -403,7 +389,6 @@ module ::Sushi::Core
       end
     end
 
-    include Router
     include Protocol
     include Common::Color
     include NodeComponents
