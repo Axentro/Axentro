@@ -33,6 +33,8 @@ module ::Sushi::Core::Controllers
   # [GET] v1/transaction/{:id}/block/header           | block header containing txn id
   # [GET] v1/transaction/{:id}/confirmations          | number confirmations for txn id
   # [GET] v1/transaction/fees                         | fees
+  # [POST] v1/transaction                             | create and broadcast a transaction
+  # [POST] v1/transaction/unsigned                    | create an unsigned transaction
   #
   # --- address
   #
@@ -81,6 +83,9 @@ module ::Sushi::Core::Controllers
       get "/v1/scars/sales" { |context, params| __v1_scars_sales(context, params) }
       get "/v1/scars/:domain/confirmed" { |context, params| __v1_scars_confirmed(context, params) }
       get "/v1/scars/:domain/unconfirmed" { |context, params| __v1_scars_unconfirmed(context, params) }
+
+      post "/v1/transaction" { |context, params| __v1_transaction(context, params) }
+      post "/v1/transaction/unsigned" { |context, params| __v1_transaction_unsigned(context, params) }
 
       route_handler
     end
@@ -155,6 +160,30 @@ module ::Sushi::Core::Controllers
     def __v1_transaction_fees(context, params)
       with_response(context) do
         @blockchain.fees.fees_impl
+      end
+    end
+
+    def __v1_transaction(context, params)
+      with_response(context) do
+        json = parse_body(context)
+
+        @blockchain.transaction_creator.create_transaction_impl(
+          Core::Transaction.from_json(json["transaction"].to_json)
+        )
+      end
+    end
+
+    def __v1_transaction_unsigned(context, params)
+      with_response(context) do
+        json = parse_body(context)
+
+        @blockchain.transaction_creator.create_unsigned_transaction_impl(
+          json["action"].as_s,
+          Core::Transaction::Senders.from_json(json["senders"].to_json),
+          Core::Transaction::Recipients.from_json(json["recipients"].to_json),
+          json["message"].as_s,
+          json["token"].as_s,
+        )
       end
     end
 
@@ -275,6 +304,13 @@ module ::Sushi::Core::Controllers
 
       context.response.print api_error(error_message)
       context
+    end
+
+    private def parse_body(context) : JSON::Any
+      raise "empty body" unless body = context.request.body
+      raise "empty payload" unless payload = body.gets
+
+      JSON.parse(payload)
     end
 
     private def convert_domain_to_address(domain : String) : String
