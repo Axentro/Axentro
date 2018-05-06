@@ -128,7 +128,7 @@ module ::Sushi::Core::DApps::BuildIn
       blockchain.chain[index].transactions
     end
 
-    def transactions_impl(address : String, page : Int32 = 0, page_size : Int32 = 20, metadata : Bool = false)
+    def transactions_impl(address : String, page : Int32 = 0, page_size : Int32 = 20)
       blockchain.transactions_for_address(address, page, page_size)
     end
   end
