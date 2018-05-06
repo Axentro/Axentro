@@ -159,9 +159,12 @@ module ::Sushi::Core::Controllers
     end
 
     def __v1_address_transactions(context, params)
-      with_response(context) do
+      with_response(context) do |query_params|
+        page = query_params["page"]?.try &.to_i || 0
+        page_size = query_params["page_size"]?.try &.to_i || 20
+
         address = params["address"]
-        @blockchain.blockchain_info.transactions_impl(address)
+        @blockchain.blockchain_info.transactions_impl(address, page, page_size)
       end
     end
 
@@ -196,10 +199,13 @@ module ::Sushi::Core::Controllers
     end
 
     def __v1_domain_transactions(context, params)
-      with_response(context) do
+      with_response(context) do |query_params|
+        page = query_params["page"]?.try &.to_i || 0
+        page_size = query_params["page_size"]?.try &.to_i || 20
+
         domain = params["domain"]
         address = convert_domain_to_address(domain)
-        @blockchain.blockchain_info.transactions_impl(address)
+        @blockchain.blockchain_info.transactions_impl(address, page, page_size)
       end
     end
 
@@ -260,7 +266,9 @@ module ::Sushi::Core::Controllers
     end
 
     private def with_response(context, &block)
-      context.response.print api_success(yield)
+      query_params = HTTP::Params.parse(context.request.query || "")
+
+      context.response.print api_success(yield query_params)
       context
     rescue e : Exception
       rest_error(context, e)
