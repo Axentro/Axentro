@@ -14,7 +14,7 @@ module ::Sushi::Core::Controllers
   class PubsubController
     @sockets : Array(HTTP::WebSocket) = [] of HTTP::WebSocket
 
-    def initialize
+    def initialize(@blockchain : Blockchain)
     end
 
     def pubsub(socket : HTTP::WebSocket)
@@ -25,13 +25,15 @@ module ::Sushi::Core::Controllers
 
       @sockets << socket
       debug "new pubsub subscriber coming (#{@sockets.size})"
+
+      socket.send(@blockchain.latest_block.to_json)
     end
 
-    def broadcast(block)
+    def broadcast_latest_block
       debug "broadcast to the subscribers (#{@sockets.size})"
 
       @sockets.each do |socket|
-        socket.send(block.to_json)
+        socket.send(@blockchain.latest_block.to_json)
       rescue e : Exception
         @sockets.delete(socket)
         debug "a pubsub subscriber disconnected (#{@sockets.size})"

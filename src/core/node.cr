@@ -62,7 +62,7 @@ module ::Sushi::Core
 
       @rpc_controller = Controllers::RPCController.new(@blockchain)
       @rest_controller = Controllers::RESTController.new(@blockchain)
-      @pubsub_controller = Controllers::PubsubController.new
+      @pubsub_controller = Controllers::PubsubController.new(@blockchain)
 
       wallet_network = Wallet.address_network_type(@wallet.address)
 
@@ -214,8 +214,6 @@ module ::Sushi::Core
                 end
 
       send_on_chord(M_TYPE_NODE_BROADCAST_BLOCK, content, from)
-
-      @pubsub_controller.broadcast(block)
     end
 
     def broadcast_block(socket : HTTP::WebSocket, block : Block, from : Chord::NodeContext? = nil)
@@ -254,8 +252,16 @@ module ::Sushi::Core
       end
     end
 
-    def callback_from_queue(block)
+    def callback(block : Block, by_self : Bool)
       @blockchain.push_block(block)
+
+      if by_self
+        send_block(block)
+        @miners_manager.clear_nonces
+      end
+
+      @miners_manager.broadcast_latest_block
+      @pubsub_controller.broadcast_latest_block
     end
 
     def clean_connection(socket : HTTP::WebSocket)
