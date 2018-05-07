@@ -51,6 +51,19 @@ module ::Sushi::Core::DApps::BuildIn
       message = json["message"].as_s
       token = json["token"].as_s
 
+      transaction = create_unsigned_transaction_impl(action, senders, recipients, message, token)
+
+      context.response.print api_success(transaction)
+      context
+    end
+
+    def create_unsigned_transaction_impl(
+      action : String,
+      senders : Core::Transaction::Senders,
+      recipients : Core::Transaction::Recipients,
+      message : String,
+      token : String
+    )
       transaction = blockchain.create_unsigned_transaction(
         action,
         senders,
@@ -63,17 +76,21 @@ module ::Sushi::Core::DApps::BuildIn
 
       raise "invalid fee #{fee} for the action #{action}" if fee <= 0.0
 
-      context.response.print api_success(transaction)
-      context
+      transaction
     end
 
     def create_transaction(json, context, params)
       transaction = Transaction.from_json(json["transaction"].to_json)
-
-      node.broadcast_transaction(transaction)
+      transaction = create_transaction_impl(transaction)
 
       context.response.print api_success(transaction)
       context
+    end
+
+    def create_transaction_impl(transaction : Transaction)
+      node.broadcast_transaction(transaction)
+
+      transaction
     end
   end
 end
