@@ -41,6 +41,10 @@ module ::Sushi::Interface::Sushi
           name: "config",
           desc: "save default configuration used by sushi, sushid and sushim (cg for short)",
         },
+        {
+          name: "pubsub",
+          desc: "receive blocks in realtime",
+        },
       ]
     end
 
@@ -78,6 +82,11 @@ module ::Sushi::Interface::Sushi
       when "config", "cg"
         return Config.new(
           {name: "config", desc: "save default configuration used by sushi, sushid and sushim"},
+          next_parents,
+        ).run
+      when "pubsub", "ps"
+        return Pubsub.new(
+          {name: "pubsub", desc: "receive blocks in realtime"},
           next_parents,
         ).run
       end

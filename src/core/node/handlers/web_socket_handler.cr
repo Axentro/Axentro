@@ -16,7 +16,11 @@ module ::Sushi::Core
     end
 
     def call(context : HTTP::Server::Context)
-      super(context)
+      if context.request.path == @path
+        super(context)
+      else
+        call_next(context)
+      end
     end
   end
 end

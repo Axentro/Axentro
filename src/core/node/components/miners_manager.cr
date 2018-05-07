@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::NodeComponents
-  class MinersManager
+  class MinersManager < HandleSocket
     alias Miner = NamedTuple(
       address: String,
       socket: HTTP::WebSocket,
@@ -63,11 +63,6 @@ module ::Sushi::Core::NodeComponents
         block:      @blockchain.latest_block,
         difficulty: miner_difficulty_at(@blockchain.latest_index),
       })
-    rescue e : Exception
-      warning "failed to execute handshake with new miner (disconnected)"
-      warning e.message.not_nil! if e.message
-
-      clean_connection(socket)
     end
 
     def found_nonce(node, socket, _content)
@@ -84,16 +79,10 @@ module ::Sushi::Core::NodeComponents
         elsif !@blockchain.latest_block.valid_nonce?(nonce, miner_difficulty_at(@blockchain.latest_block.index))
           warning "received nonce is invalid, try to update latest block"
 
-          begin
-            send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
-              block:      @blockchain.latest_block,
-              difficulty: miner_difficulty_at(@blockchain.latest_index),
-            })
-          rescue e : Exception
-            warning "failed to update the block for a miner"
-
-            handle_socket(miner[:socket])
-          end
+          send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
+            block:      @blockchain.latest_block,
+            difficulty: miner_difficulty_at(@blockchain.latest_index),
+          })
         else
           info "miner #{miner[:address][0..7]} found nonce (nonces: #{miner[:nonces].size})"
 
@@ -119,25 +108,15 @@ module ::Sushi::Core::NodeComponents
 
     def broadcast_latest_block
       @miners.each do |miner|
-        begin
-          send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
-            block:      @blockchain.latest_block,
-            difficulty: miner_difficulty_at(@blockchain.latest_index),
-          })
-        rescue e : Exception
-          warning "failed to update the block for a miner"
-
-          handle_socket(miner[:socket])
-        end
+        send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
+          block:      @blockchain.latest_block,
+          difficulty: miner_difficulty_at(@blockchain.latest_index),
+        })
       end
     end
 
     def find?(socket : HTTP::WebSocket) : Miner?
       @miners.find { |m| m[:socket] == socket }
-    end
-
-    def handle_socket(socket)
-      clean_connection(socket) if socket.closed?
     end
 
     def clean_connection(socket)
@@ -151,7 +130,6 @@ module ::Sushi::Core::NodeComponents
       @miners.size
     end
 
-    include Logger
     include Protocol
     include Consensus
     include Common::Color

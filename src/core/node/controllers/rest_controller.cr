@@ -33,6 +33,8 @@ module ::Sushi::Core::Controllers
   # [GET] v1/transaction/{:id}/block/header           | block header containing txn id
   # [GET] v1/transaction/{:id}/confirmations          | number confirmations for txn id
   # [GET] v1/transaction/fees                         | fees
+  # [POST] v1/transaction                             | create and broadcast a transaction
+  # [POST] v1/transaction/unsigned                    | create an unsigned transaction
   #
   # --- address
   #
@@ -81,6 +83,9 @@ module ::Sushi::Core::Controllers
       get "/v1/scars/sales" { |context, params| __v1_scars_sales(context, params) }
       get "/v1/scars/:domain/confirmed" { |context, params| __v1_scars_confirmed(context, params) }
       get "/v1/scars/:domain/unconfirmed" { |context, params| __v1_scars_unconfirmed(context, params) }
+
+      post "/v1/transaction" { |context, params| __v1_transaction(context, params) }
+      post "/v1/transaction/unsigned" { |context, params| __v1_transaction_unsigned(context, params) }
 
       route_handler
     end
@@ -158,10 +163,37 @@ module ::Sushi::Core::Controllers
       end
     end
 
-    def __v1_address_transactions(context, params)
+    def __v1_transaction(context, params)
       with_response(context) do
+        json = parse_body(context)
+
+        @blockchain.transaction_creator.create_transaction_impl(
+          Core::Transaction.from_json(json["transaction"].to_json)
+        )
+      end
+    end
+
+    def __v1_transaction_unsigned(context, params)
+      with_response(context) do
+        json = parse_body(context)
+
+        @blockchain.transaction_creator.create_unsigned_transaction_impl(
+          json["action"].as_s,
+          Core::Transaction::Senders.from_json(json["senders"].to_json),
+          Core::Transaction::Recipients.from_json(json["recipients"].to_json),
+          json["message"].as_s,
+          json["token"].as_s,
+        )
+      end
+    end
+
+    def __v1_address_transactions(context, params)
+      with_response(context) do |query_params|
+        page = query_params["page"]?.try &.to_i || 0
+        page_size = query_params["page_size"]?.try &.to_i || 20
+
         address = params["address"]
-        @blockchain.blockchain_info.transactions_impl(address)
+        @blockchain.blockchain_info.transactions_impl(address, page, page_size)
       end
     end
 
@@ -196,10 +228,13 @@ module ::Sushi::Core::Controllers
     end
 
     def __v1_domain_transactions(context, params)
-      with_response(context) do
+      with_response(context) do |query_params|
+        page = query_params["page"]?.try &.to_i || 0
+        page_size = query_params["page_size"]?.try &.to_i || 20
+
         domain = params["domain"]
         address = convert_domain_to_address(domain)
-        @blockchain.blockchain_info.transactions_impl(address)
+        @blockchain.blockchain_info.transactions_impl(address, page, page_size)
       end
     end
 
@@ -260,7 +295,9 @@ module ::Sushi::Core::Controllers
     end
 
     private def with_response(context, &block)
-      context.response.print api_success(yield)
+      query_params = HTTP::Params.parse(context.request.query || "")
+
+      context.response.print api_success(yield query_params)
       context
     rescue e : Exception
       rest_error(context, e)
@@ -275,6 +312,13 @@ module ::Sushi::Core::Controllers
 
       context.response.print api_error(error_message)
       context
+    end
+
+    private def parse_body(context) : JSON::Any
+      raise "empty body" unless body = context.request.body
+      raise "empty payload" unless payload = body.gets
+
+      JSON.parse(payload)
     end
 
     private def convert_domain_to_address(domain : String) : String
