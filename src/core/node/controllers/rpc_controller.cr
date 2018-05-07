@@ -32,5 +32,26 @@ module ::Sushi::Core::Controllers
       context.response.print api_error("unpermitted call: #{call}")
       context
     end
+
+    def get_handler
+      options "/rpc" do |context|
+        context.response.headers["Allow"] = "HEAD,GET,PUT,POST,DELETE,OPTIONS"
+        context.response.headers["Access-Control-Allow-Origin"] = "*"
+        context.response.headers["Access-Control-Allow-Headers"] =
+          "X-Requested-With, X-HTTP-Method-Override, Content-Type, Cache-Control, Accept"
+        context.response.status_code = 200
+        context.response.print ""
+        context
+      end
+
+      post "/rpc" do |context, params|
+        context.response.headers["Access-Control-Allow-Origin"] = "*"
+        exec(context, params)
+      end
+
+      route_handler
+    end
+
+    include Router
   end
 end
