@@ -17452,6 +17452,11 @@ var _user$project$Messages$NavMsg = function (a) {
 var _user$project$Messages$UrlChange = function (a) {
 	return {ctor: 'UrlChange', _0: a};
 };
+var _user$project$Messages$ApiTransactionFees = {ctor: 'ApiTransactionFees'};
+var _user$project$Messages$ApiTransactionConfirmations = {ctor: 'ApiTransactionConfirmations'};
+var _user$project$Messages$ApiTransactionBlockHeader = {ctor: 'ApiTransactionBlockHeader'};
+var _user$project$Messages$ApiTransactionBlock = {ctor: 'ApiTransactionBlock'};
+var _user$project$Messages$ApiTransaction = {ctor: 'ApiTransaction'};
 var _user$project$Messages$ApiBlockTransactions = {ctor: 'ApiBlockTransactions'};
 var _user$project$Messages$ApiBlockHeader = {ctor: 'ApiBlockHeader'};
 var _user$project$Messages$ApiBlock = {ctor: 'ApiBlock'};
@@ -17471,7 +17476,17 @@ var _user$project$Models$Model = function (a) {
 							return function (h) {
 								return function (i) {
 									return function (j) {
-										return {page: a, navState: b, apiResponse: c, error: d, apiUrlB1: e, apiUrlB2: f, apiUrlB3: g, apiUrlB4: h, apiUrlB5: i, apiUrlB6: j};
+										return function (k) {
+											return function (l) {
+												return function (m) {
+													return function (n) {
+														return function (o) {
+															return {page: a, navState: b, apiResponse: c, error: d, apiUrlB1: e, apiUrlB2: f, apiUrlB3: g, apiUrlB4: h, apiUrlB5: i, apiUrlB6: j, apiUrlT1: k, apiUrlT2: l, apiUrlT3: m, apiUrlT4: n, apiUrlT5: o};
+														};
+													};
+												};
+											};
+										};
 									};
 								};
 							};
@@ -17534,7 +17549,42 @@ var _user$project$Navi$routeParser = _evancz$url_parser$UrlParser$oneOf(
 											_evancz$url_parser$UrlParser$map,
 											_user$project$Messages$ApiBlockTransactions,
 											_evancz$url_parser$UrlParser$s('api-block-transactions')),
-										_1: {ctor: '[]'}
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_evancz$url_parser$UrlParser$map,
+												_user$project$Messages$ApiTransaction,
+												_evancz$url_parser$UrlParser$s('api-transaction')),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_evancz$url_parser$UrlParser$map,
+													_user$project$Messages$ApiTransactionBlock,
+													_evancz$url_parser$UrlParser$s('api-transaction-block')),
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_evancz$url_parser$UrlParser$map,
+														_user$project$Messages$ApiTransactionBlockHeader,
+														_evancz$url_parser$UrlParser$s('api-transaction-block-header')),
+													_1: {
+														ctor: '::',
+														_0: A2(
+															_evancz$url_parser$UrlParser$map,
+															_user$project$Messages$ApiTransactionConfirmations,
+															_evancz$url_parser$UrlParser$s('api-transaction-confirmations')),
+														_1: {
+															ctor: '::',
+															_0: A2(
+																_evancz$url_parser$UrlParser$map,
+																_user$project$Messages$ApiTransactionFees,
+																_evancz$url_parser$UrlParser$s('api-transaction-fees')),
+															_1: {ctor: '[]'}
+														}
+													}
+												}
+											}
+										}
 									}
 								}
 							}
@@ -17563,7 +17613,7 @@ var _user$project$Navi$urlUpdate = F2(
 				ctor: '_Tuple2',
 				_0: _elm_lang$core$Native_Utils.update(
 					model,
-					{page: _p0._0}),
+					{page: _p0._0, apiResponse: ''}),
 				_1: _elm_lang$core$Platform_Cmd$none
 			};
 		}
@@ -17663,6 +17713,46 @@ var _user$project$Update$update = F2(
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
 								{apiUrlB6: _p4}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiTransaction':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlT1: _p4}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiTransactionBlock':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlT2: _p4}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiTransactionBlockHeader':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlT3: _p4}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiTransactionConfirmations':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlT4: _p4}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiTransactionFees':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlT5: _p4}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					default:
@@ -17814,7 +17904,45 @@ var _user$project$Views_ApiLeftNav$apiLeftNav = function (page) {
 											_1: {
 												ctor: '::',
 												_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiBlockTransactions, '#api-block-transactions', 'block/transactions', page),
-												_1: {ctor: '[]'}
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_elm_lang$html$Html$hr,
+														{ctor: '[]'},
+														{ctor: '[]'}),
+													_1: {
+														ctor: '::',
+														_0: A2(
+															_elm_lang$html$Html$h5,
+															{ctor: '[]'},
+															{
+																ctor: '::',
+																_0: _elm_lang$html$Html$text('Transaction'),
+																_1: {ctor: '[]'}
+															}),
+														_1: {
+															ctor: '::',
+															_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiTransaction, '#api-transaction', 'transaction', page),
+															_1: {
+																ctor: '::',
+																_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiTransactionBlock, '#api-transaction-block', 'transaction/block', page),
+																_1: {
+																	ctor: '::',
+																	_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiTransactionBlockHeader, '#api-transaction-block-header', 'transaction/block/header', page),
+																	_1: {
+																		ctor: '::',
+																		_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiTransactionConfirmations, '#api-transaction-confirmations', 'transaction/confirmations', page),
+																		_1: {
+																			ctor: '::',
+																			_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiTransactionFees, '#api-transaction-fees', 'transaction/fees', page),
+																			_1: {ctor: '[]'}
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
 											}
 										}
 									}
@@ -18243,6 +18371,288 @@ var _user$project$Views_ApiOverview$apiOverviewTable = function (tableBody) {
 			tbody: tableBody
 		});
 };
+var _user$project$Views_ApiOverview$overviewTransactionSection = {
+	ctor: '::',
+	_0: A2(
+		_elm_lang$html$Html$hr,
+		{ctor: '[]'},
+		{ctor: '[]'}),
+	_1: {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$h3,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text('Transaction'),
+				_1: {ctor: '[]'}
+			}),
+		_1: {
+			ctor: '::',
+			_0: _user$project$Views_ApiOverview$apiOverviewTable(
+				A2(
+					_rundis$elm_bootstrap$Bootstrap_Table$tbody,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Table$tr,
+							{ctor: '[]'},
+							{
+								ctor: '::',
+								_0: A2(
+									_rundis$elm_bootstrap$Bootstrap_Table$td,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('GET'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_rundis$elm_bootstrap$Bootstrap_Table$td,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: A2(
+												_elm_lang$html$Html$a,
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$href('#api-transaction'),
+													_1: {ctor: '[]'}
+												},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('v1/transaction{:id}'),
+													_1: {ctor: '[]'}
+												}),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_rundis$elm_bootstrap$Bootstrap_Table$td,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('transaction for supplied transaction id'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {ctor: '[]'}
+									}
+								}
+							}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_rundis$elm_bootstrap$Bootstrap_Table$tr,
+								{ctor: '[]'},
+								{
+									ctor: '::',
+									_0: A2(
+										_rundis$elm_bootstrap$Bootstrap_Table$td,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('GET'),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_rundis$elm_bootstrap$Bootstrap_Table$td,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$a,
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html_Attributes$href('#api-transaction-block'),
+														_1: {ctor: '[]'}
+													},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text('v1/transaction/{:id}/block'),
+														_1: {ctor: '[]'}
+													}),
+												_1: {ctor: '[]'}
+											}),
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_rundis$elm_bootstrap$Bootstrap_Table$td,
+												{ctor: '[]'},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('block containing transaction id'),
+													_1: {ctor: '[]'}
+												}),
+											_1: {ctor: '[]'}
+										}
+									}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_rundis$elm_bootstrap$Bootstrap_Table$tr,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: A2(
+											_rundis$elm_bootstrap$Bootstrap_Table$td,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('GET'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_rundis$elm_bootstrap$Bootstrap_Table$td,
+												{ctor: '[]'},
+												{
+													ctor: '::',
+													_0: A2(
+														_elm_lang$html$Html$a,
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html_Attributes$href('#api-transaction-block-header'),
+															_1: {ctor: '[]'}
+														},
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html$text('v1/transaction/{:id}/block/header'),
+															_1: {ctor: '[]'}
+														}),
+													_1: {ctor: '[]'}
+												}),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_rundis$elm_bootstrap$Bootstrap_Table$td,
+													{ctor: '[]'},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text('header for block containing transaction id'),
+														_1: {ctor: '[]'}
+													}),
+												_1: {ctor: '[]'}
+											}
+										}
+									}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_rundis$elm_bootstrap$Bootstrap_Table$tr,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: A2(
+												_rundis$elm_bootstrap$Bootstrap_Table$td,
+												{ctor: '[]'},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('GET'),
+													_1: {ctor: '[]'}
+												}),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_rundis$elm_bootstrap$Bootstrap_Table$td,
+													{ctor: '[]'},
+													{
+														ctor: '::',
+														_0: A2(
+															_elm_lang$html$Html$a,
+															{
+																ctor: '::',
+																_0: _elm_lang$html$Html_Attributes$href('#api-transaction-confirmations'),
+																_1: {ctor: '[]'}
+															},
+															{
+																ctor: '::',
+																_0: _elm_lang$html$Html$text('v1/transaction/{:id}/confirmations'),
+																_1: {ctor: '[]'}
+															}),
+														_1: {ctor: '[]'}
+													}),
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_rundis$elm_bootstrap$Bootstrap_Table$td,
+														{ctor: '[]'},
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html$text('number of confirmations for transaction'),
+															_1: {ctor: '[]'}
+														}),
+													_1: {ctor: '[]'}
+												}
+											}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_rundis$elm_bootstrap$Bootstrap_Table$tr,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: A2(
+													_rundis$elm_bootstrap$Bootstrap_Table$td,
+													{ctor: '[]'},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text('GET'),
+														_1: {ctor: '[]'}
+													}),
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_rundis$elm_bootstrap$Bootstrap_Table$td,
+														{ctor: '[]'},
+														{
+															ctor: '::',
+															_0: A2(
+																_elm_lang$html$Html$a,
+																{
+																	ctor: '::',
+																	_0: _elm_lang$html$Html_Attributes$href('#api-transaction-fees'),
+																	_1: {ctor: '[]'}
+																},
+																{
+																	ctor: '::',
+																	_0: _elm_lang$html$Html$text('v1/transaction/fees'),
+																	_1: {ctor: '[]'}
+																}),
+															_1: {ctor: '[]'}
+														}),
+													_1: {
+														ctor: '::',
+														_0: A2(
+															_rundis$elm_bootstrap$Bootstrap_Table$td,
+															{ctor: '[]'},
+															{
+																ctor: '::',
+																_0: _elm_lang$html$Html$text('get transaction fees'),
+																_1: {ctor: '[]'}
+															}),
+														_1: {ctor: '[]'}
+													}
+												}
+											}),
+										_1: {ctor: '[]'}
+									}
+								}
+							}
+						}
+					})),
+			_1: {ctor: '[]'}
+		}
+	}
+};
 var _user$project$Views_ApiOverview$overviewBlockSection = {
 	ctor: '::',
 	_0: A2(
@@ -18667,7 +19077,21 @@ var _user$project$Views_ApiOverview$pageApiOverview = function (model) {
 									_user$project$Views_ApiOverview$overviewBlockSection),
 								_1: {ctor: '[]'}
 							}),
-						_1: {ctor: '[]'}
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_rundis$elm_bootstrap$Bootstrap_Grid$row,
+								{ctor: '[]'},
+								{
+									ctor: '::',
+									_0: A2(
+										_rundis$elm_bootstrap$Bootstrap_Grid$col,
+										{ctor: '[]'},
+										_user$project$Views_ApiOverview$overviewTransactionSection),
+									_1: {ctor: '[]'}
+								}),
+							_1: {ctor: '[]'}
+						}
 					}
 				}
 			}
@@ -18899,6 +19323,231 @@ var _user$project$Views_ApiBlockTransactions$pageApiBlockTransactions = function
 		}
 	};
 };
+var _user$project$Views_ApiTransaction$pageApiTransaction = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"id\":\"da2d2ef81e1ca3f4e1fee7ba06bcb93860349d67d93e066554e17b3fc1c4b5bc\",\"action\":\"head\",\"senders\":[],\"recipients\":[{\"address\":\"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\"amount\":2500},{\"address\":\"VDAxNmM1OGVkNmYyNzI2NzcyYjYzODRmMzJmMDkzODhjMTczNWI0NDFjZGM5ZTIz\",\"amount\":7500}],\"message\":\"0\",\"token\":\"SHARI\",\"prev_hash\":\"0\",\"sign_r\":\"0\",\"sign_s\":\"0\"}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves the transaction specified by the transaction id as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiTransaction),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiTransaction, model.apiUrlT1, model.apiResponse, 'Transaction', description, 'GET', 'v1/transaction/{:id}', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/transaction/{:id}', ex),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _user$project$Views_ApiTransactionBlock$pageApiTransactionBlock = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"index\":1,\"transactions\":[{\"id\":\"da2d2ef81e1ca3f4e1fee7ba06bcb93860349d67d93e066554e17b3fc1c4b5bc\",\"action\":\"head\",\"senders\":[],\"recipients\":[{\"address\":\"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\"amount\":2500},{\"address\":\"VDAxNmM1OGVkNmYyNzI2NzcyYjYzODRmMzJmMDkzODhjMTczNWI0NDFjZGM5ZTIz\",\"amount\":7500}],\"message\":\"0\",\"token\":\"SHARI\",\"prev_hash\":\"0\",\"sign_r\":\"0\",\"sign_s\":\"0\"}],\"nonce\":3981483406659451763,\"prev_hash\":\"5396e18efa80a8e891c417fff862d7cad171465e65bc4b4e5e1c1c3ab0aeb88f\",\"merkle_tree_root\":\"55aec377396d17730181d4400931fd97ce59e4dd\"}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves the block containing the specified transaction id as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiTransactionBlock),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiTransactionBlock, model.apiUrlT2, model.apiResponse, 'Transaction Block', description, 'GET', 'v1/transaction/{:id}/block', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/transaction/{:id}/block', ex),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _user$project$Views_ApiTransactionBlockHeader$pageApiTransactionBlockHeader = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"index\":1,\"nonce\":3981483406659451763,\"prev_hash\":\"5396e18efa80a8e891c417fff862d7cad171465e65bc4b4e5e1c1c3ab0aeb88f\",\"merkle_tree_root\":\"55aec377396d17730181d4400931fd97ce59e4dd\"}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves the block header containing the specified transaction id as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiTransactionBlockHeader),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiTransactionBlockHeader, model.apiUrlT3, model.apiResponse, 'Transaction Block Header', description, 'GET', 'v1/transaction/{:id}/block/header', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/transaction/{:id}/block/header', ex),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _user$project$Views_ApiTransactionConfirmations$pageApiTransactionConfirmations = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"confirmed\":true,\"confirmations\":2425,\"threshold\":10}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves the number of confirmations for the specified transaction id as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiTransactionConfirmations),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiTransactionConfirmations, model.apiUrlT4, model.apiResponse, 'Transaction Confirmations', description, 'GET', 'v1/transaction/confirmations', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/transaction/confirmations', ex),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _user$project$Views_ApiTransactionFees$pageApiTransactionFees = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"index\":1,\"transactions\":[{\"id\":\"da2d2ef81e1ca3f4e1fee7ba06bcb93860349d67d93e066554e17b3fc1c4b5bc\",\"action\":\"head\",\"senders\":[],\"recipients\":[{\"address\":\"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\"amount\":2500},{\"address\":\"VDAxNmM1OGVkNmYyNzI2NzcyYjYzODRmMzJmMDkzODhjMTczNWI0NDFjZGM5ZTIz\",\"amount\":7500}],\"message\":\"0\",\"token\":\"SHARI\",\"prev_hash\":\"0\",\"sign_r\":\"0\",\"sign_s\":\"0\"}],\"nonce\":3981483406659451763,\"prev_hash\":\"5396e18efa80a8e891c417fff862d7cad171465e65bc4b4e5e1c1c3ab0aeb88f\",\"merkle_tree_root\":\"55aec377396d17730181d4400931fd97ce59e4dd\"}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This gets the current transaction fees as json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiTransactionFees),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiTransactionFees, model.apiUrlT5, model.apiResponse, 'Transaction Fees', description, 'GET', 'v1/transaction/fees', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/transaction/fees', ex),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
 var _user$project$View$pageGettingStarted = function (model) {
 	return {
 		ctor: '::',
@@ -18952,6 +19601,16 @@ var _user$project$View$mainContent = function (model) {
 					return _user$project$Views_ApiBlockHeader$pageApiBlockHeader(model);
 				case 'ApiBlockTransactions':
 					return _user$project$Views_ApiBlockTransactions$pageApiBlockTransactions(model);
+				case 'ApiTransaction':
+					return _user$project$Views_ApiTransaction$pageApiTransaction(model);
+				case 'ApiTransactionBlock':
+					return _user$project$Views_ApiTransactionBlock$pageApiTransactionBlock(model);
+				case 'ApiTransactionBlockHeader':
+					return _user$project$Views_ApiTransactionBlockHeader$pageApiTransactionBlockHeader(model);
+				case 'ApiTransactionConfirmations':
+					return _user$project$Views_ApiTransactionConfirmations$pageApiTransactionConfirmations(model);
+				case 'ApiTransactionFees':
+					return _user$project$Views_ApiTransactionFees$pageApiTransactionFees(model);
 				default:
 					return _user$project$View$pageNotFound;
 			}
@@ -19050,7 +19709,12 @@ var _user$project$Main$init = function (location) {
 			apiUrlB3: A2(_elm_lang$core$Basics_ops['++'], prefix, 'blockchain/size'),
 			apiUrlB4: A2(_elm_lang$core$Basics_ops['++'], prefix, 'block/0'),
 			apiUrlB5: A2(_elm_lang$core$Basics_ops['++'], prefix, 'block/0/header'),
-			apiUrlB6: A2(_elm_lang$core$Basics_ops['++'], prefix, 'block/0/transactions')
+			apiUrlB6: A2(_elm_lang$core$Basics_ops['++'], prefix, 'block/0/transactions'),
+			apiUrlT1: A2(_elm_lang$core$Basics_ops['++'], prefix, 'transaction/{:id}'),
+			apiUrlT2: A2(_elm_lang$core$Basics_ops['++'], prefix, 'transaction/{:id}/block'),
+			apiUrlT3: A2(_elm_lang$core$Basics_ops['++'], prefix, 'transaction/{:id}/block/header'),
+			apiUrlT4: A2(_elm_lang$core$Basics_ops['++'], prefix, 'transaction/{:id}/confirmations'),
+			apiUrlT5: A2(_elm_lang$core$Basics_ops['++'], prefix, 'transaction/fees')
 		});
 	var model = _p1._0;
 	var urlCmd = _p1._1;

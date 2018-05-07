@@ -49,6 +49,11 @@ init location =
                , apiUrlB4 = (prefix ++ "block/0")
                , apiUrlB5 = (prefix ++ "block/0/header")
                , apiUrlB6 = (prefix ++ "block/0/transactions")
+               , apiUrlT1 = (prefix ++ "transaction/{:id}")
+               , apiUrlT2 = (prefix ++ "transaction/{:id}/block")
+               , apiUrlT3 = (prefix ++ "transaction/{:id}/block/header")
+               , apiUrlT4 = (prefix ++ "transaction/{:id}/confirmations")
+               , apiUrlT5 = (prefix ++ "transaction/fees")
 
                 }
     in

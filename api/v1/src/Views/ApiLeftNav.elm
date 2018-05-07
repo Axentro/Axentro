@@ -28,6 +28,13 @@ apiLeftNav page =
         , link ApiBlock "#api-block" "block" page
         , link ApiBlockHeader "#api-block-header" "block/header" page
         , link ApiBlockTransactions "#api-block-transactions" "block/transactions" page
+        , hr [] []
+        , h5 [] [ text "Transaction" ]
+        , link ApiTransaction "#api-transaction" "transaction" page
+        , link ApiTransactionBlock "#api-transaction-block" "transaction/block" page
+        , link ApiTransactionBlockHeader "#api-transaction-block-header" "transaction/block/header" page
+        , link ApiTransactionConfirmations "#api-transaction-confirmations" "transaction/confirmations" page
+        , link ApiTransactionFees "#api-transaction-fees" "transaction/fees" page
         ]
 
 

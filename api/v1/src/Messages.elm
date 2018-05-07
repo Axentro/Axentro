@@ -20,9 +20,16 @@ type Page
     = GettingStarted
     | NotFound
     | ApiOverview
+
     | ApiBlockchain
     | ApiBlockchainHeader
     | ApiBlockchainSize
     | ApiBlock
     | ApiBlockHeader
     | ApiBlockTransactions
+
+    | ApiTransaction
+    | ApiTransactionBlock
+    | ApiTransactionBlockHeader
+    | ApiTransactionConfirmations
+    | ApiTransactionFees

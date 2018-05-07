@@ -3,8 +3,6 @@ module Views.ApiOverview exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (href)
 import Models exposing (Model)
-
-
 import Bootstrap.Navbar as Navbar
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
@@ -15,6 +13,7 @@ import Bootstrap.ListGroup as Listgroup
 import Bootstrap.Modal as Modal
 import Bootstrap.Table as Table
 import Messages exposing (Msg(..))
+
 
 pageApiOverview : Model -> List (Html Msg)
 pageApiOverview model =
@@ -28,7 +27,9 @@ pageApiOverview model =
     , hr [] []
     , Grid.row [] [ Grid.col [] overviewBlockChainSection ]
     , Grid.row [] [ Grid.col [] overviewBlockSection ]
+    , Grid.row [] [ Grid.col [] overviewTransactionSection ]
     ]
+
 
 overviewBlockChainSection =
     [ h3 [] [ text "Blockchain" ]
@@ -53,6 +54,7 @@ overviewBlockChainSection =
         )
     ]
 
+
 overviewBlockSection =
     [ hr [] []
     , h3 [] [ text "Block" ]
@@ -76,6 +78,53 @@ overviewBlockSection =
             ]
         )
     ]
+
+
+
+--
+-- [GET] v1/transaction/{:id}                        | transaction for supplied txn id
+--  # [GET] v1/transaction/{:id}/block                  | full block containing txn id
+--  # [GET] v1/transaction/{:id}/block/header           | block header containing txn id
+--  # [GET] v1/transaction/{:id}/confirmations          | number confirmations for txn id
+--  # [GET] v1/transaction/fees                         | fees
+--  # [POST] v1/transaction                             | create and broadcast a transaction
+--  # [POST] v1/transaction/unsigned                    | create an unsigned transaction
+
+
+overviewTransactionSection =
+    [ hr [] []
+    , h3 [] [ text "Transaction" ]
+    , apiOverviewTable
+        (Table.tbody []
+            [ Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "#api-transaction" ] [ Html.text "v1/transaction{:id}" ] ]
+                , Table.td [] [ Html.text "transaction for supplied transaction id" ]
+                ]
+            , Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "#api-transaction-block" ] [ Html.text "v1/transaction/{:id}/block" ] ]
+                , Table.td [] [ Html.text "block containing transaction id" ]
+                ]
+            , Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "#api-transaction-block-header" ] [ Html.text "v1/transaction/{:id}/block/header" ] ]
+                , Table.td [] [ Html.text "header for block containing transaction id" ]
+                ]
+            , Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "#api-transaction-confirmations" ] [ Html.text "v1/transaction/{:id}/confirmations" ] ]
+                , Table.td [] [ Html.text "number of confirmations for transaction" ]
+                ]
+            , Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "#api-transaction-fees" ] [ Html.text "v1/transaction/fees" ] ]
+                , Table.td [] [ Html.text "get transaction fees" ]
+                ]
+            ]
+        )
+    ]
+
 
 apiOverviewTable : Table.TBody msg -> Html.Html msg
 apiOverviewTable tableBody =

@@ -21,7 +21,11 @@ import Views.ApiBlockChainHeader exposing (pageApiBlockChainHeader)
 import Views.ApiBlockChainSize exposing (pageApiBlockChainSize)
 import Views.ApiBlockHeader exposing (pageApiBlockHeader)
 import Views.ApiBlockTransactions exposing (pageApiBlockTransactions)
-
+import Views.ApiTransaction exposing (pageApiTransaction)
+import Views.ApiTransactionBlock exposing (pageApiTransactionBlock)
+import Views.ApiTransactionBlockHeader exposing (pageApiTransactionBlockHeader)
+import Views.ApiTransactionConfirmations exposing (pageApiTransactionConfirmations)
+import Views.ApiTransactionFees exposing (pageApiTransactionFees)
 
 
 view : Model -> Html Msg
@@ -74,6 +78,21 @@ mainContent model =
 
             ApiBlockTransactions ->
                 pageApiBlockTransactions model
+
+            ApiTransaction ->
+                pageApiTransaction model
+
+            ApiTransactionBlock ->
+                pageApiTransactionBlock model
+
+            ApiTransactionBlockHeader ->
+                pageApiTransactionBlockHeader model
+
+            ApiTransactionConfirmations ->
+                pageApiTransactionConfirmations model
+
+            ApiTransactionFees ->
+                pageApiTransactionFees model
 
             NotFound ->
                 pageNotFound

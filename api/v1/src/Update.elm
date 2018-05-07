@@ -53,5 +53,20 @@ update msg model =
                 ApiBlockTransactions ->
                     ( { model | apiUrlB6 = url }, Cmd.none )
 
+                ApiTransaction ->
+                    ( { model | apiUrlT1 = url }, Cmd.none )
+
+                ApiTransactionBlock ->
+                    ( { model | apiUrlT2 = url }, Cmd.none )
+
+                ApiTransactionBlockHeader ->
+                    ( { model | apiUrlT3 = url }, Cmd.none )
+
+                ApiTransactionConfirmations ->
+                    ( { model | apiUrlT4 = url }, Cmd.none )
+
+                ApiTransactionFees ->
+                    ( { model | apiUrlT5 = url }, Cmd.none )
+
                 _ ->
                     ( { model | apiUrlB1 = url }, Cmd.none )
