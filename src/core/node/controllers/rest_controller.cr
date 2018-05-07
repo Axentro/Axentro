@@ -297,6 +297,10 @@ module ::Sushi::Core::Controllers
     private def with_response(context, &block)
       query_params = HTTP::Params.parse(context.request.query || "")
 
+      context.response.headers["Allow"] = "HEAD,GET,PUT,POST,DELETE,OPTIONS"
+      context.response.headers["Access-Control-Allow-Origin"] = "*"
+      context.response.headers["Access-Control-Allow-Headers"] =
+        "X-Requested-With, X-HTTP-Method-Override, Content-Type, Cache-Control, Accept"
       context.response.print api_success(yield query_params)
       context
     rescue e : Exception

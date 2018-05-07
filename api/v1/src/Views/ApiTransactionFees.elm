@@ -29,7 +29,7 @@ pageApiTransactionFees model =
         description =
             div [] [ Html.text "This gets the current transaction fees as json" ]
 
-        ex = """{"status":"success","result":{"index":1,"transactions":[{"id":"da2d2ef81e1ca3f4e1fee7ba06bcb93860349d67d93e066554e17b3fc1c4b5bc","action":"head","senders":[],"recipients":[{"address":"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5","amount":2500},{"address":"VDAxNmM1OGVkNmYyNzI2NzcyYjYzODRmMzJmMDkzODhjMTczNWI0NDFjZGM5ZTIz","amount":7500}],"message":"0","token":"SHARI","prev_hash":"0","sign_r":"0","sign_s":"0"}],"nonce":3981483406659451763,"prev_hash":"5396e18efa80a8e891c417fff862d7cad171465e65bc4b4e5e1c1c3ab0aeb88f","merkle_tree_root":"55aec377396d17730181d4400931fd97ce59e4dd"}}"""
+        ex = """{"status":"success","result":{"send":1,"scars_buy":100,"scars_sell":10,"scars_cancel":1,"create_token":1000}}"""
     in
         [ br [] []
         , Grid.row []
