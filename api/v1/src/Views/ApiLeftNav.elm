@@ -19,7 +19,7 @@ apiLeftNav : Page -> Grid.Column Msg
 apiLeftNav page =
     Grid.col [ Col.md3 ]
         [ hr [] []
-        , h5 [] [ text "BlockChain" ]
+        , h5 [] [ text "Blockchain" ]
         , link ApiBlockchain "#api-blockchain" "blockchain" page
         , link ApiBlockchainHeader "#api-blockchain-header" "blockchain/header" page
         , link ApiBlockchainSize "#api-blockchain-size" "blockchain/size" page
