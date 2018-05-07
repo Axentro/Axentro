@@ -1,4 +1,4 @@
-module Views.ApiBlockChainHeader exposing (..)
+module Views.ApiBlockChainSize exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (href)
@@ -17,20 +17,20 @@ import Views.ApiDocumentationHelper exposing (documentation)
 import Views.ApiLeftNav exposing (apiLeftNav)
 
 
-pageApiBlockChainHeader : Model -> List (Html Msg)
-pageApiBlockChainHeader model =
+pageApiBlockChainSize : Model -> List (Html Msg)
+pageApiBlockChainSize model =
     let
         description =
-            div [] [ Html.text "This retrieves the headers of the entire blockchain as Json" ]
+            div [] [ Html.text "This retrieves the total length of the blockchain" ]
 
         ex =
-            """{"status":"success","result":[{"index":0,"nonce":0,"prev_hash":"genesis","merkle_tree_root":""}]}"""
+            """{"status":"success","result":{"size":1}}"""
     in
         [ br [] []
         , Grid.row []
-            [ apiLeftNav ApiBlockchainHeader
+            [ apiLeftNav ApiBlockchainSize
             , Grid.col [ Col.md9 ]
-                [ documentation ApiBlockchainHeader model.apiUrlB2 model.apiResponse "Blockchain Header" description "GET" "v1/blockchain/header" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/v1/blockchain/header" ex
+                [ documentation ApiBlockchainSize model.apiUrlB3 model.apiResponse "Blockchain Size" description "GET" "v1/blockchain/size" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/v1/blockchain/size" ex
                 ]
             ]
         ]

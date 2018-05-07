@@ -14,9 +14,15 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Messages exposing (Msg(..), Page(..))
 import Models exposing (Model)
+import Views.ApiBlock exposing (pageApiBlock)
 import Views.ApiOverview exposing (pageApiOverview)
 import Views.ApiBlockChain exposing (pageApiBlockChain)
 import Views.ApiBlockChainHeader exposing (pageApiBlockChainHeader)
+import Views.ApiBlockChainSize exposing (pageApiBlockChainSize)
+import Views.ApiBlockHeader exposing (pageApiBlockHeader)
+import Views.ApiBlockTransactions exposing (pageApiBlockTransactions)
+
+
 
 view : Model -> Html Msg
 view model =
@@ -52,19 +58,22 @@ mainContent model =
                 pageApiOverview model
 
             ApiBlockchain ->
-               pageApiBlockChain model
+                pageApiBlockChain model
 
             ApiBlockchainHeader ->
-               pageApiBlockChainHeader model
+                pageApiBlockChainHeader model
 
             ApiBlockchainSize ->
-             pageGettingStarted model
+                pageApiBlockChainSize model
+
             ApiBlock ->
-             pageGettingStarted model
+                pageApiBlock model
+
             ApiBlockHeader ->
-             pageGettingStarted model
+                pageApiBlockHeader model
+
             ApiBlockTransactions ->
-               pageGettingStarted model
+                pageApiBlockTransactions model
 
             NotFound ->
                 pageNotFound
@@ -80,11 +89,12 @@ pageNotFound =
 pageGettingStarted : Model -> List (Html Msg)
 pageGettingStarted model =
     [ h2 [] [ text "Getting started" ]
---    , Button.button
---        [ Button.success
---        , Button.large
---        , Button.block
---        , Button.attrs [ onClick ShowModal ]
---        ]
---        [ text "Click me" ]
+
+    --    , Button.button
+    --        [ Button.success
+    --        , Button.large
+    --        , Button.block
+    --        , Button.attrs [ onClick ShowModal ]
+    --        ]
+    --        [ text "Click me" ]
     ]

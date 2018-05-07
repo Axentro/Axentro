@@ -25,9 +25,9 @@ apiLeftNav page =
         , link ApiBlockchainSize "#api-blockchain-size" "blockchain/size" page
         , hr [] []
         , h5 [] [ text "Block" ]
-        , div [] [ a [ href "#api-block" ] [ text "block" ] ]
-        , div [] [ a [ href "#api-block-header" ] [ text "block/header" ] ]
-        , div [] [ a [ href "#api-block-transactions" ] [ text "block/transactions" ] ]
+        , link ApiBlock "#api-block" "block" page
+        , link ApiBlockHeader "#api-block-header" "block/header" page
+        , link ApiBlockTransactions "#api-block-transactions" "block/transactions" page
         ]
 
 

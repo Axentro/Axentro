@@ -39,8 +39,18 @@ init location =
         ( navState, navCmd ) =
             Navbar.initialState NavMsg
 
+        prefix = "http://localhost:3000/v1/"
+
         ( model, urlCmd ) =
-            urlUpdate location { navState = navState, page = ApiOverview }
+            urlUpdate location { navState = navState, page = ApiOverview, error = "", apiResponse = ""
+               , apiUrlB1 = (prefix ++ "blockchain")
+               , apiUrlB2 = (prefix ++ "blockchain/header")
+               , apiUrlB3 = (prefix ++ "blockchain/size")
+               , apiUrlB4 = (prefix ++ "block/0")
+               , apiUrlB5 = (prefix ++ "block/0/header")
+               , apiUrlB6 = (prefix ++ "block/0/transactions")
+
+                }
     in
         ( model, Cmd.batch [ urlCmd, navCmd ] )
 

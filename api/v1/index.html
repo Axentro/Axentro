@@ -5733,6 +5733,85 @@ var _elm_lang$core$Platform$Program = {ctor: 'Program'};
 var _elm_lang$core$Platform$Task = {ctor: 'Task'};
 var _elm_lang$core$Platform$ProcessId = {ctor: 'ProcessId'};
 var _elm_lang$core$Platform$Router = {ctor: 'Router'};
+var _NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode = _elm_lang$core$Json_Decode$succeed;
+var _NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$resolve = _elm_lang$core$Json_Decode$andThen(_elm_lang$core$Basics$identity);
+var _NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$custom = _elm_lang$core$Json_Decode$map2(
+	F2(
+		function (x, y) {
+			return y(x);
+		}));
+var _NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$hardcoded = function (_p0) {
+	return _NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$custom(
+		_elm_lang$core$Json_Decode$succeed(_p0));
+};
+var _NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optionalDecoder = F3(
+	function (pathDecoder, valDecoder, fallback) {
+		var nullOr = function (decoder) {
+			return _elm_lang$core$Json_Decode$oneOf(
+				{
+					ctor: '::',
+					_0: decoder,
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$core$Json_Decode$null(fallback),
+						_1: {ctor: '[]'}
+					}
+				});
+		};
+		var handleResult = function (input) {
+			var _p1 = A2(_elm_lang$core$Json_Decode$decodeValue, pathDecoder, input);
+			if (_p1.ctor === 'Ok') {
+				var _p2 = A2(
+					_elm_lang$core$Json_Decode$decodeValue,
+					nullOr(valDecoder),
+					_p1._0);
+				if (_p2.ctor === 'Ok') {
+					return _elm_lang$core$Json_Decode$succeed(_p2._0);
+				} else {
+					return _elm_lang$core$Json_Decode$fail(_p2._0);
+				}
+			} else {
+				return _elm_lang$core$Json_Decode$succeed(fallback);
+			}
+		};
+		return A2(_elm_lang$core$Json_Decode$andThen, handleResult, _elm_lang$core$Json_Decode$value);
+	});
+var _NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optionalAt = F4(
+	function (path, valDecoder, fallback, decoder) {
+		return A2(
+			_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$custom,
+			A3(
+				_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optionalDecoder,
+				A2(_elm_lang$core$Json_Decode$at, path, _elm_lang$core$Json_Decode$value),
+				valDecoder,
+				fallback),
+			decoder);
+	});
+var _NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional = F4(
+	function (key, valDecoder, fallback, decoder) {
+		return A2(
+			_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$custom,
+			A3(
+				_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optionalDecoder,
+				A2(_elm_lang$core$Json_Decode$field, key, _elm_lang$core$Json_Decode$value),
+				valDecoder,
+				fallback),
+			decoder);
+	});
+var _NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$requiredAt = F3(
+	function (path, valDecoder, decoder) {
+		return A2(
+			_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$custom,
+			A2(_elm_lang$core$Json_Decode$at, path, valDecoder),
+			decoder);
+	});
+var _NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required = F3(
+	function (key, valDecoder, decoder) {
+		return A2(
+			_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$custom,
+			A2(_elm_lang$core$Json_Decode$field, key, valDecoder),
+			decoder);
+	});
 var _debois$elm_dom$DOM$className = A2(
 	_elm_lang$core$Json_Decode$at,
 	{
@@ -10596,6 +10675,233 @@ var _evancz$url_parser$UrlParser$stringParam = function (name) {
 var _evancz$url_parser$UrlParser$intParam = function (name) {
 	return A2(_evancz$url_parser$UrlParser$customParam, name, _evancz$url_parser$UrlParser$intParamHelp);
 };
+var _lukewestby$elm_http_builder$HttpBuilder$replace = F2(
+	function (old, $new) {
+		return function (_p0) {
+			return A2(
+				_elm_lang$core$String$join,
+				$new,
+				A2(_elm_lang$core$String$split, old, _p0));
+		};
+	});
+var _lukewestby$elm_http_builder$HttpBuilder$queryEscape = function (_p1) {
+	return A3(
+		_lukewestby$elm_http_builder$HttpBuilder$replace,
+		'%20',
+		'+',
+		_elm_lang$http$Http$encodeUri(_p1));
+};
+var _lukewestby$elm_http_builder$HttpBuilder$queryPair = function (_p2) {
+	var _p3 = _p2;
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_lukewestby$elm_http_builder$HttpBuilder$queryEscape(_p3._0),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'=',
+			_lukewestby$elm_http_builder$HttpBuilder$queryEscape(_p3._1)));
+};
+var _lukewestby$elm_http_builder$HttpBuilder$joinUrlEncoded = function (args) {
+	return A2(
+		_elm_lang$core$String$join,
+		'&',
+		A2(_elm_lang$core$List$map, _lukewestby$elm_http_builder$HttpBuilder$queryPair, args));
+};
+var _lukewestby$elm_http_builder$HttpBuilder$toRequest = function (builder) {
+	var encodedParams = _lukewestby$elm_http_builder$HttpBuilder$joinUrlEncoded(builder.queryParams);
+	var fullUrl = _elm_lang$core$String$isEmpty(encodedParams) ? builder.url : A2(
+		_elm_lang$core$Basics_ops['++'],
+		builder.url,
+		A2(_elm_lang$core$Basics_ops['++'], '?', encodedParams));
+	return _elm_lang$http$Http$request(
+		{method: builder.method, url: fullUrl, headers: builder.headers, body: builder.body, expect: builder.expect, timeout: builder.timeout, withCredentials: builder.withCredentials});
+};
+var _lukewestby$elm_http_builder$HttpBuilder$toTaskPlain = function (builder) {
+	return _elm_lang$http$Http$toTask(
+		_lukewestby$elm_http_builder$HttpBuilder$toRequest(builder));
+};
+var _lukewestby$elm_http_builder$HttpBuilder$withCacheBuster = F2(
+	function (paramName, builder) {
+		return _elm_lang$core$Native_Utils.update(
+			builder,
+			{
+				cacheBuster: _elm_lang$core$Maybe$Just(paramName)
+			});
+	});
+var _lukewestby$elm_http_builder$HttpBuilder$withQueryParams = F2(
+	function (queryParams, builder) {
+		return _elm_lang$core$Native_Utils.update(
+			builder,
+			{
+				queryParams: A2(_elm_lang$core$Basics_ops['++'], builder.queryParams, queryParams)
+			});
+	});
+var _lukewestby$elm_http_builder$HttpBuilder$toTaskWithCacheBuster = F2(
+	function (paramName, builder) {
+		var request = function (timestamp) {
+			return _lukewestby$elm_http_builder$HttpBuilder$toTaskPlain(
+				A2(
+					_lukewestby$elm_http_builder$HttpBuilder$withQueryParams,
+					{
+						ctor: '::',
+						_0: {
+							ctor: '_Tuple2',
+							_0: paramName,
+							_1: _elm_lang$core$Basics$toString(timestamp)
+						},
+						_1: {ctor: '[]'}
+					},
+					builder));
+		};
+		return A2(_elm_lang$core$Task$andThen, request, _elm_lang$core$Time$now);
+	});
+var _lukewestby$elm_http_builder$HttpBuilder$toTask = function (builder) {
+	var _p4 = builder.cacheBuster;
+	if (_p4.ctor === 'Just') {
+		return A2(_lukewestby$elm_http_builder$HttpBuilder$toTaskWithCacheBuster, _p4._0, builder);
+	} else {
+		return _lukewestby$elm_http_builder$HttpBuilder$toTaskPlain(builder);
+	}
+};
+var _lukewestby$elm_http_builder$HttpBuilder$send = F2(
+	function (tagger, builder) {
+		return A2(
+			_elm_lang$core$Task$attempt,
+			tagger,
+			_lukewestby$elm_http_builder$HttpBuilder$toTask(builder));
+	});
+var _lukewestby$elm_http_builder$HttpBuilder$withExpectString = function (builder) {
+	return _elm_lang$core$Native_Utils.update(
+		builder,
+		{expect: _elm_lang$http$Http$expectString});
+};
+var _lukewestby$elm_http_builder$HttpBuilder$withExpectJson = F2(
+	function (decoder, builder) {
+		return _elm_lang$core$Native_Utils.update(
+			builder,
+			{
+				expect: _elm_lang$http$Http$expectJson(decoder)
+			});
+	});
+var _lukewestby$elm_http_builder$HttpBuilder$withExpect = F2(
+	function (expect, builder) {
+		return _elm_lang$core$Native_Utils.update(
+			builder,
+			{expect: expect});
+	});
+var _lukewestby$elm_http_builder$HttpBuilder$withCredentials = function (builder) {
+	return _elm_lang$core$Native_Utils.update(
+		builder,
+		{withCredentials: true});
+};
+var _lukewestby$elm_http_builder$HttpBuilder$withTimeout = F2(
+	function (timeout, builder) {
+		return _elm_lang$core$Native_Utils.update(
+			builder,
+			{
+				timeout: _elm_lang$core$Maybe$Just(timeout)
+			});
+	});
+var _lukewestby$elm_http_builder$HttpBuilder$withBody = F2(
+	function (body, builder) {
+		return _elm_lang$core$Native_Utils.update(
+			builder,
+			{body: body});
+	});
+var _lukewestby$elm_http_builder$HttpBuilder$withStringBody = F2(
+	function (contentType, value) {
+		return _lukewestby$elm_http_builder$HttpBuilder$withBody(
+			A2(_elm_lang$http$Http$stringBody, contentType, value));
+	});
+var _lukewestby$elm_http_builder$HttpBuilder$withUrlEncodedBody = function (_p5) {
+	return A2(
+		_lukewestby$elm_http_builder$HttpBuilder$withStringBody,
+		'application/x-www-form-urlencoded',
+		_lukewestby$elm_http_builder$HttpBuilder$joinUrlEncoded(_p5));
+};
+var _lukewestby$elm_http_builder$HttpBuilder$withJsonBody = function (value) {
+	return _lukewestby$elm_http_builder$HttpBuilder$withBody(
+		_elm_lang$http$Http$jsonBody(value));
+};
+var _lukewestby$elm_http_builder$HttpBuilder$withMultipartStringBody = function (partPairs) {
+	return _lukewestby$elm_http_builder$HttpBuilder$withBody(
+		_elm_lang$http$Http$multipartBody(
+			A2(
+				_elm_lang$core$List$map,
+				_elm_lang$core$Basics$uncurry(_elm_lang$http$Http$stringPart),
+				partPairs)));
+};
+var _lukewestby$elm_http_builder$HttpBuilder$withBearerToken = F2(
+	function (value, builder) {
+		return _elm_lang$core$Native_Utils.update(
+			builder,
+			{
+				headers: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$http$Http$header,
+						'Authorization',
+						A2(_elm_lang$core$Basics_ops['++'], 'Bearer ', value)),
+					_1: builder.headers
+				}
+			});
+	});
+var _lukewestby$elm_http_builder$HttpBuilder$withHeaders = F2(
+	function (headerPairs, builder) {
+		return _elm_lang$core$Native_Utils.update(
+			builder,
+			{
+				headers: A2(
+					_elm_lang$core$Basics_ops['++'],
+					A2(
+						_elm_lang$core$List$map,
+						_elm_lang$core$Basics$uncurry(_elm_lang$http$Http$header),
+						headerPairs),
+					builder.headers)
+			});
+	});
+var _lukewestby$elm_http_builder$HttpBuilder$withHeader = F3(
+	function (key, value, builder) {
+		return _elm_lang$core$Native_Utils.update(
+			builder,
+			{
+				headers: {
+					ctor: '::',
+					_0: A2(_elm_lang$http$Http$header, key, value),
+					_1: builder.headers
+				}
+			});
+	});
+var _lukewestby$elm_http_builder$HttpBuilder$requestWithMethodAndUrl = F2(
+	function (method, url) {
+		return {
+			method: method,
+			url: url,
+			headers: {ctor: '[]'},
+			body: _elm_lang$http$Http$emptyBody,
+			expect: _elm_lang$http$Http$expectStringResponse(
+				function (_p6) {
+					return _elm_lang$core$Result$Ok(
+						{ctor: '_Tuple0'});
+				}),
+			timeout: _elm_lang$core$Maybe$Nothing,
+			withCredentials: false,
+			queryParams: {ctor: '[]'},
+			cacheBuster: _elm_lang$core$Maybe$Nothing
+		};
+	});
+var _lukewestby$elm_http_builder$HttpBuilder$get = _lukewestby$elm_http_builder$HttpBuilder$requestWithMethodAndUrl('GET');
+var _lukewestby$elm_http_builder$HttpBuilder$post = _lukewestby$elm_http_builder$HttpBuilder$requestWithMethodAndUrl('POST');
+var _lukewestby$elm_http_builder$HttpBuilder$put = _lukewestby$elm_http_builder$HttpBuilder$requestWithMethodAndUrl('PUT');
+var _lukewestby$elm_http_builder$HttpBuilder$patch = _lukewestby$elm_http_builder$HttpBuilder$requestWithMethodAndUrl('PATCH');
+var _lukewestby$elm_http_builder$HttpBuilder$delete = _lukewestby$elm_http_builder$HttpBuilder$requestWithMethodAndUrl('DELETE');
+var _lukewestby$elm_http_builder$HttpBuilder$options = _lukewestby$elm_http_builder$HttpBuilder$requestWithMethodAndUrl('OPTIONS');
+var _lukewestby$elm_http_builder$HttpBuilder$trace = _lukewestby$elm_http_builder$HttpBuilder$requestWithMethodAndUrl('TRACE');
+var _lukewestby$elm_http_builder$HttpBuilder$head = _lukewestby$elm_http_builder$HttpBuilder$requestWithMethodAndUrl('HEAD');
+var _lukewestby$elm_http_builder$HttpBuilder$RequestBuilder = F9(
+	function (a, b, c, d, e, f, g, h, i) {
+		return {method: a, headers: b, url: c, body: d, expect: e, timeout: f, withCredentials: g, queryParams: h, cacheBuster: i};
+	});
 var _rundis$elm_bootstrap$Bootstrap_Grid_Internal$horizontalAlignOption = function (align) {
 	var _p0 = align;
 	switch (_p0.ctor) {
@@ -12714,6 +13020,344 @@ var _rundis$elm_bootstrap$Bootstrap_Card$imgBottom = F3(
 								children)))
 				}));
 	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$headingPrivate = F3(
+	function (elemFn, attributes, children) {
+		return A2(
+			elemFn,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('alert-header'),
+				_1: attributes
+			},
+			children);
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$h6 = F2(
+	function (attributes, children) {
+		return A3(_rundis$elm_bootstrap$Bootstrap_Alert$headingPrivate, _elm_lang$html$Html$h6, attributes, children);
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$h5 = F2(
+	function (attributes, children) {
+		return A3(_rundis$elm_bootstrap$Bootstrap_Alert$headingPrivate, _elm_lang$html$Html$h5, attributes, children);
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$h4 = F2(
+	function (attributes, children) {
+		return A3(_rundis$elm_bootstrap$Bootstrap_Alert$headingPrivate, _elm_lang$html$Html$h4, attributes, children);
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$h3 = F2(
+	function (attributes, children) {
+		return A3(_rundis$elm_bootstrap$Bootstrap_Alert$headingPrivate, _elm_lang$html$Html$h3, attributes, children);
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$h2 = F2(
+	function (attributes, children) {
+		return A3(_rundis$elm_bootstrap$Bootstrap_Alert$headingPrivate, _elm_lang$html$Html$h2, attributes, children);
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$h1 = F2(
+	function (attributes, children) {
+		return A3(_rundis$elm_bootstrap$Bootstrap_Alert$headingPrivate, _elm_lang$html$Html$h1, attributes, children);
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$link = F2(
+	function (attributes, children) {
+		return A2(
+			_elm_lang$html$Html$a,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('alert-link'),
+				_1: attributes
+			},
+			children);
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$isDismissable = function (configRec) {
+	var _p0 = configRec.dismissable;
+	if (_p0.ctor === 'Just') {
+		return true;
+	} else {
+		return false;
+	}
+};
+var _rundis$elm_bootstrap$Bootstrap_Alert$injectButton = F2(
+	function (btn, children) {
+		var _p1 = children;
+		if (_p1.ctor === '::') {
+			return {
+				ctor: '::',
+				_0: _p1._0,
+				_1: {ctor: '::', _0: btn, _1: _p1._1}
+			};
+		} else {
+			return {
+				ctor: '::',
+				_0: btn,
+				_1: {ctor: '[]'}
+			};
+		}
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$ConfigRec = F6(
+	function (a, b, c, d, e, f) {
+		return {visibility: a, dismissable: b, attributes: c, children: d, role: e, withAnimation: f};
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$Config = function (a) {
+	return {ctor: 'Config', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Alert$role = F2(
+	function (role, _p2) {
+		var _p3 = _p2;
+		return _rundis$elm_bootstrap$Bootstrap_Alert$Config(
+			_elm_lang$core$Native_Utils.update(
+				_p3._0,
+				{role: role}));
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$primary = function (config) {
+	return A2(_rundis$elm_bootstrap$Bootstrap_Alert$role, _rundis$elm_bootstrap$Bootstrap_Internal_Role$Primary, config);
+};
+var _rundis$elm_bootstrap$Bootstrap_Alert$secondary = function (config) {
+	return A2(_rundis$elm_bootstrap$Bootstrap_Alert$role, _rundis$elm_bootstrap$Bootstrap_Internal_Role$Secondary, config);
+};
+var _rundis$elm_bootstrap$Bootstrap_Alert$success = function (config) {
+	return A2(_rundis$elm_bootstrap$Bootstrap_Alert$role, _rundis$elm_bootstrap$Bootstrap_Internal_Role$Success, config);
+};
+var _rundis$elm_bootstrap$Bootstrap_Alert$info = function (config) {
+	return A2(_rundis$elm_bootstrap$Bootstrap_Alert$role, _rundis$elm_bootstrap$Bootstrap_Internal_Role$Info, config);
+};
+var _rundis$elm_bootstrap$Bootstrap_Alert$warning = function (config) {
+	return A2(_rundis$elm_bootstrap$Bootstrap_Alert$role, _rundis$elm_bootstrap$Bootstrap_Internal_Role$Warning, config);
+};
+var _rundis$elm_bootstrap$Bootstrap_Alert$danger = function (config) {
+	return A2(_rundis$elm_bootstrap$Bootstrap_Alert$role, _rundis$elm_bootstrap$Bootstrap_Internal_Role$Danger, config);
+};
+var _rundis$elm_bootstrap$Bootstrap_Alert$dark = function (config) {
+	return A2(_rundis$elm_bootstrap$Bootstrap_Alert$role, _rundis$elm_bootstrap$Bootstrap_Internal_Role$Dark, config);
+};
+var _rundis$elm_bootstrap$Bootstrap_Alert$light = function (config) {
+	return A2(_rundis$elm_bootstrap$Bootstrap_Alert$role, _rundis$elm_bootstrap$Bootstrap_Internal_Role$Light, config);
+};
+var _rundis$elm_bootstrap$Bootstrap_Alert$attrs = F2(
+	function (attributes, _p4) {
+		var _p5 = _p4;
+		return _rundis$elm_bootstrap$Bootstrap_Alert$Config(
+			_elm_lang$core$Native_Utils.update(
+				_p5._0,
+				{attributes: attributes}));
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$dismissable = F2(
+	function (dismissMsg, _p6) {
+		var _p7 = _p6;
+		return _rundis$elm_bootstrap$Bootstrap_Alert$Config(
+			_elm_lang$core$Native_Utils.update(
+				_p7._0,
+				{
+					dismissable: _elm_lang$core$Maybe$Just(dismissMsg)
+				}));
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$dismissableWithAnimation = F2(
+	function (dismissMsg, _p8) {
+		var _p9 = _p8;
+		return _rundis$elm_bootstrap$Bootstrap_Alert$Config(
+			_elm_lang$core$Native_Utils.update(
+				_p9._0,
+				{
+					dismissable: _elm_lang$core$Maybe$Just(dismissMsg),
+					withAnimation: true
+				}));
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$children = F2(
+	function (children, _p10) {
+		var _p11 = _p10;
+		return _rundis$elm_bootstrap$Bootstrap_Alert$Config(
+			_elm_lang$core$Native_Utils.update(
+				_p11._0,
+				{children: children}));
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$Closed = {ctor: 'Closed'};
+var _rundis$elm_bootstrap$Bootstrap_Alert$closed = _rundis$elm_bootstrap$Bootstrap_Alert$Closed;
+var _rundis$elm_bootstrap$Bootstrap_Alert$FadeClose = {ctor: 'FadeClose'};
+var _rundis$elm_bootstrap$Bootstrap_Alert$subscriptions = F2(
+	function (visibility, animateMsg) {
+		var _p12 = visibility;
+		if (_p12.ctor === 'StartClose') {
+			return _elm_lang$animation_frame$AnimationFrame$times(
+				function (_p13) {
+					return animateMsg(_rundis$elm_bootstrap$Bootstrap_Alert$FadeClose);
+				});
+		} else {
+			return _elm_lang$core$Platform_Sub$none;
+		}
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$StartClose = {ctor: 'StartClose'};
+var _rundis$elm_bootstrap$Bootstrap_Alert$clickHandler = F2(
+	function (visibility, configRec) {
+		var handleClick = F2(
+			function (viz, toMsg) {
+				return _elm_lang$html$Html_Events$onClick(
+					toMsg(viz));
+			});
+		var _p14 = configRec.dismissable;
+		if (_p14.ctor === 'Just') {
+			var _p15 = _p14._0;
+			return {
+				ctor: '::',
+				_0: configRec.withAnimation ? A2(handleClick, _rundis$elm_bootstrap$Bootstrap_Alert$StartClose, _p15) : A2(handleClick, _rundis$elm_bootstrap$Bootstrap_Alert$Closed, _p15),
+				_1: {ctor: '[]'}
+			};
+		} else {
+			return {ctor: '[]'};
+		}
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$maybeAddDismissButton = F3(
+	function (visibilty, configRec, children) {
+		return _rundis$elm_bootstrap$Bootstrap_Alert$isDismissable(configRec) ? A2(
+			_rundis$elm_bootstrap$Bootstrap_Alert$injectButton,
+			A2(
+				_elm_lang$html$Html$button,
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$type_('button'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('close'),
+							_1: {
+								ctor: '::',
+								_0: A2(_elm_lang$html$Html_Attributes$attribute, 'aria-label', 'close'),
+								_1: {ctor: '[]'}
+							}
+						}
+					},
+					A2(_rundis$elm_bootstrap$Bootstrap_Alert$clickHandler, visibilty, configRec)),
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$span,
+						{
+							ctor: '::',
+							_0: A2(_elm_lang$html$Html_Attributes$attribute, 'aria-hidden', 'true'),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('×'),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				}),
+			children) : children;
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$Shown = {ctor: 'Shown'};
+var _rundis$elm_bootstrap$Bootstrap_Alert$shown = _rundis$elm_bootstrap$Bootstrap_Alert$Shown;
+var _rundis$elm_bootstrap$Bootstrap_Alert$config = _rundis$elm_bootstrap$Bootstrap_Alert$Config(
+	{
+		visibility: _rundis$elm_bootstrap$Bootstrap_Alert$Shown,
+		dismissable: _elm_lang$core$Maybe$Nothing,
+		attributes: {ctor: '[]'},
+		children: {ctor: '[]'},
+		role: _rundis$elm_bootstrap$Bootstrap_Internal_Role$Secondary,
+		withAnimation: false
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$viewAttributes = F2(
+	function (visibility, configRec) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			{
+				ctor: '::',
+				_0: A2(_elm_lang$html$Html_Attributes$attribute, 'role', 'alert'),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$classList(
+						{
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: 'alert', _1: true},
+							_1: {
+								ctor: '::',
+								_0: {
+									ctor: '_Tuple2',
+									_0: 'alert-dismissible',
+									_1: _rundis$elm_bootstrap$Bootstrap_Alert$isDismissable(configRec)
+								},
+								_1: {
+									ctor: '::',
+									_0: {ctor: '_Tuple2', _0: 'fade', _1: configRec.withAnimation},
+									_1: {
+										ctor: '::',
+										_0: {
+											ctor: '_Tuple2',
+											_0: 'show',
+											_1: _elm_lang$core$Native_Utils.eq(visibility, _rundis$elm_bootstrap$Bootstrap_Alert$Shown)
+										},
+										_1: {ctor: '[]'}
+									}
+								}
+							}
+						}),
+					_1: {
+						ctor: '::',
+						_0: A2(_rundis$elm_bootstrap$Bootstrap_Internal_Role$toClass, 'alert', configRec.role),
+						_1: {ctor: '[]'}
+					}
+				}
+			},
+			_elm_lang$core$Native_Utils.eq(visibility, _rundis$elm_bootstrap$Bootstrap_Alert$Closed) ? {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'display', _1: 'none'},
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			} : A2(
+				_elm_lang$core$Basics_ops['++'],
+				{ctor: '[]'},
+				function () {
+					if (configRec.withAnimation) {
+						var _p16 = configRec.dismissable;
+						if (_p16.ctor === 'Just') {
+							return {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html_Events$on,
+									'transitionend',
+									_elm_lang$core$Json_Decode$succeed(
+										_p16._0(_rundis$elm_bootstrap$Bootstrap_Alert$Closed))),
+								_1: {ctor: '[]'}
+							};
+						} else {
+							return {ctor: '[]'};
+						}
+					} else {
+						return {ctor: '[]'};
+					}
+				}()));
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$view = F2(
+	function (visibility, _p17) {
+		var _p18 = _p17;
+		var _p19 = _p18._0;
+		return A2(
+			_elm_lang$html$Html$div,
+			A2(_rundis$elm_bootstrap$Bootstrap_Alert$viewAttributes, visibility, _p19),
+			A3(_rundis$elm_bootstrap$Bootstrap_Alert$maybeAddDismissButton, visibility, _p19, _p19.children));
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$simple = F3(
+	function (role_, attributes, children_) {
+		return A2(
+			_rundis$elm_bootstrap$Bootstrap_Alert$view,
+			_rundis$elm_bootstrap$Bootstrap_Alert$Shown,
+			A2(
+				_rundis$elm_bootstrap$Bootstrap_Alert$children,
+				children_,
+				A2(
+					_rundis$elm_bootstrap$Bootstrap_Alert$attrs,
+					attributes,
+					A2(_rundis$elm_bootstrap$Bootstrap_Alert$role, role_, _rundis$elm_bootstrap$Bootstrap_Alert$config))));
+	});
+var _rundis$elm_bootstrap$Bootstrap_Alert$simplePrimary = _rundis$elm_bootstrap$Bootstrap_Alert$simple(_rundis$elm_bootstrap$Bootstrap_Internal_Role$Primary);
+var _rundis$elm_bootstrap$Bootstrap_Alert$simpleSecondary = _rundis$elm_bootstrap$Bootstrap_Alert$simple(_rundis$elm_bootstrap$Bootstrap_Internal_Role$Secondary);
+var _rundis$elm_bootstrap$Bootstrap_Alert$simpleSuccess = _rundis$elm_bootstrap$Bootstrap_Alert$simple(_rundis$elm_bootstrap$Bootstrap_Internal_Role$Success);
+var _rundis$elm_bootstrap$Bootstrap_Alert$simpleInfo = _rundis$elm_bootstrap$Bootstrap_Alert$simple(_rundis$elm_bootstrap$Bootstrap_Internal_Role$Info);
+var _rundis$elm_bootstrap$Bootstrap_Alert$simpleWarning = _rundis$elm_bootstrap$Bootstrap_Alert$simple(_rundis$elm_bootstrap$Bootstrap_Internal_Role$Warning);
+var _rundis$elm_bootstrap$Bootstrap_Alert$simpleDanger = _rundis$elm_bootstrap$Bootstrap_Alert$simple(_rundis$elm_bootstrap$Bootstrap_Internal_Role$Danger);
+var _rundis$elm_bootstrap$Bootstrap_Alert$simpleDark = _rundis$elm_bootstrap$Bootstrap_Alert$simple(_rundis$elm_bootstrap$Bootstrap_Internal_Role$Dark);
+var _rundis$elm_bootstrap$Bootstrap_Alert$simpleLight = _rundis$elm_bootstrap$Bootstrap_Alert$simple(_rundis$elm_bootstrap$Bootstrap_Internal_Role$Light);
 var _rundis$elm_bootstrap$Bootstrap_Internal_Button$roleClass = function (role) {
 	var _p0 = role;
 	switch (_p0.ctor) {
@@ -13377,6 +14021,518 @@ var _rundis$elm_bootstrap$Bootstrap_Grid_Col$topSm = A2(_rundis$elm_bootstrap$Bo
 var _rundis$elm_bootstrap$Bootstrap_Grid_Col$topXs = A2(_rundis$elm_bootstrap$Bootstrap_Grid_Internal$colVAlign, _rundis$elm_bootstrap$Bootstrap_Grid_Internal$XS, _rundis$elm_bootstrap$Bootstrap_Grid_Internal$Top);
 var _rundis$elm_bootstrap$Bootstrap_Grid_Col$attrs = function (attrs) {
 	return _rundis$elm_bootstrap$Bootstrap_Grid_Internal$ColAttrs(attrs);
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_FormInternal$validationToString = function (validation) {
+	var _p0 = validation;
+	if (_p0.ctor === 'Success') {
+		return 'is-valid';
+	} else {
+		return 'is-invalid';
+	}
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_FormInternal$validationWrapperAttribute = function (validation) {
+	return _elm_lang$html$Html_Attributes$class(
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'has-',
+			_rundis$elm_bootstrap$Bootstrap_Form_FormInternal$validationToString(validation)));
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_FormInternal$Danger = {ctor: 'Danger'};
+var _rundis$elm_bootstrap$Bootstrap_Form_FormInternal$Success = {ctor: 'Success'};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$validationAttribute = function (validation) {
+	return _elm_lang$html$Html_Attributes$class(
+		_rundis$elm_bootstrap$Bootstrap_Form_FormInternal$validationToString(validation));
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$typeAttribute = function (inputType) {
+	return _elm_lang$html$Html_Attributes$type_(
+		function () {
+			var _p0 = inputType;
+			switch (_p0.ctor) {
+				case 'Text':
+					return 'text';
+				case 'Password':
+					return 'password';
+				case 'DatetimeLocal':
+					return 'datetime-local';
+				case 'Date':
+					return 'date';
+				case 'Month':
+					return 'month';
+				case 'Time':
+					return 'time';
+				case 'Week':
+					return 'week';
+				case 'Number':
+					return 'number';
+				case 'Email':
+					return 'email';
+				case 'Url':
+					return 'url';
+				case 'Search':
+					return 'search';
+				case 'Tel':
+					return 'tel';
+				default:
+					return 'color';
+			}
+		}());
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$sizeAttribute = function (size) {
+	return A2(
+		_elm_lang$core$Maybe$map,
+		function (s) {
+			return _elm_lang$html$Html_Attributes$class(
+				A2(_elm_lang$core$Basics_ops['++'], 'form-control-', s));
+		},
+		_rundis$elm_bootstrap$Bootstrap_Grid_Internal$screenSizeOption(size));
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$applyModifier = F2(
+	function (modifier, options) {
+		var _p1 = modifier;
+		switch (_p1.ctor) {
+			case 'Size':
+				return _elm_lang$core$Native_Utils.update(
+					options,
+					{
+						size: _elm_lang$core$Maybe$Just(_p1._0)
+					});
+			case 'Id':
+				return _elm_lang$core$Native_Utils.update(
+					options,
+					{
+						id: _elm_lang$core$Maybe$Just(_p1._0)
+					});
+			case 'Type':
+				return _elm_lang$core$Native_Utils.update(
+					options,
+					{tipe: _p1._0});
+			case 'Disabled':
+				return _elm_lang$core$Native_Utils.update(
+					options,
+					{disabled: _p1._0});
+			case 'Value':
+				return _elm_lang$core$Native_Utils.update(
+					options,
+					{
+						value: _elm_lang$core$Maybe$Just(_p1._0)
+					});
+			case 'DefaultValue':
+				return _elm_lang$core$Native_Utils.update(
+					options,
+					{
+						defaultValue: _elm_lang$core$Maybe$Just(_p1._0)
+					});
+			case 'Placeholder':
+				return _elm_lang$core$Native_Utils.update(
+					options,
+					{
+						placeholder: _elm_lang$core$Maybe$Just(_p1._0)
+					});
+			case 'OnInput':
+				return _elm_lang$core$Native_Utils.update(
+					options,
+					{
+						onInput: _elm_lang$core$Maybe$Just(_p1._0)
+					});
+			case 'Validation':
+				return _elm_lang$core$Native_Utils.update(
+					options,
+					{
+						validation: _elm_lang$core$Maybe$Just(_p1._0)
+					});
+			case 'Readonly':
+				return _elm_lang$core$Native_Utils.update(
+					options,
+					{readonly: _p1._0});
+			default:
+				return _elm_lang$core$Native_Utils.update(
+					options,
+					{
+						attributes: A2(_elm_lang$core$Basics_ops['++'], options.attributes, _p1._0)
+					});
+		}
+	});
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Options = function (a) {
+	return function (b) {
+		return function (c) {
+			return function (d) {
+				return function (e) {
+					return function (f) {
+						return function (g) {
+							return function (h) {
+								return function (i) {
+									return function (j) {
+										return function (k) {
+											return {tipe: a, id: b, size: c, disabled: d, value: e, defaultValue: f, placeholder: g, onInput: h, validation: i, readonly: j, attributes: k};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Input = function (a) {
+	return {ctor: 'Input', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Attrs = function (a) {
+	return {ctor: 'Attrs', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$attrs = function (attrs) {
+	return _rundis$elm_bootstrap$Bootstrap_Form_Input$Attrs(attrs);
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Readonly = function (a) {
+	return {ctor: 'Readonly', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$readonly = function (readonly) {
+	return _rundis$elm_bootstrap$Bootstrap_Form_Input$Readonly(readonly);
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Placeholder = function (a) {
+	return {ctor: 'Placeholder', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$placeholder = function (value) {
+	return _rundis$elm_bootstrap$Bootstrap_Form_Input$Placeholder(value);
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Validation = function (a) {
+	return {ctor: 'Validation', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$success = _rundis$elm_bootstrap$Bootstrap_Form_Input$Validation(_rundis$elm_bootstrap$Bootstrap_Form_FormInternal$Success);
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$danger = _rundis$elm_bootstrap$Bootstrap_Form_Input$Validation(_rundis$elm_bootstrap$Bootstrap_Form_FormInternal$Danger);
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$OnInput = function (a) {
+	return {ctor: 'OnInput', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$onInput = function (toMsg) {
+	return _rundis$elm_bootstrap$Bootstrap_Form_Input$OnInput(toMsg);
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$DefaultValue = function (a) {
+	return {ctor: 'DefaultValue', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$defaultValue = function (value) {
+	return _rundis$elm_bootstrap$Bootstrap_Form_Input$DefaultValue(value);
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Value = function (a) {
+	return {ctor: 'Value', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$value = function (value) {
+	return _rundis$elm_bootstrap$Bootstrap_Form_Input$Value(value);
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Disabled = function (a) {
+	return {ctor: 'Disabled', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$disabled = function (disabled) {
+	return _rundis$elm_bootstrap$Bootstrap_Form_Input$Disabled(disabled);
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Type = function (a) {
+	return {ctor: 'Type', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$create = F2(
+	function (tipe, options) {
+		return _rundis$elm_bootstrap$Bootstrap_Form_Input$Input(
+			{
+				options: {
+					ctor: '::',
+					_0: _rundis$elm_bootstrap$Bootstrap_Form_Input$Type(tipe),
+					_1: options
+				}
+			});
+	});
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Id = function (a) {
+	return {ctor: 'Id', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$id = function (id) {
+	return _rundis$elm_bootstrap$Bootstrap_Form_Input$Id(id);
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Size = function (a) {
+	return {ctor: 'Size', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$small = _rundis$elm_bootstrap$Bootstrap_Form_Input$Size(_rundis$elm_bootstrap$Bootstrap_Grid_Internal$SM);
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$large = _rundis$elm_bootstrap$Bootstrap_Form_Input$Size(_rundis$elm_bootstrap$Bootstrap_Grid_Internal$LG);
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Color = {ctor: 'Color'};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Tel = {ctor: 'Tel'};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Search = {ctor: 'Search'};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Url = {ctor: 'Url'};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Email = {ctor: 'Email'};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Number = {ctor: 'Number'};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Week = {ctor: 'Week'};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Time = {ctor: 'Time'};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Month = {ctor: 'Month'};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Date = {ctor: 'Date'};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$DatetimeLocal = {ctor: 'DatetimeLocal'};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Password = {ctor: 'Password'};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$Text = {ctor: 'Text'};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$defaultOptions = {
+	tipe: _rundis$elm_bootstrap$Bootstrap_Form_Input$Text,
+	id: _elm_lang$core$Maybe$Nothing,
+	size: _elm_lang$core$Maybe$Nothing,
+	disabled: false,
+	value: _elm_lang$core$Maybe$Nothing,
+	defaultValue: _elm_lang$core$Maybe$Nothing,
+	placeholder: _elm_lang$core$Maybe$Nothing,
+	onInput: _elm_lang$core$Maybe$Nothing,
+	validation: _elm_lang$core$Maybe$Nothing,
+	readonly: false,
+	attributes: {ctor: '[]'}
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$toAttributes = function (modifiers) {
+	var options = A3(_elm_lang$core$List$foldl, _rundis$elm_bootstrap$Bootstrap_Form_Input$applyModifier, _rundis$elm_bootstrap$Bootstrap_Form_Input$defaultOptions, modifiers);
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('form-control'),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$disabled(options.disabled),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$readonly(options.readonly),
+					_1: {
+						ctor: '::',
+						_0: _rundis$elm_bootstrap$Bootstrap_Form_Input$typeAttribute(options.tipe),
+						_1: {ctor: '[]'}
+					}
+				}
+			}
+		},
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			A2(
+				_elm_lang$core$List$filterMap,
+				_elm_lang$core$Basics$identity,
+				{
+					ctor: '::',
+					_0: A2(_elm_lang$core$Maybe$map, _elm_lang$html$Html_Attributes$id, options.id),
+					_1: {
+						ctor: '::',
+						_0: A2(_elm_lang$core$Maybe$andThen, _rundis$elm_bootstrap$Bootstrap_Form_Input$sizeAttribute, options.size),
+						_1: {
+							ctor: '::',
+							_0: A2(_elm_lang$core$Maybe$map, _elm_lang$html$Html_Attributes$value, options.value),
+							_1: {
+								ctor: '::',
+								_0: A2(_elm_lang$core$Maybe$map, _elm_lang$html$Html_Attributes$defaultValue, options.defaultValue),
+								_1: {
+									ctor: '::',
+									_0: A2(_elm_lang$core$Maybe$map, _elm_lang$html$Html_Attributes$placeholder, options.placeholder),
+									_1: {
+										ctor: '::',
+										_0: A2(_elm_lang$core$Maybe$map, _elm_lang$html$Html_Events$onInput, options.onInput),
+										_1: {
+											ctor: '::',
+											_0: A2(_elm_lang$core$Maybe$map, _rundis$elm_bootstrap$Bootstrap_Form_Input$validationAttribute, options.validation),
+											_1: {ctor: '[]'}
+										}
+									}
+								}
+							}
+						}
+					}
+				}),
+			options.attributes));
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$view = function (_p2) {
+	var _p3 = _p2;
+	return A2(
+		_elm_lang$html$Html$input,
+		_rundis$elm_bootstrap$Bootstrap_Form_Input$toAttributes(_p3._0.options),
+		{ctor: '[]'});
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$input = F2(
+	function (tipe, options) {
+		return _rundis$elm_bootstrap$Bootstrap_Form_Input$view(
+			A2(_rundis$elm_bootstrap$Bootstrap_Form_Input$create, tipe, options));
+	});
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$text = _rundis$elm_bootstrap$Bootstrap_Form_Input$input(_rundis$elm_bootstrap$Bootstrap_Form_Input$Text);
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$password = _rundis$elm_bootstrap$Bootstrap_Form_Input$input(_rundis$elm_bootstrap$Bootstrap_Form_Input$Password);
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$datetimeLocal = _rundis$elm_bootstrap$Bootstrap_Form_Input$input(_rundis$elm_bootstrap$Bootstrap_Form_Input$DatetimeLocal);
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$date = _rundis$elm_bootstrap$Bootstrap_Form_Input$input(_rundis$elm_bootstrap$Bootstrap_Form_Input$Date);
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$month = _rundis$elm_bootstrap$Bootstrap_Form_Input$input(_rundis$elm_bootstrap$Bootstrap_Form_Input$Month);
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$time = _rundis$elm_bootstrap$Bootstrap_Form_Input$input(_rundis$elm_bootstrap$Bootstrap_Form_Input$Time);
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$week = _rundis$elm_bootstrap$Bootstrap_Form_Input$input(_rundis$elm_bootstrap$Bootstrap_Form_Input$Week);
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$number = _rundis$elm_bootstrap$Bootstrap_Form_Input$input(_rundis$elm_bootstrap$Bootstrap_Form_Input$Number);
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$email = _rundis$elm_bootstrap$Bootstrap_Form_Input$input(_rundis$elm_bootstrap$Bootstrap_Form_Input$Email);
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$url = _rundis$elm_bootstrap$Bootstrap_Form_Input$input(_rundis$elm_bootstrap$Bootstrap_Form_Input$Url);
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$search = _rundis$elm_bootstrap$Bootstrap_Form_Input$input(_rundis$elm_bootstrap$Bootstrap_Form_Input$Search);
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$tel = _rundis$elm_bootstrap$Bootstrap_Form_Input$input(_rundis$elm_bootstrap$Bootstrap_Form_Input$Tel);
+var _rundis$elm_bootstrap$Bootstrap_Form_Input$color = _rundis$elm_bootstrap$Bootstrap_Form_Input$input(_rundis$elm_bootstrap$Bootstrap_Form_Input$Color);
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$validationAttribute = function (validation) {
+	return _elm_lang$html$Html_Attributes$class(
+		_rundis$elm_bootstrap$Bootstrap_Form_FormInternal$validationToString(validation));
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$applyModifier = F2(
+	function (modifier, options) {
+		var _p0 = modifier;
+		switch (_p0.ctor) {
+			case 'Id':
+				return _elm_lang$core$Native_Utils.update(
+					options,
+					{
+						id: _elm_lang$core$Maybe$Just(_p0._0)
+					});
+			case 'Rows':
+				return _elm_lang$core$Native_Utils.update(
+					options,
+					{
+						rows: _elm_lang$core$Maybe$Just(_p0._0)
+					});
+			case 'Disabled':
+				return _elm_lang$core$Native_Utils.update(
+					options,
+					{disabled: true});
+			case 'Value':
+				return _elm_lang$core$Native_Utils.update(
+					options,
+					{
+						value: _elm_lang$core$Maybe$Just(_p0._0)
+					});
+			case 'DefaultValue':
+				return _elm_lang$core$Native_Utils.update(
+					options,
+					{
+						defaultValue: _elm_lang$core$Maybe$Just(_p0._0)
+					});
+			case 'OnInput':
+				return _elm_lang$core$Native_Utils.update(
+					options,
+					{
+						onInput: _elm_lang$core$Maybe$Just(_p0._0)
+					});
+			case 'Validation':
+				return _elm_lang$core$Native_Utils.update(
+					options,
+					{
+						validation: _elm_lang$core$Maybe$Just(_p0._0)
+					});
+			default:
+				return _elm_lang$core$Native_Utils.update(
+					options,
+					{
+						attributes: A2(_elm_lang$core$Basics_ops['++'], options.attributes, _p0._0)
+					});
+		}
+	});
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$defaultOptions = {
+	id: _elm_lang$core$Maybe$Nothing,
+	rows: _elm_lang$core$Maybe$Nothing,
+	disabled: false,
+	value: _elm_lang$core$Maybe$Nothing,
+	defaultValue: _elm_lang$core$Maybe$Nothing,
+	onInput: _elm_lang$core$Maybe$Nothing,
+	validation: _elm_lang$core$Maybe$Nothing,
+	attributes: {ctor: '[]'}
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$toAttributes = function (modifiers) {
+	var options = A3(_elm_lang$core$List$foldl, _rundis$elm_bootstrap$Bootstrap_Form_Textarea$applyModifier, _rundis$elm_bootstrap$Bootstrap_Form_Textarea$defaultOptions, modifiers);
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('form-control'),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$disabled(options.disabled),
+				_1: {ctor: '[]'}
+			}
+		},
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			A2(
+				_elm_lang$core$List$filterMap,
+				_elm_lang$core$Basics$identity,
+				{
+					ctor: '::',
+					_0: A2(_elm_lang$core$Maybe$map, _elm_lang$html$Html_Attributes$id, options.id),
+					_1: {
+						ctor: '::',
+						_0: A2(_elm_lang$core$Maybe$map, _elm_lang$html$Html_Attributes$rows, options.rows),
+						_1: {
+							ctor: '::',
+							_0: A2(_elm_lang$core$Maybe$map, _elm_lang$html$Html_Attributes$value, options.value),
+							_1: {
+								ctor: '::',
+								_0: A2(_elm_lang$core$Maybe$map, _elm_lang$html$Html_Attributes$defaultValue, options.defaultValue),
+								_1: {
+									ctor: '::',
+									_0: A2(_elm_lang$core$Maybe$map, _elm_lang$html$Html_Events$onInput, options.onInput),
+									_1: {
+										ctor: '::',
+										_0: A2(_elm_lang$core$Maybe$map, _rundis$elm_bootstrap$Bootstrap_Form_Textarea$validationAttribute, options.validation),
+										_1: {ctor: '[]'}
+									}
+								}
+							}
+						}
+					}
+				}),
+			options.attributes));
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$view = function (_p1) {
+	var _p2 = _p1;
+	return A2(
+		_elm_lang$html$Html$textarea,
+		_rundis$elm_bootstrap$Bootstrap_Form_Textarea$toAttributes(_p2._0.options),
+		{ctor: '[]'});
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$Options = F8(
+	function (a, b, c, d, e, f, g, h) {
+		return {id: a, rows: b, disabled: c, value: d, defaultValue: e, onInput: f, validation: g, attributes: h};
+	});
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$Textarea = function (a) {
+	return {ctor: 'Textarea', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$create = function (options) {
+	return _rundis$elm_bootstrap$Bootstrap_Form_Textarea$Textarea(
+		{options: options});
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$textarea = function (_p3) {
+	return _rundis$elm_bootstrap$Bootstrap_Form_Textarea$view(
+		_rundis$elm_bootstrap$Bootstrap_Form_Textarea$create(_p3));
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$Attrs = function (a) {
+	return {ctor: 'Attrs', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$attrs = function (attrs) {
+	return _rundis$elm_bootstrap$Bootstrap_Form_Textarea$Attrs(attrs);
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$Validation = function (a) {
+	return {ctor: 'Validation', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$success = _rundis$elm_bootstrap$Bootstrap_Form_Textarea$Validation(_rundis$elm_bootstrap$Bootstrap_Form_FormInternal$Success);
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$danger = _rundis$elm_bootstrap$Bootstrap_Form_Textarea$Validation(_rundis$elm_bootstrap$Bootstrap_Form_FormInternal$Danger);
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$OnInput = function (a) {
+	return {ctor: 'OnInput', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$onInput = function (toMsg) {
+	return _rundis$elm_bootstrap$Bootstrap_Form_Textarea$OnInput(toMsg);
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$DefaultValue = function (a) {
+	return {ctor: 'DefaultValue', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$defaultValue = function (value) {
+	return _rundis$elm_bootstrap$Bootstrap_Form_Textarea$DefaultValue(value);
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$Value = function (a) {
+	return {ctor: 'Value', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$value = function (value) {
+	return _rundis$elm_bootstrap$Bootstrap_Form_Textarea$Value(value);
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$Disabled = {ctor: 'Disabled'};
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$disabled = _rundis$elm_bootstrap$Bootstrap_Form_Textarea$Disabled;
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$Rows = function (a) {
+	return {ctor: 'Rows', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$rows = function (rows) {
+	return _rundis$elm_bootstrap$Bootstrap_Form_Textarea$Rows(rows);
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$Id = function (a) {
+	return {ctor: 'Id', _0: a};
+};
+var _rundis$elm_bootstrap$Bootstrap_Form_Textarea$id = function (id) {
+	return _rundis$elm_bootstrap$Bootstrap_Form_Textarea$Id(id);
 };
 var _rundis$elm_bootstrap$Bootstrap_Grid$renderCol = function (column) {
 	var _p0 = column;
@@ -16161,85 +17317,844 @@ var _rundis$elm_bootstrap$Bootstrap_Table$tbody = F2(
 		return _rundis$elm_bootstrap$Bootstrap_Table$TBody(
 			{attributes: attributes, rows: rows});
 	});
-var _user$project$Main$pageNotFound = {
-	ctor: '::',
-	_0: A2(
-		_elm_lang$html$Html$h1,
-		{ctor: '[]'},
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html$text('Not found'),
-			_1: {ctor: '[]'}
-		}),
-	_1: {
-		ctor: '::',
-		_0: _elm_lang$html$Html$text('SOrry couldn\'t find that page'),
-		_1: {ctor: '[]'}
+var _user$project$Json_PrettyPrint$internalJsonToString = function (json) {
+	var _p0 = json;
+	switch (_p0.ctor) {
+		case 'JsonString':
+			return A2(
+				_elm_lang$core$Basics_ops['++'],
+				'\"',
+				A2(_elm_lang$core$Basics_ops['++'], _p0._0, '\"'));
+		case 'JsonNumber':
+			return _elm_lang$core$Basics$toString(_p0._0);
+		case 'JsonBool':
+			return _p0._0 ? 'true' : 'false';
+		case 'JsonObject':
+			return function (x) {
+				return A2(
+					_elm_lang$core$Basics_ops['++'],
+					'{\n',
+					A2(_elm_lang$core$Basics_ops['++'], x, '}'));
+			}(
+				A2(
+					_elm_lang$core$String$join,
+					',\n',
+					A2(
+						_elm_lang$core$List$map,
+						function (_p1) {
+							var _p2 = _p1;
+							return A2(
+								_elm_lang$core$Basics_ops['++'],
+								'\"',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									_p2._0,
+									A2(
+										_elm_lang$core$Basics_ops['++'],
+										'\" : ',
+										_user$project$Json_PrettyPrint$internalJsonToString(_p2._1))));
+						},
+						_elm_lang$core$Dict$toList(_p0._0))));
+		default:
+			return function (x) {
+				return A2(
+					_elm_lang$core$Basics_ops['++'],
+					'[',
+					A2(_elm_lang$core$Basics_ops['++'], x, ']'));
+			}(
+				A2(
+					_elm_lang$core$String$join,
+					', ',
+					A2(_elm_lang$core$List$map, _user$project$Json_PrettyPrint$internalJsonToString, _p0._0)));
 	}
 };
-var _user$project$Main$pageModules = function (model) {
-	return {
+var _user$project$Json_PrettyPrint$JsonList = function (a) {
+	return {ctor: 'JsonList', _0: a};
+};
+var _user$project$Json_PrettyPrint$JsonObject = function (a) {
+	return {ctor: 'JsonObject', _0: a};
+};
+var _user$project$Json_PrettyPrint$JsonBool = function (a) {
+	return {ctor: 'JsonBool', _0: a};
+};
+var _user$project$Json_PrettyPrint$JsonNumber = function (a) {
+	return {ctor: 'JsonNumber', _0: a};
+};
+var _user$project$Json_PrettyPrint$JsonString = function (a) {
+	return {ctor: 'JsonString', _0: a};
+};
+var _user$project$Json_PrettyPrint$decodeToInternalJson = _elm_lang$core$Json_Decode$oneOf(
+	{
 		ctor: '::',
-		_0: A2(
-			_elm_lang$html$Html$h1,
-			{ctor: '[]'},
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html$text('Modules'),
-				_1: {ctor: '[]'}
-			}),
+		_0: A2(_elm_lang$core$Json_Decode$map, _user$project$Json_PrettyPrint$JsonString, _elm_lang$core$Json_Decode$string),
 		_1: {
 			ctor: '::',
-			_0: _rundis$elm_bootstrap$Bootstrap_ListGroup$ul(
-				{
+			_0: A2(_elm_lang$core$Json_Decode$map, _user$project$Json_PrettyPrint$JsonNumber, _elm_lang$core$Json_Decode$float),
+			_1: {
+				ctor: '::',
+				_0: A2(_elm_lang$core$Json_Decode$map, _user$project$Json_PrettyPrint$JsonBool, _elm_lang$core$Json_Decode$bool),
+				_1: {
 					ctor: '::',
 					_0: A2(
-						_rundis$elm_bootstrap$Bootstrap_ListGroup$li,
-						{ctor: '[]'},
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html$text('Alert'),
-							_1: {ctor: '[]'}
-						}),
+						_elm_lang$core$Json_Decode$map,
+						_user$project$Json_PrettyPrint$JsonObject,
+						_elm_lang$core$Json_Decode$lazy(
+							function (_p3) {
+								return _elm_lang$core$Json_Decode$dict(_user$project$Json_PrettyPrint$decodeToInternalJson);
+							})),
 					_1: {
 						ctor: '::',
 						_0: A2(
-							_rundis$elm_bootstrap$Bootstrap_ListGroup$li,
+							_elm_lang$core$Json_Decode$map,
+							_user$project$Json_PrettyPrint$JsonList,
+							_elm_lang$core$Json_Decode$lazy(
+								function (_p4) {
+									return _elm_lang$core$Json_Decode$list(_user$project$Json_PrettyPrint$decodeToInternalJson);
+								})),
+						_1: {ctor: '[]'}
+					}
+				}
+			}
+		}
+	});
+var _user$project$Json_PrettyPrint$toString = function (value) {
+	var _p5 = A2(_elm_lang$core$Json_Decode$decodeValue, _user$project$Json_PrettyPrint$decodeToInternalJson, value);
+	if (_p5.ctor === 'Err') {
+		return _p5._0;
+	} else {
+		return _user$project$Json_PrettyPrint$internalJsonToString(_p5._0);
+	}
+};
+var _user$project$Json_PrettyPrint$stringify = function (value) {
+	var _p6 = A2(_elm_lang$core$Json_Decode$decodeString, _user$project$Json_PrettyPrint$decodeToInternalJson, value);
+	if (_p6.ctor === 'Err') {
+		return _p6._0;
+	} else {
+		return _user$project$Json_PrettyPrint$internalJsonToString(_p6._0);
+	}
+};
+var _user$project$Messages$POST = {ctor: 'POST'};
+var _user$project$Messages$GET = {ctor: 'GET'};
+var _user$project$Messages$SetApiUrl = F2(
+	function (a, b) {
+		return {ctor: 'SetApiUrl', _0: a, _1: b};
+	});
+var _user$project$Messages$RunApiCallResponse = function (a) {
+	return {ctor: 'RunApiCallResponse', _0: a};
+};
+var _user$project$Messages$RunApiCall = F2(
+	function (a, b) {
+		return {ctor: 'RunApiCall', _0: a, _1: b};
+	});
+var _user$project$Messages$NavMsg = function (a) {
+	return {ctor: 'NavMsg', _0: a};
+};
+var _user$project$Messages$UrlChange = function (a) {
+	return {ctor: 'UrlChange', _0: a};
+};
+var _user$project$Messages$ApiBlockTransactions = {ctor: 'ApiBlockTransactions'};
+var _user$project$Messages$ApiBlockHeader = {ctor: 'ApiBlockHeader'};
+var _user$project$Messages$ApiBlock = {ctor: 'ApiBlock'};
+var _user$project$Messages$ApiBlockchainSize = {ctor: 'ApiBlockchainSize'};
+var _user$project$Messages$ApiBlockchainHeader = {ctor: 'ApiBlockchainHeader'};
+var _user$project$Messages$ApiBlockchain = {ctor: 'ApiBlockchain'};
+var _user$project$Messages$ApiOverview = {ctor: 'ApiOverview'};
+var _user$project$Messages$NotFound = {ctor: 'NotFound'};
+var _user$project$Messages$GettingStarted = {ctor: 'GettingStarted'};
+var _user$project$Models$Model = function (a) {
+	return function (b) {
+		return function (c) {
+			return function (d) {
+				return function (e) {
+					return function (f) {
+						return function (g) {
+							return function (h) {
+								return function (i) {
+									return function (j) {
+										return {page: a, navState: b, apiResponse: c, error: d, apiUrlB1: e, apiUrlB2: f, apiUrlB3: g, apiUrlB4: h, apiUrlB5: i, apiUrlB6: j};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var _user$project$Navi$routeParser = _evancz$url_parser$UrlParser$oneOf(
+	{
+		ctor: '::',
+		_0: A2(_evancz$url_parser$UrlParser$map, _user$project$Messages$ApiOverview, _evancz$url_parser$UrlParser$top),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_evancz$url_parser$UrlParser$map,
+				_user$project$Messages$GettingStarted,
+				_evancz$url_parser$UrlParser$s('getting-started')),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_evancz$url_parser$UrlParser$map,
+					_user$project$Messages$ApiOverview,
+					_evancz$url_parser$UrlParser$s('api-overview')),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_evancz$url_parser$UrlParser$map,
+						_user$project$Messages$ApiBlockchain,
+						_evancz$url_parser$UrlParser$s('api-blockchain')),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_evancz$url_parser$UrlParser$map,
+							_user$project$Messages$ApiBlockchainHeader,
+							_evancz$url_parser$UrlParser$s('api-blockchain-header')),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_evancz$url_parser$UrlParser$map,
+								_user$project$Messages$ApiBlockchainSize,
+								_evancz$url_parser$UrlParser$s('api-blockchain-size')),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_evancz$url_parser$UrlParser$map,
+									_user$project$Messages$ApiBlock,
+									_evancz$url_parser$UrlParser$s('api-block')),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_evancz$url_parser$UrlParser$map,
+										_user$project$Messages$ApiBlockHeader,
+										_evancz$url_parser$UrlParser$s('api-block-header')),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_evancz$url_parser$UrlParser$map,
+											_user$project$Messages$ApiBlockTransactions,
+											_evancz$url_parser$UrlParser$s('api-block-transactions')),
+										_1: {ctor: '[]'}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	});
+var _user$project$Navi$decode = function (location) {
+	return A2(_evancz$url_parser$UrlParser$parseHash, _user$project$Navi$routeParser, location);
+};
+var _user$project$Navi$urlUpdate = F2(
+	function (location, model) {
+		var _p0 = _user$project$Navi$decode(location);
+		if (_p0.ctor === 'Nothing') {
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Native_Utils.update(
+					model,
+					{page: _user$project$Messages$NotFound}),
+				_1: _elm_lang$core$Platform_Cmd$none
+			};
+		} else {
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Native_Utils.update(
+					model,
+					{page: _p0._0}),
+				_1: _elm_lang$core$Platform_Cmd$none
+			};
+		}
+	});
+var _user$project$Update$update = F2(
+	function (msg, model) {
+		var _p0 = msg;
+		switch (_p0.ctor) {
+			case 'UrlChange':
+				return A2(_user$project$Navi$urlUpdate, _p0._0, model);
+			case 'NavMsg':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{navState: _p0._0}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'RunApiCall':
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: A2(
+						_elm_lang$http$Http$send,
+						_user$project$Messages$RunApiCallResponse,
+						_elm_lang$http$Http$getString(_p0._1))
+				};
+			case 'RunApiCallResponse':
+				if (_p0._0.ctor === 'Ok') {
+					var _p2 = _p0._0._0;
+					var _p1 = A2(_elm_lang$core$Debug$log, 'here ', _p2);
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{apiResponse: _p2}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				} else {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								error: _elm_lang$core$Basics$toString(_p0._0._0)
+							}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				}
+			default:
+				var _p4 = _p0._1;
+				var _p3 = _p0._0;
+				switch (_p3.ctor) {
+					case 'ApiBlockchain':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlB1: _p4}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiBlockchainHeader':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlB2: _p4}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiBlockchainSize':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlB3: _p4}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiBlock':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlB4: _p4}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiBlockHeader':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlB5: _p4}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiBlockTransactions':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlB6: _p4}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					default:
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlB1: _p4}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+				}
+		}
+	});
+var _user$project$Views_TableHelper$docTable = F2(
+	function (tableHeader, tableBody) {
+		return _rundis$elm_bootstrap$Bootstrap_Table$table(
+			{
+				options: {
+					ctor: '::',
+					_0: _rundis$elm_bootstrap$Bootstrap_Table$bordered,
+					_1: {ctor: '[]'}
+				},
+				thead: tableHeader,
+				tbody: tableBody
+			});
+	});
+var _user$project$Views_ApiLeftNav$link = F4(
+	function (thisPage, url, desc, currentPage) {
+		return _elm_lang$core$Native_Utils.eq(thisPage, currentPage) ? A2(
+			_elm_lang$html$Html$div,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('badge badge-secondary'),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$a,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$style(
+									{
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: 'color', _1: 'white'},
+										_1: {ctor: '[]'}
+									}),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$href(url),
+									_1: {ctor: '[]'}
+								}
+							},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text(desc),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			}) : A2(
+			_elm_lang$html$Html$div,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$a,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$href(url),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text(desc),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			});
+	});
+var _user$project$Views_ApiLeftNav$apiLeftNav = function (page) {
+	return A2(
+		_rundis$elm_bootstrap$Bootstrap_Grid$col,
+		{
+			ctor: '::',
+			_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md3,
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$hr,
+				{ctor: '[]'},
+				{ctor: '[]'}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$h5,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text('BlockChain'),
+						_1: {ctor: '[]'}
+					}),
+				_1: {
+					ctor: '::',
+					_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiBlockchain, '#api-blockchain', 'blockchain', page),
+					_1: {
+						ctor: '::',
+						_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiBlockchainHeader, '#api-blockchain-header', 'blockchain/header', page),
+						_1: {
+							ctor: '::',
+							_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiBlockchainSize, '#api-blockchain-size', 'blockchain/size', page),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$hr,
+									{ctor: '[]'},
+									{ctor: '[]'}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$h5,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('Block'),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiBlock, '#api-block', 'block', page),
+										_1: {
+											ctor: '::',
+											_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiBlockHeader, '#api-block-header', 'block/header', page),
+											_1: {
+												ctor: '::',
+												_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiBlockTransactions, '#api-block-transactions', 'block/transactions', page),
+												_1: {ctor: '[]'}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		});
+};
+var _user$project$Views_ApiDocumentationHelper$tBody = F2(
+	function (req, url) {
+		return A2(
+			_rundis$elm_bootstrap$Bootstrap_Table$tbody,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: A2(
+					_rundis$elm_bootstrap$Bootstrap_Table$tr,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Table$td,
 							{ctor: '[]'},
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html$text('Badge'),
+								_0: _elm_lang$html$Html$text(req),
 								_1: {ctor: '[]'}
 							}),
 						_1: {
 							ctor: '::',
 							_0: A2(
-								_rundis$elm_bootstrap$Bootstrap_ListGroup$li,
+								_rundis$elm_bootstrap$Bootstrap_Table$td,
 								{ctor: '[]'},
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html$text('Card'),
+									_0: _elm_lang$html$Html$text(url),
 									_1: {ctor: '[]'}
 								}),
 							_1: {ctor: '[]'}
 						}
+					}),
+				_1: {ctor: '[]'}
+			});
+	});
+var _user$project$Views_ApiDocumentationHelper$callTableHeader = function (options) {
+	return A2(
+		_rundis$elm_bootstrap$Bootstrap_Table$thead,
+		options,
+		{
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Table$tr,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: A2(
+						_rundis$elm_bootstrap$Bootstrap_Table$th,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Method'),
+							_1: {ctor: '[]'}
+						}),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Table$th,
+							{ctor: '[]'},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text('Url'),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
 					}
 				}),
 			_1: {ctor: '[]'}
-		}
-	};
+		});
 };
-var _user$project$Main$pageHome = function (model) {
+var _user$project$Views_ApiDocumentationHelper$documentation = F9(
+	function (msg, apiUrl, apiResponse, title, description, method, url, curl, ex) {
+		return _rundis$elm_bootstrap$Bootstrap_Card$view(
+			A3(
+				_rundis$elm_bootstrap$Bootstrap_Card$block,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: A2(
+						_rundis$elm_bootstrap$Bootstrap_Card_Block$text,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$div,
+								{ctor: '[]'},
+								{
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$p,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: description,
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_elm_lang$html$Html$h5,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('Request'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_user$project$Views_TableHelper$docTable,
+												_user$project$Views_ApiDocumentationHelper$callTableHeader(
+													{ctor: '[]'}),
+												A2(_user$project$Views_ApiDocumentationHelper$tBody, method, url)),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$h6,
+													{ctor: '[]'},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text('Example'),
+														_1: {ctor: '[]'}
+													}),
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_rundis$elm_bootstrap$Bootstrap_Alert$simplePrimary,
+														{ctor: '[]'},
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html$text(curl),
+															_1: {ctor: '[]'}
+														}),
+													_1: {
+														ctor: '::',
+														_0: A2(
+															_elm_lang$html$Html$hr,
+															{ctor: '[]'},
+															{ctor: '[]'}),
+														_1: {
+															ctor: '::',
+															_0: A2(
+																_elm_lang$html$Html$h5,
+																{ctor: '[]'},
+																{
+																	ctor: '::',
+																	_0: _elm_lang$html$Html$text('Response'),
+																	_1: {ctor: '[]'}
+																}),
+															_1: {
+																ctor: '::',
+																_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$textarea(
+																	{
+																		ctor: '::',
+																		_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$id('example-response'),
+																		_1: {
+																			ctor: '::',
+																			_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$rows(12),
+																			_1: {
+																				ctor: '::',
+																				_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$value(
+																					_user$project$Json_PrettyPrint$stringify(ex)),
+																				_1: {
+																					ctor: '::',
+																					_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$disabled,
+																					_1: {ctor: '[]'}
+																				}
+																			}
+																		}
+																	}),
+																_1: {
+																	ctor: '::',
+																	_0: A2(
+																		_elm_lang$html$Html$hr,
+																		{ctor: '[]'},
+																		{ctor: '[]'}),
+																	_1: {
+																		ctor: '::',
+																		_0: A2(
+																			_elm_lang$html$Html$h5,
+																			{ctor: '[]'},
+																			{
+																				ctor: '::',
+																				_0: _elm_lang$html$Html$text('Try me'),
+																				_1: {ctor: '[]'}
+																			}),
+																		_1: {
+																			ctor: '::',
+																			_0: A2(
+																				_rundis$elm_bootstrap$Bootstrap_Alert$simplePrimary,
+																				{ctor: '[]'},
+																				{
+																					ctor: '::',
+																					_0: A2(
+																						_elm_lang$html$Html$div,
+																						{ctor: '[]'},
+																						{
+																							ctor: '::',
+																							_0: _rundis$elm_bootstrap$Bootstrap_Form_Input$text(
+																								{
+																									ctor: '::',
+																									_0: _rundis$elm_bootstrap$Bootstrap_Form_Input$value(apiUrl),
+																									_1: {
+																										ctor: '::',
+																										_0: _rundis$elm_bootstrap$Bootstrap_Form_Input$attrs(
+																											{
+																												ctor: '::',
+																												_0: _elm_lang$html$Html_Events$onInput(
+																													_user$project$Messages$SetApiUrl(msg)),
+																												_1: {ctor: '[]'}
+																											}),
+																										_1: {ctor: '[]'}
+																									}
+																								}),
+																							_1: {
+																								ctor: '::',
+																								_0: A2(
+																									_elm_lang$html$Html$br,
+																									{ctor: '[]'},
+																									{ctor: '[]'}),
+																								_1: {
+																									ctor: '::',
+																									_0: A2(
+																										_rundis$elm_bootstrap$Bootstrap_Button$button,
+																										{
+																											ctor: '::',
+																											_0: _rundis$elm_bootstrap$Bootstrap_Button$primary,
+																											_1: {
+																												ctor: '::',
+																												_0: _rundis$elm_bootstrap$Bootstrap_Button$attrs(
+																													{
+																														ctor: '::',
+																														_0: _elm_lang$html$Html_Events$onClick(
+																															A2(_user$project$Messages$RunApiCall, _user$project$Messages$GET, apiUrl)),
+																														_1: {ctor: '[]'}
+																													}),
+																												_1: {ctor: '[]'}
+																											}
+																										},
+																										{
+																											ctor: '::',
+																											_0: _elm_lang$html$Html$text('Run'),
+																											_1: {ctor: '[]'}
+																										}),
+																									_1: {
+																										ctor: '::',
+																										_0: (!_elm_lang$core$Native_Utils.eq(apiResponse, '')) ? A2(
+																											_elm_lang$html$Html$div,
+																											{ctor: '[]'},
+																											{
+																												ctor: '::',
+																												_0: A2(
+																													_elm_lang$html$Html$hr,
+																													{ctor: '[]'},
+																													{ctor: '[]'}),
+																												_1: {
+																													ctor: '::',
+																													_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$textarea(
+																														{
+																															ctor: '::',
+																															_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$id('response'),
+																															_1: {
+																																ctor: '::',
+																																_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$rows(12),
+																																_1: {
+																																	ctor: '::',
+																																	_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$value(apiResponse),
+																																	_1: {ctor: '[]'}
+																																}
+																															}
+																														}),
+																													_1: {ctor: '[]'}
+																												}
+																											}) : _elm_lang$html$Html$text(''),
+																										_1: {ctor: '[]'}
+																									}
+																								}
+																							}
+																						}),
+																					_1: {ctor: '[]'}
+																				}),
+																			_1: {ctor: '[]'}
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				},
+				A3(
+					_rundis$elm_bootstrap$Bootstrap_Card$headerH4,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(title),
+						_1: {ctor: '[]'}
+					},
+					_rundis$elm_bootstrap$Bootstrap_Card$config(
+						{
+							ctor: '::',
+							_0: _rundis$elm_bootstrap$Bootstrap_Card$outlineDark,
+							_1: {ctor: '[]'}
+						}))));
+	});
+var _user$project$Views_ApiBlock$pageApiBlock = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"index\":0,\"transactions\":[],\"nonce\":0,\"prev_hash\":\"genesis\",\"merkle_tree_root\":\"\"}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves the block specified by the index as Json'),
+			_1: {ctor: '[]'}
+		});
 	return {
 		ctor: '::',
 		_0: A2(
-			_elm_lang$html$Html$h1,
+			_elm_lang$html$Html$br,
 			{ctor: '[]'},
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html$text('Home'),
-				_1: {ctor: '[]'}
-			}),
+			{ctor: '[]'}),
 		_1: {
 			ctor: '::',
 			_0: A2(
@@ -16247,130 +18162,19 @@ var _user$project$Main$pageHome = function (model) {
 				{ctor: '[]'},
 				{
 					ctor: '::',
-					_0: A2(
-						_rundis$elm_bootstrap$Bootstrap_Grid$col,
-						{ctor: '[]'},
-						{
-							ctor: '::',
-							_0: _rundis$elm_bootstrap$Bootstrap_Card$view(
-								A3(
-									_rundis$elm_bootstrap$Bootstrap_Card$block,
-									{ctor: '[]'},
-									{
-										ctor: '::',
-										_0: A2(
-											_rundis$elm_bootstrap$Bootstrap_Card_Block$text,
-											{ctor: '[]'},
-											{
-												ctor: '::',
-												_0: _elm_lang$html$Html$text('Getting started is real easy. Just click the start button.'),
-												_1: {ctor: '[]'}
-											}),
-										_1: {
-											ctor: '::',
-											_0: _rundis$elm_bootstrap$Bootstrap_Card_Block$custom(
-												A2(
-													_rundis$elm_bootstrap$Bootstrap_Button$linkButton,
-													{
-														ctor: '::',
-														_0: _rundis$elm_bootstrap$Bootstrap_Button$primary,
-														_1: {
-															ctor: '::',
-															_0: _rundis$elm_bootstrap$Bootstrap_Button$attrs(
-																{
-																	ctor: '::',
-																	_0: _elm_lang$html$Html_Attributes$href('#getting-started'),
-																	_1: {ctor: '[]'}
-																}),
-															_1: {ctor: '[]'}
-														}
-													},
-													{
-														ctor: '::',
-														_0: _elm_lang$html$Html$text('Start'),
-														_1: {ctor: '[]'}
-													})),
-											_1: {ctor: '[]'}
-										}
-									},
-									A3(
-										_rundis$elm_bootstrap$Bootstrap_Card$headerH4,
-										{ctor: '[]'},
-										{
-											ctor: '::',
-											_0: _elm_lang$html$Html$text('Getting started'),
-											_1: {ctor: '[]'}
-										},
-										_rundis$elm_bootstrap$Bootstrap_Card$config(
-											{
-												ctor: '::',
-												_0: _rundis$elm_bootstrap$Bootstrap_Card$outlinePrimary,
-												_1: {ctor: '[]'}
-											})))),
-							_1: {ctor: '[]'}
-						}),
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiBlock),
 					_1: {
 						ctor: '::',
 						_0: A2(
 							_rundis$elm_bootstrap$Bootstrap_Grid$col,
-							{ctor: '[]'},
 							{
 								ctor: '::',
-								_0: _rundis$elm_bootstrap$Bootstrap_Card$view(
-									A3(
-										_rundis$elm_bootstrap$Bootstrap_Card$block,
-										{ctor: '[]'},
-										{
-											ctor: '::',
-											_0: A2(
-												_rundis$elm_bootstrap$Bootstrap_Card_Block$text,
-												{ctor: '[]'},
-												{
-													ctor: '::',
-													_0: _elm_lang$html$Html$text('Check out the modules overview'),
-													_1: {ctor: '[]'}
-												}),
-											_1: {
-												ctor: '::',
-												_0: _rundis$elm_bootstrap$Bootstrap_Card_Block$custom(
-													A2(
-														_rundis$elm_bootstrap$Bootstrap_Button$linkButton,
-														{
-															ctor: '::',
-															_0: _rundis$elm_bootstrap$Bootstrap_Button$primary,
-															_1: {
-																ctor: '::',
-																_0: _rundis$elm_bootstrap$Bootstrap_Button$attrs(
-																	{
-																		ctor: '::',
-																		_0: _elm_lang$html$Html_Attributes$href('#modules'),
-																		_1: {ctor: '[]'}
-																	}),
-																_1: {ctor: '[]'}
-															}
-														},
-														{
-															ctor: '::',
-															_0: _elm_lang$html$Html$text('Module'),
-															_1: {ctor: '[]'}
-														})),
-												_1: {ctor: '[]'}
-											}
-										},
-										A3(
-											_rundis$elm_bootstrap$Bootstrap_Card$headerH4,
-											{ctor: '[]'},
-											{
-												ctor: '::',
-												_0: _elm_lang$html$Html$text('Modules'),
-												_1: {ctor: '[]'}
-											},
-											_rundis$elm_bootstrap$Bootstrap_Card$config(
-												{
-													ctor: '::',
-													_0: _rundis$elm_bootstrap$Bootstrap_Card$outlineDanger,
-													_1: {ctor: '[]'}
-												})))),
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiBlock, model.apiUrlB4, model.apiResponse, 'Block', description, 'GET', 'v1/block/{:index}', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/block/0', ex),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -16380,7 +18184,7 @@ var _user$project$Main$pageHome = function (model) {
 		}
 	};
 };
-var _user$project$Main$apiOverviewThead = function (options) {
+var _user$project$Views_ApiOverview$apiOverviewThead = function (options) {
 	return A2(
 		_rundis$elm_bootstrap$Bootstrap_Table$thead,
 		options,
@@ -16426,7 +18230,7 @@ var _user$project$Main$apiOverviewThead = function (options) {
 			_1: {ctor: '[]'}
 		});
 };
-var _user$project$Main$apiOverviewTable = function (tableBody) {
+var _user$project$Views_ApiOverview$apiOverviewTable = function (tableBody) {
 	return _rundis$elm_bootstrap$Bootstrap_Table$table(
 		{
 			options: {
@@ -16434,12 +18238,12 @@ var _user$project$Main$apiOverviewTable = function (tableBody) {
 				_0: _rundis$elm_bootstrap$Bootstrap_Table$bordered,
 				_1: {ctor: '[]'}
 			},
-			thead: _user$project$Main$apiOverviewThead(
+			thead: _user$project$Views_ApiOverview$apiOverviewThead(
 				{ctor: '[]'}),
 			tbody: tableBody
 		});
 };
-var _user$project$Main$overviewBlockSection = {
+var _user$project$Views_ApiOverview$overviewBlockSection = {
 	ctor: '::',
 	_0: A2(
 		_elm_lang$html$Html$hr,
@@ -16457,7 +18261,7 @@ var _user$project$Main$overviewBlockSection = {
 			}),
 		_1: {
 			ctor: '::',
-			_0: _user$project$Main$apiOverviewTable(
+			_0: _user$project$Views_ApiOverview$apiOverviewTable(
 				A2(
 					_rundis$elm_bootstrap$Bootstrap_Table$tbody,
 					{ctor: '[]'},
@@ -16487,7 +18291,7 @@ var _user$project$Main$overviewBlockSection = {
 												_elm_lang$html$Html$a,
 												{
 													ctor: '::',
-													_0: _elm_lang$html$Html_Attributes$href(''),
+													_0: _elm_lang$html$Html_Attributes$href('#api-block'),
 													_1: {ctor: '[]'}
 												},
 												{
@@ -16537,7 +18341,7 @@ var _user$project$Main$overviewBlockSection = {
 													_elm_lang$html$Html$a,
 													{
 														ctor: '::',
-														_0: _elm_lang$html$Html_Attributes$href(''),
+														_0: _elm_lang$html$Html_Attributes$href('#api-block-header'),
 														_1: {ctor: '[]'}
 													},
 													{
@@ -16587,7 +18391,7 @@ var _user$project$Main$overviewBlockSection = {
 														_elm_lang$html$Html$a,
 														{
 															ctor: '::',
-															_0: _elm_lang$html$Html_Attributes$href(''),
+															_0: _elm_lang$html$Html_Attributes$href('#api-block-transactions'),
 															_1: {ctor: '[]'}
 														},
 														{
@@ -16619,7 +18423,7 @@ var _user$project$Main$overviewBlockSection = {
 		}
 	}
 };
-var _user$project$Main$overviewBlockChainSection = {
+var _user$project$Views_ApiOverview$overviewBlockChainSection = {
 	ctor: '::',
 	_0: A2(
 		_elm_lang$html$Html$h3,
@@ -16631,7 +18435,7 @@ var _user$project$Main$overviewBlockChainSection = {
 		}),
 	_1: {
 		ctor: '::',
-		_0: _user$project$Main$apiOverviewTable(
+		_0: _user$project$Views_ApiOverview$apiOverviewTable(
 			A2(
 				_rundis$elm_bootstrap$Bootstrap_Table$tbody,
 				{ctor: '[]'},
@@ -16661,7 +18465,7 @@ var _user$project$Main$overviewBlockChainSection = {
 											_elm_lang$html$Html$a,
 											{
 												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$href(''),
+												_0: _elm_lang$html$Html_Attributes$href('#api-blockchain'),
 												_1: {ctor: '[]'}
 											},
 											{
@@ -16711,12 +18515,12 @@ var _user$project$Main$overviewBlockChainSection = {
 												_elm_lang$html$Html$a,
 												{
 													ctor: '::',
-													_0: _elm_lang$html$Html_Attributes$href(''),
+													_0: _elm_lang$html$Html_Attributes$href('#api-blockchain-header'),
 													_1: {ctor: '[]'}
 												},
 												{
 													ctor: '::',
-													_0: _elm_lang$html$Html$text('v1/blockchain/headers'),
+													_0: _elm_lang$html$Html$text('v1/blockchain/header'),
 													_1: {ctor: '[]'}
 												}),
 											_1: {ctor: '[]'}
@@ -16761,7 +18565,7 @@ var _user$project$Main$overviewBlockChainSection = {
 													_elm_lang$html$Html$a,
 													{
 														ctor: '::',
-														_0: _elm_lang$html$Html_Attributes$href(''),
+														_0: _elm_lang$html$Html_Attributes$href('#api-blockchain-size'),
 														_1: {ctor: '[]'}
 													},
 													{
@@ -16792,7 +18596,7 @@ var _user$project$Main$overviewBlockChainSection = {
 		_1: {ctor: '[]'}
 	}
 };
-var _user$project$Main$pageApiOverview = function (model) {
+var _user$project$Views_ApiOverview$pageApiOverview = function (model) {
 	return {
 		ctor: '::',
 		_0: A2(
@@ -16847,7 +18651,7 @@ var _user$project$Main$pageApiOverview = function (model) {
 							_0: A2(
 								_rundis$elm_bootstrap$Bootstrap_Grid$col,
 								{ctor: '[]'},
-								_user$project$Main$overviewBlockChainSection),
+								_user$project$Views_ApiOverview$overviewBlockChainSection),
 							_1: {ctor: '[]'}
 						}),
 					_1: {
@@ -16860,7 +18664,7 @@ var _user$project$Main$pageApiOverview = function (model) {
 								_0: A2(
 									_rundis$elm_bootstrap$Bootstrap_Grid$col,
 									{ctor: '[]'},
-									_user$project$Main$overviewBlockSection),
+									_user$project$Views_ApiOverview$overviewBlockSection),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -16870,100 +18674,232 @@ var _user$project$Main$pageApiOverview = function (model) {
 		}
 	};
 };
-var _user$project$Main$Model = F3(
-	function (a, b, c) {
-		return {page: a, navState: b, modalVisibility: c};
-	});
-var _user$project$Main$ApiOverview = {ctor: 'ApiOverview'};
-var _user$project$Main$NotFound = {ctor: 'NotFound'};
-var _user$project$Main$Modules = {ctor: 'Modules'};
-var _user$project$Main$GettingStarted = {ctor: 'GettingStarted'};
-var _user$project$Main$Home = {ctor: 'Home'};
-var _user$project$Main$routeParser = _evancz$url_parser$UrlParser$oneOf(
-	{
+var _user$project$Views_ApiBlockChain$pageApiBlockChain = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":[{\"index\":0,\"transactions\":[],\"nonce\":0,\"prev_hash\":\"genesis\",\"merkle_tree_root\":\"\"}]}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves the entire blockchain as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
 		ctor: '::',
-		_0: A2(_evancz$url_parser$UrlParser$map, _user$project$Main$Home, _evancz$url_parser$UrlParser$top),
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
 		_1: {
 			ctor: '::',
 			_0: A2(
-				_evancz$url_parser$UrlParser$map,
-				_user$project$Main$GettingStarted,
-				_evancz$url_parser$UrlParser$s('getting-started')),
-			_1: {
-				ctor: '::',
-				_0: A2(
-					_evancz$url_parser$UrlParser$map,
-					_user$project$Main$Modules,
-					_evancz$url_parser$UrlParser$s('modules')),
-				_1: {
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
 					ctor: '::',
-					_0: A2(
-						_evancz$url_parser$UrlParser$map,
-						_user$project$Main$ApiOverview,
-						_evancz$url_parser$UrlParser$s('api-overview')),
-					_1: {ctor: '[]'}
-				}
-			}
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiBlockchain),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiBlockchain, model.apiUrlB1, model.apiResponse, 'Blockchain', description, 'GET', 'v1/blockchain', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/blockchain', ex),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
 		}
-	});
-var _user$project$Main$decode = function (location) {
-	return A2(_evancz$url_parser$UrlParser$parseHash, _user$project$Main$routeParser, location);
+	};
 };
-var _user$project$Main$urlUpdate = F2(
-	function (location, model) {
-		var _p0 = _user$project$Main$decode(location);
-		if (_p0.ctor === 'Nothing') {
-			return {
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Native_Utils.update(
-					model,
-					{page: _user$project$Main$NotFound}),
-				_1: _elm_lang$core$Platform_Cmd$none
-			};
-		} else {
-			return {
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Native_Utils.update(
-					model,
-					{page: _p0._0}),
-				_1: _elm_lang$core$Platform_Cmd$none
-			};
+var _user$project$Views_ApiBlockChainHeader$pageApiBlockChainHeader = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":[{\"index\":0,\"nonce\":0,\"prev_hash\":\"genesis\",\"merkle_tree_root\":\"\"}]}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves the headers of the entire blockchain as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiBlockchainHeader),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiBlockchainHeader, model.apiUrlB2, model.apiResponse, 'Blockchain Header', description, 'GET', 'v1/blockchain/header', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/blockchain/header', ex),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
 		}
-	});
-var _user$project$Main$update = F2(
-	function (msg, model) {
-		var _p1 = msg;
-		switch (_p1.ctor) {
-			case 'UrlChange':
-				return A2(_user$project$Main$urlUpdate, _p1._0, model);
-			case 'NavMsg':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{navState: _p1._0}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'CloseModal':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{modalVisibility: _rundis$elm_bootstrap$Bootstrap_Modal$hidden}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			default:
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{modalVisibility: _rundis$elm_bootstrap$Bootstrap_Modal$shown}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
+	};
+};
+var _user$project$Views_ApiBlockChainSize$pageApiBlockChainSize = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"size\":1}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves the total length of the blockchain'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiBlockchainSize),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiBlockchainSize, model.apiUrlB3, model.apiResponse, 'Blockchain Size', description, 'GET', 'v1/blockchain/size', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/blockchain/size', ex),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
 		}
-	});
-var _user$project$Main$ShowModal = {ctor: 'ShowModal'};
-var _user$project$Main$pageGettingStarted = function (model) {
+	};
+};
+var _user$project$Views_ApiBlockHeader$pageApiBlockHeader = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"index\":0,\"nonce\":0,\"prev_hash\":\"genesis\",\"merkle_tree_root\":\"\"}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves the block at the specified index as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiBlockHeader),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiBlockHeader, model.apiUrlB5, model.apiResponse, 'Block Header', description, 'GET', 'v1/block/{:index}/header', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/block/0/header', ex),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _user$project$Views_ApiBlockTransactions$pageApiBlockTransactions = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":[]}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves the transactions for the block specified at index as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiBlockTransactions),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiBlockTransactions, model.apiUrlB6, model.apiResponse, 'Block Transactions', description, 'GET', 'v1/block/{:index}/transactions', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/block/0/transactions', ex),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _user$project$View$pageGettingStarted = function (model) {
 	return {
 		ctor: '::',
 		_0: A2(
@@ -16974,157 +18910,54 @@ var _user$project$Main$pageGettingStarted = function (model) {
 				_0: _elm_lang$html$Html$text('Getting started'),
 				_1: {ctor: '[]'}
 			}),
-		_1: {
-			ctor: '::',
-			_0: A2(
-				_rundis$elm_bootstrap$Bootstrap_Button$button,
-				{
-					ctor: '::',
-					_0: _rundis$elm_bootstrap$Bootstrap_Button$success,
-					_1: {
-						ctor: '::',
-						_0: _rundis$elm_bootstrap$Bootstrap_Button$large,
-						_1: {
-							ctor: '::',
-							_0: _rundis$elm_bootstrap$Bootstrap_Button$block,
-							_1: {
-								ctor: '::',
-								_0: _rundis$elm_bootstrap$Bootstrap_Button$attrs(
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$ShowModal),
-										_1: {ctor: '[]'}
-									}),
-								_1: {ctor: '[]'}
-							}
-						}
-					}
-				},
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html$text('Click me'),
-					_1: {ctor: '[]'}
-				}),
-			_1: {ctor: '[]'}
-		}
+		_1: {ctor: '[]'}
 	};
 };
-var _user$project$Main$mainContent = function (model) {
+var _user$project$View$pageNotFound = {
+	ctor: '::',
+	_0: A2(
+		_elm_lang$html$Html$h1,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('Not found'),
+			_1: {ctor: '[]'}
+		}),
+	_1: {
+		ctor: '::',
+		_0: _elm_lang$html$Html$text('SOrry couldn\'t find that page'),
+		_1: {ctor: '[]'}
+	}
+};
+var _user$project$View$mainContent = function (model) {
 	return A2(
 		_rundis$elm_bootstrap$Bootstrap_Grid$container,
 		{ctor: '[]'},
 		function () {
-			var _p2 = model.page;
-			switch (_p2.ctor) {
-				case 'Home':
-					return _user$project$Main$pageHome(model);
+			var _p0 = model.page;
+			switch (_p0.ctor) {
 				case 'GettingStarted':
-					return _user$project$Main$pageGettingStarted(model);
-				case 'Modules':
-					return _user$project$Main$pageModules(model);
+					return _user$project$View$pageGettingStarted(model);
 				case 'ApiOverview':
-					return _user$project$Main$pageApiOverview(model);
+					return _user$project$Views_ApiOverview$pageApiOverview(model);
+				case 'ApiBlockchain':
+					return _user$project$Views_ApiBlockChain$pageApiBlockChain(model);
+				case 'ApiBlockchainHeader':
+					return _user$project$Views_ApiBlockChainHeader$pageApiBlockChainHeader(model);
+				case 'ApiBlockchainSize':
+					return _user$project$Views_ApiBlockChainSize$pageApiBlockChainSize(model);
+				case 'ApiBlock':
+					return _user$project$Views_ApiBlock$pageApiBlock(model);
+				case 'ApiBlockHeader':
+					return _user$project$Views_ApiBlockHeader$pageApiBlockHeader(model);
+				case 'ApiBlockTransactions':
+					return _user$project$Views_ApiBlockTransactions$pageApiBlockTransactions(model);
 				default:
-					return _user$project$Main$pageNotFound;
+					return _user$project$View$pageNotFound;
 			}
 		}());
 };
-var _user$project$Main$CloseModal = {ctor: 'CloseModal'};
-var _user$project$Main$modal = function (model) {
-	return A2(
-		_rundis$elm_bootstrap$Bootstrap_Modal$view,
-		model.modalVisibility,
-		A3(
-			_rundis$elm_bootstrap$Bootstrap_Modal$body,
-			{ctor: '[]'},
-			{
-				ctor: '::',
-				_0: A2(
-					_rundis$elm_bootstrap$Bootstrap_Grid$containerFluid,
-					{ctor: '[]'},
-					{
-						ctor: '::',
-						_0: A2(
-							_rundis$elm_bootstrap$Bootstrap_Grid$row,
-							{ctor: '[]'},
-							{
-								ctor: '::',
-								_0: A2(
-									_rundis$elm_bootstrap$Bootstrap_Grid$col,
-									{
-										ctor: '::',
-										_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$xs6,
-										_1: {ctor: '[]'}
-									},
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html$text('Col 1'),
-										_1: {ctor: '[]'}
-									}),
-								_1: {
-									ctor: '::',
-									_0: A2(
-										_rundis$elm_bootstrap$Bootstrap_Grid$col,
-										{
-											ctor: '::',
-											_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$xs6,
-											_1: {ctor: '[]'}
-										},
-										{
-											ctor: '::',
-											_0: _elm_lang$html$Html$text('Col 2'),
-											_1: {ctor: '[]'}
-										}),
-									_1: {ctor: '[]'}
-								}
-							}),
-						_1: {ctor: '[]'}
-					}),
-				_1: {ctor: '[]'}
-			},
-			A3(
-				_rundis$elm_bootstrap$Bootstrap_Modal$h4,
-				{ctor: '[]'},
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html$text('Getting started ?'),
-					_1: {ctor: '[]'}
-				},
-				_rundis$elm_bootstrap$Bootstrap_Modal$small(
-					_rundis$elm_bootstrap$Bootstrap_Modal$config(_user$project$Main$CloseModal)))));
-};
-var _user$project$Main$NavMsg = function (a) {
-	return {ctor: 'NavMsg', _0: a};
-};
-var _user$project$Main$init = function (location) {
-	var _p3 = _rundis$elm_bootstrap$Bootstrap_Navbar$initialState(_user$project$Main$NavMsg);
-	var navState = _p3._0;
-	var navCmd = _p3._1;
-	var _p4 = A2(
-		_user$project$Main$urlUpdate,
-		location,
-		{navState: navState, page: _user$project$Main$Home, modalVisibility: _rundis$elm_bootstrap$Bootstrap_Modal$hidden});
-	var model = _p4._0;
-	var urlCmd = _p4._1;
-	return {
-		ctor: '_Tuple2',
-		_0: model,
-		_1: _elm_lang$core$Platform_Cmd$batch(
-			{
-				ctor: '::',
-				_0: urlCmd,
-				_1: {
-					ctor: '::',
-					_0: navCmd,
-					_1: {ctor: '[]'}
-				}
-			})
-	};
-};
-var _user$project$Main$subscriptions = function (model) {
-	return A2(_rundis$elm_bootstrap$Bootstrap_Navbar$subscriptions, model.navState, _user$project$Main$NavMsg);
-};
-var _user$project$Main$menu = function (model) {
+var _user$project$View$menu = function (model) {
 	return A2(
 		_rundis$elm_bootstrap$Bootstrap_Navbar$view,
 		model.navState,
@@ -17176,9 +19009,9 @@ var _user$project$Main$menu = function (model) {
 				_rundis$elm_bootstrap$Bootstrap_Navbar$dark(
 					_rundis$elm_bootstrap$Bootstrap_Navbar$container(
 						_rundis$elm_bootstrap$Bootstrap_Navbar$withAnimation(
-							_rundis$elm_bootstrap$Bootstrap_Navbar$config(_user$project$Main$NavMsg)))))));
+							_rundis$elm_bootstrap$Bootstrap_Navbar$config(_user$project$Messages$NavMsg)))))));
 };
-var _user$project$Main$view = function (model) {
+var _user$project$View$view = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
@@ -17187,26 +19020,59 @@ var _user$project$Main$view = function (model) {
 			_0: _rundis$elm_bootstrap$Bootstrap_CDN$stylesheet,
 			_1: {
 				ctor: '::',
-				_0: _user$project$Main$menu(model),
+				_0: _user$project$View$menu(model),
 				_1: {
 					ctor: '::',
-					_0: _user$project$Main$mainContent(model),
-					_1: {
-						ctor: '::',
-						_0: _user$project$Main$modal(model),
-						_1: {ctor: '[]'}
-					}
+					_0: _user$project$View$mainContent(model),
+					_1: {ctor: '[]'}
 				}
 			}
 		});
 };
-var _user$project$Main$UrlChange = function (a) {
-	return {ctor: 'UrlChange', _0: a};
+var _user$project$Main$subscriptions = function (model) {
+	return A2(_rundis$elm_bootstrap$Bootstrap_Navbar$subscriptions, model.navState, _user$project$Messages$NavMsg);
+};
+var _user$project$Main$init = function (location) {
+	var prefix = 'http://localhost:3000/v1/';
+	var _p0 = _rundis$elm_bootstrap$Bootstrap_Navbar$initialState(_user$project$Messages$NavMsg);
+	var navState = _p0._0;
+	var navCmd = _p0._1;
+	var _p1 = A2(
+		_user$project$Navi$urlUpdate,
+		location,
+		{
+			navState: navState,
+			page: _user$project$Messages$ApiOverview,
+			error: '',
+			apiResponse: '',
+			apiUrlB1: A2(_elm_lang$core$Basics_ops['++'], prefix, 'blockchain'),
+			apiUrlB2: A2(_elm_lang$core$Basics_ops['++'], prefix, 'blockchain/header'),
+			apiUrlB3: A2(_elm_lang$core$Basics_ops['++'], prefix, 'blockchain/size'),
+			apiUrlB4: A2(_elm_lang$core$Basics_ops['++'], prefix, 'block/0'),
+			apiUrlB5: A2(_elm_lang$core$Basics_ops['++'], prefix, 'block/0/header'),
+			apiUrlB6: A2(_elm_lang$core$Basics_ops['++'], prefix, 'block/0/transactions')
+		});
+	var model = _p1._0;
+	var urlCmd = _p1._1;
+	return {
+		ctor: '_Tuple2',
+		_0: model,
+		_1: _elm_lang$core$Platform_Cmd$batch(
+			{
+				ctor: '::',
+				_0: urlCmd,
+				_1: {
+					ctor: '::',
+					_0: navCmd,
+					_1: {ctor: '[]'}
+				}
+			})
+	};
 };
 var _user$project$Main$main = A2(
 	_elm_lang$navigation$Navigation$program,
-	_user$project$Main$UrlChange,
-	{view: _user$project$Main$view, update: _user$project$Main$update, subscriptions: _user$project$Main$subscriptions, init: _user$project$Main$init})();
+	_user$project$Messages$UrlChange,
+	{view: _user$project$View$view, update: _user$project$Update$update, subscriptions: _user$project$Main$subscriptions, init: _user$project$Main$init})();
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
 if (typeof _user$project$Main$main !== 'undefined') {

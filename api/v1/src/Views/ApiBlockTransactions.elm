@@ -1,4 +1,4 @@
-module Views.ApiBlockChain exposing (..)
+module Views.ApiBlockTransactions exposing (..)
 
 import Html.Events exposing (onClick, onInput)
 import Json.PrettyPrint
@@ -23,19 +23,20 @@ import Messages exposing (Method(GET), Msg(..), Page(..))
 import Views.ApiDocumentationHelper exposing (documentation)
 
 
-pageApiBlockChain : Model -> List (Html Msg)
-pageApiBlockChain model =
+pageApiBlockTransactions : Model -> List (Html Msg)
+pageApiBlockTransactions model =
     let
         description =
-            div [] [ Html.text "This retrieves the entire blockchain as Json" ]
+            div [] [ Html.text "This retrieves the transactions for the block specified at index as Json" ]
 
-        ex = """{"status":"success","result":[{"index":0,"transactions":[],"nonce":0,"prev_hash":"genesis","merkle_tree_root":""}]}"""
+        ex =
+            """{"status":"success","result":[]}"""
     in
         [ br [] []
         , Grid.row []
-            [ apiLeftNav ApiBlockchain
+            [ apiLeftNav ApiBlockTransactions
             , Grid.col [ Col.md9 ]
-                [ documentation ApiBlockchain model.apiUrlB1 model.apiResponse "Blockchain" description "GET" "v1/blockchain" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/v1/blockchain" ex
+                [ documentation ApiBlockTransactions model.apiUrlB6 model.apiResponse "Block Transactions" description "GET" "v1/block/{:index}/transactions" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/v1/block/0/transactions" ex
                 ]
             ]
         ]
