@@ -146,26 +146,26 @@ module ::Sushi::Interface::Sushi
 
       payload = {call: "transaction", transaction_id: transaction_id}.to_json
 
-      begin
-        body = rpc(node, payload)
-        json = JSON.parse(body)
+      body = rpc(node, payload)
+      json = JSON.parse(body)
 
-        puts_success("show the transaction #{transaction_id}") unless __json
-        puts body
-      rescue e : Exception
-        begin
-          payload = {call: "rejects", transaction_id: transaction_id}.to_json
-
-          body = rpc(node, payload)
-          json = JSON.parse(body)
-
-          puts_error "transaction #{transaction_id} was rejected for a reason:"
-          puts_error json["reason"].as_s
-          exit -1
-        rescue e : Exception
-          puts_error "transaction #{transaction_id} was not found"
-          exit -1
+      unless __json
+        case json["status"].as_s
+        when "accepted"
+          puts_success("show the transaction")
+          puts body
+        when "pending"
+          puts_success("the transaction is still pending in transaction pool")
+        when "rejected"
+          puts_error("the transaction was rejected")
+          puts_error("the reason: #{json["reason"].as_s}")
+        when "not found"
+          puts_error("the transcation was not found")
+        else
+          puts_error("unknown status for the transaction")
         end
+      else
+        puts body
       end
     end
 

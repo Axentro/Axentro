@@ -74,13 +74,32 @@ module ::Sushi::Core::DApps::BuildIn
     def transaction_impl(transaction_id : String)
       if block_index = get(transaction_id)
         if transaction = blockchain.chain[block_index].find_transaction(transaction_id)
-          transaction
-        else
-          raise "failed to find a transaction for the transaction id #{transaction_id}"
+          return {
+            status: "accepted",
+            transaction: transaction,
+          }
         end
-      else
-        raise "failed to find a transaction for the transaction id #{transaction_id}"
       end
+
+      if transaction = blockchain.transaction_pool.find { |t| t.id == transaction_id }
+        return {
+          status: "pending",
+          transaction: transaction,
+        }
+      end
+
+      if rejected_reason = blockchain.rejects.find(transaction_id)
+        return {
+          status: "rejected",
+          transaction: nil,
+          reason: rejected_reason,
+        }
+      end
+
+      {
+        status: "not found",
+        transaction: nil,
+      }
     end
 
     def confirmation(json, context, params)
