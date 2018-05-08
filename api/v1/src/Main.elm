@@ -59,6 +59,11 @@ init location =
                , apiUrlA3 = (prefix ++ "address/{:addresss}/confirmed/{:token}")
                , apiUrlA4 = (prefix ++ "address/{:address}/unconfirmed")
                , apiUrlA5 = (prefix ++ "address/{:address}/unconfirmed/{:token}")
+               , apiUrlD1 = (prefix ++ "domain/{:domain}/unconfirmed/{:token}")
+               , apiUrlD2 = (prefix ++ "domain/{:domain}/unconfirmed/{:token}")
+               , apiUrlD3 = (prefix ++ "domain/{:domain}/unconfirmed/{:token}")
+               , apiUrlD4 = (prefix ++ "domain/{:domain}/unconfirmed/{:token}")
+               , apiUrlD5 = (prefix ++ "domain/{:domain}/unconfirmed/{:token}")
 
                 }
     in

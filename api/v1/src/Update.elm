@@ -83,5 +83,20 @@ update msg model =
                 ApiAddressUnconfirmedToken ->
                     ( { model | apiUrlA5 = url }, Cmd.none )
 
+                ApiDomainTransactions ->
+                    ( { model | apiUrlD1 = url }, Cmd.none )
+
+                ApiDomainConfirmed ->
+                    ( { model | apiUrlD2 = url }, Cmd.none )
+
+                ApiDomainConfirmedToken ->
+                    ( { model | apiUrlD3 = url }, Cmd.none )
+
+                ApiDomainUnconfirmed ->
+                    ( { model | apiUrlD4 = url }, Cmd.none )
+
+                ApiDomainUnconfirmedToken ->
+                    ( { model | apiUrlD5 = url }, Cmd.none )
+
                 _ ->
                     ( { model | apiUrlB1 = url }, Cmd.none )

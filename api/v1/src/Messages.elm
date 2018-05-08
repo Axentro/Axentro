@@ -39,3 +39,9 @@ type Page
     | ApiAddressConfirmedToken
     | ApiAddressUnconfirmed
     | ApiAddressUnconfirmedToken
+
+    | ApiDomainTransactions
+    | ApiDomainConfirmed
+    | ApiDomainConfirmedToken
+    | ApiDomainUnconfirmed
+    | ApiDomainUnconfirmedToken

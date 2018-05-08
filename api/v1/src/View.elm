@@ -20,6 +20,11 @@ import Views.ApiAddressTransactions exposing (pageApiAddressTransactions)
 import Views.ApiAddressUnconfirmed exposing (pageApiAddressUnconfirmed)
 import Views.ApiAddressUnconfirmedToken exposing (pageApiAddressUnconfirmedToken)
 import Views.ApiBlock exposing (pageApiBlock)
+import Views.ApiDomainConfirmed exposing (pageApiDomainConfirmed)
+import Views.ApiDomainConfirmedToken exposing (pageApiDomainConfirmedToken)
+import Views.ApiDomainTransactions exposing (pageApiDomainTransactions)
+import Views.ApiDomainUnconfirmed exposing (pageApiDomainUnconfirmed)
+import Views.ApiDomainUnconfirmedToken exposing (pageApiDomainUnconfirmedToken)
 import Views.ApiOverview exposing (pageApiOverview)
 import Views.ApiBlockChain exposing (pageApiBlockChain)
 import Views.ApiBlockChainHeader exposing (pageApiBlockChainHeader)
@@ -113,6 +118,21 @@ mainContent model =
 
             ApiAddressUnconfirmedToken ->
                 pageApiAddressUnconfirmedToken model
+
+            ApiDomainTransactions ->
+                pageApiDomainTransactions model
+
+            ApiDomainConfirmed ->
+                pageApiDomainConfirmed model
+
+            ApiDomainConfirmedToken ->
+                pageApiDomainConfirmedToken model
+
+            ApiDomainUnconfirmed ->
+                pageApiDomainUnconfirmed model
+
+            ApiDomainUnconfirmedToken ->
+                pageApiDomainUnconfirmedToken model
 
             NotFound ->
                 pageNotFound

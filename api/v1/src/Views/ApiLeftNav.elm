@@ -42,6 +42,13 @@ apiLeftNav page =
         , link ApiAddressConfirmedToken "#api-address-confirmed-token" "address/confirmed/token" page
         , link ApiAddressUnconfirmed "#api-address-unconfirmed" "address/unconfirmed" page
         , link ApiAddressUnconfirmedToken "#api-address-unconfirmed-token" "address/unconfirmed/token" page
+        , hr [] []
+        , h5 [] [ text "Domain" ]
+        , link ApiDomainTransactions "#api-domain-transactions" "domain/transactions" page
+        , link ApiDomainConfirmed "#api-domain-confirmed" "domain/confirmed" page
+        , link ApiDomainConfirmedToken "#api-domain-confirmed-token" "domain/confirmed/token" page
+        , link ApiDomainUnconfirmed "#api-domain-unconfirmed" "domain/unconfirmed" page
+        , link ApiDomainUnconfirmedToken "#api-domain-unconfirmed-token" "domain/unconfirmed/token" page        
         ]
 
 
