@@ -31,7 +31,7 @@ module ::Sushi::Core
     @rest_controller : Controllers::RESTController
     @pubsub_controller : Controllers::PubsubController
 
-    @latest_confirmed_index : Int64? = nil
+    @conflicted_index : Int64? = nil
 
     def initialize(
       @is_private : Bool,
@@ -99,7 +99,7 @@ module ::Sushi::Core
           _s,
           M_TYPE_NODE_REQUEST_CHAIN,
           {
-            latest_index: @latest_confirmed_index.nil? ? 0 : @latest_confirmed_index.not_nil!,
+            latest_index: @conflicted_index.nil? ? @blockchain.latest_index : @conflicted_index.not_nil!,
           }
         )
       else
@@ -226,7 +226,7 @@ module ::Sushi::Core
       elsif @blockchain.latest_index == block.index
         warning "blockchain conflicted at #{block.index} (#{light_cyan(@blockchain.chain.size)})"
 
-        @latest_confirmed_index ||= block.index
+        @conflicted_index ||= block.index
 
         send_block(block, from)
       elsif @blockchain.latest_index + 1 < block.index
@@ -320,7 +320,7 @@ module ::Sushi::Core
         info "chain updated: #{light_green(current_latest_index)} -> #{light_green(@blockchain.latest_index)}"
         @miners_manager.broadcast_latest_block
 
-        @latest_confirmed_index = nil
+        @conflicted_index = nil
       end
 
       if @flag == FLAG_BLOCKCHAIN_SYNCING
@@ -378,7 +378,7 @@ module ::Sushi::Core
         info "loaded blockchain's size: #{light_cyan(@blockchain.chain.size)}"
 
         if @database
-          @latest_confirmed_index = @blockchain.latest_index
+          @conflicted_index = nil
         else
           warning "no database has been specified"
         end
