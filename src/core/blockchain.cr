@@ -156,7 +156,7 @@ module ::Sushi::Core
         block.valid_as_latest?(self)
         @chain << block
 
-        progress "block ##{block.index} was imported", i+1, subchain.size
+        progress "block ##{block.index} was imported", i + 1, subchain.size
 
         dapps_record
       rescue e : Exception
