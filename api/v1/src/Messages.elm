@@ -45,3 +45,7 @@ type Page
     | ApiDomainConfirmedToken
     | ApiDomainUnconfirmed
     | ApiDomainUnconfirmedToken
+
+    | ApiScarsSales
+    | ApiScarsConfirmed
+    | ApiScarsUnconfirmed

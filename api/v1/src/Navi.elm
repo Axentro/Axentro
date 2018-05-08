@@ -51,4 +51,8 @@ routeParser =
          , UrlParser.map ApiDomainConfirmedToken (UrlParser.s "api-domain-confirmed-token")
          , UrlParser.map ApiDomainUnconfirmed (UrlParser.s "api-domain-unconfirmed")
          , UrlParser.map ApiDomainUnconfirmedToken (UrlParser.s "api-domain-unconfirmed-token")
+
+         , UrlParser.map ApiScarsSales (UrlParser.s "api-scars-sales")
+         , UrlParser.map ApiScarsConfirmed (UrlParser.s "api-scars-confirmed")
+         , UrlParser.map ApiScarsUnconfirmed (UrlParser.s "api-scars-unconfirmed")
         ]

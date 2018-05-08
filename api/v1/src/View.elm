@@ -31,6 +31,9 @@ import Views.ApiBlockChainHeader exposing (pageApiBlockChainHeader)
 import Views.ApiBlockChainSize exposing (pageApiBlockChainSize)
 import Views.ApiBlockHeader exposing (pageApiBlockHeader)
 import Views.ApiBlockTransactions exposing (pageApiBlockTransactions)
+import Views.ApiScarsConfirmed exposing (pageApiScarsConfirmed)
+import Views.ApiScarsSales exposing (pageApiScarsSales)
+import Views.ApiScarsUnconfirmed exposing (pageApiScarsUnconfirmed)
 import Views.ApiTransaction exposing (pageApiTransaction)
 import Views.ApiTransactionBlock exposing (pageApiTransactionBlock)
 import Views.ApiTransactionBlockHeader exposing (pageApiTransactionBlockHeader)
@@ -133,6 +136,15 @@ mainContent model =
 
             ApiDomainUnconfirmedToken ->
                 pageApiDomainUnconfirmedToken model
+
+            ApiScarsSales ->
+                pageApiScarsSales model
+
+            ApiScarsConfirmed ->
+                pageApiScarsConfirmed model
+
+            ApiScarsUnconfirmed ->
+                pageApiScarsUnconfirmed model
 
             NotFound ->
                 pageNotFound

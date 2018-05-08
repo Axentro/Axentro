@@ -98,5 +98,14 @@ update msg model =
                 ApiDomainUnconfirmedToken ->
                     ( { model | apiUrlD5 = url }, Cmd.none )
 
+                ApiScarsSales ->
+                    ( { model | apiUrlS1 = url }, Cmd.none )
+
+                ApiScarsConfirmed ->
+                    ( { model | apiUrlS2 = url }, Cmd.none )
+
+                ApiScarsUnconfirmed ->
+                    ( { model | apiUrlS3 = url }, Cmd.none )
+
                 _ ->
                     ( { model | apiUrlB1 = url }, Cmd.none )

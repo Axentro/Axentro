@@ -30,6 +30,7 @@ pageApiOverview model =
     , Grid.row [] [ Grid.col [] overviewTransactionSection ]
     , Grid.row [] [ Grid.col [] overviewAddressSection ]
     , Grid.row [] [ Grid.col [] overviewDomainSection ]
+    , Grid.row [] [ Grid.col [] overviewScarsSection ]
     ]
 
 
@@ -83,12 +84,6 @@ overviewBlockSection =
 
 
 
---
--- [GET] v1/transaction/{:id}                        | transaction for supplied txn id
---  # [GET] v1/transaction/{:id}/block                  | full block containing txn id
---  # [GET] v1/transaction/{:id}/block/header           | block header containing txn id
---  # [GET] v1/transaction/{:id}/confirmations          | number confirmations for txn id
---  # [GET] v1/transaction/fees                         | fees
 --  # [POST] v1/transaction                             | create and broadcast a transaction
 --  # [POST] v1/transaction/unsigned                    | create an unsigned transaction
 
@@ -197,7 +192,32 @@ overviewDomainSection =
             ]
         )
     ]    
-    
+
+
+overviewScarsSection =
+    [ hr [] []
+    , h3 [] [ text "SCARS (Human readable addresses)" ]
+    , apiOverviewTable
+        (Table.tbody []
+            [ Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "#api-scars-sales" ] [ Html.text "v1/scars/sales" ] ]
+                , Table.td [] [ Html.text "get all scars domains for sale" ]
+                ]
+            , Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "#api-scars-domain-confirmed" ] [ Html.text "v1/scars/{:domain}/confirmed" ] ]
+                , Table.td [] [ Html.text "get the confirmed status of the domain" ]
+                ]
+            , Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "#api-scars-domain-unconfirmed" ] [ Html.text "v1/scars/{:domain}/unconfirmed" ] ]
+                , Table.td [] [ Html.text "get the unconfirmed status of the domain" ]
+                ]
+            ]
+        )
+    ]
+
 
 apiOverviewTable : Table.TBody msg -> Html.Html msg
 apiOverviewTable tableBody =
