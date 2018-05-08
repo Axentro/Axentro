@@ -49,7 +49,7 @@ module ::Sushi::Core::Logger
 
     ratio = (current * PROGRESS_BAR_WIDTH) / max
 
-    bar_left  = light_cyan(PROGRESS_CHAR * ratio)
+    bar_left = light_cyan(PROGRESS_CHAR * ratio)
     bar_right = ""
 
     (PROGRESS_BAR_WIDTH - ratio).times do |_|

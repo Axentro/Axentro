@@ -61,7 +61,7 @@ module ::Sushi::Core
 
       @db.query "select max(idx) from blocks" do |rows|
         rows.each do
-          idx = rows.read(Int64|Nil)
+          idx = rows.read(Int64 | Nil)
         end
       end
 
