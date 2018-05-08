@@ -58,7 +58,7 @@ module ::Sushi::Core::Logger
 
     bar = "#{bar_left}#{bar_right}"
 
-    print " #{bar} #{msg}\r"
+    print "#{bar} #{msg}\r"
   end
 
   private def log_out(t : String, msg : String, color : Symbol)
