@@ -68,5 +68,20 @@ update msg model =
                 ApiTransactionFees ->
                     ( { model | apiUrlT5 = url }, Cmd.none )
 
+                ApiAddressTransactions ->
+                    ( { model | apiUrlA1 = url }, Cmd.none )
+
+                ApiAddressConfirmed ->
+                    ( { model | apiUrlA2 = url }, Cmd.none )
+
+                ApiAddressConfirmedToken ->
+                    ( { model | apiUrlA3 = url }, Cmd.none )
+
+                ApiAddressUnconfirmed ->
+                    ( { model | apiUrlA4 = url }, Cmd.none )
+
+                ApiAddressUnconfirmedToken ->
+                    ( { model | apiUrlA5 = url }, Cmd.none )
+
                 _ ->
                     ( { model | apiUrlB1 = url }, Cmd.none )

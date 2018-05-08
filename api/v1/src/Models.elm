@@ -19,4 +19,9 @@ type alias Model =
     , apiUrlT3 : String
     , apiUrlT4 : String
     , apiUrlT5 : String
+    , apiUrlA1 : String
+    , apiUrlA2 : String
+    , apiUrlA3 : String
+    , apiUrlA4 : String
+    , apiUrlA5 : String
     }

@@ -54,6 +54,11 @@ init location =
                , apiUrlT3 = (prefix ++ "transaction/{:id}/block/header")
                , apiUrlT4 = (prefix ++ "transaction/{:id}/confirmations")
                , apiUrlT5 = (prefix ++ "transaction/fees")
+               , apiUrlA1 = (prefix ++ "address/{:address}/transactions")
+               , apiUrlA2 = (prefix ++ "address/{:address}/confirmed")
+               , apiUrlA3 = (prefix ++ "address/{:addresss}/confirmed/{:token}")
+               , apiUrlA4 = (prefix ++ "address/{:address}/unconfirmed")
+               , apiUrlA5 = (prefix ++ "address/{:address}/unconfirmed/{:token}")
 
                 }
     in

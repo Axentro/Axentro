@@ -39,4 +39,10 @@ routeParser =
         , UrlParser.map ApiTransactionBlockHeader (UrlParser.s "api-transaction-block-header")
         , UrlParser.map ApiTransactionConfirmations (UrlParser.s "api-transaction-confirmations")
         , UrlParser.map ApiTransactionFees (UrlParser.s "api-transaction-fees")
+
+        , UrlParser.map ApiAddressTransactions (UrlParser.s "api-address-transactions")
+        , UrlParser.map ApiAddressConfirmed (UrlParser.s "api-address-confirmed")
+        , UrlParser.map ApiAddressConfirmedToken (UrlParser.s "api-address-confirmed-token")
+        , UrlParser.map ApiAddressUnconfirmed (UrlParser.s "api-address-unconfirmed")
+        , UrlParser.map ApiAddressUnconfirmedToken (UrlParser.s "api-address-unconfirmed-token")
         ]

@@ -14,6 +14,11 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Messages exposing (Msg(..), Page(..))
 import Models exposing (Model)
+import Views.ApiAddressConfirmed exposing (pageApiAddressConfirmed)
+import Views.ApiAddressConfirmedToken exposing (pageApiAddressConfirmedToken)
+import Views.ApiAddressTransactions exposing (pageApiAddressTransactions)
+import Views.ApiAddressUnconfirmed exposing (pageApiAddressUnconfirmed)
+import Views.ApiAddressUnconfirmedToken exposing (pageApiAddressUnconfirmedToken)
 import Views.ApiBlock exposing (pageApiBlock)
 import Views.ApiOverview exposing (pageApiOverview)
 import Views.ApiBlockChain exposing (pageApiBlockChain)
@@ -93,6 +98,21 @@ mainContent model =
 
             ApiTransactionFees ->
                 pageApiTransactionFees model
+
+            ApiAddressTransactions ->
+                pageApiAddressTransactions model
+
+            ApiAddressConfirmed ->
+                pageApiAddressConfirmed model
+
+            ApiAddressConfirmedToken ->
+                pageApiAddressConfirmedToken model
+
+            ApiAddressUnconfirmed ->
+                pageApiAddressUnconfirmed model
+
+            ApiAddressUnconfirmedToken ->
+                pageApiAddressUnconfirmedToken model
 
             NotFound ->
                 pageNotFound

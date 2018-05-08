@@ -35,6 +35,13 @@ apiLeftNav page =
         , link ApiTransactionBlockHeader "#api-transaction-block-header" "transaction/block/header" page
         , link ApiTransactionConfirmations "#api-transaction-confirmations" "transaction/confirmations" page
         , link ApiTransactionFees "#api-transaction-fees" "transaction/fees" page
+        , hr [] []
+        , h5 [] [ text "Address" ]
+        , link ApiAddressTransactions "#api-address-transactions" "address/transactions" page
+        , link ApiAddressConfirmed "#api-address-confirmed" "address/confirmed" page
+        , link ApiAddressConfirmedToken "#api-address-confirmed-token" "address/confirmed/token" page
+        , link ApiAddressUnconfirmed "#api-address-unconfirmed" "address/unconfirmed" page
+        , link ApiAddressUnconfirmedToken "#api-address-unconfirmed-token" "address/unconfirmed/token" page
         ]
 
 

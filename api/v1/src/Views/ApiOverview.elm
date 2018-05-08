@@ -28,6 +28,7 @@ pageApiOverview model =
     , Grid.row [] [ Grid.col [] overviewBlockChainSection ]
     , Grid.row [] [ Grid.col [] overviewBlockSection ]
     , Grid.row [] [ Grid.col [] overviewTransactionSection ]
+    , Grid.row [] [ Grid.col [] overviewAddressSection ]
     ]
 
 
@@ -125,6 +126,40 @@ overviewTransactionSection =
         )
     ]
 
+
+overviewAddressSection =
+    [ hr [] []
+    , h3 [] [ text "Address" ]
+    , apiOverviewTable
+        (Table.tbody []
+            [ Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "#api-address-transactions" ] [ Html.text "v1/address/{:address}/transactions" ] ]
+                , Table.td [] [ Html.text "transactions for address" ]
+                ]
+            , Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "#api-address-confirmed" ] [ Html.text "v1/address/{:address}/confirmed" ] ]
+                , Table.td [] [ Html.text "confirmed amount for address for all tokens" ]
+                ]
+            , Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "#api-address-confirmed-token" ] [ Html.text "v1/address/{:address}/confirmed/{:token}" ] ]
+                , Table.td [] [ Html.text "confirmed amount for address for specified token" ]
+                ]
+            , Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "#api-address-unconfirmed" ] [ Html.text "v1/address/{:address}/unconfirmed" ] ]
+                , Table.td [] [ Html.text "unconfirmed amount for address for all tokens" ]
+                ]
+            , Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "#api-address-unconfirmed-token" ] [ Html.text "v1/address/{:address}/unconfirmed" ] ]
+                , Table.td [] [ Html.text "unconfirmed amount for address for specified token" ]
+                ]
+            ]
+        )
+    ]
 
 apiOverviewTable : Table.TBody msg -> Html.Html msg
 apiOverviewTable tableBody =

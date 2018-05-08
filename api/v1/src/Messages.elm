@@ -33,3 +33,9 @@ type Page
     | ApiTransactionBlockHeader
     | ApiTransactionConfirmations
     | ApiTransactionFees
+
+    | ApiAddressTransactions
+    | ApiAddressConfirmed
+    | ApiAddressConfirmedToken
+    | ApiAddressUnconfirmed
+    | ApiAddressUnconfirmedToken
