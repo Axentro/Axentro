@@ -75,7 +75,7 @@ module ::Sushi::Core::DApps::BuildIn
       if block_index = get(transaction_id)
         if transaction = blockchain.chain[block_index].find_transaction(transaction_id)
           return {
-            status: "accepted",
+            status:      "accepted",
             transaction: transaction,
           }
         end
@@ -83,21 +83,21 @@ module ::Sushi::Core::DApps::BuildIn
 
       if transaction = blockchain.transaction_pool.find { |t| t.id == transaction_id }
         return {
-          status: "pending",
+          status:      "pending",
           transaction: transaction,
         }
       end
 
       if rejected_reason = blockchain.rejects.find(transaction_id)
         return {
-          status: "rejected",
+          status:      "rejected",
           transaction: nil,
-          reason: rejected_reason,
+          reason:      rejected_reason,
         }
       end
 
       {
-        status: "not found",
+        status:      "not found",
         transaction: nil,
       }
     end
