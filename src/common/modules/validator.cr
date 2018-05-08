@@ -10,4 +10,12 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-require "./utils/utils"
+module ::Sushi::Common::Validator
+  def valid_amount?(amount : Int64) : Bool
+    if Int64::MAX < amount || 0 > amount
+      raise "the amount is out of range"
+    end
+
+    true
+  end
+end

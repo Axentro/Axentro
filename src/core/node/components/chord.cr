@@ -472,6 +472,12 @@ module ::Sushi::Core::NodeComponents
           @predecessor = nil
         end
       end
+
+      @private_nodes.each do |private_node|
+        if private_node[:socket] == socket
+          @private_nodes.delete(private_node)
+        end
+      end
     end
 
     def context

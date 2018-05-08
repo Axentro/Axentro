@@ -16,39 +16,39 @@ module ::Sushi::Core::Controllers
   #
   # --- blockchain
   #
-  # [GET] v1/blockchain                               | full blockchain
-  # [GET] v1/blockchain/header                        | blockchain headers
-  # [GET] v1/blockchain/size                          | blockchain size
+  # [GET] api/v1/blockchain                               | full blockchain
+  # [GET] api/v1/blockchain/header                        | blockchain headers
+  # [GET] api/v1/blockchain/size                          | blockchain size
   #
   # --- block
   #
-  # [GET] v1/block/{:index}                           | full block at index
-  # [GET] v1/block/{:index}/header                    | block header at index
-  # [GET] v1/block/{:index}/transactions              | transactions in block
+  # [GET] api/v1/block/{:index}                           | full block at index
+  # [GET] api/v1/block/{:index}/header                    | block header at index
+  # [GET] api/v1/block/{:index}/transactions              | transactions in block
   #
   # --- transaction
   #
-  # [GET] v1/transaction/{:id}                        | transaction for supplied txn id
-  # [GET] v1/transaction/{:id}/block                  | full block containing txn id
-  # [GET] v1/transaction/{:id}/block/header           | block header containing txn id
-  # [GET] v1/transaction/{:id}/confirmations          | number confirmations for txn id
-  # [GET] v1/transaction/fees                         | fees
-  # [POST] v1/transaction                             | create and broadcast a transaction
-  # [POST] v1/transaction/unsigned                    | create an unsigned transaction
+  # [GET] api/v1/transaction/{:id}                        | transaction for supplied txn id
+  # [GET] api/v1/transaction/{:id}/block                  | full block containing txn id
+  # [GET] api/v1/transaction/{:id}/block/header           | block header containing txn id
+  # [GET] api/v1/transaction/{:id}/confirmations          | number confirmations for txn id
+  # [GET] api/v1/transaction/fees                         | fees
+  # [POST] api/v1/transaction                             | create and broadcast a transaction
+  # [POST] api/v1/transaction/unsigned                    | create an unsigned transaction
   #
   # --- address
   #
-  # [GET] v1/address/{:address}/transactions          | transactions for address
-  # [GET] v1/address/{:address}/confirmed             | confirmed amount for address for all tokens
-  # [GET] v1/address/{:address}/confirmed/{:token}    | confirmed amount for address for the token
-  # [GET] v1/address/{:address}/unconfirmed           | unconfirmed amount for address for all tokens
-  # [GET] v1/address/{:address}/unconfirmed/{:token}  | unconfirmed amount for address for all tokens for the token
+  # [GET] api/v1/address/{:address}/transactions          | transactions for address
+  # [GET] api/v1/address/{:address}/confirmed             | confirmed amount for address for all tokens
+  # [GET] api/v1/address/{:address}/confirmed/{:token}    | confirmed amount for address for the token
+  # [GET] api/v1/address/{:address}/unconfirmed           | unconfirmed amount for address for all tokens
+  # [GET] api/v1/address/{:address}/unconfirmed/{:token}  | unconfirmed amount for address for all tokens for the token
   #
   # --- scars
   #
-  # [GET] v1/scars/sales                              | get all scars's domains for sales
-  # [GET] v1/scars/{:domain}/confirmed                | get the confirmed status of the domain
-  # [GET] v1/scars/{:domain}/unconfirmed              | get the unconfirmed status of the domain
+  # [GET] api/v1/scars/sales                              | get all scars's domains for sales
+  # [GET] api/v1/scars/{:domain}/confirmed                | get the confirmed status of the domain
+  # [GET] api/v1/scars/{:domain}/unconfirmed              | get the unconfirmed status of the domain
   #
   class RESTController
     def initialize(@blockchain : Blockchain)
@@ -59,33 +59,33 @@ module ::Sushi::Core::Controllers
     end
 
     def get_handler
-      get "/v1/blockchain" { |context, params| __v1_blockchain(context, params) }
-      get "/v1/blockchain/header" { |context, params| __v1_blockchain_header(context, params) }
-      get "/v1/blockchain/size" { |context, params| __v1_blockchain_size(context, params) }
-      get "/v1/block/:index" { |context, params| __v1_block_index(context, params) }
-      get "/v1/block/:index/header" { |context, params| __v1_block_index_header(context, params) }
-      get "/v1/block/:index/transactions" { |context, params| __v1_block_index_transactions(context, params) }
-      get "/v1/transaction/:id" { |context, params| __v1_transaction_id(context, params) }
-      get "/v1/transaction/:id/block" { |context, params| __v1_transaction_id_block(context, params) }
-      get "/v1/transaction/:id/block/header" { |context, params| __v1_transaction_id_block_header(context, params) }
-      get "/v1/transaction/:id/confirmations" { |context, params| __v1_transaction_id_confirmations(context, params) }
-      get "/v1/transaction/fees" { |context, params| __v1_transaction_fees(context, params) }
-      get "/v1/address/:address/transactions" { |context, params| __v1_address_transactions(context, params) }
-      get "/v1/address/:address/confirmed" { |context, params| __v1_address_confirmed(context, params) }
-      get "/v1/address/:address/confirmed/:token" { |context, params| __v1_address_confirmed_token(context, params) }
-      get "/v1/address/:address/unconfirmed" { |context, params| __v1_address_unconfirmed(context, params) }
-      get "/v1/address/:address/unconfirmed/:token" { |context, params| __v1_address_unconfirmed_token(context, params) }
-      get "/v1/domain/:domain/transactions" { |context, params| __v1_domain_transactions(context, params) }
-      get "/v1/domain/:domain/confirmed" { |context, params| __v1_domain_confirmed(context, params) }
-      get "/v1/domain/:domain/confirmed/:token" { |context, params| __v1_domain_confirmed_token(context, params) }
-      get "/v1/domain/:domain/unconfirmed" { |context, params| __v1_domain_unconfirmed(context, params) }
-      get "/v1/domain/:domain/unconfirmed/:token" { |context, params| __v1_domain_unconfirmed_token(context, params) }
-      get "/v1/scars/sales" { |context, params| __v1_scars_sales(context, params) }
-      get "/v1/scars/:domain/confirmed" { |context, params| __v1_scars_confirmed(context, params) }
-      get "/v1/scars/:domain/unconfirmed" { |context, params| __v1_scars_unconfirmed(context, params) }
+      get "/api/v1/blockchain" { |context, params| __v1_blockchain(context, params) }
+      get "/api/v1/blockchain/header" { |context, params| __v1_blockchain_header(context, params) }
+      get "/api/v1/blockchain/size" { |context, params| __v1_blockchain_size(context, params) }
+      get "/api/v1/block/:index" { |context, params| __v1_block_index(context, params) }
+      get "/api/v1/block/:index/header" { |context, params| __v1_block_index_header(context, params) }
+      get "/api/v1/block/:index/transactions" { |context, params| __v1_block_index_transactions(context, params) }
+      get "/api/v1/transaction/:id" { |context, params| __v1_transaction_id(context, params) }
+      get "/api/v1/transaction/:id/block" { |context, params| __v1_transaction_id_block(context, params) }
+      get "/api/v1/transaction/:id/block/header" { |context, params| __v1_transaction_id_block_header(context, params) }
+      get "/api/v1/transaction/:id/confirmations" { |context, params| __v1_transaction_id_confirmations(context, params) }
+      get "/api/v1/transaction/fees" { |context, params| __v1_transaction_fees(context, params) }
+      get "/api/v1/address/:address/transactions" { |context, params| __v1_address_transactions(context, params) }
+      get "/api/v1/address/:address/confirmed" { |context, params| __v1_address_confirmed(context, params) }
+      get "/api/v1/address/:address/confirmed/:token" { |context, params| __v1_address_confirmed_token(context, params) }
+      get "/api/v1/address/:address/unconfirmed" { |context, params| __v1_address_unconfirmed(context, params) }
+      get "/api/v1/address/:address/unconfirmed/:token" { |context, params| __v1_address_unconfirmed_token(context, params) }
+      get "/api/v1/domain/:domain/transactions" { |context, params| __v1_domain_transactions(context, params) }
+      get "/api/v1/domain/:domain/confirmed" { |context, params| __v1_domain_confirmed(context, params) }
+      get "/api/v1/domain/:domain/confirmed/:token" { |context, params| __v1_domain_confirmed_token(context, params) }
+      get "/api/v1/domain/:domain/unconfirmed" { |context, params| __v1_domain_unconfirmed(context, params) }
+      get "/api/v1/domain/:domain/unconfirmed/:token" { |context, params| __v1_domain_unconfirmed_token(context, params) }
+      get "/api/v1/scars/sales" { |context, params| __v1_scars_sales(context, params) }
+      get "/api/v1/scars/:domain/confirmed" { |context, params| __v1_scars_confirmed(context, params) }
+      get "/api/v1/scars/:domain/unconfirmed" { |context, params| __v1_scars_unconfirmed(context, params) }
 
-      post "/v1/transaction" { |context, params| __v1_transaction(context, params) }
-      post "/v1/transaction/unsigned" { |context, params| __v1_transaction_unsigned(context, params) }
+      post "/api/v1/transaction" { |context, params| __v1_transaction(context, params) }
+      post "/api/v1/transaction/unsigned" { |context, params| __v1_transaction_unsigned(context, params) }
 
       route_handler
     end
@@ -191,9 +191,10 @@ module ::Sushi::Core::Controllers
       with_response(context) do |query_params|
         page = query_params["page"]?.try &.to_i || 0
         page_size = query_params["page_size"]?.try &.to_i || 20
+        actions = query_params["actions"]?.try &.split(",") || [] of String
 
         address = params["address"]
-        @blockchain.blockchain_info.transactions_impl(address, page, page_size)
+        @blockchain.blockchain_info.transactions_impl(address, page, page_size, actions)
       end
     end
 
@@ -231,10 +232,11 @@ module ::Sushi::Core::Controllers
       with_response(context) do |query_params|
         page = query_params["page"]?.try &.to_i || 0
         page_size = query_params["page_size"]?.try &.to_i || 20
+        actions = query_params["actions"]?.try &.split(",") || [] of String
 
         domain = params["domain"]
         address = convert_domain_to_address(domain)
-        @blockchain.blockchain_info.transactions_impl(address, page, page_size)
+        @blockchain.blockchain_info.transactions_impl(address, page, page_size, actions)
       end
     end
 

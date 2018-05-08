@@ -21,6 +21,8 @@ module ::Sushi::Core
     @use_ssl : Bool
 
     def initialize(@is_testnet : Bool, @host : String, @port : Int32, @wallet : Wallet, @num_threads : Int32, @use_ssl : Bool)
+      welcome
+
       info "launching #{@num_threads} threads..."
     end
 

@@ -18,7 +18,7 @@ module ::Sushi::Core::BlockQueue
     def exec
       if block = queue.blockchain.valid_block?(@block)
         info "received block at #{@block.index} is valid. import the block."
-        @callback.callback_from_queue(block)
+        @callback.callback(block, false)
       end
     rescue e : Exception
       warning "coming block at #{@block.index} has been rejected for the reason: #{e.message}"

@@ -31,7 +31,7 @@ module ::Sushi::Core
     @rest_controller : Controllers::RESTController
     @pubsub_controller : Controllers::PubsubController
 
-    @latest_confirmed_index : Int64? = nil
+    @conflicted_index : Int64? = nil
 
     def initialize(
       @is_private : Bool,
@@ -47,13 +47,13 @@ module ::Sushi::Core
       @database : Database?,
       @use_ssl : Bool = false
     )
+      welcome
+
       @blockchain = Blockchain.new(@wallet, @database)
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl)
       @miners_manager = MinersManager.new(@blockchain)
       @flag = FLAG_NONE
-
-      info "core version: #{light_green(Core::CORE_VERSION)}"
 
       debug "is_private: #{light_green(@is_private)}"
       debug "public url: #{light_green(@public_host)}:#{light_green(@public_port)}" unless @is_private
@@ -62,7 +62,7 @@ module ::Sushi::Core
 
       @rpc_controller = Controllers::RPCController.new(@blockchain)
       @rest_controller = Controllers::RESTController.new(@blockchain)
-      @pubsub_controller = Controllers::PubsubController.new
+      @pubsub_controller = Controllers::PubsubController.new(@blockchain)
 
       wallet_network = Wallet.address_network_type(@wallet.address)
 
@@ -99,7 +99,7 @@ module ::Sushi::Core
           _s,
           M_TYPE_NODE_REQUEST_CHAIN,
           {
-            latest_index: @latest_confirmed_index.nil? ? 0 : @latest_confirmed_index.not_nil!,
+            latest_index: @conflicted_index.nil? ? @blockchain.latest_index : @conflicted_index.not_nil!,
           }
         )
       else
@@ -218,8 +218,6 @@ module ::Sushi::Core
                 end
 
       send_on_chord(M_TYPE_NODE_BROADCAST_BLOCK, content, from)
-
-      @pubsub_controller.broadcast(block)
     end
 
     def broadcast_block(socket : HTTP::WebSocket, block : Block, from : Chord::NodeContext? = nil)
@@ -232,7 +230,7 @@ module ::Sushi::Core
       elsif @blockchain.latest_index == block.index
         warning "blockchain conflicted at #{block.index} (#{light_cyan(@blockchain.chain.size)})"
 
-        @latest_confirmed_index ||= block.index
+        @conflicted_index ||= block.index
 
         send_block(block, from)
       elsif @blockchain.latest_index + 1 < block.index
@@ -258,8 +256,16 @@ module ::Sushi::Core
       end
     end
 
-    def callback_from_queue(block)
+    def callback(block : Block, by_self : Bool)
       @blockchain.push_block(block)
+
+      if by_self
+        send_block(block)
+        @miners_manager.clear_nonces
+      end
+
+      @miners_manager.broadcast_latest_block
+      @pubsub_controller.broadcast_latest_block
     end
 
     def clean_connection(socket : HTTP::WebSocket)
@@ -318,7 +324,7 @@ module ::Sushi::Core
         info "chain updated: #{light_green(current_latest_index)} -> #{light_green(@blockchain.latest_index)}"
         @miners_manager.broadcast_latest_block
 
-        @latest_confirmed_index = nil
+        @conflicted_index = nil
       end
 
       if @flag == FLAG_BLOCKCHAIN_SYNCING
@@ -377,7 +383,7 @@ module ::Sushi::Core
         info "loaded blockchain's size: #{light_cyan(@blockchain.chain.size)}"
 
         if @database
-          @latest_confirmed_index = @blockchain.latest_index
+          @conflicted_index = nil
         else
           warning "no database has been specified"
         end

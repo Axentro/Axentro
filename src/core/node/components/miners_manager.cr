@@ -92,18 +92,13 @@ module ::Sushi::Core::NodeComponents
         end
       end
 
-      @blockchain.queue.enqueue(BlockQueue::TaskFoundNonce.new(self, nonce, @miners)) if found
+      @blockchain.queue.enqueue(BlockQueue::TaskFoundNonce.new(node, nonce, @miners)) if found
     end
 
-    def callback_from_queue(block)
-      @blockchain.push_block(block)
-      @blockchain.node.send_block(block)
-
+    def clear_nonces
       @miners.each do |m|
         m[:nonces].clear
       end
-
-      broadcast_latest_block
     end
 
     def broadcast_latest_block
