@@ -55,5 +55,17 @@ module ::Sushi::Core
 
       block
     end
+
+    def max_index : Int64
+      idx : Int64? = nil
+
+      @db.query "select max(idx) from blocks" do |rows|
+        rows.each do
+          idx = rows.read(Int64|Nil)
+        end
+      end
+
+      idx || -1_i64
+    end
   end
 end

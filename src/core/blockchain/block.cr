@@ -70,14 +70,16 @@ module ::Sushi::Core
       valid?(self.index, self.to_hash, nonce, difficulty)
     end
 
-    def valid_as_latest?(blockchain : Blockchain) : Bool
+    def valid_as_latest?(blockchain : Blockchain, skip_transaction_validation : Bool = false) : Bool
       is_genesis = (@index == 0)
 
       unless is_genesis
         raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
 
-        transactions.each_with_index do |transaction, idx|
-          transaction.valid?(blockchain, @index, idx == 0, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
+        unless skip_transaction_validation
+          transactions.each_with_index do |transaction, idx|
+            transaction.valid?(blockchain, @index, idx == 0, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
+          end
         end
 
         return valid_for?(blockchain.latest_block)

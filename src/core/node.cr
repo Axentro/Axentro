@@ -47,13 +47,13 @@ module ::Sushi::Core
       @database : Database?,
       @use_ssl : Bool = false
     )
+      welcome
+
       @blockchain = Blockchain.new(@wallet, @database)
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl)
       @miners_manager = MinersManager.new(@blockchain)
       @flag = FLAG_NONE
-
-      info "core version: #{light_green(Core::CORE_VERSION)}"
 
       debug "is_private: #{light_green(@is_private)}"
       debug "public url: #{light_green(@public_host)}:#{light_green(@public_port)}" unless @is_private

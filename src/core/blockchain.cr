@@ -69,13 +69,15 @@ module ::Sushi::Core
 
     def restore_from_database(database : Database)
       info "start loding blockchain from #{database.path}"
+      info "there are #{database.max_index + 1} blockes recorded"
+
       current_index = 0_i64
 
       loop do
         _block = database.get_block(current_index)
 
         break unless block = _block
-        break unless block.valid_as_latest?(self)
+        break unless block.valid_as_latest?(self, true)
 
         @chain.push(block)
 
@@ -83,7 +85,7 @@ module ::Sushi::Core
 
         current_index += 1
 
-        progress "  block ##{current_index} was imported\r"
+        progress "block ##{current_index} was imported", current_index, database.max_index
       end
     rescue e : Exception
       error "an error happens during restoring a blockchain from database"
@@ -150,11 +152,11 @@ module ::Sushi::Core
 
       dapps_clear_record
 
-      subchain.each do |block|
+      subchain.each_with_index do |block, i|
         block.valid_as_latest?(self)
         @chain << block
 
-        progress "  block ##{block.index} was imported\r"
+        progress "block ##{block.index} was imported", i+1, subchain.size
 
         dapps_record
       rescue e : Exception
