@@ -95,7 +95,9 @@ describe Indices do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq(transaction.to_json)
+            data = JSON.parse(result)
+            data["status"].should eq("accepted")
+            data["transaction"].should eq(JSON.parse(transaction.to_json))
           end
         end
       end
@@ -106,7 +108,7 @@ describe Indices do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq("failed to find a transaction for the transaction id invalid-transaction-id")
+            result.should eq("{\"status\":\"not found\",\"transaction\":null}")
           end
         end
       end

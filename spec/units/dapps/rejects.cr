@@ -85,47 +85,5 @@ describe Rejects do
     end
   end
 
-  describe "#define_rpc?" do
-    describe "#rejects" do
-      it "should return a reject true with a reason for the supplied transaction id" do
-        with_factory do |block_factory, transaction_factory|
-          transaction = transaction_factory.make_send(1000000000_i64)
-          block_factory.addBlocks(1).addBlock([transaction])
-
-          payload = {call: "rejects", transaction_id: transaction.id}.to_json
-          json = JSON.parse(payload)
-
-          with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq("{\"reason\":\"sender has not enough token(SHARI). sender has 20000 + 0 but try to pay 1000000000\"}")
-          end
-        end
-      end
-
-      it "should return a reject false for the supplied transaction id" do
-        with_factory do |block_factory, transaction_factory|
-          transaction = transaction_factory.make_send(1_i64)
-          block_factory.addBlock([transaction])
-
-          payload = {call: "rejects", transaction_id: transaction.id}.to_json
-          json = JSON.parse(payload)
-
-          with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq("{\"reason\":\"\"}")
-          end
-        end
-      end
-
-      it "should return a reject false when transaction not found" do
-        with_factory do |block_factory, transaction_factory|
-          payload = {call: "rejects", transaction_id: "invalid-transaction-id"}.to_json
-          json = JSON.parse(payload)
-
-          with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq("{\"reason\":\"\"}")
-          end
-        end
-      end
-    end
-  end
   STDERR.puts "< dApps::Rejects"
 end
