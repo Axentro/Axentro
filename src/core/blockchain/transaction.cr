@@ -77,12 +77,16 @@ module ::Sushi::Core
         unless Keys::Address.from(sender[:address], "sender")
           raise "invalid checksum for sender's address: #{sender[:address]}"
         end
+
+        valid_amount?(sender[:amount])
       end
 
       @recipients.each do |recipient|
         unless Keys::Address.from(recipient[:address], "recipient")
           raise "invalid checksum for recipient's address: #{recipient[:address]}"
         end
+
+        valid_amount?(recipient[:amount])
       end
 
       if !is_coinbase
@@ -178,5 +182,6 @@ module ::Sushi::Core
     end
 
     include Hashes
+    include Common::Validator
   end
 end
