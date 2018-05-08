@@ -191,9 +191,10 @@ module ::Sushi::Core::Controllers
       with_response(context) do |query_params|
         page = query_params["page"]?.try &.to_i || 0
         page_size = query_params["page_size"]?.try &.to_i || 20
+        actions = query_params["actions"]?.try &.split(",") || [] of String
 
         address = params["address"]
-        @blockchain.blockchain_info.transactions_impl(address, page, page_size)
+        @blockchain.blockchain_info.transactions_impl(address, page, page_size, actions)
       end
     end
 
@@ -231,10 +232,11 @@ module ::Sushi::Core::Controllers
       with_response(context) do |query_params|
         page = query_params["page"]?.try &.to_i || 0
         page_size = query_params["page_size"]?.try &.to_i || 20
+        actions = query_params["actions"]?.try &.split(",") || [] of String
 
         domain = params["domain"]
         address = convert_domain_to_address(domain)
-        @blockchain.blockchain_info.transactions_impl(address, page, page_size)
+        @blockchain.blockchain_info.transactions_impl(address, page, page_size, actions)
       end
     end
 

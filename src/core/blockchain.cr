@@ -293,11 +293,12 @@ module ::Sushi::Core
       @chain.map { |block| block.to_header }
     end
 
-    def transactions_for_address(address : String, page : Int32 = 0, page_size : Int32 = 20) : Array(Transaction)
+    def transactions_for_address(address : String, page : Int32 = 0, page_size : Int32 = 20, actions : Array(String) = [] of String) : Array(Transaction)
       @chain
         .reverse
         .map { |block| block.transactions }
         .flatten
+        .select { |transaction| actions.empty? || actions.includes?(transaction.action) }
         .select { |transaction|
         transaction.senders.any? { |sender| sender[:address] == address } ||
           transaction.recipients.any? { |recipient| recipient[:address] == address }
