@@ -27,7 +27,7 @@ update msg model =
             ( { model | apiResponse = json, error = "" }, Cmd.none )
 
         RunApiCallResponse (Err err) ->
-            ( { model | error = (toString err) }, Cmd.none )
+            ( { model | apiResponse = "", error = (toString err) }, Cmd.none )
 
         SetApiUrl page url ->
             case page of
