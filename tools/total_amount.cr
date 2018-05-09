@@ -12,15 +12,28 @@
 
 require "../src/core"
 
-total_amount = 0_i64
-current_index = 0_u64
+include ::Sushi::Core
 
-loop do
-  served_amount = ::Sushi::Core::Blockchain.served_amount(current_index)
-  break if served_amount == 0
-
-  total_amount += served_amount
-  current_index += 1
+def create_block(index : Int64) : Block
+  Block.new(index, [] of Transaction, 0_u64, "")
 end
 
-puts "total amount: #{total_amount}"
+t_amount = 0_u64
+c_amount = 0_u64
+
+i = 0_i64
+
+loop do
+  c_amount = create_block(i).coinbase_amount
+
+  break if c_amount == 0
+
+  t_amount += c_amount
+  i += 1
+
+  puts "at #{i} (current amount: #{c_amount}, total amount: #{t_amount})\r" if i % 1000000 == 0
+end
+
+puts ""
+puts "Total amount : #{t_amount}[SHARI]"
+puts "Last index   : #{i}"

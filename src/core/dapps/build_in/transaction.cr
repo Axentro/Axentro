@@ -72,7 +72,7 @@ module ::Sushi::Core::DApps::BuildIn
         token,
       )
 
-      fee = transaction.calculate_fee
+      fee = transaction.total_fees
 
       raise "invalid fee #{fee} for the action #{action}" if fee <= 0.0
 

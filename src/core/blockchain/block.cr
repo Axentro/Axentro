@@ -108,6 +108,18 @@ module ::Sushi::Core
       @transactions.find { |t| t.id == transaction_id }
     end
 
+    def total_fees : Int64
+      return 0_i64 if @transactions.size < 2
+      @transactions[1..-1].reduce(0_i64) { |fees, transaction| fees + transaction.total_fees }
+    end
+
+    def coinbase_amount
+      base = 10000000000_i64
+      div = (@index*1000000) / base
+      return base + total_fees if div == 0
+      base / div + total_fees
+    end
+
     include Hashes
     include Consensus
   end
