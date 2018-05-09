@@ -35,7 +35,7 @@ pageApiAddressUnconfirmed model =
         , Grid.row []
             [ apiLeftNav ApiAddressUnconfirmed
             , Grid.col [ Col.md9 ]
-                [ documentation ApiAddressUnconfirmed model.apiUrlA4 model.apiResponse "Address Unconfirmed" description "GET" "v1/address/{:address}/unconfirmed" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/v1/address/{:address}/unconfirmed" ex
+                [ documentation ApiAddressUnconfirmed model.apiUrlA4 model.apiResponse "Address Unconfirmed" description "GET" "api/v1/address/{:address}/unconfirmed" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/address/{:address}/unconfirmed" ex model.error
                 ]
             ]
         ]

@@ -29,13 +29,13 @@ pageApiScarsConfirmed model =
         description =
             div [] [ Html.text "This retrieves the confirmed status of the scars domain as Json" ]
 
-        ex = """ x """
+        ex = """{"status":"success","result":{"resolved":false,"domain":{"domain_name":"sushichain.sc","address":"","status":-1,"price":0}}}"""
     in
         [ br [] []
         , Grid.row []
             [ apiLeftNav ApiScarsConfirmed
             , Grid.col [ Col.md9 ]
-                [ documentation ApiScarsConfirmed model.apiUrlS2 model.apiResponse "Address Confirmed" description "GET" "v1/scars/{:domain}/confirmed" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/v1/scars/{:domain}/confirmed" ex
+                [ documentation ApiScarsConfirmed model.apiUrlS2 model.apiResponse "Address Confirmed" description "GET" "api/v1/scars/{:domain}/confirmed" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/scars/{:domain}/confirmed" ex model.error
                 ]
             ]
         ]

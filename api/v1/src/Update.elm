@@ -24,11 +24,7 @@ update msg model =
             ( model, Http.send RunApiCallResponse (Http.getString url) )
 
         RunApiCallResponse (Ok json) ->
-            let
-                _ =
-                    Debug.log "here " json
-            in
-                ( { model | apiResponse = json }, Cmd.none )
+            ( { model | apiResponse = json, error = "" }, Cmd.none )
 
         RunApiCallResponse (Err err) ->
             ( { model | error = (toString err) }, Cmd.none )

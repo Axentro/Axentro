@@ -35,7 +35,7 @@ pageApiDomainUnconfirmed model =
         , Grid.row []
             [ apiLeftNav ApiDomainUnconfirmed
             , Grid.col [ Col.md9 ]
-                [ documentation ApiDomainUnconfirmed model.apiUrlD4 model.apiResponse "Domain Unconfirmed" description "GET" "v1/domain/{:domain}/unconfirmed" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/v1/domain/{:domain}/unconfirmed" ex
+                [ documentation ApiDomainUnconfirmed model.apiUrlD4 model.apiResponse "Domain Unconfirmed" description "GET" "api/v1/domain/{:domain}/unconfirmed" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/unconfirmed" ex model.error
                 ]
             ]
         ]

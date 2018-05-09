@@ -35,7 +35,7 @@ pageApiScarsSales model =
         , Grid.row []
             [ apiLeftNav ApiScarsSales
             , Grid.col [ Col.md9 ]
-                [ documentation ApiScarsSales model.apiUrlS1 model.apiResponse "Scars Sales" description "GET" "v1/scars/sales" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/v1/scars/sales" ex
+                [ documentation ApiScarsSales model.apiUrlS1 model.apiResponse "Scars Sales" description "GET" "api/v1/scars/sales" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/scars/sales" ex model.error
                 ]
             ]
         ]

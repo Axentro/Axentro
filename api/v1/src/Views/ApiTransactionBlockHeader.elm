@@ -35,7 +35,7 @@ pageApiTransactionBlockHeader model =
         , Grid.row []
             [ apiLeftNav ApiTransactionBlockHeader
             , Grid.col [ Col.md9 ]
-                [ documentation ApiTransactionBlockHeader model.apiUrlT3 model.apiResponse "Transaction Block Header" description "GET" "v1/transaction/{:id}/block/header" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/v1/transaction/{:id}/block/header" ex
+                [ documentation ApiTransactionBlockHeader model.apiUrlT3 model.apiResponse "Transaction Block Header" description "GET" "api/v1/transaction/{:id}/block/header" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/transaction/{:id}/block/header" ex model.error
                 ]
             ]
         ]

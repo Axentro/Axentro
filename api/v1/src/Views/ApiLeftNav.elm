@@ -48,7 +48,12 @@ apiLeftNav page =
         , link ApiDomainConfirmed "#api-domain-confirmed" "domain/confirmed" page
         , link ApiDomainConfirmedToken "#api-domain-confirmed-token" "domain/confirmed/token" page
         , link ApiDomainUnconfirmed "#api-domain-unconfirmed" "domain/unconfirmed" page
-        , link ApiDomainUnconfirmedToken "#api-domain-unconfirmed-token" "domain/unconfirmed/token" page        
+        , link ApiDomainUnconfirmedToken "#api-domain-unconfirmed-token" "domain/unconfirmed/token" page
+        , hr [] []
+        , h5 [] [ text "Domain" ]
+        , link ApiScarsSales "#api-scars-sales" "scars/sales" page
+        , link ApiScarsConfirmed "#api-scars-confirmed" "scars/confirmed" page
+        , link ApiScarsUnconfirmed "#api-scars-unconfirmed" "scars/unconfirmed" page
         ]
 
 

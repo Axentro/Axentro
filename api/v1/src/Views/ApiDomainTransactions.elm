@@ -71,7 +71,7 @@ pageApiDomainTransactions model =
         , Grid.row []
             [ apiLeftNav ApiDomainTransactions
             , Grid.col [ Col.md9 ]
-                [ documentation ApiDomainTransactions model.apiUrlD1 model.apiResponse "Domain Transactions" description "GET" "v1/domain/{:domain}/transactions" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/v1/domain/{:domain}/transactions" ex
+                [ documentation ApiDomainTransactions model.apiUrlD1 model.apiResponse "Domain Transactions" description "GET" "api/v1/domain/{:domain}/transactions" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/transactions" ex model.error
                 ]
             ]
         ]

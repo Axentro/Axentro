@@ -35,7 +35,7 @@ pageApiDomainConfirmedToken model =
         , Grid.row []
             [ apiLeftNav ApiDomainConfirmedToken
             , Grid.col [ Col.md9 ]
-                [ documentation ApiDomainConfirmedToken model.apiUrlD3 model.apiResponse "Domain Confirmed Token" description "GET" "v1/domain/{:domain}/confirmed/{:token}" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/v1/domain/{:domain}/confirmed/token" ex
+                [ documentation ApiDomainConfirmedToken model.apiUrlD3 model.apiResponse "Domain Confirmed Token" description "GET" "api/v1/domain/{:domain}/confirmed/{:token}" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/confirmed/token" ex model.error
                 ]
             ]
         ]

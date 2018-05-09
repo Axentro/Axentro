@@ -35,7 +35,7 @@ pageApiBlockHeader model =
         , Grid.row []
             [ apiLeftNav ApiBlockHeader
             , Grid.col [ Col.md9 ]
-                [ documentation ApiBlockHeader model.apiUrlB5 model.apiResponse "Block Header" description "GET" "v1/block/{:index}/header" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/v1/block/0/header" ex
+                [ documentation ApiBlockHeader model.apiUrlB5 model.apiResponse "Block Header" description "GET" "api/v1/block/{:index}/header" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/block/0/header" ex model.error
                 ]
             ]
         ]

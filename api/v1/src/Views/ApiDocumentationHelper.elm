@@ -22,7 +22,7 @@ import Bootstrap.Form.Input as Input
 import Messages exposing (Method(GET), Msg(..), Page(..))
 
 
-documentation msg apiUrl apiResponse title description method url curl ex =
+documentation msg apiUrl apiResponse title description method url curl ex error =
     Card.config [ Card.outlineDark ]
         |> Card.headerH4 [] [ text title ]
         |> Card.block []
@@ -48,6 +48,7 @@ documentation msg apiUrl apiResponse title description method url curl ex =
                             [ Input.text [ Input.value apiUrl, Input.attrs [ onInput (SetApiUrl msg) ] ]
                             , br [] []
                             , Button.button [ Button.primary, Button.attrs [ onClick (RunApiCall GET apiUrl) ] ] [ text "Run" ]
+                            , if error /= "" then div [] [ hr [] [], Alert.simpleDanger [] [ text error ] ] else text ""
                             , if apiResponse /= "" then
                                 div []
                                     [ hr [] []

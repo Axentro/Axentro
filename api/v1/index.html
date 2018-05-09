@@ -17452,6 +17452,19 @@ var _user$project$Messages$NavMsg = function (a) {
 var _user$project$Messages$UrlChange = function (a) {
 	return {ctor: 'UrlChange', _0: a};
 };
+var _user$project$Messages$ApiScarsUnconfirmed = {ctor: 'ApiScarsUnconfirmed'};
+var _user$project$Messages$ApiScarsConfirmed = {ctor: 'ApiScarsConfirmed'};
+var _user$project$Messages$ApiScarsSales = {ctor: 'ApiScarsSales'};
+var _user$project$Messages$ApiDomainUnconfirmedToken = {ctor: 'ApiDomainUnconfirmedToken'};
+var _user$project$Messages$ApiDomainUnconfirmed = {ctor: 'ApiDomainUnconfirmed'};
+var _user$project$Messages$ApiDomainConfirmedToken = {ctor: 'ApiDomainConfirmedToken'};
+var _user$project$Messages$ApiDomainConfirmed = {ctor: 'ApiDomainConfirmed'};
+var _user$project$Messages$ApiDomainTransactions = {ctor: 'ApiDomainTransactions'};
+var _user$project$Messages$ApiAddressUnconfirmedToken = {ctor: 'ApiAddressUnconfirmedToken'};
+var _user$project$Messages$ApiAddressUnconfirmed = {ctor: 'ApiAddressUnconfirmed'};
+var _user$project$Messages$ApiAddressConfirmedToken = {ctor: 'ApiAddressConfirmedToken'};
+var _user$project$Messages$ApiAddressConfirmed = {ctor: 'ApiAddressConfirmed'};
+var _user$project$Messages$ApiAddressTransactions = {ctor: 'ApiAddressTransactions'};
 var _user$project$Messages$ApiTransactionFees = {ctor: 'ApiTransactionFees'};
 var _user$project$Messages$ApiTransactionConfirmations = {ctor: 'ApiTransactionConfirmations'};
 var _user$project$Messages$ApiTransactionBlockHeader = {ctor: 'ApiTransactionBlockHeader'};
@@ -17481,7 +17494,33 @@ var _user$project$Models$Model = function (a) {
 												return function (m) {
 													return function (n) {
 														return function (o) {
-															return {page: a, navState: b, apiResponse: c, error: d, apiUrlB1: e, apiUrlB2: f, apiUrlB3: g, apiUrlB4: h, apiUrlB5: i, apiUrlB6: j, apiUrlT1: k, apiUrlT2: l, apiUrlT3: m, apiUrlT4: n, apiUrlT5: o};
+															return function (p) {
+																return function (q) {
+																	return function (r) {
+																		return function (s) {
+																			return function (t) {
+																				return function (u) {
+																					return function (v) {
+																						return function (w) {
+																							return function (x) {
+																								return function (y) {
+																									return function (z) {
+																										return function (_1) {
+																											return function (_2) {
+																												return {page: a, navState: b, apiResponse: c, error: d, apiUrlB1: e, apiUrlB2: f, apiUrlB3: g, apiUrlB4: h, apiUrlB5: i, apiUrlB6: j, apiUrlT1: k, apiUrlT2: l, apiUrlT3: m, apiUrlT4: n, apiUrlT5: o, apiUrlA1: p, apiUrlA2: q, apiUrlA3: r, apiUrlA4: s, apiUrlA5: t, apiUrlD1: u, apiUrlD2: v, apiUrlD3: w, apiUrlD4: x, apiUrlD5: y, apiUrlS1: z, apiUrlS2: _1, apiUrlS3: _2};
+																											};
+																										};
+																									};
+																								};
+																							};
+																						};
+																					};
+																				};
+																			};
+																		};
+																	};
+																};
+															};
 														};
 													};
 												};
@@ -17579,7 +17618,98 @@ var _user$project$Navi$routeParser = _evancz$url_parser$UrlParser$oneOf(
 																_evancz$url_parser$UrlParser$map,
 																_user$project$Messages$ApiTransactionFees,
 																_evancz$url_parser$UrlParser$s('api-transaction-fees')),
-															_1: {ctor: '[]'}
+															_1: {
+																ctor: '::',
+																_0: A2(
+																	_evancz$url_parser$UrlParser$map,
+																	_user$project$Messages$ApiAddressTransactions,
+																	_evancz$url_parser$UrlParser$s('api-address-transactions')),
+																_1: {
+																	ctor: '::',
+																	_0: A2(
+																		_evancz$url_parser$UrlParser$map,
+																		_user$project$Messages$ApiAddressConfirmed,
+																		_evancz$url_parser$UrlParser$s('api-address-confirmed')),
+																	_1: {
+																		ctor: '::',
+																		_0: A2(
+																			_evancz$url_parser$UrlParser$map,
+																			_user$project$Messages$ApiAddressConfirmedToken,
+																			_evancz$url_parser$UrlParser$s('api-address-confirmed-token')),
+																		_1: {
+																			ctor: '::',
+																			_0: A2(
+																				_evancz$url_parser$UrlParser$map,
+																				_user$project$Messages$ApiAddressUnconfirmed,
+																				_evancz$url_parser$UrlParser$s('api-address-unconfirmed')),
+																			_1: {
+																				ctor: '::',
+																				_0: A2(
+																					_evancz$url_parser$UrlParser$map,
+																					_user$project$Messages$ApiAddressUnconfirmedToken,
+																					_evancz$url_parser$UrlParser$s('api-address-unconfirmed-token')),
+																				_1: {
+																					ctor: '::',
+																					_0: A2(
+																						_evancz$url_parser$UrlParser$map,
+																						_user$project$Messages$ApiDomainTransactions,
+																						_evancz$url_parser$UrlParser$s('api-domain-transactions')),
+																					_1: {
+																						ctor: '::',
+																						_0: A2(
+																							_evancz$url_parser$UrlParser$map,
+																							_user$project$Messages$ApiDomainConfirmed,
+																							_evancz$url_parser$UrlParser$s('api-domain-confirmed')),
+																						_1: {
+																							ctor: '::',
+																							_0: A2(
+																								_evancz$url_parser$UrlParser$map,
+																								_user$project$Messages$ApiDomainConfirmedToken,
+																								_evancz$url_parser$UrlParser$s('api-domain-confirmed-token')),
+																							_1: {
+																								ctor: '::',
+																								_0: A2(
+																									_evancz$url_parser$UrlParser$map,
+																									_user$project$Messages$ApiDomainUnconfirmed,
+																									_evancz$url_parser$UrlParser$s('api-domain-unconfirmed')),
+																								_1: {
+																									ctor: '::',
+																									_0: A2(
+																										_evancz$url_parser$UrlParser$map,
+																										_user$project$Messages$ApiDomainUnconfirmedToken,
+																										_evancz$url_parser$UrlParser$s('api-domain-unconfirmed-token')),
+																									_1: {
+																										ctor: '::',
+																										_0: A2(
+																											_evancz$url_parser$UrlParser$map,
+																											_user$project$Messages$ApiScarsSales,
+																											_evancz$url_parser$UrlParser$s('api-scars-sales')),
+																										_1: {
+																											ctor: '::',
+																											_0: A2(
+																												_evancz$url_parser$UrlParser$map,
+																												_user$project$Messages$ApiScarsConfirmed,
+																												_evancz$url_parser$UrlParser$s('api-scars-confirmed')),
+																											_1: {
+																												ctor: '::',
+																												_0: A2(
+																													_evancz$url_parser$UrlParser$map,
+																													_user$project$Messages$ApiScarsUnconfirmed,
+																													_evancz$url_parser$UrlParser$s('api-scars-unconfirmed')),
+																												_1: {ctor: '[]'}
+																											}
+																										}
+																									}
+																								}
+																							}
+																						}
+																					}
+																				}
+																			}
+																		}
+																	}
+																}
+															}
 														}
 													}
 												}
@@ -17643,13 +17773,11 @@ var _user$project$Update$update = F2(
 				};
 			case 'RunApiCallResponse':
 				if (_p0._0.ctor === 'Ok') {
-					var _p2 = _p0._0._0;
-					var _p1 = A2(_elm_lang$core$Debug$log, 'here ', _p2);
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
-							{apiResponse: _p2}),
+							{apiResponse: _p0._0._0, error: ''}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				} else {
@@ -17664,15 +17792,15 @@ var _user$project$Update$update = F2(
 					};
 				}
 			default:
-				var _p4 = _p0._1;
-				var _p3 = _p0._0;
-				switch (_p3.ctor) {
+				var _p2 = _p0._1;
+				var _p1 = _p0._0;
+				switch (_p1.ctor) {
 					case 'ApiBlockchain':
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{apiUrlB1: _p4}),
+								{apiUrlB1: _p2}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					case 'ApiBlockchainHeader':
@@ -17680,7 +17808,7 @@ var _user$project$Update$update = F2(
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{apiUrlB2: _p4}),
+								{apiUrlB2: _p2}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					case 'ApiBlockchainSize':
@@ -17688,7 +17816,7 @@ var _user$project$Update$update = F2(
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{apiUrlB3: _p4}),
+								{apiUrlB3: _p2}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					case 'ApiBlock':
@@ -17696,7 +17824,7 @@ var _user$project$Update$update = F2(
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{apiUrlB4: _p4}),
+								{apiUrlB4: _p2}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					case 'ApiBlockHeader':
@@ -17704,7 +17832,7 @@ var _user$project$Update$update = F2(
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{apiUrlB5: _p4}),
+								{apiUrlB5: _p2}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					case 'ApiBlockTransactions':
@@ -17712,7 +17840,7 @@ var _user$project$Update$update = F2(
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{apiUrlB6: _p4}),
+								{apiUrlB6: _p2}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					case 'ApiTransaction':
@@ -17720,7 +17848,7 @@ var _user$project$Update$update = F2(
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{apiUrlT1: _p4}),
+								{apiUrlT1: _p2}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					case 'ApiTransactionBlock':
@@ -17728,7 +17856,7 @@ var _user$project$Update$update = F2(
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{apiUrlT2: _p4}),
+								{apiUrlT2: _p2}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					case 'ApiTransactionBlockHeader':
@@ -17736,7 +17864,7 @@ var _user$project$Update$update = F2(
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{apiUrlT3: _p4}),
+								{apiUrlT3: _p2}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					case 'ApiTransactionConfirmations':
@@ -17744,7 +17872,7 @@ var _user$project$Update$update = F2(
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{apiUrlT4: _p4}),
+								{apiUrlT4: _p2}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					case 'ApiTransactionFees':
@@ -17752,7 +17880,111 @@ var _user$project$Update$update = F2(
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{apiUrlT5: _p4}),
+								{apiUrlT5: _p2}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiAddressTransactions':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlA1: _p2}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiAddressConfirmed':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlA2: _p2}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiAddressConfirmedToken':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlA3: _p2}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiAddressUnconfirmed':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlA4: _p2}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiAddressUnconfirmedToken':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlA5: _p2}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiDomainTransactions':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlD1: _p2}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiDomainConfirmed':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlD2: _p2}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiDomainConfirmedToken':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlD3: _p2}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiDomainUnconfirmed':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlD4: _p2}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiDomainUnconfirmedToken':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlD5: _p2}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiScarsSales':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlS1: _p2}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiScarsConfirmed':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlS2: _p2}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiScarsUnconfirmed':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlS3: _p2}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					default:
@@ -17760,7 +17992,7 @@ var _user$project$Update$update = F2(
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{apiUrlB1: _p4}),
+								{apiUrlB1: _p2}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 				}
@@ -17867,7 +18099,7 @@ var _user$project$Views_ApiLeftNav$apiLeftNav = function (page) {
 					{ctor: '[]'},
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html$text('BlockChain'),
+						_0: _elm_lang$html$Html$text('Blockchain'),
 						_1: {ctor: '[]'}
 					}),
 				_1: {
@@ -17935,7 +18167,113 @@ var _user$project$Views_ApiLeftNav$apiLeftNav = function (page) {
 																		_1: {
 																			ctor: '::',
 																			_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiTransactionFees, '#api-transaction-fees', 'transaction/fees', page),
-																			_1: {ctor: '[]'}
+																			_1: {
+																				ctor: '::',
+																				_0: A2(
+																					_elm_lang$html$Html$hr,
+																					{ctor: '[]'},
+																					{ctor: '[]'}),
+																				_1: {
+																					ctor: '::',
+																					_0: A2(
+																						_elm_lang$html$Html$h5,
+																						{ctor: '[]'},
+																						{
+																							ctor: '::',
+																							_0: _elm_lang$html$Html$text('Address'),
+																							_1: {ctor: '[]'}
+																						}),
+																					_1: {
+																						ctor: '::',
+																						_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiAddressTransactions, '#api-address-transactions', 'address/transactions', page),
+																						_1: {
+																							ctor: '::',
+																							_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiAddressConfirmed, '#api-address-confirmed', 'address/confirmed', page),
+																							_1: {
+																								ctor: '::',
+																								_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiAddressConfirmedToken, '#api-address-confirmed-token', 'address/confirmed/token', page),
+																								_1: {
+																									ctor: '::',
+																									_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiAddressUnconfirmed, '#api-address-unconfirmed', 'address/unconfirmed', page),
+																									_1: {
+																										ctor: '::',
+																										_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiAddressUnconfirmedToken, '#api-address-unconfirmed-token', 'address/unconfirmed/token', page),
+																										_1: {
+																											ctor: '::',
+																											_0: A2(
+																												_elm_lang$html$Html$hr,
+																												{ctor: '[]'},
+																												{ctor: '[]'}),
+																											_1: {
+																												ctor: '::',
+																												_0: A2(
+																													_elm_lang$html$Html$h5,
+																													{ctor: '[]'},
+																													{
+																														ctor: '::',
+																														_0: _elm_lang$html$Html$text('Domain'),
+																														_1: {ctor: '[]'}
+																													}),
+																												_1: {
+																													ctor: '::',
+																													_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiDomainTransactions, '#api-domain-transactions', 'domain/transactions', page),
+																													_1: {
+																														ctor: '::',
+																														_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiDomainConfirmed, '#api-domain-confirmed', 'domain/confirmed', page),
+																														_1: {
+																															ctor: '::',
+																															_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiDomainConfirmedToken, '#api-domain-confirmed-token', 'domain/confirmed/token', page),
+																															_1: {
+																																ctor: '::',
+																																_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiDomainUnconfirmed, '#api-domain-unconfirmed', 'domain/unconfirmed', page),
+																																_1: {
+																																	ctor: '::',
+																																	_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiDomainUnconfirmedToken, '#api-domain-unconfirmed-token', 'domain/unconfirmed/token', page),
+																																	_1: {
+																																		ctor: '::',
+																																		_0: A2(
+																																			_elm_lang$html$Html$hr,
+																																			{ctor: '[]'},
+																																			{ctor: '[]'}),
+																																		_1: {
+																																			ctor: '::',
+																																			_0: A2(
+																																				_elm_lang$html$Html$h5,
+																																				{ctor: '[]'},
+																																				{
+																																					ctor: '::',
+																																					_0: _elm_lang$html$Html$text('Domain'),
+																																					_1: {ctor: '[]'}
+																																				}),
+																																			_1: {
+																																				ctor: '::',
+																																				_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiScarsSales, '#api-scars-sales', 'scars/sales', page),
+																																				_1: {
+																																					ctor: '::',
+																																					_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiScarsConfirmed, '#api-scars-confirmed', 'scars/confirmed', page),
+																																					_1: {
+																																						ctor: '::',
+																																						_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiScarsUnconfirmed, '#api-scars-unconfirmed', 'scars/unconfirmed', page),
+																																						_1: {ctor: '[]'}
+																																					}
+																																				}
+																																			}
+																																		}
+																																	}
+																																}
+																															}
+																														}
+																													}
+																												}
+																											}
+																										}
+																									}
+																								}
+																							}
+																						}
+																					}
+																				}
+																			}
 																		}
 																	}
 																}
@@ -18025,112 +18363,40 @@ var _user$project$Views_ApiDocumentationHelper$callTableHeader = function (optio
 			_1: {ctor: '[]'}
 		});
 };
-var _user$project$Views_ApiDocumentationHelper$documentation = F9(
-	function (msg, apiUrl, apiResponse, title, description, method, url, curl, ex) {
-		return _rundis$elm_bootstrap$Bootstrap_Card$view(
-			A3(
-				_rundis$elm_bootstrap$Bootstrap_Card$block,
-				{ctor: '[]'},
-				{
-					ctor: '::',
-					_0: A2(
-						_rundis$elm_bootstrap$Bootstrap_Card_Block$text,
-						{ctor: '[]'},
-						{
-							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$div,
-								{ctor: '[]'},
-								{
-									ctor: '::',
-									_0: A2(
-										_elm_lang$html$Html$p,
-										{ctor: '[]'},
-										{
-											ctor: '::',
-											_0: description,
-											_1: {ctor: '[]'}
-										}),
-									_1: {
-										ctor: '::',
-										_0: A2(
-											_elm_lang$html$Html$h5,
-											{ctor: '[]'},
-											{
-												ctor: '::',
-												_0: _elm_lang$html$Html$text('Request'),
-												_1: {ctor: '[]'}
-											}),
-										_1: {
-											ctor: '::',
-											_0: A2(
-												_user$project$Views_TableHelper$docTable,
-												_user$project$Views_ApiDocumentationHelper$callTableHeader(
-													{ctor: '[]'}),
-												A2(_user$project$Views_ApiDocumentationHelper$tBody, method, url)),
-											_1: {
-												ctor: '::',
-												_0: A2(
-													_elm_lang$html$Html$h6,
-													{ctor: '[]'},
-													{
-														ctor: '::',
-														_0: _elm_lang$html$Html$text('Example'),
-														_1: {ctor: '[]'}
-													}),
-												_1: {
+var _user$project$Views_ApiDocumentationHelper$documentation = function (msg) {
+	return function (apiUrl) {
+		return function (apiResponse) {
+			return function (title) {
+				return function (description) {
+					return function (method) {
+						return function (url) {
+							return function (curl) {
+								return function (ex) {
+									return function (error) {
+										return _rundis$elm_bootstrap$Bootstrap_Card$view(
+											A3(
+												_rundis$elm_bootstrap$Bootstrap_Card$block,
+												{ctor: '[]'},
+												{
 													ctor: '::',
 													_0: A2(
-														_rundis$elm_bootstrap$Bootstrap_Alert$simplePrimary,
+														_rundis$elm_bootstrap$Bootstrap_Card_Block$text,
 														{ctor: '[]'},
 														{
 															ctor: '::',
-															_0: _elm_lang$html$Html$text(curl),
-															_1: {ctor: '[]'}
-														}),
-													_1: {
-														ctor: '::',
-														_0: A2(
-															_elm_lang$html$Html$hr,
-															{ctor: '[]'},
-															{ctor: '[]'}),
-														_1: {
-															ctor: '::',
 															_0: A2(
-																_elm_lang$html$Html$h5,
+																_elm_lang$html$Html$div,
 																{ctor: '[]'},
 																{
 																	ctor: '::',
-																	_0: _elm_lang$html$Html$text('Response'),
-																	_1: {ctor: '[]'}
-																}),
-															_1: {
-																ctor: '::',
-																_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$textarea(
-																	{
-																		ctor: '::',
-																		_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$id('example-response'),
-																		_1: {
-																			ctor: '::',
-																			_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$rows(12),
-																			_1: {
-																				ctor: '::',
-																				_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$value(
-																					_user$project$Json_PrettyPrint$stringify(ex)),
-																				_1: {
-																					ctor: '::',
-																					_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$disabled,
-																					_1: {ctor: '[]'}
-																				}
-																			}
-																		}
-																	}),
-																_1: {
-																	ctor: '::',
 																	_0: A2(
-																		_elm_lang$html$Html$hr,
+																		_elm_lang$html$Html$p,
 																		{ctor: '[]'},
-																		{ctor: '[]'}),
+																		{
+																			ctor: '::',
+																			_0: description,
+																			_1: {ctor: '[]'}
+																		}),
 																	_1: {
 																		ctor: '::',
 																		_0: A2(
@@ -18138,135 +18404,474 @@ var _user$project$Views_ApiDocumentationHelper$documentation = F9(
 																			{ctor: '[]'},
 																			{
 																				ctor: '::',
-																				_0: _elm_lang$html$Html$text('Try me'),
+																				_0: _elm_lang$html$Html$text('Request'),
 																				_1: {ctor: '[]'}
 																			}),
 																		_1: {
 																			ctor: '::',
 																			_0: A2(
-																				_rundis$elm_bootstrap$Bootstrap_Alert$simplePrimary,
-																				{ctor: '[]'},
-																				{
+																				_user$project$Views_TableHelper$docTable,
+																				_user$project$Views_ApiDocumentationHelper$callTableHeader(
+																					{ctor: '[]'}),
+																				A2(_user$project$Views_ApiDocumentationHelper$tBody, method, url)),
+																			_1: {
+																				ctor: '::',
+																				_0: A2(
+																					_elm_lang$html$Html$h6,
+																					{ctor: '[]'},
+																					{
+																						ctor: '::',
+																						_0: _elm_lang$html$Html$text('Example'),
+																						_1: {ctor: '[]'}
+																					}),
+																				_1: {
 																					ctor: '::',
 																					_0: A2(
-																						_elm_lang$html$Html$div,
+																						_rundis$elm_bootstrap$Bootstrap_Alert$simplePrimary,
 																						{ctor: '[]'},
 																						{
 																							ctor: '::',
-																							_0: _rundis$elm_bootstrap$Bootstrap_Form_Input$text(
+																							_0: _elm_lang$html$Html$text(curl),
+																							_1: {ctor: '[]'}
+																						}),
+																					_1: {
+																						ctor: '::',
+																						_0: A2(
+																							_elm_lang$html$Html$hr,
+																							{ctor: '[]'},
+																							{ctor: '[]'}),
+																						_1: {
+																							ctor: '::',
+																							_0: A2(
+																								_elm_lang$html$Html$h5,
+																								{ctor: '[]'},
 																								{
 																									ctor: '::',
-																									_0: _rundis$elm_bootstrap$Bootstrap_Form_Input$value(apiUrl),
-																									_1: {
-																										ctor: '::',
-																										_0: _rundis$elm_bootstrap$Bootstrap_Form_Input$attrs(
-																											{
-																												ctor: '::',
-																												_0: _elm_lang$html$Html_Events$onInput(
-																													_user$project$Messages$SetApiUrl(msg)),
-																												_1: {ctor: '[]'}
-																											}),
-																										_1: {ctor: '[]'}
-																									}
+																									_0: _elm_lang$html$Html$text('Response'),
+																									_1: {ctor: '[]'}
 																								}),
 																							_1: {
 																								ctor: '::',
-																								_0: A2(
-																									_elm_lang$html$Html$br,
-																									{ctor: '[]'},
-																									{ctor: '[]'}),
+																								_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$textarea(
+																									{
+																										ctor: '::',
+																										_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$id('example-response'),
+																										_1: {
+																											ctor: '::',
+																											_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$rows(12),
+																											_1: {
+																												ctor: '::',
+																												_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$value(
+																													_user$project$Json_PrettyPrint$stringify(ex)),
+																												_1: {
+																													ctor: '::',
+																													_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$disabled,
+																													_1: {ctor: '[]'}
+																												}
+																											}
+																										}
+																									}),
 																								_1: {
 																									ctor: '::',
 																									_0: A2(
-																										_rundis$elm_bootstrap$Bootstrap_Button$button,
-																										{
-																											ctor: '::',
-																											_0: _rundis$elm_bootstrap$Bootstrap_Button$primary,
-																											_1: {
-																												ctor: '::',
-																												_0: _rundis$elm_bootstrap$Bootstrap_Button$attrs(
-																													{
-																														ctor: '::',
-																														_0: _elm_lang$html$Html_Events$onClick(
-																															A2(_user$project$Messages$RunApiCall, _user$project$Messages$GET, apiUrl)),
-																														_1: {ctor: '[]'}
-																													}),
-																												_1: {ctor: '[]'}
-																											}
-																										},
-																										{
-																											ctor: '::',
-																											_0: _elm_lang$html$Html$text('Run'),
-																											_1: {ctor: '[]'}
-																										}),
+																										_elm_lang$html$Html$hr,
+																										{ctor: '[]'},
+																										{ctor: '[]'}),
 																									_1: {
 																										ctor: '::',
-																										_0: (!_elm_lang$core$Native_Utils.eq(apiResponse, '')) ? A2(
-																											_elm_lang$html$Html$div,
+																										_0: A2(
+																											_elm_lang$html$Html$h5,
 																											{ctor: '[]'},
 																											{
 																												ctor: '::',
-																												_0: A2(
-																													_elm_lang$html$Html$hr,
-																													{ctor: '[]'},
-																													{ctor: '[]'}),
-																												_1: {
+																												_0: _elm_lang$html$Html$text('Try me'),
+																												_1: {ctor: '[]'}
+																											}),
+																										_1: {
+																											ctor: '::',
+																											_0: A2(
+																												_rundis$elm_bootstrap$Bootstrap_Alert$simplePrimary,
+																												{ctor: '[]'},
+																												{
 																													ctor: '::',
-																													_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$textarea(
+																													_0: A2(
+																														_elm_lang$html$Html$div,
+																														{ctor: '[]'},
 																														{
 																															ctor: '::',
-																															_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$id('response'),
+																															_0: _rundis$elm_bootstrap$Bootstrap_Form_Input$text(
+																																{
+																																	ctor: '::',
+																																	_0: _rundis$elm_bootstrap$Bootstrap_Form_Input$value(apiUrl),
+																																	_1: {
+																																		ctor: '::',
+																																		_0: _rundis$elm_bootstrap$Bootstrap_Form_Input$attrs(
+																																			{
+																																				ctor: '::',
+																																				_0: _elm_lang$html$Html_Events$onInput(
+																																					_user$project$Messages$SetApiUrl(msg)),
+																																				_1: {ctor: '[]'}
+																																			}),
+																																		_1: {ctor: '[]'}
+																																	}
+																																}),
 																															_1: {
 																																ctor: '::',
-																																_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$rows(12),
+																																_0: A2(
+																																	_elm_lang$html$Html$br,
+																																	{ctor: '[]'},
+																																	{ctor: '[]'}),
 																																_1: {
 																																	ctor: '::',
-																																	_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$value(apiResponse),
-																																	_1: {ctor: '[]'}
+																																	_0: A2(
+																																		_rundis$elm_bootstrap$Bootstrap_Button$button,
+																																		{
+																																			ctor: '::',
+																																			_0: _rundis$elm_bootstrap$Bootstrap_Button$primary,
+																																			_1: {
+																																				ctor: '::',
+																																				_0: _rundis$elm_bootstrap$Bootstrap_Button$attrs(
+																																					{
+																																						ctor: '::',
+																																						_0: _elm_lang$html$Html_Events$onClick(
+																																							A2(_user$project$Messages$RunApiCall, _user$project$Messages$GET, apiUrl)),
+																																						_1: {ctor: '[]'}
+																																					}),
+																																				_1: {ctor: '[]'}
+																																			}
+																																		},
+																																		{
+																																			ctor: '::',
+																																			_0: _elm_lang$html$Html$text('Run'),
+																																			_1: {ctor: '[]'}
+																																		}),
+																																	_1: {
+																																		ctor: '::',
+																																		_0: (!_elm_lang$core$Native_Utils.eq(error, '')) ? A2(
+																																			_elm_lang$html$Html$div,
+																																			{ctor: '[]'},
+																																			{
+																																				ctor: '::',
+																																				_0: A2(
+																																					_elm_lang$html$Html$hr,
+																																					{ctor: '[]'},
+																																					{ctor: '[]'}),
+																																				_1: {
+																																					ctor: '::',
+																																					_0: A2(
+																																						_rundis$elm_bootstrap$Bootstrap_Alert$simpleDanger,
+																																						{ctor: '[]'},
+																																						{
+																																							ctor: '::',
+																																							_0: _elm_lang$html$Html$text(error),
+																																							_1: {ctor: '[]'}
+																																						}),
+																																					_1: {ctor: '[]'}
+																																				}
+																																			}) : _elm_lang$html$Html$text(''),
+																																		_1: {
+																																			ctor: '::',
+																																			_0: (!_elm_lang$core$Native_Utils.eq(apiResponse, '')) ? A2(
+																																				_elm_lang$html$Html$div,
+																																				{ctor: '[]'},
+																																				{
+																																					ctor: '::',
+																																					_0: A2(
+																																						_elm_lang$html$Html$hr,
+																																						{ctor: '[]'},
+																																						{ctor: '[]'}),
+																																					_1: {
+																																						ctor: '::',
+																																						_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$textarea(
+																																							{
+																																								ctor: '::',
+																																								_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$id('response'),
+																																								_1: {
+																																									ctor: '::',
+																																									_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$rows(12),
+																																									_1: {
+																																										ctor: '::',
+																																										_0: _rundis$elm_bootstrap$Bootstrap_Form_Textarea$value(apiResponse),
+																																										_1: {ctor: '[]'}
+																																									}
+																																								}
+																																							}),
+																																						_1: {ctor: '[]'}
+																																					}
+																																				}) : _elm_lang$html$Html$text(''),
+																																			_1: {ctor: '[]'}
+																																		}
+																																	}
 																																}
 																															}
 																														}),
 																													_1: {ctor: '[]'}
-																												}
-																											}) : _elm_lang$html$Html$text(''),
-																										_1: {ctor: '[]'}
+																												}),
+																											_1: {ctor: '[]'}
+																										}
 																									}
 																								}
 																							}
-																						}),
-																					_1: {ctor: '[]'}
-																				}),
-																			_1: {ctor: '[]'}
+																						}
+																					}
+																				}
+																			}
 																		}
 																	}
-																}
-															}
-														}
-													}
-												}
-											}
-										}
-									}
-								}),
-							_1: {ctor: '[]'}
-						}),
-					_1: {ctor: '[]'}
-				},
-				A3(
-					_rundis$elm_bootstrap$Bootstrap_Card$headerH4,
-					{ctor: '[]'},
-					{
+																}),
+															_1: {ctor: '[]'}
+														}),
+													_1: {ctor: '[]'}
+												},
+												A3(
+													_rundis$elm_bootstrap$Bootstrap_Card$headerH4,
+													{ctor: '[]'},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text(title),
+														_1: {ctor: '[]'}
+													},
+													_rundis$elm_bootstrap$Bootstrap_Card$config(
+														{
+															ctor: '::',
+															_0: _rundis$elm_bootstrap$Bootstrap_Card$outlineDark,
+															_1: {ctor: '[]'}
+														}))));
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var _user$project$Views_ApiAddressConfirmed$pageApiAddressConfirmed = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"confirmed\":true,\"pairs\":[{\"token\":\"SHARI\",\"amount\":13620044},{\"token\":\"KINGS\",\"amount\":0},{\"token\":\"WOOP\",\"amount\":0},{\"token\":\"EAGLE\",\"amount\":100000}]}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves amounts of confirmed tokens for an address as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiAddressConfirmed),
+					_1: {
 						ctor: '::',
-						_0: _elm_lang$html$Html$text(title),
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiAddressConfirmed)(model.apiUrlA2)(model.apiResponse)('Address Confirmed')(description)('GET')('api/v1/address/{:address}/confirmed')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/address/{:address}/confirmed')(ex)(model.error),
+								_1: {ctor: '[]'}
+							}),
 						_1: {ctor: '[]'}
-					},
-					_rundis$elm_bootstrap$Bootstrap_Card$config(
-						{
-							ctor: '::',
-							_0: _rundis$elm_bootstrap$Bootstrap_Card$outlineDark,
-							_1: {ctor: '[]'}
-						}))));
-	});
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _user$project$Views_ApiAddressConfirmedToken$pageApiAddressConfirmedToken = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"confirmed\":true,\"pairs\":[{\"token\":\"EAGLE\",\"amount\":100000}]}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves amounts of confirmed tokens for the specified token for an address as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiAddressConfirmedToken),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiAddressConfirmedToken)(model.apiUrlA3)(model.apiResponse)('Address Confirmed Token')(description)('GET')('api/v1/address/{:address}/confirmed/{:token}')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/address/{:address}/confirmed/token')(ex)(model.error),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _user$project$Views_ApiAddressTransactions$pageApiAddressTransactions = function (model) {
+	var ex = '{\n                  \"status\": \"success\",\n                  \"result\": [\n                    {\n                      \"id\": \"d7900abe99bf8cab768b62e543cd909e5a99fa2f800186a63de546326cce1c4f\",\n                      \"action\": \"head\",\n                      \"senders\": [],\n                      \"recipients\": [\n                        {\n                          \"address\": \"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\n                          \"amount\": 2502\n                        }\n                      ],\n                      \"message\": \"0\",\n                      \"token\": \"SHARI\",\n                      \"prev_hash\": \"0\",\n                      \"sign_r\": \"0\",\n                      \"sign_s\": \"0\"\n                    },\n                    {\n                      \"id\": \"a5ad8f71befd4713700b9a0b9402bb0370bd68b32dbf5d54afb23ada74e47483\",\n                      \"action\": \"head\",\n                      \"senders\": [],\n                      \"recipients\": [\n                        {\n                          \"address\": \"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\n                          \"amount\": 2501\n                        }\n                      ],\n                      \"message\": \"0\",\n                      \"token\": \"SHARI\",\n                      \"prev_hash\": \"0\",\n                      \"sign_r\": \"0\",\n                      \"sign_s\": \"0\"\n                    }\n                  ]\n                }';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves the transactions for an address as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiAddressTransactions),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiAddressTransactions)(model.apiUrlA1)(model.apiResponse)('Address Transactions')(description)('GET')('api/v1/address/{:address}/transactions')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/address/{:address}/transactions')(ex)(model.error),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _user$project$Views_ApiAddressUnconfirmed$pageApiAddressUnconfirmed = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"confirmed\":false,\"pairs\":[{\"token\":\"SHARI\",\"amount\":13710044},{\"token\":\"KINGS\",\"amount\":0},{\"token\":\"WOOP\",\"amount\":0},{\"token\":\"EAGLE\",\"amount\":100000}]}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves amounts of unconfirmed tokens for an address as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiAddressUnconfirmed),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiAddressUnconfirmed)(model.apiUrlA4)(model.apiResponse)('Address Unconfirmed')(description)('GET')('api/v1/address/{:address}/unconfirmed')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/address/{:address}/unconfirmed')(ex)(model.error),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _user$project$Views_ApiAddressUnconfirmedToken$pageApiAddressUnconfirmedToken = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"confirmed\":false,\"pairs\":[{\"token\":\"EAGLE\",\"amount\":100000}]}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves amounts of unconfirmed tokens for the specified token for an address as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiAddressUnconfirmedToken),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiAddressUnconfirmedToken)(model.apiUrlA5)(model.apiResponse)('Address Unconfirmed Token')(description)('GET')('api/v1/address/{:address}/unconfirmed/{:token}')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/address/{:address}/unconfirmed/{:token}')(ex)(model.error),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
 var _user$project$Views_ApiBlock$pageApiBlock = function (model) {
 	var ex = '{\"status\":\"success\",\"result\":{\"index\":0,\"transactions\":[],\"nonce\":0,\"prev_hash\":\"genesis\",\"merkle_tree_root\":\"\"}}';
 	var description = A2(
@@ -18302,7 +18907,232 @@ var _user$project$Views_ApiBlock$pageApiBlock = function (model) {
 							},
 							{
 								ctor: '::',
-								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiBlock, model.apiUrlB4, model.apiResponse, 'Block', description, 'GET', 'v1/block/{:index}', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/block/0', ex),
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiBlock)(model.apiUrlB4)(model.apiResponse)('Block')(description)('GET')('api/v1/block/{:index}')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/block/0')(ex)(model.error),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _user$project$Views_ApiDomainConfirmed$pageApiDomainConfirmed = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"confirmed\":true,\"pairs\":[{\"token\":\"SHARI\",\"amount\":13620044},{\"token\":\"KINGS\",\"amount\":0},{\"token\":\"WOOP\",\"amount\":0},{\"token\":\"EAGLE\",\"amount\":100000}]}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves amounts of confirmed tokens for a domain as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiDomainConfirmed),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiDomainConfirmed)(model.apiUrlD2)(model.apiResponse)('Domain Confirmed')(description)('GET')('api/v1/domain/{:domain}/confirmed')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/confirmed')(ex)(model.error),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _user$project$Views_ApiDomainConfirmedToken$pageApiDomainConfirmedToken = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"confirmed\":true,\"pairs\":[{\"token\":\"EAGLE\",\"amount\":100000}]}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves amounts of confirmed tokens for the specified token for a domain as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiDomainConfirmedToken),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiDomainConfirmedToken)(model.apiUrlD3)(model.apiResponse)('Domain Confirmed Token')(description)('GET')('api/v1/domain/{:domain}/confirmed/{:token}')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/confirmed/token')(ex)(model.error),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _user$project$Views_ApiDomainTransactions$pageApiDomainTransactions = function (model) {
+	var ex = '{\n                  \"status\": \"success\",\n                  \"result\": [\n                    {\n                      \"id\": \"d7900abe99bf8cab768b62e543cd909e5a99fa2f800186a63de546326cce1c4f\",\n                      \"action\": \"head\",\n                      \"senders\": [],\n                      \"recipients\": [\n                        {\n                          \"address\": \"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\n                          \"amount\": 2502\n                        }\n                      ],\n                      \"message\": \"0\",\n                      \"token\": \"SHARI\",\n                      \"prev_hash\": \"0\",\n                      \"sign_r\": \"0\",\n                      \"sign_s\": \"0\"\n                    },\n                    {\n                      \"id\": \"a5ad8f71befd4713700b9a0b9402bb0370bd68b32dbf5d54afb23ada74e47483\",\n                      \"action\": \"head\",\n                      \"senders\": [],\n                      \"recipients\": [\n                        {\n                          \"address\": \"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\n                          \"amount\": 2501\n                        }\n                      ],\n                      \"message\": \"0\",\n                      \"token\": \"SHARI\",\n                      \"prev_hash\": \"0\",\n                      \"sign_r\": \"0\",\n                      \"sign_s\": \"0\"\n                    }\n                  ]\n                }';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves the transactions for a domain as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiDomainTransactions),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiDomainTransactions)(model.apiUrlD1)(model.apiResponse)('Domain Transactions')(description)('GET')('api/v1/domain/{:domain}/transactions')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/transactions')(ex)(model.error),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _user$project$Views_ApiDomainUnconfirmed$pageApiDomainUnconfirmed = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"confirmed\":false,\"pairs\":[{\"token\":\"SHARI\",\"amount\":13710044},{\"token\":\"KINGS\",\"amount\":0},{\"token\":\"WOOP\",\"amount\":0},{\"token\":\"EAGLE\",\"amount\":100000}]}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves amounts of unconfirmed tokens for a domain as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiDomainUnconfirmed),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiDomainUnconfirmed)(model.apiUrlD4)(model.apiResponse)('Domain Unconfirmed')(description)('GET')('api/v1/domain/{:domain}/unconfirmed')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/unconfirmed')(ex)(model.error),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _user$project$Views_ApiDomainUnconfirmedToken$pageApiDomainUnconfirmedToken = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"confirmed\":false,\"pairs\":[{\"token\":\"EAGLE\",\"amount\":100000}]}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves amounts of unconfirmed tokens for the specified token for a domain as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiDomainUnconfirmedToken),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiDomainUnconfirmedToken)(model.apiUrlD5)(model.apiResponse)('Domain Unconfirmed Token')(description)('GET')('api/v1/domain/{:domain}/unconfirmed/{:token}')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/unconfirmed/{:token}')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -18371,6 +19201,750 @@ var _user$project$Views_ApiOverview$apiOverviewTable = function (tableBody) {
 			tbody: tableBody
 		});
 };
+var _user$project$Views_ApiOverview$overviewScarsSection = {
+	ctor: '::',
+	_0: A2(
+		_elm_lang$html$Html$hr,
+		{ctor: '[]'},
+		{ctor: '[]'}),
+	_1: {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$h3,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text('SCARS (Human readable addresses)'),
+				_1: {ctor: '[]'}
+			}),
+		_1: {
+			ctor: '::',
+			_0: _user$project$Views_ApiOverview$apiOverviewTable(
+				A2(
+					_rundis$elm_bootstrap$Bootstrap_Table$tbody,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Table$tr,
+							{ctor: '[]'},
+							{
+								ctor: '::',
+								_0: A2(
+									_rundis$elm_bootstrap$Bootstrap_Table$td,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('GET'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_rundis$elm_bootstrap$Bootstrap_Table$td,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: A2(
+												_elm_lang$html$Html$a,
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$href('#api-scars-sales'),
+													_1: {ctor: '[]'}
+												},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('api/v1/scars/sales'),
+													_1: {ctor: '[]'}
+												}),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_rundis$elm_bootstrap$Bootstrap_Table$td,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('get all scars domains for sale'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {ctor: '[]'}
+									}
+								}
+							}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_rundis$elm_bootstrap$Bootstrap_Table$tr,
+								{ctor: '[]'},
+								{
+									ctor: '::',
+									_0: A2(
+										_rundis$elm_bootstrap$Bootstrap_Table$td,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('GET'),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_rundis$elm_bootstrap$Bootstrap_Table$td,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$a,
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html_Attributes$href('#api-scars-domain-confirmed'),
+														_1: {ctor: '[]'}
+													},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text('api/v1/scars/{:domain}/confirmed'),
+														_1: {ctor: '[]'}
+													}),
+												_1: {ctor: '[]'}
+											}),
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_rundis$elm_bootstrap$Bootstrap_Table$td,
+												{ctor: '[]'},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('get the confirmed status of the domain'),
+													_1: {ctor: '[]'}
+												}),
+											_1: {ctor: '[]'}
+										}
+									}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_rundis$elm_bootstrap$Bootstrap_Table$tr,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: A2(
+											_rundis$elm_bootstrap$Bootstrap_Table$td,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('GET'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_rundis$elm_bootstrap$Bootstrap_Table$td,
+												{ctor: '[]'},
+												{
+													ctor: '::',
+													_0: A2(
+														_elm_lang$html$Html$a,
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html_Attributes$href('#api-scars-domain-unconfirmed'),
+															_1: {ctor: '[]'}
+														},
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html$text('api/v1/scars/{:domain}/unconfirmed'),
+															_1: {ctor: '[]'}
+														}),
+													_1: {ctor: '[]'}
+												}),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_rundis$elm_bootstrap$Bootstrap_Table$td,
+													{ctor: '[]'},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text('get the unconfirmed status of the domain'),
+														_1: {ctor: '[]'}
+													}),
+												_1: {ctor: '[]'}
+											}
+										}
+									}),
+								_1: {ctor: '[]'}
+							}
+						}
+					})),
+			_1: {ctor: '[]'}
+		}
+	}
+};
+var _user$project$Views_ApiOverview$overviewDomainSection = {
+	ctor: '::',
+	_0: A2(
+		_elm_lang$html$Html$hr,
+		{ctor: '[]'},
+		{ctor: '[]'}),
+	_1: {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$h3,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text('Domain'),
+				_1: {ctor: '[]'}
+			}),
+		_1: {
+			ctor: '::',
+			_0: _user$project$Views_ApiOverview$apiOverviewTable(
+				A2(
+					_rundis$elm_bootstrap$Bootstrap_Table$tbody,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Table$tr,
+							{ctor: '[]'},
+							{
+								ctor: '::',
+								_0: A2(
+									_rundis$elm_bootstrap$Bootstrap_Table$td,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('GET'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_rundis$elm_bootstrap$Bootstrap_Table$td,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: A2(
+												_elm_lang$html$Html$a,
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$href('#api-domain-transactions'),
+													_1: {ctor: '[]'}
+												},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('api/v1/domain/{:domain}/transactions'),
+													_1: {ctor: '[]'}
+												}),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_rundis$elm_bootstrap$Bootstrap_Table$td,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('transactions for domain'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {ctor: '[]'}
+									}
+								}
+							}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_rundis$elm_bootstrap$Bootstrap_Table$tr,
+								{ctor: '[]'},
+								{
+									ctor: '::',
+									_0: A2(
+										_rundis$elm_bootstrap$Bootstrap_Table$td,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('GET'),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_rundis$elm_bootstrap$Bootstrap_Table$td,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$a,
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html_Attributes$href('#api-domain-confirmed'),
+														_1: {ctor: '[]'}
+													},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text('api/v1/domain/{:domain}/confirmed'),
+														_1: {ctor: '[]'}
+													}),
+												_1: {ctor: '[]'}
+											}),
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_rundis$elm_bootstrap$Bootstrap_Table$td,
+												{ctor: '[]'},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('confirmed amount for domain for all tokens'),
+													_1: {ctor: '[]'}
+												}),
+											_1: {ctor: '[]'}
+										}
+									}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_rundis$elm_bootstrap$Bootstrap_Table$tr,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: A2(
+											_rundis$elm_bootstrap$Bootstrap_Table$td,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('GET'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_rundis$elm_bootstrap$Bootstrap_Table$td,
+												{ctor: '[]'},
+												{
+													ctor: '::',
+													_0: A2(
+														_elm_lang$html$Html$a,
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html_Attributes$href('#api-domain-confirmed-token'),
+															_1: {ctor: '[]'}
+														},
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html$text('api/v1/domain/{:domain}/confirmed/{:token}'),
+															_1: {ctor: '[]'}
+														}),
+													_1: {ctor: '[]'}
+												}),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_rundis$elm_bootstrap$Bootstrap_Table$td,
+													{ctor: '[]'},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text('confirmed amount for domain for specified token'),
+														_1: {ctor: '[]'}
+													}),
+												_1: {ctor: '[]'}
+											}
+										}
+									}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_rundis$elm_bootstrap$Bootstrap_Table$tr,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: A2(
+												_rundis$elm_bootstrap$Bootstrap_Table$td,
+												{ctor: '[]'},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('GET'),
+													_1: {ctor: '[]'}
+												}),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_rundis$elm_bootstrap$Bootstrap_Table$td,
+													{ctor: '[]'},
+													{
+														ctor: '::',
+														_0: A2(
+															_elm_lang$html$Html$a,
+															{
+																ctor: '::',
+																_0: _elm_lang$html$Html_Attributes$href('#api-domain-unconfirmed'),
+																_1: {ctor: '[]'}
+															},
+															{
+																ctor: '::',
+																_0: _elm_lang$html$Html$text('api/v1/domain/{:domain}/unconfirmed'),
+																_1: {ctor: '[]'}
+															}),
+														_1: {ctor: '[]'}
+													}),
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_rundis$elm_bootstrap$Bootstrap_Table$td,
+														{ctor: '[]'},
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html$text('unconfirmed amount for domain for all tokens'),
+															_1: {ctor: '[]'}
+														}),
+													_1: {ctor: '[]'}
+												}
+											}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_rundis$elm_bootstrap$Bootstrap_Table$tr,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: A2(
+													_rundis$elm_bootstrap$Bootstrap_Table$td,
+													{ctor: '[]'},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text('GET'),
+														_1: {ctor: '[]'}
+													}),
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_rundis$elm_bootstrap$Bootstrap_Table$td,
+														{ctor: '[]'},
+														{
+															ctor: '::',
+															_0: A2(
+																_elm_lang$html$Html$a,
+																{
+																	ctor: '::',
+																	_0: _elm_lang$html$Html_Attributes$href('#api-domain-unconfirmed-token'),
+																	_1: {ctor: '[]'}
+																},
+																{
+																	ctor: '::',
+																	_0: _elm_lang$html$Html$text('api/v1/domain/{:domain}/unconfirmed'),
+																	_1: {ctor: '[]'}
+																}),
+															_1: {ctor: '[]'}
+														}),
+													_1: {
+														ctor: '::',
+														_0: A2(
+															_rundis$elm_bootstrap$Bootstrap_Table$td,
+															{ctor: '[]'},
+															{
+																ctor: '::',
+																_0: _elm_lang$html$Html$text('unconfirmed amount for domain for specified token'),
+																_1: {ctor: '[]'}
+															}),
+														_1: {ctor: '[]'}
+													}
+												}
+											}),
+										_1: {ctor: '[]'}
+									}
+								}
+							}
+						}
+					})),
+			_1: {ctor: '[]'}
+		}
+	}
+};
+var _user$project$Views_ApiOverview$overviewAddressSection = {
+	ctor: '::',
+	_0: A2(
+		_elm_lang$html$Html$hr,
+		{ctor: '[]'},
+		{ctor: '[]'}),
+	_1: {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$h3,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text('Address'),
+				_1: {ctor: '[]'}
+			}),
+		_1: {
+			ctor: '::',
+			_0: _user$project$Views_ApiOverview$apiOverviewTable(
+				A2(
+					_rundis$elm_bootstrap$Bootstrap_Table$tbody,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Table$tr,
+							{ctor: '[]'},
+							{
+								ctor: '::',
+								_0: A2(
+									_rundis$elm_bootstrap$Bootstrap_Table$td,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('GET'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_rundis$elm_bootstrap$Bootstrap_Table$td,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: A2(
+												_elm_lang$html$Html$a,
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$href('#api-address-transactions'),
+													_1: {ctor: '[]'}
+												},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('api/v1/address/{:address}/transactions'),
+													_1: {ctor: '[]'}
+												}),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_rundis$elm_bootstrap$Bootstrap_Table$td,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('transactions for address'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {ctor: '[]'}
+									}
+								}
+							}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_rundis$elm_bootstrap$Bootstrap_Table$tr,
+								{ctor: '[]'},
+								{
+									ctor: '::',
+									_0: A2(
+										_rundis$elm_bootstrap$Bootstrap_Table$td,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('GET'),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_rundis$elm_bootstrap$Bootstrap_Table$td,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$a,
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html_Attributes$href('#api-address-confirmed'),
+														_1: {ctor: '[]'}
+													},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text('api/v1/address/{:address}/confirmed'),
+														_1: {ctor: '[]'}
+													}),
+												_1: {ctor: '[]'}
+											}),
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_rundis$elm_bootstrap$Bootstrap_Table$td,
+												{ctor: '[]'},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('confirmed amount for address for all tokens'),
+													_1: {ctor: '[]'}
+												}),
+											_1: {ctor: '[]'}
+										}
+									}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_rundis$elm_bootstrap$Bootstrap_Table$tr,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: A2(
+											_rundis$elm_bootstrap$Bootstrap_Table$td,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('GET'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_rundis$elm_bootstrap$Bootstrap_Table$td,
+												{ctor: '[]'},
+												{
+													ctor: '::',
+													_0: A2(
+														_elm_lang$html$Html$a,
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html_Attributes$href('#api-address-confirmed-token'),
+															_1: {ctor: '[]'}
+														},
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html$text('api/v1/address/{:address}/confirmed/{:token}'),
+															_1: {ctor: '[]'}
+														}),
+													_1: {ctor: '[]'}
+												}),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_rundis$elm_bootstrap$Bootstrap_Table$td,
+													{ctor: '[]'},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text('confirmed amount for address for specified token'),
+														_1: {ctor: '[]'}
+													}),
+												_1: {ctor: '[]'}
+											}
+										}
+									}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_rundis$elm_bootstrap$Bootstrap_Table$tr,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: A2(
+												_rundis$elm_bootstrap$Bootstrap_Table$td,
+												{ctor: '[]'},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('GET'),
+													_1: {ctor: '[]'}
+												}),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_rundis$elm_bootstrap$Bootstrap_Table$td,
+													{ctor: '[]'},
+													{
+														ctor: '::',
+														_0: A2(
+															_elm_lang$html$Html$a,
+															{
+																ctor: '::',
+																_0: _elm_lang$html$Html_Attributes$href('#api-address-unconfirmed'),
+																_1: {ctor: '[]'}
+															},
+															{
+																ctor: '::',
+																_0: _elm_lang$html$Html$text('api/v1/address/{:address}/unconfirmed'),
+																_1: {ctor: '[]'}
+															}),
+														_1: {ctor: '[]'}
+													}),
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_rundis$elm_bootstrap$Bootstrap_Table$td,
+														{ctor: '[]'},
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html$text('unconfirmed amount for address for all tokens'),
+															_1: {ctor: '[]'}
+														}),
+													_1: {ctor: '[]'}
+												}
+											}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_rundis$elm_bootstrap$Bootstrap_Table$tr,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: A2(
+													_rundis$elm_bootstrap$Bootstrap_Table$td,
+													{ctor: '[]'},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text('GET'),
+														_1: {ctor: '[]'}
+													}),
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_rundis$elm_bootstrap$Bootstrap_Table$td,
+														{ctor: '[]'},
+														{
+															ctor: '::',
+															_0: A2(
+																_elm_lang$html$Html$a,
+																{
+																	ctor: '::',
+																	_0: _elm_lang$html$Html_Attributes$href('#api-address-unconfirmed-token'),
+																	_1: {ctor: '[]'}
+																},
+																{
+																	ctor: '::',
+																	_0: _elm_lang$html$Html$text('api/v1/address/{:address}/unconfirmed'),
+																	_1: {ctor: '[]'}
+																}),
+															_1: {ctor: '[]'}
+														}),
+													_1: {
+														ctor: '::',
+														_0: A2(
+															_rundis$elm_bootstrap$Bootstrap_Table$td,
+															{ctor: '[]'},
+															{
+																ctor: '::',
+																_0: _elm_lang$html$Html$text('unconfirmed amount for address for specified token'),
+																_1: {ctor: '[]'}
+															}),
+														_1: {ctor: '[]'}
+													}
+												}
+											}),
+										_1: {ctor: '[]'}
+									}
+								}
+							}
+						}
+					})),
+			_1: {ctor: '[]'}
+		}
+	}
+};
 var _user$project$Views_ApiOverview$overviewTransactionSection = {
 	ctor: '::',
 	_0: A2(
@@ -18424,7 +19998,7 @@ var _user$project$Views_ApiOverview$overviewTransactionSection = {
 												},
 												{
 													ctor: '::',
-													_0: _elm_lang$html$Html$text('v1/transaction{:id}'),
+													_0: _elm_lang$html$Html$text('api/v1/transaction{:id}'),
 													_1: {ctor: '[]'}
 												}),
 											_1: {ctor: '[]'}
@@ -18474,7 +20048,7 @@ var _user$project$Views_ApiOverview$overviewTransactionSection = {
 													},
 													{
 														ctor: '::',
-														_0: _elm_lang$html$Html$text('v1/transaction/{:id}/block'),
+														_0: _elm_lang$html$Html$text('api/v1/transaction/{:id}/block'),
 														_1: {ctor: '[]'}
 													}),
 												_1: {ctor: '[]'}
@@ -18524,7 +20098,7 @@ var _user$project$Views_ApiOverview$overviewTransactionSection = {
 														},
 														{
 															ctor: '::',
-															_0: _elm_lang$html$Html$text('v1/transaction/{:id}/block/header'),
+															_0: _elm_lang$html$Html$text('api/v1/transaction/{:id}/block/header'),
 															_1: {ctor: '[]'}
 														}),
 													_1: {ctor: '[]'}
@@ -18574,7 +20148,7 @@ var _user$project$Views_ApiOverview$overviewTransactionSection = {
 															},
 															{
 																ctor: '::',
-																_0: _elm_lang$html$Html$text('v1/transaction/{:id}/confirmations'),
+																_0: _elm_lang$html$Html$text('api/v1/transaction/{:id}/confirmations'),
 																_1: {ctor: '[]'}
 															}),
 														_1: {ctor: '[]'}
@@ -18624,7 +20198,7 @@ var _user$project$Views_ApiOverview$overviewTransactionSection = {
 																},
 																{
 																	ctor: '::',
-																	_0: _elm_lang$html$Html$text('v1/transaction/fees'),
+																	_0: _elm_lang$html$Html$text('api/v1/transaction/fees'),
 																	_1: {ctor: '[]'}
 																}),
 															_1: {ctor: '[]'}
@@ -18706,7 +20280,7 @@ var _user$project$Views_ApiOverview$overviewBlockSection = {
 												},
 												{
 													ctor: '::',
-													_0: _elm_lang$html$Html$text('v1/block{:index}'),
+													_0: _elm_lang$html$Html$text('api/v1/block{:index}'),
 													_1: {ctor: '[]'}
 												}),
 											_1: {ctor: '[]'}
@@ -18756,7 +20330,7 @@ var _user$project$Views_ApiOverview$overviewBlockSection = {
 													},
 													{
 														ctor: '::',
-														_0: _elm_lang$html$Html$text('v1/block/{:index}/header'),
+														_0: _elm_lang$html$Html$text('api/v1/block/{:index}/header'),
 														_1: {ctor: '[]'}
 													}),
 												_1: {ctor: '[]'}
@@ -18806,7 +20380,7 @@ var _user$project$Views_ApiOverview$overviewBlockSection = {
 														},
 														{
 															ctor: '::',
-															_0: _elm_lang$html$Html$text('v1/block/{:index}/transactions'),
+															_0: _elm_lang$html$Html$text('api/v1/block/{:index}/transactions'),
 															_1: {ctor: '[]'}
 														}),
 													_1: {ctor: '[]'}
@@ -18880,7 +20454,7 @@ var _user$project$Views_ApiOverview$overviewBlockChainSection = {
 											},
 											{
 												ctor: '::',
-												_0: _elm_lang$html$Html$text('v1/blockchain'),
+												_0: _elm_lang$html$Html$text('api/v1/blockchain'),
 												_1: {ctor: '[]'}
 											}),
 										_1: {ctor: '[]'}
@@ -18930,7 +20504,7 @@ var _user$project$Views_ApiOverview$overviewBlockChainSection = {
 												},
 												{
 													ctor: '::',
-													_0: _elm_lang$html$Html$text('v1/blockchain/header'),
+													_0: _elm_lang$html$Html$text('api/v1/blockchain/header'),
 													_1: {ctor: '[]'}
 												}),
 											_1: {ctor: '[]'}
@@ -18980,7 +20554,7 @@ var _user$project$Views_ApiOverview$overviewBlockChainSection = {
 													},
 													{
 														ctor: '::',
-														_0: _elm_lang$html$Html$text('v1/blockchain/size'),
+														_0: _elm_lang$html$Html$text('api/v1/blockchain/size'),
 														_1: {ctor: '[]'}
 													}),
 												_1: {ctor: '[]'}
@@ -19090,7 +20664,49 @@ var _user$project$Views_ApiOverview$pageApiOverview = function (model) {
 										_user$project$Views_ApiOverview$overviewTransactionSection),
 									_1: {ctor: '[]'}
 								}),
-							_1: {ctor: '[]'}
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_rundis$elm_bootstrap$Bootstrap_Grid$row,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: A2(
+											_rundis$elm_bootstrap$Bootstrap_Grid$col,
+											{ctor: '[]'},
+											_user$project$Views_ApiOverview$overviewAddressSection),
+										_1: {ctor: '[]'}
+									}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_rundis$elm_bootstrap$Bootstrap_Grid$row,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: A2(
+												_rundis$elm_bootstrap$Bootstrap_Grid$col,
+												{ctor: '[]'},
+												_user$project$Views_ApiOverview$overviewDomainSection),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_rundis$elm_bootstrap$Bootstrap_Grid$row,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: A2(
+													_rundis$elm_bootstrap$Bootstrap_Grid$col,
+													{ctor: '[]'},
+													_user$project$Views_ApiOverview$overviewScarsSection),
+												_1: {ctor: '[]'}
+											}),
+										_1: {ctor: '[]'}
+									}
+								}
+							}
 						}
 					}
 				}
@@ -19133,7 +20749,7 @@ var _user$project$Views_ApiBlockChain$pageApiBlockChain = function (model) {
 							},
 							{
 								ctor: '::',
-								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiBlockchain, model.apiUrlB1, model.apiResponse, 'Blockchain', description, 'GET', 'v1/blockchain', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/blockchain', ex),
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiBlockchain)(model.apiUrlB1)(model.apiResponse)('Blockchain')(description)('GET')('api/v1/blockchain')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/blockchain')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -19178,7 +20794,7 @@ var _user$project$Views_ApiBlockChainHeader$pageApiBlockChainHeader = function (
 							},
 							{
 								ctor: '::',
-								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiBlockchainHeader, model.apiUrlB2, model.apiResponse, 'Blockchain Header', description, 'GET', 'v1/blockchain/header', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/blockchain/header', ex),
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiBlockchainHeader)(model.apiUrlB2)(model.apiResponse)('Blockchain Header')(description)('GET')('api/v1/blockchain/header')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/blockchain/header')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -19223,7 +20839,7 @@ var _user$project$Views_ApiBlockChainSize$pageApiBlockChainSize = function (mode
 							},
 							{
 								ctor: '::',
-								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiBlockchainSize, model.apiUrlB3, model.apiResponse, 'Blockchain Size', description, 'GET', 'v1/blockchain/size', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/blockchain/size', ex),
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiBlockchainSize)(model.apiUrlB3)(model.apiResponse)('Blockchain Size')(description)('GET')('api/v1/blockchain/size')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/blockchain/size')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -19268,7 +20884,7 @@ var _user$project$Views_ApiBlockHeader$pageApiBlockHeader = function (model) {
 							},
 							{
 								ctor: '::',
-								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiBlockHeader, model.apiUrlB5, model.apiResponse, 'Block Header', description, 'GET', 'v1/block/{:index}/header', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/block/0/header', ex),
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiBlockHeader)(model.apiUrlB5)(model.apiResponse)('Block Header')(description)('GET')('api/v1/block/{:index}/header')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/block/0/header')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -19313,7 +20929,142 @@ var _user$project$Views_ApiBlockTransactions$pageApiBlockTransactions = function
 							},
 							{
 								ctor: '::',
-								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiBlockTransactions, model.apiUrlB6, model.apiResponse, 'Block Transactions', description, 'GET', 'v1/block/{:index}/transactions', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/block/0/transactions', ex),
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiBlockTransactions)(model.apiUrlB6)(model.apiResponse)('Block Transactions')(description)('GET')('api/v1/block/{:index}/transactions')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/block/0/transactions')(ex)(model.error),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _user$project$Views_ApiScarsConfirmed$pageApiScarsConfirmed = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"resolved\":false,\"domain\":{\"domain_name\":\"sushichain.sc\",\"address\":\"\",\"status\":-1,\"price\":0}}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves the confirmed status of the scars domain as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiScarsConfirmed),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiScarsConfirmed)(model.apiUrlS2)(model.apiResponse)('Address Confirmed')(description)('GET')('api/v1/scars/{:domain}/confirmed')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/scars/{:domain}/confirmed')(ex)(model.error),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _user$project$Views_ApiScarsSales$pageApiScarsSales = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":[{\"domain_name\":\"awesome.sc\",\"address\":\"VDAxNmM1OGVkNmYyNzI2NzcyYjYzODRmMzJmMDkzODhjMTczNWI0NDFjZGM5ZTIz\",\"status\":1,\"price\":100},{\"domain_name\":\"superdry.sc\",\"address\":\"VDAxNmM1OGVkNmYyNzI2NzcyYjYzODRmMzJmMDkzODhjMTczNWI0NDFjZGM5ZTIz\",\"status\":1,\"price\":100}]}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This shows the list of domains for sale as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiScarsSales),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiScarsSales)(model.apiUrlS1)(model.apiResponse)('Scars Sales')(description)('GET')('api/v1/scars/sales')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/scars/sales')(ex)(model.error),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+var _user$project$Views_ApiScarsUnconfirmed$pageApiScarsUnconfirmed = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"resolved\":false,\"domain\":{\"domain_name\":\"sushichain.sc\",\"address\":\"\",\"status\":-1,\"price\":0}}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('This retrieves the unconfirmed status of the scars domain as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rundis$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiScarsUnconfirmed),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rundis$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _rundis$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiScarsUnconfirmed)(model.apiUrlS3)(model.apiResponse)('Scars Confirmed')(description)('GET')('api/v1/scars/{:domain}/unconfirmed')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/scars/{:domain}/unconfirmed')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -19358,7 +21109,7 @@ var _user$project$Views_ApiTransaction$pageApiTransaction = function (model) {
 							},
 							{
 								ctor: '::',
-								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiTransaction, model.apiUrlT1, model.apiResponse, 'Transaction', description, 'GET', 'v1/transaction/{:id}', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/transaction/{:id}', ex),
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiTransaction)(model.apiUrlT1)(model.apiResponse)('Transaction')(description)('GET')('api/v1/transaction/{:id}')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/transaction/{:id}')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -19403,7 +21154,7 @@ var _user$project$Views_ApiTransactionBlock$pageApiTransactionBlock = function (
 							},
 							{
 								ctor: '::',
-								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiTransactionBlock, model.apiUrlT2, model.apiResponse, 'Transaction Block', description, 'GET', 'v1/transaction/{:id}/block', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/transaction/{:id}/block', ex),
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiTransactionBlock)(model.apiUrlT2)(model.apiResponse)('Transaction Block')(description)('GET')('api/v1/transaction/{:id}/block')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/transaction/{:id}/block')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -19448,7 +21199,7 @@ var _user$project$Views_ApiTransactionBlockHeader$pageApiTransactionBlockHeader 
 							},
 							{
 								ctor: '::',
-								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiTransactionBlockHeader, model.apiUrlT3, model.apiResponse, 'Transaction Block Header', description, 'GET', 'v1/transaction/{:id}/block/header', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/transaction/{:id}/block/header', ex),
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiTransactionBlockHeader)(model.apiUrlT3)(model.apiResponse)('Transaction Block Header')(description)('GET')('api/v1/transaction/{:id}/block/header')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/transaction/{:id}/block/header')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -19493,7 +21244,7 @@ var _user$project$Views_ApiTransactionConfirmations$pageApiTransactionConfirmati
 							},
 							{
 								ctor: '::',
-								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiTransactionConfirmations, model.apiUrlT4, model.apiResponse, 'Transaction Confirmations', description, 'GET', 'v1/transaction/confirmations', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/transaction/confirmations', ex),
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiTransactionConfirmations)(model.apiUrlT4)(model.apiResponse)('Transaction Confirmations')(description)('GET')('api/v1/transaction/confirmations')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/transaction/confirmations')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -19538,7 +21289,7 @@ var _user$project$Views_ApiTransactionFees$pageApiTransactionFees = function (mo
 							},
 							{
 								ctor: '::',
-								_0: A9(_user$project$Views_ApiDocumentationHelper$documentation, _user$project$Messages$ApiTransactionFees, model.apiUrlT5, model.apiResponse, 'Transaction Fees', description, 'GET', 'v1/transaction/fees', 'curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/v1/transaction/fees', ex),
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiTransactionFees)(model.apiUrlT5)(model.apiResponse)('Transaction Fees')(description)('GET')('api/v1/transaction/fees')('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/transaction/fees')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -19611,6 +21362,32 @@ var _user$project$View$mainContent = function (model) {
 					return _user$project$Views_ApiTransactionConfirmations$pageApiTransactionConfirmations(model);
 				case 'ApiTransactionFees':
 					return _user$project$Views_ApiTransactionFees$pageApiTransactionFees(model);
+				case 'ApiAddressTransactions':
+					return _user$project$Views_ApiAddressTransactions$pageApiAddressTransactions(model);
+				case 'ApiAddressConfirmed':
+					return _user$project$Views_ApiAddressConfirmed$pageApiAddressConfirmed(model);
+				case 'ApiAddressConfirmedToken':
+					return _user$project$Views_ApiAddressConfirmedToken$pageApiAddressConfirmedToken(model);
+				case 'ApiAddressUnconfirmed':
+					return _user$project$Views_ApiAddressUnconfirmed$pageApiAddressUnconfirmed(model);
+				case 'ApiAddressUnconfirmedToken':
+					return _user$project$Views_ApiAddressUnconfirmedToken$pageApiAddressUnconfirmedToken(model);
+				case 'ApiDomainTransactions':
+					return _user$project$Views_ApiDomainTransactions$pageApiDomainTransactions(model);
+				case 'ApiDomainConfirmed':
+					return _user$project$Views_ApiDomainConfirmed$pageApiDomainConfirmed(model);
+				case 'ApiDomainConfirmedToken':
+					return _user$project$Views_ApiDomainConfirmedToken$pageApiDomainConfirmedToken(model);
+				case 'ApiDomainUnconfirmed':
+					return _user$project$Views_ApiDomainUnconfirmed$pageApiDomainUnconfirmed(model);
+				case 'ApiDomainUnconfirmedToken':
+					return _user$project$Views_ApiDomainUnconfirmedToken$pageApiDomainUnconfirmedToken(model);
+				case 'ApiScarsSales':
+					return _user$project$Views_ApiScarsSales$pageApiScarsSales(model);
+				case 'ApiScarsConfirmed':
+					return _user$project$Views_ApiScarsConfirmed$pageApiScarsConfirmed(model);
+				case 'ApiScarsUnconfirmed':
+					return _user$project$Views_ApiScarsUnconfirmed$pageApiScarsUnconfirmed(model);
 				default:
 					return _user$project$View$pageNotFound;
 			}
@@ -19692,7 +21469,7 @@ var _user$project$Main$subscriptions = function (model) {
 	return A2(_rundis$elm_bootstrap$Bootstrap_Navbar$subscriptions, model.navState, _user$project$Messages$NavMsg);
 };
 var _user$project$Main$init = function (location) {
-	var prefix = 'http://localhost:3000/v1/';
+	var prefix = 'http://localhost:3000/api/v1/';
 	var _p0 = _rundis$elm_bootstrap$Bootstrap_Navbar$initialState(_user$project$Messages$NavMsg);
 	var navState = _p0._0;
 	var navCmd = _p0._1;
@@ -19714,7 +21491,20 @@ var _user$project$Main$init = function (location) {
 			apiUrlT2: A2(_elm_lang$core$Basics_ops['++'], prefix, 'transaction/{:id}/block'),
 			apiUrlT3: A2(_elm_lang$core$Basics_ops['++'], prefix, 'transaction/{:id}/block/header'),
 			apiUrlT4: A2(_elm_lang$core$Basics_ops['++'], prefix, 'transaction/{:id}/confirmations'),
-			apiUrlT5: A2(_elm_lang$core$Basics_ops['++'], prefix, 'transaction/fees')
+			apiUrlT5: A2(_elm_lang$core$Basics_ops['++'], prefix, 'transaction/fees'),
+			apiUrlA1: A2(_elm_lang$core$Basics_ops['++'], prefix, 'address/{:address}/transactions'),
+			apiUrlA2: A2(_elm_lang$core$Basics_ops['++'], prefix, 'address/{:address}/confirmed'),
+			apiUrlA3: A2(_elm_lang$core$Basics_ops['++'], prefix, 'address/{:addresss}/confirmed/{:token}'),
+			apiUrlA4: A2(_elm_lang$core$Basics_ops['++'], prefix, 'address/{:address}/unconfirmed'),
+			apiUrlA5: A2(_elm_lang$core$Basics_ops['++'], prefix, 'address/{:address}/unconfirmed/{:token}'),
+			apiUrlD1: A2(_elm_lang$core$Basics_ops['++'], prefix, 'domain/{:domain}/unconfirmed/{:token}'),
+			apiUrlD2: A2(_elm_lang$core$Basics_ops['++'], prefix, 'domain/{:domain}/unconfirmed/{:token}'),
+			apiUrlD3: A2(_elm_lang$core$Basics_ops['++'], prefix, 'domain/{:domain}/unconfirmed/{:token}'),
+			apiUrlD4: A2(_elm_lang$core$Basics_ops['++'], prefix, 'domain/{:domain}/unconfirmed/{:token}'),
+			apiUrlD5: A2(_elm_lang$core$Basics_ops['++'], prefix, 'domain/{:domain}/unconfirmed/{:token}'),
+			apiUrlS1: A2(_elm_lang$core$Basics_ops['++'], prefix, 'scars/sales'),
+			apiUrlS2: A2(_elm_lang$core$Basics_ops['++'], prefix, 'scars/{:domain}/confirmed'),
+			apiUrlS3: A2(_elm_lang$core$Basics_ops['++'], prefix, 'scars/{:domain}/unconfirmed')
 		});
 	var model = _p1._0;
 	var urlCmd = _p1._1;
