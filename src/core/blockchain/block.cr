@@ -113,10 +113,14 @@ module ::Sushi::Core
       @transactions[1..-1].reduce(0_i64) { |fees, transaction| fees + transaction.total_fees }
     end
 
-    def coinbase_amount
+    def coinbase_amount : Int64
       base = 10000000000_i64
-      div = (@index*1000000) / base
-      return base + total_fees if div == 0
+      #
+      # divider will be incremented by 1000 per 10000 blocks
+      #
+      div = (@index / 10000_i64) * 1000_i64
+      div = 1 if div <= 0
+
       base / div + total_fees
     end
 
