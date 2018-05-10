@@ -112,6 +112,7 @@ module ::Sushi::Core
       return 0_i64 if @transactions.size < 2
       @transactions[1..-1].reduce(0_i64) { |fees, transaction| fees + transaction.total_fees }
     end
+
     #
     # y : coinbase amount
     # x : index
