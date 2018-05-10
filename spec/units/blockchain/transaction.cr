@@ -252,7 +252,7 @@ describe Transaction do
           Transaction.create_id,
           "head", # action
           [] of Transaction::Sender,
-          [a_recipient(recipient_wallet, 10000_i64)],
+          [a_recipient(recipient_wallet, 11283791_i64)],
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -407,7 +407,7 @@ describe Transaction do
           "0",           # sign_s
         )
 
-        expect_raises(Exception, "invalid served amount for coinbase transaction: expected 10000 but got 10") do
+        expect_raises(Exception, "invalid served amount for coinbase transaction: expected 11283791 but got 10") do
           transaction.valid?(blockchain, 0_i64, true, [] of Transaction)
         end
       end
@@ -521,7 +521,7 @@ describe Transaction do
       "0",           # sign_s
     )
 
-    transaction.calculate_fee.should eq(1_i64)
+    transaction.total_fees.should eq(1_i64)
   end
 
   STDERR.puts "< Transaction"

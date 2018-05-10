@@ -26,7 +26,7 @@ describe UTXO do
         utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
         utxo.record(chain)
 
-        address = block_1.transactions.first.recipients.first[:address]
+        address = chain[1].transactions.first.recipients.first[:address]
         utxo.get(address, TOKEN_DEFAULT).should eq(0)
       end
     end
@@ -38,7 +38,7 @@ describe UTXO do
         utxo.record(chain)
 
         address = chain[1].transactions.first.recipients.first[:address]
-        expected_amount = block_1.transactions[0].recipients[0]["amount"]
+        expected_amount = chain[1].transactions[0].recipients[0]["amount"]
 
         utxo.get(address, TOKEN_DEFAULT).should eq(expected_amount)
       end
@@ -204,13 +204,13 @@ describe UTXO do
 
     it "should raise an error if sender has not enough default token to afford the transaction" do
       with_factory do |block_factory, transaction_factory|
-        transaction1 = transaction_factory.make_send(1000000_i64)
-        transaction2 = transaction_factory.make_send(2000000_i64)
+        transaction1 = transaction_factory.make_send(100000000_i64)
+        transaction2 = transaction_factory.make_send(200000000_i64)
         chain = block_factory.addBlock.chain
         utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
 
         utxo.record(chain)
-        expect_raises(Exception, "sender has not enough token(#{TOKEN_DEFAULT}). sender has -990001 + 0 but try to pay 2000000") do
+        expect_raises(Exception, "sender has not enough token(#{TOKEN_DEFAULT}). sender has -88716210 + 0 but try to pay 2000000") do
           utxo.valid_transaction?(transaction2, [transaction1])
         end
       end
@@ -311,7 +311,7 @@ describe UTXO do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq(%{{"confirmed":false,"pairs":[{"token":"SHARI","amount":100000}]}})
+            result.should eq(%{{"confirmed":false,"pairs":[{"token":"SHARI","amount":112837910}]}})
           end
         end
       end
@@ -324,7 +324,7 @@ describe UTXO do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq(%{{"confirmed":true,"pairs":[{"token":"SHARI","amount":10000}]}})
+            result.should eq(%{{"confirmed":true,"pairs":[{"token":"SHARI","amount":11283791}]}})
           end
         end
       end
