@@ -12,7 +12,7 @@ urlUpdate location model =
             ( { model | page = NotFound }, Cmd.none )
 
         Just route ->
-            ( { model | page = route, apiResponse = "", apiBody = "" }, Cmd.none )
+            ( { model | page = route, apiResponse = "", apiBody = "", error = "" }, Cmd.none )
 
 
 decode : Location -> Maybe Page

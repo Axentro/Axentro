@@ -39,7 +39,7 @@ init location =
         ( navState, navCmd ) =
             Navbar.initialState NavMsg
 
-        prefix = "http://localhost:3000/api/v1/"
+        prefix = "http://testnet.sushichain.io:3000/api/v1/"
 
         ( model, urlCmd ) =
             urlUpdate location { navState = navState, page = ApiOverview, error = "", apiResponse = ""

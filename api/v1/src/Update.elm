@@ -32,7 +32,10 @@ update msg model =
             ( { model | apiResponse = json, error = "" }, Cmd.none )
 
         RunApiCallResponse (Err err) ->
-            ( { model | apiResponse = "", error = (toString err) }, Cmd.none )
+            let
+             _ = Debug.log "error: " err
+            in
+             ( { model | apiResponse = "", error = (toString err) }, Cmd.none )
 
         SetApiBody body ->
              ( { model | apiBody = body }, Cmd.none )
