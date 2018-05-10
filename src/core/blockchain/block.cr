@@ -112,16 +112,32 @@ module ::Sushi::Core
       return 0_i64 if @transactions.size < 2
       @transactions[1..-1].reduce(0_i64) { |fees, transaction| fees + transaction.total_fees }
     end
+    #
+    # y : coinbase amount
+    # x : index
+    # r : radius
+    #
+    # total coinbase amount: 100000000000000
+    #
+    # y = sqrt(r^2 - x^2)
+    #
+    # (r * r * PI) / 4 == 100000000000000
+    # => r = sqrt(400000000000000 / PI)
+    # => r = 11283791.670955127
+    # => r ^ r = 127323954473516
+    #
+    # < result >
+    # total coinbase amount : 100000000000700[SHARI]
+    # last index            : 11283792
+    #
+    R = 127323954473516
 
     def coinbase_amount : Int64
-      base = 10000000000_i64
-      #
-      # divider will be incremented by 1000 per 10000 blocks
-      #
-      div = (@index / 10000_i64) * 1000_i64
-      div = 1 if div <= 0
+      index_index = @index * @index
 
-      base / div + total_fees
+      return total_fees if index_index > R
+
+      Math.sqrt(R - index_index).to_i64
     end
 
     include Hashes
