@@ -35,7 +35,7 @@ pageApiTransactionFees model =
         , Grid.row []
             [ apiLeftNav ApiTransactionFees
             , Grid.col [ Col.md9 ]
-                [ documentation ApiTransactionFees model.apiUrlT5 model.apiResponse "Transaction Fees" description "GET" "api/v1/transaction/fees" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/transaction/fees" ex model.error
+                [ documentation ApiTransactionFees model.apiUrlT5 model.apiResponse "Transaction Fees" description "GET" "api/v1/transaction/fees" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/transaction/fees" ex model.error
                 ]
             ]
         ]

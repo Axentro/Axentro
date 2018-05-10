@@ -22,7 +22,7 @@ import Bootstrap.Form.Input as Input
 import Messages exposing (Method(GET), Msg(..), Page(..))
 
 
-documentation msg apiUrl apiResponse title description method url curl ex error =
+documentation msg apiUrl apiResponse title description method url requestDescription responseDescription curl ex error =
     Card.config [ Card.outlineDark ]
         |> Card.headerH4 [] [ text title ]
         |> Card.block []
@@ -31,6 +31,12 @@ documentation msg apiUrl apiResponse title description method url curl ex error 
                     [ p [] [ description ]
                     , Html.h5 [] [ Html.text "Request" ]
                     , docTable (callTableHeader []) (tBody method url)
+                    , case requestDescription of
+                        Just requestDesc ->
+                            requestDesc
+
+                        _ ->
+                            text ""
                     , Html.h6 [] [ Html.text "Example" ]
                     , Alert.simplePrimary [] [ Html.text curl ]
                     , hr [] []
@@ -41,6 +47,12 @@ documentation msg apiUrl apiResponse title description method url curl ex error 
                         , TextArea.value <| Json.PrettyPrint.stringify ex
                         , TextArea.disabled
                         ]
+                    , case responseDescription of
+                        Just responseDesc ->
+                            responseDesc
+
+                        _ ->
+                            text ""
                     , hr [] []
                     , Html.h5 [] [ Html.text "Try me" ]
                     , Alert.simplePrimary []
@@ -48,7 +60,10 @@ documentation msg apiUrl apiResponse title description method url curl ex error 
                             [ Input.text [ Input.value apiUrl, Input.attrs [ onInput (SetApiUrl msg) ] ]
                             , br [] []
                             , Button.button [ Button.primary, Button.attrs [ onClick (RunApiCall GET apiUrl) ] ] [ text "Run" ]
-                            , if error /= "" then div [] [ hr [] [], Alert.simpleDanger [] [ text error ] ] else text ""
+                            , if error /= "" then
+                                div [] [ hr [] [], Alert.simpleDanger [] [ text error ] ]
+                              else
+                                text ""
                             , if apiResponse /= "" then
                                 div []
                                     [ hr [] []
@@ -56,7 +71,8 @@ documentation msg apiUrl apiResponse title description method url curl ex error 
                                         [ TextArea.id "response"
                                         , TextArea.rows 12
                                         , TextArea.value apiResponse
---                                        , TextArea.value <| Json.PrettyPrint.stringify apiResponse
+
+                                        --                                        , TextArea.value <| Json.PrettyPrint.stringify apiResponse
                                         ]
                                     ]
                               else

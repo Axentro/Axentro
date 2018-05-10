@@ -36,7 +36,7 @@ pageApiBlockTransactions model =
         , Grid.row []
             [ apiLeftNav ApiBlockTransactions
             , Grid.col [ Col.md9 ]
-                [ documentation ApiBlockTransactions model.apiUrlB6 model.apiResponse "Block Transactions" description "GET" "api/v1/block/{:index}/transactions" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/block/0/transactions" ex model.error
+                [ documentation ApiBlockTransactions model.apiUrlB6 model.apiResponse "Block Transactions" description "GET" "api/v1/block/{:index}/transactions" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/block/0/transactions" ex model.error
                 ]
             ]
         ]

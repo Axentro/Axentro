@@ -35,7 +35,7 @@ pageApiDomainConfirmed model =
         , Grid.row []
             [ apiLeftNav ApiDomainConfirmed
             , Grid.col [ Col.md9 ]
-                [ documentation ApiDomainConfirmed model.apiUrlD2 model.apiResponse "Domain Confirmed" description "GET" "api/v1/domain/{:domain}/confirmed" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/confirmed" ex model.error
+                [ documentation ApiDomainConfirmed model.apiUrlD2 model.apiResponse "Domain Confirmed" description "GET" "api/v1/domain/{:domain}/confirmed" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/confirmed" ex model.error
                 ]
             ]
         ]

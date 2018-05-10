@@ -83,11 +83,6 @@ overviewBlockSection =
     ]
 
 
-
---  # [POST] v1/transaction                             | create and broadcast a transaction
---  # [POST] v1/transaction/unsigned                    | create an unsigned transaction
-
-
 overviewTransactionSection =
     [ hr [] []
     , h3 [] [ text "Transaction" ]
@@ -117,6 +112,16 @@ overviewTransactionSection =
                 [ Table.td [] [ Html.text "GET" ]
                 , Table.td [] [ a [ href "#api-transaction-fees" ] [ Html.text "api/v1/transaction/fees" ] ]
                 , Table.td [] [ Html.text "get transaction fees" ]
+                ]
+            , Table.tr []
+                [ Table.td [] [ Html.text "POST" ]
+                , Table.td [] [ a [ href "#api-transaction-create-unsigned" ] [ Html.text "api/v1/transaction/unsigned" ] ]
+                , Table.td [] [ Html.text "create an unsigned transaction" ]
+                ]
+            , Table.tr []
+                [ Table.td [] [ Html.text "POST" ]
+                , Table.td [] [ a [ href "#api-transaction-create" ] [ Html.text "api/v1/transaction" ] ]
+                , Table.td [] [ Html.text "create and broadcast a signed transaction" ]
                 ]
             ]
         )
@@ -156,8 +161,7 @@ overviewAddressSection =
             ]
         )
     ]
-    
-    
+
 
 overviewDomainSection =
     [ hr [] []
@@ -191,7 +195,7 @@ overviewDomainSection =
                 ]
             ]
         )
-    ]    
+    ]
 
 
 overviewScarsSection =

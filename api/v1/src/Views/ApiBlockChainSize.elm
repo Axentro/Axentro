@@ -30,7 +30,7 @@ pageApiBlockChainSize model =
         , Grid.row []
             [ apiLeftNav ApiBlockchainSize
             , Grid.col [ Col.md9 ]
-                [ documentation ApiBlockchainSize model.apiUrlB3 model.apiResponse "Blockchain Size" description "GET" "api/v1/blockchain/size" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/blockchain/size" ex model.error
+                [ documentation ApiBlockchainSize model.apiUrlB3 model.apiResponse "Blockchain Size" description "GET" "api/v1/blockchain/size" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/blockchain/size" ex model.error
                 ]
             ]
         ]

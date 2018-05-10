@@ -35,7 +35,7 @@ pageApiTransactionConfirmations model =
         , Grid.row []
             [ apiLeftNav ApiTransactionConfirmations
             , Grid.col [ Col.md9 ]
-                [ documentation ApiTransactionConfirmations model.apiUrlT4 model.apiResponse "Transaction Confirmations" description "GET" "api/v1/transaction/confirmations" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/transaction/confirmations" ex model.error
+                [ documentation ApiTransactionConfirmations model.apiUrlT4 model.apiResponse "Transaction Confirmations" description "GET" "api/v1/transaction/confirmations" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/transaction/confirmations" ex model.error
                 ]
             ]
         ]

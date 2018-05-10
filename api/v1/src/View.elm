@@ -38,6 +38,8 @@ import Views.ApiTransaction exposing (pageApiTransaction)
 import Views.ApiTransactionBlock exposing (pageApiTransactionBlock)
 import Views.ApiTransactionBlockHeader exposing (pageApiTransactionBlockHeader)
 import Views.ApiTransactionConfirmations exposing (pageApiTransactionConfirmations)
+import Views.ApiTransactionCreate exposing (pageApiTransactionCreate)
+import Views.ApiTransactionCreateUnsigned exposing (pageApiTransactionCreateUnsigned)
 import Views.ApiTransactionFees exposing (pageApiTransactionFees)
 
 
@@ -58,8 +60,9 @@ menu model =
         |> Navbar.dark
         |> Navbar.brand [ href "#" ] [ text "SushiChain API" ]
         |> Navbar.items
-            [ Navbar.itemLink [ href "#getting-started" ] [ text "Getting started" ]
-            , Navbar.itemLink [ href "#api-overview" ] [ text "Api Overview" ]
+            [
+--            Navbar.itemLink [ href "#getting-started" ] [ text "Getting started" ] This is for later - a guide to creating dApps / stuff using the API
+             Navbar.itemLink [ href "#api-overview" ] [ text "Api Overview" ]
             ]
         |> Navbar.view model.navState
 
@@ -106,6 +109,12 @@ mainContent model =
 
             ApiTransactionFees ->
                 pageApiTransactionFees model
+
+            ApiTransactionCreateUnsigned ->
+                pageApiTransactionCreateUnsigned model
+
+            ApiTransactionCreate ->
+                pageApiTransactionCreate model
 
             ApiAddressTransactions ->
                 pageApiAddressTransactions model
@@ -159,13 +168,4 @@ pageNotFound =
 
 pageGettingStarted : Model -> List (Html Msg)
 pageGettingStarted model =
-    [ h2 [] [ text "Getting started" ]
-
-    --    , Button.button
-    --        [ Button.success
-    --        , Button.large
-    --        , Button.block
-    --        , Button.attrs [ onClick ShowModal ]
-    --        ]
-    --        [ text "Click me" ]
-    ]
+    [ h2 [] [ text "Getting started" ] ]

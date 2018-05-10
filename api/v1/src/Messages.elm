@@ -33,6 +33,8 @@ type Page
     | ApiTransactionBlockHeader
     | ApiTransactionConfirmations
     | ApiTransactionFees
+    | ApiTransactionCreateUnsigned
+    | ApiTransactionCreate
 
     | ApiAddressTransactions
     | ApiAddressConfirmed

@@ -35,6 +35,8 @@ apiLeftNav page =
         , link ApiTransactionBlockHeader "#api-transaction-block-header" "transaction/block/header" page
         , link ApiTransactionConfirmations "#api-transaction-confirmations" "transaction/confirmations" page
         , link ApiTransactionFees "#api-transaction-fees" "transaction/fees" page
+        , link ApiTransactionCreateUnsigned "#api-transaction-create-unsigned" "transaction/create/unsigned" page
+        , link ApiTransactionCreate "#api-transaction-create" "transaction/create" page
         , hr [] []
         , h5 [] [ text "Address" ]
         , link ApiAddressTransactions "#api-address-transactions" "address/transactions" page

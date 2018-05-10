@@ -35,7 +35,7 @@ pageApiScarsConfirmed model =
         , Grid.row []
             [ apiLeftNav ApiScarsConfirmed
             , Grid.col [ Col.md9 ]
-                [ documentation ApiScarsConfirmed model.apiUrlS2 model.apiResponse "Address Confirmed" description "GET" "api/v1/scars/{:domain}/confirmed" "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/scars/{:domain}/confirmed" ex model.error
+                [ documentation ApiScarsConfirmed model.apiUrlS2 model.apiResponse "Address Confirmed" description "GET" "api/v1/scars/{:domain}/confirmed" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/scars/{:domain}/confirmed" ex model.error
                 ]
             ]
         ]
