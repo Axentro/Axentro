@@ -35,7 +35,7 @@ pageApiTransactionCreateUnsigned model =
         , Grid.row []
             [ apiLeftNav ApiTransactionCreateUnsigned
             , Grid.col [ Col.md9 ]
-                [ documentation ApiTransactionCreateUnsigned model.apiUrlT6 model.apiResponse "Transaction Create Unsigned" description "POST" "api/v1/transaction/unsigned" (Just requestDescription) Nothing """curl -X POST -H 'Content-Type: application/json' -d '{"action": "send","senders": [{"address": "VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj","public_key": "48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242","amount": 5000,"fee": 1}],"recipients": [{"address": "VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx","amount": 5000}],"message": "","token": "SUPERCOOL"}' http://localhost:3000/v1/transaction/unsigned""" ex model.error
+                [ documentation ApiTransactionCreateUnsigned model.apiUrlT6 (Just model.apiBody) model.apiResponse "Transaction Create Unsigned" description "POST" "api/v1/transaction/unsigned" (Just requestDescription) Nothing """curl -X POST -H 'Content-Type: application/json' -d '{"action": "send","senders": [{"address": "VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj","public_key": "48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242","amount": 5000,"fee": 1}],"recipients": [{"address": "VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx","amount": 5000}],"message": "","token": "SUPERCOOL"}' http://localhost:3000/api/v1/transaction/unsigned""" ex model.error
                 ]
             ]
         ]

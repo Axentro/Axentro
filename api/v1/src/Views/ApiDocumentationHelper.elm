@@ -19,10 +19,10 @@ import Bootstrap.Table as Table
 import Bootstrap.Alert as Alert
 import Bootstrap.Form.Textarea as TextArea
 import Bootstrap.Form.Input as Input
-import Messages exposing (Method(GET), Msg(..), Page(..))
+import Messages exposing (Method(GET, POST), Msg(..), Page(..))
 
 
-documentation msg apiUrl apiResponse title description method url requestDescription responseDescription curl ex error =
+documentation msg apiUrl apiBody apiResponse title description method url requestDescription responseDescription curl ex error =
     Card.config [ Card.outlineDark ]
         |> Card.headerH4 [] [ text title ]
         |> Card.block []
@@ -59,7 +59,18 @@ documentation msg apiUrl apiResponse title description method url requestDescrip
                         [ div []
                             [ Input.text [ Input.value apiUrl, Input.attrs [ onInput (SetApiUrl msg) ] ]
                             , br [] []
-                            , Button.button [ Button.primary, Button.attrs [ onClick (RunApiCall GET apiUrl) ] ] [ text "Run" ]
+                            , if (msg == ApiTransactionCreate || msg == ApiTransactionCreateUnsigned) then
+                                div []
+                                    [ TextArea.textarea
+                                        [ TextArea.id "request_body"
+                                        , TextArea.rows 12
+                                        , TextArea.attrs [ onInput SetApiBody ]
+                                        , TextArea.value (Maybe.withDefault "" apiBody)
+                                        ]
+                                    , Button.button [ Button.primary, Button.attrs [ onClick (RunApiCall POST apiUrl apiBody) ] ] [ text "Run" ]
+                                    ]
+                              else
+                                Button.button [ Button.primary, Button.attrs [ onClick (RunApiCall GET apiUrl Nothing) ] ] [ text "Run" ]
                             , if error /= "" then
                                 div [] [ hr [] [], Alert.simpleDanger [] [ text error ] ]
                               else
@@ -70,9 +81,9 @@ documentation msg apiUrl apiResponse title description method url requestDescrip
                                     , TextArea.textarea
                                         [ TextArea.id "response"
                                         , TextArea.rows 12
-                                        , TextArea.value apiResponse
 
-                                        --                                        , TextArea.value <| Json.PrettyPrint.stringify apiResponse
+                                        --                                        , TextArea.value apiResponse
+                                        , TextArea.value <| Json.PrettyPrint.stringify apiResponse
                                         ]
                                     ]
                               else

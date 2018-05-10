@@ -35,7 +35,7 @@ pageApiBlockChain model =
         , Grid.row []
             [ apiLeftNav ApiBlockchain
             , Grid.col [ Col.md9 ]
-                [ documentation ApiBlockchain model.apiUrlB1 model.apiResponse "Blockchain" description "GET" "api/v1/blockchain" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/blockchain" ex model.error
+                [ documentation ApiBlockchain model.apiUrlB1 Nothing model.apiResponse "Blockchain" description "GET" "api/v1/blockchain" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/blockchain" ex model.error
                 ]
             ]
         ]

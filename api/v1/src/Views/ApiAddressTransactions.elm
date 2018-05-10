@@ -71,7 +71,7 @@ pageApiAddressTransactions model =
         , Grid.row []
             [ apiLeftNav ApiAddressTransactions
             , Grid.col [ Col.md9 ]
-                [ documentation ApiAddressTransactions model.apiUrlA1 model.apiResponse "Address Transactions" description "GET" "api/v1/address/{:address}/transactions" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/address/{:address}/transactions" ex model.error
+                [ documentation ApiAddressTransactions model.apiUrlA1 Nothing model.apiResponse "Address Transactions" description "GET" "api/v1/address/{:address}/transactions" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/address/{:address}/transactions" ex model.error
                 ]
             ]
         ]

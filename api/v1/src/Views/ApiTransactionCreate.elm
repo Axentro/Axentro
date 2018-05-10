@@ -35,7 +35,7 @@ pageApiTransactionCreate model =
         , Grid.row []
             [ apiLeftNav ApiTransactionCreate
             , Grid.col [ Col.md9 ]
-                [ documentation ApiTransactionCreate model.apiUrlT1 model.apiResponse "Transaction" description "GET" "api/v1/transaction/{:id}" (Just requestDescription) Nothing """curl -X POST -H "Content-Type: application/json" -d '{"transaction": {"id":"9581ab8ae3c121cdec9d57613006bae9014a28fb87de2c8c6348adac485d2d4e","action":"send","senders":[{"address":"VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj","public_key":"48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242","amount":5000,"fee":1}],"recipients":[{"address":"VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx","amount":5000}],"message":"","token":"WOOP","prev_hash":"0","sign_r":"0","sign_s":"0"}}}' http://testnet.sushichain.io:3000/api/v1/transaction""" ex model.error
+                [ documentation ApiTransactionCreate model.apiUrlT7 (Just model.apiBody) model.apiResponse "Transaction" description "POST" "api/v1/transaction" (Just requestDescription) Nothing """curl -X POST -H "Content-Type: application/json" -d '{"transaction": {"id":"9581ab8ae3c121cdec9d57613006bae9014a28fb87de2c8c6348adac485d2d4e","action":"send","senders":[{"address":"VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj","public_key":"48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242","amount":5000,"fee":1}],"recipients":[{"address":"VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx","amount":5000}],"message":"","token":"WOOP","prev_hash":"0","sign_r":"0","sign_s":"0"}}' http://testnet.sushichain.io:3000/api/v1/transaction""" ex model.error
                 ]
             ]
         ]
@@ -46,6 +46,8 @@ requestDescription =
    div [] [
     hr [] []
     , Html.h5 [] [ Html.text "Post Body"]
+    , p [] [ text "The post body must have a key called transaction with a value of the transaction containing the mandatory fields described below:"]
+    , Alert.simpleLight [] [ text """ {"transaction": {"action":"send" ...}} """ ]
     , p [] [ text "The post body is made up of the following mandatory fields:"]
     , ul [] [
      li [] [ text "action"]

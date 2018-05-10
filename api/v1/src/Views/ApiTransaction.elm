@@ -35,7 +35,7 @@ pageApiTransaction model =
         , Grid.row []
             [ apiLeftNav ApiTransaction
             , Grid.col [ Col.md9 ]
-                [ documentation ApiTransaction model.apiUrlT1 model.apiResponse "Transaction" description "GET" "api/v1/transaction/{:id}" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/transaction/{:id}" ex model.error
+                [ documentation ApiTransaction model.apiUrlT1 Nothing model.apiResponse "Transaction" description "GET" "api/v1/transaction/{:id}" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/transaction/{:id}" ex model.error
                 ]
             ]
         ]

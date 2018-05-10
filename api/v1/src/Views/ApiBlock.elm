@@ -35,7 +35,7 @@ pageApiBlock model =
         , Grid.row []
             [ apiLeftNav ApiBlock
             , Grid.col [ Col.md9 ]
-                [ documentation ApiBlock model.apiUrlB4 model.apiResponse "Block" description "GET" "api/v1/block/{:index}" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/block/0" ex model.error
+                [ documentation ApiBlock model.apiUrlB4 Nothing model.apiResponse "Block" description "GET" "api/v1/block/{:index}" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/block/0" ex model.error
                 ]
             ]
         ]

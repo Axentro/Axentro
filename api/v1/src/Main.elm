@@ -69,7 +69,7 @@ init location =
                , apiUrlS1 = (prefix ++ "scars/sales")
                , apiUrlS2 = (prefix ++ "scars/{:domain}/confirmed")
                , apiUrlS3 = (prefix ++ "scars/{:domain}/unconfirmed")
-
+               , apiBody = ""
                 }
     in
         ( model, Cmd.batch [ urlCmd, navCmd ] )

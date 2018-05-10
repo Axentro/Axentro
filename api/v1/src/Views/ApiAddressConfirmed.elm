@@ -35,7 +35,7 @@ pageApiAddressConfirmed model =
         , Grid.row []
             [ apiLeftNav ApiAddressConfirmed
             , Grid.col [ Col.md9 ]
-                [ documentation ApiAddressConfirmed model.apiUrlA2 model.apiResponse "Address Confirmed" description "GET" "api/v1/address/{:address}/confirmed" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/address/{:address}/confirmed" ex model.error
+                [ documentation ApiAddressConfirmed model.apiUrlA2 Nothing model.apiResponse "Address Confirmed" description "GET" "api/v1/address/{:address}/confirmed" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/address/{:address}/confirmed" ex model.error
                 ]
             ]
         ]
