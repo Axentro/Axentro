@@ -353,6 +353,7 @@ module ::Sushi::Core
         @rest_controller.get_handler,
         @pubsub_controller.get_handler,
         v1_api_documentation_handler,
+        HTTP::StaticFileHandler.new("api/v1",false)
       ]
     end
 

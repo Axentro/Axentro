@@ -17,7 +17,6 @@ import Bootstrap.Button as Button
 import Bootstrap.ListGroup as Listgroup
 import Bootstrap.Modal as Modal
 import Bootstrap.Table as Table
-import Bootstrap.CDN as CDN
 
 import Models exposing (Model)
 import View exposing (view)

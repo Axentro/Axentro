@@ -9,7 +9,6 @@ import Bootstrap.Button as Button
 import Bootstrap.ListGroup as Listgroup
 import Bootstrap.Modal as Modal
 import Bootstrap.Table as Table
-import Bootstrap.CDN as CDN
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Messages exposing (Msg(..), Page(..))
@@ -46,8 +45,7 @@ import Views.ApiTransactionFees exposing (pageApiTransactionFees)
 view : Model -> Html Msg
 view model =
     div []
-        [ CDN.stylesheet
-        , menu model
+        [ menu model
         , mainContent model
         ]
 
