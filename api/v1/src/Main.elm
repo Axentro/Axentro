@@ -69,6 +69,7 @@ init location =
                , apiUrlS2 = (prefix ++ "scars/{:domain}/confirmed")
                , apiUrlS3 = (prefix ++ "scars/{:domain}/unconfirmed")
                , apiBody = ""
+               , apiUrlTK1 = (prefix ++ "tokens")
                 }
     in
         ( model, Cmd.batch [ urlCmd, navCmd ] )

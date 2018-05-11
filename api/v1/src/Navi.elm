@@ -57,4 +57,6 @@ routeParser =
          , UrlParser.map ApiScarsSales (UrlParser.s "api-scars-sales")
          , UrlParser.map ApiScarsConfirmed (UrlParser.s "api-scars-confirmed")
          , UrlParser.map ApiScarsUnconfirmed (UrlParser.s "api-scars-unconfirmed")
+
+         , UrlParser.map ApiTokenList (UrlParser.s "api-token-list")
         ]

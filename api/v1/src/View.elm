@@ -33,6 +33,7 @@ import Views.ApiBlockTransactions exposing (pageApiBlockTransactions)
 import Views.ApiScarsConfirmed exposing (pageApiScarsConfirmed)
 import Views.ApiScarsSales exposing (pageApiScarsSales)
 import Views.ApiScarsUnconfirmed exposing (pageApiScarsUnconfirmed)
+import Views.ApiTokenList exposing (pageApiTokenList)
 import Views.ApiTransaction exposing (pageApiTransaction)
 import Views.ApiTransactionBlock exposing (pageApiTransactionBlock)
 import Views.ApiTransactionBlockHeader exposing (pageApiTransactionBlockHeader)
@@ -152,6 +153,9 @@ mainContent model =
 
             ApiScarsUnconfirmed ->
                 pageApiScarsUnconfirmed model
+
+            ApiTokenList ->
+                pageApiTokenList model
 
             NotFound ->
                 pageNotFound

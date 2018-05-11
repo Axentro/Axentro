@@ -31,6 +31,7 @@ pageApiOverview model =
     , Grid.row [] [ Grid.col [] overviewAddressSection ]
     , Grid.row [] [ Grid.col [] overviewDomainSection ]
     , Grid.row [] [ Grid.col [] overviewScarsSection ]
+    , Grid.row [] [ Grid.col [] overviewTokensSection ]
     ]
 
 
@@ -222,6 +223,19 @@ overviewScarsSection =
         )
     ]
 
+
+overviewTokensSection =
+    [ h3 [] [ text "Tokens" ]
+    , apiOverviewTable
+        (Table.tbody []
+            [ Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "#api-token-list" ] [ Html.text "api/v1/tokens" ] ]
+                , Table.td [] [ Html.text "list of tokens" ]
+                ]
+            ]
+        )
+    ]
 
 apiOverviewTable : Table.TBody msg -> Html.Html msg
 apiOverviewTable tableBody =

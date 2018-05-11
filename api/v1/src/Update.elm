@@ -114,6 +114,8 @@ update msg model =
                 ApiScarsUnconfirmed ->
                     ( { model | apiUrlS3 = url }, Cmd.none )
 
+                ApiTokenList ->
+                    ( { model | apiUrlTK1 = url }, Cmd.none )
                 _ ->
                     ( model, Cmd.none )
 

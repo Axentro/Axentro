@@ -52,10 +52,13 @@ apiLeftNav page =
         , link ApiDomainUnconfirmed "#api-domain-unconfirmed" "domain/unconfirmed" page
         , link ApiDomainUnconfirmedToken "#api-domain-unconfirmed-token" "domain/unconfirmed/token" page
         , hr [] []
-        , h5 [] [ text "Domain" ]
+        , h5 [] [ text "SCARS" ]
         , link ApiScarsSales "#api-scars-sales" "scars/sales" page
         , link ApiScarsConfirmed "#api-scars-confirmed" "scars/confirmed" page
         , link ApiScarsUnconfirmed "#api-scars-unconfirmed" "scars/unconfirmed" page
+        , hr [] []
+        , h5 [] [ text "Tokens" ]
+        , link ApiTokenList "#api-token-list" "tokens/list" page
         ]
 
 
