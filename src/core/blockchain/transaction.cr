@@ -10,25 +10,12 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
+require "./transaction/models"
+
 module ::Sushi::Core
   class Transaction
     MESSAGE_SIZE_LIMIT = 512
     TOKEN_SIZE_LIMIT   =  16
-
-    alias Recipient = NamedTuple(
-      address: String,
-      amount: Int64,
-    )
-
-    alias Sender = NamedTuple(
-      address: String,
-      public_key: String,
-      amount: Int64,
-      fee: Int64,
-    )
-
-    alias Recipients = Array(Recipient)
-    alias Senders = Array(Sender)
 
     JSON.mapping(
       id: String,
@@ -40,6 +27,7 @@ module ::Sushi::Core
       prev_hash: String,
       sign_r: String,
       sign_s: String,
+      scaled: Bool,
     )
 
     setter prev_hash : String
@@ -53,7 +41,8 @@ module ::Sushi::Core
       @token : String,
       @prev_hash : String,
       @sign_r : String,
-      @sign_s : String
+      @sign_s : String,
+      @scaled : Bool,
     )
     end
 
@@ -72,6 +61,7 @@ module ::Sushi::Core
       raise "length of transaction id have to be 64: #{@id}" if @id.size != 64
       raise "message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
       raise "token size exceeds: #{self.token.bytesize} for #{TOKEN_SIZE_LIMIT}" if self.token.bytesize > TOKEN_SIZE_LIMIT
+      raise "unscaled transaction" unless @scaled
 
       @senders.each do |sender|
         unless Keys::Address.from(sender[:address], "sender")
@@ -153,6 +143,7 @@ module ::Sushi::Core
         self.prev_hash,
         sign_r,
         sign_s,
+        self.scaled,
       )
     end
 
@@ -167,6 +158,7 @@ module ::Sushi::Core
         "0",
         "0",
         "0",
+        self.scaled,
       )
     end
 
@@ -184,5 +176,8 @@ module ::Sushi::Core
 
     include Hashes
     include Common::Validator
+    include TransactionModels
   end
 end
+
+require "./transaction/*"

@@ -48,11 +48,11 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def fees_impl
-      fees = Hash(String, Int64).new
+      fees = Hash(String, String).new
 
       blockchain.dapps.each do |dapp|
         dapp.transaction_actions.each do |action|
-          fees[action] = dapp.class.fee(action) if dapp.class.fee(action) > 0
+          fees[action] = scale_decimal(dapp.class.fee(action)) if dapp.class.fee(action) > 0
         end
       end
 

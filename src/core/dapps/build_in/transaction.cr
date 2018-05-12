@@ -46,8 +46,8 @@ module ::Sushi::Core::DApps::BuildIn
 
     def create_unsigned_transaction(json, context, params)
       action = json["action"].as_s
-      senders = Core::Transaction::Senders.from_json(json["senders"].to_json)
-      recipients = Core::Transaction::Recipients.from_json(json["recipients"].to_json)
+      senders = SendersDecimal.from_json(json["senders"].to_json)
+      recipients = RecipientsDecimal.from_json(json["recipients"].to_json)
       message = json["message"].as_s
       token = json["token"].as_s
 
@@ -59,22 +59,31 @@ module ::Sushi::Core::DApps::BuildIn
 
     def create_unsigned_transaction_impl(
       action : String,
-      senders : Core::Transaction::Senders,
-      recipients : Core::Transaction::Recipients,
+      senders : SendersDecimal,
+      recipients : RecipientsDecimal,
       message : String,
-      token : String
-    )
-      transaction = blockchain.create_unsigned_transaction(
+      token : String,
+      id : String = Transaction.create_id,
+     )
+
+      transaction = TransactionDecimal.new(
+        id,
         action,
         senders,
         recipients,
         message,
         token,
-      )
+        "0", # prev_hash
+        "0", # sign_r
+        "0", # sign_s
+        false,
+      ).to_transaction
 
       fee = transaction.total_fees
 
-      raise "invalid fee #{fee} for the action #{action}" if fee <= 0.0
+      # todo
+      # check for specific fees
+      raise "invalid fee #{fee} for the action #{action}" if fee <= 0
 
       transaction
     end
@@ -92,5 +101,7 @@ module ::Sushi::Core::DApps::BuildIn
 
       transaction
     end
+
+    include TransactionModels
   end
 end

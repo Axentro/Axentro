@@ -60,19 +60,19 @@ module ::Sushi::Core::DApps::BuildIn
 
       as_recipients = transaction.recipients.select { |recipient| recipient[:address] == sender[:address] }
       amount_token_as_recipients = as_recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
-      amount_default_as_recipients = transaction.token == DEFAULT ? amount_token_as_recipients : 0
+      amount_default_as_recipients = transaction.token == DEFAULT ? amount_token_as_recipients : 0_i64
 
       pay_token = sender[:amount]
       pay_default = (transaction.token == DEFAULT ? sender[:amount] : 0_i64) + sender[:fee]
 
       if amount_token + amount_token_as_recipients - pay_token < 0
         raise "sender has not enough token(#{transaction.token}). " +
-              "sender has #{amount_token} + #{amount_token_as_recipients} but try to pay #{pay_token}"
+              "sender has #{scale_decimal(amount_token)} + #{scale_decimal(amount_token_as_recipients)} but try to pay #{scale_decimal(pay_token)}"
       end
 
       if amount_default + amount_default_as_recipients - pay_default < 0
         raise "sender has not enough token(#{DEFAULT}). " +
-              "sender has #{amount_default} + #{amount_default_as_recipients} but try to pay #{pay_default}"
+              "sender has #{scale_decimal(amount_default)} + #{scale_decimal(amount_default_as_recipients)} but try to pay #{scale_decimal(pay_default)}"
       end
 
       true
@@ -175,7 +175,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def self.fee(action : String) : Int64
-      1_i64
+      scale_i64("0.0001")
     end
 
     include Consensus

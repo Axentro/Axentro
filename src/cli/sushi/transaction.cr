@@ -83,10 +83,6 @@ module ::Sushi::Interface::Sushi
 
       action = __action || "send"
 
-      if fee < Core::DApps::BuildIn::UTXO.fee(action)
-        raise "invalid fee for the action #{action}: minimum fee is #{Core::DApps::BuildIn::UTXO.fee("action")}"
-      end
-
       recipient_address = if address = __address
                             address
                           else
@@ -99,7 +95,7 @@ module ::Sushi::Interface::Sushi
 
       wallet = get_wallet(wallet_path, __wallet_password)
 
-      senders = Core::Transaction::Senders.new
+      senders = SendersDecimal.new
       senders.push(
         {
           address:    wallet.address,
@@ -109,7 +105,7 @@ module ::Sushi::Interface::Sushi
         }
       )
 
-      recipients = Core::Transaction::Recipients.new
+      recipients = RecipientsDecimal.new
       recipients.push(
         {
           address: to_address.as_hex,
@@ -203,15 +199,15 @@ module ::Sushi::Interface::Sushi
       unless __json
         puts_success("\n  showing fees for each action.\n")
 
-        puts_info("  + %20s - %20s +" % ["-" * 20, "-" * 20])
-        puts_info("  | %20s | %20s |" % ["action", "fee"])
-        puts_info("  | %20s | %20s |" % ["-" * 20, "-" * 20])
+        puts_info("  + %30s - %30s +" % ["-" * 30, "-" * 30])
+        puts_info("  | %30s | %30s |" % ["action", "fee"])
+        puts_info("  | %30s | %30s |" % ["-" * 30, "-" * 30])
 
         json.each do |action, fee|
-          puts_info("  | %20s | %20s |" % [action, fee])
+          puts_info("  | %30s | %30s |" % [action, fee])
         end
 
-        puts_info("  + %20s - %20s +" % ["-" * 20, "-" * 20])
+        puts_info("  + %30s - %30s +" % ["-" * 30, "-" * 30])
         puts_info("")
       else
         puts body

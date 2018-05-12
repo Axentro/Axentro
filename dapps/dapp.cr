@@ -149,13 +149,13 @@ module ::Sushi::Core::DApps::User
     # So, in this method, you only have to specify the sending amount of the token.
     # Also the fee is fixed as 1 SHARI.
     #
-    def create_sender(amount : Int64) : Core::Transaction::Senders
-      senders = Core::Transaction::Senders.new
+    def create_sender(amount : String) : SendersDecimal
+      senders = SendersDecimal.new
       senders.push({
         address:    blockchain.wallet.address,
         public_key: blockchain.wallet.public_key,
         amount:     amount,
-        fee:        1_i64,
+        fee:        "0.0001",
       })
       senders
     end
@@ -164,8 +164,8 @@ module ::Sushi::Core::DApps::User
     # This is a wrapper method that you can create a recipient.
     # You can specify a recipient's public address and amount of the token.
     #
-    def create_recipient(address : String, amount : Int64) : Core::Transaction::Recipients
-      recipients = Core::Transaction::Recipients.new
+    def create_recipient(address : String, amount : String) : RecipientsDecimal
+      recipients = RecipientsDecimal.new
       recipients.push({
         address: address,
         amount:  amount,
@@ -186,8 +186,8 @@ module ::Sushi::Core::DApps::User
     def create_transaction(
       id : String,
       action : String,
-      senders : Core::Transaction::Senders,
-      recipients : Core::Transaction::Recipients,
+      senders : SendersDecimal,
+      recipients : RecipientsDecimal,
       message : String,
       token : String
     ) : Bool
@@ -196,7 +196,7 @@ module ::Sushi::Core::DApps::User
         return false
       end
 
-      unsigned_transaction = blockchain.create_unsigned_transaction(
+      unsigned_transaction = blockchain.transaction_creator.create_unsigned_transaction_impl(
         action,
         senders,
         recipients,
@@ -281,6 +281,8 @@ module ::Sushi::Core::DApps::User
     def define_rpc?(call : String, json : JSON::Any, context : HTTP::Server::Context, params : Hash(String, String)) : HTTP::Server::Context?
       define_rpc?(call, json, context)
     end
+
+    include TransactionModels
   end
 end
 

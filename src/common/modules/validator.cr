@@ -18,4 +18,14 @@ module ::Sushi::Common::Validator
 
     true
   end
+
+  def valid_amount?(amount : String) : Bool
+    amount_decimal = BigDecimal.new(amount)
+
+    if BigDecimal.new(Int64::MAX, Denomination::SCALE_DECIMAL) < amount_decimal || 0 > amount_decimal
+      raise "the amount is out of range"
+    end
+
+    true
+  end
 end

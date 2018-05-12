@@ -77,17 +77,13 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_PRICE) unless price = __price
       puts_help(HELP_DOMAIN) unless domain = __domain
 
-      if fee < Core::DApps::BuildIn::Scars.fee("scars_buy")
-        raise "invalid fee for the action buy: minimum fee is #{Core::DApps::BuildIn::Scars.fee("scars_buy")}"
-      end
-
       Core::DApps::BuildIn::Scars.valid_domain?(domain)
 
       resolved = resolve_internal(node, domain, false)
 
       wallet = get_wallet(wallet_path, __wallet_password)
 
-      senders = Core::Transaction::Senders.new
+      senders = SendersDecimal.new
       senders.push({
         address:    wallet.address,
         public_key: wallet.public_key,
@@ -95,13 +91,11 @@ module ::Sushi::Interface::Sushi
         fee:        fee,
       })
 
-      recipients = Core::Transaction::Recipients.new
+      recipients = RecipientsDecimal.new
 
       if resolved["resolved"].as_bool
-        resolved_price = resolved["domain"]["price"].as_i64
+        resolved_price = resolved["domain"]["price"].as_s
         resolved_address = resolved["domain"]["address"].as_s
-
-        raise "invalid price. you specified #{price} but the price is #{resolved_price}" if resolved_price != price
 
         recipients.push({
           address: resolved_address,
@@ -119,10 +113,6 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_PRICE) unless price = __price
       puts_help(HELP_DOMAIN) unless domain = __domain
 
-      if fee < Core::DApps::BuildIn::Scars.fee("scars_sell")
-        raise "invalid fee for the action sell: minimum fee is #{Core::DApps::BuildIn::Scars.fee("scars_sell")}"
-      end
-
       resolved = resolve_internal(node, domain, false)
 
       raise "the domain #{domain} is not resolved" unless resolved["resolved"].as_bool
@@ -133,7 +123,7 @@ module ::Sushi::Interface::Sushi
 
       wallet = get_wallet(wallet_path, __wallet_password)
 
-      senders = Core::Transaction::Senders.new
+      senders = SendersDecimal.new
       senders.push({
         address:    wallet.address,
         public_key: wallet.public_key,
@@ -141,7 +131,7 @@ module ::Sushi::Interface::Sushi
         fee:        fee,
       })
 
-      recipients = Core::Transaction::Recipients.new
+      recipients = RecipientsDecimal.new
       recipients.push({
         address: wallet.address,
         amount:  price,
@@ -156,10 +146,6 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_FEE) unless fee = __fee
       puts_help(HELP_DOMAIN) unless domain = __domain
 
-      if fee < Core::DApps::BuildIn::Scars.fee("scars_cancel")
-        raise "invalid fee for the action sell: minimum fee is #{Core::DApps::BuildIn::Scars.fee("scars_sell")}"
-      end
-
       resolved = resolve_internal(node, domain, false)
 
       raise "the domain #{domain} is not resolved" unless resolved["resolved"].as_bool
@@ -170,18 +156,18 @@ module ::Sushi::Interface::Sushi
 
       wallet = get_wallet(wallet_path, __wallet_password)
 
-      senders = Core::Transaction::Senders.new
+      senders = SendersDecimal.new
       senders.push({
         address:    wallet.address,
         public_key: wallet.public_key,
-        amount:     1_i64,
+        amount:     "0",
         fee:        fee,
       })
 
-      recipients = Core::Transaction::Recipients.new
+      recipients = RecipientsDecimal.new
       recipients.push({
         address: wallet.address,
-        amount:  1_i64,
+        amount:  "0",
       })
 
       add_transaction(node, wallet, "scars_cancel", senders, recipients, domain, TOKEN_DEFAULT)
@@ -201,7 +187,7 @@ module ::Sushi::Interface::Sushi
 
         json = JSON.parse(body)
         json.each do |domain|
-          puts " - %20s | %64s | %d" % [domain["domain_name"].as_s, domain["address"].as_s, domain["price"].as_i]
+          puts " - %20s | %64s | %s" % [domain["domain_name"].as_s, domain["address"].as_s, domain["price"].as_s]
         end
 
         puts
@@ -231,7 +217,7 @@ module ::Sushi::Interface::Sushi
 
         puts_success "address  : #{resolved["domain"]["address"]}"
         puts_success "status   : #{status}"
-        puts_success "price    : #{resolved["domain"]["price"]}"
+        puts_success "price    : #{resolved["domain"]["price"].as_s}"
       else
         puts resolved.to_json
       end

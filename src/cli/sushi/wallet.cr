@@ -185,7 +185,7 @@ module ::Sushi::Interface::Sushi
 
         json["pairs"].each do |pair|
           next if pair["token"] != TOKEN_DEFAULT && pair["amount"].as_i == 0
-          puts_info("  | %20s | %20s |" % [pair["token"], pair["amount"]])
+          puts_info("  | %20s | %20s |" % [pair["token"], scale_decimal(pair["amount"].as_i64)])
         end
 
         puts_info("  + %20s - %20s +" % ["-" * 20, "-" * 20])

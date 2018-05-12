@@ -120,7 +120,7 @@ RULE
     end
 
     def self.fee(action : String) : Int64
-      1000_i64
+      scale_i64("0.1")
     end
   end
 end

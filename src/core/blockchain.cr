@@ -259,20 +259,7 @@ module ::Sushi::Core
         "0",           # prev_hash
         "0",           # sign_r
         "0",           # sign_s
-      )
-    end
-
-    def create_unsigned_transaction(action, senders, recipients, message, token, id = Transaction.create_id) : Transaction
-      Transaction.new(
-        id,
-        action,
-        senders,
-        recipients,
-        message,
-        token,
-        "0", # prev_hash
-        "0", # sign_r
-        "0", # sign_s
+        true,
       )
     end
 
@@ -313,5 +300,6 @@ module ::Sushi::Core
     include Hashes
     include Consensus
     include DApps
+    include TransactionModels
   end
 end

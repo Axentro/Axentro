@@ -39,7 +39,7 @@ module ::Sushi::Core::DApps::User
       raise "the number of senders must be 1" unless transaction.senders.size == 1
       raise "the number of recipients must be 1" unless transaction.recipients.size == 1
       raise "the recipient address must be #{VALID_ADDRESS}" unless transaction.recipients[0][:address] == VALID_ADDRESS
-      raise "the sending amount must be 10" unless transaction.senders[0][:amount] == 10
+      raise "the sending amount must be 0.0001" unless transaction.senders[0][:amount] == scale_i64("0.0001")
 
       true
     end
@@ -49,9 +49,8 @@ module ::Sushi::Core::DApps::User
         if transaction.action == TARGET_ACTION
           info "found a #{TARGET_ACTION} transaction"
 
-          sender = create_sender(5_i64)
-          recipient = create_recipient(transaction.senders[0][:address], 5_i64)
-
+          sender = create_sender("0.5")
+          recipient = create_recipient(transaction.senders[0][:address], "0.5")
           #
           # You can create a transaction id by `create_transaction_id`
           #

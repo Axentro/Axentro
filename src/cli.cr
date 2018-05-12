@@ -151,8 +151,8 @@ module ::Sushi::Interface
     def add_transaction(node : String,
                         wallet : Core::Wallet,
                         action : String,
-                        senders : Core::Transaction::Senders,
-                        recipients : Core::Transaction::Recipients,
+                        senders : SendersDecimal,
+                        recipients : RecipientsDecimal,
                         message : String,
                         token : String)
       unsigned_transaction =
@@ -177,8 +177,8 @@ module ::Sushi::Interface
 
     def create_unsigned_transaction(node : String,
                                     action : String,
-                                    senders : Core::Transaction::Senders,
-                                    recipients : Core::Transaction::Recipients,
+                                    senders : SendersDecimal,
+                                    recipients : RecipientsDecimal,
                                     message : String,
                                     token : String)
       payload = {
@@ -224,5 +224,7 @@ module ::Sushi::Interface
 
     include Helps
     include Logger
+    include Core::TransactionModels
+    include Common::Denomination
   end
 end
