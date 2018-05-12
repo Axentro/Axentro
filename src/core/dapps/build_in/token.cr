@@ -12,7 +12,7 @@
 
 module ::Sushi::Core::DApps::BuildIn
   class Token < DApp
-    getter tokens : Array(String) = ["SHARI"]
+    getter tokens : Array(String) = ["SUSHI"]
 
     @latest_recorded_index = 0
 
@@ -100,7 +100,7 @@ RULE
 
     def clear
       @tokens.clear
-      @tokens << "SHARI"
+      @tokens << "SUSHI"
 
       @latest_recorded_index = 0
     end

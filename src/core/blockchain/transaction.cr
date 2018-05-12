@@ -27,7 +27,7 @@ module ::Sushi::Core
       prev_hash: String,
       sign_r: String,
       sign_s: String,
-      scaled: Bool,
+      scaled: Int32,
     )
 
     setter prev_hash : String
@@ -42,7 +42,7 @@ module ::Sushi::Core
       @prev_hash : String,
       @sign_r : String,
       @sign_s : String,
-      @scaled : Bool
+      @scaled : Int32,
     )
     end
 
@@ -61,7 +61,7 @@ module ::Sushi::Core
       raise "length of transaction id have to be 64: #{@id}" if @id.size != 64
       raise "message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
       raise "token size exceeds: #{self.token.bytesize} for #{TOKEN_SIZE_LIMIT}" if self.token.bytesize > TOKEN_SIZE_LIMIT
-      raise "unscaled transaction" unless @scaled
+      raise "unscaled transaction" if scaled != 1
 
       @senders.each do |sender|
         unless Keys::Address.from(sender[:address], "sender")

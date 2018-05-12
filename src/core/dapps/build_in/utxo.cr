@@ -12,7 +12,7 @@
 
 module ::Sushi::Core::DApps::BuildIn
   class UTXO < DApp
-    DEFAULT = "SHARI"
+    DEFAULT = "SUSHI"
 
     @utxo_internal : Array(Hash(String, Hash(String, Int64))) = Array(Hash(String, Hash(String, Int64))).new
 

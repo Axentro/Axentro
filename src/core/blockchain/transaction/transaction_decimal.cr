@@ -22,7 +22,7 @@ module ::Sushi::Core
       prev_hash: String,
       sign_r: String,
       sign_s: String,
-      scaled: Bool,
+      scaled: Int32,
     )
 
     def initialize(
@@ -35,8 +35,9 @@ module ::Sushi::Core
       @prev_hash : String,
       @sign_r : String,
       @sign_s : String,
-      @scaled : Bool
+      @scaled : Int32,
     )
+      raise "invalid decimal transaction (expected scaled: 0 bug receive #{@scaled})" if @scaled != 0
     end
 
     def create_unsigned_transaction_decimal(
@@ -57,7 +58,7 @@ module ::Sushi::Core
         "0",
         "0",
         "0",
-        false,
+        0,
       )
     end
 
@@ -72,7 +73,7 @@ module ::Sushi::Core
         @prev_hash,
         @sign_r,
         @sign_s,
-        true,
+        1,
       )
     end
 
@@ -87,7 +88,7 @@ module ::Sushi::Core
         transaction.prev_hash,
         transaction.sign_r,
         transaction.sign_s,
-        false,
+        0,
       )
     end
 

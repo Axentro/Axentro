@@ -128,7 +128,8 @@ module ::Sushi::Core
     # => r ^ r = 127323954473516
     #
     # < result >
-    # total coinbase amount : 100000000000700[SHARI]
+    # todo
+    # total coinbase amount : 100000000000700[SUSHI]
     # last index            : 11283792
     #
     R = 127323954473516

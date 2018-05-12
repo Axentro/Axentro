@@ -259,7 +259,8 @@ module ::Sushi::Core
         "0",           # prev_hash
         "0",           # sign_r
         "0",           # sign_s
-        true      )
+        1,             # scaled
+      )
     end
 
     def headers

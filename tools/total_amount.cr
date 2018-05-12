@@ -13,13 +13,14 @@
 require "../src/core"
 
 include ::Sushi::Core
+include ::Sushi::Common::Denomination
 
 def create_block(index : Int64) : Block
   Block.new(index, [] of Transaction, 0_u64, "")
 end
 
-t_amount = 0_u64
-c_amount = 0_u64
+t_amount = 0_i64
+c_amount = 0_i64
 
 i = 0_i64
 
@@ -35,5 +36,5 @@ loop do
 end
 
 puts ""
-puts "Total amount : #{t_amount}[SHARI]"
+puts "Total amount : #{scale_decimal(t_amount.to_i64)}[SUSHI]"
 puts "Last index   : #{i}"

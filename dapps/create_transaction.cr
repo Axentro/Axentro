@@ -49,8 +49,8 @@ module ::Sushi::Core::DApps::User
         if transaction.action == TARGET_ACTION
           info "found a #{TARGET_ACTION} transaction"
 
-          sender = create_sender("0.5")
-          recipient = create_recipient(transaction.senders[0][:address], "0.5")
+          sender = create_sender("0.00005")
+          recipient = create_recipient(transaction.senders[0][:address], "0.00005")
           #
           # You can create a transaction id by `create_transaction_id`
           #
@@ -67,7 +67,7 @@ module ::Sushi::Core::DApps::User
             "send",                                                   # action
             sender,                                                   # sender
             recipient,                                                # recipient
-            "Thanks for sending me 10 SHARI! I'll back you 5 SHARI!", # message
+            "Thanks for sending me 0.0001 SUSHI! I'll back you 0.00005 SUSHI!", # message
             TOKEN_DEFAULT,                                            # token
           )
 

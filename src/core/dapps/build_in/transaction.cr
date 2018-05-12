@@ -75,7 +75,8 @@ module ::Sushi::Core::DApps::BuildIn
         "0", # prev_hash
         "0", # sign_r
         "0", # sign_s
-        false      ).to_transaction
+        0,   # scaled
+      ).to_transaction
 
       fee = transaction.total_fees
 
