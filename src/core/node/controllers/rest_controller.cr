@@ -83,6 +83,7 @@ module ::Sushi::Core::Controllers
       get "/api/v1/scars/sales" { |context, params| __v1_scars_sales(context, params) }
       get "/api/v1/scars/:domain/confirmed" { |context, params| __v1_scars_confirmed(context, params) }
       get "/api/v1/scars/:domain/unconfirmed" { |context, params| __v1_scars_unconfirmed(context, params) }
+      get "/api/v1/tokens" { |context, params| __v1_tokens(context, params) }
 
       post "/api/v1/transaction" { |context, params| __v1_transaction(context, params) }
       post "/api/v1/transaction/unsigned" { |context, params| __v1_transaction_unsigned(context, params) }
@@ -293,6 +294,12 @@ module ::Sushi::Core::Controllers
 
       with_response(context) do
         @blockchain.scars.scars_resolve_impl(domain, false)
+      end
+    end
+
+    def __v1_tokens(context, params)
+      with_response(context) do
+        @blockchain.token.tokens_list_impl
       end
     end
 

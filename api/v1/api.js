@@ -17502,6 +17502,7 @@ var _user$project$Messages$NavMsg = function (a) {
 var _user$project$Messages$UrlChange = function (a) {
 	return {ctor: 'UrlChange', _0: a};
 };
+var _user$project$Messages$ApiTokenList = {ctor: 'ApiTokenList'};
 var _user$project$Messages$ApiScarsUnconfirmed = {ctor: 'ApiScarsUnconfirmed'};
 var _user$project$Messages$ApiScarsConfirmed = {ctor: 'ApiScarsConfirmed'};
 var _user$project$Messages$ApiScarsSales = {ctor: 'ApiScarsSales'};
@@ -17563,7 +17564,9 @@ var _user$project$Models$Model = function (a) {
 																												return function (_3) {
 																													return function (_4) {
 																														return function (_5) {
-																															return {page: a, navState: b, apiResponse: c, error: d, apiUrlB1: e, apiUrlB2: f, apiUrlB3: g, apiUrlB4: h, apiUrlB5: i, apiUrlB6: j, apiUrlT1: k, apiUrlT2: l, apiUrlT3: m, apiUrlT4: n, apiUrlT5: o, apiUrlT6: p, apiUrlT7: q, apiUrlA1: r, apiUrlA2: s, apiUrlA3: t, apiUrlA4: u, apiUrlA5: v, apiUrlD1: w, apiUrlD2: x, apiUrlD3: y, apiUrlD4: z, apiUrlD5: _1, apiUrlS1: _2, apiUrlS2: _3, apiUrlS3: _4, apiBody: _5};
+																															return function (_6) {
+																																return {page: a, navState: b, apiResponse: c, error: d, apiUrlB1: e, apiUrlB2: f, apiUrlB3: g, apiUrlB4: h, apiUrlB5: i, apiUrlB6: j, apiUrlT1: k, apiUrlT2: l, apiUrlT3: m, apiUrlT4: n, apiUrlT5: o, apiUrlT6: p, apiUrlT7: q, apiUrlA1: r, apiUrlA2: s, apiUrlA3: t, apiUrlA4: u, apiUrlA5: v, apiUrlD1: w, apiUrlD2: x, apiUrlD3: y, apiUrlD4: z, apiUrlD5: _1, apiUrlS1: _2, apiUrlS2: _3, apiUrlS3: _4, apiBody: _5, apiUrlTK1: _6};
+																															};
 																														};
 																													};
 																												};
@@ -17768,7 +17771,14 @@ var _user$project$Navi$routeParser = _evancz$url_parser$UrlParser$oneOf(
 																															_evancz$url_parser$UrlParser$map,
 																															_user$project$Messages$ApiScarsUnconfirmed,
 																															_evancz$url_parser$UrlParser$s('api-scars-unconfirmed')),
-																														_1: {ctor: '[]'}
+																														_1: {
+																															ctor: '::',
+																															_0: A2(
+																																_evancz$url_parser$UrlParser$map,
+																																_user$project$Messages$ApiTokenList,
+																																_evancz$url_parser$UrlParser$s('api-token-list')),
+																															_1: {ctor: '[]'}
+																														}
 																													}
 																												}
 																											}
@@ -18102,6 +18112,14 @@ var _user$project$Update$update = F2(
 								{apiUrlS3: _p6}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
+					case 'ApiTokenList':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlTK1: _p6}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
 					default:
 						return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 				}
@@ -18359,7 +18377,7 @@ var _user$project$Views_ApiLeftNav$apiLeftNav = function (page) {
 																																						{ctor: '[]'},
 																																						{
 																																							ctor: '::',
-																																							_0: _elm_lang$html$Html$text('Domain'),
+																																							_0: _elm_lang$html$Html$text('SCARS'),
 																																							_1: {ctor: '[]'}
 																																						}),
 																																					_1: {
@@ -18371,7 +18389,29 @@ var _user$project$Views_ApiLeftNav$apiLeftNav = function (page) {
 																																							_1: {
 																																								ctor: '::',
 																																								_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiScarsUnconfirmed, '#api-scars-unconfirmed', 'scars/unconfirmed', page),
-																																								_1: {ctor: '[]'}
+																																								_1: {
+																																									ctor: '::',
+																																									_0: A2(
+																																										_elm_lang$html$Html$hr,
+																																										{ctor: '[]'},
+																																										{ctor: '[]'}),
+																																									_1: {
+																																										ctor: '::',
+																																										_0: A2(
+																																											_elm_lang$html$Html$h5,
+																																											{ctor: '[]'},
+																																											{
+																																												ctor: '::',
+																																												_0: _elm_lang$html$Html$text('Tokens'),
+																																												_1: {ctor: '[]'}
+																																											}),
+																																										_1: {
+																																											ctor: '::',
+																																											_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiTokenList, '#api-token-list', 'tokens/list', page),
+																																											_1: {ctor: '[]'}
+																																										}
+																																									}
+																																								}
 																																							}
 																																						}
 																																					}
@@ -19416,6 +19456,77 @@ var _user$project$Views_ApiOverview$apiOverviewTable = function (tableBody) {
 				{ctor: '[]'}),
 			tbody: tableBody
 		});
+};
+var _user$project$Views_ApiOverview$overviewTokensSection = {
+	ctor: '::',
+	_0: A2(
+		_elm_lang$html$Html$h3,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('Tokens'),
+			_1: {ctor: '[]'}
+		}),
+	_1: {
+		ctor: '::',
+		_0: _user$project$Views_ApiOverview$apiOverviewTable(
+			A2(
+				_kingsleyh$elm_bootstrap$Bootstrap_Table$tbody,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: A2(
+						_kingsleyh$elm_bootstrap$Bootstrap_Table$tr,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: A2(
+								_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
+								{ctor: '[]'},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('GET'),
+									_1: {ctor: '[]'}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: A2(
+											_elm_lang$html$Html$a,
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html_Attributes$href('#api-token-list'),
+												_1: {ctor: '[]'}
+											},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('api/v1/tokens'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {ctor: '[]'}
+									}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('list of tokens'),
+											_1: {ctor: '[]'}
+										}),
+									_1: {ctor: '[]'}
+								}
+							}
+						}),
+					_1: {ctor: '[]'}
+				})),
+		_1: {ctor: '[]'}
+	}
 };
 var _user$project$Views_ApiOverview$overviewScarsSection = {
 	ctor: '::',
@@ -21021,7 +21132,21 @@ var _user$project$Views_ApiOverview$pageApiOverview = function (model) {
 													_user$project$Views_ApiOverview$overviewScarsSection),
 												_1: {ctor: '[]'}
 											}),
-										_1: {ctor: '[]'}
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_kingsleyh$elm_bootstrap$Bootstrap_Grid$row,
+												{ctor: '[]'},
+												{
+													ctor: '::',
+													_0: A2(
+														_kingsleyh$elm_bootstrap$Bootstrap_Grid$col,
+														{ctor: '[]'},
+														_user$project$Views_ApiOverview$overviewTokensSection),
+													_1: {ctor: '[]'}
+												}),
+											_1: {ctor: '[]'}
+										}
 									}
 								}
 							}
@@ -21391,6 +21516,52 @@ var _user$project$Views_ApiScarsUnconfirmed$pageApiScarsUnconfirmed = function (
 							{
 								ctor: '::',
 								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiScarsUnconfirmed)(model.apiUrlS3)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Scars Confirmed')(description)('GET')('api/v1/scars/{:domain}/unconfirmed')(_elm_lang$core$Maybe$Nothing)(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/scars/{:domain}/unconfirmed')(ex)(model.error),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+
+var _user$project$Views_ApiTokenList$pageApiTokenList = function (model) {
+	var ex = '{\"result\":[\"SHARI\"],\"status\":\"success\"}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('Shows a list of all available tokens as Json'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_kingsleyh$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiTokenList),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_kingsleyh$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _kingsleyh$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiTokenList)(model.apiUrlTK1)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Tokens')(description)('GET')('api/v1/tokens')(_elm_lang$core$Maybe$Nothing)(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/tokens')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -22541,6 +22712,8 @@ var _user$project$View$mainContent = function (model) {
 					return _user$project$Views_ApiScarsConfirmed$pageApiScarsConfirmed(model);
 				case 'ApiScarsUnconfirmed':
 					return _user$project$Views_ApiScarsUnconfirmed$pageApiScarsUnconfirmed(model);
+				case 'ApiTokenList':
+					return _user$project$Views_ApiTokenList$pageApiTokenList(model);
 				default:
 					return _user$project$View$pageNotFound;
 			}
@@ -22642,7 +22815,8 @@ var _user$project$Main$init = function (location) {
 			apiUrlS1: A2(_elm_lang$core$Basics_ops['++'], prefix, 'scars/sales'),
 			apiUrlS2: A2(_elm_lang$core$Basics_ops['++'], prefix, 'scars/{:domain}/confirmed'),
 			apiUrlS3: A2(_elm_lang$core$Basics_ops['++'], prefix, 'scars/{:domain}/unconfirmed'),
-			apiBody: ''
+			apiBody: '',
+			apiUrlTK1: A2(_elm_lang$core$Basics_ops['++'], prefix, 'tokens')
 		});
 	var model = _p1._0;
 	var urlCmd = _p1._1;

@@ -52,3 +52,5 @@ type Page
     | ApiScarsSales
     | ApiScarsConfirmed
     | ApiScarsUnconfirmed
+
+    | ApiTokenList
