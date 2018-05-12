@@ -35,7 +35,7 @@ module ::Sushi::Core
       @prev_hash : String,
       @sign_r : String,
       @sign_s : String,
-      @scaled : Int32,
+      @scaled : Int32
     )
       raise "invalid decimal transaction (expected scaled: 0 bug receive #{@scaled})" if @scaled != 0
     end

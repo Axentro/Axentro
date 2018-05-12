@@ -42,7 +42,7 @@ module ::Sushi::Core
       @prev_hash : String,
       @sign_r : String,
       @sign_s : String,
-      @scaled : Int32,
+      @scaled : Int32
     )
     end
 
