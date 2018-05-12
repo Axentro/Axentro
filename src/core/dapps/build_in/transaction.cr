@@ -93,7 +93,6 @@ module ::Sushi::Core::DApps::BuildIn
 
     def create_transaction(json, context, params)
       transaction = Transaction.from_json(json["transaction"].to_json)
-      transaction.pre_fetch
       transaction = create_transaction_impl(transaction)
 
       context.response.print api_success(transaction)
