@@ -75,13 +75,18 @@ module ::Sushi::Core::DApps::BuildIn
         "0", # prev_hash
         "0", # sign_r
         "0", # sign_s
-        false      ).to_transaction
+        false,
+      ).to_transaction
 
       fee = transaction.total_fees
 
-      # todo
-      # check for specific fees
-      raise "invalid fee #{fee} for the action #{action}" if fee <= 0
+      minimum_fee = if _fee = blockchain.fees.fees_impl[action]?
+                      scale_i64(_fee)
+                    else
+                      Core::DApps::BuildIn::UTXO.fee("send")
+                    end
+
+      raise "the fee (#{scale_decimal(fee)}) is less than the minimum fee (#{scale_decimal(minimum_fee)})."if fee < minimum_fee
 
       transaction
     end

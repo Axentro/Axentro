@@ -127,12 +127,6 @@ module ::Sushi::Interface
     end
 
     def verify_response!(res) : String
-      unless res.status_code == 200
-        puts_error "failed to call an API."
-        puts_error res.body
-        exit -1
-      end
-
       unless body = res.body
         puts_error "returned body is empty"
         exit -1
@@ -142,6 +136,12 @@ module ::Sushi::Interface
 
       if json["status"].as_s == "error"
         puts_error json["reason"].as_s
+        exit -1
+      end
+
+      unless res.status_code == 200
+        puts_error "failed to call an API."
+        puts_error res.body
         exit -1
       end
 

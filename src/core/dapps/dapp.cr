@@ -12,6 +12,8 @@
 
 module ::Sushi::Core::DApps
   abstract class DApp
+    extend Common::Denomination
+
     abstract def setup
     abstract def transaction_actions : Array(String)
     abstract def transaction_related?(action : String) : Bool
@@ -40,7 +42,7 @@ module ::Sushi::Core::DApps
     end
 
     #
-    # Default fee is 1 SHARI
+    # Default fee is 0.0001 SUSHI
     # All thrid party dApps cannot override here.
     # Otherwise the transactions will be rejected from other nodes.
     #
@@ -59,8 +61,6 @@ module ::Sushi::Core::DApps
     include Logger
     include NodeComponents::APIFormat
     include Common::Denomination
-
-    extend Common::Denomination
   end
 end
 
