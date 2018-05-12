@@ -32,9 +32,9 @@ loop do
   t_amount += c_amount
   i += 1
 
-  puts "at #{i} (current amount: #{c_amount}, total amount: #{t_amount})\r" if i % 1000000 == 0
+  puts "at #{i} (current amount: #{c_amount}, total amount: #{scale_decimal(t_amount)} [SUSHI])\r" if i % 1000000 == 0
 end
 
 puts ""
-puts "Total amount : #{scale_decimal(t_amount.to_i64)}[SUSHI]"
+puts "Total amount : #{scale_decimal(t_amount)} [SUSHI]"
 puts "Last index   : #{i}"
