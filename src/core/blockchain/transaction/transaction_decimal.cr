@@ -14,26 +14,27 @@ module ::Sushi::Core
     )
 
     def initialize(
-         @id : String,
-         @action : String,
-         @senders : SendersDecimal,
-         @recipients : RecipientsDecimal,
-         @message : String,
-         @token : String,
-         @prev_hash : String,
-         @sign_r : String,
-         @sign_s : String,
-         @scaled : Bool,
-       )
+      @id : String,
+      @action : String,
+      @senders : SendersDecimal,
+      @recipients : RecipientsDecimal,
+      @message : String,
+      @token : String,
+      @prev_hash : String,
+      @sign_r : String,
+      @sign_s : String,
+      @scaled : Bool
+    )
     end
 
     def create_unsigned_transaction_decimal(
-         action : String,
-         senders : SendersDecimal,
-         recipients : RecipientsDecimal,
-         message : String,
-         token : String,
-         id = Transaction.create_id) : TransactionDecimal
+      action : String,
+      senders : SendersDecimal,
+      recipients : RecipientsDecimal,
+      message : String,
+      token : String,
+      id = Transaction.create_id
+    ) : TransactionDecimal
       TransactionDecimal.new(
         id,
         action,
@@ -44,8 +45,7 @@ module ::Sushi::Core
         "0", # prev_hash
         "0", # sign_r
         "0", # sign_s
-        false,
-      )
+        false      )
     end
 
     def to_transaction : Transaction
@@ -84,10 +84,10 @@ module ::Sushi::Core
 
     private def scale_i64(sender : SenderDecimal) : Sender
       {
-        address: sender[:address],
+        address:    sender[:address],
         public_key: sender[:public_key],
-        amount: scale_i64(sender[:amount]),
-        fee: scale_i64(sender[:fee]),
+        amount:     scale_i64(sender[:amount]),
+        fee:        scale_i64(sender[:fee]),
       }
     end
 
@@ -98,7 +98,7 @@ module ::Sushi::Core
     private def scale_i64(recipient : RecipientDecimal) : Recipient
       {
         address: recipient[:address],
-        amount: scale_i64(recipient[:amount]),
+        amount:  scale_i64(recipient[:amount]),
       }
     end
 
@@ -108,10 +108,10 @@ module ::Sushi::Core
 
     private def scale_decimal(sender : Sender) : SenderDecimal
       {
-        address: sender[:address],
+        address:    sender[:address],
         public_key: sender[:public_key],
-        amount: scale_decimal(sender[:amount]),
-        fee: scale_decimal(sender[:fee]),
+        amount:     scale_decimal(sender[:amount]),
+        fee:        scale_decimal(sender[:fee]),
       }
     end
 
@@ -122,7 +122,7 @@ module ::Sushi::Core
     private def scale_decimal(recipient : Recipient) : RecipientDecimal
       {
         address: recipient[:address],
-        amount: scale_decimal(recipient[:amount]),
+        amount:  scale_decimal(recipient[:amount]),
       }
     end
 

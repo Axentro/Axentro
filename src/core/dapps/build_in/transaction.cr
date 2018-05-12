@@ -63,9 +63,8 @@ module ::Sushi::Core::DApps::BuildIn
       recipients : RecipientsDecimal,
       message : String,
       token : String,
-      id : String = Transaction.create_id,
-     )
-
+      id : String = Transaction.create_id
+    )
       transaction = TransactionDecimal.new(
         id,
         action,
@@ -76,8 +75,7 @@ module ::Sushi::Core::DApps::BuildIn
         "0", # prev_hash
         "0", # sign_r
         "0", # sign_s
-        false,
-      ).to_transaction
+        false      ).to_transaction
 
       fee = transaction.total_fees
 

@@ -288,9 +288,9 @@ RULE
     def scale_decimal(domain : Domain)
       {
         domain_name: domain[:domain_name],
-        address: domain[:address],
-        status: domain[:status],
-        price: scale_decimal(domain[:price]),
+        address:     domain[:address],
+        status:      domain[:status],
+        price:       scale_decimal(domain[:price]),
       }
     end
 
