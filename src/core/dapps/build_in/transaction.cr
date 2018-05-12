@@ -75,8 +75,7 @@ module ::Sushi::Core::DApps::BuildIn
         "0", # prev_hash
         "0", # sign_r
         "0", # sign_s
-        false,
-      ).to_transaction
+        false      ).to_transaction
 
       fee = transaction.total_fees
 
@@ -86,7 +85,7 @@ module ::Sushi::Core::DApps::BuildIn
                       Core::DApps::BuildIn::UTXO.fee("send")
                     end
 
-      raise "the fee (#{scale_decimal(fee)}) is less than the minimum fee (#{scale_decimal(minimum_fee)})."if fee < minimum_fee
+      raise "the fee (#{scale_decimal(fee)}) is less than the minimum fee (#{scale_decimal(minimum_fee)})." if fee < minimum_fee
 
       transaction
     end

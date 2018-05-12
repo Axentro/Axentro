@@ -42,10 +42,11 @@ module ::Sushi::Core
         recipients,
         message,
         token,
-        "0", # prev_hash
-        "0", # sign_r
-        "0", # sign_s
-        false      )
+        "0",
+        "0",
+        "0",
+        false,
+      )
     end
 
     def to_transaction : Transaction
