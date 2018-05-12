@@ -26,6 +26,8 @@ module ::Sushi::Core::BlockQueue
       end
     rescue e : Exception
       warning "found nonce #{@nonce} has been rejected for the reason: #{e.message}"
+      # todo
+      warning e.backtrace.not_nil!.join("\n")
     end
   end
 end

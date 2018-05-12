@@ -29,7 +29,9 @@ module ::Sushi::Core::Logger
   end
 
   def warning(msg : String)
-    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E")
+    # todo
+    # return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E")
+    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION")
     log_out("Warning", msg, :yellow)
   end
 

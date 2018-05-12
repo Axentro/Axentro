@@ -98,14 +98,14 @@ module ::Sushi::Core
         network = Keys::Address.from(@senders.first[:address]).network
         public_key = Keys::PublicKey.new(@senders.first[:public_key], network)
 
-        secp256k1 = ECDSA::Secp256k1.new
+        secp256k1 : ECDSA::Secp256k1 = ECDSA::Secp256k1.new
 
         raise "invalid signing" if !secp256k1.verify(
-                                     public_key.point,
-                                     self.as_unsigned.to_hash,
-                                     BigInt.new(@sign_r, base: 16),
-                                     BigInt.new(@sign_s, base: 16),
-                                   )
+            public_key.not_nil!.point,
+            self.as_unsigned.to_hash,
+            BigInt.new(@sign_r, base: 16),
+            BigInt.new(@sign_s, base: 16),
+          )
 
         blockchain.dapps.each do |dapp|
           dapp.valid?(self, transactions) if dapp.transaction_related?(@action)

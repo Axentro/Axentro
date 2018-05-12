@@ -184,8 +184,10 @@ module ::Sushi::Interface::Sushi
         puts_info("  | %20s | %20s |" % ["-" * 20, "-" * 20])
 
         json["pairs"].each do |pair|
-          next if pair["token"] != TOKEN_DEFAULT && pair["amount"].as_i == 0
-          puts_info("  | %20s | %20s |" % [pair["token"], scale_decimal(pair["amount"].as_i64)])
+          amount = BigDecimal.new(pair["amount"].as_s)
+
+          next if pair["token"] != TOKEN_DEFAULT && amount == 0
+          puts_info("  | %20s | %20s |" % [pair["token"], amount])
         end
 
         puts_info("  + %20s - %20s +" % ["-" * 20, "-" * 20])

@@ -161,14 +161,14 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def amount_impl(address, confirmed, token)
-      pairs = [] of NamedTuple(token: String, amount: Int64)
+      pairs = [] of NamedTuple(token: String, amount: String)
 
       tokens = blockchain.token.tokens
       tokens.each do |_token|
         next if _token != token && token != "all"
 
         amount = confirmed ? get(address, _token) : get_unconfirmed(address, Array(Transaction).new, _token)
-        pairs << {token: _token, amount: amount}
+        pairs << {token: _token, amount: scale_decimal(amount)}
       end
 
       {confirmed: confirmed, pairs: pairs}
