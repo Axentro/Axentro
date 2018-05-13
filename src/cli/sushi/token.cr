@@ -68,6 +68,8 @@ module ::Sushi::Interface::Sushi
         public_key: wallet.public_key,
         amount:     amount,
         fee:        fee,
+        sign_r: "0",
+        sign_s: "0",
       })
 
       recipients = RecipientsDecimal.new
@@ -76,7 +78,7 @@ module ::Sushi::Interface::Sushi
         amount:  amount,
       })
 
-      add_transaction(node, wallet, "create_token", senders, recipients, "", token)
+      add_transaction(node, "create_token", [wallet], senders, recipients, "", token)
     end
 
     def list

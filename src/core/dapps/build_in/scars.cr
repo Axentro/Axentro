@@ -82,6 +82,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def valid_buy?(transaction : Transaction, transactions : Array(Transaction)) : Bool
+      raise "senders have to be only one for scars action" if transaction.senders.size != 1
       raise "you must pay by #{UTXO::DEFAULT} for SCARS" unless transaction.token == UTXO::DEFAULT
 
       sender = transaction.senders[0]
@@ -113,6 +114,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def valid_sell?(transaction : Transaction, transactions : Array(Transaction)) : Bool
+      raise "senders have to be only one for scars action" if transaction.senders.size != 1
       raise "you have to set one recipient" if transaction.recipients.size != 1
 
       sender = transaction.senders[0]
@@ -135,6 +137,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def valid_cancel?(transaction : Transaction, transactions : Array(Transaction)) : Bool
+      raise "senders have to be only one for scars action" if transaction.senders.size != 1
       raise "you have to set one recipient" if transaction.recipients.size != 1
 
       sender = transaction.senders[0]

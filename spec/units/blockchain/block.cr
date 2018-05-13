@@ -226,8 +226,6 @@ def a_fixed_coinbase_transaction
     "0",           # message
     TOKEN_DEFAULT, # token
     "0",           # prev_hash
-    "0",           # sign_r
-    "0",           # sign_s
   )
 end
 
@@ -257,8 +255,6 @@ def a_fixed_signed_transaction
     "0",           # message
     TOKEN_DEFAULT, # token
     "0",           # prev_hash
-    "0",           # sign_r
-    "0",           # sign_s
   )
 
   unsigned_transaction.signed("cd5927cdc4cf789af690fb5dcd8fd8ec64e9155d9cb025ed93962d686b5d823a", "ef991d40c9a74079ae64c3a351f733134fc50fe92628f66f3b97a42610521c06")

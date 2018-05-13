@@ -149,16 +149,18 @@ module ::Sushi::Interface
     end
 
     def add_transaction(node : String,
-                        wallet : Core::Wallet,
                         action : String,
+                        wallets : Array(Core::Wallet),
                         senders : SendersDecimal,
                         recipients : RecipientsDecimal,
                         message : String,
                         token : String)
+      raise "mimatch for wallet size and sender's size" if wallets.size != senders.size
+
       unsigned_transaction =
         create_unsigned_transaction(node, action, senders, recipients, message, token)
 
-      signed_transaction = sign(wallet, unsigned_transaction)
+      signed_transaction = sign(wallets, unsigned_transaction)
 
       payload = {
         call:        "create_transaction",
@@ -180,7 +182,7 @@ module ::Sushi::Interface
                                     senders : SendersDecimal,
                                     recipients : RecipientsDecimal,
                                     message : String,
-                                    token : String)
+                                    token : String) : Core::Transaction
       payload = {
         call:       "create_unsigned_transaction",
         action:     action,
@@ -195,20 +197,25 @@ module ::Sushi::Interface
       Core::Transaction.from_json(body)
     end
 
-    def sign(wallet : Core::Wallet, transaction : Core::Transaction) : Core::Transaction
+    def sign(wallets : Array(Core::Wallet), transaction : Core::Transaction) : Core::Transaction
       secp256k1 = Core::ECDSA::Secp256k1.new
 
-      private_key = Wif.new(wallet.wif).private_key
+      transaction.senders = transaction.senders.map_with_index do |s, i|
+        private_key = Wif.new(wallets[i].wif).private_key
 
-      sign = secp256k1.sign(
-        private_key.as_big_i,
-        transaction.to_hash,
-      )
+        sign = secp256k1.sign(private_key.as_big_i, transaction.to_hash)
 
-      transaction.signed(
-        sign[0].to_s(base: 16),
-        sign[1].to_s(base: 16),
-      )
+        {
+          address: s[:address],
+          public_key: s[:public_key],
+          amount: s[:amount],
+          fee: s[:fee],
+          sign_r: sign[0].to_s(base: 16),
+          sign_s: sign[1].to_s(base: 16),
+        }
+      end
+
+      transaction
     end
 
     def resolve_internal(node, domain, confirmed : Bool = true) : JSON::Any

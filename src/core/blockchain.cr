@@ -257,8 +257,6 @@ module ::Sushi::Core
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
-        "0",           # sign_r
-        "0",           # sign_s
         1,             # scaled
       )
     end

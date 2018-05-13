@@ -28,6 +28,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
+      raise "senders have to be only one for token action" if transaction.senders.size != 1
       raise "number of specified senders must be one for 'create_token'" if transaction.senders.size != 1
       raise "number of specified recipients must be one for 'create_token'" if transaction.recipients.size != 1
 
