@@ -68,8 +68,8 @@ module ::Sushi::Interface::Sushi
         public_key: wallet.public_key,
         amount:     amount,
         fee:        fee,
-        sign_r: "0",
-        sign_s: "0",
+        sign_r:     "0",
+        sign_s:     "0",
       })
 
       recipients = RecipientsDecimal.new

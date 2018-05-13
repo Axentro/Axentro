@@ -156,8 +156,8 @@ module ::Sushi::Core::DApps::User
         public_key: blockchain.wallet.public_key,
         amount:     amount,
         fee:        "0.0001",
-        sign_r: "0",
-        sign_s: "0",
+        sign_r:     "0",
+        sign_s:     "0",
       })
       senders
     end
@@ -214,12 +214,12 @@ module ::Sushi::Core::DApps::User
         sign = secp256k1.sign(private_key.as_big_i, transaction.to_hash)
 
         {
-          address: sender[:address],
+          address:    sender[:address],
           public_key: sender[:public_key],
-          amount: sender[:amount],
-          fee: sender[:fee],
-          sign_r: sign[0].to_s(base: 16),
-          sign_s: sign[1].to_s(base: 16),
+          amount:     sender[:amount],
+          fee:        sender[:fee],
+          sign_r:     sign[0].to_s(base: 16),
+          sign_s:     sign[1].to_s(base: 16),
         }
       }
 

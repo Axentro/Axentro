@@ -68,11 +68,11 @@ module ::Sushi::Core
         public_key = Keys::PublicKey.new(sender[:public_key], network)
 
         if !secp256k1.verify(
-            public_key.not_nil!.point,
-            self.as_unsigned.to_hash,
-            BigInt.new(sender[:sign_r], base: 16),
-            BigInt.new(sender[:sign_s], base: 16),
-          )
+             public_key.not_nil!.point,
+             self.as_unsigned.to_hash,
+             BigInt.new(sender[:sign_r], base: 16),
+             BigInt.new(sender[:sign_s], base: 16),
+           )
           raise "invalid signing for sender: #{sender[:address]}"
         end
 
@@ -132,12 +132,12 @@ module ::Sushi::Core
     def as_unsigned : Transaction
       unsigned_senders = self.senders.map { |s|
         {
-          address: s[:address],
+          address:    s[:address],
           public_key: s[:public_key],
-          amount: s[:amount],
-          fee: s[:fee],
-          sign_r: "0",
-          sign_s: "0",
+          amount:     s[:amount],
+          fee:        s[:fee],
+          sign_r:     "0",
+          sign_s:     "0",
         }
       }
 

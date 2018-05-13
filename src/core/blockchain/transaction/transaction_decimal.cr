@@ -92,8 +92,8 @@ module ::Sushi::Core
         public_key: sender[:public_key],
         amount:     scale_i64(sender[:amount]),
         fee:        scale_i64(sender[:fee]),
-        sign_r: sender[:sign_r],
-        sign_s: sender[:sign_s],
+        sign_r:     sender[:sign_r],
+        sign_s:     sender[:sign_s],
       }
     end
 
@@ -118,8 +118,8 @@ module ::Sushi::Core
         public_key: sender[:public_key],
         amount:     scale_decimal(sender[:amount]),
         fee:        scale_decimal(sender[:fee]),
-        sign_r: sender[:sign_r],
-        sign_s: sender[:sign_s],
+        sign_r:     sender[:sign_r],
+        sign_s:     sender[:sign_s],
       }
     end
 
