@@ -153,8 +153,9 @@ module ::Sushi::Interface
         } if is_active?(actives, Options::ADDRESS)
 
         parser.on("-m AMOUNT", "--amount=AMOUNT", "the amount of tokens") { |amount|
-          valid_amount?(amount)
-          @amount = amount
+          decimal_option(amount) do
+            @amount = amount
+          end
         } if is_active?(actives, Options::AMOUNT)
 
         parser.on("--action=ACTION", "specify an action name of the transaction") { |action|
@@ -178,8 +179,9 @@ module ::Sushi::Interface
         } if is_active?(actives, Options::TRANSACTION_ID)
 
         parser.on("-f FEE", "--fee=FEE", "the amount of fee") { |fee|
-          valid_amount?(fee)
-          @fee = fee
+          decimal_option(fee) do
+            @fee = fee
+          end
         } if is_active?(actives, Options::FEE)
 
         parser.on("-h", "--header", "get headers only when get a blockchain or blocks") {
@@ -195,8 +197,9 @@ module ::Sushi::Interface
         } if is_active?(actives, Options::ENCRYPTED)
 
         parser.on("--price=PRICE", "buy/sell price for SCARS") { |price|
-          valid_amount?(price)
-          @price = price
+          decimal_option(price) do
+            @price = price
+          end
         } if is_active?(actives, Options::PRICE)
 
         parser.on("--domain=DOMAIN", "specify a domain for SCARS") { |domain|
@@ -340,6 +343,15 @@ module ::Sushi::Interface
       ConfigManager.get_instance
     end
 
+    def decimal_option(value, &block)
+      valid_amount?(value)
+      yield value
+    rescue e : InvalidBigDecimalException
+      puts_error "please supply valid decimal number: #{value}"
+      exit -1
+    end
+
+    include Logger
     include Common::Validator
   end
 end
