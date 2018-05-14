@@ -143,6 +143,22 @@ module ::Sushi::Core::DApps::User
     abstract def define_rpc?(call : String, json : JSON::Any, context : HTTP::Server::Context) : HTTP::Server::Context?
 
     #
+    # You can set the timing when your dApps will be activated
+    # Return a block "index" (not a blockchain's size)
+    # e.g. If you return 100, the dApp will be activated on block index 100, 101, ...
+    # If you return nil, the dApp will be activated when you start a node with it.
+    #
+    abstract def activate : Int64|Nil
+
+    #
+    # You can set the timing when your dApps will be deactivated
+    # Return a block "index" (not a blockchain's size)
+    # e.g. If you return 100, the dApp will be activated on block index ..., 98, 99.
+    # If you return nil, the dApp will never be deactivated.
+    #
+    abstract def deactivate : Int64|Nil
+
+    #
     # This is a wrapper method that you can create a sender
     # Note that creating transactions on dApps on SushiChain is restricted.
     # The sender must be the node launcher which the dApps be activated on.
@@ -268,6 +284,9 @@ module ::Sushi::Core::DApps::User
       return if chain.size < @latest_loaded_block_index
 
       chain[@latest_loaded_block_index..-1].each do |block|
+        next if !activate.nil? && block.index < activate.not_nil!
+        next if !deactivate.nil? && block.index >= deactivate.not_nil!
+
         new_block(block)
       end
 

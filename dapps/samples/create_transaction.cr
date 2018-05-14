@@ -44,6 +44,14 @@ module ::Sushi::Core::DApps::User
       true
     end
 
+    def activate
+      nil
+    end
+
+    def deactivate
+      nil
+    end
+
     def new_block(block)
       block.transactions.each do |transaction|
         if transaction.action == TARGET_ACTION
