@@ -9,7 +9,6 @@
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
-# hoge
 
 module ::Sushi::Core::DApps::User
   class CreateTransaction < UserDApp
