@@ -52,7 +52,7 @@ module ::Sushi::Interface::SushiD
       if connect_node = __connect_node
         connect_uri = URI.parse(connect_node)
         use_ssl = (connect_uri.scheme == "https")
-        has_first_connection = !connect_uri.host.nil? && !connect_uri.port.nil? && !__is_private
+        has_first_connection = !connect_uri.host.nil? && !connect_uri.port.nil?
       end
 
       wallet = get_wallet(wallet_path, __wallet_password)
