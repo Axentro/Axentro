@@ -9,6 +9,5 @@
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
-# test
 
 require "./modules/*"
