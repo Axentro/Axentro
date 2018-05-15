@@ -29,12 +29,12 @@ module ::Sushi::Interface
     @database_path : String?
 
     @address : String?
-    @amount : Int64?
+    @amount : String?
     @action : String?
     @message : String = ""
     @block_index : Int32?
     @transaction_id : String?
-    @fee : Int64?
+    @fee : String?
 
     @header : Bool = false
 
@@ -42,7 +42,7 @@ module ::Sushi::Interface
 
     @encrypted : Bool = false
 
-    @price : Int64?
+    @price : String?
     @domain : String?
 
     @token : String?
@@ -153,7 +153,9 @@ module ::Sushi::Interface
         } if is_active?(actives, Options::ADDRESS)
 
         parser.on("-m AMOUNT", "--amount=AMOUNT", "the amount of tokens") { |amount|
-          @amount = amount.to_i64
+          decimal_option(amount) do
+            @amount = amount
+          end
         } if is_active?(actives, Options::AMOUNT)
 
         parser.on("--action=ACTION", "specify an action name of the transaction") { |action|
@@ -177,7 +179,9 @@ module ::Sushi::Interface
         } if is_active?(actives, Options::TRANSACTION_ID)
 
         parser.on("-f FEE", "--fee=FEE", "the amount of fee") { |fee|
-          @fee = fee.to_i64
+          decimal_option(fee) do
+            @fee = fee
+          end
         } if is_active?(actives, Options::FEE)
 
         parser.on("-h", "--header", "get headers only when get a blockchain or blocks") {
@@ -193,7 +197,9 @@ module ::Sushi::Interface
         } if is_active?(actives, Options::ENCRYPTED)
 
         parser.on("--price=PRICE", "buy/sell price for SCARS") { |price|
-          @price = price.to_i64
+          decimal_option(price) do
+            @price = price
+          end
         } if is_active?(actives, Options::PRICE)
 
         parser.on("--domain=DOMAIN", "specify a domain for SCARS") { |domain|
@@ -276,7 +282,7 @@ module ::Sushi::Interface
       cm.get_s("address")
     end
 
-    def __amount : Int64?
+    def __amount : String?
       @amount
     end
 
@@ -296,7 +302,7 @@ module ::Sushi::Interface
       @transaction_id
     end
 
-    def __fee : Int64?
+    def __fee : String?
       @fee
     end
 
@@ -316,7 +322,7 @@ module ::Sushi::Interface
       @encrypted
     end
 
-    def __price : Int64?
+    def __price : String?
       @price
     end
 
@@ -336,5 +342,16 @@ module ::Sushi::Interface
     def cm
       ConfigManager.get_instance
     end
+
+    def decimal_option(value, &block)
+      valid_amount?(value)
+      yield value
+    rescue e : InvalidBigDecimalException
+      puts_error "please supply valid decimal number: #{value}"
+      exit -1
+    end
+
+    include Logger
+    include Common::Validator
   end
 end

@@ -41,7 +41,7 @@ describe Scars do
     it "should return domain info if the domain is found" do
       with_factory do |block_factory, transaction_factory|
         domain = "domain1.sc"
-        chain = block_factory.addBlock([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).addBlocks(10).chain
+        chain = block_factory.addBlocks(10).addBlock([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).addBlocks(10).chain
         scars = Scars.new(blockchain_node(transaction_factory.sender_wallet))
         scars.record(chain)
 
@@ -397,13 +397,13 @@ describe Scars do
         it "should return the resolved address for the domain when confirmed" do
           with_factory do |block_factory, transaction_factory|
             domain = "awesome.sc"
-            block_factory.addBlock([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).addBlocks(10)
+            block_factory.addBlocks(10).addBlock([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).addBlocks(10)
 
             payload = {call: "scars_resolve", domain_name: domain, confirmed: true}.to_json
             json = JSON.parse(payload)
 
             with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-              result.should eq("{\"resolved\":true,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":0,\"price\":0}}")
+              result.should eq("{\"resolved\":true,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":0,\"price\":\"0\"}}")
             end
           end
         end
@@ -411,13 +411,13 @@ describe Scars do
         it "should return the resolved address for the domain when unconfirmed" do
           with_factory do |block_factory, transaction_factory|
             domain = "awesome.sc"
-            block_factory.addBlock([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)])
+            block_factory.addBlocks(10).addBlock([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)])
 
             payload = {call: "scars_resolve", domain_name: domain, confirmed: false}.to_json
             json = JSON.parse(payload)
 
             with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-              result.should eq("{\"resolved\":true,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":0,\"price\":0}}")
+              result.should eq("{\"resolved\":true,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":0,\"price\":\"0\"}}")
             end
           end
         end
@@ -431,7 +431,7 @@ describe Scars do
             json = JSON.parse(payload)
 
             with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-              result.should eq("{\"resolved\":false,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"\",\"status\":-1,\"price\":0}}")
+              result.should eq("{\"resolved\":false,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"\",\"status\":-1,\"price\":\"0.0\"}}")
             end
           end
         end
@@ -441,16 +441,16 @@ describe Scars do
         it "should list domains for sale" do
           with_factory do |block_factory, transaction_factory|
             domain = "awesome.sc"
-            block_factory.addBlock([
+            block_factory.addBlocks(10).addBlock([
               transaction_factory.make_buy_domain_from_platform(domain, 0_i64),
-              transaction_factory.make_sell_domain(domain, 1_i64),
+              transaction_factory.make_sell_domain(domain, 20000000_i64),
             ])
 
             payload = {call: "scars_for_sale"}.to_json
             json = JSON.parse(payload)
 
             with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-              result.should eq("[{\"domain_name\":\"awesome.sc\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":1,\"price\":1}]")
+              result.should eq("[{\"domain_name\":\"awesome.sc\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":1,\"price\":\"0.2\"}]")
             end
           end
         end
@@ -577,9 +577,9 @@ describe Scars do
 
     describe "#Scars.fee" do
       it "should show the fee for an action" do
-        Scars.fee("scars_buy").should eq(100_i64)
-        Scars.fee("scars_sell").should eq(10_i64)
-        Scars.fee("scars_cancel").should eq(1_i64)
+        Scars.fee("scars_buy").should eq(100000_i64)
+        Scars.fee("scars_sell").should eq(10000_i64)
+        Scars.fee("scars_cancel").should eq(10000_i64)
       end
 
       it "should raise an error if fee type is unknown" do
@@ -608,7 +608,7 @@ describe Scars do
           result["domain_name"].should eq(domain)
           result["address"].should eq(transaction_factory.sender_wallet.address)
           result["status"].should eq(1)
-          result["price"].should eq(500_i64)
+          result["price"].should eq("0.000005")
         end
       end
 

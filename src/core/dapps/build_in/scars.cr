@@ -32,7 +32,7 @@ module ::Sushi::Core::DApps::BuildIn
     def setup
     end
 
-    def sales : Array(Domain)
+    def sales
       domain_all = DomainMap.new
 
       @domains_internal.reverse.each do |domain_map|
@@ -41,11 +41,9 @@ module ::Sushi::Core::DApps::BuildIn
         end
       end
 
-      domain_for_sale = domain_all
+      domain_all
         .select { |domain_name, domain| domain[:status] == Status::ForSale }
-        .map { |domain_name, domain| domain }
-
-      domain_for_sale
+        .map { |domain_name, domain| scale_decimal(domain) }
     end
 
     def resolve(domain_name : String) : Domain?
@@ -238,11 +236,11 @@ RULE
     def self.fee(action : String) : Int64
       case action
       when "scars_buy"
-        return 100_i64
+        return scale_i64("0.001")
       when "scars_sell"
-        return 10_i64
+        return scale_i64("0.0001")
       when "scars_cancel"
-        return 1_i64
+        return scale_i64("0.0001")
       end
 
       raise "got unknown action #{action} during getting a fee for scars"
@@ -271,9 +269,9 @@ RULE
       domain = confirmed ? resolve(domain_name) : resolve_unconfirmed(domain_name, [] of Transaction)
 
       if domain
-        {resolved: true, domain: domain}
+        {resolved: true, domain: scale_decimal(domain)}
       else
-        default_domain = {domain_name: domain_name, address: "", status: Status::NotFound, price: 0}
+        default_domain = {domain_name: domain_name, address: "", status: Status::NotFound, price: "0.0"}
         {resolved: false, domain: default_domain}
       end
     end
@@ -285,6 +283,15 @@ RULE
 
     def scars_for_sale_impl
       sales
+    end
+
+    def scale_decimal(domain : Domain)
+      {
+        domain_name: domain[:domain_name],
+        address:     domain[:address],
+        status:      domain[:status],
+        price:       scale_decimal(domain[:price]),
+      }
     end
 
     include Consensus

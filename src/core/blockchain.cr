@@ -229,7 +229,7 @@ module ::Sushi::Core
     end
 
     def create_coinbase_transaction(miners : NodeComponents::MinersManager::Miners) : Transaction
-      rewards_total = served_amount(latest_index)
+      rewards_total = latest_block.coinbase_amount
 
       miners_nonces_size = miners.reduce(0) { |sum, m| sum + m[:nonces].size }
       miners_rewards_total = (rewards_total * 3_i64) / 4_i64
@@ -259,36 +259,8 @@ module ::Sushi::Core
         "0",           # prev_hash
         "0",           # sign_r
         "0",           # sign_s
+        1,             # scaled
       )
-    end
-
-    def total_fees_of_latest_block : Int64
-      return 0_i64 if @chain.size == 0
-      return 0_i64 if @chain[-1].transactions.size < 2
-
-      latest_block.transactions[1..-1].reduce(0_i64) { |fees, transaction| fees + transaction.calculate_fee }
-    end
-
-    def create_unsigned_transaction(action, senders, recipients, message, token, id = Transaction.create_id) : Transaction
-      Transaction.new(
-        id,
-        action,
-        senders,
-        recipients,
-        message,
-        token,
-        "0", # prev_hash
-        "0", # sign_r
-        "0", # sign_s
-      )
-    end
-
-    def served_amount(index) : Int64
-      total_fees = total_fees_of_latest_block
-      base = 10000
-      div = (index / base).to_i
-      return base.to_i64 + total_fees if div == 0
-      (base / div).to_i64 + total_fees
     end
 
     def headers
@@ -328,5 +300,6 @@ module ::Sushi::Core
     include Hashes
     include Consensus
     include DApps
+    include TransactionModels
   end
 end

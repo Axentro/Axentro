@@ -12,6 +12,8 @@
 
 module ::Sushi::Core::DApps
   abstract class DApp
+    extend Common::Denomination
+
     abstract def setup
     abstract def transaction_actions : Array(String)
     abstract def transaction_related?(action : String) : Bool
@@ -33,19 +35,19 @@ module ::Sushi::Core::DApps
       sender = transaction.senders[0]
 
       if sender[:fee] < self.class.fee(transaction.action)
-        raise "not enough fee, should be #{sender[:fee]} >= #{self.class.fee(transaction.action)}"
+        raise "not enough fee, should be #{scale_decimal(sender[:fee])} >= #{scale_decimal(self.class.fee(transaction.action))}"
       end
 
       valid_transaction?(transaction, prev_transactions)
     end
 
     #
-    # Default fee is 1 SHARI
+    # Default fee is 0.0001 SUSHI
     # All thrid party dApps cannot override here.
     # Otherwise the transactions will be rejected from other nodes.
     #
     def self.fee(action : String) : Int64
-      1_i64
+      scale_i64("0.0001")
     end
 
     private def blockchain : Blockchain
@@ -58,6 +60,7 @@ module ::Sushi::Core::DApps
 
     include Logger
     include NodeComponents::APIFormat
+    include Common::Denomination
   end
 end
 

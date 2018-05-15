@@ -72,7 +72,7 @@ describe Fees do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq("{\"send\":1,\"scars_buy\":100,\"scars_sell\":10,\"scars_cancel\":1,\"create_token\":1000}")
+            result.should eq("{\"send\":\"0.0001\",\"scars_buy\":\"0.001\",\"scars_sell\":\"0.0001\",\"scars_cancel\":\"0.0001\",\"create_token\":\"0.1\"}")
           end
         end
       end

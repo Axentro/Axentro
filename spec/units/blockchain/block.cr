@@ -41,14 +41,14 @@ describe Block do
     it "should calculate merkle tree root when coinbase transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
       block = Block.new(1_i64, [coinbase_transaction], 1_u64, "prev_hash")
-      block.calcluate_merkle_tree_root.should eq("873737b4bd5e83a3c255db15476b3af8892dadf4")
+      block.calcluate_merkle_tree_root.should eq("dbb8c56ef9c8dcc0b6e16c065ef3843d80f8f92c")
     end
 
     it "should calculate merkle tree root when 2 transactions (first is coinbase)" do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = Block.new(1_i64, [coinbase_transaction, transaction1], 1_u64, "prev_hash")
-      block.calcluate_merkle_tree_root.should eq("b1c08f72e02ca7cf35c3eaa095f04a4c5561ca9d")
+      block.calcluate_merkle_tree_root.should eq("12972bd5d457a34a402ccccabba0df4a1774d6f5")
     end
   end
 
@@ -214,8 +214,8 @@ describe Block do
 end
 
 def a_fixed_coinbase_transaction
-  recipient1 = a_recipient_with_address("VDAyYTVjMDYwZjYyZThkOWM5ODhkZGFkMmM3NzM2MjczZWZhZjIxNDAyNWRmNWQ0", 4167_i64)
-  recipient2 = a_recipient_with_address("VDBhYTYxYzk5MTQ4M2QyZmU1YTA4NzUxZjYzYWUzYzA4ZTExYTgzMjdkNWViODU2", 3333_i64)
+  recipient1 = a_recipient_with_address("VDAyYTVjMDYwZjYyZThkOWM5ODhkZGFkMmM3NzM2MjczZWZhZjIxNDAyNWRmNWQ0", 50452650_i64)
+  recipient2 = a_recipient_with_address("VDBhYTYxYzk5MTQ4M2QyZmU1YTA4NzUxZjYzYWUzYzA4ZTExYTgzMjdkNWViODU2", 7500_i64)
   recipient3 = a_recipient_with_address("VDAyNTk0YjdlMTc4N2FkODRmYTU0YWZmODM1YzQzOTA2YTEzY2NjYmMyNjdkYjVm", 2500_i64)
 
   Transaction.new(
@@ -228,6 +228,7 @@ def a_fixed_coinbase_transaction
     "0",           # prev_hash
     "0",           # sign_r
     "0",           # sign_s
+    1              # scaled
   )
 end
 
@@ -259,6 +260,7 @@ def a_fixed_signed_transaction
     "0",           # prev_hash
     "0",           # sign_r
     "0",           # sign_s
+    1              # scaled
   )
 
   unsigned_transaction.signed("cd5927cdc4cf789af690fb5dcd8fd8ec64e9155d9cb025ed93962d686b5d823a", "ef991d40c9a74079ae64c3a351f733134fc50fe92628f66f3b97a42610521c06")

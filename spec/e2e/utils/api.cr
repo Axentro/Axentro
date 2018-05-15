@@ -41,29 +41,27 @@ module ::E2E::Utils::API
     parse_json(res)
   end
 
-  def amount(port : Int32, num : Int32, unconfirmed = false) : Int64
+  def amount(port : Int32, num : Int32, unconfirmed = false) : BigDecimal
     args = ["wallet", "amount", "-w", wallet(num), "-n", "http://127.0.0.1:#{port}", "--json"]
     args << "-u" if unconfirmed
 
     res = `#{sushi(args)}`
 
     if json = parse_json(res)
-      return json["pairs"][0]["amount"].to_s.to_i64
+      return BigDecimal.new(json["pairs"][0]["amount"].as_s)
     end
 
-    0_i64
+    BigDecimal.new(0)
   end
 
   def create(port : Int32, n_sender : Int32, n_recipient : Int32) : String?
     a = amount(port, n_sender, true)
 
-    return nil if a == 0
-
-    a = Random.rand(a/10000) + 1
+    return nil if a < BigDecimal.new("0.00010001")
 
     recipient_address = ::Sushi::Core::Wallet.from_path(wallet(n_recipient)).address
 
-    args = ["transaction", "create", "-w", wallet(n_sender), "-a", recipient_address, "-m", a, "-n", "http://127.0.0.1:#{port}", "--message='E2E Test'", "-f", "1", "--json"]
+    args = ["transaction", "create", "-w", wallet(n_sender), "-a", recipient_address, "-m", "0.00000001", "-n", "http://127.0.0.1:#{port}", "--message='E2E Test'", "-f", "0.0001", "--json"]
 
     res = `#{sushi(args)}`
 
@@ -90,4 +88,6 @@ module ::E2E::Utils::API
 
     nil
   end
+
+  include ::Sushi::Common::Denomination
 end

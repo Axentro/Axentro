@@ -180,8 +180,8 @@ module ::Sushi::Core::Controllers
 
         @blockchain.transaction_creator.create_unsigned_transaction_impl(
           json["action"].as_s,
-          Core::Transaction::Senders.from_json(json["senders"].to_json),
-          Core::Transaction::Recipients.from_json(json["recipients"].to_json),
+          SendersDecimal.from_json(json["senders"].to_json),
+          RecipientsDecimal.from_json(json["recipients"].to_json),
           json["message"].as_s,
           json["token"].as_s,
         )
@@ -343,5 +343,6 @@ module ::Sushi::Core::Controllers
 
     include Router
     include NodeComponents::APIFormat
+    include TransactionModels
   end
 end

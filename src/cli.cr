@@ -127,12 +127,6 @@ module ::Sushi::Interface
     end
 
     def verify_response!(res) : String
-      unless res.status_code == 200
-        puts_error "failed to call an API."
-        puts_error res.body
-        exit -1
-      end
-
       unless body = res.body
         puts_error "returned body is empty"
         exit -1
@@ -145,14 +139,20 @@ module ::Sushi::Interface
         exit -1
       end
 
+      unless res.status_code == 200
+        puts_error "failed to call an API."
+        puts_error res.body
+        exit -1
+      end
+
       json["result"].to_json
     end
 
     def add_transaction(node : String,
                         wallet : Core::Wallet,
                         action : String,
-                        senders : Core::Transaction::Senders,
-                        recipients : Core::Transaction::Recipients,
+                        senders : SendersDecimal,
+                        recipients : RecipientsDecimal,
                         message : String,
                         token : String)
       unsigned_transaction =
@@ -177,8 +177,8 @@ module ::Sushi::Interface
 
     def create_unsigned_transaction(node : String,
                                     action : String,
-                                    senders : Core::Transaction::Senders,
-                                    recipients : Core::Transaction::Recipients,
+                                    senders : SendersDecimal,
+                                    recipients : RecipientsDecimal,
                                     message : String,
                                     token : String)
       payload = {
@@ -224,5 +224,7 @@ module ::Sushi::Interface
 
     include Helps
     include Logger
+    include Core::TransactionModels
+    include Common::Denomination
   end
 end

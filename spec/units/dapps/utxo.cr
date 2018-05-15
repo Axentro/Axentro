@@ -26,7 +26,7 @@ describe UTXO do
         utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
         utxo.record(chain)
 
-        address = block_1.transactions.first.recipients.first[:address]
+        address = chain[1].transactions.first.recipients.first[:address]
         utxo.get(address, TOKEN_DEFAULT).should eq(0)
       end
     end
@@ -38,7 +38,7 @@ describe UTXO do
         utxo.record(chain)
 
         address = chain[1].transactions.first.recipients.first[:address]
-        expected_amount = block_1.transactions[0].recipients[0]["amount"]
+        expected_amount = chain[1].transactions[0].recipients[0]["amount"]
 
         utxo.get(address, TOKEN_DEFAULT).should eq(expected_amount)
       end
@@ -167,7 +167,7 @@ describe UTXO do
       with_factory do |block_factory, transaction_factory|
         transaction1 = transaction_factory.make_send(100_i64)
         transaction2 = transaction_factory.make_send(200_i64)
-        chain = block_factory.addBlock.chain
+        chain = block_factory.addBlocks(10).chain
         utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
         utxo.record(chain)
         utxo.valid_transaction?(transaction2, [transaction1]).should be_true
@@ -204,13 +204,13 @@ describe UTXO do
 
     it "should raise an error if sender has not enough default token to afford the transaction" do
       with_factory do |block_factory, transaction_factory|
-        transaction1 = transaction_factory.make_send(1000000_i64)
-        transaction2 = transaction_factory.make_send(2000000_i64)
-        chain = block_factory.addBlock.chain
+        transaction1 = transaction_factory.make_send(100000000_i64)
+        transaction2 = transaction_factory.make_send(200000000_i64)
+        chain = block_factory.addBlocks(1).chain
         utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
 
         utxo.record(chain)
-        expect_raises(Exception, "sender has not enough token(#{TOKEN_DEFAULT}). sender has -990001 + 0 but try to pay 2000000") do
+        expect_raises(Exception, "sender has not enough token(#{TOKEN_DEFAULT}). sender has -1.4953735 + 0 but try to pay 2") do
           utxo.valid_transaction?(transaction2, [transaction1])
         end
       end
@@ -224,7 +224,7 @@ describe UTXO do
         utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
 
         utxo.record(chain)
-        expect_raises(Exception, "sender has not enough token(KINGS). sender has -1000000 + 0 but try to pay 2000000") do
+        expect_raises(Exception, "sender has not enough token(KINGS). sender has -0.01 + 0 but try to pay 0.02") do
           utxo.valid_transaction?(transaction2, [transaction1])
         end
       end
@@ -239,7 +239,7 @@ describe UTXO do
         chain = block_factory.addBlock.chain
         utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
         utxo.record(chain)
-        expected = {TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -201_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64}}
+        expected = {TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -100000200_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64}}
         utxo.calculate_for_transaction(transaction2).should eq(expected)
       end
     end
@@ -252,7 +252,7 @@ describe UTXO do
         utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
         utxo.record(chain)
         expected = {"KINGS"       => {"#{transaction_factory.sender_wallet.address}" => -200_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64},
-                    TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -1_i64},
+                    TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -100000000_i64},
         }
         utxo.calculate_for_transaction(transaction2).should eq(expected)
       end
@@ -268,7 +268,7 @@ describe UTXO do
         utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
         utxo.record(chain)
         expected = {"KINGS"       => {"#{transaction_factory.sender_wallet.address}" => -100_i64, "#{transaction_factory.recipient_wallet.address}" => 100_i64},
-                    TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -202_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64}}
+                    TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -200000200_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64}}
         utxo.calculate_for_transactions([transaction1, transaction2]).should eq(expected)
       end
     end
@@ -311,7 +311,7 @@ describe UTXO do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq(%{{"confirmed":false,"pairs":[{"token":"SHARI","amount":100000}]}})
+            result.should eq(%{{"confirmed":false,"pairs":[{"token":"SUSHI","amount":"5.046265"}]}})
           end
         end
       end
@@ -324,7 +324,7 @@ describe UTXO do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq(%{{"confirmed":true,"pairs":[{"token":"SHARI","amount":10000}]}})
+            result.should eq(%{{"confirmed":true,"pairs":[{"token":"SUSHI","amount":"0.5046265"}]}})
           end
         end
       end
@@ -332,7 +332,7 @@ describe UTXO do
   end
 
   it "should return fee when calling #Self.fee" do
-    UTXO.fee("send").should eq(1_i64)
+    UTXO.fee("send").should eq(10000_i64)
   end
 
   STDERR.puts "< dApps::UTXO"

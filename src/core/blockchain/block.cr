@@ -108,6 +108,39 @@ module ::Sushi::Core
       @transactions.find { |t| t.id == transaction_id }
     end
 
+    def total_fees : Int64
+      return 0_i64 if @transactions.size < 2
+      @transactions[1..-1].reduce(0_i64) { |fees, transaction| fees + transaction.total_fees }
+    end
+
+    #
+    # y : coinbase amount
+    # x : index
+    # r : radius
+    #
+    # Aim to be the total coinbase amount: 20000000 [SUSHI]
+    #
+    # y = sqrt(r^2 - x^2)
+    #
+    # (r * r * PI) / 4 == 100000000000000
+    # => r = sqrt(8000000000000000 / PI)
+    # => r = 50462650.4404032
+    # => r ^ 2 = 2546479089470325
+    #
+    # < result >
+    # Total amount : 20000000.00004112 [SUSHI]
+    # Last index   : 50462651
+    #
+    RR = 2546479089470325
+
+    def coinbase_amount : Int64
+      index_index = @index * @index
+
+      return total_fees if index_index > RR
+
+      Math.sqrt(RR - index_index).to_i64
+    end
+
     include Hashes
     include Consensus
   end

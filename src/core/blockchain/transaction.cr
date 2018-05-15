@@ -10,25 +10,12 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
+require "./transaction/models"
+
 module ::Sushi::Core
   class Transaction
     MESSAGE_SIZE_LIMIT = 512
     TOKEN_SIZE_LIMIT   =  16
-
-    alias Recipient = NamedTuple(
-      address: String,
-      amount: Int64,
-    )
-
-    alias Sender = NamedTuple(
-      address: String,
-      public_key: String,
-      amount: Int64,
-      fee: Int64,
-    )
-
-    alias Recipients = Array(Recipient)
-    alias Senders = Array(Sender)
 
     JSON.mapping(
       id: String,
@@ -40,6 +27,7 @@ module ::Sushi::Core
       prev_hash: String,
       sign_r: String,
       sign_s: String,
+      scaled: Int32,
     )
 
     setter prev_hash : String
@@ -53,7 +41,8 @@ module ::Sushi::Core
       @token : String,
       @prev_hash : String,
       @sign_r : String,
-      @sign_s : String
+      @sign_s : String,
+      @scaled : Int32
     )
     end
 
@@ -72,6 +61,7 @@ module ::Sushi::Core
       raise "length of transaction id have to be 64: #{@id}" if @id.size != 64
       raise "message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
       raise "token size exceeds: #{self.token.bytesize} for #{TOKEN_SIZE_LIMIT}" if self.token.bytesize > TOKEN_SIZE_LIMIT
+      raise "unscaled transaction" if scaled != 1
 
       @senders.each do |sender|
         unless Keys::Address.from(sender[:address], "sender")
@@ -108,10 +98,10 @@ module ::Sushi::Core
         network = Keys::Address.from(@senders.first[:address]).network
         public_key = Keys::PublicKey.new(@senders.first[:public_key], network)
 
-        secp256k1 = ECDSA::Secp256k1.new
+        secp256k1 : ECDSA::Secp256k1 = ECDSA::Secp256k1.new
 
         raise "invalid signing" if !secp256k1.verify(
-                                     public_key.point,
+                                     public_key.not_nil!.point,
                                      self.as_unsigned.to_hash,
                                      BigInt.new(@sign_r, base: 16),
                                      BigInt.new(@sign_s, base: 16),
@@ -130,10 +120,11 @@ module ::Sushi::Core
         raise "sign_s of coinbase transaction has to be '0'" if @sign_s != "0"
 
         served_sum = @recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
+        served_sum_expected = blockchain.latest_block.coinbase_amount
 
-        if served_sum != blockchain.served_amount(block_index)
+        if served_sum != served_sum_expected
           raise "invalid served amount for coinbase transaction: " +
-                "expected #{blockchain.served_amount(block_index)} but got #{served_sum} " +
+                "expected #{served_sum_expected} but got #{served_sum} " +
                 "(received block index: #{block_index}, latest block index: #{blockchain.latest_block.index})"
         end
       end
@@ -152,6 +143,7 @@ module ::Sushi::Core
         self.prev_hash,
         sign_r,
         sign_s,
+        self.scaled,
       )
     end
 
@@ -166,6 +158,7 @@ module ::Sushi::Core
         "0",
         "0",
         "0",
+        self.scaled,
       )
     end
 
@@ -177,11 +170,14 @@ module ::Sushi::Core
       recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
     end
 
-    def calculate_fee : Int64
+    def total_fees : Int64
       senders.reduce(0_i64) { |sum, sender| sum + sender[:fee] }
     end
 
     include Hashes
     include Common::Validator
+    include TransactionModels
   end
 end
+
+require "./transaction/*"

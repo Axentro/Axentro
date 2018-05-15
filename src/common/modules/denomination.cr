@@ -10,22 +10,14 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Common::Validator
-  def valid_amount?(amount : Int64) : Bool
-    if Int64::MAX < amount || 0 > amount
-      raise "the amount is out of range"
-    end
+module ::Sushi::Common::Denomination
+  SCALE_DECIMAL = 8
 
-    true
+  def scale_i64(value : String) : Int64
+    BigDecimal.new(value).scale_to(BigDecimal.new(1, SCALE_DECIMAL)).value.to_i64
   end
 
-  def valid_amount?(amount : String) : Bool
-    amount_decimal = BigDecimal.new(amount)
-
-    if BigDecimal.new(Int64::MAX, Denomination::SCALE_DECIMAL) < amount_decimal || 0 > amount_decimal
-      raise "the amount is out of range"
-    end
-
-    true
+  def scale_decimal(value : Int64) : String
+    BigDecimal.new(value, 8).to_s
   end
 end

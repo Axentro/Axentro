@@ -204,7 +204,7 @@ describe Token do
       token = Token.new(blockchain_node(transaction_factory.sender_wallet))
       token.record(chain).should eq(11)
       token.clear
-      token.@tokens.should eq(["SHARI"])
+      token.@tokens.should eq(["SUSHI"])
     end
   end
 
@@ -216,7 +216,7 @@ describe Token do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq("[\"SHARI\"]")
+            result.should eq("[\"SUSHI\"]")
           end
         end
       end

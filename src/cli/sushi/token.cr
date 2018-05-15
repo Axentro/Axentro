@@ -62,7 +62,7 @@ module ::Sushi::Interface::Sushi
 
       wallet = get_wallet(wallet_path, __wallet_password)
 
-      senders = Core::Transaction::Senders.new
+      senders = SendersDecimal.new
       senders.push({
         address:    wallet.address,
         public_key: wallet.public_key,
@@ -70,7 +70,7 @@ module ::Sushi::Interface::Sushi
         fee:        fee,
       })
 
-      recipients = Core::Transaction::Recipients.new
+      recipients = RecipientsDecimal.new
       recipients.push({
         address: wallet.address,
         amount:  amount,

@@ -23,8 +23,8 @@ describe RPCController do
     describe "#create_unsigned_transaction" do
       it "should return the transaction as json when valid" do
         with_factory do |block_factory, transaction_factory|
-          senders = [a_sender(transaction_factory.sender_wallet, 1000_i64)]
-          recipients = [a_recipient(transaction_factory.recipient_wallet, 10_i64)]
+          senders = [a_decimal_sender(transaction_factory.sender_wallet, "1")]
+          recipients = [a_decimal_recipient(transaction_factory.recipient_wallet, "10")]
 
           payload = {
             call:       "create_unsigned_transaction",
@@ -38,14 +38,17 @@ describe RPCController do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
+            expected_senders = [a_sender(transaction_factory.sender_wallet, 100000000_i64)]
+            expected_recipients = [a_recipient(transaction_factory.recipient_wallet, 1000000000_i64)]
+
             transaction = Transaction.from_json(result)
             transaction.action.should eq("send")
             transaction.prev_hash.should eq("0")
             transaction.message.should eq("")
             transaction.sign_r.should eq("0")
             transaction.sign_s.should eq("0")
-            transaction.senders.should eq(senders)
-            transaction.recipients.should eq(recipients)
+            transaction.senders.should eq(expected_senders)
+            transaction.recipients.should eq(expected_recipients)
           end
         end
       end
