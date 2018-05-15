@@ -41,14 +41,14 @@ describe Block do
     it "should calculate merkle tree root when coinbase transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
       block = Block.new(1_i64, [coinbase_transaction], 1_u64, "prev_hash")
-      block.calcluate_merkle_tree_root.should eq("365a1feae4a38a6216a025ff655d67cc85523bfe")
+      block.calcluate_merkle_tree_root.should eq("dbb8c56ef9c8dcc0b6e16c065ef3843d80f8f92c")
     end
 
     it "should calculate merkle tree root when 2 transactions (first is coinbase)" do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = Block.new(1_i64, [coinbase_transaction, transaction1], 1_u64, "prev_hash")
-      block.calcluate_merkle_tree_root.should eq("2e03edb525ddad46aa2a8e8506536e7817e93a5d")
+      block.calcluate_merkle_tree_root.should eq("12972bd5d457a34a402ccccabba0df4a1774d6f5")
     end
   end
 
@@ -214,7 +214,7 @@ describe Block do
 end
 
 def a_fixed_coinbase_transaction
-  recipient1 = a_recipient_with_address("VDAyYTVjMDYwZjYyZThkOWM5ODhkZGFkMmM3NzM2MjczZWZhZjIxNDAyNWRmNWQ0", 11273791_i64)
+  recipient1 = a_recipient_with_address("VDAyYTVjMDYwZjYyZThkOWM5ODhkZGFkMmM3NzM2MjczZWZhZjIxNDAyNWRmNWQ0", 50452650_i64)
   recipient2 = a_recipient_with_address("VDBhYTYxYzk5MTQ4M2QyZmU1YTA4NzUxZjYzYWUzYzA4ZTExYTgzMjdkNWViODU2", 7500_i64)
   recipient3 = a_recipient_with_address("VDAyNTk0YjdlMTc4N2FkODRmYTU0YWZmODM1YzQzOTA2YTEzY2NjYmMyNjdkYjVm", 2500_i64)
 
@@ -226,6 +226,7 @@ def a_fixed_coinbase_transaction
     "0",           # message
     TOKEN_DEFAULT, # token
     "0",           # prev_hash
+    1              # scaled
   )
 end
 
@@ -255,6 +256,7 @@ def a_fixed_signed_transaction
     "0",           # message
     TOKEN_DEFAULT, # token
     "0",           # prev_hash
+    1              # scaled
   )
 
   unsigned_transaction.signed("cd5927cdc4cf789af690fb5dcd8fd8ec64e9155d9cb025ed93962d686b5d823a", "ef991d40c9a74079ae64c3a351f733134fc50fe92628f66f3b97a42610521c06")

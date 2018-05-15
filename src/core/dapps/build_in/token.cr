@@ -116,8 +116,12 @@ RULE
     end
 
     def list(json, context, params)
-      context.response.print api_success(@tokens)
+      context.response.print api_success(tokens_list_impl)
       context
+    end
+
+    def tokens_list_impl
+      @tokens
     end
 
     def self.fee(action : String) : Int64

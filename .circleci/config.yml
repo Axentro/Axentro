@@ -10,7 +10,7 @@ jobs:
           apt-get update
           apt-get install curl libsqlite3-dev -y
       - run: |
-          shards build
+          shards build --release
           crystal spec
 
   e2e-tests-all-public:
@@ -22,7 +22,7 @@ jobs:
           apt-get update
           apt-get install curl libsqlite3-dev -y
       - run: |
-          shards build
+          shards build --release
           bin/e2e --mode=all_public --num_nodes=3 --num_miners=3 --time=300
 
   e2e-tests-all-private:
@@ -34,7 +34,7 @@ jobs:
           apt-get update
           apt-get install curl libsqlite3-dev -y
       - run: |
-          shards build
+          shards build --release
           bin/e2e --mode=all_private --num_nodes=3 --num_miners=3 --time=300
 
   e2e-tests-one-private:
@@ -46,7 +46,7 @@ jobs:
           apt-get update
           apt-get install curl libsqlite3-dev -y
       - run: |
-          shards build
+          shards build --release
           bin/e2e --mode=one_private --num_nodes=3 --num_miners=3 --time=300
 
   docker-build:

@@ -92,8 +92,8 @@ module ::Sushi::Interface::Sushi
                           end
 
       to_address = Address.from(recipient_address, "recipient")
-      wallet = get_wallet(wallet_path, __wallet_password)
 
+      wallet = get_wallet(wallet_path, __wallet_password)
       wallets = [wallet]
 
       senders = SendersDecimal.new

@@ -59,7 +59,6 @@ module ::Sushi::Core
       raise "message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
       raise "token size exceeds: #{self.token.bytesize} for #{TOKEN_SIZE_LIMIT}" if self.token.bytesize > TOKEN_SIZE_LIMIT
       raise "unscaled transaction" if scaled != 1
-      raise "amount mismatch for senders (#{scale_decimal(sender_total_amount)}) and recipients (#{scale_decimal(recipient_total_amount)})" if sender_total_amount != recipient_total_amount
 
       secp256k1 : ECDSA::Secp256k1 = ECDSA::Secp256k1.new
 
@@ -93,6 +92,10 @@ module ::Sushi::Core
 
       if !is_coinbase
         raise "There must be some transactions" if transactions.size < 1
+
+        if sender_total_amount != recipient_total_amount
+          raise "amount mismatch for senders (#{scale_decimal(sender_total_amount)}) and recipients (#{scale_decimal(recipient_total_amount)})"
+        end
 
         if @prev_hash != transactions[-1].to_hash
           raise "invalid prev_hash: expected #{transactions[-1].to_hash} but got #{@prev_hash}"
