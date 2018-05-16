@@ -40,9 +40,10 @@ module ::Units::Utils::ChainGenerator
       @node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, nil, false)
       @blockchain = Blockchain.new(node_wallet)
       @blockchain.setup(@node)
-      @miner = {address: miner_wallet.address, socket: MockWebSocket.new, nonces: [] of UInt64}
+      @miner = {context: {address: miner_wallet.address, nonces: [] of UInt64}, socket: MockWebSocket.new}
       @transaction_factory = TransactionFactory.new(@node_wallet)
       @rpc = RPCController.new(@blockchain)
+      @rest = RESTController.new(@blockchain)
       enable_difficulty
     end
 
@@ -81,6 +82,10 @@ module ::Units::Utils::ChainGenerator
 
     def rpc
       @rpc
+    end
+
+    def rest
+      @rest
     end
 
     private def add_valid_block(nonce : UInt64, miners : Array(NodeComponents::MinersManager::Miner))

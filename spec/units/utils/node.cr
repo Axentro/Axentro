@@ -14,8 +14,8 @@ module ::Units::Utils::NodeHelper
   include Sushi::Core
 
   class MockRequest < HTTP::Request
-    def initialize(method : String)
-      super(method, "/rpc", HTTP::Headers.new, IO::Memory.new)
+    def initialize(method : String, url : String = "/rpc")
+      super(method, url, HTTP::Headers.new, IO::Memory.new)
     end
   end
 
@@ -32,8 +32,8 @@ module ::Units::Utils::NodeHelper
   end
 
   class MockContext < HTTP::Server::Context
-    def initialize(method : String = "POST")
-      @request = MockRequest.new(method).unsafe_as(HTTP::Request)
+    def initialize(method : String = "POST", url : String = "/rpc")
+      @request = MockRequest.new(method, url).unsafe_as(HTTP::Request)
       @response = MockResponse.new.unsafe_as(HTTP::Server::Response)
     end
   end
@@ -43,6 +43,23 @@ module ::Units::Utils::NodeHelper
     node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, wallet, nil, false)
     blockchain.setup(node)
     blockchain
+  end
+
+  def exec_rest_api(res, status_code = 200, &block)
+
+    res.response.output.flush
+    res.response.output.close
+    output = res.response.output
+    case output
+    when IO
+      res.response.status_code.should eq(status_code)
+      http_res = res.response.unsafe_as(MockResponse).content
+      yield JSON.parse(http_res.split("\n").find{|l| l.includes?("result")}.not_nil!.chomp)
+    else
+      fail "expected an io response"
+    end
+  rescue e : Exception
+    yield e.message.not_nil!
   end
 
   def with_rpc_exec_internal_post(rpc, json, status_code = 200, &block)
