@@ -66,7 +66,7 @@ describe Transaction do
 
           blockchain = blockchain_node(transaction_factory.sender_wallet)
           blockchain.replace_chain(block_factory.addBlocks(10).sub_chain)
-          signed_transaction2.valid?(blockchain, 0_i64, false, [deposit_coins, signed_transaction1]).should be_true
+          signed_transaction2.valid?(blockchain, [deposit_coins, signed_transaction1]).should be_true
         end
       end
 
@@ -86,21 +86,21 @@ describe Transaction do
         )
 
         expect_raises(Exception, "length of transaction id have to be 64: too-short-id") do
-          transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
+          transaction.valid?(blockchain, [] of Transaction)
         end
       end
 
       it "should raise error: transaction already included in indices" do
         with_factory do |block_factory, transaction_factory|
-          transaction1 = transaction_factory.make_send(100000000_i64)
-          transaction2 = transaction_factory.make_send(200000000_i64)
-          chain = block_factory.addBlocks(10).addBlock([transaction1, transaction2]).sub_chain
+          transaction1 = transaction_factory.make_send(100000_i64)
+          transaction2 = transaction_factory.make_send(200000_i64)
+          chain = block_factory.addBlocks(2).addBlock([transaction1, transaction2]).sub_chain
           blockchain = blockchain_node(transaction_factory.sender_wallet)
           blockchain.replace_chain(chain)
 
           transaction1 = transaction_factory.align_transaction(transaction1, blockchain.chain.last.transactions.last.to_hash)
           expect_raises(Exception, "the transaction #{transaction1.id} is already included in 11") do
-            transaction1.valid?(blockchain, 0_i64, false, blockchain.chain.last.transactions)
+            transaction1.valid?(blockchain, blockchain.chain.last.transactions)
           end
         end
       end
@@ -121,7 +121,7 @@ describe Transaction do
         )
 
         expect_raises(Exception, "message size exceeds: 700 for 512") do
-          transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
+          transaction.valid?(blockchain, [] of Transaction)
         end
       end
 
@@ -150,7 +150,7 @@ describe Transaction do
         )
 
         expect_raises(Exception, "invalid sender address checksum for: VDBpbnZhbGlkLXdhbGxldC1hZGRyZXNz") do
-          transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
+          transaction.valid?(blockchain, [] of Transaction)
         end
       end
 
@@ -177,7 +177,7 @@ describe Transaction do
         signed_transaction = transaction.as_signed([sender_wallet])
 
         expect_raises(Exception, "invalid recipient address checksum for: VDBpbnZhbGlkLXdhbGxldC1hZGRyZXNz") do
-          signed_transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
+          signed_transaction.valid?(blockchain, [] of Transaction)
         end
       end
 
@@ -199,7 +199,7 @@ describe Transaction do
         signed_transaction = transaction.as_signed([sender_wallet])
 
         expect_raises(Exception, "There must be some transactions") do
-          signed_transaction.valid?(blockchain, 0_i64, false, [] of Transaction)
+          signed_transaction.valid?(blockchain, [] of Transaction)
         end
       end
 
@@ -210,7 +210,7 @@ describe Transaction do
           blockchain = blockchain_node(transaction_factory.sender_wallet)
 
           expect_raises(Exception, "invalid signing") do
-            signed_transaction2.valid?(blockchain, 0_i64, false, [signed_transaction1])
+            signed_transaction2.valid?(blockchain, [signed_transaction1])
           end
         end
       end
@@ -237,7 +237,7 @@ describe Transaction do
         )
 
         blockchain = blockchain_node(sender_wallet)
-        unsigned_transaction.valid?(blockchain, 0_i64, true, [] of Transaction)
+        unsigned_transaction.valid?(blockchain, [] of Transaction)
       end
 
       it "should raise message should be '0' error if supplied coinbase message is not '0'" do
@@ -256,7 +256,7 @@ describe Transaction do
         )
 
         expect_raises(Exception, "message has to be '0' for coinbase transaction") do
-          transaction.valid?(blockchain, 0_i64, true, [] of Transaction)
+          transaction.valid?(blockchain, [] of Transaction)
         end
       end
 
@@ -276,7 +276,7 @@ describe Transaction do
         )
 
         expect_raises(Exception, "actions has to be 'head' for coinbase transaction") do
-          transaction.valid?(blockchain, 0_i64, true, [] of Transaction)
+          transaction.valid?(blockchain, [] of Transaction)
         end
       end
 
@@ -298,7 +298,7 @@ describe Transaction do
         signed_transaction = transaction.as_signed([sender_wallet])
 
         expect_raises(Exception, "there should be no Sender for a coinbase transaction") do
-          signed_transaction.valid?(blockchain, 0_i64, true, [] of Transaction)
+          signed_transaction.valid?(blockchain, [] of Transaction)
         end
       end
 
@@ -318,7 +318,7 @@ describe Transaction do
         )
 
         expect_raises(Exception, "prev_hash of coinbase transaction has to be '0'") do
-          transaction.valid?(blockchain, 0_i64, true, [] of Transaction)
+          transaction.valid?(blockchain, [] of Transaction)
         end
       end
 
@@ -339,7 +339,7 @@ describe Transaction do
         )
 
         expect_raises(Exception, "invalid served amount for coinbase transaction: expected 50462650 but got 10") do
-          transaction.valid?(blockchain, 0_i64, true, [] of Transaction)
+          transaction.valid?(blockchain, [] of Transaction)
         end
       end
     end
