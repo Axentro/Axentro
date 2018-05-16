@@ -14,7 +14,7 @@ module ::Sushi::Core::BlockQueue
   class TaskReceiveBlock < Task
     def initialize(@callback : Node, @block : Block)
     end
- 
+
     def exec
       if block = queue.blockchain.valid_block?(@block)
         info "received block at #{@block.index} is valid. import the block."

@@ -13,9 +13,9 @@
 module ::Sushi::Core::NodeComponents
   class MinersManager < HandleSocket
     alias MinerContext = NamedTuple(
-            address: String,
-            nonces: Array(UInt64),
-          )
+      address: String,
+      nonces: Array(UInt64),
+    )
 
     alias MinerContexts = Array(MinerContext)
 
@@ -58,7 +58,7 @@ module ::Sushi::Core::NodeComponents
         })
       end
 
-      miner_context = { address: address, nonces: [] of UInt64 }
+      miner_context = {address: address, nonces: [] of UInt64}
       miner = {context: miner_context, socket: socket}
 
       @miners << miner

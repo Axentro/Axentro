@@ -83,7 +83,6 @@ describe TransactionCreator do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-
             expected_senders = [a_sender(transaction_factory.sender_wallet, 100000000_i64)]
             expected_recipients = [a_recipient(transaction_factory.recipient_wallet, 1000000000_i64)]
 

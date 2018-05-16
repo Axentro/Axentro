@@ -100,7 +100,7 @@ module ::Sushi::Core
       @transaction_pool.reject! { |transaction| indices.get(transaction.id) }
     end
 
-    def create_block?(nonce : UInt64, miners : NodeComponents::MinersManager::Miners) : Block?
+    def valid_block?(nonce : UInt64, miners : NodeComponents::MinersManager::Miners) : Block?
       return nil unless latest_block.valid_nonce?(nonce)
 
       index = @chain.size.to_i64

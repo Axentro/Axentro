@@ -18,7 +18,7 @@ module ::Sushi::Core::BlockQueue
       @miners : NodeComponents::MinersManager::Miners
     )
     end
- 
+
     def exec
       if block = queue.blockchain.valid_block?(@nonce, @miners)
         info "found new nonce: #{light_green(@nonce)} (block: #{block.index})"

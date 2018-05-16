@@ -13,11 +13,11 @@
 module ::Sushi::Core::BlockQueue
   abstract class Task
     abstract def exec
- 
+
     def queue
       Queue.get_instance
     end
- 
+
     include Logger
     include Common::Color
   end

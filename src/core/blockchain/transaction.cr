@@ -158,12 +158,12 @@ module ::Sushi::Core
         sign = secp256k1.sign(private_key.as_big_i, self.to_hash)
 
         {
-          address: s[:address],
+          address:    s[:address],
           public_key: s[:public_key],
-          amount: s[:amount],
-          fee: s[:fee],
-          sign_r: sign[0].to_s(base: 16),
-          sign_s: sign[1].to_s(base: 16),
+          amount:     s[:amount],
+          fee:        s[:fee],
+          sign_r:     sign[0].to_s(base: 16),
+          sign_s:     sign[1].to_s(base: 16),
         }
       }
 
