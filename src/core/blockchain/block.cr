@@ -66,8 +66,18 @@ module ::Sushi::Core
       ripemd160(current_hashes[0])
     end
 
+    #
+    # validate the nonce for the prev_block
+    #
     def valid_nonce?(nonce : UInt64, difficulty : Int32? = nil) : Bool
-      valid?(self.index, self.to_hash, nonce, difficulty)
+      valid_nonce?(self.index, self.to_hash, nonce, difficulty)
+    end
+
+    #
+    # validate the block for the prev_block
+    #
+    def valid?(block : Block, prev_block : Block)
+      
     end
 
     def valid_as_latest?(blockchain : Blockchain, skip_transaction_validation : Bool = false) : Bool
@@ -78,7 +88,7 @@ module ::Sushi::Core
 
         unless skip_transaction_validation
           transactions.each_with_index do |transaction, idx|
-            transaction.valid?(blockchain, @index, idx == 0, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
+            transaction.valid?(blockchain, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
           end
         end
 

@@ -63,7 +63,7 @@ module ::Sushi::Core::NodeComponents
 
       @miners << miner
 
-      info "new miner: #{light_green(miner[:address][0..7])} (#{@miners.size})"
+      info "new miner: #{light_green(miner[:context][:address][0..7])} (#{@miners.size})"
 
       send(socket, M_TYPE_MINER_HANDSHAKE_ACCEPTED, {
         version:    Core::CORE_VERSION,

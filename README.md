@@ -43,3 +43,5 @@ tranasction validation
 ## Check
 - [ ] Validate a transaction in block
 - [ ] Validate a transaction in prev blocks
+- [ ] Transaction's validation should not be passed blockchain
+  - [ ] All data is recorded into database as structured data

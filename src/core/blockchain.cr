@@ -100,7 +100,7 @@ module ::Sushi::Core
       @transaction_pool.reject! { |transaction| indices.get(transaction.id) }
     end
 
-    def valid_block?(nonce : UInt64, miners : NodeComponents::MinersManager::Miners) : Block?
+    def create_block?(nonce : UInt64, miners : NodeComponents::MinersManager::Miners) : Block?
       return nil unless latest_block.valid_nonce?(nonce)
 
       index = @chain.size.to_i64
@@ -185,7 +185,7 @@ module ::Sushi::Core
 
       transactions[1..-1].each_with_index do |transaction, idx|
         transaction.prev_hash = selected_transactions[-1].to_hash
-        transaction.valid?(self, latest_index, false, selected_transactions)
+        transaction.valid?(self, selected_transactions)
 
         selected_transactions << transaction
       rescue e : Exception
@@ -237,7 +237,7 @@ module ::Sushi::Core
                             miners.map { |m|
                               amount = (miners_rewards_total * m[:context][:nonces].size) / miners_nonces_size
                               {address: m[:context][:address], amount: amount}
-                            }.reject { |m| m[:context][:amount] == 0 }
+                            }.reject { |m| m[:amount] == 0 }
                           else
                             [] of NamedTuple(address: String, amount: Int64)
                           end

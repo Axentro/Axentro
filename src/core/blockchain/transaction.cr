@@ -53,11 +53,13 @@ module ::Sushi::Core
       sha256(string)
     end
 
-    def valid?(blockchain : Blockchain, block_index : Int64, is_coinbase : Bool, transactions : Array(Transaction)) : Bool
+    def valid?(blockchain : Blockchain, transactions : Array(Transaction)) : Bool
       raise "length of transaction id have to be 64: #{@id}" if @id.size != 64
       raise "message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
       raise "token size exceeds: #{self.token.bytesize} for #{TOKEN_SIZE_LIMIT}" if self.token.bytesize > TOKEN_SIZE_LIMIT
       raise "unscaled transaction" if scaled != 1
+
+      is_coinbase = transactions.size == 0
 
       secp256k1 : ECDSA::Secp256k1 = ECDSA::Secp256k1.new
 
@@ -116,8 +118,7 @@ module ::Sushi::Core
 
         if served_sum != served_sum_expected
           raise "invalid served amount for coinbase transaction: " +
-                "expected #{served_sum_expected} but got #{served_sum} " +
-                "(received block index: #{block_index}, latest block index: #{blockchain.latest_block.index})"
+                "expected #{served_sum_expected} but got #{served_sum} "
         end
       end
 

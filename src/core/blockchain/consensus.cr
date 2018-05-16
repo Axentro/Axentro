@@ -49,7 +49,7 @@ module ::Sushi::Core::Consensus
     buffer.hexstring[0, difficulty] == "0" * difficulty
   end
 
-  def valid?(block_index : Int64, block_hash : String, nonce : UInt64, _difficulty : Int32? = nil) : Bool
+  def valid_nonce?(block_index : Int64, block_hash : String, nonce : UInt64, _difficulty : Int32? = nil) : Bool
     valid_scryptn?(block_index, block_hash, nonce, _difficulty)
   end
 
