@@ -10,15 +10,12 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-# module ::Sushi::Core::BlockQueue
-#   abstract class Task
-#     abstract def exec
-#  
-#     def queue
-#       Queue.get_instance
-#     end
-#  
-#     include Logger
-#     include Common::Color
-#   end
-# end
+module ::Sushi::Core::BlockQueue
+  class WorkerFoundNonce < Worker
+    def task(message : String)
+      message_found_nonce = MessageFoundNonce.from_json(message)
+    rescue e : Exception
+      warning "found nonce #{nonce} has been rejected for the reason: #{e.message}"
+    end
+  end
+end

@@ -108,7 +108,7 @@ module ::Sushi::Core
       coinbase_transaction = create_coinbase_transaction(miners)
 
       transactions = [coinbase_transaction] + @transaction_pool
-      transactions = align_transactions(transactions)
+      transactions = align_transactions(transactions) # took times
 
       Block.new(
         index,
@@ -231,13 +231,13 @@ module ::Sushi::Core
     def create_coinbase_transaction(miners : NodeComponents::MinersManager::Miners) : Transaction
       rewards_total = latest_block.coinbase_amount
 
-      miners_nonces_size = miners.reduce(0) { |sum, m| sum + m[:nonces].size }
+      miners_nonces_size = miners.reduce(0) { |sum, m| sum + m[:context][:nonces].size }
       miners_rewards_total = (rewards_total * 3_i64) / 4_i64
       miners_recipients = if miners_nonces_size > 0
                             miners.map { |m|
-                              amount = (miners_rewards_total * m[:nonces].size) / miners_nonces_size
-                              {address: m[:address], amount: amount}
-                            }.reject { |m| m[:amount] == 0 }
+                              amount = (miners_rewards_total * m[:context][:nonces].size) / miners_nonces_size
+                              {address: m[:context][:address], amount: amount}
+                            }.reject { |m| m[:context][:amount] == 0 }
                           else
                             [] of NamedTuple(address: String, amount: Int64)
                           end

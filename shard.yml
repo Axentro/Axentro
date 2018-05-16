@@ -20,6 +20,8 @@ targets:
 dependencies:
   router:
     github: tbrand/router.cr
+  tokoroten:
+    github: tbrand/tokoroten
   sqlite3:
     github: crystal-lang/crystal-sqlite3
   scrypt:

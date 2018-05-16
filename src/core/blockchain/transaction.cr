@@ -100,14 +100,7 @@ module ::Sushi::Core
           raise "invalid prev_hash: expected #{transactions[-1].to_hash} but got #{@prev_hash}"
         end
 
-        if blockchain.indices.get(@id)
-          raise "the transaction #{@id} is already included in #{blockchain.indices.get(@id)}"
-        end
-
-        if transactions.select { |transaction| transaction.id == @id }.size > 0
-          raise "the transaction #{@id} is already included in the same block (#{block_index})"
-        end
-
+        # omg...
         blockchain.dapps.each do |dapp|
           dapp.valid?(self, transactions) if dapp.transaction_related?(@action)
         end

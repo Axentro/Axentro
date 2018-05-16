@@ -34,6 +34,14 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
+      if index = get(transaction.id)
+        raise "the transaction #{transaction.id} is already included in #{index}"
+      end
+
+      if prev_transactions.select { |t| t.id == transaction.id }.size > 0
+        raise "the transcation #{transaction.id} already exists in the same block"
+      end
+
       true
     end
 
