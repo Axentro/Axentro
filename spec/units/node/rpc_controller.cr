@@ -45,8 +45,6 @@ describe RPCController do
             transaction.action.should eq("send")
             transaction.prev_hash.should eq("0")
             transaction.message.should eq("")
-            transaction.sign_r.should eq("0")
-            transaction.sign_s.should eq("0")
             transaction.senders.should eq(expected_senders)
             transaction.recipients.should eq(expected_recipients)
           end
