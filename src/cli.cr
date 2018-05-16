@@ -198,24 +198,7 @@ module ::Sushi::Interface
     end
 
     def sign(wallets : Array(Core::Wallet), transaction : Core::Transaction) : Core::Transaction
-      secp256k1 = Core::ECDSA::Secp256k1.new
-
-      transaction.senders = transaction.senders.map_with_index do |s, i|
-        private_key = Wif.new(wallets[i].wif).private_key
-
-        sign = secp256k1.sign(private_key.as_big_i, transaction.to_hash)
-
-        {
-          address:    s[:address],
-          public_key: s[:public_key],
-          amount:     s[:amount],
-          fee:        s[:fee],
-          sign_r:     sign[0].to_s(base: 16),
-          sign_s:     sign[1].to_s(base: 16),
-        }
-      end
-
-      transaction
+      transaction.as_signed(wallets)
     end
 
     def resolve_internal(node, domain, confirmed : Bool = true) : JSON::Any

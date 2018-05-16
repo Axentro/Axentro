@@ -198,7 +198,7 @@ module ::Sushi::Core::DApps::User
         return false
       end
 
-      transaction = blockchain.transaction_creator.create_unsigned_transaction_impl(
+      unsigned_transaction = blockchain.transaction_creator.create_unsigned_transaction_impl(
         action,
         senders,
         recipients,
@@ -207,25 +207,9 @@ module ::Sushi::Core::DApps::User
         id,
       )
 
-      secp256k1 = Core::ECDSA::Secp256k1.new
-      private_key = Wif.new(blockchain.wallet.wif).private_key
+      signed_transaction = unsigned_transaction.as_signed([blockchain.wallet])
 
-      signed_senders = transaction.senders.map { |sender|
-        sign = secp256k1.sign(private_key.as_big_i, transaction.to_hash)
-
-        {
-          address:    sender[:address],
-          public_key: sender[:public_key],
-          amount:     sender[:amount],
-          fee:        sender[:fee],
-          sign_r:     sign[0].to_s(base: 16),
-          sign_s:     sign[1].to_s(base: 16),
-        }
-      }
-
-      transaction.senders = signed_senders
-
-      node.broadcast_transaction(transaction)
+      node.broadcast_transaction(signed_transaction)
 
       true
     end

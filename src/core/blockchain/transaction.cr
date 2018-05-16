@@ -29,7 +29,6 @@ module ::Sushi::Core
     )
 
     setter prev_hash : String
-    setter senders : Senders
 
     def initialize(
       @id : String,
@@ -148,6 +147,36 @@ module ::Sushi::Core
         self.id,
         self.action,
         unsigned_senders,
+        self.recipients,
+        self.message,
+        self.token,
+        "0",
+        self.scaled,
+      )
+    end
+
+    def as_signed(wallets : Array(Wallet)) : Transaction
+      secp256k1 = Core::ECDSA::Secp256k1.new
+
+      signed_senders = self.senders.map_with_index { |s, i|
+        private_key = Wif.new(wallets[i].wif).private_key
+
+        sign = secp256k1.sign(private_key.as_big_i, self.to_hash)
+
+        {
+          address: s[:address],
+          public_key: s[:public_key],
+          amount: s[:amount],
+          fee: s[:fee],
+          sign_r: sign[0].to_s(base: 16),
+          sign_s: sign[1].to_s(base: 16),
+        }
+      }
+
+      Transaction.new(
+        self.id,
+        self.action,
+        signed_senders,
         self.recipients,
         self.message,
         self.token,
