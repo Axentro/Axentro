@@ -62,7 +62,7 @@ module ::Sushi::Core
       secp256k1 : ECDSA::Secp256k1 = ECDSA::Secp256k1.new
 
       @senders.each do |sender|
-        network = Keys::Address.from(sender[:address]).network
+        network = Keys::Address.from(sender[:address], "sender").network
         public_key = Keys::PublicKey.new(sender[:public_key], network)
 
         if !secp256k1.verify(

@@ -91,8 +91,6 @@ describe TransactionCreator do
             transaction.action.should eq("send")
             transaction.prev_hash.should eq("0")
             transaction.message.should eq("")
-            transaction.sign_r.should eq("0")
-            transaction.sign_s.should eq("0")
             transaction.senders.should eq(expected_senders)
             transaction.recipients.should eq(expected_recipients)
           end
@@ -113,13 +111,10 @@ describe TransactionCreator do
               "0",           # message
               TOKEN_DEFAULT, # token
               "0",           # prev_hash
-              "0",           # sign_r
-              "0",           # sign_s
-              0              # scaled
+              1              # scaled
             )
 
-            signature = sign(transaction_factory.sender_wallet, unsigned_transaction)
-            signed_transaction = unsigned_transaction.signed(signature[:r], signature[:s])
+            signed_transaction = unsigned_transaction.as_signed([transaction_factory.sender_wallet])
 
             payload = {
               call:        "create_transaction",
@@ -133,9 +128,9 @@ describe TransactionCreator do
               transaction.action.should eq("send")
               transaction.prev_hash.should eq("0")
               transaction.message.should eq("0")
-              transaction.sign_r.should eq(signature[:r])
-              transaction.sign_s.should eq(signature[:s])
-              transaction.senders.should eq(senders)
+              transaction.senders.first["sign_r"].should_not eq("0")
+              transaction.senders.first["sign_s"].should_not eq("0")
+              transaction.senders.should_not eq(senders)
             end
           end
         end

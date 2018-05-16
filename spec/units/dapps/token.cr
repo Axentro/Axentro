@@ -61,12 +61,12 @@ describe Token do
     end
     it "should raise an error when no senders" do
       with_factory do |block_factory, transaction_factory|
-        senders = [] of Transaction::Sender
+        senders = [a_sender(transaction_factory.sender_wallet, 10_i64, 1000_i64)]
         recipients = [] of Transaction::Recipient
         transaction = transaction_factory.make_create_token("KINGS", senders, recipients)
         chain = block_factory.addBlocks(10).chain
         token = Token.new(blockchain_node(transaction_factory.sender_wallet))
-        expect_raises(Exception, "number of specified senders must be one for 'create_token'") do
+        expect_raises(Exception, "number of specified recipients must be one for 'create_token'") do
           token.valid_transaction?(transaction, chain.last.transactions)
         end
       end

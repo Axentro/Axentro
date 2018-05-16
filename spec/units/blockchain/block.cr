@@ -41,14 +41,14 @@ describe Block do
     it "should calculate merkle tree root when coinbase transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
       block = Block.new(1_i64, [coinbase_transaction], 1_u64, "prev_hash")
-      block.calcluate_merkle_tree_root.should eq("dbb8c56ef9c8dcc0b6e16c065ef3843d80f8f92c")
+      block.calcluate_merkle_tree_root.should eq("01856aeae999909e1813961eb45d6ed6f317382d")
     end
 
     it "should calculate merkle tree root when 2 transactions (first is coinbase)" do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = Block.new(1_i64, [coinbase_transaction, transaction1], 1_u64, "prev_hash")
-      block.calcluate_merkle_tree_root.should eq("12972bd5d457a34a402ccccabba0df4a1774d6f5")
+      block.calcluate_merkle_tree_root.should eq("f39b71f57e2b182c87ac258345378a58fe5e10d0")
     end
   end
 
@@ -88,11 +88,28 @@ describe Block do
       end
 
       it "should raise an error: invalid transaction" do
-        blockchain = blockchain_node(a_fixed_sender_wallet)
-        prev_hash = blockchain.chain[0].to_hash
-        block = Block.new(1_i64, [a_fixed_signed_transaction], 0_u64, prev_hash)
-        expect_raises(Exception, "actions has to be 'head' for coinbase transaction") do
-          block.valid_as_latest?(blockchain)
+        with_factory do |block_factory, transaction_factory|
+          senders = [a_sender(transaction_factory.sender_wallet, 1000_i64)]
+          recipients = [a_recipient(transaction_factory.recipient_wallet, 100_i64)]
+
+          unsigned_transaction = Transaction.new(
+            Transaction.create_id,
+            "send", # action
+            senders,
+            recipients,
+            "0",           # message
+            TOKEN_DEFAULT, # token
+            "0",           # prev_hash
+            1              # scaled
+          )
+
+          signed_transaction = unsigned_transaction.as_signed([transaction_factory.sender_wallet])
+
+          blockchain = blockchain_node(transaction_factory.sender_wallet)
+          block = Block.new(1_i64, [signed_transaction], 0_u64, "prev_hash")
+          expect_raises(Exception, "actions has to be 'head' for coinbase transaction") do
+            block.valid_as_latest?(blockchain)
+          end
         end
       end
     end
@@ -248,16 +265,14 @@ def a_fixed_signed_transaction
     "TTA0MGQyMjc2ODMxNmE2MzlmZTNmNDZmNzRlYTU0NDFmNDM3MGY0MDBmNzU3NGVlMDE2OThkNDM4MjcxMTk0NzY4NjM4NWVj",
     "TTA4ZGViYmM1NTdiNTkyNmU1MmUwZmQ5NThkZWQ1M2E1ODE5NjU2NDg1OWM2MWQw")
 
-  unsigned_transaction = Transaction.new(
+  signed_transaction = Transaction.new(
     "ded1ea5373f55b4e84ea9c140761ba181af31a94cc6c2bb22685b2f86639ca1e",
     "send", # action
-    [a_sender(sender_wallet, 1000_i64)],
+    [a_signed_sender(sender_wallet, 1000_i64, "6fee937285f5bfb59d84d4e371ab28f6e2a9226091ef781b6039781778662b0f", "c033714ab9a447ac08b7e2774b42ff894a143663147923403b2da171ffd6f7e9")],
     [a_recipient(recipient_wallet, 10_i64)],
     "0",           # message
     TOKEN_DEFAULT, # token
     "0",           # prev_hash
     1              # scaled
   )
-
-  unsigned_transaction.signed("cd5927cdc4cf789af690fb5dcd8fd8ec64e9155d9cb025ed93962d686b5d823a", "ef991d40c9a74079ae64c3a351f733134fc50fe92628f66f3b97a42610521c06")
 end
