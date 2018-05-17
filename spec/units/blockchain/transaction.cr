@@ -181,28 +181,6 @@ describe Transaction do
         end
       end
 
-      it "should raise error when there are no transactions" do
-        sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
-        blockchain = blockchain_node(sender_wallet)
-
-        transaction = Transaction.new(
-          Transaction.create_id,
-          "send", # action
-          [a_sender(sender_wallet, 1000_i64)],
-          [] of Transaction::Recipient,
-          "0",           # message
-          TOKEN_DEFAULT, # token
-          "0",           # prev_hash
-          1              # scaled
-        )
-
-        signed_transaction = transaction.as_signed([sender_wallet])
-
-        expect_raises(Exception, "There must be some transactions") do
-          signed_transaction.valid?(blockchain, [] of Transaction)
-        end
-      end
-
       it "should raise invalid signing error when the signature is invalid" do
         with_factory do |block_factory, transaction_factory|
           signed_transaction1 = transaction_factory.make_send(100_i64)

@@ -64,7 +64,8 @@ describe Indices do
     with_factory do |block_factory, transaction_factory|
       chain = block_factory.addBlocks(2).chain
       indices = Indices.new(blockchain_node(transaction_factory.sender_wallet))
-      indices.valid_transaction?(chain.last.transactions.first, chain.last.transactions).should be_true
+
+      indices.valid_transaction?(chain.last.transactions.first, chain.last.transactions[1..-1]).should be_true
     end
   end
   it "should perform #record" do
