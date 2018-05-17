@@ -64,5 +64,4 @@ module ::Units::Utils::TransactionHelper
 
     {r: sign[0].to_s(base: 16), s: sign[1].to_s(base: 16)}
   end
-
 end
