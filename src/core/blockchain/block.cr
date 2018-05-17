@@ -67,8 +67,6 @@ module ::Sushi::Core
     end
 
     def valid_nonce?(nonce : UInt64, difficulty : Int32? = nil) : Bool
-      # todo
-      # rename
       valid?(self.index, self.to_hash, nonce, difficulty)
     end
 
