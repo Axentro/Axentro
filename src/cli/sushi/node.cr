@@ -27,10 +27,10 @@ module ::Sushi::Interface::Sushi
 
     def option_parser
       create_option_parser([
-                             Options::CONNECT_NODE,
-                             Options::JSON,
-                             Options::NODE_ID,
-                           ])
+        Options::CONNECT_NODE,
+        Options::JSON,
+        Options::NODE_ID,
+      ])
     end
 
     def run_impl(action_name)

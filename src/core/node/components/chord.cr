@@ -494,8 +494,8 @@ module ::Sushi::Core::NodeComponents
     def connected_nodes
       {
         successor_list: extract_context(@successor_list),
-        predecessor: extract_context(@predecessor),
-        private_nodes: extract_context(@private_nodes),
+        predecessor:    extract_context(@predecessor),
+        private_nodes:  extract_context(@private_nodes),
       }
     end
 
