@@ -16,7 +16,7 @@ module ::E2E::Utils::Node
       .map { |arg| arg.to_s }
       .join(" ")
 
-    bin = File.expand_path("../../../../bin/sushid", __FILE__)
+    bin = File.expand_path("../../../bin/sushid", __FILE__)
 
     "#{bin} #{_args}"
   end

@@ -16,7 +16,7 @@ module ::E2E::Utils::Miner
       .map { |arg| arg.to_s }
       .join(" ")
 
-    bin = File.expand_path("../../../../bin/sushim", __FILE__)
+    bin = File.expand_path("../../../bin/sushim", __FILE__)
 
     "#{bin} #{_args}"
   end

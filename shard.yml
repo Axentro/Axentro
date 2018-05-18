@@ -15,7 +15,7 @@ targets:
   sushim:
     main: src/cli/sushim.cr
   e2e:
-    main: spec/e2e/e2e.cr
+    main: e2e/e2e.cr
 
 dependencies:
   router:
