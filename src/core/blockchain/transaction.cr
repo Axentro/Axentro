@@ -92,8 +92,6 @@ module ::Sushi::Core
       end
 
       if !is_coinbase
-        raise "There must be some transactions" if transactions.size < 1
-
         if sender_total_amount != recipient_total_amount
           raise "amount mismatch for senders (#{scale_decimal(sender_total_amount)}) and recipients (#{scale_decimal(recipient_total_amount)})"
         end
@@ -102,7 +100,6 @@ module ::Sushi::Core
           raise "invalid prev_hash: expected #{transactions[-1].to_hash} but got #{@prev_hash}"
         end
 
-        # omg...
         blockchain.dapps.each do |dapp|
           dapp.valid?(self, transactions) if dapp.transaction_related?(@action)
         end

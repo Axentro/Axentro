@@ -10,27 +10,6 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-# module ::Sushi::Core::BlockQueue
-#   alias MessageFoundNonce = NamedTuple(
-#           latest_block: Block,
-#           nonce: UInt64,
-#           miners: MinersManager::MinerContexts,
-#         )
-#
-#   alias MessageReceiveBlock = NamedTuple(
-#           latest_block: Block,
-#           block: Block,
-#         )
-#
-#   def valid_block?(block : Block, latest_block : Block)
-#
-#   end
-#
-#   include Logger
-#   include NodeComponents
-#   include Common::Color
-# end
-
 module ::Sushi::Core::BlockQueue
   class Queue
     @@block_queue : Queue?

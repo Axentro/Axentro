@@ -30,7 +30,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def transaction_related?(action : String) : Bool
-      false
+      true
     end
 
     def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool

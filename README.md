@@ -34,14 +34,3 @@ These channels are bridged each other.
 ## Contributors
 - [@tbrand](https://github.com/tbrand) Taichiro Suzuki - core developer, founder
 - [@kingsleyh](https://github.com/kingsleyh) Kingsley Hendrickse - core developer, co-creator
-
-# Memo
-tranasction validation
- - blockchain.align_transactions
- - block.valid_as_latest?
-
-## Check
-- [ ] Validate a transaction in block
-- [ ] Validate a transaction in prev blocks
-- [ ] Transaction's validation should not be passed blockchain
-  - [ ] All data is recorded into database as structured data
