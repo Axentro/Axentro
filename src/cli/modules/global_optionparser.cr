@@ -229,7 +229,7 @@ module ::Sushi::Interface
     end
 
     def __wallet_password : String?
-        with_string_config("wallet_password", @wallet_password)
+      with_string_config("wallet_password", @wallet_password)
     end
 
     def __is_testnet : Bool
