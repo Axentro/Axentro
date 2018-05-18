@@ -119,6 +119,7 @@ module ::Units::Utils::ChainGenerator
     end
 
     def align_transaction(transaction : Transaction, prev_hash : String) : Transaction
+      transaction = transaction.dup
       transaction.prev_hash = prev_hash
       transaction
     end

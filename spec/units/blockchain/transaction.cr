@@ -99,7 +99,8 @@ describe Transaction do
           blockchain.replace_chain(chain)
 
           transaction1 = transaction_factory.align_transaction(transaction1, blockchain.chain.last.transactions.last.to_hash)
-          expect_raises(Exception, "the transaction #{transaction1.id} is already included in 11") do
+
+          expect_raises(Exception, "the transaction #{transaction1.id} is already included in 3") do
             transaction1.valid?(blockchain, blockchain.chain.last.transactions)
           end
         end
@@ -423,7 +424,7 @@ describe Transaction do
       1              # scaled
     )
 
-    transaction.total_fees.should eq(100000000_i64)
+    transaction.total_fees.should eq(10000_i64)
   end
 
   STDERR.puts "< Transaction"

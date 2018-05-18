@@ -18,7 +18,7 @@ module ::Units::Utils::TransactionHelper
      amount:  amount}
   end
 
-  def a_sender(wallet : Wallet, amount : Int64, fee : Int64 = 100000000_i64) : Transaction::Sender
+  def a_sender(wallet : Wallet, amount : Int64, fee : Int64 = 10000_i64) : Transaction::Sender
     {address:    wallet.address,
      public_key: wallet.public_key,
      amount:     amount,
@@ -28,7 +28,7 @@ module ::Units::Utils::TransactionHelper
     }
   end
 
-  def a_signed_sender(wallet : Wallet, amount : Int64, sign_r : String, sign_s : String, fee : Int64 = 100000000_i64) : Transaction::Sender
+  def a_signed_sender(wallet : Wallet, amount : Int64, sign_r : String, sign_s : String, fee : Int64 = 10000_i64) : Transaction::Sender
     {address:    wallet.address,
      public_key: wallet.public_key,
      amount:     amount,
@@ -43,7 +43,7 @@ module ::Units::Utils::TransactionHelper
      amount:  amount}
   end
 
-  def a_decimal_sender(wallet : Wallet, amount : String, fee : String = "1.0") : Transaction::SenderDecimal
+  def a_decimal_sender(wallet : Wallet, amount : String, fee : String = "0.0001") : Transaction::SenderDecimal
     {address:    wallet.address,
      public_key: wallet.public_key,
      amount:     amount,
