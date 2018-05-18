@@ -23,7 +23,7 @@ describe RPCController do
     describe "#create_unsigned_transaction" do
       it "should return the transaction as json when valid" do
         with_factory do |block_factory, transaction_factory|
-          senders = [a_decimal_sender(transaction_factory.sender_wallet, "1")]
+          senders = [a_decimal_sender(transaction_factory.sender_wallet, "1", "0.0001")]
           recipients = [a_decimal_recipient(transaction_factory.recipient_wallet, "10")]
 
           payload = {

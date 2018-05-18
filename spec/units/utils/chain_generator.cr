@@ -40,7 +40,7 @@ module ::Units::Utils::ChainGenerator
       @node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, nil, false)
       @blockchain = Blockchain.new(node_wallet)
       @blockchain.setup(@node)
-      @miner = {address: miner_wallet.address, socket: MockWebSocket.new, nonces: [] of UInt64}
+      @miner = {context: {address: miner_wallet.address, nonces: [] of UInt64}, socket: MockWebSocket.new}
       @transaction_factory = TransactionFactory.new(@node_wallet)
       @rpc = RPCController.new(@blockchain)
       enable_difficulty
@@ -119,6 +119,7 @@ module ::Units::Utils::ChainGenerator
     end
 
     def align_transaction(transaction : Transaction, prev_hash : String) : Transaction
+      transaction = transaction.dup
       transaction.prev_hash = prev_hash
       transaction
     end

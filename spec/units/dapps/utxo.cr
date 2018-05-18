@@ -210,7 +210,7 @@ describe UTXO do
         utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
 
         utxo.record(chain)
-        expect_raises(Exception, "sender has not enough token(#{TOKEN_DEFAULT}). sender has -1.4953735 + 0 but try to pay 2") do
+        expect_raises(Exception, "sender has not enough token(#{TOKEN_DEFAULT}). sender has -.4954735 + 0 but try to pay 2") do
           utxo.valid_transaction?(transaction2, [transaction1])
         end
       end
@@ -239,7 +239,7 @@ describe UTXO do
         chain = block_factory.addBlock.chain
         utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
         utxo.record(chain)
-        expected = {TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -100000200_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64}}
+        expected = {TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -10200_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64}}
         utxo.calculate_for_transaction(transaction2).should eq(expected)
       end
     end
@@ -252,7 +252,7 @@ describe UTXO do
         utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
         utxo.record(chain)
         expected = {"KINGS"       => {"#{transaction_factory.sender_wallet.address}" => -200_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64},
-                    TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -100000000_i64},
+                    TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -10000_i64},
         }
         utxo.calculate_for_transaction(transaction2).should eq(expected)
       end
@@ -268,7 +268,7 @@ describe UTXO do
         utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
         utxo.record(chain)
         expected = {"KINGS"       => {"#{transaction_factory.sender_wallet.address}" => -100_i64, "#{transaction_factory.recipient_wallet.address}" => 100_i64},
-                    TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -200000200_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64}}
+                    TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -20200_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64}}
         utxo.calculate_for_transactions([transaction1, transaction2]).should eq(expected)
       end
     end
