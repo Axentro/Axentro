@@ -89,6 +89,8 @@ module ::Sushi::Interface::Sushi
         public_key: wallet.public_key,
         amount:     price,
         fee:        fee,
+        sign_r:     "0",
+        sign_s:     "0",
       })
 
       recipients = RecipientsDecimal.new
@@ -103,7 +105,7 @@ module ::Sushi::Interface::Sushi
         })
       end
 
-      add_transaction(node, wallet, "scars_buy", senders, recipients, domain, TOKEN_DEFAULT)
+      add_transaction(node, "scars_buy", [wallet], senders, recipients, domain, TOKEN_DEFAULT)
     end
 
     def sell
@@ -129,6 +131,8 @@ module ::Sushi::Interface::Sushi
         public_key: wallet.public_key,
         amount:     price,
         fee:        fee,
+        sign_r:     "0",
+        sign_s:     "0",
       })
 
       recipients = RecipientsDecimal.new
@@ -137,7 +141,7 @@ module ::Sushi::Interface::Sushi
         amount:  price,
       })
 
-      add_transaction(node, wallet, "scars_sell", senders, recipients, domain, TOKEN_DEFAULT)
+      add_transaction(node, "scars_sell", [wallet], senders, recipients, domain, TOKEN_DEFAULT)
     end
 
     def cancel
@@ -162,6 +166,8 @@ module ::Sushi::Interface::Sushi
         public_key: wallet.public_key,
         amount:     "0",
         fee:        fee,
+        sign_r:     "0",
+        sign_s:     "0",
       })
 
       recipients = RecipientsDecimal.new
@@ -170,7 +176,7 @@ module ::Sushi::Interface::Sushi
         amount:  "0",
       })
 
-      add_transaction(node, wallet, "scars_cancel", senders, recipients, domain, TOKEN_DEFAULT)
+      add_transaction(node, "scars_cancel", [wallet], senders, recipients, domain, TOKEN_DEFAULT)
     end
 
     def sales

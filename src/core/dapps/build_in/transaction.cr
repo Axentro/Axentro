@@ -73,8 +73,6 @@ module ::Sushi::Core::DApps::BuildIn
         message,
         token,
         "0", # prev_hash
-        "0", # sign_r
-        "0", # sign_s
         0,   # scaled
       ).to_transaction
 

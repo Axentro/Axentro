@@ -12,10 +12,16 @@
 
 module ::Sushi::Core::NodeComponents
   class MinersManager < HandleSocket
-    alias Miner = NamedTuple(
+    alias MinerContext = NamedTuple(
       address: String,
-      socket: HTTP::WebSocket,
       nonces: Array(UInt64),
+    )
+
+    alias MinerContexts = Array(MinerContext)
+
+    alias Miner = NamedTuple(
+      context: MinerContext,
+      socket: HTTP::WebSocket,
     )
 
     alias Miners = Array(Miner)
@@ -52,11 +58,12 @@ module ::Sushi::Core::NodeComponents
         })
       end
 
-      miner = {socket: socket, address: address, nonces: [] of UInt64}
+      miner_context = {address: address, nonces: [] of UInt64}
+      miner = {context: miner_context, socket: socket}
 
       @miners << miner
 
-      info "new miner: #{light_green(miner[:address][0..7])} (#{@miners.size})"
+      info "new miner: #{light_green(miner[:context][:address][0..7])} (#{@miners.size})"
 
       send(socket, M_TYPE_MINER_HANDSHAKE_ACCEPTED, {
         version:    Core::CORE_VERSION,
@@ -74,7 +81,7 @@ module ::Sushi::Core::NodeComponents
       found = false
 
       if miner = find?(socket)
-        if @miners.map { |m| m[:nonces] }.flatten.includes?(nonce)
+        if @miners.map { |m| m[:context][:nonces] }.flatten.includes?(nonce)
           warning "nonce #{nonce} has already been discoverd"
         elsif !@blockchain.latest_block.valid_nonce?(nonce, miner_difficulty_at(@blockchain.latest_block.index))
           warning "received nonce is invalid, try to update latest block"
@@ -84,9 +91,9 @@ module ::Sushi::Core::NodeComponents
             difficulty: miner_difficulty_at(@blockchain.latest_index),
           })
         else
-          info "miner #{miner[:address][0..7]} found nonce (nonces: #{miner[:nonces].size})"
+          info "miner #{miner[:context][:address][0..7]} found nonce (nonces: #{miner[:context][:nonces].size})"
 
-          miner[:nonces].push(nonce)
+          miner[:context][:nonces].push(nonce)
 
           found = true
         end
@@ -97,7 +104,7 @@ module ::Sushi::Core::NodeComponents
 
     def clear_nonces
       @miners.each do |m|
-        m[:nonces].clear
+        m[:context][:nonces].clear
       end
     end
 
@@ -123,6 +130,10 @@ module ::Sushi::Core::NodeComponents
 
     def size
       @miners.size
+    end
+
+    def miner_contexts : MinerContexts
+      @miners.map { |m| m[:context] }
     end
 
     include Protocol

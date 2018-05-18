@@ -83,6 +83,7 @@ module ::Sushi::Core::Controllers
       get "/api/v1/scars/sales" { |context, params| __v1_scars_sales(context, params) }
       get "/api/v1/scars/:domain/confirmed" { |context, params| __v1_scars_confirmed(context, params) }
       get "/api/v1/scars/:domain/unconfirmed" { |context, params| __v1_scars_unconfirmed(context, params) }
+      get "/api/v1/tokens" { |context, params| __v1_tokens(context, params) }
 
       post "/api/v1/transaction" { |context, params| __v1_transaction(context, params) }
       post "/api/v1/transaction/unsigned" { |context, params| __v1_transaction_unsigned(context, params) }
@@ -296,9 +297,19 @@ module ::Sushi::Core::Controllers
       end
     end
 
+    def __v1_tokens(context, params)
+      with_response(context) do
+        @blockchain.token.tokens_list_impl
+      end
+    end
+
     private def with_response(context, &block)
       query_params = HTTP::Params.parse(context.request.query || "")
 
+      context.response.headers["Allow"] = "HEAD,GET,PUT,POST,DELETE,OPTIONS"
+      context.response.headers["Access-Control-Allow-Origin"] = "*"
+      context.response.headers["Access-Control-Allow-Headers"] =
+        "X-Requested-With, X-HTTP-Method-Override, Content-Type, Cache-Control, Accept"
       context.response.print api_success(yield query_params)
       context
     rescue e : Exception

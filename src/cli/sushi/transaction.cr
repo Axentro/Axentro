@@ -94,6 +94,7 @@ module ::Sushi::Interface::Sushi
       to_address = Address.from(recipient_address, "recipient")
 
       wallet = get_wallet(wallet_path, __wallet_password)
+      wallets = [wallet]
 
       senders = SendersDecimal.new
       senders.push(
@@ -102,6 +103,8 @@ module ::Sushi::Interface::Sushi
           public_key: wallet.public_key,
           amount:     amount,
           fee:        fee,
+          sign_r:     "0",
+          sign_s:     "0",
         }
       )
 
@@ -113,7 +116,7 @@ module ::Sushi::Interface::Sushi
         }
       )
 
-      add_transaction(node, wallet, action, senders, recipients, __message, __token || TOKEN_DEFAULT)
+      add_transaction(node, action, wallets, senders, recipients, __message, __token || TOKEN_DEFAULT)
     end
 
     def transactions

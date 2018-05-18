@@ -16,6 +16,8 @@ module ::Sushi::Core::TransactionModels
     public_key: String,
     amount: Int64,
     fee: Int64,
+    sign_r: String,
+    sign_s: String,
   )
 
   alias Senders = Array(Sender)
@@ -25,6 +27,8 @@ module ::Sushi::Core::TransactionModels
     public_key: String,
     amount: String,
     fee: String,
+    sign_r: String,
+    sign_s: String,
   )
 
   alias SendersDecimal = Array(SenderDecimal)

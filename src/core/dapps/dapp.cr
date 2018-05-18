@@ -31,11 +31,8 @@ module ::Sushi::Core::DApps
     end
 
     def valid?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-      raise "senders have to be only one currently" if transaction.senders.size != 1
-      sender = transaction.senders[0]
-
-      if sender[:fee] < self.class.fee(transaction.action)
-        raise "not enough fee, should be #{scale_decimal(sender[:fee])} >= #{scale_decimal(self.class.fee(transaction.action))}"
+      if transaction.total_fees < self.class.fee(transaction.action)
+        raise "not enough fee, should be #{scale_decimal(transaction.total_fees)} >= #{scale_decimal(self.class.fee(transaction.action))}"
       end
 
       valid_transaction?(transaction, prev_transactions)

@@ -78,7 +78,7 @@ module ::Sushi::Core
 
         unless skip_transaction_validation
           transactions.each_with_index do |transaction, idx|
-            transaction.valid?(blockchain, @index, idx == 0, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
+            transaction.valid?(blockchain, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
           end
         end
 

@@ -20,8 +20,6 @@ module ::Sushi::Core
       message: String,
       token: String,
       prev_hash: String,
-      sign_r: String,
-      sign_s: String,
       scaled: Int32,
     )
 
@@ -33,8 +31,6 @@ module ::Sushi::Core
       @message : String,
       @token : String,
       @prev_hash : String,
-      @sign_r : String,
-      @sign_s : String,
       @scaled : Int32
     )
       raise "invalid decimal transaction (expected scaled: 0 bug receive #{@scaled})" if @scaled != 0
@@ -56,8 +52,6 @@ module ::Sushi::Core
         message,
         token,
         "0",
-        "0",
-        "0",
         0,
       )
     end
@@ -71,8 +65,6 @@ module ::Sushi::Core
         @message,
         @token,
         @prev_hash,
-        @sign_r,
-        @sign_s,
         1,
       )
     end
@@ -86,8 +78,6 @@ module ::Sushi::Core
         transaction.message,
         transaction.token,
         transaction.prev_hash,
-        transaction.sign_r,
-        transaction.sign_s,
         0,
       )
     end
@@ -102,6 +92,8 @@ module ::Sushi::Core
         public_key: sender[:public_key],
         amount:     scale_i64(sender[:amount]),
         fee:        scale_i64(sender[:fee]),
+        sign_r:     sender[:sign_r],
+        sign_s:     sender[:sign_s],
       }
     end
 
@@ -126,6 +118,8 @@ module ::Sushi::Core
         public_key: sender[:public_key],
         amount:     scale_decimal(sender[:amount]),
         fee:        scale_decimal(sender[:fee]),
+        sign_r:     sender[:sign_r],
+        sign_s:     sender[:sign_s],
       }
     end
 

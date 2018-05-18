@@ -25,8 +25,6 @@ module ::Sushi::Core
       message: String,
       token: String,
       prev_hash: String,
-      sign_r: String,
-      sign_s: String,
       scaled: Int32,
     )
 
@@ -40,8 +38,6 @@ module ::Sushi::Core
       @message : String,
       @token : String,
       @prev_hash : String,
-      @sign_r : String,
-      @sign_s : String,
       @scaled : Int32
     )
     end
@@ -57,13 +53,29 @@ module ::Sushi::Core
       sha256(string)
     end
 
-    def valid?(blockchain : Blockchain, block_index : Int64, is_coinbase : Bool, transactions : Array(Transaction)) : Bool
+    def valid?(blockchain : Blockchain, transactions : Array(Transaction)) : Bool
       raise "length of transaction id have to be 64: #{@id}" if @id.size != 64
       raise "message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
       raise "token size exceeds: #{self.token.bytesize} for #{TOKEN_SIZE_LIMIT}" if self.token.bytesize > TOKEN_SIZE_LIMIT
       raise "unscaled transaction" if scaled != 1
 
+      is_coinbase = transactions.size == 0
+
+      secp256k1 : ECDSA::Secp256k1 = ECDSA::Secp256k1.new
+
       @senders.each do |sender|
+        network = Keys::Address.from(sender[:address], "sender").network
+        public_key = Keys::PublicKey.new(sender[:public_key], network)
+
+        if !secp256k1.verify(
+             public_key.not_nil!.point,
+             self.as_unsigned.to_hash,
+             BigInt.new(sender[:sign_r], base: 16),
+             BigInt.new(sender[:sign_s], base: 16),
+           )
+          raise "invalid signing for sender: #{sender[:address]}"
+        end
+
         unless Keys::Address.from(sender[:address], "sender")
           raise "invalid checksum for sender's address: #{sender[:address]}"
         end
@@ -80,32 +92,13 @@ module ::Sushi::Core
       end
 
       if !is_coinbase
-        raise "sender have to be only one currently" if @senders.size != 1
-        raise "There must be some transactions" if transactions.size < 1
+        if sender_total_amount != recipient_total_amount
+          raise "amount mismatch for senders (#{scale_decimal(sender_total_amount)}) and recipients (#{scale_decimal(recipient_total_amount)})"
+        end
 
         if @prev_hash != transactions[-1].to_hash
           raise "invalid prev_hash: expected #{transactions[-1].to_hash} but got #{@prev_hash}"
         end
-
-        if blockchain.indices.get(@id)
-          raise "the transaction #{@id} is already included in #{blockchain.indices.get(@id)}"
-        end
-
-        if transactions.select { |transaction| transaction.id == @id }.size > 0
-          raise "the transaction #{@id} is already included in the same block (#{block_index})"
-        end
-
-        network = Keys::Address.from(@senders.first[:address]).network
-        public_key = Keys::PublicKey.new(@senders.first[:public_key], network)
-
-        secp256k1 : ECDSA::Secp256k1 = ECDSA::Secp256k1.new
-
-        raise "invalid signing" if !secp256k1.verify(
-                                     public_key.not_nil!.point,
-                                     self.as_unsigned.to_hash,
-                                     BigInt.new(@sign_r, base: 16),
-                                     BigInt.new(@sign_s, base: 16),
-                                   )
 
         blockchain.dapps.each do |dapp|
           dapp.valid?(self, transactions) if dapp.transaction_related?(@action)
@@ -116,47 +109,68 @@ module ::Sushi::Core
         raise "token has to be #{TOKEN_DEFAULT} for coinbase transaction" if @token != TOKEN_DEFAULT
         raise "there should be no Sender for a coinbase transaction" if @senders.size != 0
         raise "prev_hash of coinbase transaction has to be '0'" if @prev_hash != "0"
-        raise "sign_r of coinbase transaction has to be '0'" if @sign_r != "0"
-        raise "sign_s of coinbase transaction has to be '0'" if @sign_s != "0"
 
         served_sum = @recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
         served_sum_expected = blockchain.latest_block.coinbase_amount
 
         if served_sum != served_sum_expected
           raise "invalid served amount for coinbase transaction: " +
-                "expected #{served_sum_expected} but got #{served_sum} " +
-                "(received block index: #{block_index}, latest block index: #{blockchain.latest_block.index})"
+                "expected #{served_sum_expected} but got #{served_sum} "
         end
       end
 
       true
     end
 
-    def signed(sign_r : String, sign_s : String)
+    def as_unsigned : Transaction
+      unsigned_senders = self.senders.map { |s|
+        {
+          address:    s[:address],
+          public_key: s[:public_key],
+          amount:     s[:amount],
+          fee:        s[:fee],
+          sign_r:     "0",
+          sign_s:     "0",
+        }
+      }
+
       Transaction.new(
         self.id,
         self.action,
-        self.senders,
+        unsigned_senders,
         self.recipients,
         self.message,
         self.token,
-        self.prev_hash,
-        sign_r,
-        sign_s,
+        "0",
         self.scaled,
       )
     end
 
-    def as_unsigned : Transaction
+    def as_signed(wallets : Array(Wallet)) : Transaction
+      secp256k1 = Core::ECDSA::Secp256k1.new
+
+      signed_senders = self.senders.map_with_index { |s, i|
+        private_key = Wif.new(wallets[i].wif).private_key
+
+        sign = secp256k1.sign(private_key.as_big_i, self.to_hash)
+
+        {
+          address:    s[:address],
+          public_key: s[:public_key],
+          amount:     s[:amount],
+          fee:        s[:fee],
+          sign_r:     sign[0].to_s(base: 16),
+          sign_s:     sign[1].to_s(base: 16),
+        }
+      }
+
       Transaction.new(
         self.id,
         self.action,
-        self.senders,
+        signed_senders,
         self.recipients,
         self.message,
         self.token,
-        "0",
-        "0",
         "0",
         self.scaled,
       )
@@ -175,8 +189,9 @@ module ::Sushi::Core
     end
 
     include Hashes
-    include Common::Validator
     include TransactionModels
+    include Common::Validator
+    include Common::Denomination
   end
 end
 

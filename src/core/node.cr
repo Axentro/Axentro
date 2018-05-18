@@ -116,6 +116,10 @@ module ::Sushi::Core
       WebSocketHandler.new("/peer") { |socket, context| peer(socket) }
     end
 
+    private def v1_api_documentation_handler : ApiDocumentationHandler
+      ApiDocumentationHandler.new("/docs/api/v1", "api/v1/index.html")
+    end
+
     def peer(socket : HTTP::WebSocket)
       socket.on_message do |message|
         message_json = JSON.parse(message)
@@ -201,9 +205,9 @@ module ::Sushi::Core
     def broadcast_transaction(transaction : Transaction, from : Chord::NodeContext? = nil)
       info "new transaction coming: #{transaction.id}"
 
-      @blockchain.add_transaction(transaction)
-
-      send_transaction(transaction, from)
+      if @blockchain.add_transaction(transaction)
+        send_transaction(transaction, from)
+      end
     end
 
     def send_block(block : Block, from : Chord::NodeContext? = nil)
@@ -348,6 +352,8 @@ module ::Sushi::Core
         @rpc_controller.get_handler,
         @rest_controller.get_handler,
         @pubsub_controller.get_handler,
+        v1_api_documentation_handler,
+        HTTP::StaticFileHandler.new("api/v1", false),
       ]
     end
 
