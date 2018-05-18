@@ -49,6 +49,8 @@ module ::Sushi::Interface
 
     @config_name : String?
 
+    @node_id : String?
+
     module Options
       # common options
       CONNECT_NODE    = 0
@@ -85,6 +87,8 @@ module ::Sushi::Interface
       TOKEN = 24
       # for config
       CONFIG_NAME = 25
+      # for node
+      NODE_ID = 26
     end
 
     def create_option_parser(actives : Array(Int32)) : OptionParser
@@ -213,6 +217,10 @@ module ::Sushi::Interface
         parser.on("--name=CONFIG_NAME", "specify a config name") { |name|
           @config_name = name
         } if is_active?(actives, Options::CONFIG_NAME)
+
+        parser.on("--node_id=NODE_ID", "specify a node id") { |node_id|
+          @node_id = node_id
+        } if is_active?(actives, Options::NODE_ID)
       end
     end
 
@@ -337,6 +345,10 @@ module ::Sushi::Interface
 
     def __name : String?
       @config_name
+    end
+
+    def __node_id : String?
+      @node_id
     end
 
     def cm
