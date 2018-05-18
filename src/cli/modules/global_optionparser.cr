@@ -221,18 +221,15 @@ module ::Sushi::Interface
     end
 
     def __connect_node : String?
-      return @connect_node if @connect_node
-      cm.get_s("connect_node", @config_name)
+      with_string_config("connect_node", @connect_node)
     end
 
     def __wallet_path : String?
-      return @wallet_path if @wallet_path
-      cm.get_s("wallet_path", @config_name)
+      with_string_config("wallet_path", @wallet_path)
     end
 
     def __wallet_password : String?
-      return @wallet_password if @wallet_password
-      cm.get_s("wallet_password", @config_name)
+        with_string_config("wallet_password", @wallet_password)
     end
 
     def __is_testnet : Bool
@@ -268,18 +265,15 @@ module ::Sushi::Interface
     end
 
     def __public_url : String?
-      return @public_url if @public_url
-      cm.get_s("public_url", @config_name)
+      with_string_config("public_url", @public_url)
     end
 
     def __database_path : String?
-      return @database_path if @database_path
-      cm.get_s("database_path", @config_name)
+      with_string_config("database_path", @database_path)
     end
 
     def __address : String?
-      return @address if @address
-      cm.get_s("address", @config_name)
+      with_string_config("address", @address)
     end
 
     def __amount : String?
@@ -327,8 +321,7 @@ module ::Sushi::Interface
     end
 
     def __domain : String?
-      return @domain if @domain
-      cm.get_s("domain", @config_name)
+      with_string_config("domain", @domain)
     end
 
     def __token : String?
@@ -349,6 +342,11 @@ module ::Sushi::Interface
     rescue e : InvalidBigDecimalException
       puts_error "please supply valid decimal number: #{value}"
       exit -1
+    end
+
+    private def with_string_config(name, var)
+      return var if var
+      cm.get_s(name, @config_name)
     end
 
     include Logger
