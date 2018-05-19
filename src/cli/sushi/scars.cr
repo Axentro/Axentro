@@ -47,6 +47,7 @@ module ::Sushi::Interface::Sushi
         Options::FEE,
         Options::PRICE,
         Options::DOMAIN,
+        Options::CONFIG_NAME,
       ])
     end
 

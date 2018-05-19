@@ -49,6 +49,7 @@ module ::Sushi::Interface::Sushi
         Options::ADDRESS,
         Options::DOMAIN,
         Options::TOKEN,
+        Options::CONFIG_NAME,
       ])
     end
 
