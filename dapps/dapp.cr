@@ -148,7 +148,7 @@ module ::Sushi::Core::DApps::User
     # e.g. If you return 100, the dApp will be activated on block index 100, 101, ...
     # If you return nil, the dApp will be activated when you start a node with it.
     #
-    abstract def activate : Int64|Nil
+    abstract def activate : Int64 | Nil
 
     #
     # You can set the timing when your dApps will be deactivated
@@ -156,7 +156,7 @@ module ::Sushi::Core::DApps::User
     # e.g. If you return 100, the dApp will be activated on block index ..., 98, 99.
     # If you return nil, the dApp will never be deactivated.
     #
-    abstract def deactivate : Int64|Nil
+    abstract def deactivate : Int64 | Nil
 
     #
     # This is a wrapper method that you can create a sender

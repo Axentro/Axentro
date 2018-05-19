@@ -84,6 +84,9 @@ module ::Sushi::Core::Controllers
       get "/api/v1/scars/:domain/confirmed" { |context, params| __v1_scars_confirmed(context, params) }
       get "/api/v1/scars/:domain/unconfirmed" { |context, params| __v1_scars_unconfirmed(context, params) }
       get "/api/v1/tokens" { |context, params| __v1_tokens(context, params) }
+      get "/api/v1/nodes" { |context, params| __v1_nodes(context, params) }
+      get "/api/v1/node" { |context, params| __v1_node(context, params) }
+      get "/api/v1/node/:id" { |context, params| __v1_node_id(context, params) }
 
       post "/api/v1/transaction" { |context, params| __v1_transaction(context, params) }
       post "/api/v1/transaction/unsigned" { |context, params| __v1_transaction_unsigned(context, params) }
@@ -300,6 +303,26 @@ module ::Sushi::Core::Controllers
     def __v1_tokens(context, params)
       with_response(context) do
         @blockchain.token.tokens_list_impl
+      end
+    end
+
+    def __v1_nodes(context, params)
+      with_response(context) do
+        @blockchain.node_info.nodes_impl
+      end
+    end
+
+    def __v1_node(context, params)
+      with_response(context) do
+        @blockchain.node_info.node_impl
+      end
+    end
+
+    def __v1_node_id(context, params)
+      id = params["id"]
+
+      with_response(context) do
+        @blockchain.node_info.node_id_impl(id)
       end
     end
 

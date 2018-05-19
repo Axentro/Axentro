@@ -30,6 +30,10 @@ module ::Sushi::Interface::Sushi
           desc: "get or create transactions (tx for short)",
         },
         {
+          name: "node",
+          desc: "show information of nodes (nd for short)",
+        },
+        {
           name: "scars",
           desc: "SushiCon Address Resolution System (SCARS), buy/sell a readable domain for your address (sc for short)",
         },
@@ -67,6 +71,11 @@ module ::Sushi::Interface::Sushi
       when "transaction", "tx"
         return Transaction.new(
           {name: "transaction", desc: "get or create transactions"},
+          next_parents,
+        ).run
+      when "node", "nd"
+        return Node.new(
+          {name: "node", desc: "show information of nodes"},
           next_parents,
         ).run
       when "scars", "sc"
