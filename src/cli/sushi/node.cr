@@ -120,7 +120,7 @@ module ::Sushi::Interface::Sushi
     end
 
     def puts_line
-      puts_info "+-%20s-+-%32s-+-%30s-+-%10s-|" % [ "-" * 20, "-" * 32, "-" * 30, "-" * 10 ]
+      puts_info "+-%20s-+-%32s-+-%30s-+-%10s-|" % ["-" * 20, "-" * 32, "-" * 30, "-" * 10]
     end
 
     def puts_node_context(role : String, node_context)
@@ -134,11 +134,11 @@ module ::Sushi::Interface::Sushi
 
     def node_context(json)
       {
-        id: json["id"].as_s,
-        host: json["host"].as_s,
-        port: json["port"].as_i,
-        ssl: json["ssl"].as_bool,
-        type: json["type"].as_s,
+        id:         json["id"].as_s,
+        host:       json["host"].as_s,
+        port:       json["port"].as_i,
+        ssl:        json["ssl"].as_bool,
+        type:       json["type"].as_s,
         is_private: json["is_private"].as_bool,
       }
     end
