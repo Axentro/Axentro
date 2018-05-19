@@ -56,27 +56,28 @@ module ::Sushi::Interface::Sushi
       unless __json
         json = JSON.parse(body)
 
-        puts_success("Show the connected node")
+        puts_success ""
+        puts_success "show the connected node"
+        puts_success ""
 
-        puts_info("--- successor list")
+        puts_title
 
-        successor_list = json["successor_list"].as_a
-        successor_list.each_with_index do |successor, i|
-          puts_info("#{i} #{successor}")
+        json["successor_list"].each_with_index do |successor, i|
+          puts_node_context("successor (#{i})", node_context(successor))
+          puts_line if i == 0
         end
-
-        puts_info("--- predecessor")
 
         if predecessor = json["predecessor"]?
-          puts_info("#{predecessor}")
+          puts_node_context("predecessor", node_context(predecessor))
+          puts_line
         end
 
-        puts_info("--- private nodes")
-
-        private_nodes = json["private_nodes"].as_a
-        private_nodes.each_with_index do |private_node, i|
-          puts_info("#{i} #{private_node}")
+        json["private_nodes"].each_with_index do |private_node, i|
+          puts_node_context("private node (#{i})", node_context(private_node))
+          puts_line if i == 0
         end
+
+        puts_info ""
       else
         puts body
       end
@@ -94,14 +95,53 @@ module ::Sushi::Interface::Sushi
       body = rpc(node, payload)
 
       unless __json
-        puts body
+        json = JSON.parse(body)
+
+        puts_success ""
+        puts_success "show the node"
+        puts_success ""
+
+        puts_title
+
+        puts_node_context("-", node_context(json))
+
+        puts_line
+
+        puts_info ""
       else
         puts body
       end
     end
 
-    # todo
-    # def puts_node_context(node_context : JSON::Any)
+    def puts_title
+      puts_line
+      puts_info "| %20s | %32s | %30s | %10s |" % ["role", "id", "remote", "private?"]
+      puts_line
+    end
+
+    def puts_line
+      puts_info "+-%20s-+-%32s-+-%30s-+-%10s-|" % [ "-" * 20, "-" * 32, "-" * 30, "-" * 10 ]
+    end
+
+    def puts_node_context(role : String, node_context)
+      puts_info "| %20s | %32s | %30s | %10s |" % [
+        role,
+        node_context[:id],
+        node_context[:port] != -1 ? "#{node_context[:host]}:#{node_context[:port]}" : "-",
+        node_context[:is_private],
+      ]
+    end
+
+    def node_context(json)
+      {
+        id: json["id"].as_s,
+        host: json["host"].as_s,
+        port: json["port"].as_i,
+        ssl: json["ssl"].as_bool,
+        type: json["type"].as_s,
+        is_private: json["is_private"].as_bool,
+      }
+    end
 
     include GlobalOptionParser
   end
