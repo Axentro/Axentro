@@ -14,7 +14,6 @@ module ::Sushi::Core
   alias MinerWork = NamedTuple(difficulty: Int32, index: Int64, hash: String)
 
   class MinerWorker < Tokoroten::Worker
-
     def task(message : String)
       nonce : UInt64 = Random.rand(UInt64::MAX)
 
