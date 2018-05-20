@@ -10,16 +10,18 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-require "./build_in/*"
-
-module ::Sushi::Core::DApps::BuildIn
-  BUILD_IN_DAPPS = %w(BlockchainInfo NodeInfo TransactionCreator UTXO Scars Token Indices Rejects Fees)
-
-  {% for dapp in BUILD_IN_DAPPS %}
-    @{{ dapp.id.underscore }} : {{ dapp.id }}?
-
-    def {{ dapp.id.underscore }} : {{ dapp.id }}
-      @{{ dapp.id.underscore }}.not_nil!
-    end
-  {% end %}
-end
+#
+# We put the samples of the dApps at `./samples/*`
+# If you don't need them, you can remove by commenting out the below line.
+#
+require "./samples/*"
+#
+# Even the sample is on `./sample/*`, your dApp can be located at `./*`.
+# For example, If you create `my_awesome_dapp.cr`, the tree will be like
+#
+# - /
+# - /dapps
+# - /dapps/dapps.cr
+# - /dapps/dapp.cr
+# - /dapps/my_awesome_app.cr
+#

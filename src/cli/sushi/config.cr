@@ -96,6 +96,7 @@ module ::Sushi::Interface::Sushi
 
     def save
       cm.set_enabled_state(ConfigStatus::Disabled)
+      cm.set_override_state(false)
       cm.set("connect_node", __connect_node)
       cm.set("wallet_path", absolute_path(__wallet_path))
       cm.set("is_testnet", __is_testnet)
@@ -111,7 +112,7 @@ module ::Sushi::Interface::Sushi
       cm.set("domain", __domain)
       cm.save(__name)
       cm.set_enabled_state(ConfigStatus::Enabled)
-
+      cm.set_override_state(true)
       puts_success "saved the configuration at #{cm.config_path}"
 
       cm.release_config

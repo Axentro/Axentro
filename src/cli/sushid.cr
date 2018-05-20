@@ -29,6 +29,7 @@ module ::Sushi::Interface::SushiD
         Options::BIND_PORT,
         Options::PUBLIC_URL,
         Options::DATABASE_PATH,
+        Options::CONFIG_NAME,
       ])
     end
 

@@ -23,6 +23,7 @@ module ::Sushi::Interface
 
     @config_map : Hash(String, Configurable)
     @config : Config?
+    @override : Bool = true
 
     def initialize
       @config_map = Hash(String, Configurable).new
@@ -33,11 +34,11 @@ module ::Sushi::Interface
       @config_map[name] = value
     end
 
-    def get_config : ConfigItem?
+    def get_config(override_name : String | Nil = nil) : ConfigItem?
       return nil unless File.exists?(config_path)
       @config = Config.from_yaml(File.read(config_path))
       return nil unless config = @config
-      current_config = config.configs[config.current_config]
+      current_config = (@override && !override_name.nil?) ? config.configs[override_name] : config.configs[config.current_config]
       ConfigItem.new(config.current_config, config.config_status, current_config)
     end
 
@@ -51,8 +52,12 @@ module ::Sushi::Interface
       @config = nil
     end
 
-    private def with_config_for(name, &block)
-      return nil unless config_item = get_config
+    def set_override_state(value : Bool)
+      @override = value
+    end
+
+    private def with_config_for(name, override_name, &block)
+      return nil unless config_item = get_config(override_name)
       return nil unless config = config_item.config
       return nil unless config[name]?
       return nil unless config_item.is_enabled?
@@ -60,26 +65,26 @@ module ::Sushi::Interface
       yield config[name]
     end
 
-    def get_s(name : String) : String?
-      with_config_for(name) do |config_name|
+    def get_s(name : String, config : String | Nil) : String?
+      with_config_for(name, config) do |config_name|
         config_name.to_s
       end
     end
 
-    def get_i32(name : String) : Int32?
-      with_config_for(name) do |config_name|
+    def get_i32(name : String, config : String | Nil) : Int32?
+      with_config_for(name, config) do |config_name|
         config_name.to_s.to_i32
       end
     end
 
-    def get_i64(name : String) : Int64?
-      with_config_for(name) do |config_name|
+    def get_i64(name : String, config : String | Nil) : Int64?
+      with_config_for(name, config) do |config_name|
         config_name.to_i64
       end
     end
 
-    def get_bool(name : String) : Bool?
-      with_config_for(name) do |config_name|
+    def get_bool(name : String, config : String | Nil) : Bool?
+      with_config_for(name, config) do |config_name|
         config_name.to_s == "true"
       end
     end

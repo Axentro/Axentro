@@ -25,6 +25,7 @@ module ::Sushi::Interface::SushiM
         Options::WALLET_PASSWORD,
         Options::IS_TESTNET,
         Options::THREADS,
+        Options::CONFIG_NAME,
       ])
     end
 

@@ -22,10 +22,10 @@ module ::Sushi::Core
     property flag : Int32
 
     getter network_type : String
+    getter chord : Chord
 
     @blockchain : Blockchain
     @miners_manager : MinersManager
-    @chord : Chord
 
     @rpc_controller : Controllers::RPCController
     @rest_controller : Controllers::RESTController

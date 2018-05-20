@@ -491,6 +491,44 @@ module ::Sushi::Core::NodeComponents
       }
     end
 
+    def connected_nodes
+      {
+        successor_list: extract_context(@successor_list),
+        predecessor:    extract_context(@predecessor),
+        private_nodes:  extract_context(@private_nodes),
+      }
+    end
+
+    def extract_context(nodes : Nodes) : NodeContexts
+      nodes.map { |n| extract_context(n) }
+    end
+
+    def extract_context(node : Node) : NodeContext
+      node[:context]
+    end
+
+    def extract_context(node : Nil) : Nil
+      nil
+    end
+
+    def find_node(id : String) : NodeContext
+      return context if context[:id] == id
+
+      @successor_list.each do |n|
+        return extract_context(n) if n[:context][:id] == id
+      end
+
+      if n = @predecessor
+        return extract_context(n) if n[:context][:id] == id
+      end
+
+      @private_nodes.each do |n|
+        return extract_context(n) if n[:context][:id] == id
+      end
+
+      raise "the node #{id} not found. (currently only search for the nodes which are directly connected.)"
+    end
+
     include Protocol
     include Consensus
     include Common::Color

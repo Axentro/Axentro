@@ -36,6 +36,7 @@ module ::Sushi::Interface::Sushi
         Options::BLOCK_INDEX,
         Options::TRANSACTION_ID,
         Options::HEADER,
+        Options::CONFIG_NAME,
       ])
     end
 

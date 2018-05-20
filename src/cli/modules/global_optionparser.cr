@@ -49,6 +49,8 @@ module ::Sushi::Interface
 
     @config_name : String?
 
+    @node_id : String?
+
     module Options
       # common options
       CONNECT_NODE    = 0
@@ -85,6 +87,8 @@ module ::Sushi::Interface
       TOKEN = 24
       # for config
       CONFIG_NAME = 25
+      # for node
+      NODE_ID = 26
     end
 
     def create_option_parser(actives : Array(Int32)) : OptionParser
@@ -210,9 +214,13 @@ module ::Sushi::Interface
           @token = token
         } if is_active?(actives, Options::TOKEN)
 
-        parser.on("--name=CONFIG_NAME", "specify a config name") { |name|
+        parser.on("-c", "--config=CONFIG_NAME", "specify a config name") { |name|
           @config_name = name
         } if is_active?(actives, Options::CONFIG_NAME)
+
+        parser.on("--node_id=NODE_ID", "specify a node id") { |node_id|
+          @node_id = node_id
+        } if is_active?(actives, Options::NODE_ID)
       end
     end
 
@@ -221,29 +229,26 @@ module ::Sushi::Interface
     end
 
     def __connect_node : String?
-      return @connect_node if @connect_node
-      cm.get_s("connect_node")
+      with_string_config("connect_node", @connect_node)
     end
 
     def __wallet_path : String?
-      return @wallet_path if @wallet_path
-      cm.get_s("wallet_path")
+      with_string_config("wallet_path", @wallet_path)
     end
 
     def __wallet_password : String?
-      return @wallet_password if @wallet_password
-      cm.get_s("wallet_password")
+      with_string_config("wallet_password", @wallet_password)
     end
 
     def __is_testnet : Bool
       return @is_testnet if @is_testnet_changed
-      return cm.get_bool("is_testnet").not_nil! if cm.get_bool("is_testnet")
+      return cm.get_bool("is_testnet", @config_name).not_nil! if cm.get_bool("is_testnet", @config_name)
       @is_testnet
     end
 
     def __is_private : Bool
       return @is_private if @is_private_changed
-      return cm.get_bool("is_private").not_nil! if cm.get_bool("is_private")
+      return cm.get_bool("is_private", @config_name).not_nil! if cm.get_bool("is_private", @config_name)
       @is_private
     end
 
@@ -257,29 +262,26 @@ module ::Sushi::Interface
 
     def __bind_host : String
       return @bind_host if @bind_host != "0.0.0.0"
-      return cm.get_s("bind_host").not_nil! if cm.get_s("bind_host")
+      return cm.get_s("bind_host", @config_name).not_nil! if cm.get_s("bind_host", @config_name)
       @bind_host
     end
 
     def __bind_port : Int32
       return @bind_port if @bind_port != 3000
-      return cm.get_i32("bind_port").not_nil! if cm.get_i32("bind_port")
+      return cm.get_i32("bind_port", @config_name).not_nil! if cm.get_i32("bind_port", @config_name)
       @bind_port
     end
 
     def __public_url : String?
-      return @public_url if @public_url
-      cm.get_s("public_url")
+      with_string_config("public_url", @public_url)
     end
 
     def __database_path : String?
-      return @database_path if @database_path
-      cm.get_s("database_path")
+      with_string_config("database_path", @database_path)
     end
 
     def __address : String?
-      return @address if @address
-      cm.get_s("address")
+      with_string_config("address", @address)
     end
 
     def __amount : String?
@@ -312,13 +314,13 @@ module ::Sushi::Interface
 
     def __threads : Int32
       return @threads if @threads != 1
-      return cm.get_i32("threads").not_nil! if cm.get_i32("threads")
+      return cm.get_i32("threads", @config_name).not_nil! if cm.get_i32("threads", @config_name)
       @threads
     end
 
     def __encrypted : Bool
       return @encrypted if @encrypted
-      return cm.get_bool("encrypted").not_nil! if cm.get_bool("encrypted")
+      return cm.get_bool("encrypted", @config_name).not_nil! if cm.get_bool("encrypted", @config_name)
       @encrypted
     end
 
@@ -327,8 +329,7 @@ module ::Sushi::Interface
     end
 
     def __domain : String?
-      return @domain if @domain
-      cm.get_s("domain")
+      with_string_config("domain", @domain)
     end
 
     def __token : String?
@@ -337,6 +338,10 @@ module ::Sushi::Interface
 
     def __name : String?
       @config_name
+    end
+
+    def __node_id : String?
+      @node_id
     end
 
     def cm
@@ -349,6 +354,11 @@ module ::Sushi::Interface
     rescue e : InvalidBigDecimalException
       puts_error "please supply valid decimal number: #{value}"
       exit -1
+    end
+
+    private def with_string_config(name, var)
+      return var if var
+      cm.get_s(name, @config_name)
     end
 
     include Logger

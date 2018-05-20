@@ -20,6 +20,7 @@ module ::Sushi::Interface::Sushi
       create_option_parser([
         Options::CONNECT_NODE,
         Options::JSON,
+        Options::CONFIG_NAME,
       ])
     end
 

@@ -15,11 +15,13 @@ targets:
   sushim:
     main: src/cli/sushim.cr
   e2e:
-    main: spec/e2e/e2e.cr
+    main: e2e/e2e.cr
 
 dependencies:
   router:
     github: tbrand/router.cr
+  tokoroten:
+    github: tbrand/tokoroten
   sqlite3:
     github: crystal-lang/crystal-sqlite3
   scrypt:
