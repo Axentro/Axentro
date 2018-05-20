@@ -112,6 +112,19 @@ module ::E2E
       latest_block_index - (::Sushi::Core::Consensus::CONFIRMATION - 1)
     end
 
+    def verify_at_least_mining_one_block
+      STDERR.puts
+      STDERR.puts "verifying: #{green("at least mining one block")}"
+
+      block_sizes.each do |port_size|
+        raise "node #{port_size[:port]} has no mined block" if port_size[:size] < 3
+        STDERR.print "."
+      end
+
+      STDERR.puts
+      STDERR.puts light_green("-> PASSED!")
+    end
+
     def verify_latest_confirmed_block
       _latest_confirmed_block_index = latest_confirmed_block_index
 
@@ -213,6 +226,7 @@ module ::E2E
     end
 
     def assertion!
+      verify_at_least_mining_one_block
       verify_latest_confirmed_block
       verify_blockchain_sizes_are_almost_same
       verify_all_addresses_have_non_negative_amount
