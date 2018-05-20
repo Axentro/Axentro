@@ -6,7 +6,9 @@
 *.log
 *.db
 
-spec/e2e/wallets/*.json
+e2e/wallets/*.json
+e2e/db/*.db
+e2e/logs/*.log
 
 !.gitkeep
 
