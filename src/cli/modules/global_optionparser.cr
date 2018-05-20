@@ -38,7 +38,7 @@ module ::Sushi::Interface
 
     @header : Bool = false
 
-    @threads : Int32 = 1
+    @processes : Int32 = 1
 
     @encrypted : Bool = false
 
@@ -51,7 +51,7 @@ module ::Sushi::Interface
 
     @node_id : String?
 
-    module Options
+    enum Options
       # common options
       CONNECT_NODE    = 0
       WALLET_PATH     = 1
@@ -77,7 +77,7 @@ module ::Sushi::Interface
       # for blockchain
       HEADER = 19
       # for miners
-      THREADS = 20
+      PROCESSES = 20
       # for wallet
       ENCRYPTED = 21
       # for scars
@@ -91,7 +91,7 @@ module ::Sushi::Interface
       NODE_ID = 26
     end
 
-    def create_option_parser(actives : Array(Int32)) : OptionParser
+    def create_option_parser(actives : Array(Options)) : OptionParser
       OptionParser.new do |parser|
         parser.on("-n NODE", "--node=NODE", "a url of the connect node") { |connect_node|
           @connect_node = connect_node
@@ -192,9 +192,9 @@ module ::Sushi::Interface
           @header = true
         } if is_active?(actives, Options::HEADER)
 
-        parser.on("--threads=THREADS", "# of the work threads (default is 1)") { |threads|
-          @threads = threads.to_i
-        } if is_active?(actives, Options::THREADS)
+        parser.on("--process=PROCESSES", "# of the work processes (default is 1)") { |processes|
+          @processes = processes.to_i
+        } if is_active?(actives, Options::PROCESSES)
 
         parser.on("-e", "--encrypted", "set this flag when creating a wallet to create an encrypted wallet") {
           @encrypted = true
@@ -224,7 +224,7 @@ module ::Sushi::Interface
       end
     end
 
-    def is_active?(actives : Array(Int32), option : Int32) : Bool
+    def is_active?(actives : Array(Options), option : Options) : Bool
       actives.includes?(option)
     end
 
@@ -312,10 +312,10 @@ module ::Sushi::Interface
       @header
     end
 
-    def __threads : Int32
-      return @threads if @threads != 1
-      return cm.get_i32("threads", @config_name).not_nil! if cm.get_i32("threads", @config_name)
-      @threads
+    def __processes : Int32
+      return @processes if @processes != 1
+      return cm.get_i32("processes", @config_name).not_nil! if cm.get_i32("processes", @config_name)
+      @processes
     end
 
     def __encrypted : Bool

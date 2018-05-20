@@ -17,10 +17,10 @@ module ::Sushi::Core
 
     @workers : Array(Tokoroten::Worker) = [] of Tokoroten::Worker
 
-    def initialize(@is_testnet : Bool, @host : String, @port : Int32, @wallet : Wallet, @num_threads : Int32, @use_ssl : Bool)
+    def initialize(@is_testnet : Bool, @host : String, @port : Int32, @wallet : Wallet, @num_processes : Int32, @use_ssl : Bool)
       welcome
 
-      info "launched #{@num_threads} processes..."
+      info "launched #{@num_processes} processes..."
     end
 
     def run
@@ -116,7 +116,7 @@ module ::Sushi::Core
     end
 
     def start_workers(difficulty, latest_index, latest_hash)
-      @workers = MinerWorker.create(@num_threads)
+      @workers = MinerWorker.create(@num_processes)
       @workers.each do |w|
         spawn do
           loop do
