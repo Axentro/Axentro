@@ -29,13 +29,13 @@ pageApiTransactionCreateUnsigned model =
         description =
             div [] [ Html.text "Creates an unsigned transaction with the supplied data (which can be used to make a signed transaction) - The transaction is returned in the response with a generated Id which can then be signed and used with the create (signed) transaction API call." ]
 
-        ex = """{"status":"success","result":{"id":"ea4fb45c5b0e12a959e65435cbcc29e52fcab64b4684c5c546ea044f8da927e4","action":"send","senders":[{"address":"VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj","public_key":"48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242","amount":5000,"fee":1}],"recipients":[{"address":"VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx","amount":5000}],"message":"","token":"SUPERCOOL","prev_hash":"0","sign_r":"0","sign_s":"0"}}"""
+        ex = """{"status":"success","result":{"id":"ea4fb45c5b0e12a959e65435cbcc29e52fcab64b4684c5c546ea044f8da927e4","action":"send","senders":[{"address":"VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj","public_key":"48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242","amount":5000,"fee":1}],"recipients":[{"address":"VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx","amount":5000}],"message":"","token":"SUPERCOOL","prev_hash":"0"}}"""
     in
         [ br [] []
         , Grid.row []
             [ apiLeftNav ApiTransactionCreateUnsigned
             , Grid.col [ Col.md9 ]
-                [ documentation ApiTransactionCreateUnsigned model.apiUrlT6 (Just model.apiBody) model.apiResponse "Transaction Create Unsigned" description "POST" "api/v1/transaction/unsigned" (Just requestDescription) Nothing """curl -X POST -H 'Content-Type: application/json' -d '{"action": "send","senders": [{"address": "VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj","public_key": "48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242","amount": 5000,"fee": 1}],"recipients": [{"address": "VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx","amount": 5000}],"message": "","token": "SUPERCOOL"}' http://localhost:3000/api/v1/transaction/unsigned""" ex model.error
+                [ documentation ApiTransactionCreateUnsigned model.apiUrlT6 (Just model.apiBody) model.apiResponse "Transaction Create Unsigned" description "POST" "api/v1/transaction/unsigned" (Just requestDescription) Nothing """curl -X POST -H 'Content-Type: application/json' -d '{"action": "send","senders": [{"address": "VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj","public_key": "48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242","amount": 5000,"fee": 1,"sign_r":"0","sign_s":"0"}],"recipients": [{"address": "VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx","amount": 5000}],"message": "","token": "SUPERCOOL"}' http://localhost:3000/api/v1/transaction/unsigned""" ex model.error
                 ]
             ]
         ]
@@ -60,7 +60,7 @@ requestDescription =
     , hr [] []
     , Html.h6 [] [ Html.text "Senders"]
     , p [] [ text "This is information about where a payment or action originates - e.g. the address from which to send tokens from. It's made up of an address, amount, fee and public key. It's a list of senders but generally there is only one"]
-    , Alert.simpleLight [] [ text """ {"senders": [{"address": "the-address", "amount":1000, "fee":1, "public_key":"the-public-key"}] ...}""" ]
+    , Alert.simpleLight [] [ text """ {"senders": [{"address": "the-address", "amount":1000, "fee":1, "public_key":"the-public-key", "sign_r":"0", "sign_s":"0"}] ...}""" ]
     , hr [] []
     , Html.h6 [] [ Html.text "Recipients"]
     , p [] [ text "This is information about when a payment of action is going - e.g. the destination address when sending tokens. It's made up of an address and amount. It's a list of recipients but generally there is only one" ]

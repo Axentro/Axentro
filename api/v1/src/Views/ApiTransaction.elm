@@ -29,7 +29,7 @@ pageApiTransaction model =
         description =
             div [] [ Html.text "This retrieves the transaction specified by the transaction id as Json" ]
 
-        ex = """{"status":"success","result":{"id":"da2d2ef81e1ca3f4e1fee7ba06bcb93860349d67d93e066554e17b3fc1c4b5bc","action":"head","senders":[],"recipients":[{"address":"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5","amount":2500},{"address":"VDAxNmM1OGVkNmYyNzI2NzcyYjYzODRmMzJmMDkzODhjMTczNWI0NDFjZGM5ZTIz","amount":7500}],"message":"0","token":"SHARI","prev_hash":"0","sign_r":"0","sign_s":"0"}}"""
+        ex = """{"status":"success","result":{"id":"da2d2ef81e1ca3f4e1fee7ba06bcb93860349d67d93e066554e17b3fc1c4b5bc","action":"head","senders":[],"recipients":[{"address":"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5","amount":2500},{"address":"VDAxNmM1OGVkNmYyNzI2NzcyYjYzODRmMzJmMDkzODhjMTczNWI0NDFjZGM5ZTIz","amount":7500}],"message":"0","token":"SHARI","prev_hash":"0"}}"""
     in
         [ br [] []
         , Grid.row []

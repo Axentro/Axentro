@@ -124,13 +124,11 @@ describe Indices do
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
             json_result = JSON.parse(result)
-            json_result["confirmed"].as_bool.should be_false
             json_result["confirmations"].as_i.should eq(8)
-            json_result["threshold"].as_i.should eq(10)
           end
         end
       end
-      it "should go go" do
+      it "should fail to find a block for the supplied transaction id" do
         with_factory do |block_factory, transaction_factory|
           payload = {call: "confirmation", transaction_id: "non-existing-transaction-id"}.to_json
           json = JSON.parse(payload)

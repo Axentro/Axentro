@@ -1,7 +1,8 @@
-module Views.ApiAddressUnconfirmedToken exposing (..)
+module Views.ApiDomainAmount exposing (..)
 
 import Html.Events exposing (onClick, onInput)
 import Json.PrettyPrint
+import Views.ApiAddressAmount exposing (confirmationQueryParams)
 import Views.TableHelper exposing (docTable)
 import Views.ApiLeftNav exposing (apiLeftNav)
 import Html exposing (..)
@@ -23,19 +24,19 @@ import Messages exposing (Method(GET), Msg(..), Page(..))
 import Views.ApiDocumentationHelper exposing (documentation)
 
 
-pageApiAddressUnconfirmedToken : Model -> List (Html Msg)
-pageApiAddressUnconfirmedToken model =
+pageApiDomainAmount : Model -> List (Html Msg)
+pageApiDomainAmount model =
     let
         description =
-            div [] [ Html.text "This retrieves amounts of unconfirmed tokens for the specified token for an address as Json" ]
+            div [] [ Html.text "This retrieves amounts of tokens for a domain as Json" ]
 
-        ex = """{"status":"success","result":{"confirmed":false,"pairs":[{"token":"EAGLE","amount":100000}]}}"""
+        ex = """{"status":"success","result":{"confirmation":1,"pairs":[{"token":"SHARI","amount":13620044},{"token":"KINGS","amount":0},{"token":"WOOP","amount":0},{"token":"EAGLE","amount":100000}]}}"""
     in
         [ br [] []
         , Grid.row []
-            [ apiLeftNav ApiAddressUnconfirmedToken
+            [ apiLeftNav ApiDomainAmount
             , Grid.col [ Col.md9 ]
-                [ documentation ApiAddressUnconfirmedToken model.apiUrlA5 Nothing model.apiResponse "Address Unconfirmed Token" description "GET" "api/v1/address/{:address}/unconfirmed/{:token}" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/address/{:address}/unconfirmed/{:token}" ex model.error
+                [ documentation ApiDomainAmount model.apiUrlD2 Nothing model.apiResponse "Domain Amount" description "GET" "api/v1/domain/{:domain}" (Just confirmationQueryParams) Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}" ex model.error
                 ]
             ]
         ]

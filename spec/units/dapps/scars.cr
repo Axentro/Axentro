@@ -25,7 +25,7 @@ describe Scars do
         chain = block_factory.addBlock.chain
         scars = Scars.new(blockchain_node(transaction_factory.sender_wallet))
         scars.record(chain)
-        scars.resolve("domain1.sc").should be_nil
+        scars.resolve("domain1.sc", 1).should be_nil
       end
     end
 
@@ -34,7 +34,7 @@ describe Scars do
         chain = block_factory.addBlocks(10).chain
         scars = Scars.new(blockchain_node(transaction_factory.sender_wallet))
         scars.record(chain)
-        scars.resolve("domain1.sc").should be_nil
+        scars.resolve("domain1.sc", 1).should be_nil
       end
     end
 
@@ -45,7 +45,7 @@ describe Scars do
         scars = Scars.new(blockchain_node(transaction_factory.sender_wallet))
         scars.record(chain)
 
-        onSuccess(scars.resolve(domain)) do |result|
+        onSuccess(scars.resolve(domain, 1)) do |result|
           result["domain_name"].should eq(domain)
           result["address"].should eq(transaction_factory.sender_wallet.address)
           result["status"].should eq(0)
@@ -54,17 +54,17 @@ describe Scars do
       end
     end
 
-    describe "#resolve_unconfirmed" do
+    describe "#resolve_pending" do
       it "should return nil if the domain is not found" do
         with_factory do |block_factory, transaction_factory|
           chain = block_factory.addBlock.chain
           scars = Scars.new(blockchain_node(transaction_factory.sender_wallet))
           scars.record(chain)
-          scars.resolve_unconfirmed("domain1.sc", chain.last.transactions).should be_nil
+          scars.resolve_pending("domain1.sc", chain.last.transactions).should be_nil
         end
       end
 
-      it "should return the domain info for unconfirmed domains" do
+      it "should return the domain info for pending domains" do
         with_factory do |block_factory, transaction_factory|
           domain = "domain1.sc"
           transactions = [transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]
@@ -72,7 +72,7 @@ describe Scars do
           scars = Scars.new(blockchain_node(transaction_factory.sender_wallet))
           scars.record(chain)
 
-          onSuccess(scars.resolve_unconfirmed(domain, transactions)) do |result|
+          onSuccess(scars.resolve_pending(domain, transactions)) do |result|
             result["domain_name"].should eq(domain)
             result["address"].should eq(transaction_factory.sender_wallet.address)
             result["status"].should eq(0)
@@ -399,11 +399,11 @@ describe Scars do
             domain = "awesome.sc"
             block_factory.addBlocks(10).addBlock([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).addBlocks(10)
 
-            payload = {call: "scars_resolve", domain_name: domain, confirmed: true}.to_json
+            payload = {call: "scars_resolve", domain_name: domain, confirmation: 1}.to_json
             json = JSON.parse(payload)
 
             with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-              result.should eq("{\"resolved\":true,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":0,\"price\":\"0\"}}")
+              result.should eq("{\"resolved\":true,\"confirmation\":1,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":0,\"price\":\"0\"}}")
             end
           end
         end
@@ -413,11 +413,11 @@ describe Scars do
             domain = "awesome.sc"
             block_factory.addBlocks(10).addBlock([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)])
 
-            payload = {call: "scars_resolve", domain_name: domain, confirmed: false}.to_json
+            payload = {call: "scars_resolve", domain_name: domain, confirmation: 1}.to_json
             json = JSON.parse(payload)
 
             with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-              result.should eq("{\"resolved\":true,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":0,\"price\":\"0\"}}")
+              result.should eq("{\"resolved\":true,\"confirmation\":1,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":0,\"price\":\"0\"}}")
             end
           end
         end
@@ -427,11 +427,11 @@ describe Scars do
             domain = "awesome.sc"
             block_factory.addBlock
 
-            payload = {call: "scars_resolve", domain_name: domain, confirmed: false}.to_json
+            payload = {call: "scars_resolve", domain_name: domain, confirmation: 1}.to_json
             json = JSON.parse(payload)
 
             with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-              result.should eq("{\"resolved\":false,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"\",\"status\":-1,\"price\":\"0.0\"}}")
+              result.should eq("{\"resolved\":false,\"confirmation\":1,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"\",\"status\":-1,\"price\":\"0.0\"}}")
             end
           end
         end
