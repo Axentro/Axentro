@@ -51,45 +51,44 @@ module ::Sushi::Interface
 
     @node_id : String?
 
-    # todo: remove nums
     enum Options
       # common options
-      CONNECT_NODE    = 0
-      WALLET_PATH     = 1
-      WALLET_PASSWORD = 2
+      CONNECT_NODE
+      WALLET_PATH
+      WALLET_PASSWORD
       # flags
-      IS_TESTNET  = 3
-      IS_PRIVATE  = 4
-      JSON        = 5
-      CONFIRMATION = 6
+      IS_TESTNET
+      IS_PRIVATE
+      JSON
+      CONFIRMATION
       # for node setting up
-      BIND_HOST     =  7
-      BIND_PORT     =  8
-      PUBLIC_URL    =  9
-      DATABASE_PATH = 10
+      BIND_HOST
+      BIND_PORT
+      PUBLIC_URL
+      DATABASE_PATH
       # for transaction
-      ADDRESS        = 12
-      AMOUNT         = 13
-      ACTION         = 14
-      MESSAGE        = 15
-      BLOCK_INDEX    = 16
-      TRANSACTION_ID = 17
-      FEE            = 18
+      ADDRESS
+      AMOUNT
+      ACTION
+      MESSAGE
+      BLOCK_INDEX
+      TRANSACTION_ID
+      FEE
       # for blockchain
-      HEADER = 19
+      HEADER
       # for miners
-      PROCESSES = 20
+      PROCESSES
       # for wallet
-      ENCRYPTED = 21
+      ENCRYPTED
       # for scars
-      PRICE  = 22
-      DOMAIN = 23
+      PRICE
+      DOMAIN
       # for tokens
-      TOKEN = 24
+      TOKEN
       # for config
-      CONFIG_NAME = 25
+      CONFIG_NAME
       # for node
-      NODE_ID = 26
+      NODE_ID
     end
 
     def create_option_parser(actives : Array(Options)) : OptionParser
