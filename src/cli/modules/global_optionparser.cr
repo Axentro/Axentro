@@ -21,7 +21,7 @@ module ::Sushi::Interface
     @is_private : Bool = false
     @is_private_changed = false
     @json : Bool = false
-    @unconfirmed : Bool = false
+    @confirmation : Int32 = 1
 
     @bind_host : String = "0.0.0.0"
     @bind_port : Int32 = 3000
@@ -53,42 +53,42 @@ module ::Sushi::Interface
 
     enum Options
       # common options
-      CONNECT_NODE    = 0
-      WALLET_PATH     = 1
-      WALLET_PASSWORD = 2
+      CONNECT_NODE
+      WALLET_PATH
+      WALLET_PASSWORD
       # flags
-      IS_TESTNET  = 3
-      IS_PRIVATE  = 4
-      JSON        = 5
-      UNCONFIRMED = 6
+      IS_TESTNET
+      IS_PRIVATE
+      JSON
+      CONFIRMATION
       # for node setting up
-      BIND_HOST     =  7
-      BIND_PORT     =  8
-      PUBLIC_URL    =  9
-      DATABASE_PATH = 10
+      BIND_HOST
+      BIND_PORT
+      PUBLIC_URL
+      DATABASE_PATH
       # for transaction
-      ADDRESS        = 12
-      AMOUNT         = 13
-      ACTION         = 14
-      MESSAGE        = 15
-      BLOCK_INDEX    = 16
-      TRANSACTION_ID = 17
-      FEE            = 18
+      ADDRESS
+      AMOUNT
+      ACTION
+      MESSAGE
+      BLOCK_INDEX
+      TRANSACTION_ID
+      FEE
       # for blockchain
-      HEADER = 19
+      HEADER
       # for miners
-      PROCESSES = 20
+      PROCESSES
       # for wallet
-      ENCRYPTED = 21
+      ENCRYPTED
       # for scars
-      PRICE  = 22
-      DOMAIN = 23
+      PRICE
+      DOMAIN
       # for tokens
-      TOKEN = 24
+      TOKEN
       # for config
-      CONFIG_NAME = 25
+      CONFIG_NAME
       # for node
-      NODE_ID = 26
+      NODE_ID
     end
 
     def create_option_parser(actives : Array(Options)) : OptionParser
@@ -131,9 +131,9 @@ module ::Sushi::Interface
           @json = true
         } if is_active?(actives, Options::JSON)
 
-        parser.on("-u", "--unconfirmed", "showing unconfirmed amount") {
-          @unconfirmed = true
-        } if is_active?(actives, Options::UNCONFIRMED)
+        parser.on("--confirmation=CONFIRMATION", "set the length for the confirmation") { |confirmation|
+          @confirmation = confirmation.to_i
+        } if is_active?(actives, Options::CONFIRMATION)
 
         parser.on("-h BIND_HOST", "--bind_host=BIND_HOST", "binding host; '0.0.0.0' by default") { |bind_host|
           raise "invalid host: #{bind_host}" unless bind_host.count('.') == 3
@@ -256,8 +256,8 @@ module ::Sushi::Interface
       @json
     end
 
-    def __unconfirmed : Bool
-      @unconfirmed
+    def __confirmation : Int32
+      @confirmation
     end
 
     def __bind_host : String

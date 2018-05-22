@@ -17503,18 +17503,13 @@ var _user$project$Messages$UrlChange = function (a) {
 	return {ctor: 'UrlChange', _0: a};
 };
 var _user$project$Messages$ApiTokenList = {ctor: 'ApiTokenList'};
-var _user$project$Messages$ApiScarsUnconfirmed = {ctor: 'ApiScarsUnconfirmed'};
-var _user$project$Messages$ApiScarsConfirmed = {ctor: 'ApiScarsConfirmed'};
+var _user$project$Messages$ApiScarsDomain = {ctor: 'ApiScarsDomain'};
 var _user$project$Messages$ApiScarsSales = {ctor: 'ApiScarsSales'};
-var _user$project$Messages$ApiDomainUnconfirmedToken = {ctor: 'ApiDomainUnconfirmedToken'};
-var _user$project$Messages$ApiDomainUnconfirmed = {ctor: 'ApiDomainUnconfirmed'};
-var _user$project$Messages$ApiDomainConfirmedToken = {ctor: 'ApiDomainConfirmedToken'};
-var _user$project$Messages$ApiDomainConfirmed = {ctor: 'ApiDomainConfirmed'};
+var _user$project$Messages$ApiDomainAmountToken = {ctor: 'ApiDomainAmountToken'};
+var _user$project$Messages$ApiDomainAmount = {ctor: 'ApiDomainAmount'};
 var _user$project$Messages$ApiDomainTransactions = {ctor: 'ApiDomainTransactions'};
-var _user$project$Messages$ApiAddressUnconfirmedToken = {ctor: 'ApiAddressUnconfirmedToken'};
-var _user$project$Messages$ApiAddressUnconfirmed = {ctor: 'ApiAddressUnconfirmed'};
-var _user$project$Messages$ApiAddressConfirmedToken = {ctor: 'ApiAddressConfirmedToken'};
-var _user$project$Messages$ApiAddressConfirmed = {ctor: 'ApiAddressConfirmed'};
+var _user$project$Messages$ApiAddressAmountToken = {ctor: 'ApiAddressAmountToken'};
+var _user$project$Messages$ApiAddressAmount = {ctor: 'ApiAddressAmount'};
 var _user$project$Messages$ApiAddressTransactions = {ctor: 'ApiAddressTransactions'};
 var _user$project$Messages$ApiTransactionCreate = {ctor: 'ApiTransactionCreate'};
 var _user$project$Messages$ApiTransactionCreateUnsigned = {ctor: 'ApiTransactionCreateUnsigned'};
@@ -17560,17 +17555,7 @@ var _user$project$Models$Model = function (a) {
 																								return function (y) {
 																									return function (z) {
 																										return function (_1) {
-																											return function (_2) {
-																												return function (_3) {
-																													return function (_4) {
-																														return function (_5) {
-																															return function (_6) {
-																																return {page: a, navState: b, apiResponse: c, error: d, apiUrlB1: e, apiUrlB2: f, apiUrlB3: g, apiUrlB4: h, apiUrlB5: i, apiUrlB6: j, apiUrlT1: k, apiUrlT2: l, apiUrlT3: m, apiUrlT4: n, apiUrlT5: o, apiUrlT6: p, apiUrlT7: q, apiUrlA1: r, apiUrlA2: s, apiUrlA3: t, apiUrlA4: u, apiUrlA5: v, apiUrlD1: w, apiUrlD2: x, apiUrlD3: y, apiUrlD4: z, apiUrlD5: _1, apiUrlS1: _2, apiUrlS2: _3, apiUrlS3: _4, apiBody: _5, apiUrlTK1: _6};
-																															};
-																														};
-																													};
-																												};
-																											};
+																											return {page: a, navState: b, apiResponse: c, error: d, apiUrlB1: e, apiUrlB2: f, apiUrlB3: g, apiUrlB4: h, apiUrlB5: i, apiUrlB6: j, apiUrlT1: k, apiUrlT2: l, apiUrlT3: m, apiUrlT4: n, apiUrlT5: o, apiUrlT6: p, apiUrlT7: q, apiUrlA1: r, apiUrlA2: s, apiUrlA3: t, apiUrlD1: u, apiUrlD2: v, apiUrlD3: w, apiUrlS1: x, apiUrlS2: y, apiBody: z, apiUrlTK1: _1};
 																										};
 																									};
 																								};
@@ -17703,86 +17688,51 @@ var _user$project$Navi$routeParser = _evancz$url_parser$UrlParser$oneOf(
 																			ctor: '::',
 																			_0: A2(
 																				_evancz$url_parser$UrlParser$map,
-																				_user$project$Messages$ApiAddressConfirmed,
-																				_evancz$url_parser$UrlParser$s('api-address-confirmed')),
+																				_user$project$Messages$ApiAddressAmount,
+																				_evancz$url_parser$UrlParser$s('api-address-amount')),
 																			_1: {
 																				ctor: '::',
 																				_0: A2(
 																					_evancz$url_parser$UrlParser$map,
-																					_user$project$Messages$ApiAddressConfirmedToken,
-																					_evancz$url_parser$UrlParser$s('api-address-confirmed-token')),
+																					_user$project$Messages$ApiAddressAmountToken,
+																					_evancz$url_parser$UrlParser$s('api-address-amount-token')),
 																				_1: {
 																					ctor: '::',
 																					_0: A2(
 																						_evancz$url_parser$UrlParser$map,
-																						_user$project$Messages$ApiAddressUnconfirmed,
-																						_evancz$url_parser$UrlParser$s('api-address-unconfirmed')),
+																						_user$project$Messages$ApiDomainTransactions,
+																						_evancz$url_parser$UrlParser$s('api-domain-transactions')),
 																					_1: {
 																						ctor: '::',
 																						_0: A2(
 																							_evancz$url_parser$UrlParser$map,
-																							_user$project$Messages$ApiAddressUnconfirmedToken,
-																							_evancz$url_parser$UrlParser$s('api-address-unconfirmed-token')),
+																							_user$project$Messages$ApiDomainAmount,
+																							_evancz$url_parser$UrlParser$s('api-domain-amount')),
 																						_1: {
 																							ctor: '::',
 																							_0: A2(
 																								_evancz$url_parser$UrlParser$map,
-																								_user$project$Messages$ApiDomainTransactions,
-																								_evancz$url_parser$UrlParser$s('api-domain-transactions')),
+																								_user$project$Messages$ApiDomainAmountToken,
+																								_evancz$url_parser$UrlParser$s('api-domain-amount-token')),
 																							_1: {
 																								ctor: '::',
 																								_0: A2(
 																									_evancz$url_parser$UrlParser$map,
-																									_user$project$Messages$ApiDomainConfirmed,
-																									_evancz$url_parser$UrlParser$s('api-domain-confirmed')),
+																									_user$project$Messages$ApiScarsSales,
+																									_evancz$url_parser$UrlParser$s('api-scars-sales')),
 																								_1: {
 																									ctor: '::',
 																									_0: A2(
 																										_evancz$url_parser$UrlParser$map,
-																										_user$project$Messages$ApiDomainConfirmedToken,
-																										_evancz$url_parser$UrlParser$s('api-domain-confirmed-token')),
+																										_user$project$Messages$ApiScarsDomain,
+																										_evancz$url_parser$UrlParser$s('api-scars-domain')),
 																									_1: {
 																										ctor: '::',
 																										_0: A2(
 																											_evancz$url_parser$UrlParser$map,
-																											_user$project$Messages$ApiDomainUnconfirmed,
-																											_evancz$url_parser$UrlParser$s('api-domain-unconfirmed')),
-																										_1: {
-																											ctor: '::',
-																											_0: A2(
-																												_evancz$url_parser$UrlParser$map,
-																												_user$project$Messages$ApiDomainUnconfirmedToken,
-																												_evancz$url_parser$UrlParser$s('api-domain-unconfirmed-token')),
-																											_1: {
-																												ctor: '::',
-																												_0: A2(
-																													_evancz$url_parser$UrlParser$map,
-																													_user$project$Messages$ApiScarsSales,
-																													_evancz$url_parser$UrlParser$s('api-scars-sales')),
-																												_1: {
-																													ctor: '::',
-																													_0: A2(
-																														_evancz$url_parser$UrlParser$map,
-																														_user$project$Messages$ApiScarsConfirmed,
-																														_evancz$url_parser$UrlParser$s('api-scars-confirmed')),
-																													_1: {
-																														ctor: '::',
-																														_0: A2(
-																															_evancz$url_parser$UrlParser$map,
-																															_user$project$Messages$ApiScarsUnconfirmed,
-																															_evancz$url_parser$UrlParser$s('api-scars-unconfirmed')),
-																														_1: {
-																															ctor: '::',
-																															_0: A2(
-																																_evancz$url_parser$UrlParser$map,
-																																_user$project$Messages$ApiTokenList,
-																																_evancz$url_parser$UrlParser$s('api-token-list')),
-																															_1: {ctor: '[]'}
-																														}
-																													}
-																												}
-																											}
-																										}
+																											_user$project$Messages$ApiTokenList,
+																											_evancz$url_parser$UrlParser$s('api-token-list')),
+																										_1: {ctor: '[]'}
 																									}
 																								}
 																							}
@@ -18016,7 +17966,7 @@ var _user$project$Update$update = F2(
 								{apiUrlA1: _p6}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
-					case 'ApiAddressConfirmed':
+					case 'ApiAddressAmount':
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
@@ -18024,28 +17974,12 @@ var _user$project$Update$update = F2(
 								{apiUrlA2: _p6}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
-					case 'ApiAddressConfirmedToken':
+					case 'ApiAddressAmountToken':
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
 								{apiUrlA3: _p6}),
-							_1: _elm_lang$core$Platform_Cmd$none
-						};
-					case 'ApiAddressUnconfirmed':
-						return {
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Native_Utils.update(
-								model,
-								{apiUrlA4: _p6}),
-							_1: _elm_lang$core$Platform_Cmd$none
-						};
-					case 'ApiAddressUnconfirmedToken':
-						return {
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Native_Utils.update(
-								model,
-								{apiUrlA5: _p6}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					case 'ApiDomainTransactions':
@@ -18056,7 +17990,7 @@ var _user$project$Update$update = F2(
 								{apiUrlD1: _p6}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
-					case 'ApiDomainConfirmed':
+					case 'ApiDomainAmount':
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
@@ -18064,28 +17998,12 @@ var _user$project$Update$update = F2(
 								{apiUrlD2: _p6}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
-					case 'ApiDomainConfirmedToken':
+					case 'ApiDomainAmountToken':
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
 								{apiUrlD3: _p6}),
-							_1: _elm_lang$core$Platform_Cmd$none
-						};
-					case 'ApiDomainUnconfirmed':
-						return {
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Native_Utils.update(
-								model,
-								{apiUrlD4: _p6}),
-							_1: _elm_lang$core$Platform_Cmd$none
-						};
-					case 'ApiDomainUnconfirmedToken':
-						return {
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Native_Utils.update(
-								model,
-								{apiUrlD5: _p6}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					case 'ApiScarsSales':
@@ -18096,20 +18014,12 @@ var _user$project$Update$update = F2(
 								{apiUrlS1: _p6}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
-					case 'ApiScarsConfirmed':
+					case 'ApiScarsDomain':
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
 								{apiUrlS2: _p6}),
-							_1: _elm_lang$core$Platform_Cmd$none
-						};
-					case 'ApiScarsUnconfirmed':
-						return {
-							ctor: '_Tuple2',
-							_0: _elm_lang$core$Native_Utils.update(
-								model,
-								{apiUrlS3: _p6}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					case 'ApiTokenList':
@@ -18323,47 +18233,57 @@ var _user$project$Views_ApiLeftNav$apiLeftNav = function (page) {
 																								_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiAddressTransactions, '#api-address-transactions', 'address/transactions', page),
 																								_1: {
 																									ctor: '::',
-																									_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiAddressConfirmed, '#api-address-confirmed', 'address/confirmed', page),
+																									_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiAddressAmount, '#api-address-amount', 'address/amount', page),
 																									_1: {
 																										ctor: '::',
-																										_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiAddressConfirmedToken, '#api-address-confirmed-token', 'address/confirmed/token', page),
+																										_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiAddressAmountToken, '#api-address-amount-token', 'address/amount/token', page),
 																										_1: {
 																											ctor: '::',
-																											_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiAddressUnconfirmed, '#api-address-unconfirmed', 'address/unconfirmed', page),
+																											_0: A2(
+																												_elm_lang$html$Html$hr,
+																												{ctor: '[]'},
+																												{ctor: '[]'}),
 																											_1: {
 																												ctor: '::',
-																												_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiAddressUnconfirmedToken, '#api-address-unconfirmed-token', 'address/unconfirmed/token', page),
+																												_0: A2(
+																													_elm_lang$html$Html$h5,
+																													{ctor: '[]'},
+																													{
+																														ctor: '::',
+																														_0: _elm_lang$html$Html$text('Domain'),
+																														_1: {ctor: '[]'}
+																													}),
 																												_1: {
 																													ctor: '::',
-																													_0: A2(
-																														_elm_lang$html$Html$hr,
-																														{ctor: '[]'},
-																														{ctor: '[]'}),
+																													_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiDomainTransactions, '#api-domain-transactions', 'domain/transactions', page),
 																													_1: {
 																														ctor: '::',
-																														_0: A2(
-																															_elm_lang$html$Html$h5,
-																															{ctor: '[]'},
-																															{
-																																ctor: '::',
-																																_0: _elm_lang$html$Html$text('Domain'),
-																																_1: {ctor: '[]'}
-																															}),
+																														_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiDomainAmount, '#api-domain-amount', 'domain/amount', page),
 																														_1: {
 																															ctor: '::',
-																															_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiDomainTransactions, '#api-domain-transactions', 'domain/transactions', page),
+																															_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiDomainAmountToken, '#api-domain-amount-token', 'domain/amount/token', page),
 																															_1: {
 																																ctor: '::',
-																																_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiDomainConfirmed, '#api-domain-confirmed', 'domain/confirmed', page),
+																																_0: A2(
+																																	_elm_lang$html$Html$hr,
+																																	{ctor: '[]'},
+																																	{ctor: '[]'}),
 																																_1: {
 																																	ctor: '::',
-																																	_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiDomainConfirmedToken, '#api-domain-confirmed-token', 'domain/confirmed/token', page),
+																																	_0: A2(
+																																		_elm_lang$html$Html$h5,
+																																		{ctor: '[]'},
+																																		{
+																																			ctor: '::',
+																																			_0: _elm_lang$html$Html$text('SCARS'),
+																																			_1: {ctor: '[]'}
+																																		}),
 																																	_1: {
 																																		ctor: '::',
-																																		_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiDomainUnconfirmed, '#api-domain-unconfirmed', 'domain/unconfirmed', page),
+																																		_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiScarsSales, '#api-scars-sales', 'scars/sales', page),
 																																		_1: {
 																																			ctor: '::',
-																																			_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiDomainUnconfirmedToken, '#api-domain-unconfirmed-token', 'domain/unconfirmed/token', page),
+																																			_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiScarsDomain, '#api-scars-domain', 'scars/domain', page),
 																																			_1: {
 																																				ctor: '::',
 																																				_0: A2(
@@ -18377,43 +18297,13 @@ var _user$project$Views_ApiLeftNav$apiLeftNav = function (page) {
 																																						{ctor: '[]'},
 																																						{
 																																							ctor: '::',
-																																							_0: _elm_lang$html$Html$text('SCARS'),
+																																							_0: _elm_lang$html$Html$text('Tokens'),
 																																							_1: {ctor: '[]'}
 																																						}),
 																																					_1: {
 																																						ctor: '::',
-																																						_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiScarsSales, '#api-scars-sales', 'scars/sales', page),
-																																						_1: {
-																																							ctor: '::',
-																																							_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiScarsConfirmed, '#api-scars-confirmed', 'scars/confirmed', page),
-																																							_1: {
-																																								ctor: '::',
-																																								_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiScarsUnconfirmed, '#api-scars-unconfirmed', 'scars/unconfirmed', page),
-																																								_1: {
-																																									ctor: '::',
-																																									_0: A2(
-																																										_elm_lang$html$Html$hr,
-																																										{ctor: '[]'},
-																																										{ctor: '[]'}),
-																																									_1: {
-																																										ctor: '::',
-																																										_0: A2(
-																																											_elm_lang$html$Html$h5,
-																																											{ctor: '[]'},
-																																											{
-																																												ctor: '::',
-																																												_0: _elm_lang$html$Html$text('Tokens'),
-																																												_1: {ctor: '[]'}
-																																											}),
-																																										_1: {
-																																											ctor: '::',
-																																											_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiTokenList, '#api-token-list', 'tokens/list', page),
-																																											_1: {ctor: '[]'}
-																																										}
-																																									}
-																																								}
-																																							}
-																																						}
+																																						_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiTokenList, '#api-token-list', 'tokens/list', page),
+																																						_1: {ctor: '[]'}
 																																					}
 																																				}
 																																			}
@@ -18892,14 +18782,58 @@ var _user$project$Views_ApiDocumentationHelper$documentation = function (msg) {
 	};
 };
 
-var _user$project$Views_ApiAddressConfirmed$pageApiAddressConfirmed = function (model) {
-	var ex = '{\"status\":\"success\",\"result\":{\"confirmed\":true,\"pairs\":[{\"token\":\"SHARI\",\"amount\":13620044},{\"token\":\"KINGS\",\"amount\":0},{\"token\":\"WOOP\",\"amount\":0},{\"token\":\"EAGLE\",\"amount\":100000}]}}';
+var _user$project$Views_ApiAddressAmount$confirmationQueryParams = A2(
+	_elm_lang$html$Html$div,
+	{ctor: '[]'},
+	{
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$hr,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$h5,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text('Extra query parameters'),
+					_1: {ctor: '[]'}
+				}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$p,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text('The number of confirmations can be supplied as a query parameter'),
+						_1: {ctor: '[]'}
+					}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_kingsleyh$elm_bootstrap$Bootstrap_Alert$simpleLight,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text(' {api-call-url}?confirmations=10 '),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				}
+			}
+		}
+	});
+var _user$project$Views_ApiAddressAmount$pageApiAddressAmount = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"confirmation\":1,\"pairs\":[{\"token\":\"SHARI\",\"amount\":13620044},{\"token\":\"KINGS\",\"amount\":0},{\"token\":\"WOOP\",\"amount\":0},{\"token\":\"EAGLE\",\"amount\":100000}]}}';
 	var description = A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html$text('This retrieves amounts of confirmed tokens for an address as Json'),
+			_0: _elm_lang$html$Html$text('This retrieves amounts of tokens for an address as Json'),
 			_1: {ctor: '[]'}
 		});
 	return {
@@ -18915,7 +18849,7 @@ var _user$project$Views_ApiAddressConfirmed$pageApiAddressConfirmed = function (
 				{ctor: '[]'},
 				{
 					ctor: '::',
-					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiAddressConfirmed),
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiAddressAmount),
 					_1: {
 						ctor: '::',
 						_0: A2(
@@ -18927,7 +18861,8 @@ var _user$project$Views_ApiAddressConfirmed$pageApiAddressConfirmed = function (
 							},
 							{
 								ctor: '::',
-								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiAddressConfirmed)(model.apiUrlA2)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Address Confirmed')(description)('GET')('api/v1/address/{:address}/confirmed')(_elm_lang$core$Maybe$Nothing)(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/address/{:address}/confirmed')(ex)(model.error),
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiAddressAmount)(model.apiUrlA2)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Address amount')(description)('GET')('api/v1/address/{:address}')(
+									_elm_lang$core$Maybe$Just(_user$project$Views_ApiAddressAmount$confirmationQueryParams))(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/address/{:address}')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -18938,14 +18873,14 @@ var _user$project$Views_ApiAddressConfirmed$pageApiAddressConfirmed = function (
 	};
 };
 
-var _user$project$Views_ApiAddressConfirmedToken$pageApiAddressConfirmedToken = function (model) {
-	var ex = '{\"status\":\"success\",\"result\":{\"confirmed\":true,\"pairs\":[{\"token\":\"EAGLE\",\"amount\":100000}]}}';
+var _user$project$Views_ApiAddressAmountToken$pageApiAddressAmountToken = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"confirmation\":1,\"pairs\":[{\"token\":\"EAGLE\",\"amount\":100000}]}}';
 	var description = A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html$text('This retrieves amounts of confirmed tokens for the specified token for an address as Json'),
+			_0: _elm_lang$html$Html$text('This retrieves amounts of tokens for the specified token for an address as Json'),
 			_1: {ctor: '[]'}
 		});
 	return {
@@ -18961,7 +18896,7 @@ var _user$project$Views_ApiAddressConfirmedToken$pageApiAddressConfirmedToken = 
 				{ctor: '[]'},
 				{
 					ctor: '::',
-					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiAddressConfirmedToken),
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiAddressAmountToken),
 					_1: {
 						ctor: '::',
 						_0: A2(
@@ -18973,7 +18908,8 @@ var _user$project$Views_ApiAddressConfirmedToken$pageApiAddressConfirmedToken = 
 							},
 							{
 								ctor: '::',
-								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiAddressConfirmedToken)(model.apiUrlA3)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Address Confirmed Token')(description)('GET')('api/v1/address/{:address}/confirmed/{:token}')(_elm_lang$core$Maybe$Nothing)(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/address/{:address}/confirmed/token')(ex)(model.error),
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiAddressAmountToken)(model.apiUrlA3)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Address Amount Token')(description)('GET')('api/v1/address/{:address}/token/{:token}')(
+									_elm_lang$core$Maybe$Just(_user$project$Views_ApiAddressAmount$confirmationQueryParams))(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/address/{:address}/token/{:token}')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -18985,7 +18921,7 @@ var _user$project$Views_ApiAddressConfirmedToken$pageApiAddressConfirmedToken = 
 };
 
 var _user$project$Views_ApiAddressTransactions$pageApiAddressTransactions = function (model) {
-	var ex = '{\n                  \"status\": \"success\",\n                  \"result\": [\n                    {\n                      \"id\": \"d7900abe99bf8cab768b62e543cd909e5a99fa2f800186a63de546326cce1c4f\",\n                      \"action\": \"head\",\n                      \"senders\": [],\n                      \"recipients\": [\n                        {\n                          \"address\": \"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\n                          \"amount\": 2502\n                        }\n                      ],\n                      \"message\": \"0\",\n                      \"token\": \"SHARI\",\n                      \"prev_hash\": \"0\",\n                      \"sign_r\": \"0\",\n                      \"sign_s\": \"0\"\n                    },\n                    {\n                      \"id\": \"a5ad8f71befd4713700b9a0b9402bb0370bd68b32dbf5d54afb23ada74e47483\",\n                      \"action\": \"head\",\n                      \"senders\": [],\n                      \"recipients\": [\n                        {\n                          \"address\": \"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\n                          \"amount\": 2501\n                        }\n                      ],\n                      \"message\": \"0\",\n                      \"token\": \"SHARI\",\n                      \"prev_hash\": \"0\",\n                      \"sign_r\": \"0\",\n                      \"sign_s\": \"0\"\n                    }\n                  ]\n                }';
+	var ex = '{\n                  \"status\": \"success\",\n                  \"result\": [\n                    {\n                      \"id\": \"d7900abe99bf8cab768b62e543cd909e5a99fa2f800186a63de546326cce1c4f\",\n                      \"action\": \"head\",\n                      \"senders\": [],\n                      \"recipients\": [\n                        {\n                          \"address\": \"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\n                          \"amount\": 2502\n                        }\n                      ],\n                      \"message\": \"0\",\n                      \"token\": \"SHARI\",\n                      \"prev_hash\": \"0\"\n                    },\n                    {\n                      \"id\": \"a5ad8f71befd4713700b9a0b9402bb0370bd68b32dbf5d54afb23ada74e47483\",\n                      \"action\": \"head\",\n                      \"senders\": [],\n                      \"recipients\": [\n                        {\n                          \"address\": \"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\n                          \"amount\": 2501\n                        }\n                      ],\n                      \"message\": \"0\",\n                      \"token\": \"SHARI\",\n                      \"prev_hash\": \"0\"\n                    }\n                  ]\n                }';
 	var description = A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
@@ -19020,98 +18956,6 @@ var _user$project$Views_ApiAddressTransactions$pageApiAddressTransactions = func
 							{
 								ctor: '::',
 								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiAddressTransactions)(model.apiUrlA1)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Address Transactions')(description)('GET')('api/v1/address/{:address}/transactions')(_elm_lang$core$Maybe$Nothing)(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/address/{:address}/transactions')(ex)(model.error),
-								_1: {ctor: '[]'}
-							}),
-						_1: {ctor: '[]'}
-					}
-				}),
-			_1: {ctor: '[]'}
-		}
-	};
-};
-
-var _user$project$Views_ApiAddressUnconfirmed$pageApiAddressUnconfirmed = function (model) {
-	var ex = '{\"status\":\"success\",\"result\":{\"confirmed\":false,\"pairs\":[{\"token\":\"SHARI\",\"amount\":13710044},{\"token\":\"KINGS\",\"amount\":0},{\"token\":\"WOOP\",\"amount\":0},{\"token\":\"EAGLE\",\"amount\":100000}]}}';
-	var description = A2(
-		_elm_lang$html$Html$div,
-		{ctor: '[]'},
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html$text('This retrieves amounts of unconfirmed tokens for an address as Json'),
-			_1: {ctor: '[]'}
-		});
-	return {
-		ctor: '::',
-		_0: A2(
-			_elm_lang$html$Html$br,
-			{ctor: '[]'},
-			{ctor: '[]'}),
-		_1: {
-			ctor: '::',
-			_0: A2(
-				_kingsleyh$elm_bootstrap$Bootstrap_Grid$row,
-				{ctor: '[]'},
-				{
-					ctor: '::',
-					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiAddressUnconfirmed),
-					_1: {
-						ctor: '::',
-						_0: A2(
-							_kingsleyh$elm_bootstrap$Bootstrap_Grid$col,
-							{
-								ctor: '::',
-								_0: _kingsleyh$elm_bootstrap$Bootstrap_Grid_Col$md9,
-								_1: {ctor: '[]'}
-							},
-							{
-								ctor: '::',
-								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiAddressUnconfirmed)(model.apiUrlA4)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Address Unconfirmed')(description)('GET')('api/v1/address/{:address}/unconfirmed')(_elm_lang$core$Maybe$Nothing)(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/address/{:address}/unconfirmed')(ex)(model.error),
-								_1: {ctor: '[]'}
-							}),
-						_1: {ctor: '[]'}
-					}
-				}),
-			_1: {ctor: '[]'}
-		}
-	};
-};
-
-var _user$project$Views_ApiAddressUnconfirmedToken$pageApiAddressUnconfirmedToken = function (model) {
-	var ex = '{\"status\":\"success\",\"result\":{\"confirmed\":false,\"pairs\":[{\"token\":\"EAGLE\",\"amount\":100000}]}}';
-	var description = A2(
-		_elm_lang$html$Html$div,
-		{ctor: '[]'},
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html$text('This retrieves amounts of unconfirmed tokens for the specified token for an address as Json'),
-			_1: {ctor: '[]'}
-		});
-	return {
-		ctor: '::',
-		_0: A2(
-			_elm_lang$html$Html$br,
-			{ctor: '[]'},
-			{ctor: '[]'}),
-		_1: {
-			ctor: '::',
-			_0: A2(
-				_kingsleyh$elm_bootstrap$Bootstrap_Grid$row,
-				{ctor: '[]'},
-				{
-					ctor: '::',
-					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiAddressUnconfirmedToken),
-					_1: {
-						ctor: '::',
-						_0: A2(
-							_kingsleyh$elm_bootstrap$Bootstrap_Grid$col,
-							{
-								ctor: '::',
-								_0: _kingsleyh$elm_bootstrap$Bootstrap_Grid_Col$md9,
-								_1: {ctor: '[]'}
-							},
-							{
-								ctor: '::',
-								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiAddressUnconfirmedToken)(model.apiUrlA5)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Address Unconfirmed Token')(description)('GET')('api/v1/address/{:address}/unconfirmed/{:token}')(_elm_lang$core$Maybe$Nothing)(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/address/{:address}/unconfirmed/{:token}')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -19168,14 +19012,14 @@ var _user$project$Views_ApiBlock$pageApiBlock = function (model) {
 	};
 };
 
-var _user$project$Views_ApiDomainConfirmed$pageApiDomainConfirmed = function (model) {
-	var ex = '{\"status\":\"success\",\"result\":{\"confirmed\":true,\"pairs\":[{\"token\":\"SHARI\",\"amount\":13620044},{\"token\":\"KINGS\",\"amount\":0},{\"token\":\"WOOP\",\"amount\":0},{\"token\":\"EAGLE\",\"amount\":100000}]}}';
+var _user$project$Views_ApiDomainAmount$pageApiDomainAmount = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"confirmation\":1,\"pairs\":[{\"token\":\"SHARI\",\"amount\":13620044},{\"token\":\"KINGS\",\"amount\":0},{\"token\":\"WOOP\",\"amount\":0},{\"token\":\"EAGLE\",\"amount\":100000}]}}';
 	var description = A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html$text('This retrieves amounts of confirmed tokens for a domain as Json'),
+			_0: _elm_lang$html$Html$text('This retrieves amounts of tokens for a domain as Json'),
 			_1: {ctor: '[]'}
 		});
 	return {
@@ -19191,7 +19035,7 @@ var _user$project$Views_ApiDomainConfirmed$pageApiDomainConfirmed = function (mo
 				{ctor: '[]'},
 				{
 					ctor: '::',
-					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiDomainConfirmed),
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiDomainAmount),
 					_1: {
 						ctor: '::',
 						_0: A2(
@@ -19203,7 +19047,8 @@ var _user$project$Views_ApiDomainConfirmed$pageApiDomainConfirmed = function (mo
 							},
 							{
 								ctor: '::',
-								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiDomainConfirmed)(model.apiUrlD2)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Domain Confirmed')(description)('GET')('api/v1/domain/{:domain}/confirmed')(_elm_lang$core$Maybe$Nothing)(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/confirmed')(ex)(model.error),
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiDomainAmount)(model.apiUrlD2)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Domain Amount')(description)('GET')('api/v1/domain/{:domain}')(
+									_elm_lang$core$Maybe$Just(_user$project$Views_ApiAddressAmount$confirmationQueryParams))(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -19214,14 +19059,14 @@ var _user$project$Views_ApiDomainConfirmed$pageApiDomainConfirmed = function (mo
 	};
 };
 
-var _user$project$Views_ApiDomainConfirmedToken$pageApiDomainConfirmedToken = function (model) {
-	var ex = '{\"status\":\"success\",\"result\":{\"confirmed\":true,\"pairs\":[{\"token\":\"EAGLE\",\"amount\":100000}]}}';
+var _user$project$Views_ApiDomainAmountToken$pageApiDomainAmountToken = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"confirmation\":1,\"pairs\":[{\"token\":\"EAGLE\",\"amount\":100000}]}}';
 	var description = A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html$text('This retrieves amounts of confirmed tokens for the specified token for a domain as Json'),
+			_0: _elm_lang$html$Html$text('This retrieves amounts of tokens for the specified token for a domain as Json'),
 			_1: {ctor: '[]'}
 		});
 	return {
@@ -19237,7 +19082,7 @@ var _user$project$Views_ApiDomainConfirmedToken$pageApiDomainConfirmedToken = fu
 				{ctor: '[]'},
 				{
 					ctor: '::',
-					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiDomainConfirmedToken),
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiDomainAmountToken),
 					_1: {
 						ctor: '::',
 						_0: A2(
@@ -19249,7 +19094,8 @@ var _user$project$Views_ApiDomainConfirmedToken$pageApiDomainConfirmedToken = fu
 							},
 							{
 								ctor: '::',
-								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiDomainConfirmedToken)(model.apiUrlD3)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Domain Confirmed Token')(description)('GET')('api/v1/domain/{:domain}/confirmed/{:token}')(_elm_lang$core$Maybe$Nothing)(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/confirmed/token')(ex)(model.error),
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiDomainAmountToken)(model.apiUrlD3)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Domain Amount Token')(description)('GET')('api/v1/domain/{:domain}/token/{:token}')(
+									_elm_lang$core$Maybe$Just(_user$project$Views_ApiAddressAmount$confirmationQueryParams))(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/token/{:token}')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -19261,7 +19107,7 @@ var _user$project$Views_ApiDomainConfirmedToken$pageApiDomainConfirmedToken = fu
 };
 
 var _user$project$Views_ApiDomainTransactions$pageApiDomainTransactions = function (model) {
-	var ex = '{\n                  \"status\": \"success\",\n                  \"result\": [\n                    {\n                      \"id\": \"d7900abe99bf8cab768b62e543cd909e5a99fa2f800186a63de546326cce1c4f\",\n                      \"action\": \"head\",\n                      \"senders\": [],\n                      \"recipients\": [\n                        {\n                          \"address\": \"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\n                          \"amount\": 2502\n                        }\n                      ],\n                      \"message\": \"0\",\n                      \"token\": \"SHARI\",\n                      \"prev_hash\": \"0\",\n                      \"sign_r\": \"0\",\n                      \"sign_s\": \"0\"\n                    },\n                    {\n                      \"id\": \"a5ad8f71befd4713700b9a0b9402bb0370bd68b32dbf5d54afb23ada74e47483\",\n                      \"action\": \"head\",\n                      \"senders\": [],\n                      \"recipients\": [\n                        {\n                          \"address\": \"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\n                          \"amount\": 2501\n                        }\n                      ],\n                      \"message\": \"0\",\n                      \"token\": \"SHARI\",\n                      \"prev_hash\": \"0\",\n                      \"sign_r\": \"0\",\n                      \"sign_s\": \"0\"\n                    }\n                  ]\n                }';
+	var ex = '{\n                  \"status\": \"success\",\n                  \"result\": [\n                    {\n                      \"id\": \"d7900abe99bf8cab768b62e543cd909e5a99fa2f800186a63de546326cce1c4f\",\n                      \"action\": \"head\",\n                      \"senders\": [],\n                      \"recipients\": [\n                        {\n                          \"address\": \"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\n                          \"amount\": 2502\n                        }\n                      ],\n                      \"message\": \"0\",\n                      \"token\": \"SHARI\",\n                      \"prev_hash\": \"0\"\n                    },\n                    {\n                      \"id\": \"a5ad8f71befd4713700b9a0b9402bb0370bd68b32dbf5d54afb23ada74e47483\",\n                      \"action\": \"head\",\n                      \"senders\": [],\n                      \"recipients\": [\n                        {\n                          \"address\": \"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\n                          \"amount\": 2501\n                        }\n                      ],\n                      \"message\": \"0\",\n                      \"token\": \"SHARI\",\n                      \"prev_hash\": \"0\"\n                    }\n                  ]\n                }';
 	var description = A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
@@ -19295,99 +19141,8 @@ var _user$project$Views_ApiDomainTransactions$pageApiDomainTransactions = functi
 							},
 							{
 								ctor: '::',
-								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiDomainTransactions)(model.apiUrlD1)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Domain Transactions')(description)('GET')('api/v1/domain/{:domain}/transactions')(_elm_lang$core$Maybe$Nothing)(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/transactions')(ex)(model.error),
-								_1: {ctor: '[]'}
-							}),
-						_1: {ctor: '[]'}
-					}
-				}),
-			_1: {ctor: '[]'}
-		}
-	};
-};
-
-var _user$project$Views_ApiDomainUnconfirmed$pageApiDomainUnconfirmed = function (model) {
-	var ex = '{\"status\":\"success\",\"result\":{\"confirmed\":false,\"pairs\":[{\"token\":\"SHARI\",\"amount\":13710044},{\"token\":\"KINGS\",\"amount\":0},{\"token\":\"WOOP\",\"amount\":0},{\"token\":\"EAGLE\",\"amount\":100000}]}}';
-	var description = A2(
-		_elm_lang$html$Html$div,
-		{ctor: '[]'},
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html$text('This retrieves amounts of unconfirmed tokens for a domain as Json'),
-			_1: {ctor: '[]'}
-		});
-	return {
-		ctor: '::',
-		_0: A2(
-			_elm_lang$html$Html$br,
-			{ctor: '[]'},
-			{ctor: '[]'}),
-		_1: {
-			ctor: '::',
-			_0: A2(
-				_kingsleyh$elm_bootstrap$Bootstrap_Grid$row,
-				{ctor: '[]'},
-				{
-					ctor: '::',
-					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiDomainUnconfirmed),
-					_1: {
-						ctor: '::',
-						_0: A2(
-							_kingsleyh$elm_bootstrap$Bootstrap_Grid$col,
-							{
-								ctor: '::',
-								_0: _kingsleyh$elm_bootstrap$Bootstrap_Grid_Col$md9,
-								_1: {ctor: '[]'}
-							},
-							{
-								ctor: '::',
-								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiDomainUnconfirmed)(model.apiUrlD4)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Domain Unconfirmed')(description)('GET')('api/v1/domain/{:domain}/unconfirmed')(_elm_lang$core$Maybe$Nothing)(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/unconfirmed')(ex)(model.error),
-								_1: {ctor: '[]'}
-							}),
-						_1: {ctor: '[]'}
-					}
-				}),
-			_1: {ctor: '[]'}
-		}
-	};
-};
-
-var _user$project$Views_ApiDomainUnconfirmedToken$pageApiDomainUnconfirmedToken = function (model) {
-	var ex = '{\"status\":\"success\",\"result\":{\"confirmed\":false,\"pairs\":[{\"token\":\"EAGLE\",\"amount\":100000}]}}';
-	var description = A2(
-		_elm_lang$html$Html$div,
-		{ctor: '[]'},
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html$text('This retrieves amounts of unconfirmed tokens for the specified token for a domain as Json'),
-			_1: {ctor: '[]'}
-		});
-	return {
-		ctor: '::',
-		_0: A2(
-			_elm_lang$html$Html$br,
-			{ctor: '[]'},
-			{ctor: '[]'}),
-		_1: {
-			ctor: '::',
-			_0: A2(
-				_kingsleyh$elm_bootstrap$Bootstrap_Grid$row,
-				{ctor: '[]'},
-				{
-					ctor: '::',
-					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiDomainUnconfirmedToken),
-					_1: {
-						ctor: '::',
-						_0: A2(
-							_kingsleyh$elm_bootstrap$Bootstrap_Grid$col,
-							{
-								ctor: '::',
-								_0: _kingsleyh$elm_bootstrap$Bootstrap_Grid_Col$md9,
-								_1: {ctor: '[]'}
-							},
-							{
-								ctor: '::',
-								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiDomainUnconfirmedToken)(model.apiUrlD5)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Domain Unconfirmed Token')(description)('GET')('api/v1/domain/{:domain}/unconfirmed/{:token}')(_elm_lang$core$Maybe$Nothing)(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/unconfirmed/{:token}')(ex)(model.error),
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiDomainTransactions)(model.apiUrlD1)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Domain Transactions')(description)('GET')('api/v1/domain/{:domain}/transactions')(
+									_elm_lang$core$Maybe$Just(_user$project$Views_ApiAddressAmount$confirmationQueryParams))(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/transactions')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -19626,12 +19381,12 @@ var _user$project$Views_ApiOverview$overviewScarsSection = {
 													_elm_lang$html$Html$a,
 													{
 														ctor: '::',
-														_0: _elm_lang$html$Html_Attributes$href('#api-scars-domain-confirmed'),
+														_0: _elm_lang$html$Html_Attributes$href('#api-scars-domain'),
 														_1: {ctor: '[]'}
 													},
 													{
 														ctor: '::',
-														_0: _elm_lang$html$Html$text('api/v1/scars/{:domain}/confirmed'),
+														_0: _elm_lang$html$Html$text('api/v1/scars/{:domain}'),
 														_1: {ctor: '[]'}
 													}),
 												_1: {ctor: '[]'}
@@ -19643,65 +19398,14 @@ var _user$project$Views_ApiOverview$overviewScarsSection = {
 												{ctor: '[]'},
 												{
 													ctor: '::',
-													_0: _elm_lang$html$Html$text('get the confirmed status of the domain'),
+													_0: _elm_lang$html$Html$text('get the status of the domain'),
 													_1: {ctor: '[]'}
 												}),
 											_1: {ctor: '[]'}
 										}
 									}
 								}),
-							_1: {
-								ctor: '::',
-								_0: A2(
-									_kingsleyh$elm_bootstrap$Bootstrap_Table$tr,
-									{ctor: '[]'},
-									{
-										ctor: '::',
-										_0: A2(
-											_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
-											{ctor: '[]'},
-											{
-												ctor: '::',
-												_0: _elm_lang$html$Html$text('GET'),
-												_1: {ctor: '[]'}
-											}),
-										_1: {
-											ctor: '::',
-											_0: A2(
-												_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
-												{ctor: '[]'},
-												{
-													ctor: '::',
-													_0: A2(
-														_elm_lang$html$Html$a,
-														{
-															ctor: '::',
-															_0: _elm_lang$html$Html_Attributes$href('#api-scars-domain-unconfirmed'),
-															_1: {ctor: '[]'}
-														},
-														{
-															ctor: '::',
-															_0: _elm_lang$html$Html$text('api/v1/scars/{:domain}/unconfirmed'),
-															_1: {ctor: '[]'}
-														}),
-													_1: {ctor: '[]'}
-												}),
-											_1: {
-												ctor: '::',
-												_0: A2(
-													_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
-													{ctor: '[]'},
-													{
-														ctor: '::',
-														_0: _elm_lang$html$Html$text('get the unconfirmed status of the domain'),
-														_1: {ctor: '[]'}
-													}),
-												_1: {ctor: '[]'}
-											}
-										}
-									}),
-								_1: {ctor: '[]'}
-							}
+							_1: {ctor: '[]'}
 						}
 					})),
 			_1: {ctor: '[]'}
@@ -19806,12 +19510,12 @@ var _user$project$Views_ApiOverview$overviewDomainSection = {
 													_elm_lang$html$Html$a,
 													{
 														ctor: '::',
-														_0: _elm_lang$html$Html_Attributes$href('#api-domain-confirmed'),
+														_0: _elm_lang$html$Html_Attributes$href('#api-domain-amount'),
 														_1: {ctor: '[]'}
 													},
 													{
 														ctor: '::',
-														_0: _elm_lang$html$Html$text('api/v1/domain/{:domain}/confirmed'),
+														_0: _elm_lang$html$Html$text('api/v1/domain/{:domain}'),
 														_1: {ctor: '[]'}
 													}),
 												_1: {ctor: '[]'}
@@ -19823,7 +19527,7 @@ var _user$project$Views_ApiOverview$overviewDomainSection = {
 												{ctor: '[]'},
 												{
 													ctor: '::',
-													_0: _elm_lang$html$Html$text('confirmed amount for domain for all tokens'),
+													_0: _elm_lang$html$Html$text('amount for domain for all tokens'),
 													_1: {ctor: '[]'}
 												}),
 											_1: {ctor: '[]'}
@@ -19856,12 +19560,12 @@ var _user$project$Views_ApiOverview$overviewDomainSection = {
 														_elm_lang$html$Html$a,
 														{
 															ctor: '::',
-															_0: _elm_lang$html$Html_Attributes$href('#api-domain-confirmed-token'),
+															_0: _elm_lang$html$Html_Attributes$href('#api-domain-amount-token'),
 															_1: {ctor: '[]'}
 														},
 														{
 															ctor: '::',
-															_0: _elm_lang$html$Html$text('api/v1/domain/{:domain}/confirmed/{:token}'),
+															_0: _elm_lang$html$Html$text('api/v1/domain/{:domain}/token/{:token}'),
 															_1: {ctor: '[]'}
 														}),
 													_1: {ctor: '[]'}
@@ -19873,116 +19577,14 @@ var _user$project$Views_ApiOverview$overviewDomainSection = {
 													{ctor: '[]'},
 													{
 														ctor: '::',
-														_0: _elm_lang$html$Html$text('confirmed amount for domain for specified token'),
+														_0: _elm_lang$html$Html$text('amount for domain for specified token'),
 														_1: {ctor: '[]'}
 													}),
 												_1: {ctor: '[]'}
 											}
 										}
 									}),
-								_1: {
-									ctor: '::',
-									_0: A2(
-										_kingsleyh$elm_bootstrap$Bootstrap_Table$tr,
-										{ctor: '[]'},
-										{
-											ctor: '::',
-											_0: A2(
-												_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
-												{ctor: '[]'},
-												{
-													ctor: '::',
-													_0: _elm_lang$html$Html$text('GET'),
-													_1: {ctor: '[]'}
-												}),
-											_1: {
-												ctor: '::',
-												_0: A2(
-													_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
-													{ctor: '[]'},
-													{
-														ctor: '::',
-														_0: A2(
-															_elm_lang$html$Html$a,
-															{
-																ctor: '::',
-																_0: _elm_lang$html$Html_Attributes$href('#api-domain-unconfirmed'),
-																_1: {ctor: '[]'}
-															},
-															{
-																ctor: '::',
-																_0: _elm_lang$html$Html$text('api/v1/domain/{:domain}/unconfirmed'),
-																_1: {ctor: '[]'}
-															}),
-														_1: {ctor: '[]'}
-													}),
-												_1: {
-													ctor: '::',
-													_0: A2(
-														_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
-														{ctor: '[]'},
-														{
-															ctor: '::',
-															_0: _elm_lang$html$Html$text('unconfirmed amount for domain for all tokens'),
-															_1: {ctor: '[]'}
-														}),
-													_1: {ctor: '[]'}
-												}
-											}
-										}),
-									_1: {
-										ctor: '::',
-										_0: A2(
-											_kingsleyh$elm_bootstrap$Bootstrap_Table$tr,
-											{ctor: '[]'},
-											{
-												ctor: '::',
-												_0: A2(
-													_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
-													{ctor: '[]'},
-													{
-														ctor: '::',
-														_0: _elm_lang$html$Html$text('GET'),
-														_1: {ctor: '[]'}
-													}),
-												_1: {
-													ctor: '::',
-													_0: A2(
-														_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
-														{ctor: '[]'},
-														{
-															ctor: '::',
-															_0: A2(
-																_elm_lang$html$Html$a,
-																{
-																	ctor: '::',
-																	_0: _elm_lang$html$Html_Attributes$href('#api-domain-unconfirmed-token'),
-																	_1: {ctor: '[]'}
-																},
-																{
-																	ctor: '::',
-																	_0: _elm_lang$html$Html$text('api/v1/domain/{:domain}/unconfirmed'),
-																	_1: {ctor: '[]'}
-																}),
-															_1: {ctor: '[]'}
-														}),
-													_1: {
-														ctor: '::',
-														_0: A2(
-															_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
-															{ctor: '[]'},
-															{
-																ctor: '::',
-																_0: _elm_lang$html$Html$text('unconfirmed amount for domain for specified token'),
-																_1: {ctor: '[]'}
-															}),
-														_1: {ctor: '[]'}
-													}
-												}
-											}),
-										_1: {ctor: '[]'}
-									}
-								}
+								_1: {ctor: '[]'}
 							}
 						}
 					})),
@@ -20088,12 +19690,12 @@ var _user$project$Views_ApiOverview$overviewAddressSection = {
 													_elm_lang$html$Html$a,
 													{
 														ctor: '::',
-														_0: _elm_lang$html$Html_Attributes$href('#api-address-confirmed'),
+														_0: _elm_lang$html$Html_Attributes$href('#api-address-amount'),
 														_1: {ctor: '[]'}
 													},
 													{
 														ctor: '::',
-														_0: _elm_lang$html$Html$text('api/v1/address/{:address}/confirmed'),
+														_0: _elm_lang$html$Html$text('api/v1/address/{:address}'),
 														_1: {ctor: '[]'}
 													}),
 												_1: {ctor: '[]'}
@@ -20105,7 +19707,7 @@ var _user$project$Views_ApiOverview$overviewAddressSection = {
 												{ctor: '[]'},
 												{
 													ctor: '::',
-													_0: _elm_lang$html$Html$text('confirmed amount for address for all tokens'),
+													_0: _elm_lang$html$Html$text('amount for address for all tokens'),
 													_1: {ctor: '[]'}
 												}),
 											_1: {ctor: '[]'}
@@ -20138,12 +19740,12 @@ var _user$project$Views_ApiOverview$overviewAddressSection = {
 														_elm_lang$html$Html$a,
 														{
 															ctor: '::',
-															_0: _elm_lang$html$Html_Attributes$href('#api-address-confirmed-token'),
+															_0: _elm_lang$html$Html_Attributes$href('#api-address-amount-token'),
 															_1: {ctor: '[]'}
 														},
 														{
 															ctor: '::',
-															_0: _elm_lang$html$Html$text('api/v1/address/{:address}/confirmed/{:token}'),
+															_0: _elm_lang$html$Html$text('api/v1/address/{:address}/token/{:token}'),
 															_1: {ctor: '[]'}
 														}),
 													_1: {ctor: '[]'}
@@ -20155,116 +19757,14 @@ var _user$project$Views_ApiOverview$overviewAddressSection = {
 													{ctor: '[]'},
 													{
 														ctor: '::',
-														_0: _elm_lang$html$Html$text('confirmed amount for address for specified token'),
+														_0: _elm_lang$html$Html$text('amount for address for specified token'),
 														_1: {ctor: '[]'}
 													}),
 												_1: {ctor: '[]'}
 											}
 										}
 									}),
-								_1: {
-									ctor: '::',
-									_0: A2(
-										_kingsleyh$elm_bootstrap$Bootstrap_Table$tr,
-										{ctor: '[]'},
-										{
-											ctor: '::',
-											_0: A2(
-												_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
-												{ctor: '[]'},
-												{
-													ctor: '::',
-													_0: _elm_lang$html$Html$text('GET'),
-													_1: {ctor: '[]'}
-												}),
-											_1: {
-												ctor: '::',
-												_0: A2(
-													_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
-													{ctor: '[]'},
-													{
-														ctor: '::',
-														_0: A2(
-															_elm_lang$html$Html$a,
-															{
-																ctor: '::',
-																_0: _elm_lang$html$Html_Attributes$href('#api-address-unconfirmed'),
-																_1: {ctor: '[]'}
-															},
-															{
-																ctor: '::',
-																_0: _elm_lang$html$Html$text('api/v1/address/{:address}/unconfirmed'),
-																_1: {ctor: '[]'}
-															}),
-														_1: {ctor: '[]'}
-													}),
-												_1: {
-													ctor: '::',
-													_0: A2(
-														_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
-														{ctor: '[]'},
-														{
-															ctor: '::',
-															_0: _elm_lang$html$Html$text('unconfirmed amount for address for all tokens'),
-															_1: {ctor: '[]'}
-														}),
-													_1: {ctor: '[]'}
-												}
-											}
-										}),
-									_1: {
-										ctor: '::',
-										_0: A2(
-											_kingsleyh$elm_bootstrap$Bootstrap_Table$tr,
-											{ctor: '[]'},
-											{
-												ctor: '::',
-												_0: A2(
-													_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
-													{ctor: '[]'},
-													{
-														ctor: '::',
-														_0: _elm_lang$html$Html$text('GET'),
-														_1: {ctor: '[]'}
-													}),
-												_1: {
-													ctor: '::',
-													_0: A2(
-														_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
-														{ctor: '[]'},
-														{
-															ctor: '::',
-															_0: A2(
-																_elm_lang$html$Html$a,
-																{
-																	ctor: '::',
-																	_0: _elm_lang$html$Html_Attributes$href('#api-address-unconfirmed-token'),
-																	_1: {ctor: '[]'}
-																},
-																{
-																	ctor: '::',
-																	_0: _elm_lang$html$Html$text('api/v1/address/{:address}/unconfirmed'),
-																	_1: {ctor: '[]'}
-																}),
-															_1: {ctor: '[]'}
-														}),
-													_1: {
-														ctor: '::',
-														_0: A2(
-															_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
-															{ctor: '[]'},
-															{
-																ctor: '::',
-																_0: _elm_lang$html$Html$text('unconfirmed amount for address for specified token'),
-																_1: {ctor: '[]'}
-															}),
-														_1: {ctor: '[]'}
-													}
-												}
-											}),
-										_1: {ctor: '[]'}
-									}
-								}
+								_1: {ctor: '[]'}
 							}
 						}
 					})),
@@ -21388,14 +20888,14 @@ var _user$project$Views_ApiBlockTransactions$pageApiBlockTransactions = function
 	};
 };
 
-var _user$project$Views_ApiScarsConfirmed$pageApiScarsConfirmed = function (model) {
-	var ex = '{\"status\":\"success\",\"result\":{\"resolved\":false,\"domain\":{\"domain_name\":\"sushichain.sc\",\"address\":\"\",\"status\":-1,\"price\":0}}}';
+var _user$project$Views_ApiScarsDomain$pageApiScarsDomain = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"confirmation\":1,\"resolved\":false,\"domain\":{\"domain_name\":\"sushichain.sc\",\"address\":\"\",\"status\":-1,\"price\":0}}}';
 	var description = A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html$text('This retrieves the confirmed status of the scars domain as Json'),
+			_0: _elm_lang$html$Html$text('This retrieves the status of the scars domain as Json'),
 			_1: {ctor: '[]'}
 		});
 	return {
@@ -21411,7 +20911,7 @@ var _user$project$Views_ApiScarsConfirmed$pageApiScarsConfirmed = function (mode
 				{ctor: '[]'},
 				{
 					ctor: '::',
-					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiScarsConfirmed),
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiScarsDomain),
 					_1: {
 						ctor: '::',
 						_0: A2(
@@ -21423,7 +20923,8 @@ var _user$project$Views_ApiScarsConfirmed$pageApiScarsConfirmed = function (mode
 							},
 							{
 								ctor: '::',
-								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiScarsConfirmed)(model.apiUrlS2)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Address Confirmed')(description)('GET')('api/v1/scars/{:domain}/confirmed')(_elm_lang$core$Maybe$Nothing)(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/scars/{:domain}/confirmed')(ex)(model.error),
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiScarsDomain)(model.apiUrlS2)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Address Status')(description)('GET')('api/v1/scars/{:domain}')(
+									_elm_lang$core$Maybe$Just(_user$project$Views_ApiAddressAmount$confirmationQueryParams))(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/scars/{:domain}')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -21470,52 +20971,6 @@ var _user$project$Views_ApiScarsSales$pageApiScarsSales = function (model) {
 							{
 								ctor: '::',
 								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiScarsSales)(model.apiUrlS1)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Scars Sales')(description)('GET')('api/v1/scars/sales')(_elm_lang$core$Maybe$Nothing)(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/scars/sales')(ex)(model.error),
-								_1: {ctor: '[]'}
-							}),
-						_1: {ctor: '[]'}
-					}
-				}),
-			_1: {ctor: '[]'}
-		}
-	};
-};
-
-var _user$project$Views_ApiScarsUnconfirmed$pageApiScarsUnconfirmed = function (model) {
-	var ex = '{\"status\":\"success\",\"result\":{\"resolved\":false,\"domain\":{\"domain_name\":\"sushichain.sc\",\"address\":\"\",\"status\":-1,\"price\":0}}}';
-	var description = A2(
-		_elm_lang$html$Html$div,
-		{ctor: '[]'},
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html$text('This retrieves the unconfirmed status of the scars domain as Json'),
-			_1: {ctor: '[]'}
-		});
-	return {
-		ctor: '::',
-		_0: A2(
-			_elm_lang$html$Html$br,
-			{ctor: '[]'},
-			{ctor: '[]'}),
-		_1: {
-			ctor: '::',
-			_0: A2(
-				_kingsleyh$elm_bootstrap$Bootstrap_Grid$row,
-				{ctor: '[]'},
-				{
-					ctor: '::',
-					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiScarsUnconfirmed),
-					_1: {
-						ctor: '::',
-						_0: A2(
-							_kingsleyh$elm_bootstrap$Bootstrap_Grid$col,
-							{
-								ctor: '::',
-								_0: _kingsleyh$elm_bootstrap$Bootstrap_Grid_Col$md9,
-								_1: {ctor: '[]'}
-							},
-							{
-								ctor: '::',
-								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiScarsUnconfirmed)(model.apiUrlS3)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Scars Confirmed')(description)('GET')('api/v1/scars/{:domain}/unconfirmed')(_elm_lang$core$Maybe$Nothing)(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/scars/{:domain}/unconfirmed')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -21573,7 +21028,7 @@ var _user$project$Views_ApiTokenList$pageApiTokenList = function (model) {
 };
 
 var _user$project$Views_ApiTransaction$pageApiTransaction = function (model) {
-	var ex = '{\"status\":\"success\",\"result\":{\"id\":\"da2d2ef81e1ca3f4e1fee7ba06bcb93860349d67d93e066554e17b3fc1c4b5bc\",\"action\":\"head\",\"senders\":[],\"recipients\":[{\"address\":\"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\"amount\":2500},{\"address\":\"VDAxNmM1OGVkNmYyNzI2NzcyYjYzODRmMzJmMDkzODhjMTczNWI0NDFjZGM5ZTIz\",\"amount\":7500}],\"message\":\"0\",\"token\":\"SHARI\",\"prev_hash\":\"0\",\"sign_r\":\"0\",\"sign_s\":\"0\"}}';
+	var ex = '{\"status\":\"success\",\"result\":{\"id\":\"da2d2ef81e1ca3f4e1fee7ba06bcb93860349d67d93e066554e17b3fc1c4b5bc\",\"action\":\"head\",\"senders\":[],\"recipients\":[{\"address\":\"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\"amount\":2500},{\"address\":\"VDAxNmM1OGVkNmYyNzI2NzcyYjYzODRmMzJmMDkzODhjMTczNWI0NDFjZGM5ZTIz\",\"amount\":7500}],\"message\":\"0\",\"token\":\"SHARI\",\"prev_hash\":\"0\"}}';
 	var description = A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
@@ -21619,7 +21074,7 @@ var _user$project$Views_ApiTransaction$pageApiTransaction = function (model) {
 };
 
 var _user$project$Views_ApiTransactionBlock$pageApiTransactionBlock = function (model) {
-	var ex = '{\"status\":\"success\",\"result\":{\"index\":1,\"transactions\":[{\"id\":\"da2d2ef81e1ca3f4e1fee7ba06bcb93860349d67d93e066554e17b3fc1c4b5bc\",\"action\":\"head\",\"senders\":[],\"recipients\":[{\"address\":\"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\"amount\":2500},{\"address\":\"VDAxNmM1OGVkNmYyNzI2NzcyYjYzODRmMzJmMDkzODhjMTczNWI0NDFjZGM5ZTIz\",\"amount\":7500}],\"message\":\"0\",\"token\":\"SHARI\",\"prev_hash\":\"0\",\"sign_r\":\"0\",\"sign_s\":\"0\"}],\"nonce\":3981483406659451763,\"prev_hash\":\"5396e18efa80a8e891c417fff862d7cad171465e65bc4b4e5e1c1c3ab0aeb88f\",\"merkle_tree_root\":\"55aec377396d17730181d4400931fd97ce59e4dd\"}}';
+	var ex = '{\"status\":\"success\",\"result\":{\"index\":1,\"transactions\":[{\"id\":\"da2d2ef81e1ca3f4e1fee7ba06bcb93860349d67d93e066554e17b3fc1c4b5bc\",\"action\":\"head\",\"senders\":[],\"recipients\":[{\"address\":\"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\"amount\":2500},{\"address\":\"VDAxNmM1OGVkNmYyNzI2NzcyYjYzODRmMzJmMDkzODhjMTczNWI0NDFjZGM5ZTIz\",\"amount\":7500}],\"message\":\"0\",\"token\":\"SHARI\",\"prev_hash\":\"0\"}],\"nonce\":3981483406659451763,\"prev_hash\":\"5396e18efa80a8e891c417fff862d7cad171465e65bc4b4e5e1c1c3ab0aeb88f\",\"merkle_tree_root\":\"55aec377396d17730181d4400931fd97ce59e4dd\"}}';
 	var description = A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
@@ -21711,7 +21166,7 @@ var _user$project$Views_ApiTransactionBlockHeader$pageApiTransactionBlockHeader 
 };
 
 var _user$project$Views_ApiTransactionConfirmations$pageApiTransactionConfirmations = function (model) {
-	var ex = '{\"status\":\"success\",\"result\":{\"confirmed\":true,\"confirmations\":2425,\"threshold\":10}}';
+	var ex = '{\"status\":\"success\",\"result\":{\"confirmations\":2425}}';
 	var description = A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
@@ -21745,7 +21200,7 @@ var _user$project$Views_ApiTransactionConfirmations$pageApiTransactionConfirmati
 							},
 							{
 								ctor: '::',
-								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiTransactionConfirmations)(model.apiUrlT4)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Transaction Confirmations')(description)('GET')('api/v1/transaction/confirmations')(_elm_lang$core$Maybe$Nothing)(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/transaction/confirmations')(ex)(model.error),
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiTransactionConfirmations)(model.apiUrlT4)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Transaction Confirmations')(description)('GET')('api/v1/transaction/{:id}/confirmations')(_elm_lang$core$Maybe$Nothing)(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/transaction/{:id}/confirmations')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -21957,7 +21412,7 @@ var _user$project$Views_ApiTransactionCreate$requestDescription = A2(
 																{ctor: '[]'},
 																{
 																	ctor: '::',
-																	_0: _elm_lang$html$Html$text(' {\"senders\": [{\"address\": \"the-address\", \"amount\":1000, \"fee\":1, \"public_key\":\"the-public-key\"}] ...}'),
+																	_0: _elm_lang$html$Html$text(' {\"senders\": [{\"address\": \"the-address\", \"amount\":1000, \"fee\":1, \"public_key\":\"the-public-key\", \"sign_r\":\"0\", \"sign_s\":\"0\"}] ...}'),
 																	_1: {ctor: '[]'}
 																}),
 															_1: {
@@ -22117,7 +21572,7 @@ var _user$project$Views_ApiTransactionCreate$requestDescription = A2(
 																																		{ctor: '[]'},
 																																		{
 																																			ctor: '::',
-																																			_0: _elm_lang$html$Html$text('Signing'),
+																																			_0: _elm_lang$html$Html$text('Signing a Sender'),
 																																			_1: {ctor: '[]'}
 																																		}),
 																																	_1: {
@@ -22127,7 +21582,7 @@ var _user$project$Views_ApiTransactionCreate$requestDescription = A2(
 																																			{ctor: '[]'},
 																																			{
 																																				ctor: '::',
-																																				_0: _elm_lang$html$Html$text('To create a transaction that will be accepted by the node you have to sign it with your private key. A typical usage pattern is to first create an unsigned transaction using the API which will return the original transaction but with an Id and prev hash and then use this to create a signed transaction and send it via this API call. See the help with signing page on the wiki.'),
+																																				_0: _elm_lang$html$Html$text('To create a transaction that will be accepted by the node you have to sign it with your private key (signing happens inside Senders). A typical usage pattern is to first create an unsigned transaction using the API which will return the original transaction but with an Id and prev hash and then use this to create a signed transaction and send it via this API call. See the help with signing page on the wiki.'),
 																																				_1: {ctor: '[]'}
 																																			}),
 																																		_1: {
@@ -22183,7 +21638,7 @@ var _user$project$Views_ApiTransactionCreate$requestDescription = A2(
 		}
 	});
 var _user$project$Views_ApiTransactionCreate$pageApiTransactionCreate = function (model) {
-	var ex = '{\"status\":\"success\",\"result\":{\"id\":\"da2d2ef81e1ca3f4e1fee7ba06bcb93860349d67d93e066554e17b3fc1c4b5bc\",\"action\":\"head\",\"senders\":[],\"recipients\":[{\"address\":\"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\"amount\":2500},{\"address\":\"VDAxNmM1OGVkNmYyNzI2NzcyYjYzODRmMzJmMDkzODhjMTczNWI0NDFjZGM5ZTIz\",\"amount\":7500}],\"message\":\"0\",\"token\":\"SHARI\",\"prev_hash\":\"0\",\"sign_r\":\"0\",\"sign_s\":\"0\"}}';
+	var ex = '{\"status\":\"success\",\"result\":{\"id\":\"da2d2ef81e1ca3f4e1fee7ba06bcb93860349d67d93e066554e17b3fc1c4b5bc\",\"action\":\"head\",\"senders\":[],\"recipients\":[{\"address\":\"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5\",\"amount\":2500},{\"address\":\"VDAxNmM1OGVkNmYyNzI2NzcyYjYzODRmMzJmMDkzODhjMTczNWI0NDFjZGM5ZTIz\",\"amount\":7500}],\"message\":\"0\",\"token\":\"SHARI\",\"prev_hash\":\"0\"}}';
 	var description = A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
@@ -22219,7 +21674,7 @@ var _user$project$Views_ApiTransactionCreate$pageApiTransactionCreate = function
 								ctor: '::',
 								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiTransactionCreate)(model.apiUrlT7)(
 									_elm_lang$core$Maybe$Just(model.apiBody))(model.apiResponse)('Transaction')(description)('POST')('api/v1/transaction')(
-									_elm_lang$core$Maybe$Just(_user$project$Views_ApiTransactionCreate$requestDescription))(_elm_lang$core$Maybe$Nothing)('curl -X POST -H \"Content-Type: application/json\" -d \'{\"transaction\": {\"id\":\"9581ab8ae3c121cdec9d57613006bae9014a28fb87de2c8c6348adac485d2d4e\",\"action\":\"send\",\"senders\":[{\"address\":\"VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj\",\"public_key\":\"48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242\",\"amount\":5000,\"fee\":1}],\"recipients\":[{\"address\":\"VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx\",\"amount\":5000}],\"message\":\"\",\"token\":\"WOOP\",\"prev_hash\":\"0\",\"sign_r\":\"0\",\"sign_s\":\"0\"}}\' http://testnet.sushichain.io:3000/api/v1/transaction')(ex)(model.error),
+									_elm_lang$core$Maybe$Just(_user$project$Views_ApiTransactionCreate$requestDescription))(_elm_lang$core$Maybe$Nothing)('curl -X POST -H \"Content-Type: application/json\" -d \'{\"transaction\": {\"id\":\"9581ab8ae3c121cdec9d57613006bae9014a28fb87de2c8c6348adac485d2d4e\",\"action\":\"send\",\"senders\":[{\"address\":\"VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj\",\"public_key\":\"48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242\",\"amount\":5000,\"fee\":1,\"sign_r\":\"0\",\"sign_s\":\"0\"}],\"recipients\":[{\"address\":\"VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx\",\"amount\":5000}],\"message\":\"\",\"token\":\"WOOP\",\"prev_hash\":\"0\"}}\' http://testnet.sushichain.io:3000/api/v1/transaction')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -22389,7 +21844,7 @@ var _user$project$Views_ApiTransactionCreateUnsigned$requestDescription = A2(
 														{ctor: '[]'},
 														{
 															ctor: '::',
-															_0: _elm_lang$html$Html$text(' {\"senders\": [{\"address\": \"the-address\", \"amount\":1000, \"fee\":1, \"public_key\":\"the-public-key\"}] ...}'),
+															_0: _elm_lang$html$Html$text(' {\"senders\": [{\"address\": \"the-address\", \"amount\":1000, \"fee\":1, \"public_key\":\"the-public-key\", \"sign_r\":\"0\", \"sign_s\":\"0\"}] ...}'),
 															_1: {ctor: '[]'}
 														}),
 													_1: {
@@ -22526,7 +21981,7 @@ var _user$project$Views_ApiTransactionCreateUnsigned$requestDescription = A2(
 		}
 	});
 var _user$project$Views_ApiTransactionCreateUnsigned$pageApiTransactionCreateUnsigned = function (model) {
-	var ex = '{\"status\":\"success\",\"result\":{\"id\":\"ea4fb45c5b0e12a959e65435cbcc29e52fcab64b4684c5c546ea044f8da927e4\",\"action\":\"send\",\"senders\":[{\"address\":\"VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj\",\"public_key\":\"48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242\",\"amount\":5000,\"fee\":1}],\"recipients\":[{\"address\":\"VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx\",\"amount\":5000}],\"message\":\"\",\"token\":\"SUPERCOOL\",\"prev_hash\":\"0\",\"sign_r\":\"0\",\"sign_s\":\"0\"}}';
+	var ex = '{\"status\":\"success\",\"result\":{\"id\":\"ea4fb45c5b0e12a959e65435cbcc29e52fcab64b4684c5c546ea044f8da927e4\",\"action\":\"send\",\"senders\":[{\"address\":\"VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj\",\"public_key\":\"48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242\",\"amount\":5000,\"fee\":1}],\"recipients\":[{\"address\":\"VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx\",\"amount\":5000}],\"message\":\"\",\"token\":\"SUPERCOOL\",\"prev_hash\":\"0\"}}';
 	var description = A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
@@ -22562,7 +22017,7 @@ var _user$project$Views_ApiTransactionCreateUnsigned$pageApiTransactionCreateUns
 								ctor: '::',
 								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiTransactionCreateUnsigned)(model.apiUrlT6)(
 									_elm_lang$core$Maybe$Just(model.apiBody))(model.apiResponse)('Transaction Create Unsigned')(description)('POST')('api/v1/transaction/unsigned')(
-									_elm_lang$core$Maybe$Just(_user$project$Views_ApiTransactionCreateUnsigned$requestDescription))(_elm_lang$core$Maybe$Nothing)('curl -X POST -H \'Content-Type: application/json\' -d \'{\"action\": \"send\",\"senders\": [{\"address\": \"VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj\",\"public_key\": \"48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242\",\"amount\": 5000,\"fee\": 1}],\"recipients\": [{\"address\": \"VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx\",\"amount\": 5000}],\"message\": \"\",\"token\": \"SUPERCOOL\"}\' http://localhost:3000/api/v1/transaction/unsigned')(ex)(model.error),
+									_elm_lang$core$Maybe$Just(_user$project$Views_ApiTransactionCreateUnsigned$requestDescription))(_elm_lang$core$Maybe$Nothing)('curl -X POST -H \'Content-Type: application/json\' -d \'{\"action\": \"send\",\"senders\": [{\"address\": \"VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj\",\"public_key\": \"48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242\",\"amount\": 5000,\"fee\": 1,\"sign_r\":\"0\",\"sign_s\":\"0\"}],\"recipients\": [{\"address\": \"VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx\",\"amount\": 5000}],\"message\": \"\",\"token\": \"SUPERCOOL\"}\' http://localhost:3000/api/v1/transaction/unsigned')(ex)(model.error),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
@@ -22574,7 +22029,7 @@ var _user$project$Views_ApiTransactionCreateUnsigned$pageApiTransactionCreateUns
 };
 
 var _user$project$Views_ApiTransactionFees$pageApiTransactionFees = function (model) {
-	var ex = '{\"status\":\"success\",\"result\":{\"send\":1,\"scars_buy\":100,\"scars_sell\":10,\"scars_cancel\":1,\"create_token\":1000}}';
+	var ex = '{\n                \"result\" : {\n                \"create_token\" : \"0.1\",\n                \"scars_buy\" : \"0.001\",\n                \"scars_cancel\" : \"0.0001\",\n                \"scars_sell\" : \"0.0001\",\n                \"send\" : \"0.0001\"},\n                \"status\" : \"success\"}';
 	var description = A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
@@ -22645,7 +22100,7 @@ var _user$project$View$pageNotFound = {
 		}),
 	_1: {
 		ctor: '::',
-		_0: _elm_lang$html$Html$text('SOrry couldn\'t find that page'),
+		_0: _elm_lang$html$Html$text('Sorry couldn\'t find that page'),
 		_1: {ctor: '[]'}
 	}
 };
@@ -22688,30 +22143,20 @@ var _user$project$View$mainContent = function (model) {
 					return _user$project$Views_ApiTransactionCreate$pageApiTransactionCreate(model);
 				case 'ApiAddressTransactions':
 					return _user$project$Views_ApiAddressTransactions$pageApiAddressTransactions(model);
-				case 'ApiAddressConfirmed':
-					return _user$project$Views_ApiAddressConfirmed$pageApiAddressConfirmed(model);
-				case 'ApiAddressConfirmedToken':
-					return _user$project$Views_ApiAddressConfirmedToken$pageApiAddressConfirmedToken(model);
-				case 'ApiAddressUnconfirmed':
-					return _user$project$Views_ApiAddressUnconfirmed$pageApiAddressUnconfirmed(model);
-				case 'ApiAddressUnconfirmedToken':
-					return _user$project$Views_ApiAddressUnconfirmedToken$pageApiAddressUnconfirmedToken(model);
+				case 'ApiAddressAmount':
+					return _user$project$Views_ApiAddressAmount$pageApiAddressAmount(model);
+				case 'ApiAddressAmountToken':
+					return _user$project$Views_ApiAddressAmountToken$pageApiAddressAmountToken(model);
 				case 'ApiDomainTransactions':
 					return _user$project$Views_ApiDomainTransactions$pageApiDomainTransactions(model);
-				case 'ApiDomainConfirmed':
-					return _user$project$Views_ApiDomainConfirmed$pageApiDomainConfirmed(model);
-				case 'ApiDomainConfirmedToken':
-					return _user$project$Views_ApiDomainConfirmedToken$pageApiDomainConfirmedToken(model);
-				case 'ApiDomainUnconfirmed':
-					return _user$project$Views_ApiDomainUnconfirmed$pageApiDomainUnconfirmed(model);
-				case 'ApiDomainUnconfirmedToken':
-					return _user$project$Views_ApiDomainUnconfirmedToken$pageApiDomainUnconfirmedToken(model);
+				case 'ApiDomainAmount':
+					return _user$project$Views_ApiDomainAmount$pageApiDomainAmount(model);
+				case 'ApiDomainAmountToken':
+					return _user$project$Views_ApiDomainAmountToken$pageApiDomainAmountToken(model);
 				case 'ApiScarsSales':
 					return _user$project$Views_ApiScarsSales$pageApiScarsSales(model);
-				case 'ApiScarsConfirmed':
-					return _user$project$Views_ApiScarsConfirmed$pageApiScarsConfirmed(model);
-				case 'ApiScarsUnconfirmed':
-					return _user$project$Views_ApiScarsUnconfirmed$pageApiScarsUnconfirmed(model);
+				case 'ApiScarsDomain':
+					return _user$project$Views_ApiScarsDomain$pageApiScarsDomain(model);
 				case 'ApiTokenList':
 					return _user$project$Views_ApiTokenList$pageApiTokenList(model);
 				default:
@@ -22803,18 +22248,13 @@ var _user$project$Main$init = function (location) {
 			apiUrlT6: A2(_elm_lang$core$Basics_ops['++'], prefix, 'transaction/unsigned'),
 			apiUrlT7: A2(_elm_lang$core$Basics_ops['++'], prefix, 'transaction'),
 			apiUrlA1: A2(_elm_lang$core$Basics_ops['++'], prefix, 'address/{:address}/transactions'),
-			apiUrlA2: A2(_elm_lang$core$Basics_ops['++'], prefix, 'address/{:address}/confirmed'),
-			apiUrlA3: A2(_elm_lang$core$Basics_ops['++'], prefix, 'address/{:addresss}/confirmed/{:token}'),
-			apiUrlA4: A2(_elm_lang$core$Basics_ops['++'], prefix, 'address/{:address}/unconfirmed'),
-			apiUrlA5: A2(_elm_lang$core$Basics_ops['++'], prefix, 'address/{:address}/unconfirmed/{:token}'),
-			apiUrlD1: A2(_elm_lang$core$Basics_ops['++'], prefix, 'domain/{:domain}/unconfirmed/{:token}'),
-			apiUrlD2: A2(_elm_lang$core$Basics_ops['++'], prefix, 'domain/{:domain}/unconfirmed/{:token}'),
-			apiUrlD3: A2(_elm_lang$core$Basics_ops['++'], prefix, 'domain/{:domain}/unconfirmed/{:token}'),
-			apiUrlD4: A2(_elm_lang$core$Basics_ops['++'], prefix, 'domain/{:domain}/unconfirmed/{:token}'),
-			apiUrlD5: A2(_elm_lang$core$Basics_ops['++'], prefix, 'domain/{:domain}/unconfirmed/{:token}'),
+			apiUrlA2: A2(_elm_lang$core$Basics_ops['++'], prefix, 'address/{:address}'),
+			apiUrlA3: A2(_elm_lang$core$Basics_ops['++'], prefix, 'address/{:address}/token/{:token}'),
+			apiUrlD1: A2(_elm_lang$core$Basics_ops['++'], prefix, 'domain/{:domain}/transactions'),
+			apiUrlD2: A2(_elm_lang$core$Basics_ops['++'], prefix, 'domain/{:domain}'),
+			apiUrlD3: A2(_elm_lang$core$Basics_ops['++'], prefix, 'domain/{:domain}/token/{:token}'),
 			apiUrlS1: A2(_elm_lang$core$Basics_ops['++'], prefix, 'scars/sales'),
-			apiUrlS2: A2(_elm_lang$core$Basics_ops['++'], prefix, 'scars/{:domain}/confirmed'),
-			apiUrlS3: A2(_elm_lang$core$Basics_ops['++'], prefix, 'scars/{:domain}/unconfirmed'),
+			apiUrlS2: A2(_elm_lang$core$Basics_ops['++'], prefix, 'scars/{:domain}'),
 			apiBody: '',
 			apiUrlTK1: A2(_elm_lang$core$Basics_ops['++'], prefix, 'tokens')
 		});

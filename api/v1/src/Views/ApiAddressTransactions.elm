@@ -44,9 +44,7 @@ pageApiAddressTransactions model =
                       ],
                       "message": "0",
                       "token": "SHARI",
-                      "prev_hash": "0",
-                      "sign_r": "0",
-                      "sign_s": "0"
+                      "prev_hash": "0"
                     },
                     {
                       "id": "a5ad8f71befd4713700b9a0b9402bb0370bd68b32dbf5d54afb23ada74e47483",
@@ -60,9 +58,7 @@ pageApiAddressTransactions model =
                       ],
                       "message": "0",
                       "token": "SHARI",
-                      "prev_hash": "0",
-                      "sign_r": "0",
-                      "sign_s": "0"
+                      "prev_hash": "0"
                     }
                   ]
                 }"""

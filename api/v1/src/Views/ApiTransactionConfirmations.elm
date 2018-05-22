@@ -29,13 +29,13 @@ pageApiTransactionConfirmations model =
         description =
             div [] [ Html.text "This retrieves the number of confirmations for the specified transaction id as Json" ]
 
-        ex = """{"status":"success","result":{"confirmed":true,"confirmations":2425,"threshold":10}}"""
+        ex = """{"status":"success","result":{"confirmations":2425}}"""
     in
         [ br [] []
         , Grid.row []
             [ apiLeftNav ApiTransactionConfirmations
             , Grid.col [ Col.md9 ]
-                [ documentation ApiTransactionConfirmations model.apiUrlT4 Nothing model.apiResponse "Transaction Confirmations" description "GET" "api/v1/transaction/confirmations" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/transaction/confirmations" ex model.error
+                [ documentation ApiTransactionConfirmations model.apiUrlT4 Nothing model.apiResponse "Transaction Confirmations" description "GET" "api/v1/transaction/{:id}/confirmations" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/transaction/{:id}/confirmations" ex model.error
                 ]
             ]
         ]

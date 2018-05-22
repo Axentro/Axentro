@@ -38,17 +38,20 @@ module ::Sushi::Core::Controllers
   #
   # --- address
   #
+  # [GET] api/v1/address/{:address}                       | amount for address for all tokens
+  # [GET] api/v1/address/{:address}/token/{:token}        | amount for address for the token
   # [GET] api/v1/address/{:address}/transactions          | transactions for address
-  # [GET] api/v1/address/{:address}/confirmed             | confirmed amount for address for all tokens
-  # [GET] api/v1/address/{:address}/confirmed/{:token}    | confirmed amount for address for the token
-  # [GET] api/v1/address/{:address}/unconfirmed           | unconfirmed amount for address for all tokens
-  # [GET] api/v1/address/{:address}/unconfirmed/{:token}  | unconfirmed amount for address for all tokens for the token
+  #
+  # --- domain
+  #
+  # [GET] api/v1/domain/{:domain}                       | amount for domain for all tokens
+  # [GET] api/v1/domain/{:domain}/token/{:token}        | amount for domain for the token
+  # [GET] api/v1/domain/{:domain}/transactions          | transactions for domain
   #
   # --- scars
   #
   # [GET] api/v1/scars/sales                              | get all scars's domains for sales
-  # [GET] api/v1/scars/{:domain}/confirmed                | get the confirmed status of the domain
-  # [GET] api/v1/scars/{:domain}/unconfirmed              | get the unconfirmed status of the domain
+  # [GET] api/v1/scars/{:domain}                          | get the status of the domain
   #
   class RESTController
     def initialize(@blockchain : Blockchain)
@@ -70,19 +73,14 @@ module ::Sushi::Core::Controllers
       get "/api/v1/transaction/:id/block/header" { |context, params| __v1_transaction_id_block_header(context, params) }
       get "/api/v1/transaction/:id/confirmations" { |context, params| __v1_transaction_id_confirmations(context, params) }
       get "/api/v1/transaction/fees" { |context, params| __v1_transaction_fees(context, params) }
+      get "/api/v1/address/:address" { |context, params| __v1_address(context, params) }
+      get "/api/v1/address/:address/token/:token" { |context, params| __v1_address_token(context, params) }
       get "/api/v1/address/:address/transactions" { |context, params| __v1_address_transactions(context, params) }
-      get "/api/v1/address/:address/confirmed" { |context, params| __v1_address_confirmed(context, params) }
-      get "/api/v1/address/:address/confirmed/:token" { |context, params| __v1_address_confirmed_token(context, params) }
-      get "/api/v1/address/:address/unconfirmed" { |context, params| __v1_address_unconfirmed(context, params) }
-      get "/api/v1/address/:address/unconfirmed/:token" { |context, params| __v1_address_unconfirmed_token(context, params) }
+      get "/api/v1/domain/:domain" { |context, params| __v1_domain(context, params) }
+      get "/api/v1/domain/:domain/token/:token" { |context, params| __v1_domain_token(context, params) }
       get "/api/v1/domain/:domain/transactions" { |context, params| __v1_domain_transactions(context, params) }
-      get "/api/v1/domain/:domain/confirmed" { |context, params| __v1_domain_confirmed(context, params) }
-      get "/api/v1/domain/:domain/confirmed/:token" { |context, params| __v1_domain_confirmed_token(context, params) }
-      get "/api/v1/domain/:domain/unconfirmed" { |context, params| __v1_domain_unconfirmed(context, params) }
-      get "/api/v1/domain/:domain/unconfirmed/:token" { |context, params| __v1_domain_unconfirmed_token(context, params) }
       get "/api/v1/scars/sales" { |context, params| __v1_scars_sales(context, params) }
-      get "/api/v1/scars/:domain/confirmed" { |context, params| __v1_scars_confirmed(context, params) }
-      get "/api/v1/scars/:domain/unconfirmed" { |context, params| __v1_scars_unconfirmed(context, params) }
+      get "/api/v1/scars/:domain" { |context, params| __v1_scars(context, params) }
       get "/api/v1/tokens" { |context, params| __v1_tokens(context, params) }
       get "/api/v1/nodes" { |context, params| __v1_nodes(context, params) }
       get "/api/v1/node" { |context, params| __v1_node(context, params) }
@@ -202,33 +200,20 @@ module ::Sushi::Core::Controllers
       end
     end
 
-    def __v1_address_confirmed(context, params)
-      with_response(context) do
+    def __v1_address(context, params)
+      with_response(context) do |query_params|
         address = params["address"]
-        @blockchain.utxo.amount_impl(address, true, "all")
+        confirmation = query_params["confirmation"]?.try &.to_i || 1
+        @blockchain.utxo.amount_impl(address, "all", confirmation)
       end
     end
 
-    def __v1_address_confirmed_token(context, params)
-      with_response(context) do
+    def __v1_address_token(context, params)
+      with_response(context) do |query_params|
         address = params["address"]
         token = params["token"]
-        @blockchain.utxo.amount_impl(address, true, token)
-      end
-    end
-
-    def __v1_address_unconfirmed(context, params)
-      with_response(context) do
-        address = params["address"]
-        @blockchain.utxo.amount_impl(address, false, "all")
-      end
-    end
-
-    def __v1_address_unconfirmed_token(context, params)
-      with_response(context) do
-        address = params["address"]
-        token = params["token"]
-        @blockchain.utxo.amount_impl(address, false, token)
+        confirmation = query_params["confirmation"]?.try &.to_i || 1
+        @blockchain.utxo.amount_impl(address, token, confirmation)
       end
     end
 
@@ -237,44 +222,30 @@ module ::Sushi::Core::Controllers
         page = query_params["page"]?.try &.to_i || 0
         page_size = query_params["page_size"]?.try &.to_i || 20
         actions = query_params["actions"]?.try &.split(",") || [] of String
+        confirmation = query_params["confirmation"]?.try &.to_i || 1
 
         domain = params["domain"]
-        address = convert_domain_to_address(domain)
+        address = convert_domain_to_address(domain, confirmation)
         @blockchain.blockchain_info.transactions_impl(address, page, page_size, actions)
       end
     end
 
-    def __v1_domain_confirmed(context, params)
-      with_response(context) do
+    def __v1_domain(context, params)
+      with_response(context) do |query_params|
         domain = params["domain"]
-        address = convert_domain_to_address(domain)
-        @blockchain.utxo.amount_impl(address, true, "all")
+        confirmation = query_params["confirmation"]?.try &.to_i || 1
+        address = convert_domain_to_address(domain, confirmation)
+        @blockchain.utxo.amount_impl(address, "all", confirmation)
       end
     end
 
-    def __v1_domain_confirmed_token(context, params)
-      with_response(context) do
+    def __v1_domain_token(context, params)
+      with_response(context) do |query_params|
         domain = params["domain"]
         token = params["token"]
-        address = convert_domain_to_address(domain)
-        @blockchain.utxo.amount_impl(address, true, token)
-      end
-    end
-
-    def __v1_domain_unconfirmed(context, params)
-      with_response(context) do
-        domain = params["domain"]
-        address = convert_domain_to_address(domain)
-        @blockchain.utxo.amount_impl(address, false, "all")
-      end
-    end
-
-    def __v1_domain_unconfirmed_token(context, params)
-      with_response(context) do
-        domain = params["domain"]
-        token = params["token"]
-        address = convert_domain_to_address(domain)
-        @blockchain.utxo.amount_impl(address, false, token)
+        confirmation = query_params["confirmation"]?.try &.to_i || 1
+        address = convert_domain_to_address(domain, confirmation)
+        @blockchain.utxo.amount_impl(address, token, confirmation)
       end
     end
 
@@ -284,19 +255,12 @@ module ::Sushi::Core::Controllers
       end
     end
 
-    def __v1_scars_confirmed(context, params)
+    def __v1_scars(context, params)
       domain = params["domain"]
 
-      with_response(context) do
-        @blockchain.scars.scars_resolve_impl(domain, true)
-      end
-    end
-
-    def __v1_scars_unconfirmed(context, params)
-      domain = params["domain"]
-
-      with_response(context) do
-        @blockchain.scars.scars_resolve_impl(domain, false)
+      with_response(context) do |query_params|
+        confirmation = query_params["confirmation"]?.try &.to_i || 1
+        @blockchain.scars.scars_resolve_impl(domain, confirmation)
       end
     end
 
@@ -357,8 +321,8 @@ module ::Sushi::Core::Controllers
       JSON.parse(payload)
     end
 
-    private def convert_domain_to_address(domain : String) : String
-      resolved = @blockchain.scars.scars_resolve_impl(domain, true)
+    private def convert_domain_to_address(domain : String, confirmation : Int32) : String
+      resolved = @blockchain.scars.scars_resolve_impl(domain, confirmation)
       raise "the domain #{domain} is not resolved" unless resolved[:resolved]
 
       resolved[:domain][:address]

@@ -29,7 +29,14 @@ pageApiTransactionFees model =
         description =
             div [] [ Html.text "This gets the current transaction fees as json" ]
 
-        ex = """{"status":"success","result":{"send":1,"scars_buy":100,"scars_sell":10,"scars_cancel":1,"create_token":1000}}"""
+        ex = """{
+                "result" : {
+                "create_token" : "0.1",
+                "scars_buy" : "0.001",
+                "scars_cancel" : "0.0001",
+                "scars_sell" : "0.0001",
+                "send" : "0.0001"},
+                "status" : "success"}"""
     in
         [ br [] []
         , Grid.row []

@@ -78,41 +78,26 @@ update msg model =
                 ApiAddressTransactions ->
                     ( { model | apiUrlA1 = url }, Cmd.none )
 
-                ApiAddressConfirmed ->
+                ApiAddressAmount ->
                     ( { model | apiUrlA2 = url }, Cmd.none )
 
-                ApiAddressConfirmedToken ->
+                ApiAddressAmountToken ->
                     ( { model | apiUrlA3 = url }, Cmd.none )
-
-                ApiAddressUnconfirmed ->
-                    ( { model | apiUrlA4 = url }, Cmd.none )
-
-                ApiAddressUnconfirmedToken ->
-                    ( { model | apiUrlA5 = url }, Cmd.none )
 
                 ApiDomainTransactions ->
                     ( { model | apiUrlD1 = url }, Cmd.none )
 
-                ApiDomainConfirmed ->
+                ApiDomainAmount ->
                     ( { model | apiUrlD2 = url }, Cmd.none )
 
-                ApiDomainConfirmedToken ->
+                ApiDomainAmountToken ->
                     ( { model | apiUrlD3 = url }, Cmd.none )
-
-                ApiDomainUnconfirmed ->
-                    ( { model | apiUrlD4 = url }, Cmd.none )
-
-                ApiDomainUnconfirmedToken ->
-                    ( { model | apiUrlD5 = url }, Cmd.none )
 
                 ApiScarsSales ->
                     ( { model | apiUrlS1 = url }, Cmd.none )
 
-                ApiScarsConfirmed ->
+                ApiScarsDomain ->
                     ( { model | apiUrlS2 = url }, Cmd.none )
-
-                ApiScarsUnconfirmed ->
-                    ( { model | apiUrlS3 = url }, Cmd.none )
 
                 ApiTokenList ->
                     ( { model | apiUrlTK1 = url }, Cmd.none )

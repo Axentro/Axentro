@@ -40,22 +40,17 @@ apiLeftNav page =
         , hr [] []
         , h5 [] [ text "Address" ]
         , link ApiAddressTransactions "#api-address-transactions" "address/transactions" page
-        , link ApiAddressConfirmed "#api-address-confirmed" "address/confirmed" page
-        , link ApiAddressConfirmedToken "#api-address-confirmed-token" "address/confirmed/token" page
-        , link ApiAddressUnconfirmed "#api-address-unconfirmed" "address/unconfirmed" page
-        , link ApiAddressUnconfirmedToken "#api-address-unconfirmed-token" "address/unconfirmed/token" page
+        , link ApiAddressAmount "#api-address-amount" "address/amount" page
+        , link ApiAddressAmountToken "#api-address-amount-token" "address/amount/token" page
         , hr [] []
         , h5 [] [ text "Domain" ]
         , link ApiDomainTransactions "#api-domain-transactions" "domain/transactions" page
-        , link ApiDomainConfirmed "#api-domain-confirmed" "domain/confirmed" page
-        , link ApiDomainConfirmedToken "#api-domain-confirmed-token" "domain/confirmed/token" page
-        , link ApiDomainUnconfirmed "#api-domain-unconfirmed" "domain/unconfirmed" page
-        , link ApiDomainUnconfirmedToken "#api-domain-unconfirmed-token" "domain/unconfirmed/token" page
+        , link ApiDomainAmount "#api-domain-amount" "domain/amount" page
+        , link ApiDomainAmountToken "#api-domain-amount-token" "domain/amount/token" page
         , hr [] []
         , h5 [] [ text "SCARS" ]
         , link ApiScarsSales "#api-scars-sales" "scars/sales" page
-        , link ApiScarsConfirmed "#api-scars-confirmed" "scars/confirmed" page
-        , link ApiScarsUnconfirmed "#api-scars-unconfirmed" "scars/unconfirmed" page
+        , link ApiScarsDomain "#api-scars-domain" "scars/domain" page
         , hr [] []
         , h5 [] [ text "Tokens" ]
         , link ApiTokenList "#api-token-list" "tokens/list" page

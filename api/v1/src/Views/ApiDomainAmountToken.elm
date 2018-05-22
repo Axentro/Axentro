@@ -1,7 +1,8 @@
-module Views.ApiAddressConfirmed exposing (..)
+module Views.ApiDomainAmountToken exposing (..)
 
 import Html.Events exposing (onClick, onInput)
 import Json.PrettyPrint
+import Views.ApiAddressAmount exposing (confirmationQueryParams)
 import Views.TableHelper exposing (docTable)
 import Views.ApiLeftNav exposing (apiLeftNav)
 import Html exposing (..)
@@ -23,19 +24,19 @@ import Messages exposing (Method(GET), Msg(..), Page(..))
 import Views.ApiDocumentationHelper exposing (documentation)
 
 
-pageApiAddressConfirmed : Model -> List (Html Msg)
-pageApiAddressConfirmed model =
+pageApiDomainAmountToken : Model -> List (Html Msg)
+pageApiDomainAmountToken model =
     let
         description =
-            div [] [ Html.text "This retrieves amounts of confirmed tokens for an address as Json" ]
+            div [] [ Html.text "This retrieves amounts of tokens for the specified token for a domain as Json" ]
 
-        ex = """{"status":"success","result":{"confirmed":true,"pairs":[{"token":"SHARI","amount":13620044},{"token":"KINGS","amount":0},{"token":"WOOP","amount":0},{"token":"EAGLE","amount":100000}]}}"""
+        ex = """{"status":"success","result":{"confirmation":1,"pairs":[{"token":"EAGLE","amount":100000}]}}"""
     in
         [ br [] []
         , Grid.row []
-            [ apiLeftNav ApiAddressConfirmed
+            [ apiLeftNav ApiDomainAmountToken
             , Grid.col [ Col.md9 ]
-                [ documentation ApiAddressConfirmed model.apiUrlA2 Nothing model.apiResponse "Address Confirmed" description "GET" "api/v1/address/{:address}/confirmed" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/address/{:address}/confirmed" ex model.error
+                [ documentation ApiDomainAmountToken model.apiUrlD3 Nothing model.apiResponse "Domain Amount Token" description "GET" "api/v1/domain/{:domain}/token/{:token}" (Just confirmationQueryParams) Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/token/{:token}" ex model.error
                 ]
             ]
         ]

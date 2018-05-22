@@ -43,7 +43,7 @@ module ::Sushi::Interface::Sushi
         Options::WALLET_PATH,
         Options::WALLET_PASSWORD,
         Options::JSON,
-        Options::UNCONFIRMED,
+        Options::CONFIRMATION,
         Options::FEE,
         Options::PRICE,
         Options::DOMAIN,
@@ -80,7 +80,7 @@ module ::Sushi::Interface::Sushi
 
       Core::DApps::BuildIn::Scars.valid_domain?(domain)
 
-      resolved = resolve_internal(node, domain, false)
+      resolved = resolve_internal(node, domain, 1)
 
       wallet = get_wallet(wallet_path, __wallet_password)
 
@@ -116,7 +116,7 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_PRICE) unless price = __price
       puts_help(HELP_DOMAIN) unless domain = __domain
 
-      resolved = resolve_internal(node, domain, false)
+      resolved = resolve_internal(node, domain, 1)
 
       raise "the domain #{domain} is not resolved" unless resolved["resolved"].as_bool
 
@@ -151,7 +151,7 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_FEE) unless fee = __fee
       puts_help(HELP_DOMAIN) unless domain = __domain
 
-      resolved = resolve_internal(node, domain, false)
+      resolved = resolve_internal(node, domain, 1)
 
       raise "the domain #{domain} is not resolved" unless resolved["resolved"].as_bool
 
@@ -207,7 +207,7 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
       puts_help(HELP_DOMAIN) unless domain = __domain
 
-      resolved = resolve_internal(node, domain, !__unconfirmed)
+      resolved = resolve_internal(node, domain, __confirmation)
 
       unless __json
         puts_success "show information of domain #{domain}"

@@ -43,20 +43,15 @@ routeParser =
         , UrlParser.map ApiTransactionCreate (UrlParser.s "api-transaction-create")
 
         , UrlParser.map ApiAddressTransactions (UrlParser.s "api-address-transactions")
-        , UrlParser.map ApiAddressConfirmed (UrlParser.s "api-address-confirmed")
-        , UrlParser.map ApiAddressConfirmedToken (UrlParser.s "api-address-confirmed-token")
-        , UrlParser.map ApiAddressUnconfirmed (UrlParser.s "api-address-unconfirmed")
-        , UrlParser.map ApiAddressUnconfirmedToken (UrlParser.s "api-address-unconfirmed-token")
-        
-         , UrlParser.map ApiDomainTransactions (UrlParser.s "api-domain-transactions")
-         , UrlParser.map ApiDomainConfirmed (UrlParser.s "api-domain-confirmed")
-         , UrlParser.map ApiDomainConfirmedToken (UrlParser.s "api-domain-confirmed-token")
-         , UrlParser.map ApiDomainUnconfirmed (UrlParser.s "api-domain-unconfirmed")
-         , UrlParser.map ApiDomainUnconfirmedToken (UrlParser.s "api-domain-unconfirmed-token")
+        , UrlParser.map ApiAddressAmount (UrlParser.s "api-address-amount")
+        , UrlParser.map ApiAddressAmountToken (UrlParser.s "api-address-amount-token")
 
-         , UrlParser.map ApiScarsSales (UrlParser.s "api-scars-sales")
-         , UrlParser.map ApiScarsConfirmed (UrlParser.s "api-scars-confirmed")
-         , UrlParser.map ApiScarsUnconfirmed (UrlParser.s "api-scars-unconfirmed")
+        , UrlParser.map ApiDomainTransactions (UrlParser.s "api-domain-transactions")
+        , UrlParser.map ApiDomainAmount (UrlParser.s "api-domain-amount")
+        , UrlParser.map ApiDomainAmountToken (UrlParser.s "api-domain-amount-token")
 
-         , UrlParser.map ApiTokenList (UrlParser.s "api-token-list")
+        , UrlParser.map ApiScarsSales (UrlParser.s "api-scars-sales")
+        , UrlParser.map ApiScarsDomain (UrlParser.s "api-scars-domain")
+
+        , UrlParser.map ApiTokenList (UrlParser.s "api-token-list")
         ]

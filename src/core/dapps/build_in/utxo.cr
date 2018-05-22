@@ -27,18 +27,18 @@ module ::Sushi::Core::DApps::BuildIn
       0_i64
     end
 
-    def get(address : String, token : String) : Int64
-      return 0_i64 if @utxo_internal.size < CONFIRMATION
+    def get(address : String, token : String, confirmation : Int32) : Int64
+      return 0_i64 if @utxo_internal.size < confirmation
 
-      get_for(address, @utxo_internal.reverse[(CONFIRMATION - 1)..-1], token)
+      get_for(address, @utxo_internal.reverse[(confirmation - 1)..-1], token)
     end
 
-    def get_unconfirmed(address : String, transactions : Array(Transaction), token : String) : Int64
+    def get_pending(address : String, transactions : Array(Transaction), token : String) : Int64
       utxo_transactions = calculate_for_transactions(transactions)
 
-      utxo_unconfirmed = get_for(address, @utxo_internal.reverse, token)
-      utxo_unconfirmed += utxo_transactions[token][address] if utxo_transactions[token]? && utxo_transactions[token][address]?
-      utxo_unconfirmed
+      utxo_pending = get_for(address, @utxo_internal.reverse, token)
+      utxo_pending += utxo_transactions[token][address] if utxo_transactions[token]? && utxo_transactions[token][address]?
+      utxo_pending
     end
 
     def transaction_actions : Array(String)
@@ -55,8 +55,8 @@ module ::Sushi::Core::DApps::BuildIn
 
       sender = transaction.senders[0]
 
-      amount_token = get_unconfirmed(sender[:address], prev_transactions, transaction.token)
-      amount_default = transaction.token == DEFAULT ? amount_token : get_unconfirmed(sender[:address], prev_transactions, DEFAULT)
+      amount_token = get_pending(sender[:address], prev_transactions, transaction.token)
+      amount_default = transaction.token == DEFAULT ? amount_token : get_pending(sender[:address], prev_transactions, DEFAULT)
 
       as_recipients = transaction.recipients.select { |recipient| recipient[:address] == sender[:address] }
       amount_token_as_recipients = as_recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
@@ -131,7 +131,7 @@ module ::Sushi::Core::DApps::BuildIn
         utxo_block.each do |token, utxo|
           utxo.each do |address, amount|
             @utxo_internal[-1][token] ||= Hash(String, Int64).new
-            @utxo_internal[-1][token][address] ||= get_unconfirmed(address, [] of Transaction, token)
+            @utxo_internal[-1][token][address] ||= get_pending(address, [] of Transaction, token)
             @utxo_internal[-1][token][address] = @utxo_internal[-1][token][address] + amount
           end
         end
@@ -153,25 +153,25 @@ module ::Sushi::Core::DApps::BuildIn
 
     def amount(json, context, params)
       address = json["address"].as_s
-      confirmed = json["confirmed"].as_bool
       token = json["token"].as_s
+      confirmation = json["confirmation"].as_i
 
-      context.response.print api_success(amount_impl(address, confirmed, token))
+      context.response.print api_success(amount_impl(address, token, confirmation))
       context
     end
 
-    def amount_impl(address, confirmed, token)
+    def amount_impl(address, token, confirmation : Int32)
       pairs = [] of NamedTuple(token: String, amount: String)
 
       tokens = blockchain.token.tokens
       tokens.each do |_token|
         next if _token != token && token != "all"
 
-        amount = confirmed ? get(address, _token) : get_unconfirmed(address, Array(Transaction).new, _token)
+        amount = get(address, _token, confirmation)
         pairs << {token: _token, amount: scale_decimal(amount)}
       end
 
-      {confirmed: confirmed, pairs: pairs}
+      {confirmation: confirmation, pairs: pairs}
     end
 
     def self.fee(action : String) : Int64

@@ -125,9 +125,7 @@ module ::Sushi::Core::DApps::BuildIn
       latest_index = @indices.size
 
       {
-        confirmed:     (latest_index - block_index) >= UTXO::CONFIRMATION,
         confirmations: latest_index - block_index,
-        threshold:     UTXO::CONFIRMATION,
       }
     end
   end
