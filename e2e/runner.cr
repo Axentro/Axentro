@@ -170,12 +170,12 @@ module ::E2E
 
       @node_ports.each do |node_port|
         @num_miners.times do |num|
-          a = amount(node_port, num)
-          raise "amount of #{num} is #{a} on #{node_port}" if a < 0
+          a = amount(node_port, num, CONFIRMATION)
+          raise "amount of #{num} is #{a} on #{node_port} (#{CONFIRMATION})" if a < 0
           STDERR.print "."
 
-          a = amount(node_port, num, true)
-          raise "amount of #{num} is #{a} on #{node_port} (unconfirmed)" if a < 0
+          a = amount(node_port, num)
+          raise "amount of #{num} is #{a} on #{node_port}" if a < 0
           STDERR.print "."
         end
       end
