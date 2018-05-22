@@ -201,8 +201,8 @@ module ::Sushi::Interface
       transaction.as_signed(wallets)
     end
 
-    def resolve_internal(node, domain, confirmed : Bool = true) : JSON::Any
-      payload = {call: "scars_resolve", domain_name: domain, confirmed: confirmed}.to_json
+    def resolve_internal(node, domain, confirmation : Int32) : JSON::Any
+      payload = {call: "scars_resolve", domain_name: domain, confirmation: confirmation}.to_json
 
       body = rpc(node, payload)
       JSON.parse(body)

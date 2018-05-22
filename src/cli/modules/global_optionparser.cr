@@ -21,7 +21,7 @@ module ::Sushi::Interface
     @is_private : Bool = false
     @is_private_changed = false
     @json : Bool = false
-    @unconfirmed : Bool = false
+    @confirmation : Int32 = 1
 
     @bind_host : String = "0.0.0.0"
     @bind_port : Int32 = 3000
@@ -51,6 +51,7 @@ module ::Sushi::Interface
 
     @node_id : String?
 
+    # todo: remove nums
     enum Options
       # common options
       CONNECT_NODE    = 0
@@ -60,7 +61,7 @@ module ::Sushi::Interface
       IS_TESTNET  = 3
       IS_PRIVATE  = 4
       JSON        = 5
-      UNCONFIRMED = 6
+      CONFIRMATION = 6
       # for node setting up
       BIND_HOST     =  7
       BIND_PORT     =  8
@@ -131,9 +132,9 @@ module ::Sushi::Interface
           @json = true
         } if is_active?(actives, Options::JSON)
 
-        parser.on("-u", "--unconfirmed", "showing unconfirmed amount") {
-          @unconfirmed = true
-        } if is_active?(actives, Options::UNCONFIRMED)
+        parser.on("--confirmation=CONFIRMATION", "set the length for the confirmation") { |confirmation|
+          @confirmation = confirmation.to_i
+        } if is_active?(actives, Options::CONFIRMATION)
 
         parser.on("-h BIND_HOST", "--bind_host=BIND_HOST", "binding host; '0.0.0.0' by default") { |bind_host|
           raise "invalid host: #{bind_host}" unless bind_host.count('.') == 3
@@ -256,8 +257,8 @@ module ::Sushi::Interface
       @json
     end
 
-    def __unconfirmed : Bool
-      @unconfirmed
+    def __confirmation : Int32
+      @confirmation
     end
 
     def __bind_host : String

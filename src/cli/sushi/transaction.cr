@@ -42,6 +42,7 @@ module ::Sushi::Interface::Sushi
         Options::CONNECT_NODE,
         Options::WALLET_PATH,
         Options::WALLET_PASSWORD,
+        Options::CONFIRMATION,
         Options::JSON,
         Options::ADDRESS,
         Options::AMOUNT,
@@ -87,7 +88,7 @@ module ::Sushi::Interface::Sushi
       recipient_address = if address = __address
                             address
                           else
-                            resolved = resolve_internal(node, __domain.not_nil!)
+                            resolved = resolve_internal(node, __domain.not_nil!, __confirmation)
                             raise "domain #{__domain.not_nil!} is not resolved" unless resolved["resolved"].as_bool
                             resolved["domain"]["address"].as_s
                           end
@@ -184,9 +185,7 @@ module ::Sushi::Interface::Sushi
 
         puts_info("transaction id: #{transaction_id}")
         puts_info("--------------")
-        puts_info("confirmed: #{json["confirmed"]}")
         puts_info("confirmations: #{json["confirmations"]}")
-        puts_info("threshold: #{json["threshold"]}")
       else
         puts body
       end

@@ -20,6 +20,8 @@ module ::E2E
   ALL_PRIVATE = 1
   ONE_PRIVATE = 2
 
+  CONFIRMATION = 3
+
   class Runner
     @client : Client
     @db_name : String
@@ -105,11 +107,11 @@ module ::E2E
     end
 
     def latest_confirmed_block_index : Int32
-      if latest_block_index < ::Sushi::Core::Consensus::CONFIRMATION - 1
+      if latest_block_index < CONFIRMATION - 1
         return 1 if latest_block_index > 1
         return 0
       end
-      latest_block_index - (::Sushi::Core::Consensus::CONFIRMATION - 1)
+      latest_block_index - (CONFIRMATION - 1)
     end
 
     def verify_at_least_mining_one_block
