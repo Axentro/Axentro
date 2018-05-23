@@ -20,6 +20,7 @@ module ::Sushi::Core
       message: String,
       token: String,
       prev_hash: String,
+      timestamp: Int64,
       scaled: Int32,
     )
 
@@ -31,29 +32,10 @@ module ::Sushi::Core
       @message : String,
       @token : String,
       @prev_hash : String,
+      @timestamp : Int64,
       @scaled : Int32
     )
       raise "invalid decimal transaction (expected scaled: 0 bug receive #{@scaled})" if @scaled != 0
-    end
-
-    def create_unsigned_transaction_decimal(
-      action : String,
-      senders : SendersDecimal,
-      recipients : RecipientsDecimal,
-      message : String,
-      token : String,
-      id = Transaction.create_id
-    ) : TransactionDecimal
-      TransactionDecimal.new(
-        id,
-        action,
-        senders,
-        recipients,
-        message,
-        token,
-        "0",
-        0,
-      )
     end
 
     def to_transaction : Transaction
@@ -65,6 +47,7 @@ module ::Sushi::Core
         @message,
         @token,
         @prev_hash,
+        @timestamp,
         1,
       )
     end
@@ -78,6 +61,7 @@ module ::Sushi::Core
         transaction.message,
         transaction.token,
         transaction.prev_hash,
+        transaction.timestamp,
         0,
       )
     end

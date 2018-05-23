@@ -24,6 +24,7 @@ module ::Sushi::Core
       nonce: UInt64,
       prev_hash: String,
       merkle_tree_root: String,
+      timestamp: Int64,
     )
 
     getter chain : Chain = Chain.new
@@ -115,6 +116,7 @@ module ::Sushi::Core
         transactions,
         nonce,
         latest_block.to_hash,
+        timestamp,
       )
     end
 
@@ -219,12 +221,14 @@ module ::Sushi::Core
       genesis_transactions = [] of Transaction
       genesis_nonce = 0_u64
       genesis_prev_hash = "genesis"
+      genesis_timestamp = 0_i64
 
       Block.new(
         genesis_index,
         genesis_transactions,
         genesis_nonce,
         genesis_prev_hash,
+        genesis_timestamp,
       )
     end
 
@@ -257,6 +261,7 @@ module ::Sushi::Core
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
+        timestamp,     # timestamp
         1,             # scaled
       )
     end
@@ -299,5 +304,6 @@ module ::Sushi::Core
     include Consensus
     include DApps
     include TransactionModels
+    include Common::Timestamp
   end
 end

@@ -25,6 +25,7 @@ module ::Sushi::Core
       message: String,
       token: String,
       prev_hash: String,
+      timestamp: Int64,
       scaled: Int32,
     )
 
@@ -38,6 +39,7 @@ module ::Sushi::Core
       @message : String,
       @token : String,
       @prev_hash : String,
+      @timestamp : Int64,
       @scaled : Int32
     )
     end
@@ -142,6 +144,7 @@ module ::Sushi::Core
         self.message,
         self.token,
         "0",
+        self.timestamp,
         self.scaled,
       )
     end
@@ -172,6 +175,7 @@ module ::Sushi::Core
         self.message,
         self.token,
         "0",
+        self.timestamp,
         self.scaled,
       )
     end
@@ -190,6 +194,7 @@ module ::Sushi::Core
 
     include Hashes
     include TransactionModels
+    include Common::Timestamp
     include Common::Validator
     include Common::Denomination
   end
