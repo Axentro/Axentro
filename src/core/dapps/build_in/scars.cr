@@ -46,12 +46,12 @@ module ::Sushi::Core::DApps::BuildIn
         .map { |domain_name, domain| scale_decimal(domain) }
     end
 
-    def resolve(domain_name : String) : Domain?
-      return nil if @domains_internal.size < CONFIRMATION
-      resolve_for(domain_name, @domains_internal.reverse[(CONFIRMATION - 1)..-1])
+    def resolve(domain_name : String, confirmation : Int32) : Domain?
+      return nil if @domains_internal.size < confirmation
+      resolve_for(domain_name, @domains_internal.reverse[(confirmation - 1)..-1])
     end
 
-    def resolve_unconfirmed(domain_name : String, transactions : Array(Transaction)) : Domain?
+    def resolve_pending(domain_name : String, transactions : Array(Transaction)) : Domain?
       domain_map = create_domain_map_for_transactions(transactions)
 
       tmp_domains_internal = @domains_internal.dup
@@ -93,7 +93,7 @@ module ::Sushi::Core::DApps::BuildIn
 
       valid_domain?(domain_name)
 
-      sale_price = if domain = resolve_unconfirmed(domain_name, transactions)
+      sale_price = if domain = resolve_pending(domain_name, transactions)
                      raise "domain #{domain_name} is not for sale now" unless domain[:status] == Status::ForSale
                      raise "you have to the set a domain owner as a recipient" if recipients.size == 0
                      raise "you cannot set multiple recipients" if recipients.size > 1
@@ -126,7 +126,7 @@ module ::Sushi::Core::DApps::BuildIn
 
       recipient = transaction.recipients[0]
 
-      raise "domain #{domain_name} not found" unless domain = resolve_unconfirmed(domain_name, transactions)
+      raise "domain #{domain_name} not found" unless domain = resolve_pending(domain_name, transactions)
       raise "domain #{domain_name} is already for sale now" if domain[:status] == Status::ForSale
       raise "domain address mismatch: expected #{address} but got #{domain[:address]}" unless address == domain[:address]
       raise "address mismatch for scars_sell: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
@@ -149,7 +149,7 @@ module ::Sushi::Core::DApps::BuildIn
 
       recipient = transaction.recipients[0]
 
-      raise "domain #{domain_name} not found" unless domain = resolve_unconfirmed(domain_name, transactions)
+      raise "domain #{domain_name} not found" unless domain = resolve_pending(domain_name, transactions)
       raise "domain #{domain_name} is not for sale" if domain[:status] != Status::ForSale
       raise "domain address mismatch: expected #{address} but got #{domain[:address]}" unless address == domain[:address]
       raise "address mismatch for scars_cancel: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
@@ -262,20 +262,20 @@ RULE
 
     def scars_resolve(json, context, params)
       domain_name = json["domain_name"].as_s
-      confirmed = json["confirmed"].as_bool
+      confirmation = json["confirmation"].as_i
 
-      context.response.print api_success(scars_resolve_impl(domain_name, confirmed))
+      context.response.print api_success(scars_resolve_impl(domain_name, confirmation))
       context
     end
 
-    def scars_resolve_impl(domain_name : String, confirmed : Bool)
-      domain = confirmed ? resolve(domain_name) : resolve_unconfirmed(domain_name, [] of Transaction)
+    def scars_resolve_impl(domain_name : String, confirmation : Int32)
+      domain = resolve(domain_name, confirmation)
 
       if domain
-        {resolved: true, domain: scale_decimal(domain)}
+        {resolved: true, confirmation: confirmation, domain: scale_decimal(domain)}
       else
         default_domain = {domain_name: domain_name, address: "", status: Status::NotFound, price: "0.0"}
-        {resolved: false, domain: default_domain}
+        {resolved: false, confirmation: confirmation, domain: default_domain}
       end
     end
 

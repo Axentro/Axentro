@@ -20,6 +20,8 @@ module ::E2E
   ALL_PRIVATE = 1
   ONE_PRIVATE = 2
 
+  CONFIRMATION = 3
+
   class Runner
     @client : Client
     @db_name : String
@@ -105,11 +107,24 @@ module ::E2E
     end
 
     def latest_confirmed_block_index : Int32
-      if latest_block_index < ::Sushi::Core::Consensus::CONFIRMATION - 1
+      if latest_block_index < CONFIRMATION - 1
         return 1 if latest_block_index > 1
         return 0
       end
-      latest_block_index - (::Sushi::Core::Consensus::CONFIRMATION - 1)
+      latest_block_index - (CONFIRMATION - 1)
+    end
+
+    def verify_at_least_mining_one_block
+      STDERR.puts
+      STDERR.puts "verifying: #{green("at least mining one block")}"
+
+      block_sizes.each do |port_size|
+        raise "node #{port_size[:port]} has no mined block" if port_size[:size] < 3
+        STDERR.print "."
+      end
+
+      STDERR.puts
+      STDERR.puts light_green("-> PASSED!")
     end
 
     def verify_latest_confirmed_block
@@ -155,12 +170,12 @@ module ::E2E
 
       @node_ports.each do |node_port|
         @num_miners.times do |num|
-          a = amount(node_port, num)
-          raise "amount of #{num} is #{a} on #{node_port}" if a < 0
+          a = amount(node_port, num, CONFIRMATION)
+          raise "amount of #{num} is #{a} on #{node_port} (#{CONFIRMATION})" if a < 0
           STDERR.print "."
 
-          a = amount(node_port, num, true)
-          raise "amount of #{num} is #{a} on #{node_port} (unconfirmed)" if a < 0
+          a = amount(node_port, num)
+          raise "amount of #{num} is #{a} on #{node_port}" if a < 0
           STDERR.print "."
         end
       end
@@ -213,6 +228,7 @@ module ::E2E
     end
 
     def assertion!
+      verify_at_least_mining_one_block
       verify_latest_confirmed_block
       verify_blockchain_sizes_are_almost_same
       verify_all_addresses_have_non_negative_amount

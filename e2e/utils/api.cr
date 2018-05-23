@@ -41,9 +41,8 @@ module ::E2E::Utils::API
     parse_json(res)
   end
 
-  def amount(port : Int32, num : Int32, unconfirmed = false) : BigDecimal
-    args = ["wallet", "amount", "-w", wallet(num), "-n", "http://127.0.0.1:#{port}", "--json"]
-    args << "-u" if unconfirmed
+  def amount(port : Int32, num : Int32, confirmation : Int32 = 1) : BigDecimal
+    args = ["wallet", "amount", "-w", wallet(num), "-n", "http://127.0.0.1:#{port}", "--json", "--confirmation=#{confirmation}"]
 
     res = `#{sushi(args)}`
 
@@ -55,7 +54,7 @@ module ::E2E::Utils::API
   end
 
   def create(port : Int32, n_sender : Int32, n_recipient : Int32) : String?
-    a = amount(port, n_sender, true)
+    a = amount(port, n_sender)
 
     return nil if a < BigDecimal.new("0.00010001")
 

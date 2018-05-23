@@ -24,16 +24,11 @@ type alias Model =
     , apiUrlA1 : String
     , apiUrlA2 : String
     , apiUrlA3 : String
-    , apiUrlA4 : String
-    , apiUrlA5 : String
     , apiUrlD1 : String
     , apiUrlD2 : String
     , apiUrlD3 : String
-    , apiUrlD4 : String
-    , apiUrlD5 : String
     , apiUrlS1 : String
     , apiUrlS2 : String
-    , apiUrlS3 : String
     , apiBody  : String
     , apiUrlTK1 : String
     }

@@ -11,8 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::Consensus
-  CONFIRMATION = 10
-
   # SHA256 Implementation
   def valid_sha256?(block_index : Int64, block_hash : String, nonce : UInt64, _difficulty : Int32?) : Bool
     difficulty = _difficulty.nil? ? difficulty_at(block_index) : _difficulty.not_nil!

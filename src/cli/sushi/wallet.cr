@@ -45,7 +45,7 @@ module ::Sushi::Interface::Sushi
         Options::IS_TESTNET,
         Options::ENCRYPTED,
         Options::JSON,
-        Options::UNCONFIRMED,
+        Options::CONFIRMATION,
         Options::ADDRESS,
         Options::DOMAIN,
         Options::TOKEN,
@@ -164,21 +164,21 @@ module ::Sushi::Interface::Sushi
                 elsif _address = __address
                   _address
                 elsif _domain = __domain
-                  resolved = resolve_internal(node, _domain, !__unconfirmed)
+                  resolved = resolve_internal(node, _domain, __confirmation)
                   raise "domain #{_domain} is not resolved" unless resolved["resolved"].as_bool
                   resolved["domain"]["address"].as_s
                 else
                   puts_help(HELP_WALLET_PATH_OR_ADDRESS_OR_DOMAIN)
                 end
 
-      payload = {call: "amount", address: address, confirmed: !__unconfirmed, token: token}.to_json
+      payload = {call: "amount", address: address, confirmation: __confirmation, token: token}.to_json
 
       body = rpc(node, payload)
       json = JSON.parse(body)
 
       unless __json
         puts_success("\n  showing amount of each token for #{address}.")
-        puts_success("  confirmed: #{!__unconfirmed}\n")
+        puts_success("  confirmation: #{__confirmation}\n")
 
         puts_info("  + %20s - %20s +" % ["-" * 20, "-" * 20])
         puts_info("  | %20s | %20s |" % ["token", "amount"])

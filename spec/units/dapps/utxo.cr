@@ -27,7 +27,7 @@ describe UTXO do
         utxo.record(chain)
 
         address = chain[1].transactions.first.recipients.first[:address]
-        utxo.get(address, TOKEN_DEFAULT).should eq(0)
+        utxo.get(address, TOKEN_DEFAULT, 10).should eq(0)
       end
     end
 
@@ -40,7 +40,7 @@ describe UTXO do
         address = chain[1].transactions.first.recipients.first[:address]
         expected_amount = chain[1].transactions[0].recipients[0]["amount"]
 
-        utxo.get(address, TOKEN_DEFAULT).should eq(expected_amount)
+        utxo.get(address, TOKEN_DEFAULT, 10).should eq(expected_amount)
       end
     end
 
@@ -51,7 +51,7 @@ describe UTXO do
           utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
           utxo.record(chain)
 
-          utxo.get("address-does-not-exist", TOKEN_DEFAULT).should eq(0)
+          utxo.get("address-does-not-exist", TOKEN_DEFAULT, 1).should eq(0)
         end
       end
 
@@ -61,7 +61,7 @@ describe UTXO do
           utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
           utxo.record(chain)
 
-          utxo.get("address-does-not-exist", TOKEN_DEFAULT).should eq(0)
+          utxo.get("address-does-not-exist", TOKEN_DEFAULT, 1).should eq(0)
         end
       end
     end
@@ -74,7 +74,7 @@ describe UTXO do
           utxo.record(chain)
           address = chain[1].transactions.first.recipients.first[:address]
 
-          utxo.get(address, "UNKNOWN").should eq(0)
+          utxo.get(address, "UNKNOWN", 1).should eq(0)
         end
       end
 
@@ -85,14 +85,14 @@ describe UTXO do
           utxo.record(chain)
           address = chain[1].transactions.first.recipients.first[:address]
 
-          utxo.get(address, "UNKNOWN").should eq(0)
+          utxo.get(address, "UNKNOWN", 1).should eq(0)
         end
       end
     end
   end
 
-  describe "#get_unconfirmed" do
-    it "should get unconfirmed transactions amount for the supplied address in the supplied transactions" do
+  describe "#get_pending" do
+    it "should get pending transactions amount for the supplied address in the supplied transactions" do
       with_factory do |block_factory, transaction_factory|
         chain = block_factory.addBlock.chain
         utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
@@ -101,11 +101,11 @@ describe UTXO do
         transactions = chain.reject { |blk| blk.prev_hash == "genesis" }.flat_map { |blk| blk.transactions }
         address = chain[1].transactions.first.recipients.first[:address]
         expected_amount = transactions.flat_map { |txn| txn.recipients.select { |r| r[:address] == address } }.map { |x| x[:amount] }.sum * 2
-        utxo.get_unconfirmed(address, transactions, TOKEN_DEFAULT).should eq(expected_amount)
+        utxo.get_pending(address, transactions, TOKEN_DEFAULT).should eq(expected_amount)
       end
     end
 
-    it "should get unconfirmed transactions amount for the supplied address when no transactions are supplied" do
+    it "should get pending transactions amount for the supplied address when no transactions are supplied" do
       with_factory do |block_factory, transaction_factory|
         chain = block_factory.addBlock.chain
         utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
@@ -114,12 +114,12 @@ describe UTXO do
         transactions = [] of Transaction
         address = chain[1].transactions.first.recipients.first[:address]
         expected_amount = chain.reject { |blk| blk.prev_hash == "genesis" }.flat_map { |blk| blk.transactions.first.recipients.select { |r| r[:address] == address } }.map { |x| x[:amount] }.sum
-        utxo.get_unconfirmed(address, transactions, TOKEN_DEFAULT).should eq(expected_amount)
+        utxo.get_pending(address, transactions, TOKEN_DEFAULT).should eq(expected_amount)
       end
     end
 
     context "when chain is empty" do
-      it "should get unconfirmed transactions amount for the supplied address when no transactions are supplied and the chain is empty" do
+      it "should get pending transactions amount for the supplied address when no transactions are supplied and the chain is empty" do
         with_factory do |block_factory, transaction_factory|
           chain = [] of Block
           utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
@@ -127,18 +127,18 @@ describe UTXO do
 
           transactions = [] of Transaction
           address = "any-address"
-          utxo.get_unconfirmed(address, transactions, TOKEN_DEFAULT).should eq(0)
+          utxo.get_pending(address, transactions, TOKEN_DEFAULT).should eq(0)
         end
       end
 
-      it "should get unconfirmed transactions when no transactions are supplied and the chain is empty and the address is unknown" do
+      it "should get pending transactions when no transactions are supplied and the chain is empty and the address is unknown" do
         with_factory do |block_factory, transaction_factory|
           chain = [] of Block
           utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
           utxo.record(chain)
 
           transactions = [] of Transaction
-          utxo.get_unconfirmed("address-does-not-exist", transactions, TOKEN_DEFAULT).should eq(0)
+          utxo.get_pending("address-does-not-exist", transactions, TOKEN_DEFAULT).should eq(0)
         end
       end
     end
@@ -307,11 +307,11 @@ describe UTXO do
         with_factory do |block_factory, transaction_factory|
           block_factory.addBlocks(10)
           recipient_address = block_factory.chain.last.transactions.first.recipients.first[:address]
-          payload = {call: "amount", address: recipient_address, confirmed: false, token: TOKEN_DEFAULT}.to_json
+          payload = {call: "amount", address: recipient_address, confirmation: 5, token: TOKEN_DEFAULT}.to_json
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq(%{{"confirmed":false,"pairs":[{"token":"SUSHI","amount":"5.046265"}]}})
+            result.should eq("{\"confirmation\":5,\"pairs\":[{\"token\":\"SUSHI\",\"amount\":\"3.027759\"}]}")
           end
         end
       end
@@ -320,11 +320,11 @@ describe UTXO do
         with_factory do |block_factory, transaction_factory|
           block_factory.addBlocks(10)
           recipient_address = block_factory.chain.last.transactions.first.recipients.first[:address]
-          payload = {call: "amount", address: recipient_address, confirmed: true, token: TOKEN_DEFAULT}.to_json
+          payload = {call: "amount", address: recipient_address, confirmation: 10, token: TOKEN_DEFAULT}.to_json
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq(%{{"confirmed":true,"pairs":[{"token":"SUSHI","amount":"0.5046265"}]}})
+            result.should eq(%{{"confirmation":10,"pairs":[{"token":"SUSHI","amount":"0.5046265"}]}})
           end
         end
       end

@@ -53,7 +53,7 @@ module ::Sushi::Interface::Sushi
         Options::IS_TESTNET,
         Options::IS_PRIVATE,
         # Options::JSON,
-        # Options::UNCONFIRMED,
+        # Options::CONFIRMATION,
         Options::BIND_HOST,
         Options::BIND_PORT,
         Options::PUBLIC_URL,
@@ -65,7 +65,7 @@ module ::Sushi::Interface::Sushi
         # Options::BLOCK_INDEX,
         # Options::TRANSACTION_ID,
         # Options::HEADER,
-        Options::THREADS,
+        Options::PROCESSES,
         Options::ENCRYPTED,
         Options::CONFIG_NAME,
       ])
@@ -105,7 +105,7 @@ module ::Sushi::Interface::Sushi
       cm.set("bind_port", __bind_port)
       cm.set("public_url", __public_url)
       cm.set("database_path", __database_path)
-      cm.set("threads", __threads)
+      cm.set("processes", __processes)
       cm.set("encrypted", __encrypted)
       cm.set("wallet_password", __wallet_password)
       cm.set("address", __address)

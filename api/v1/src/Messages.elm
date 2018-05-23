@@ -38,19 +38,14 @@ type Page
     | ApiTransactionCreate
 
     | ApiAddressTransactions
-    | ApiAddressConfirmed
-    | ApiAddressConfirmedToken
-    | ApiAddressUnconfirmed
-    | ApiAddressUnconfirmedToken
+    | ApiAddressAmount
+    | ApiAddressAmountToken
 
     | ApiDomainTransactions
-    | ApiDomainConfirmed
-    | ApiDomainConfirmedToken
-    | ApiDomainUnconfirmed
-    | ApiDomainUnconfirmedToken
+    | ApiDomainAmount
+    | ApiDomainAmountToken
 
     | ApiScarsSales
-    | ApiScarsConfirmed
-    | ApiScarsUnconfirmed
+    | ApiScarsDomain
 
     | ApiTokenList

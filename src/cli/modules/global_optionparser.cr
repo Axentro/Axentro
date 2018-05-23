@@ -21,7 +21,7 @@ module ::Sushi::Interface
     @is_private : Bool = false
     @is_private_changed = false
     @json : Bool = false
-    @unconfirmed : Bool = false
+    @confirmation : Int32 = 1
 
     @bind_host : String = "0.0.0.0"
     @bind_port : Int32 = 3000
@@ -38,7 +38,7 @@ module ::Sushi::Interface
 
     @header : Bool = false
 
-    @threads : Int32 = 1
+    @processes : Int32 = 1
 
     @encrypted : Bool = false
 
@@ -51,47 +51,47 @@ module ::Sushi::Interface
 
     @node_id : String?
 
-    module Options
+    enum Options
       # common options
-      CONNECT_NODE    = 0
-      WALLET_PATH     = 1
-      WALLET_PASSWORD = 2
+      CONNECT_NODE
+      WALLET_PATH
+      WALLET_PASSWORD
       # flags
-      IS_TESTNET  = 3
-      IS_PRIVATE  = 4
-      JSON        = 5
-      UNCONFIRMED = 6
+      IS_TESTNET
+      IS_PRIVATE
+      JSON
+      CONFIRMATION
       # for node setting up
-      BIND_HOST     =  7
-      BIND_PORT     =  8
-      PUBLIC_URL    =  9
-      DATABASE_PATH = 10
+      BIND_HOST
+      BIND_PORT
+      PUBLIC_URL
+      DATABASE_PATH
       # for transaction
-      ADDRESS        = 12
-      AMOUNT         = 13
-      ACTION         = 14
-      MESSAGE        = 15
-      BLOCK_INDEX    = 16
-      TRANSACTION_ID = 17
-      FEE            = 18
+      ADDRESS
+      AMOUNT
+      ACTION
+      MESSAGE
+      BLOCK_INDEX
+      TRANSACTION_ID
+      FEE
       # for blockchain
-      HEADER = 19
+      HEADER
       # for miners
-      THREADS = 20
+      PROCESSES
       # for wallet
-      ENCRYPTED = 21
+      ENCRYPTED
       # for scars
-      PRICE  = 22
-      DOMAIN = 23
+      PRICE
+      DOMAIN
       # for tokens
-      TOKEN = 24
+      TOKEN
       # for config
-      CONFIG_NAME = 25
+      CONFIG_NAME
       # for node
-      NODE_ID = 26
+      NODE_ID
     end
 
-    def create_option_parser(actives : Array(Int32)) : OptionParser
+    def create_option_parser(actives : Array(Options)) : OptionParser
       OptionParser.new do |parser|
         parser.on("-n NODE", "--node=NODE", "a url of the connect node") { |connect_node|
           @connect_node = connect_node
@@ -131,9 +131,9 @@ module ::Sushi::Interface
           @json = true
         } if is_active?(actives, Options::JSON)
 
-        parser.on("-u", "--unconfirmed", "showing unconfirmed amount") {
-          @unconfirmed = true
-        } if is_active?(actives, Options::UNCONFIRMED)
+        parser.on("--confirmation=CONFIRMATION", "set the length for the confirmation") { |confirmation|
+          @confirmation = confirmation.to_i
+        } if is_active?(actives, Options::CONFIRMATION)
 
         parser.on("-h BIND_HOST", "--bind_host=BIND_HOST", "binding host; '0.0.0.0' by default") { |bind_host|
           raise "invalid host: #{bind_host}" unless bind_host.count('.') == 3
@@ -192,9 +192,9 @@ module ::Sushi::Interface
           @header = true
         } if is_active?(actives, Options::HEADER)
 
-        parser.on("--threads=THREADS", "# of the work threads (default is 1)") { |threads|
-          @threads = threads.to_i
-        } if is_active?(actives, Options::THREADS)
+        parser.on("--process=PROCESSES", "# of the work processes (default is 1)") { |processes|
+          @processes = processes.to_i
+        } if is_active?(actives, Options::PROCESSES)
 
         parser.on("-e", "--encrypted", "set this flag when creating a wallet to create an encrypted wallet") {
           @encrypted = true
@@ -224,7 +224,7 @@ module ::Sushi::Interface
       end
     end
 
-    def is_active?(actives : Array(Int32), option : Int32) : Bool
+    def is_active?(actives : Array(Options), option : Options) : Bool
       actives.includes?(option)
     end
 
@@ -256,8 +256,8 @@ module ::Sushi::Interface
       @json
     end
 
-    def __unconfirmed : Bool
-      @unconfirmed
+    def __confirmation : Int32
+      @confirmation
     end
 
     def __bind_host : String
@@ -312,10 +312,10 @@ module ::Sushi::Interface
       @header
     end
 
-    def __threads : Int32
-      return @threads if @threads != 1
-      return cm.get_i32("threads", @config_name).not_nil! if cm.get_i32("threads", @config_name)
-      @threads
+    def __processes : Int32
+      return @processes if @processes != 1
+      return cm.get_i32("processes", @config_name).not_nil! if cm.get_i32("processes", @config_name)
+      @processes
     end
 
     def __encrypted : Bool

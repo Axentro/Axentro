@@ -1,7 +1,8 @@
-module Views.ApiDomainUnconfirmedToken exposing (..)
+module Views.ApiScarsDomain exposing (..)
 
 import Html.Events exposing (onClick, onInput)
 import Json.PrettyPrint
+import Views.ApiAddressAmount exposing (confirmationQueryParams)
 import Views.TableHelper exposing (docTable)
 import Views.ApiLeftNav exposing (apiLeftNav)
 import Html exposing (..)
@@ -23,19 +24,19 @@ import Messages exposing (Method(GET), Msg(..), Page(..))
 import Views.ApiDocumentationHelper exposing (documentation)
 
 
-pageApiDomainUnconfirmedToken : Model -> List (Html Msg)
-pageApiDomainUnconfirmedToken model =
+pageApiScarsDomain : Model -> List (Html Msg)
+pageApiScarsDomain model =
     let
         description =
-            div [] [ Html.text "This retrieves amounts of unconfirmed tokens for the specified token for a domain as Json" ]
+            div [] [ Html.text "This retrieves the status of the scars domain as Json" ]
 
-        ex = """{"status":"success","result":{"confirmed":false,"pairs":[{"token":"EAGLE","amount":100000}]}}"""
+        ex = """{"status":"success","result":{"confirmation":1,"resolved":false,"domain":{"domain_name":"sushichain.sc","address":"","status":-1,"price":0}}}"""
     in
         [ br [] []
         , Grid.row []
-            [ apiLeftNav ApiDomainUnconfirmedToken
+            [ apiLeftNav ApiScarsDomain
             , Grid.col [ Col.md9 ]
-                [ documentation ApiDomainUnconfirmedToken model.apiUrlD5 Nothing model.apiResponse "Domain Unconfirmed Token" description "GET" "api/v1/domain/{:domain}/unconfirmed/{:token}" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/unconfirmed/{:token}" ex model.error
+                [ documentation ApiScarsDomain model.apiUrlS2 Nothing model.apiResponse "Address Status" description "GET" "api/v1/scars/{:domain}" (Just confirmationQueryParams) Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/scars/{:domain}" ex model.error
                 ]
             ]
         ]

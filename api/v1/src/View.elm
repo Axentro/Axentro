@@ -13,26 +13,21 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Messages exposing (Msg(..), Page(..))
 import Models exposing (Model)
-import Views.ApiAddressConfirmed exposing (pageApiAddressConfirmed)
-import Views.ApiAddressConfirmedToken exposing (pageApiAddressConfirmedToken)
+import Views.ApiAddressAmount exposing (pageApiAddressAmount)
+import Views.ApiAddressAmountToken exposing (pageApiAddressAmountToken)
 import Views.ApiAddressTransactions exposing (pageApiAddressTransactions)
-import Views.ApiAddressUnconfirmed exposing (pageApiAddressUnconfirmed)
-import Views.ApiAddressUnconfirmedToken exposing (pageApiAddressUnconfirmedToken)
 import Views.ApiBlock exposing (pageApiBlock)
-import Views.ApiDomainConfirmed exposing (pageApiDomainConfirmed)
-import Views.ApiDomainConfirmedToken exposing (pageApiDomainConfirmedToken)
+import Views.ApiDomainAmount exposing (pageApiDomainAmount)
+import Views.ApiDomainAmountToken exposing (pageApiDomainAmountToken)
 import Views.ApiDomainTransactions exposing (pageApiDomainTransactions)
-import Views.ApiDomainUnconfirmed exposing (pageApiDomainUnconfirmed)
-import Views.ApiDomainUnconfirmedToken exposing (pageApiDomainUnconfirmedToken)
 import Views.ApiOverview exposing (pageApiOverview)
 import Views.ApiBlockChain exposing (pageApiBlockChain)
 import Views.ApiBlockChainHeader exposing (pageApiBlockChainHeader)
 import Views.ApiBlockChainSize exposing (pageApiBlockChainSize)
 import Views.ApiBlockHeader exposing (pageApiBlockHeader)
 import Views.ApiBlockTransactions exposing (pageApiBlockTransactions)
-import Views.ApiScarsConfirmed exposing (pageApiScarsConfirmed)
+import Views.ApiScarsDomain exposing (pageApiScarsDomain)
 import Views.ApiScarsSales exposing (pageApiScarsSales)
-import Views.ApiScarsUnconfirmed exposing (pageApiScarsUnconfirmed)
 import Views.ApiTokenList exposing (pageApiTokenList)
 import Views.ApiTransaction exposing (pageApiTransaction)
 import Views.ApiTransactionBlock exposing (pageApiTransactionBlock)
@@ -118,41 +113,26 @@ mainContent model =
             ApiAddressTransactions ->
                 pageApiAddressTransactions model
 
-            ApiAddressConfirmed ->
-                pageApiAddressConfirmed model
+            ApiAddressAmount ->
+                pageApiAddressAmount model
 
-            ApiAddressConfirmedToken ->
-                pageApiAddressConfirmedToken model
-
-            ApiAddressUnconfirmed ->
-                pageApiAddressUnconfirmed model
-
-            ApiAddressUnconfirmedToken ->
-                pageApiAddressUnconfirmedToken model
+            ApiAddressAmountToken ->
+                pageApiAddressAmountToken model
 
             ApiDomainTransactions ->
                 pageApiDomainTransactions model
 
-            ApiDomainConfirmed ->
-                pageApiDomainConfirmed model
+            ApiDomainAmount ->
+                pageApiDomainAmount model
 
-            ApiDomainConfirmedToken ->
-                pageApiDomainConfirmedToken model
-
-            ApiDomainUnconfirmed ->
-                pageApiDomainUnconfirmed model
-
-            ApiDomainUnconfirmedToken ->
-                pageApiDomainUnconfirmedToken model
+            ApiDomainAmountToken ->
+                pageApiDomainAmountToken model
 
             ApiScarsSales ->
                 pageApiScarsSales model
 
-            ApiScarsConfirmed ->
-                pageApiScarsConfirmed model
-
-            ApiScarsUnconfirmed ->
-                pageApiScarsUnconfirmed model
+            ApiScarsDomain ->
+                pageApiScarsDomain model
 
             ApiTokenList ->
                 pageApiTokenList model
@@ -164,7 +144,7 @@ mainContent model =
 pageNotFound : List (Html Msg)
 pageNotFound =
     [ h1 [] [ text "Not found" ]
-    , text "SOrry couldn't find that page"
+    , text "Sorry couldn't find that page"
     ]
 
 

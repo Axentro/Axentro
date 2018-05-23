@@ -29,13 +29,13 @@ pageApiTransactionCreate model =
         description =
             div [] [ Html.text "This retrieves the transaction specified by the transaction id as Json" ]
 
-        ex = """{"status":"success","result":{"id":"da2d2ef81e1ca3f4e1fee7ba06bcb93860349d67d93e066554e17b3fc1c4b5bc","action":"head","senders":[],"recipients":[{"address":"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5","amount":2500},{"address":"VDAxNmM1OGVkNmYyNzI2NzcyYjYzODRmMzJmMDkzODhjMTczNWI0NDFjZGM5ZTIz","amount":7500}],"message":"0","token":"SHARI","prev_hash":"0","sign_r":"0","sign_s":"0"}}"""
+        ex = """{"status":"success","result":{"id":"da2d2ef81e1ca3f4e1fee7ba06bcb93860349d67d93e066554e17b3fc1c4b5bc","action":"head","senders":[],"recipients":[{"address":"VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5","amount":2500},{"address":"VDAxNmM1OGVkNmYyNzI2NzcyYjYzODRmMzJmMDkzODhjMTczNWI0NDFjZGM5ZTIz","amount":7500}],"message":"0","token":"SHARI","prev_hash":"0"}}"""
     in
         [ br [] []
         , Grid.row []
             [ apiLeftNav ApiTransactionCreate
             , Grid.col [ Col.md9 ]
-                [ documentation ApiTransactionCreate model.apiUrlT7 (Just model.apiBody) model.apiResponse "Transaction" description "POST" "api/v1/transaction" (Just requestDescription) Nothing """curl -X POST -H "Content-Type: application/json" -d '{"transaction": {"id":"9581ab8ae3c121cdec9d57613006bae9014a28fb87de2c8c6348adac485d2d4e","action":"send","senders":[{"address":"VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj","public_key":"48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242","amount":5000,"fee":1}],"recipients":[{"address":"VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx","amount":5000}],"message":"","token":"WOOP","prev_hash":"0","sign_r":"0","sign_s":"0"}}' http://testnet.sushichain.io:3000/api/v1/transaction""" ex model.error
+                [ documentation ApiTransactionCreate model.apiUrlT7 (Just model.apiBody) model.apiResponse "Transaction" description "POST" "api/v1/transaction" (Just requestDescription) Nothing """curl -X POST -H "Content-Type: application/json" -d '{"transaction": {"id":"9581ab8ae3c121cdec9d57613006bae9014a28fb87de2c8c6348adac485d2d4e","action":"send","senders":[{"address":"VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj","public_key":"48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242","amount":5000,"fee":1,"sign_r":"0","sign_s":"0"}],"recipients":[{"address":"VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx","amount":5000}],"message":"","token":"WOOP","prev_hash":"0"}}' http://testnet.sushichain.io:3000/api/v1/transaction""" ex model.error
                 ]
             ]
         ]
@@ -65,7 +65,7 @@ requestDescription =
     , hr [] []
     , Html.h6 [] [ Html.text "Senders"]
     , p [] [ text "This is information about where a payment or action originates - e.g. the address from which to send tokens from. It's made up of an address, amount, fee and public key. It's a list of senders but generally there is only one"]
-    , Alert.simpleLight [] [ text """ {"senders": [{"address": "the-address", "amount":1000, "fee":1, "public_key":"the-public-key"}] ...}""" ]
+    , Alert.simpleLight [] [ text """ {"senders": [{"address": "the-address", "amount":1000, "fee":1, "public_key":"the-public-key", "sign_r":"0", "sign_s":"0"}] ...}""" ]
     , hr [] []
     , Html.h6 [] [ Html.text "Recipients"]
     , p [] [ text "This is information about when a payment of action is going - e.g. the destination address when sending tokens. It's made up of an address and amount. It's a list of recipients but generally there is only one" ]
@@ -83,8 +83,8 @@ requestDescription =
     , p [] [ text "The response will contain the prev hash field which is the hash of the previous transaction - required to prove the authenticity of the transaction"]
     , Alert.simpleLight [] [ text """ {"prev_hash": "hash-of-prev-transaction" ...}""" ]
     , hr [] []
-    , Html.h6 [] [ Html.text "Signing"]
-    , p [] [ text "To create a transaction that will be accepted by the node you have to sign it with your private key. A typical usage pattern is to first create an unsigned transaction using the API which will return the original transaction but with an Id and prev hash and then use this to create a signed transaction and send it via this API call. See the help with signing page on the wiki." ]
+    , Html.h6 [] [ Html.text "Signing a Sender"]
+    , p [] [ text "To create a transaction that will be accepted by the node you have to sign it with your private key (signing happens inside Senders). A typical usage pattern is to first create an unsigned transaction using the API which will return the original transaction but with an Id and prev hash and then use this to create a signed transaction and send it via this API call. See the help with signing page on the wiki." ]
     , Alert.simpleLight [] [ text """ {"sign_r": "some-signing-r", "sign_s":"some-signing-s" ...}""" ]
     , hr [] []
    ]

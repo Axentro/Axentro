@@ -2,6 +2,7 @@ module Views.ApiDomainTransactions exposing (..)
 
 import Html.Events exposing (onClick, onInput)
 import Json.PrettyPrint
+import Views.ApiAddressAmount exposing (confirmationQueryParams)
 import Views.TableHelper exposing (docTable)
 import Views.ApiLeftNav exposing (apiLeftNav)
 import Html exposing (..)
@@ -44,9 +45,7 @@ pageApiDomainTransactions model =
                       ],
                       "message": "0",
                       "token": "SHARI",
-                      "prev_hash": "0",
-                      "sign_r": "0",
-                      "sign_s": "0"
+                      "prev_hash": "0"
                     },
                     {
                       "id": "a5ad8f71befd4713700b9a0b9402bb0370bd68b32dbf5d54afb23ada74e47483",
@@ -60,9 +59,7 @@ pageApiDomainTransactions model =
                       ],
                       "message": "0",
                       "token": "SHARI",
-                      "prev_hash": "0",
-                      "sign_r": "0",
-                      "sign_s": "0"
+                      "prev_hash": "0"
                     }
                   ]
                 }"""
@@ -71,7 +68,7 @@ pageApiDomainTransactions model =
         , Grid.row []
             [ apiLeftNav ApiDomainTransactions
             , Grid.col [ Col.md9 ]
-                [ documentation ApiDomainTransactions model.apiUrlD1 Nothing model.apiResponse "Domain Transactions" description "GET" "api/v1/domain/{:domain}/transactions" Nothing Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/transactions" ex model.error
+                [ documentation ApiDomainTransactions model.apiUrlD1 Nothing model.apiResponse "Domain Transactions" description "GET" "api/v1/domain/{:domain}/transactions" (Just confirmationQueryParams) Nothing "curl -X GET -H 'Content-Type: application/json' http://testnet.sushichain.io:3000/api/v1/domain/{:domain}/transactions" ex model.error
                 ]
             ]
         ]
