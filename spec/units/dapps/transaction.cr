@@ -110,6 +110,7 @@ describe TransactionCreator do
               "0",           # message
               TOKEN_DEFAULT, # token
               "0",           # prev_hash
+              0_i64,         # timestamp
               1              # scaled
             )
 

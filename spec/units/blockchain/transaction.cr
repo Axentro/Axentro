@@ -35,6 +35,7 @@ describe Transaction do
       "0",           # message
       TOKEN_DEFAULT, # token
       "0",           # prev_hash
+      0_i64,         # timestamp
       1              # scaled
     )
 
@@ -82,6 +83,7 @@ describe Transaction do
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
+          0_i64,         # timestamp
           1              # scaled
         )
 
@@ -118,6 +120,7 @@ describe Transaction do
           ("exceeds"*100), # message
           TOKEN_DEFAULT,   # token
           "0",             # prev_hash
+          0_i64,           # timestamp
           1                # scaled
         )
 
@@ -147,6 +150,7 @@ describe Transaction do
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
+          0_i64,         # timestamp
           1              # scaled
         )
 
@@ -172,6 +176,7 @@ describe Transaction do
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
+          0_i64,         # timestamp
           1              # scaled
         )
 
@@ -212,6 +217,7 @@ describe Transaction do
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
+          0_i64,         # timestamp
           1              # scaled
         )
 
@@ -231,6 +237,7 @@ describe Transaction do
           "1",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
+          0_i64,         # timestamp
           1              # scaled
         )
 
@@ -251,6 +258,7 @@ describe Transaction do
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
+          0_i64,         # timestamp
           1              # scaled
         )
 
@@ -271,6 +279,7 @@ describe Transaction do
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
+          0_i64,         # timestamp
           1              # scaled
         )
 
@@ -293,6 +302,7 @@ describe Transaction do
           "0",           # message
           TOKEN_DEFAULT, # token
           "1",           # prev_hash
+          0_i64,         # timestamp
           1              # scaled
         )
 
@@ -314,6 +324,7 @@ describe Transaction do
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
+          0_i64,         # timestamp
           1              # scaled
         )
 
@@ -335,6 +346,7 @@ describe Transaction do
       "0",           # message
       TOKEN_DEFAULT, # token
       "0",           # prev_hash
+      0_i64,         # timestamp
       1              # scaled
     )
 
@@ -356,6 +368,7 @@ describe Transaction do
       "0",           # message
       TOKEN_DEFAULT, # token
       "0",           # prev_hash
+      0_i64,         # timestamp
       1              # scaled
     )
 
@@ -383,6 +396,7 @@ describe Transaction do
       "0",           # message
       TOKEN_DEFAULT, # token
       "0",           # prev_hash
+      0_i64,         # timestamp
       1              # scaled
     )
 
@@ -402,6 +416,7 @@ describe Transaction do
       "0",           # message
       TOKEN_DEFAULT, # token
       "0",           # prev_hash
+      0_i64,         # timestamp
       1              # scaled
     )
 
@@ -421,6 +436,7 @@ describe Transaction do
       "0",           # message
       TOKEN_DEFAULT, # token
       "0",           # prev_hash
+      0_i64,         # timestamp
       1              # scaled
     )
 
