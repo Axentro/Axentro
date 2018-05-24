@@ -43,6 +43,7 @@ module ::Sushi::Core::Consensus
 
     buffer.hexstring[0, difficulty] == "0" * difficulty
   end
+
   #
   # todo
   # rename
@@ -54,20 +55,20 @@ module ::Sushi::Core::Consensus
   # def difficulty_at(block_index : Int64) : Int32
   #   return 3 if ENV.has_key?("SC_E2E")   # for e2e test
   #   return 3 if ENV.has_key?("SC_DEBUG") # for debugging
-  #  
+  #
   #   # for tests
   #   return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
-  #  
+  #
   #   4
   # end
-  #  
+  #
   # def miner_difficulty_at(block_index : Int64) : Int32
   #   return 2 if ENV.has_key?("SC_E2E")   # for e2e test
   #   return 2 if ENV.has_key?("SC_DEBUG") # for debugging
-  #  
+  #
   #   # for tests
   #   return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
-  #  
+  #
   #   3
   # end
 

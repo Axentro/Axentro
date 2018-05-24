@@ -302,6 +302,7 @@ module ::E2E
       @exit_code = -1
     ensure
       step benchmark_result, 0, "show benchmark result"
+      sleep 100000
       step kill_nodes, 0, "kill nodes"
       step clean_db, 2, "clean database"
       step clean_wallets, 2, "clean wallets"
