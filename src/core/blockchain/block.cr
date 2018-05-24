@@ -21,6 +21,7 @@ module ::Sushi::Core
       prev_hash:        String,
       merkle_tree_root: String,
       timestamp:        Int64,
+      difficulty:       Int32,
     })
 
     def initialize(
@@ -28,7 +29,8 @@ module ::Sushi::Core
       @transactions : Array(Transaction),
       @nonce : UInt64,
       @prev_hash : String,
-      @timestamp : Int64
+      @timestamp : Int64,
+      @difficulty : Int32
     )
       @merkle_tree_root = calcluate_merkle_tree_root
     end
@@ -45,6 +47,7 @@ module ::Sushi::Core
         prev_hash:        @prev_hash,
         merkle_tree_root: @merkle_tree_root,
         timestamp:        @timestamp,
+        difficulty:       @difficulty,
       }
     end
 
