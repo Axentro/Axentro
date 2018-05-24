@@ -487,6 +487,51 @@ describe RESTController do
     end
   end
 
+  describe "__v1_tokens" do
+    it "should return a list of existing tokens" do
+      with_factory do |block_factory, transaction_factory|
+        token = "KINGS"
+        block_factory.addBlock([transaction_factory.make_create_token(token, 10000_i64)]).addBlocks(3)
+        exec_rest_api(block_factory.rest.__v1_tokens(context("/api/v1/tokens"), no_params)) do |result|
+          result["status"].to_s.should eq("success")
+          result["result"].to_s.should eq("[\"SUSHI\", \"KINGS\"]")
+        end
+      end
+    end
+  end
+
+  describe "__v1_node" do
+    it "should return info about the connecting node" do
+      with_factory do |block_factory, transaction_factory|
+        exec_rest_api(block_factory.rest.__v1_node(context("/api/v1/node"), no_params)) do |result|
+          result["status"].to_s.should eq("success")
+          NodeResult.from_json(result["result"].to_json)
+        end
+      end
+    end
+  end
+
+  describe "__v1_nodes" do
+    it "should return info about the connecting node" do
+      with_factory do |block_factory, transaction_factory|
+        exec_rest_api(block_factory.rest.__v1_nodes(context("/api/v1/nodes"), no_params)) do |result|
+          result["status"].to_s.should eq("success")
+          NodesResult.from_json(result["result"].to_json)
+        end
+      end
+    end
+  end
+
+  describe "__v1_node_id" do
+    it "should return a message when node is not connected to any other nodes" do
+      with_factory do |block_factory, transaction_factory|
+        exec_rest_api(block_factory.rest.__v1_node_id(context("/api/v1/node/node_id"), {id: "node_id"})) do |result|
+          result["status"].to_s.should eq("error")
+          result["reason"].to_s.should eq("the node node_id not found. (currently only search for the nodes which are directly connected.)")
+        end
+      end
+    end
+  end
 
   STDERR.puts "< Node::RESTController"
 end
@@ -497,6 +542,25 @@ struct DomainResult
     address: String,
     status: Int64,
     price: String
+  })
+end
+
+struct NodeResult
+  JSON.mapping({
+    id: String,
+    host: String,
+    port: Int64,
+    ssl: Bool,
+    type: String,
+    is_private: Bool
+  })
+end
+
+struct NodesResult
+  JSON.mapping({
+    successor_list: Array(String),
+    predecessor: Nil,
+    private_nodes: Array(String)
   })
 end
 
