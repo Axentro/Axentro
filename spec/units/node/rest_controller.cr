@@ -448,7 +448,56 @@ describe RESTController do
     end
   end
 
+  describe "__v1_scars_sales" do
+    it "should return the domains for sale" do
+      with_factory do |block_factory, transaction_factory|
+        domain = "sushi.sc"
+        block_factory.addBlock([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).addBlocks(2).addBlock([transaction_factory.make_sell_domain(domain, 1_i64)]).addBlocks(3)
+        exec_rest_api(block_factory.rest.__v1_scars_sales(context("/api/v1/scars/sales"), no_params)) do |result|
+          result["status"].to_s.should eq("success")
+          result = Array(DomainResult).from_json(result["result"].to_json).first
+          result.domain_name.should eq(domain)
+          result.status.should eq(1_i64)
+          result.price.should eq("0.00000001")
+        end
+      end
+    end
+  end
+
+  describe "__v1_scars" do
+    it "should return true when domain is resolved" do
+      with_factory do |block_factory, transaction_factory|
+        domain = "sushi.sc"
+        block_factory.addBlock([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).addBlocks(2)
+        exec_rest_api(block_factory.rest.__v1_scars(context("/api/v1/scars/#{domain}"), {domain: domain})) do |result|
+          result["status"].to_s.should eq("success")
+          result["result"]["resolved"].to_s.should eq("true")
+        end
+      end
+    end
+    it "should return false when domain is not resolved" do
+      with_factory do |block_factory, transaction_factory|
+        domain = "sushi.sc"
+        block_factory.addBlocks(2)
+        exec_rest_api(block_factory.rest.__v1_scars(context("/api/v1/scars/#{domain}"), {domain: domain})) do |result|
+          result["status"].to_s.should eq("success")
+          result["result"]["resolved"].to_s.should eq("false")
+        end
+      end
+    end
+  end
+
+
   STDERR.puts "< Node::RESTController"
+end
+
+struct DomainResult
+  JSON.mapping({
+    domain_name: String,
+    address: String,
+    status: Int64,
+    price: String
+  })
 end
 
 def context(url : String)
