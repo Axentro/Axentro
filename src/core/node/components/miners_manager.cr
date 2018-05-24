@@ -68,7 +68,7 @@ module ::Sushi::Core::NodeComponents
       send(socket, M_TYPE_MINER_HANDSHAKE_ACCEPTED, {
         version:    Core::CORE_VERSION,
         block:      @blockchain.latest_block,
-        difficulty: miner_difficulty_at(@blockchain.latest_index),
+        difficulty: @blockchain.block_difficulty_miner,
       })
     end
 
@@ -83,12 +83,12 @@ module ::Sushi::Core::NodeComponents
       if miner = find?(socket)
         if @miners.map { |m| m[:context][:nonces] }.flatten.includes?(nonce)
           warning "nonce #{nonce} has already been discoverd"
-        elsif !@blockchain.latest_block.valid_nonce?(nonce, miner_difficulty_at(@blockchain.latest_block.index))
+        elsif !@blockchain.latest_block.valid_nonce?(nonce, @blockchain.block_difficulty_miner)
           warning "received nonce is invalid, try to update latest block"
 
           send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
             block:      @blockchain.latest_block,
-            difficulty: miner_difficulty_at(@blockchain.latest_index),
+            difficulty: @blockchain.block_difficulty_miner,
           })
         else
           info "miner #{miner[:context][:address][0..7]} found nonce (nonces: #{miner[:context][:nonces].size})"
@@ -112,7 +112,7 @@ module ::Sushi::Core::NodeComponents
       @miners.each do |miner|
         send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
           block:      @blockchain.latest_block,
-          difficulty: miner_difficulty_at(@blockchain.latest_index),
+          difficulty: @blockchain.block_difficulty_miner,
         })
       end
     end

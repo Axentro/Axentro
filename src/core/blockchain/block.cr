@@ -72,9 +72,13 @@ module ::Sushi::Core
       ripemd160(current_hashes[0])
     end
 
-    def valid_nonce?(nonce : UInt64, difficulty : Int32? = nil) : Bool
+    def valid_nonce?(nonce : UInt64, difficulty : Int32 = self.difficulty)
       valid?(self.index, self.to_hash, nonce, difficulty)
     end
+
+    # def valid_nonce?(nonce : UInt64) : Bool
+    #   valid?(self.index, self.to_hash, nonce, self.difficulty)
+    # end
 
     def valid_as_latest?(blockchain : Blockchain, skip_transaction_validation : Bool = false) : Bool
       is_genesis = (@index == 0)
