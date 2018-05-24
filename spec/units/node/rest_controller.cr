@@ -533,39 +533,75 @@ describe RESTController do
     end
   end
 
+  describe "__v1_transaction" do
+    it "should create a signed transaction" do
+      with_factory do |block_factory, transaction_factory|
+        transaction = {"transaction" => transaction_factory.make_send(100_i64)}.to_json
+        body = IO::Memory.new(transaction)
+        exec_rest_api(block_factory.rest.__v1_transaction(context("/api/v1/node/node_id", "POST", body), no_params)) do |result|
+          result["status"].to_s.should eq("success")
+          Transaction.from_json(result["result"].to_json)
+        end
+      end
+    end
+  end
+
+  describe "__v1_transaction_unsigned" do
+    it "should create a unsigned transaction" do
+      with_factory do |block_factory, transaction_factory|
+        transaction_id = Transaction.create_id
+        unsigned_transaction = TransactionDecimal.new(
+          transaction_id,
+          "send", # action
+          [a_decimal_sender(transaction_factory.sender_wallet, "1")],
+          [a_decimal_recipient(transaction_factory.recipient_wallet, "1")],
+          "0",           # message
+          TOKEN_DEFAULT, # token
+          "0",           # prev_hash
+          0              # scaled
+        )
+        body = IO::Memory.new(unsigned_transaction.to_json)
+        exec_rest_api(block_factory.rest.__v1_transaction_unsigned(context("/api/v1/node/node_id", "POST", body), no_params)) do |result|
+          result["status"].to_s.should eq("success")
+          Transaction.from_json(result["result"].to_json)
+        end
+      end
+    end
+  end
+
   STDERR.puts "< Node::RESTController"
 end
 
 struct DomainResult
   JSON.mapping({
     domain_name: String,
-    address: String,
-    status: Int64,
-    price: String
+    address:     String,
+    status:      Int64,
+    price:       String,
   })
 end
 
 struct NodeResult
   JSON.mapping({
-    id: String,
-    host: String,
-    port: Int64,
-    ssl: Bool,
-    type: String,
-    is_private: Bool
+    id:         String,
+    host:       String,
+    port:       Int64,
+    ssl:        Bool,
+    type:       String,
+    is_private: Bool,
   })
 end
 
 struct NodesResult
   JSON.mapping({
     successor_list: Array(String),
-    predecessor: Nil,
-    private_nodes: Array(String)
+    predecessor:    Nil,
+    private_nodes:  Array(String),
   })
 end
 
-def context(url : String)
-  MockContext.new("GET", url).unsafe_as(HTTP::Server::Context)
+def context(url : String, method : String = "GET", body : IO = IO::Memory.new)
+  MockContext.new(method, url, body).unsafe_as(HTTP::Server::Context)
 end
 
 def no_params

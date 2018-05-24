@@ -14,8 +14,8 @@ module ::Units::Utils::NodeHelper
   include Sushi::Core
 
   class MockRequest < HTTP::Request
-    def initialize(method : String, url : String = "/rpc")
-      super(method, url, HTTP::Headers.new, IO::Memory.new)
+    def initialize(method : String, url : String = "/rpc", body : IO = IO::Memory.new, headers : HTTP::Headers = HTTP::Headers.new)
+      super(method, url, headers, body)
     end
   end
 
@@ -32,8 +32,8 @@ module ::Units::Utils::NodeHelper
   end
 
   class MockContext < HTTP::Server::Context
-    def initialize(method : String = "POST", url : String = "/rpc")
-      @request = MockRequest.new(method, url).unsafe_as(HTTP::Request)
+    def initialize(method : String = "POST", url : String = "/rpc", body : IO = IO::Memory.new)
+      @request = MockRequest.new(method, url, body).unsafe_as(HTTP::Request)
       @request.path = url
       @response = MockResponse.new.unsafe_as(HTTP::Server::Response)
     end
@@ -47,7 +47,6 @@ module ::Units::Utils::NodeHelper
   end
 
   def exec_rest_api(res, status_code = 200, &block)
-
     res.response.output.flush
     res.response.output.close
     output = res.response.output
