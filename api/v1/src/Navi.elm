@@ -54,4 +54,8 @@ routeParser =
         , UrlParser.map ApiScarsDomain (UrlParser.s "api-scars-domain")
 
         , UrlParser.map ApiTokenList (UrlParser.s "api-token-list")
+
+        , UrlParser.map ApiNode (UrlParser.s "api-node")
+        , UrlParser.map ApiNodeId (UrlParser.s "api-node-id")
+        , UrlParser.map ApiNodes (UrlParser.s "api-nodes")
         ]

@@ -17502,6 +17502,9 @@ var _user$project$Messages$NavMsg = function (a) {
 var _user$project$Messages$UrlChange = function (a) {
 	return {ctor: 'UrlChange', _0: a};
 };
+var _user$project$Messages$ApiNodes = {ctor: 'ApiNodes'};
+var _user$project$Messages$ApiNodeId = {ctor: 'ApiNodeId'};
+var _user$project$Messages$ApiNode = {ctor: 'ApiNode'};
 var _user$project$Messages$ApiTokenList = {ctor: 'ApiTokenList'};
 var _user$project$Messages$ApiScarsDomain = {ctor: 'ApiScarsDomain'};
 var _user$project$Messages$ApiScarsSales = {ctor: 'ApiScarsSales'};
@@ -17555,7 +17558,13 @@ var _user$project$Models$Model = function (a) {
 																								return function (y) {
 																									return function (z) {
 																										return function (_1) {
-																											return {page: a, navState: b, apiResponse: c, error: d, apiUrlB1: e, apiUrlB2: f, apiUrlB3: g, apiUrlB4: h, apiUrlB5: i, apiUrlB6: j, apiUrlT1: k, apiUrlT2: l, apiUrlT3: m, apiUrlT4: n, apiUrlT5: o, apiUrlT6: p, apiUrlT7: q, apiUrlA1: r, apiUrlA2: s, apiUrlA3: t, apiUrlD1: u, apiUrlD2: v, apiUrlD3: w, apiUrlS1: x, apiUrlS2: y, apiBody: z, apiUrlTK1: _1};
+																											return function (_2) {
+																												return function (_3) {
+																													return function (_4) {
+																														return {page: a, navState: b, apiResponse: c, error: d, apiUrlB1: e, apiUrlB2: f, apiUrlB3: g, apiUrlB4: h, apiUrlB5: i, apiUrlB6: j, apiUrlT1: k, apiUrlT2: l, apiUrlT3: m, apiUrlT4: n, apiUrlT5: o, apiUrlT6: p, apiUrlT7: q, apiUrlA1: r, apiUrlA2: s, apiUrlA3: t, apiUrlD1: u, apiUrlD2: v, apiUrlD3: w, apiUrlS1: x, apiUrlS2: y, apiUrlN1: z, apiUrlN2: _1, apiUrlN3: _2, apiBody: _3, apiUrlTK1: _4};
+																													};
+																												};
+																											};
 																										};
 																									};
 																								};
@@ -17732,7 +17741,28 @@ var _user$project$Navi$routeParser = _evancz$url_parser$UrlParser$oneOf(
 																											_evancz$url_parser$UrlParser$map,
 																											_user$project$Messages$ApiTokenList,
 																											_evancz$url_parser$UrlParser$s('api-token-list')),
-																										_1: {ctor: '[]'}
+																										_1: {
+																											ctor: '::',
+																											_0: A2(
+																												_evancz$url_parser$UrlParser$map,
+																												_user$project$Messages$ApiNode,
+																												_evancz$url_parser$UrlParser$s('api-node')),
+																											_1: {
+																												ctor: '::',
+																												_0: A2(
+																													_evancz$url_parser$UrlParser$map,
+																													_user$project$Messages$ApiNodeId,
+																													_evancz$url_parser$UrlParser$s('api-node-id')),
+																												_1: {
+																													ctor: '::',
+																													_0: A2(
+																														_evancz$url_parser$UrlParser$map,
+																														_user$project$Messages$ApiNodes,
+																														_evancz$url_parser$UrlParser$s('api-nodes')),
+																													_1: {ctor: '[]'}
+																												}
+																											}
+																										}
 																									}
 																								}
 																							}
@@ -18030,6 +18060,30 @@ var _user$project$Update$update = F2(
 								{apiUrlTK1: _p6}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
+					case 'ApiNode':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlN1: _p6}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiNodeId':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlN2: _p6}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					case 'ApiNodes':
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{apiUrlN3: _p6}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
 					default:
 						return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 				}
@@ -18303,7 +18357,37 @@ var _user$project$Views_ApiLeftNav$apiLeftNav = function (page) {
 																																					_1: {
 																																						ctor: '::',
 																																						_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiTokenList, '#api-token-list', 'tokens/list', page),
-																																						_1: {ctor: '[]'}
+																																						_1: {
+																																							ctor: '::',
+																																							_0: A2(
+																																								_elm_lang$html$Html$hr,
+																																								{ctor: '[]'},
+																																								{ctor: '[]'}),
+																																							_1: {
+																																								ctor: '::',
+																																								_0: A2(
+																																									_elm_lang$html$Html$h5,
+																																									{ctor: '[]'},
+																																									{
+																																										ctor: '::',
+																																										_0: _elm_lang$html$Html$text('Node'),
+																																										_1: {ctor: '[]'}
+																																									}),
+																																								_1: {
+																																									ctor: '::',
+																																									_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiNode, '#api-node', 'node', page),
+																																									_1: {
+																																										ctor: '::',
+																																										_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiNodeId, '#api-node-id', 'node/id', page),
+																																										_1: {
+																																											ctor: '::',
+																																											_0: A4(_user$project$Views_ApiLeftNav$link, _user$project$Messages$ApiNodes, '#api-nodes', 'nodes', page),
+																																											_1: {ctor: '[]'}
+																																										}
+																																									}
+																																								}
+																																							}
+																																						}
 																																					}
 																																				}
 																																			}
@@ -19153,6 +19237,144 @@ var _user$project$Views_ApiDomainTransactions$pageApiDomainTransactions = functi
 	};
 };
 
+var _user$project$Views_ApiNode$pageApiNode = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"id\":\"5756a3ed2b062e2f471de4bcccf5128c\",\"host\":\"\",\"port\":-1,\"ssl\":false,\"type\":\"testnet\",\"is_private\":true}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('Show information about the current node'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_kingsleyh$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiNode),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_kingsleyh$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _kingsleyh$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiNode)(model.apiUrlN1)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Node')(description)('GET')('api/v1/node')(_elm_lang$core$Maybe$Nothing)(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/node')(ex)(model.error),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+
+var _user$project$Views_ApiNodeId$pageApiNodeId = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"id\":\"5756a3ed2b062e2f471de4bcccf5128c\",\"host\":\"\",\"port\":-1,\"ssl\":false,\"type\":\"testnet\",\"is_private\":true}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('Show information about the specified node id'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_kingsleyh$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiNodeId),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_kingsleyh$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _kingsleyh$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiNodeId)(model.apiUrlN2)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Node Id')(description)('GET')('api/v1/node/{:id}')(_elm_lang$core$Maybe$Nothing)(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/node/{:id}')(ex)(model.error),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+
+var _user$project$Views_ApiNodes$pageApiNodes = function (model) {
+	var ex = '{\"status\":\"success\",\"result\":{\"successor_list\":[],\"predecessor\":\"\",\"private_nodes\":[]}}';
+	var description = A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('Show information about the connecting nodes'),
+			_1: {ctor: '[]'}
+		});
+	return {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$br,
+			{ctor: '[]'},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_kingsleyh$elm_bootstrap$Bootstrap_Grid$row,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _user$project$Views_ApiLeftNav$apiLeftNav(_user$project$Messages$ApiNodes),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_kingsleyh$elm_bootstrap$Bootstrap_Grid$col,
+							{
+								ctor: '::',
+								_0: _kingsleyh$elm_bootstrap$Bootstrap_Grid_Col$md9,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _user$project$Views_ApiDocumentationHelper$documentation(_user$project$Messages$ApiNodes)(model.apiUrlN3)(_elm_lang$core$Maybe$Nothing)(model.apiResponse)('Nodes')(description)('GET')('api/v1/nodes')(_elm_lang$core$Maybe$Nothing)(_elm_lang$core$Maybe$Nothing)('curl -X GET -H \'Content-Type: application/json\' http://testnet.sushichain.io:3000/api/v1/nodes')(ex)(model.error),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	};
+};
+
 var _user$project$Views_ApiOverview$apiOverviewThead = function (options) {
 	return A2(
 		_kingsleyh$elm_bootstrap$Bootstrap_Table$thead,
@@ -19212,56 +19434,41 @@ var _user$project$Views_ApiOverview$apiOverviewTable = function (tableBody) {
 			tbody: tableBody
 		});
 };
-var _user$project$Views_ApiOverview$overviewTokensSection = {
+var _user$project$Views_ApiOverview$overviewNodeSection = {
 	ctor: '::',
 	_0: A2(
-		_elm_lang$html$Html$h3,
+		_elm_lang$html$Html$hr,
 		{ctor: '[]'},
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html$text('Tokens'),
-			_1: {ctor: '[]'}
-		}),
+		{ctor: '[]'}),
 	_1: {
 		ctor: '::',
-		_0: _user$project$Views_ApiOverview$apiOverviewTable(
-			A2(
-				_kingsleyh$elm_bootstrap$Bootstrap_Table$tbody,
-				{ctor: '[]'},
-				{
-					ctor: '::',
-					_0: A2(
-						_kingsleyh$elm_bootstrap$Bootstrap_Table$tr,
-						{ctor: '[]'},
-						{
-							ctor: '::',
-							_0: A2(
-								_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
-								{ctor: '[]'},
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html$text('GET'),
-									_1: {ctor: '[]'}
-								}),
-							_1: {
+		_0: A2(
+			_elm_lang$html$Html$h3,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text('Node'),
+				_1: {ctor: '[]'}
+			}),
+		_1: {
+			ctor: '::',
+			_0: _user$project$Views_ApiOverview$apiOverviewTable(
+				A2(
+					_kingsleyh$elm_bootstrap$Bootstrap_Table$tbody,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: A2(
+							_kingsleyh$elm_bootstrap$Bootstrap_Table$tr,
+							{ctor: '[]'},
+							{
 								ctor: '::',
 								_0: A2(
 									_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
 									{ctor: '[]'},
 									{
 										ctor: '::',
-										_0: A2(
-											_elm_lang$html$Html$a,
-											{
-												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$href('#api-token-list'),
-												_1: {ctor: '[]'}
-											},
-											{
-												ctor: '::',
-												_0: _elm_lang$html$Html$text('api/v1/tokens'),
-												_1: {ctor: '[]'}
-											}),
+										_0: _elm_lang$html$Html$text('GET'),
 										_1: {ctor: '[]'}
 									}),
 								_1: {
@@ -19271,16 +19478,218 @@ var _user$project$Views_ApiOverview$overviewTokensSection = {
 										{ctor: '[]'},
 										{
 											ctor: '::',
-											_0: _elm_lang$html$Html$text('list of tokens'),
+											_0: A2(
+												_elm_lang$html$Html$a,
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$href('#api-node'),
+													_1: {ctor: '[]'}
+												},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('api/v1/node'),
+													_1: {ctor: '[]'}
+												}),
 											_1: {ctor: '[]'}
 										}),
-									_1: {ctor: '[]'}
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('show current node information'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {ctor: '[]'}
+									}
 								}
+							}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_kingsleyh$elm_bootstrap$Bootstrap_Table$tr,
+								{ctor: '[]'},
+								{
+									ctor: '::',
+									_0: A2(
+										_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('GET'),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$a,
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html_Attributes$href('#api-node-id'),
+														_1: {ctor: '[]'}
+													},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text('api/v1/node/{:id}'),
+														_1: {ctor: '[]'}
+													}),
+												_1: {ctor: '[]'}
+											}),
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
+												{ctor: '[]'},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('show information for the specified node id'),
+													_1: {ctor: '[]'}
+												}),
+											_1: {ctor: '[]'}
+										}
+									}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_kingsleyh$elm_bootstrap$Bootstrap_Table$tr,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: A2(
+											_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('GET'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
+												{ctor: '[]'},
+												{
+													ctor: '::',
+													_0: A2(
+														_elm_lang$html$Html$a,
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html_Attributes$href('#api-nodes'),
+															_1: {ctor: '[]'}
+														},
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html$text('api/v1/nodes'),
+															_1: {ctor: '[]'}
+														}),
+													_1: {ctor: '[]'}
+												}),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
+													{ctor: '[]'},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text('show connected nodes information'),
+														_1: {ctor: '[]'}
+													}),
+												_1: {ctor: '[]'}
+											}
+										}
+									}),
+								_1: {ctor: '[]'}
 							}
-						}),
-					_1: {ctor: '[]'}
-				})),
-		_1: {ctor: '[]'}
+						}
+					})),
+			_1: {ctor: '[]'}
+		}
+	}
+};
+var _user$project$Views_ApiOverview$overviewTokensSection = {
+	ctor: '::',
+	_0: A2(
+		_elm_lang$html$Html$hr,
+		{ctor: '[]'},
+		{ctor: '[]'}),
+	_1: {
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$h3,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text('Tokens'),
+				_1: {ctor: '[]'}
+			}),
+		_1: {
+			ctor: '::',
+			_0: _user$project$Views_ApiOverview$apiOverviewTable(
+				A2(
+					_kingsleyh$elm_bootstrap$Bootstrap_Table$tbody,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: A2(
+							_kingsleyh$elm_bootstrap$Bootstrap_Table$tr,
+							{ctor: '[]'},
+							{
+								ctor: '::',
+								_0: A2(
+									_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('GET'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: A2(
+												_elm_lang$html$Html$a,
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$href('#api-token-list'),
+													_1: {ctor: '[]'}
+												},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('api/v1/tokens'),
+													_1: {ctor: '[]'}
+												}),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_kingsleyh$elm_bootstrap$Bootstrap_Table$td,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('list of tokens'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {ctor: '[]'}
+									}
+								}
+							}),
+						_1: {ctor: '[]'}
+					})),
+			_1: {ctor: '[]'}
+		}
 	}
 };
 var _user$project$Views_ApiOverview$overviewScarsSection = {
@@ -20645,7 +21054,21 @@ var _user$project$Views_ApiOverview$pageApiOverview = function (model) {
 														_user$project$Views_ApiOverview$overviewTokensSection),
 													_1: {ctor: '[]'}
 												}),
-											_1: {ctor: '[]'}
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_kingsleyh$elm_bootstrap$Bootstrap_Grid$row,
+													{ctor: '[]'},
+													{
+														ctor: '::',
+														_0: A2(
+															_kingsleyh$elm_bootstrap$Bootstrap_Grid$col,
+															{ctor: '[]'},
+															_user$project$Views_ApiOverview$overviewNodeSection),
+														_1: {ctor: '[]'}
+													}),
+												_1: {ctor: '[]'}
+											}
 										}
 									}
 								}
@@ -22159,6 +22582,12 @@ var _user$project$View$mainContent = function (model) {
 					return _user$project$Views_ApiScarsDomain$pageApiScarsDomain(model);
 				case 'ApiTokenList':
 					return _user$project$Views_ApiTokenList$pageApiTokenList(model);
+				case 'ApiNode':
+					return _user$project$Views_ApiNode$pageApiNode(model);
+				case 'ApiNodeId':
+					return _user$project$Views_ApiNodeId$pageApiNodeId(model);
+				case 'ApiNodes':
+					return _user$project$Views_ApiNodes$pageApiNodes(model);
 				default:
 					return _user$project$View$pageNotFound;
 			}
@@ -22255,6 +22684,9 @@ var _user$project$Main$init = function (location) {
 			apiUrlD3: A2(_elm_lang$core$Basics_ops['++'], prefix, 'domain/{:domain}/token/{:token}'),
 			apiUrlS1: A2(_elm_lang$core$Basics_ops['++'], prefix, 'scars/sales'),
 			apiUrlS2: A2(_elm_lang$core$Basics_ops['++'], prefix, 'scars/{:domain}'),
+			apiUrlN1: A2(_elm_lang$core$Basics_ops['++'], prefix, 'node'),
+			apiUrlN2: A2(_elm_lang$core$Basics_ops['++'], prefix, 'node/{:id}'),
+			apiUrlN3: A2(_elm_lang$core$Basics_ops['++'], prefix, 'nodes'),
 			apiBody: '',
 			apiUrlTK1: A2(_elm_lang$core$Basics_ops['++'], prefix, 'tokens')
 		});
