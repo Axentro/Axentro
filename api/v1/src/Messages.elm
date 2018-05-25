@@ -49,3 +49,7 @@ type Page
     | ApiScarsDomain
 
     | ApiTokenList
+
+    | ApiNode
+    | ApiNodeId
+    | ApiNodes

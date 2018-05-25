@@ -101,6 +101,16 @@ update msg model =
 
                 ApiTokenList ->
                     ( { model | apiUrlTK1 = url }, Cmd.none )
+
+                ApiNode ->
+                    ( { model | apiUrlN1 = url }, Cmd.none )
+
+                ApiNodeId ->
+                    ( { model | apiUrlN2 = url }, Cmd.none )
+
+                ApiNodes ->
+                    ( { model | apiUrlN3 = url }, Cmd.none )
+
                 _ ->
                     ( model, Cmd.none )
 

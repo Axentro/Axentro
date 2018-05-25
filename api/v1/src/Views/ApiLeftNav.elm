@@ -54,6 +54,11 @@ apiLeftNav page =
         , hr [] []
         , h5 [] [ text "Tokens" ]
         , link ApiTokenList "#api-token-list" "tokens/list" page
+        , hr [] []
+        , h5 [] [ text "Node" ]
+        , link ApiNode "#api-node" "node" page
+        , link ApiNodeId "#api-node-id" "node/id" page
+        , link ApiNodes "#api-nodes" "nodes" page
         ]
 
 

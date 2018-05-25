@@ -32,6 +32,7 @@ pageApiOverview model =
     , Grid.row [] [ Grid.col [] overviewDomainSection ]
     , Grid.row [] [ Grid.col [] overviewScarsSection ]
     , Grid.row [] [ Grid.col [] overviewTokensSection ]
+    , Grid.row [] [ Grid.col [] overviewNodeSection ]
     ]
 
 
@@ -200,7 +201,8 @@ overviewScarsSection =
 
 
 overviewTokensSection =
-    [ h3 [] [ text "Tokens" ]
+    [ hr [] []
+    , h3 [] [ text "Tokens" ]
     , apiOverviewTable
         (Table.tbody []
             [ Table.tr []
@@ -211,6 +213,32 @@ overviewTokensSection =
             ]
         )
     ]
+
+
+overviewNodeSection =
+    [ hr [] []
+    , h3 [] [ text "Node" ]
+    , apiOverviewTable
+        (Table.tbody []
+            [ Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "#api-node" ] [ Html.text "api/v1/node" ] ]
+                , Table.td [] [ Html.text "show current node information" ]
+                ]
+            , Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "#api-node-id" ] [ Html.text "api/v1/node/{:id}" ] ]
+                , Table.td [] [ Html.text "show information for the specified node id" ]
+                ]
+            , Table.tr []
+                [ Table.td [] [ Html.text "GET" ]
+                , Table.td [] [ a [ href "#api-nodes" ] [ Html.text "api/v1/nodes" ] ]
+                , Table.td [] [ Html.text "show connected nodes information" ]
+                ]
+            ]
+        )
+    ]
+
 
 apiOverviewTable : Table.TBody msg -> Html.Html msg
 apiOverviewTable tableBody =

@@ -20,6 +20,9 @@ import Views.ApiBlock exposing (pageApiBlock)
 import Views.ApiDomainAmount exposing (pageApiDomainAmount)
 import Views.ApiDomainAmountToken exposing (pageApiDomainAmountToken)
 import Views.ApiDomainTransactions exposing (pageApiDomainTransactions)
+import Views.ApiNode exposing (pageApiNode)
+import Views.ApiNodeId exposing (pageApiNodeId)
+import Views.ApiNodes exposing (pageApiNodes)
 import Views.ApiOverview exposing (pageApiOverview)
 import Views.ApiBlockChain exposing (pageApiBlockChain)
 import Views.ApiBlockChainHeader exposing (pageApiBlockChainHeader)
@@ -136,6 +139,15 @@ mainContent model =
 
             ApiTokenList ->
                 pageApiTokenList model
+
+            ApiNode ->
+                pageApiNode model
+
+            ApiNodeId ->
+                pageApiNodeId model
+
+            ApiNodes ->
+               pageApiNodes model
 
             NotFound ->
                 pageNotFound

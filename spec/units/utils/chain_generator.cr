@@ -43,6 +43,7 @@ module ::Units::Utils::ChainGenerator
       @miner = {context: {address: miner_wallet.address, nonces: [] of UInt64}, socket: MockWebSocket.new}
       @transaction_factory = TransactionFactory.new(@node_wallet)
       @rpc = RPCController.new(@blockchain)
+      @rest = RESTController.new(@blockchain)
       enable_difficulty
     end
 
@@ -81,6 +82,10 @@ module ::Units::Utils::ChainGenerator
 
     def rpc
       @rpc
+    end
+
+    def rest
+      @rest
     end
 
     private def add_valid_block(nonce : UInt64, miners : Array(NodeComponents::MinersManager::Miner))
