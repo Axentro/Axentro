@@ -131,6 +131,16 @@ module ::Sushi::Core
       block
     end
 
+    def block_difficulty : Int32
+      return latest_block.difficulty if latest_index == 0
+      block_difficulty(latest_block, @chain[-2])
+    end
+
+    def block_difficulty_miner : Int32
+      return latest_block.difficulty - 1 if latest_index == 0
+      block_difficulty_miner(latest_block, @chain[-2])
+    end
+
     def push_block(block : Block)
       @chain.push(block)
 
@@ -213,36 +223,6 @@ module ::Sushi::Core
 
     def latest_index : Int64
       latest_block.index
-    end
-
-    def block_difficulty : Int32
-      block_difficulty(latest_block)
-    end
-
-    def block_difficulty(block : Block) : Int32
-      return block.difficulty if block.index == 0
-      block_difficulty(block.timestamp - @chain[block.index - 1].timestamp, block)
-    end
-
-    def block_difficulty(time : Int64) : Int32
-      block_difficulty(time, latest_block)
-    end
-
-    def block_difficulty(time : Int64, block : Block) : Int32
-      sec = (time - block.timestamp)
-
-      return block.difficulty + 1 if sec < 30
-      return Math.max(block.difficulty - 1, 1) if sec > 90
-
-      block.difficulty
-    end
-
-    def block_difficulty_miner : Int32
-      block_difficulty_miner(latest_block)
-    end
-
-    def block_difficulty_miner(block : Block) : Int32
-      Math.max(block_difficulty(block), 1)
     end
 
     def subchain(from : Int64) : Chain?
@@ -336,10 +316,10 @@ module ::Sushi::Core
       end
     end
 
-    include Logger
-    include Hashes
-    include Consensus
     include DApps
+    include Hashes
+    include Logger
+    include Consensus
     include TransactionModels
     include Common::Timestamp
   end

@@ -23,7 +23,7 @@ module ::Sushi::Core
       work = MinerWork.from_json(message)
 
       loop do
-        break if valid?(work[:index], work[:hash], nonce, work[:difficulty])
+        break if valid_nonce?(work[:index], work[:hash], nonce, work[:difficulty])
 
         nonce += 1
 

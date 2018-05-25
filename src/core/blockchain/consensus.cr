@@ -44,33 +44,37 @@ module ::Sushi::Core::Consensus
     buffer.hexstring[0, difficulty] == "0" * difficulty
   end
 
-  #
-  # todo
-  # rename
-  #
-  def valid?(block_index : Int64, block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
+  def valid_nonce?(block_index : Int64, block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
     valid_scryptn?(block_index, block_hash, nonce, difficulty)
   end
 
-  # def difficulty_at(block_index : Int64) : Int32
-  #   return 3 if ENV.has_key?("SC_E2E")   # for e2e test
-  #   return 3 if ENV.has_key?("SC_DEBUG") # for debugging
-  #
-  #   # for tests
-  #   return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
-  #
-  #   4
-  # end
-  #
-  # def miner_difficulty_at(block_index : Int64) : Int32
-  #   return 2 if ENV.has_key?("SC_E2E")   # for e2e test
-  #   return 2 if ENV.has_key?("SC_DEBUG") # for debugging
-  #
-  #   # for tests
-  #   return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
-  #
-  #   3
-  # end
+  def block_difficulty(block : Block, prev_block : Block) : Int32
+    return block.difficulty if block.index == 0
+    block_difficulty(block.timestamp - prev_block.timestamp, block)
+  end
+
+  def block_difficulty(time : Int64) : Int32
+    block_difficulty(time, latest_block)
+  end
+
+  def block_difficulty(time : Int64, block : Block) : Int32
+    return 3 if ENV.has_key?("SC_E2E")   # for e2e test
+    return 3 if ENV.has_key?("SC_DEBUG") # for debugging
+    return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
+
+    sec = (time - block.timestamp)
+
+    return block.difficulty + 2 if sec < 20
+    return block.difficulty + 1 if sec < 40
+    return Math.max(block.difficulty - 1, 1) if sec > 60
+    return Math.max(block.difficulty - 2, 1) if sec > 80
+
+    block.difficulty
+  end
+
+  def block_difficulty_miner(block : Block, prev_block) : Int32
+    Math.max(block_difficulty(block, prev_block) - 1, 1)
+  end
 
   include Hashes
 end
