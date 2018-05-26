@@ -76,8 +76,8 @@ module ::Units::Utils::ChainGenerator
       ENV.delete("SC_SET_DIFFICULTY")
     end
 
-    def enable_difficulty
-      ENV["SC_SET_DIFFICULTY"] = "0"
+    def enable_difficulty(difficulty = "0")
+      ENV["SC_SET_DIFFICULTY"] = difficulty
     end
 
     def rpc

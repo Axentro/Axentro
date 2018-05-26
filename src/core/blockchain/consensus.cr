@@ -45,6 +45,7 @@ module ::Sushi::Core::Consensus
   end
 
   def valid_nonce?(block_index : Int64, block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
+    difficulty = ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
     valid_scryptn?(block_index, block_hash, nonce, difficulty)
   end
 
@@ -66,8 +67,8 @@ module ::Sushi::Core::Consensus
 
     return block.difficulty + 2 if sec < 20
     return block.difficulty + 1 if sec < 40
-    return Math.max(block.difficulty - 1, 1) if sec > 60
     return Math.max(block.difficulty - 2, 1) if sec > 80
+    return Math.max(block.difficulty - 1, 1) if sec > 60
 
     block.difficulty
   end

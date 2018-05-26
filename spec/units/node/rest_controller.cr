@@ -558,6 +558,7 @@ describe RESTController do
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
+          0_i64,         # timestamp
           0              # scaled
         )
         body = IO::Memory.new(unsigned_transaction.to_json)

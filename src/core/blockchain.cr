@@ -104,7 +104,6 @@ module ::Sushi::Core
 
     def valid_block?(nonce : UInt64, miners : NodeComponents::MinersManager::Miners) : Block?
       return nil unless latest_block.valid_nonce?(nonce)
-
       index = @chain.size.to_i64
 
       coinbase_transaction = create_coinbase_transaction(miners)
