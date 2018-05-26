@@ -118,6 +118,7 @@ module ::Units::Utils::ChainGenerator
         "0",   # message
         token, # token
         "0",   # prev_hash
+        0_i64, # timestamp
         1      # scaled
       )
       unsigned_transaction.as_signed([sender_wallet])
@@ -139,6 +140,7 @@ module ::Units::Utils::ChainGenerator
         "0",           # message
         TOKEN_DEFAULT, # token
         prev_hash,     # prev_hash
+        0_i64,         # timestamp
         1              # scaled
       )
       unsigned_transaction.as_signed([sender_wallet])
@@ -154,6 +156,7 @@ module ::Units::Utils::ChainGenerator
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
+        0_i64,         # timestamp
         1              # scaled
       )
       unsigned_transaction.as_signed([sender_wallet])
@@ -169,6 +172,7 @@ module ::Units::Utils::ChainGenerator
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
+        0_i64,         # timestamp
         1              # scaled
       )
       unsigned_transaction.as_signed([sender_wallet])
@@ -184,6 +188,7 @@ module ::Units::Utils::ChainGenerator
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
+        0_i64,         # timestamp
         1              # scaled
       )
       unsigned_transaction.as_signed([sender_wallet])
@@ -199,6 +204,7 @@ module ::Units::Utils::ChainGenerator
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
+        0_i64,         # timestamp
         1              # scaled
       )
       unsigned_transaction.as_signed([sender_wallet])
@@ -214,6 +220,7 @@ module ::Units::Utils::ChainGenerator
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
+        0_i64,         # timestamp
         1              # scaled
       )
       unsigned_transaction.as_signed([sender_wallet])
@@ -229,6 +236,7 @@ module ::Units::Utils::ChainGenerator
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
+        0_i64,         # timestamp
         1              # scaled
       )
       unsigned_transaction.as_signed([sender_wallet])
@@ -244,6 +252,7 @@ module ::Units::Utils::ChainGenerator
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
+        0_i64,         # timestamp
         1              # scaled
       )
       unsigned_transaction.as_signed([sender_wallet])
@@ -259,6 +268,7 @@ module ::Units::Utils::ChainGenerator
         "0",   # message
         token, # token
         "0",   # prev_hash
+        0_i64, # timestamp
         1      # scaled
       )
       unsigned_transaction.as_signed([sender_wallet])
@@ -274,6 +284,7 @@ module ::Units::Utils::ChainGenerator
         "0",   # message
         token, # token
         "0",   # prev_hash
+        0_i64, # timestamp
         1      # scaled
       )
       unsigned_transaction.as_signed([sender_wallet])

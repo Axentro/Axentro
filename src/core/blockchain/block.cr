@@ -20,13 +20,15 @@ module ::Sushi::Core
       nonce:            UInt64,
       prev_hash:        String,
       merkle_tree_root: String,
+      timestamp:        Int64,
     })
 
     def initialize(
       @index : Int64,
       @transactions : Array(Transaction),
       @nonce : UInt64,
-      @prev_hash : String
+      @prev_hash : String,
+      @timestamp : Int64
     )
       @merkle_tree_root = calcluate_merkle_tree_root
     end
@@ -42,6 +44,7 @@ module ::Sushi::Core
         nonce:            @nonce,
         prev_hash:        @prev_hash,
         merkle_tree_root: @merkle_tree_root,
+        timestamp:        @timestamp,
       }
     end
 
@@ -98,6 +101,13 @@ module ::Sushi::Core
       raise "prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
       raise "the nonce is invalid: #{@nonce}" if !prev_block.valid_nonce?(@nonce)
 
+      next_timestamp = timestamp
+      prev_timestamp = prev_block.timestamp
+
+      if prev_timestamp > @timestamp || next_timestamp < @timestamp
+        raise "timestamp is invalid: #{@timestamp} (timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
+      end
+
       merkle_tree_root = calcluate_merkle_tree_root
       raise "invalid merkle tree root: #{merkle_tree_root} != #{@merkle_tree_root}" if merkle_tree_root != @merkle_tree_root
 
@@ -143,5 +153,6 @@ module ::Sushi::Core
 
     include Hashes
     include Consensus
+    include Common::Timestamp
   end
 end
