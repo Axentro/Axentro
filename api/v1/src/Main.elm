@@ -63,6 +63,9 @@ init location =
                , apiUrlD3 = (prefix ++ "domain/{:domain}/token/{:token}")
                , apiUrlS1 = (prefix ++ "scars/sales")
                , apiUrlS2 = (prefix ++ "scars/{:domain}")
+               , apiUrlN1 = (prefix ++ "node")
+               , apiUrlN2 = (prefix ++ "node/{:id}")
+               , apiUrlN3 = (prefix ++ "nodes")
                , apiBody = ""
                , apiUrlTK1 = (prefix ++ "tokens")
                 }
