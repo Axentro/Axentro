@@ -112,7 +112,7 @@ module ::Sushi::Core
       transactions = align_transactions(transactions) # took times
 
       time = timestamp
-      difficulty = block_difficulty(time)
+      difficulty = block_difficulty(time, latest_block)
 
       Block.new(
         index,
@@ -136,7 +136,7 @@ module ::Sushi::Core
     end
 
     def block_difficulty_miner : Int32
-      return latest_block.difficulty - 1 if latest_index == 0
+      return Math.max(latest_block.difficulty - 1, 1) if latest_index == 0
       block_difficulty_miner(latest_block, @chain[-2])
     end
 

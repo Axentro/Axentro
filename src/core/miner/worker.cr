@@ -11,16 +11,16 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core
-  alias MinerWork = NamedTuple(difficulty: Int32, index: Int64, hash: String)
+  alias MinerWork = NamedTuple(start_nonce: UInt64, difficulty: Int32, index: Int64, hash: String)
 
   class MinerWorker < Tokoroten::Worker
     def task(message : String)
-      nonce : UInt64 = Random.rand(UInt64::MAX)
+      work = MinerWork.from_json(message)
+
+      nonce = work[:start_nonce]
 
       latest_nonce = nonce
       latest_time = Time.now
-
-      work = MinerWork.from_json(message)
 
       loop do
         break if valid_nonce?(work[:index], work[:hash], nonce, work[:difficulty])
