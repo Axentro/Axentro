@@ -18,12 +18,13 @@ include Sushi::Core::Consensus
 describe Consensus do
   describe "#valid?, #valid_scryptn?" do
     it "should return true when is valid" do
-      valid?(1_i64, "block_hash", 656_u64, 2).should be_true
+      valid_nonce?(1_i64, "block_hash", 656_u64, 2).should be_true
       valid_scryptn?(1_i64, "block_hash", 656_u64, 2).should be_true
     end
 
     it "should return false when is invalid" do
-      valid?(1_i64, "block_hash", 0_u64, 2).should be_false
+      ENV.delete("SC_SET_DIFFICULTY")
+      valid_nonce?(1_i64, "block_hash", 0_u64, 2).should be_false
       valid_scryptn?(1_i64, "block_hash", 0_u64, 2).should be_false
     end
   end
@@ -39,11 +40,19 @@ describe Consensus do
   end
 
   describe "difficulty" do
-    it "should return the #difficulty_at for the blockchain" do
+    it "should return the #difficulty_at for the blockchain over time" do
       current_env = ENV["SC_SET_DIFFICULTY"]?
       ENV.delete("SC_SET_DIFFICULTY")
 
-      difficulty_at(0_i64).should eq(4)
+      block_zero_time_diff_3 = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 0_i64, 3_i32)
+      block_difficulty(0_i64, block_zero_time_diff_3).should eq(5)  # difficulty +2 when < 20 sec
+      block_difficulty(20_i64, block_zero_time_diff_3).should eq(4) # difficulty +1 when < 40 sec
+
+      block_61_time_diff_3 = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 61_i64, 3_i32)
+      block_difficulty(122_i64, block_61_time_diff_3).should eq(2) # difficulty -1 when > 60 sec
+
+      block_81_time_diff_3 = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 81_i64, 3_i32)
+      block_difficulty(162_i64, block_81_time_diff_3).should eq(1) # difficulty -2 when > 80 sec
 
       ENV["SC_SET_DIFFICULTY"] = current_env
     end
@@ -52,7 +61,9 @@ describe Consensus do
       current_env = ENV["SC_SET_DIFFICULTY"]?
       ENV.delete("SC_SET_DIFFICULTY")
 
-      miner_difficulty_at(0_i64).should eq(3)
+      latest_block = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 0_i64, 3_i32)
+      prev_block = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 0_i64, 2_i32)
+      block_difficulty_miner(latest_block, prev_block).should eq(2)
 
       ENV["SC_SET_DIFFICULTY"] = current_env
     end

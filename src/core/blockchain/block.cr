@@ -21,6 +21,7 @@ module ::Sushi::Core
       prev_hash:        String,
       merkle_tree_root: String,
       timestamp:        Int64,
+      difficulty:       Int32,
     })
 
     def initialize(
@@ -28,7 +29,8 @@ module ::Sushi::Core
       @transactions : Array(Transaction),
       @nonce : UInt64,
       @prev_hash : String,
-      @timestamp : Int64
+      @timestamp : Int64,
+      @difficulty : Int32
     )
       @merkle_tree_root = calcluate_merkle_tree_root
     end
@@ -45,6 +47,7 @@ module ::Sushi::Core
         prev_hash:        @prev_hash,
         merkle_tree_root: @merkle_tree_root,
         timestamp:        @timestamp,
+        difficulty:       @difficulty,
       }
     end
 
@@ -69,8 +72,8 @@ module ::Sushi::Core
       ripemd160(current_hashes[0])
     end
 
-    def valid_nonce?(nonce : UInt64, difficulty : Int32? = nil) : Bool
-      valid?(self.index, self.to_hash, nonce, difficulty)
+    def valid_nonce?(nonce : UInt64, difficulty : Int32 = self.difficulty)
+      valid_nonce?(self.index, self.to_hash, nonce, difficulty)
     end
 
     def valid_as_latest?(blockchain : Blockchain, skip_transaction_validation : Bool = false) : Bool
@@ -91,6 +94,7 @@ module ::Sushi::Core
         raise "transactions have to be empty for genesis block: #{@transactions}" if !@transactions.empty?
         raise "nonce has to be '0' for genesis block: #{@nonce}" if @nonce != 0
         raise "prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
+        raise "difficulty has to be '3' for genesis block: #{@difficulty}" if @difficulty != 3
       end
 
       true
@@ -106,6 +110,10 @@ module ::Sushi::Core
 
       if prev_timestamp > @timestamp || next_timestamp < @timestamp
         raise "timestamp is invalid: #{@timestamp} (timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
+      end
+
+      if @difficulty != block_difficulty(self, prev_block)
+        raise "difficulty is invalid: #{@difficulty} (expected #{block_difficulty(self, prev_block)} but got #{@difficulty})"
       end
 
       merkle_tree_root = calcluate_merkle_tree_root

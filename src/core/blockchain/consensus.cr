@@ -12,8 +12,7 @@
 
 module ::Sushi::Core::Consensus
   # SHA256 Implementation
-  def valid_sha256?(block_index : Int64, block_hash : String, nonce : UInt64, _difficulty : Int32?) : Bool
-    difficulty = _difficulty.nil? ? difficulty_at(block_index) : _difficulty.not_nil!
+  def valid_sha256?(block_index : Int64, block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
     guess_nonce = "#{block_hash}#{nonce}"
     guess_hash = sha256(guess_nonce)
     guess_hash[0, difficulty] == "0" * difficulty
@@ -25,9 +24,7 @@ module ::Sushi::Core::Consensus
   K = 512
 
   # Scrypt Implementation
-  def valid_scryptn?(block_index : Int64, block_hash : String, nonce : UInt64, _difficulty : Int32?) : Bool
-    difficulty = _difficulty.nil? ? difficulty_at(block_index) : _difficulty.not_nil!
-
+  def valid_scryptn?(block_index : Int64, block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
     nonce_salt = nonce.to_s(16)
     nonce_salt = "0" + nonce_salt if nonce_salt.bytesize % 2 != 0
 
@@ -47,28 +44,37 @@ module ::Sushi::Core::Consensus
     buffer.hexstring[0, difficulty] == "0" * difficulty
   end
 
-  def valid?(block_index : Int64, block_hash : String, nonce : UInt64, _difficulty : Int32? = nil) : Bool
-    valid_scryptn?(block_index, block_hash, nonce, _difficulty)
+  def valid_nonce?(block_index : Int64, block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
+    difficulty = ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
+    valid_scryptn?(block_index, block_hash, nonce, difficulty)
   end
 
-  def difficulty_at(block_index : Int64) : Int32
+  def block_difficulty(block : Block, prev_block : Block) : Int32
+    return block.difficulty if block.index == 0
+    block_difficulty(block.timestamp - prev_block.timestamp, block)
+  end
+
+  def block_difficulty(time : Int64) : Int32
+    block_difficulty(time, latest_block)
+  end
+
+  def block_difficulty(time : Int64, block : Block) : Int32
     return 3 if ENV.has_key?("SC_E2E")   # for e2e test
     return 3 if ENV.has_key?("SC_DEBUG") # for debugging
-
-    # for tests
     return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
 
-    4
+    sec = (time - block.timestamp)
+
+    return block.difficulty + 2 if sec < 20
+    return block.difficulty + 1 if sec < 40
+    return Math.max(block.difficulty - 2, 1) if sec > 80
+    return Math.max(block.difficulty - 1, 1) if sec > 60
+
+    block.difficulty
   end
 
-  def miner_difficulty_at(block_index : Int64) : Int32
-    return 2 if ENV.has_key?("SC_E2E")   # for e2e test
-    return 2 if ENV.has_key?("SC_DEBUG") # for debugging
-
-    # for tests
-    return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
-
-    3
+  def block_difficulty_miner(block : Block, prev_block) : Int32
+    Math.max(block_difficulty(block, prev_block) - 1, 1)
   end
 
   include Hashes

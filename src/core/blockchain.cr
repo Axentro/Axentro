@@ -25,6 +25,7 @@ module ::Sushi::Core
       prev_hash: String,
       merkle_tree_root: String,
       timestamp: Int64,
+      difficulty: Int32,
     )
 
     getter chain : Chain = Chain.new
@@ -103,7 +104,6 @@ module ::Sushi::Core
 
     def valid_block?(nonce : UInt64, miners : NodeComponents::MinersManager::Miners) : Block?
       return nil unless latest_block.valid_nonce?(nonce)
-
       index = @chain.size.to_i64
 
       coinbase_transaction = create_coinbase_transaction(miners)
@@ -111,12 +111,16 @@ module ::Sushi::Core
       transactions = [coinbase_transaction] + @transaction_pool
       transactions = align_transactions(transactions) # took times
 
+      time = timestamp
+      difficulty = block_difficulty(time)
+
       Block.new(
         index,
         transactions,
         nonce,
         latest_block.to_hash,
-        timestamp,
+        time,
+        difficulty,
       )
     end
 
@@ -124,6 +128,16 @@ module ::Sushi::Core
       return nil unless block.valid_as_latest?(self)
 
       block
+    end
+
+    def block_difficulty : Int32
+      return latest_block.difficulty if latest_index == 0
+      block_difficulty(latest_block, @chain[-2])
+    end
+
+    def block_difficulty_miner : Int32
+      return latest_block.difficulty - 1 if latest_index == 0
+      block_difficulty_miner(latest_block, @chain[-2])
     end
 
     def push_block(block : Block)
@@ -222,6 +236,7 @@ module ::Sushi::Core
       genesis_nonce = 0_u64
       genesis_prev_hash = "genesis"
       genesis_timestamp = 0_i64
+      genesis_difficulty = 3
 
       Block.new(
         genesis_index,
@@ -229,6 +244,7 @@ module ::Sushi::Core
         genesis_nonce,
         genesis_prev_hash,
         genesis_timestamp,
+        genesis_difficulty,
       )
     end
 
@@ -299,10 +315,10 @@ module ::Sushi::Core
       end
     end
 
-    include Logger
-    include Hashes
-    include Consensus
     include DApps
+    include Hashes
+    include Logger
+    include Consensus
     include TransactionModels
     include Common::Timestamp
   end
