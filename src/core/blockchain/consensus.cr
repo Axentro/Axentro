@@ -11,6 +11,8 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::Consensus
+  BASE_TIME = 60.0
+
   # SHA256 Implementation
   def valid_sha256?(block_index : Int64, block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
     guess_nonce = "#{block_hash}#{nonce}"
@@ -54,21 +56,18 @@ module ::Sushi::Core::Consensus
     block_difficulty(block.timestamp - prev_block.timestamp, block)
   end
 
-  def block_difficulty(time : Int64) : Int32
-    block_difficulty(time, latest_block)
-  end
-
   def block_difficulty(time : Int64, block : Block) : Int32
     return 3 if ENV.has_key?("SC_E2E")   # for e2e test
     return 3 if ENV.has_key?("SC_DEBUG") # for debugging
     return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
 
-    sec = (time - block.timestamp)
+    ratio = (time - block.timestamp).to_f / BASE_TIME
 
-    return block.difficulty + 2 if sec < 20
-    return block.difficulty + 1 if sec < 40
-    return Math.max(block.difficulty - 2, 1) if sec > 80
-    return Math.max(block.difficulty - 1, 1) if sec > 60
+    puts "time: #{time}, ratio: #{ratio}"
+
+    return block.difficulty + 1 if ratio < 0.1
+    return Math.max(block.difficulty - 2, 1) if ratio > 100.0
+    return Math.max(block.difficulty - 1, 1) if ratio > 10.0
 
     block.difficulty
   end

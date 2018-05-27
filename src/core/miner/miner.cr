@@ -143,7 +143,7 @@ module ::Sushi::Core
     end
 
     def update(worker, difficulty, latest_index, latest_hash)
-      worker.exec({difficulty: difficulty, index: latest_index, hash: latest_hash}.to_json)
+      worker.exec({start_nonce: Random.rand(UInt64::MAX), difficulty: difficulty, index: latest_index, hash: latest_hash}.to_json)
     end
 
     def clean_workers

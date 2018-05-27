@@ -109,6 +109,8 @@ module ::Sushi::Core::NodeComponents
     end
 
     def broadcast_latest_block
+      info "new block difficulty: #{@blockchain.block_difficulty}, mining difficulty: #{@blockchain.block_difficulty_miner}"
+
       @miners.each do |miner|
         send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
           block:      @blockchain.latest_block,
