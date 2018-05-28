@@ -30,5 +30,6 @@ module ::Sushi::Interface
     HELP_TOKEN_AMOUNT                     = "please specify the token amount: -m [amount]"
     HELP_CONFIG_NAME                      = "please specify the config name: --name=[name]"
     HELP_NODE_ID                          = "please specify a node id: --node_id=[node_id]"
+    HELP_AUTH_CODE                        = "please specify an auth code: --auth_code=[auth_code]"
   end
 end

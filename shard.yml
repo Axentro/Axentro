@@ -26,6 +26,9 @@ dependencies:
     github: crystal-lang/crystal-sqlite3
   scrypt:
     github: ysbaddaden/scrypt-crystal
+  crystal-two-factor-auth:
+    github: SushiChain/crystal-two-factor-auth    
+
 
 crystal: 0.24.1
 

@@ -118,7 +118,7 @@ module ::Sushi::Interface::Sushi
         }
       )
 
-      add_transaction(node, action, wallets, senders, recipients, __message, __token || TOKEN_DEFAULT)
+      add_transaction(node, action, wallets, senders, recipients, __message, __token || TOKEN_DEFAULT, __auth_code || "")
     end
 
     def transactions

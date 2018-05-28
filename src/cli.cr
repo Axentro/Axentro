@@ -154,11 +154,12 @@ module ::Sushi::Interface
                         senders : SendersDecimal,
                         recipients : RecipientsDecimal,
                         message : String,
-                        token : String)
+                        token : String,
+                        auth_code : String)
       raise "mimatch for wallet size and sender's size" if wallets.size != senders.size
 
       unsigned_transaction =
-        create_unsigned_transaction(node, action, senders, recipients, message, token)
+        create_unsigned_transaction(node, action, senders, recipients, message, token, auth_code)
 
       signed_transaction = sign(wallets, unsigned_transaction)
 
@@ -182,7 +183,8 @@ module ::Sushi::Interface
                                     senders : SendersDecimal,
                                     recipients : RecipientsDecimal,
                                     message : String,
-                                    token : String) : Core::Transaction
+                                    token : String,
+                                    auth_code : String) : Core::Transaction
       payload = {
         call:       "create_unsigned_transaction",
         action:     action,
@@ -190,6 +192,7 @@ module ::Sushi::Interface
         recipients: recipients,
         message:    message,
         token:      token,
+        auth_code:  auth_code,
       }.to_json
 
       body = rpc(node, payload)
@@ -203,6 +206,13 @@ module ::Sushi::Interface
 
     def resolve_internal(node, domain, confirmation : Int32) : JSON::Any
       payload = {call: "scars_resolve", domain_name: domain, confirmation: confirmation}.to_json
+
+      body = rpc(node, payload)
+      JSON.parse(body)
+    end
+
+    def resolve_2fa_secret(node, address, confirmation : Int32) : JSON::Any
+      payload = {call: "2fa_resolve", address: address, confirmation: confirmation}.to_json
 
       body = rpc(node, payload)
       JSON.parse(body)

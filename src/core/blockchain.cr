@@ -278,6 +278,7 @@ module ::Sushi::Core
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
         timestamp,     # timestamp
+        "0",           # auth_code
         1,             # scaled
       )
     end

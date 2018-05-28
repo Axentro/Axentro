@@ -21,6 +21,7 @@ module ::Sushi::Core
       token: String,
       prev_hash: String,
       timestamp: Int64,
+      auth_code: String,
       scaled: Int32,
     )
 
@@ -33,6 +34,7 @@ module ::Sushi::Core
       @token : String,
       @prev_hash : String,
       @timestamp : Int64,
+      @auth_code : String,
       @scaled : Int32
     )
       raise "invalid decimal transaction (expected scaled: 0 bug receive #{@scaled})" if @scaled != 0
@@ -48,6 +50,7 @@ module ::Sushi::Core
         @token,
         @prev_hash,
         @timestamp,
+        @auth_code,
         1,
       )
     end
@@ -62,6 +65,7 @@ module ::Sushi::Core
         transaction.token,
         transaction.prev_hash,
         transaction.timestamp,
+        transaction.auth_code,
         0,
       )
     end

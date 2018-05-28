@@ -79,7 +79,7 @@ module ::Sushi::Interface::Sushi
         amount:  amount,
       })
 
-      add_transaction(node, "create_token", [wallet], senders, recipients, "", token)
+      add_transaction(node, "create_token", [wallet], senders, recipients, "", token, "")
     end
 
     def list

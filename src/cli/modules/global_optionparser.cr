@@ -46,6 +46,7 @@ module ::Sushi::Interface
     @domain : String?
 
     @token : String?
+    @auth_code : String?
 
     @config_name : String?
 
@@ -89,6 +90,8 @@ module ::Sushi::Interface
       CONFIG_NAME
       # for node
       NODE_ID
+      # for 2fa
+      AUTH_CODE
     end
 
     def create_option_parser(actives : Array(Options)) : OptionParser
@@ -221,6 +224,10 @@ module ::Sushi::Interface
         parser.on("--node_id=NODE_ID", "specify a node id") { |node_id|
           @node_id = node_id
         } if is_active?(actives, Options::NODE_ID)
+
+        parser.on("--auth_code=AUTH_CODE", "supply 2fa auth code for transaction") { |auth_code|
+          @auth_code = auth_code
+        } if is_active?(actives, Options::AUTH_CODE)
       end
     end
 
@@ -342,6 +349,10 @@ module ::Sushi::Interface
 
     def __node_id : String?
       @node_id
+    end
+
+    def __auth_code : String?
+      @auth_code
     end
 
     def cm
