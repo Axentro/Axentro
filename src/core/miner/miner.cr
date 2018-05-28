@@ -127,6 +127,8 @@ module ::Sushi::Core
             send(socket, M_TYPE_MINER_FOUND_NONCE, {nonce: nonce}) unless nonce == -1
 
             update(w, difficulty, latest_index, latest_hash)
+          rescue ioe : IO::EOFError
+            warning "received invalid message. will be ignored"
           end
         end
       end

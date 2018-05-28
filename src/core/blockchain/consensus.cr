@@ -63,8 +63,6 @@ module ::Sushi::Core::Consensus
 
     ratio = (time - block.timestamp).to_f / BASE_TIME
 
-    puts "time: #{time}, ratio: #{ratio}"
-
     return block.difficulty + 1 if ratio < 0.1
     return Math.max(block.difficulty - 2, 1) if ratio > 100.0
     return Math.max(block.difficulty - 1, 1) if ratio > 10.0
