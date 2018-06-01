@@ -26,6 +26,7 @@ module ::Sushi::Core
       token: String,
       prev_hash: String,
       timestamp: Int64,
+      auth_code: String,
       scaled: Int32,
     )
 
@@ -40,6 +41,7 @@ module ::Sushi::Core
       @token : String,
       @prev_hash : String,
       @timestamp : Int64,
+      @auth_code : String,
       @scaled : Int32
     )
     end
@@ -145,6 +147,7 @@ module ::Sushi::Core
         self.token,
         "0",
         self.timestamp,
+        self.auth_code,
         self.scaled,
       )
     end
@@ -176,6 +179,7 @@ module ::Sushi::Core
         self.token,
         "0",
         self.timestamp,
+        self.auth_code,
         self.scaled,
       )
     end

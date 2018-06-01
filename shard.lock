@@ -1,5 +1,13 @@
 version: 1.0
 shards:
+  crystal-base32:
+    github: SushiChain/crystal-base32
+    commit: b013e73c44fcbe7a4b20a46b5b1d959efcc70bad
+
+  crystal-two-factor-auth:
+    github: SushiChain/crystal-two-factor-auth
+    commit: 3e3b54dca6d10ef557344ca84196ca832bd6fa5d
+
   db:
     github: crystal-lang/crystal-db
     version: 0.5.0

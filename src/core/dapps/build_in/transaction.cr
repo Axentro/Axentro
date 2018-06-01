@@ -50,8 +50,9 @@ module ::Sushi::Core::DApps::BuildIn
       recipients = RecipientsDecimal.from_json(json["recipients"].to_json)
       message = json["message"].as_s
       token = json["token"].as_s
+      auth_code = json["auth_code"].as_s
 
-      transaction = create_unsigned_transaction_impl(action, senders, recipients, message, token)
+      transaction = create_unsigned_transaction_impl(action, senders, recipients, message, token, auth_code)
 
       context.response.print api_success(transaction)
       context
@@ -63,6 +64,7 @@ module ::Sushi::Core::DApps::BuildIn
       recipients : RecipientsDecimal,
       message : String,
       token : String,
+      auth_code : String,
       id : String = Transaction.create_id
     )
       transaction = TransactionDecimal.new(
@@ -74,6 +76,7 @@ module ::Sushi::Core::DApps::BuildIn
         token,
         "0",       # prev_hash
         timestamp, # timestamp
+        auth_code,
         0,         # scaled
       ).to_transaction
 

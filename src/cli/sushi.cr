@@ -49,6 +49,10 @@ module ::Sushi::Interface::Sushi
           name: "pubsub",
           desc: "receive blocks in realtime",
         },
+        {
+          name: "2fa",
+          desc: "enable or disable 2fa for transactions",
+        },
       ]
     end
 
@@ -96,6 +100,11 @@ module ::Sushi::Interface::Sushi
       when "pubsub", "ps"
         return Pubsub.new(
           {name: "pubsub", desc: "receive blocks in realtime"},
+          next_parents,
+        ).run
+      when "2fa", "2f"
+        return Auth.new(
+          {name: "2fa", desc: "enable or disable 2fa for transactions"},
           next_parents,
         ).run
       end

@@ -185,6 +185,7 @@ module ::Sushi::Core::Controllers
           RecipientsDecimal.from_json(json["recipients"].to_json),
           json["message"].as_s,
           json["token"].as_s,
+          json["auth_code"].as_s,
         )
       end
     end
