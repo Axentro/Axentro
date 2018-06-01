@@ -117,14 +117,23 @@ module ::Sushi::Interface::Sushi
     end
 
     def verify
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+        puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
         puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
         puts_help(HELP_AUTH_CODE) unless auth_code = __auth_code
 
         wallet = get_wallet(wallet_path, __wallet_password)
-        p secret_code = resolve_2fa_secret(node, wallet.address, 1)
+        secret_code_response = resolve_2fa_secret(node, wallet.address, 1)
+        secret_code = secret_code_response["secret_code"]["secret_code"].to_s
+        raise "2fa is not enabled on this address" if secret_code.empty?
+        puts "verifying 2fa ..."
+        result = TOTP.validate_number_string(secret_code, auth_code)
+        if result
+          puts_success("The 2fa code you supplied was successfully validated!")
+        else
+          puts_error("The 2fa code you supplied was incorrect!")
+        end
 
-        puts "verifying....2fa"
+
     end
 
     include GlobalOptionParser
