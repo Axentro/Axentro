@@ -184,8 +184,11 @@ module ::Sushi::Core
           end
         end
       else
-        if from.nil? || from[:is_private]
-          if successor = _nodes[:successor]
+        if successor = _nodes[:successor]
+          #
+          # prevent the self-connecting case
+          #
+          if (successor[:context][:id] != @chord.context[:id]) && (from.nil? || from[:is_private])
             send(successor[:socket], message_type, content)
           end
         end
