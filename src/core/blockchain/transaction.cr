@@ -194,7 +194,6 @@ module ::Sushi::Core
 
     include Hashes
     include TransactionModels
-    include Common::Timestamp
     include Common::Validator
     include Common::Denomination
   end

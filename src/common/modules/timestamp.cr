@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Common::Timestamp
-  def timestamp : Int64
+  def __timestamp : Int64
     Time.utc_now.epoch
   end
 end
