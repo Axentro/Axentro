@@ -45,7 +45,7 @@ describe Consensus do
       ENV.delete("SC_SET_DIFFICULTY")
 
       block_zero_time_diff_3 = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 0_i64, 3_i32)
-      block_difficulty(3_i64, block_zero_time_diff_3).should eq(4) # difficulty +1 when < 3 sec
+      block_difficulty(5_i64, block_zero_time_diff_3).should eq(4) # difficulty +1 when < 5 sec
 
       block_61_time_diff_3 = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 61_i64, 3_i32)
       block_difficulty(662_i64, block_61_time_diff_3).should eq(2) # difficulty -1 when > 60 sec
