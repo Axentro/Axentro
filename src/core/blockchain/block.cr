@@ -105,15 +105,15 @@ module ::Sushi::Core
       raise "prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
       raise "the nonce is invalid: #{@nonce}" if !prev_block.valid_nonce?(@nonce)
 
-      next_timestamp = timestamp
+      next_timestamp = __timestamp
       prev_timestamp = prev_block.timestamp
 
       if prev_timestamp > @timestamp || next_timestamp < @timestamp
         raise "timestamp is invalid: #{@timestamp} (timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
       end
 
-      if @difficulty != block_difficulty(self, prev_block)
-        raise "difficulty is invalid: #{@difficulty} (expected #{block_difficulty(self, prev_block)} but got #{@difficulty})"
+      if @difficulty != block_difficulty(@timestamp, prev_block)
+        raise "difficulty is invalid (expected #{block_difficulty(@timestamp, prev_block)} but got #{@difficulty})"
       end
 
       merkle_tree_root = calcluate_merkle_tree_root

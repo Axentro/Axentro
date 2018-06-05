@@ -72,9 +72,9 @@ module ::Sushi::Core::DApps::BuildIn
         recipients,
         message,
         token,
-        "0",       # prev_hash
-        timestamp, # timestamp
-        0,         # scaled
+        "0",         # prev_hash
+        __timestamp, # timestamp
+        0,           # scaled
       ).to_transaction
 
       fee = transaction.total_fees

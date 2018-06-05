@@ -55,17 +55,6 @@ describe Consensus do
 
       ENV["SC_SET_DIFFICULTY"] = current_env
     end
-
-    it "should return the #miner_difficulty_at for the miners" do
-      current_env = ENV["SC_SET_DIFFICULTY"]?
-      ENV.delete("SC_SET_DIFFICULTY")
-
-      latest_block = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 0_i64, 3_i32)
-      prev_block = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 0_i64, 2_i32)
-      block_difficulty_miner(latest_block, prev_block).should eq(2)
-
-      ENV["SC_SET_DIFFICULTY"] = current_env
-    end
   end
 
   STDERR.puts "< Consensus"

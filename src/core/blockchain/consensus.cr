@@ -51,27 +51,18 @@ module ::Sushi::Core::Consensus
     valid_scryptn?(block_index, block_hash, nonce, difficulty)
   end
 
-  def block_difficulty(block : Block, prev_block : Block) : Int32
-    return block.difficulty if block.index == 0
-    block_difficulty(block.timestamp - prev_block.timestamp, block)
-  end
-
-  def block_difficulty(time : Int64, block : Block) : Int32
+  def block_difficulty(timestamp : Int64, block : Block) : Int32
     return 3 if ENV.has_key?("SC_E2E")   # for e2e test
     return 3 if ENV.has_key?("SC_DEBUG") # for debugging
     return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
 
-    ratio = (time - block.timestamp).to_f / BASE_TIME
+    ratio = (timestamp - block.timestamp).to_f / BASE_TIME
 
     return block.difficulty + 1 if ratio < 0.1
     return Math.max(block.difficulty - 2, 1) if ratio > 100.0
     return Math.max(block.difficulty - 1, 1) if ratio > 10.0
 
     block.difficulty
-  end
-
-  def block_difficulty_miner(block : Block, prev_block) : Int32
-    Math.max(block_difficulty(block, prev_block) - 1, 1)
   end
 
   include Hashes

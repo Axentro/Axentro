@@ -46,6 +46,7 @@ module ::Sushi::Core::Logger
 
   def progress(msg : String, current : Int, max : Int)
     return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_E2E")
+    return if max == 0
 
     ratio = (current * PROGRESS_BAR_WIDTH) / max
 

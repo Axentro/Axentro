@@ -111,15 +111,16 @@ module ::Sushi::Core
       transactions = [coinbase_transaction] + @transaction_pool
       transactions = align_transactions(transactions) # took times
 
-      time = timestamp
-      difficulty = block_difficulty(time, latest_block)
+      timestamp = __timestamp
+
+      difficulty = block_difficulty(timestamp, latest_block)
 
       Block.new(
         index,
         transactions,
         nonce,
         latest_block.to_hash,
-        time,
+        timestamp,
         difficulty,
       )
     end
@@ -130,14 +131,12 @@ module ::Sushi::Core
       block
     end
 
-    def block_difficulty : Int32
-      return latest_block.difficulty if latest_index == 0
-      block_difficulty(latest_block, @chain[-2])
+    def block_difficulty_latest : Int32
+      latest_block.difficulty
     end
 
-    def block_difficulty_miner : Int32
-      return Math.max(latest_block.difficulty - 1, 1) if latest_index == 0
-      block_difficulty_miner(latest_block, @chain[-2])
+    def miner_difficulty_latest : Int32
+      Math.max(block_difficulty_latest - 1, 1)
     end
 
     def push_block(block : Block)
@@ -277,7 +276,7 @@ module ::Sushi::Core
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
-        timestamp,     # timestamp
+        __timestamp,   # timestamp
         1,             # scaled
       )
     end
