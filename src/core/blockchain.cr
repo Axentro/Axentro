@@ -28,15 +28,21 @@ module ::Sushi::Core
       difficulty: Int32,
     )
 
+    alias Transactions = Array(Transaction)
+
     getter chain : Chain = Chain.new
     getter wallet : Wallet
-    getter transaction_pool = [] of Transaction
+    # todo
+    # getter transaction_pool = [] of Transaction
 
     @node : Node?
-    @queue : BlockQueue::Queue?
+    @queue : BlockQueue::Queue? # todo
+    @transaction_pool : Tokoroten::Worker
 
     def initialize(@wallet : Wallet, @database : Database? = nil)
       initialize_dapps
+
+      @transaction_pool = TransactionPool.create(1)[0]
     end
 
     def setup(@node : Node)
@@ -99,7 +105,23 @@ module ::Sushi::Core
     end
 
     def clean_transactions
-      @transaction_pool.reject! { |transaction| indices.get(transaction.id) }
+
+      # todo
+      # @transaction_pool.reject! { |transaction| indices.get(transaction.id) }
+
+      all_request = { call: TransactionPool::Protocol::TXP_ALL ,content: "" }.to_json
+
+      @transaction_pool.exec(all_request)
+
+      if all_transactions_s = @transaction_pool.receive
+        all_transactions = Transactions.from_json(all_transactions_s)
+        all_transactions.each do |t|
+          if t_id = indices.get(t.id)
+            delete_request = { call: TransactionPool::Protocol::TXP_DELETE, content: t.to_json }.to_json
+            @transaction_pool.exec(delete_request)
+          end
+        end
+      end
     end
 
     def valid_block?(nonce : UInt64, miners : NodeComponents::MinersManager::Miners) : Block?
@@ -108,21 +130,45 @@ module ::Sushi::Core
 
       coinbase_transaction = create_coinbase_transaction(miners)
 
-      transactions = [coinbase_transaction] + @transaction_pool
-      transactions = align_transactions(transactions) # took times
+      all_request = { call: TransactionPool::Protocol::TXP_ALL, content: "" }.to_json
 
-      timestamp = __timestamp
+      @transaction_pool.exec(all_request)
 
-      difficulty = block_difficulty(timestamp, latest_block)
+      if all_transactions_s = @transaction_pool.receive
+        all_transactions = Transactions.from_json(all_transactions_s)
+        all_transactions = [coinbase_transaction] + all_transactions
+        all_transactions = align_transactions(all_transactions) # took times
 
-      Block.new(
-        index,
-        transactions,
-        nonce,
-        latest_block.to_hash,
-        timestamp,
-        difficulty,
-      )
+        timestamp = __timestamp
+
+        difficulty = block_difficulty(timestamp, latest_block)
+
+        return Block.new(
+          index,
+          all_transactions,
+          nonce,
+          latest_block.to_hash,
+          timestamp,
+          difficulty,
+        )
+      end
+      # todo
+      # transactions = [coinbase_transaction] + @transaction_pool
+      # transactions = align_transactions(transactions) # took times
+      #  
+      # timestamp = __timestamp
+      #  
+      # difficulty = block_difficulty(timestamp, latest_block)
+      #  
+      # Block.new(
+      #   index,
+      #   transactions,
+      #   nonce,
+      #   latest_block.to_hash,
+      #   timestamp,
+      #   difficulty,
+      # )
+      nil
     end
 
     def valid_block?(block : Block) : Block?
@@ -190,7 +236,11 @@ module ::Sushi::Core
     end
 
     def add_transaction(transaction : Transaction)
-      @transaction_pool << transaction
+      # todo
+      # @transaction_pool << transaction
+
+      add_request = { call: TransactionPool::Protocol::TXP_ADD, content: transaction.to_json }.to_json
+      @transaction_pool.exec(add_request)
     end
 
     def align_transactions(transactions : Array(Transaction))
@@ -209,7 +259,11 @@ module ::Sushi::Core
 
         rejects.record_reject(transaction.id, e)
 
-        @transaction_pool.delete(transaction)
+        # todo
+        # @transaction_pool.delete(transaction)
+
+        delete_request = { call: TransactionPool::Protocol::TXP_DELETE, content: transaction.to_json }.to_json
+        @transaction_pool.exec(delete_request)
       end
 
       selected_transactions
