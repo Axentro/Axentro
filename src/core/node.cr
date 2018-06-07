@@ -208,9 +208,9 @@ module ::Sushi::Core
     def broadcast_transaction(transaction : Transaction, from : Chord::NodeContext? = nil)
       info "new transaction coming: #{transaction.id}"
 
-      if @blockchain.add_transaction(transaction)
-        send_transaction(transaction, from)
-      end
+      @blockchain.add_transaction(transaction)
+
+      send_transaction(transaction, from)
     end
 
     def send_block(block : Block, from : Chord::NodeContext? = nil)

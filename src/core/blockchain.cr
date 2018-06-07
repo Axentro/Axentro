@@ -197,8 +197,6 @@ module ::Sushi::Core
 
     def add_transaction(transaction : Transaction)
       TransactionPool.add(transaction)
-
-      true
     end
 
     def align_transactions(transactions : Array(Transaction))
@@ -208,7 +206,12 @@ module ::Sushi::Core
 
       transactions[1..-1].each_with_index do |transaction, idx|
         transaction.prev_hash = selected_transactions[-1].to_hash
-        transaction.valid?(self, selected_transactions)
+        # todo
+        # transaction.valid?(self, selected_transactions)
+        coinbase_amount = latest_block.coinbase_amount
+        transaction.valid_without_dapps?(coinbase_amount, selected_transactions)
+
+        transaction_valid_dapps?(transaction, selected_transactions)
 
         selected_transactions << transaction
       rescue e : Exception
@@ -307,6 +310,15 @@ module ::Sushi::Core
 
     def available_actions : Array(String)
       @dapps.map { |dapp| dapp.transaction_actions }.flatten
+    end
+
+    #
+    # todo
+    #
+    def transaction_valid_dapps?(transaction : Transaction, transactions : Transactions)
+      dapps.each do |dapp|
+        dapp.valid?(transaction, transactions) if dapp.transaction_related?(transaction.action) && transactions.size > 0
+      end
     end
 
     def pending_transactions : Transactions

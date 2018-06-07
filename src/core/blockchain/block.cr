@@ -84,7 +84,14 @@ module ::Sushi::Core
 
         unless skip_transaction_validation
           transactions.each_with_index do |transaction, idx|
-            transaction.valid?(blockchain, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
+            # todo
+            # transaction.valid?(blockchain, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
+            coinbase_amount = blockchain.latest_block.coinbase_amount
+            transaction.valid_without_dapps?(coinbase_amount, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
+            #
+            # todo
+            #
+            blockchain.transaction_valid_dapps?(transaction, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
           end
         end
 
