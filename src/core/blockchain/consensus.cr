@@ -11,7 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::Consensus
-  BASE_TIME = 60.0
 
   # SHA256 Implementation
   def valid_sha256?(block_index : Int64, block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
@@ -47,20 +46,22 @@ module ::Sushi::Core::Consensus
   end
 
   def valid_nonce?(block_index : Int64, block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
-    difficulty = ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
+    difficulty = ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY") # for unit test
     valid_scryptn?(block_index, block_hash, nonce, difficulty)
   end
 
+  BASE_TIME = 300.0
+  MIN_DIFF = 3
+
   def block_difficulty(timestamp : Int64, block : Block) : Int32
-    return 3 if ENV.has_key?("SC_E2E")   # for e2e test
-    return 3 if ENV.has_key?("SC_DEBUG") # for debugging
+    return MIN_DIFF if ENV.has_key?("SC_E2E") # for e2e test
     return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
 
     ratio = (timestamp - block.timestamp).to_f / BASE_TIME
 
     return block.difficulty + 1 if ratio < 0.1
-    return Math.max(block.difficulty - 2, 1) if ratio > 100.0
-    return Math.max(block.difficulty - 1, 1) if ratio > 10.0
+    return Math.max(Math.max(block.difficulty - 2, 1), MIN_DIFF) if ratio > 100.0
+    return Math.max(Math.max(block.difficulty - 1, 1), MIN_DIFF) if ratio > 10.0
 
     block.difficulty
   end
