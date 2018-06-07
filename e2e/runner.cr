@@ -34,6 +34,7 @@ module ::E2E
     def initialize(@mode : Int32, @num_nodes : Int32, @num_miners : Int32, @time : Int32)
       @node_ports = (4000..4000 + (@num_nodes - 1)).to_a
 
+      # todo: tokoronize
       @client = Client.new(@node_ports, @num_miners)
       @db_name = Random.new.hex
     end

@@ -16,6 +16,8 @@ module ::Sushi::Core
 
     @pool : Transactions = Transactions.new
 
+    @@worker : Tokoroten::Worker? = nil
+
     alias TxPoolWork = NamedTuple(call: Int32, content: String)
 
     enum Protocol
@@ -27,9 +29,31 @@ module ::Sushi::Core
       TXP_REPLACE
     end
 
+    def self.setup
+      @@worker ||= TransactionPool.create(1)[0]
+    end
+
+    def self.worker : Tokoroten::Worker
+      @@worker.not_nil!
+    end
+
+    def self.create_request(protocol : Protocol, content)
+      { call: protocol, content: content.to_json }.to_json
+    end
+
+    def self.delete(transaction : Transaction)
+      request = create_request(Protocol::TXP_DELETE, transaction)
+      worker.exec(request)
+    end
+
     def delete(content : String)
       transaction = Transaction.from_json(content)
       @pool.reject! { |t| t.id == transaction.id }
+    end
+
+    def self.add(transaction : Transaction)
+      request = create_request(Protocol::TXP_ADD, transaction)
+      worker.exec(request)
     end
 
     def add(content : String)
@@ -37,32 +61,31 @@ module ::Sushi::Core
       @pool << transaction
     end
 
+    def self.all
+      request = create_request(Protocol::TXP_ALL, "")
+      worker.exec(request)
+    end
+
     def all
       response(@pool.to_json)
     end
-
-    # def find(content : String)
-    #   json = JSON.parse(content)
-    #   transaction_id = json["transaction_id"].as_s
-    #  
-    #   if transaction = @pool.find { |transaction| transaction.id == transaction_id }
-    #     response(transaction.to_json)
-    #   else
-    #     response("")
-    #   end
-    # end
 
     def align(content : String)
       # todo
     end
 
-    #
-    # todo
-    # replace
-    #
+    def self.replace(transactions : Transactions)
+      request = create_request(Protocol::TXP_REPLACE, transactions)
+      worker.exec(request)
+    end
+
     def replace(content : String)
       transactions = Transactions.from_json(content)
       @pool = transactions
+    end
+
+    def self.receive
+      worker.receive
     end
 
     def task(message : String)
@@ -73,40 +96,22 @@ module ::Sushi::Core
       # TODO:
       # fix Protocol.**to_i**
       #
-
       case json[:call]
       when Protocol::TXP_ADD.to_i
         p "--> add"
-        p "--> b: #{@pool.size}"
         add(json[:content])
-        p "--> a: #{@pool.size}"
       when Protocol::TXP_DELETE.to_i
         p "--> delete"
-        p "--> b: #{@pool.size}"
         delete(json[:content])
-        p "--> a: #{@pool.size}"
       when Protocol::TXP_ALL.to_i
         p "--> all"
-        p "--> b: #{@pool.size}"
         all
-        p "--> a: #{@pool.size}"
-      # when Protocol::TXP_FIND.to_i
-      #   p "--> find"
-      #   p "--> b: #{@pool.size}"
-      #   find(json[:content])
-      #   p "--> a: #{@pool.size}"
       when Protocol::TXP_ALIGN.to_i
         p "--> align"
-        p "--> b: #{@pool.size}"
         align(json[:content])
-        p "--> a: #{@pool.size}"
       when Protocol::TXP_REPLACE.to_i
         p "--> replace"
-        p "--> b: #{@pool.size}"
         replace(json[:content])
-        p "--> a: #{@pool.size}"
-      else
-        p "--> xxx unknown xxx"
       end
     rescue e : Exception
       error e.message.not_nil!

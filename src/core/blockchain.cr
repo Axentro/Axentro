@@ -32,17 +32,14 @@ module ::Sushi::Core
 
     getter chain : Chain = Chain.new
     getter wallet : Wallet
-    # todo
-    # getter transaction_pool = [] of Transaction
 
     @node : Node?
-    @queue : BlockQueue::Queue? # todo
-    @transaction_pool : Tokoroten::Worker
+    @queue : BlockQueue::Queue? # todo (deprecate)
 
     def initialize(@wallet : Wallet, @database : Database? = nil)
       initialize_dapps
 
-      @transaction_pool = TransactionPool.create(1)[0]
+      TransactionPool.setup
     end
 
     def setup(@node : Node)
@@ -105,27 +102,9 @@ module ::Sushi::Core
     end
 
     def clean_transactions
+      transactions = pending_transactions.reject { |t| indices.get(t.id) }
 
-      # todo
-      # @transaction_pool.reject! { |transaction| indices.get(transaction.id) }
-
-      all_request = { call: TransactionPool::Protocol::TXP_ALL ,content: "" }.to_json
-      @transaction_pool.exec(all_request)
-
-      if all_transactions_s = @transaction_pool.receive
-        all_transactions = Transactions.from_json(all_transactions_s)
-        all_transactions.reject! { |t| indices.get(t.id) }
-
-        replace_request = { call: TransactionPool::Protocol::TXP_REPLACE, content: all_transactions.to_json }.to_json
-        @transaction_pool.exec(replace_request)
-
-        # all_transactions.each do |t|
-        #   if t_id = indices.get(t.id)
-        #     delete_request = { call: TransactionPool::Protocol::TXP_DELETE, content: t.to_json }.to_json
-        #     @transaction_pool.exec(delete_request)
-        #   end
-        # end
-      end
+      TransactionPool.replace(transactions)
     end
 
     def valid_block?(nonce : UInt64, miners : NodeComponents::MinersManager::Miners) : Block?
@@ -134,45 +113,22 @@ module ::Sushi::Core
 
       coinbase_transaction = create_coinbase_transaction(miners)
 
-      all_request = { call: TransactionPool::Protocol::TXP_ALL, content: "" }.to_json
+      transactions = pending_transactions
+      transactions = [coinbase_transaction] + transactions
+      transactions = align_transactions(transactions) # todo
 
-      @transaction_pool.exec(all_request)
+      timestamp = __timestamp
 
-      if all_transactions_s = @transaction_pool.receive
-        all_transactions = Transactions.from_json(all_transactions_s)
-        all_transactions = [coinbase_transaction] + all_transactions
-        all_transactions = align_transactions(all_transactions) # took times
+      difficulty = block_difficulty(timestamp, latest_block)
 
-        timestamp = __timestamp
-
-        difficulty = block_difficulty(timestamp, latest_block)
-
-        return Block.new(
-          index,
-          all_transactions,
-          nonce,
-          latest_block.to_hash,
-          timestamp,
-          difficulty,
-        )
-      end
-      # todo
-      # transactions = [coinbase_transaction] + @transaction_pool
-      # transactions = align_transactions(transactions) # took times
-      #  
-      # timestamp = __timestamp
-      #  
-      # difficulty = block_difficulty(timestamp, latest_block)
-      #  
-      # Block.new(
-      #   index,
-      #   transactions,
-      #   nonce,
-      #   latest_block.to_hash,
-      #   timestamp,
-      #   difficulty,
-      # )
-      nil
+      Block.new(
+        index,
+        transactions,
+        nonce,
+        latest_block.to_hash,
+        timestamp,
+        difficulty,
+      )
     end
 
     def valid_block?(block : Block) : Block?
@@ -240,11 +196,7 @@ module ::Sushi::Core
     end
 
     def add_transaction(transaction : Transaction)
-      # todo
-      # @transaction_pool << transaction
-
-      add_request = { call: TransactionPool::Protocol::TXP_ADD, content: transaction.to_json }.to_json
-      @transaction_pool.exec(add_request)
+      TransactionPool.add(transaction)
 
       true
     end
@@ -265,11 +217,7 @@ module ::Sushi::Core
 
         rejects.record_reject(transaction.id, e)
 
-        # todo
-        # @transaction_pool.delete(transaction)
-
-        delete_request = { call: TransactionPool::Protocol::TXP_DELETE, content: transaction.to_json }.to_json
-        @transaction_pool.exec(delete_request)
+        TransactionPool.delete(transaction)
       end
 
       selected_transactions
@@ -362,16 +310,11 @@ module ::Sushi::Core
     end
 
     def pending_transactions : Transactions
-      all_request = { call: TransactionPool::Protocol::TXP_ALL ,content: "" }.to_json
-      @transaction_pool.exec(all_request)
+      TransactionPool.all
 
-      if all_transactions_s = @transaction_pool.receive
-        return Transactions.from_json(all_transactions_s)
+      if response = TransactionPool.receive
+        return Transactions.from_json(response)
       end
-
-      Transactions.new
-    rescue e : Exception
-      p e
 
       Transactions.new
     end
