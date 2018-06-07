@@ -11,7 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::Consensus
-
   # SHA256 Implementation
   def valid_sha256?(block_index : Int64, block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
     guess_nonce = "#{block_hash}#{nonce}"
@@ -51,7 +50,7 @@ module ::Sushi::Core::Consensus
   end
 
   BASE_TIME = 300.0
-  MIN_DIFF = 3
+  MIN_DIFF  =     3
 
   def block_difficulty(timestamp : Int64, block : Block) : Int32
     return MIN_DIFF if ENV.has_key?("SC_E2E") # for e2e test

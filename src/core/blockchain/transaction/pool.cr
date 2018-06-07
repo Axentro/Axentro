@@ -38,7 +38,7 @@ module ::Sushi::Core
     end
 
     def self.create_request(protocol : Protocol, content)
-      { call: protocol, content: content.to_json }.to_json
+      {call: protocol, content: content.to_json}.to_json
     end
 
     def self.delete(transaction : Transaction)

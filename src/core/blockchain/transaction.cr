@@ -122,7 +122,7 @@ module ::Sushi::Core
         end
       end
 
-      true      
+      true
     end
 
     # def valid?(blockchain : Blockchain, transactions : Array(Transaction)) : Bool
@@ -130,15 +130,15 @@ module ::Sushi::Core
     #   raise "message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
     #   raise "token size exceeds: #{self.token.bytesize} for #{TOKEN_SIZE_LIMIT}" if self.token.bytesize > TOKEN_SIZE_LIMIT
     #   raise "unscaled transaction" if scaled != 1
-    #  
+    #
     #   is_coinbase = transactions.size == 0
-    #  
+    #
     #   secp256k1 : ECDSA::Secp256k1 = ECDSA::Secp256k1.new
-    #  
+    #
     #   @senders.each do |sender|
     #     network = Keys::Address.from(sender[:address], "sender").network
     #     public_key = Keys::PublicKey.new(sender[:public_key], network)
-    #  
+    #
     #     if !secp256k1.verify(
     #          public_key.not_nil!.point,
     #          self.as_unsigned.to_hash,
@@ -147,31 +147,31 @@ module ::Sushi::Core
     #        )
     #       raise "invalid signing for sender: #{sender[:address]}"
     #     end
-    #  
+    #
     #     unless Keys::Address.from(sender[:address], "sender")
     #       raise "invalid checksum for sender's address: #{sender[:address]}"
     #     end
-    #  
+    #
     #     valid_amount?(sender[:amount])
     #   end
-    #  
+    #
     #   @recipients.each do |recipient|
     #     unless Keys::Address.from(recipient[:address], "recipient")
     #       raise "invalid checksum for recipient's address: #{recipient[:address]}"
     #     end
-    #  
+    #
     #     valid_amount?(recipient[:amount])
     #   end
-    #  
+    #
     #   if !is_coinbase
     #     if sender_total_amount != recipient_total_amount
     #       raise "amount mismatch for senders (#{scale_decimal(sender_total_amount)}) and recipients (#{scale_decimal(recipient_total_amount)})"
     #     end
-    #  
+    #
     #     if @prev_hash != transactions[-1].to_hash
     #       raise "invalid prev_hash: expected #{transactions[-1].to_hash} but got #{@prev_hash}"
     #     end
-    #  
+    #
     #     blockchain.dapps.each do |dapp|
     #       dapp.valid?(self, transactions) if dapp.transaction_related?(@action)
     #     end
@@ -181,16 +181,16 @@ module ::Sushi::Core
     #     raise "token has to be #{TOKEN_DEFAULT} for coinbase transaction" if @token != TOKEN_DEFAULT
     #     raise "there should be no Sender for a coinbase transaction" if @senders.size != 0
     #     raise "prev_hash of coinbase transaction has to be '0'" if @prev_hash != "0"
-    #  
+    #
     #     served_sum = @recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
     #     served_sum_expected = blockchain.latest_block.coinbase_amount
-    #  
+    #
     #     if served_sum != served_sum_expected
     #       raise "invalid served amount for coinbase transaction: " +
     #             "expected #{served_sum_expected} but got #{served_sum} "
     #     end
     #   end
-    #  
+    #
     #   true
     # end
 
