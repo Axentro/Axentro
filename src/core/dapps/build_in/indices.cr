@@ -90,12 +90,12 @@ module ::Sushi::Core::DApps::BuildIn
       end
 
       # todo
-      # if transaction = blockchain.transaction_pool.find { |t| t.id == transaction_id }
-      #   return {
-      #     status:      "pending",
-      #     transaction: transaction,
-      #   }
-      # end
+      if transaction = blockchain.pending_transactions.find { |t| t.id == transaction_id }
+        return {
+          status:      "pending",
+          transaction: transaction,
+        }
+      end
 
       if rejected_reason = blockchain.rejects.find(transaction_id)
         return {

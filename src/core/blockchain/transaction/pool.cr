@@ -24,11 +24,12 @@ module ::Sushi::Core
       TXP_ALL
       TXP_FIND
       TXP_ALIGN
+      TXP_REPLACE
     end
 
     def delete(content : String)
       transaction = Transaction.from_json(content)
-      @pool.delete(transaction)
+      @pool.reject! { |t| t.id == transaction.id }
     end
 
     def add(content : String)
@@ -40,35 +41,72 @@ module ::Sushi::Core
       response(@pool.to_json)
     end
 
-    def find(content : String)
-      json = JSON.parse(content)
-      transaction_id = json["transaction_id"].as_s
-
-      if transaction = @pool.find { |transaction| transaction.id == transaction_id }
-        response(transaction.to_json)
-      else
-        response("")
-      end
-    end
+    # def find(content : String)
+    #   json = JSON.parse(content)
+    #   transaction_id = json["transaction_id"].as_s
+    #  
+    #   if transaction = @pool.find { |transaction| transaction.id == transaction_id }
+    #     response(transaction.to_json)
+    #   else
+    #     response("")
+    #   end
+    # end
 
     def align(content : String)
       # todo
     end
 
+    #
+    # todo
+    # replace
+    #
+    def replace(content : String)
+      transactions = Transactions.from_json(content)
+      @pool = transactions
+    end
+
     def task(message : String)
       json = TxPoolWork.from_json(message)
 
+      p "----------------- task #{json[:call]} ----------------------"
+      #
+      # TODO:
+      # fix Protocol.**to_i**
+      #
+
       case json[:call]
       when Protocol::TXP_ADD.to_i
+        p "--> add"
+        p "--> b: #{@pool.size}"
         add(json[:content])
+        p "--> a: #{@pool.size}"
       when Protocol::TXP_DELETE.to_i
+        p "--> delete"
+        p "--> b: #{@pool.size}"
         delete(json[:content])
+        p "--> a: #{@pool.size}"
       when Protocol::TXP_ALL.to_i
+        p "--> all"
+        p "--> b: #{@pool.size}"
         all
-      when Protocol::TXP_FIND.to_i
-        find(json[:content])
+        p "--> a: #{@pool.size}"
+      # when Protocol::TXP_FIND.to_i
+      #   p "--> find"
+      #   p "--> b: #{@pool.size}"
+      #   find(json[:content])
+      #   p "--> a: #{@pool.size}"
       when Protocol::TXP_ALIGN.to_i
+        p "--> align"
+        p "--> b: #{@pool.size}"
         align(json[:content])
+        p "--> a: #{@pool.size}"
+      when Protocol::TXP_REPLACE.to_i
+        p "--> replace"
+        p "--> b: #{@pool.size}"
+        replace(json[:content])
+        p "--> a: #{@pool.size}"
+      else
+        p "--> xxx unknown xxx"
       end
     rescue e : Exception
       error e.message.not_nil!

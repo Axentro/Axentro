@@ -110,17 +110,21 @@ module ::Sushi::Core
       # @transaction_pool.reject! { |transaction| indices.get(transaction.id) }
 
       all_request = { call: TransactionPool::Protocol::TXP_ALL ,content: "" }.to_json
-
       @transaction_pool.exec(all_request)
 
       if all_transactions_s = @transaction_pool.receive
         all_transactions = Transactions.from_json(all_transactions_s)
-        all_transactions.each do |t|
-          if t_id = indices.get(t.id)
-            delete_request = { call: TransactionPool::Protocol::TXP_DELETE, content: t.to_json }.to_json
-            @transaction_pool.exec(delete_request)
-          end
-        end
+        all_transactions.reject! { |t| indices.get(t.id) }
+
+        replace_request = { call: TransactionPool::Protocol::TXP_REPLACE, content: all_transactions.to_json }.to_json
+        @transaction_pool.exec(replace_request)
+
+        # all_transactions.each do |t|
+        #   if t_id = indices.get(t.id)
+        #     delete_request = { call: TransactionPool::Protocol::TXP_DELETE, content: t.to_json }.to_json
+        #     @transaction_pool.exec(delete_request)
+        #   end
+        # end
       end
     end
 
@@ -241,6 +245,8 @@ module ::Sushi::Core
 
       add_request = { call: TransactionPool::Protocol::TXP_ADD, content: transaction.to_json }.to_json
       @transaction_pool.exec(add_request)
+
+      true
     end
 
     def align_transactions(transactions : Array(Transaction))
@@ -353,6 +359,21 @@ module ::Sushi::Core
 
     def available_actions : Array(String)
       @dapps.map { |dapp| dapp.transaction_actions }.flatten
+    end
+
+    def pending_transactions : Transactions
+      all_request = { call: TransactionPool::Protocol::TXP_ALL ,content: "" }.to_json
+      @transaction_pool.exec(all_request)
+
+      if all_transactions_s = @transaction_pool.receive
+        return Transactions.from_json(all_transactions_s)
+      end
+
+      Transactions.new
+    rescue e : Exception
+      p e
+
+      Transactions.new
     end
 
     private def dapps_record
