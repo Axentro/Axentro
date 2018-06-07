@@ -23,10 +23,9 @@ module ::Sushi::Core
     enum Protocol
       TXP_ADD
       TXP_DELETE
-      TXP_ALL
-      TXP_FIND
-      TXP_ALIGN
       TXP_REPLACE
+      TXP_ALL
+      TXP_ALIGN
     end
 
     def self.setup
@@ -41,6 +40,16 @@ module ::Sushi::Core
       {call: protocol, content: content.to_json}.to_json
     end
 
+    def self.add(transaction : Transaction)
+      request = create_request(Protocol::TXP_ADD, transaction)
+      worker.exec(request)
+    end
+
+    def add(content : String)
+      transaction = Transaction.from_json(content)
+      @pool << transaction
+    end
+
     def self.delete(transaction : Transaction)
       request = create_request(Protocol::TXP_DELETE, transaction)
       worker.exec(request)
@@ -51,14 +60,14 @@ module ::Sushi::Core
       @pool.reject! { |t| t.id == transaction.id }
     end
 
-    def self.add(transaction : Transaction)
-      request = create_request(Protocol::TXP_ADD, transaction)
+    def self.replace(transactions : Transactions)
+      request = create_request(Protocol::TXP_REPLACE, transactions)
       worker.exec(request)
     end
 
-    def add(content : String)
-      transaction = Transaction.from_json(content)
-      @pool << transaction
+    def replace(content : String)
+      transactions = Transactions.from_json(content)
+      @pool = transactions
     end
 
     def self.all
@@ -70,18 +79,13 @@ module ::Sushi::Core
       response(@pool.to_json)
     end
 
-    def align(content : String)
-      # todo
-    end
-
-    def self.replace(transactions : Transactions)
-      request = create_request(Protocol::TXP_REPLACE, transactions)
+    def self.align
+      request = create_request(Protocol::TXP_ALIGN, "")
       worker.exec(request)
     end
 
-    def replace(content : String)
-      transactions = Transactions.from_json(content)
-      @pool = transactions
+    def align
+      # response some
     end
 
     def self.receive
@@ -103,15 +107,15 @@ module ::Sushi::Core
       when Protocol::TXP_DELETE.to_i
         p "--> delete"
         delete(json[:content])
+      when Protocol::TXP_REPLACE.to_i
+        p "--> replace"
+        replace(json[:content])
       when Protocol::TXP_ALL.to_i
         p "--> all"
         all
       when Protocol::TXP_ALIGN.to_i
         p "--> align"
-        align(json[:content])
-      when Protocol::TXP_REPLACE.to_i
-        p "--> replace"
-        replace(json[:content])
+        align
       end
     rescue e : Exception
       error e.message.not_nil!

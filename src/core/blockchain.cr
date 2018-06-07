@@ -204,6 +204,16 @@ module ::Sushi::Core
 
       selected_transactions = [transactions[0]]
 
+      # Get aligned transactions from transaction pool
+      #
+      # todo
+      #
+      # step 1
+      # - ~~ validate for transaction structure ~~
+      #
+      # step 2
+      # - ~~ validate for dApps ~~
+      #
       transactions[1..-1].each_with_index do |transaction, idx|
         transaction.prev_hash = selected_transactions[-1].to_hash
         # todo
@@ -317,7 +327,9 @@ module ::Sushi::Core
     #
     def transaction_valid_dapps?(transaction : Transaction, transactions : Transactions)
       dapps.each do |dapp|
-        dapp.valid?(transaction, transactions) if dapp.transaction_related?(transaction.action) && transactions.size > 0
+        if dapp.transaction_related?(transaction.action) && transactions.size > 0
+          dapp.valid?(transaction, transactions)
+        end
       end
     end
 

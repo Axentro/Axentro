@@ -83,6 +83,15 @@ module ::Sushi::Core
         raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
 
         unless skip_transaction_validation
+          #
+          # todo
+          #
+          # step 1
+          # - validate for transaction structure
+          #
+          # step 2
+          # - validate for dApps
+          #
           transactions.each_with_index do |transaction, idx|
             # todo
             # transaction.valid?(blockchain, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
