@@ -40,18 +40,39 @@ describe Consensus do
   end
 
   describe "difficulty" do
-    it "should return the #difficulty_at for the blockchain over time" do
+    describe "should return the #block_diffulty over time" do
       current_env = ENV["SC_SET_DIFFICULTY"]?
       ENV.delete("SC_SET_DIFFICULTY")
 
-      block_zero_time_diff_3 = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 0_i64, 3_i32)
-      block_difficulty(5_i64, block_zero_time_diff_3).should eq(4) # difficulty +1 when < 6 sec
+      it "should return 4 when difficulty starts at 6 and ratio > 100.0" do
+        block = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 0_i64, 6_i32)
+        block_difficulty(100000_i64, block).should eq(4)
+      end
 
-      block_61_time_diff_3 = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 61_i64, 3_i32)
-      block_difficulty(662_i64, block_61_time_diff_3).should eq(2) # difficulty -1 when > 60 sec
+      it "should return minimum difficulty if calculated difficulty is less than the minimum of 3 - when ratio > 100.0" do
+        block = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 0_i64, 3_i32)
+        block_difficulty(100000_i64, block).should eq(3)
+      end
 
-      block_81_time_diff_3 = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 81_i64, 3_i32)
-      block_difficulty(6082_i64, block_81_time_diff_3).should eq(1) # difficulty -2 when > 80 sec
+      it "should return 4 when difficulty starts at 6 and ratio > 10.0 but < 100.0" do
+        block = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 0_i64, 6_i32)
+        block_difficulty(100000_i64, block).should eq(4)
+      end
+
+      it "should return minimum difficulty if calculated difficulty is less than the minimum of 3 - when ratio > 10.0 but < 100.0" do
+        block = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 0_i64, 6_i32)
+        block_difficulty(5000_i64, block).should eq(5)
+      end
+
+      it "should return current difficulty + 1 when ratio is < 0.1" do
+        block = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 0_i64, 6_i32)
+        block_difficulty(5_i64, block).should eq(7)
+      end
+
+      it "should return current difficulty with no change when ratio is > 0.1 but < 10.0" do
+        block = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 0_i64, 6_i32)
+        block_difficulty(95_i64, block).should eq(6)
+      end
 
       ENV["SC_SET_DIFFICULTY"] = current_env
     end
