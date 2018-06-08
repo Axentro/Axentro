@@ -175,6 +175,46 @@ module ::Sushi::Core::Protocol
     })
   end
 
+  ######################################
+  # Transaction Pool
+  ######################################
+
+  enum TXP
+    ADD
+    DELETE
+    REPLACE
+    ALL
+    ALIGN
+  end
+
+  struct TXP_REQ_ADD
+    JSON.mapping({ transaction: Transaction })
+  end
+
+  struct TXP_REQ_DELETE
+    JSON.mapping({ transaction: Transaction })
+  end
+
+  struct TXP_REQ_REPLACE
+    JSON.mapping({ transactions: Array(Transaction) })
+  end
+
+  struct TXP_RES_ALL
+    JSON.mapping({ transactions: Array(Transaction) })
+  end
+
+  struct TXP_REQ_ALIGN
+    JSON.mapping({ coinbase_transaction: Transaction, coinbase_amount: Int64 })
+  end
+
+  struct TXP_RES_ALIGN
+    JSON.mapping({ transactions: Array(Transaction), rejects: Array(NamedTuple(transaction_id: String, reason: String)) })
+  end
+
+  ######################################
+  # Blockchain's setup phase
+  ######################################
+
   FLAG_NONE               = 0
   FLAG_CONNECTING_NODES   = 1
   FLAG_BLOCKCHAIN_LOADING = 2

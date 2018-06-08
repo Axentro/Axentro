@@ -112,10 +112,13 @@ module ::Sushi::Core
       index = @chain.size.to_i64
 
       coinbase_transaction = create_coinbase_transaction(miners)
+      coinbase_amount = latest_block.coinbase_amount
 
-      transactions = pending_transactions
-      transactions = [coinbase_transaction] + transactions
-      transactions = align_transactions(transactions) # todo
+      # transactions = pending_transactions
+      # transactions = [coinbase_transaction] + transactions
+      # transactions = align_transactions(transactions) # todo
+
+      transactions = align_transactions(coinbase_transaction, coinbase_amount)
 
       timestamp = __timestamp
 
@@ -199,42 +202,59 @@ module ::Sushi::Core
       TransactionPool.add(transaction)
     end
 
-    def align_transactions(transactions : Array(Transaction))
-      return [] of Transaction if transactions.size == 0
+    def align_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64)
+      TransactionPool.align(coinbase_transaction, coinbase_amount)
 
-      selected_transactions = [transactions[0]]
+      if response = TransactionPool.receive
+        content = TXP_RES_ALIGN.from_json(response)
 
-      # Get aligned transactions from transaction pool
-      #
-      # todo
-      #
-      # step 1
-      # - ~~ validate for transaction structure ~~
-      #
-      # step 2
-      # - ~~ validate for dApps ~~
-      #
-      transactions[1..-1].each_with_index do |transaction, idx|
-        transaction.prev_hash = selected_transactions[-1].to_hash
-        # todo
-        # transaction.valid?(self, selected_transactions)
-        coinbase_amount = latest_block.coinbase_amount
-        transaction.valid_without_dapps?(coinbase_amount, selected_transactions)
+        aligned_transactions = content.transactions
+        aligned_transactions.each_with_index do |t, idx|
+          transaction_valid_dapps?(t, aligned_transactions[0..idx-1]) if idx > 0
+        rescue e : Exception
+          warning "invalid transaction found, will be removed from the pool"
+          warning e.message.not_nil! if e.message
 
-        transaction_valid_dapps?(transaction, selected_transactions)
+          TransactionPool.delete(t)
+        end
 
-        selected_transactions << transaction
-      rescue e : Exception
-        warning "invalid transaction found, will be removed from the pool"
-        warning e.message.not_nil! if e.message
-
-        rejects.record_reject(transaction.id, e)
-
-        TransactionPool.delete(transaction)
+        return aligned_transactions
       end
 
-      selected_transactions
+      raise "failed to get aligned transactions from pool"
     end
+
+    # def align_transactions(transactions : Array(Transaction))
+    #   return [] of Transaction if transactions.size == 0
+    #  
+    #   selected_transactions = [transactions[0]]
+    #  
+    #   # Get aligned transactions from transaction pool
+    #   #
+    #   # step 2
+    #   # - ~~ validate for dApps ~~
+    #   #
+    #   transactions[1..-1].each_with_index do |transaction, idx|
+    #     transaction.prev_hash = selected_transactions[-1].to_hash
+    #     # todo
+    #     # transaction.valid?(self, selected_transactions)
+    #     coinbase_amount = latest_block.coinbase_amount
+    #     transaction.valid_without_dapps?(coinbase_amount, selected_transactions)
+    #  
+    #     transaction_valid_dapps?(transaction, selected_transactions)
+    #  
+    #     selected_transactions << transaction
+    #   rescue e : Exception
+    #     warning "invalid transaction found, will be removed from the pool"
+    #     warning e.message.not_nil! if e.message
+    #  
+    #     rejects.record_reject(transaction.id, e)
+    #  
+    #     TransactionPool.delete(transaction)
+    #   end
+    #  
+    #   selected_transactions
+    # end
 
     def latest_block : Block
       @chain[-1]
@@ -324,6 +344,7 @@ module ::Sushi::Core
 
     #
     # todo
+    # move to Transaction
     #
     def transaction_valid_dapps?(transaction : Transaction, transactions : Transactions)
       dapps.each do |dapp|
@@ -337,7 +358,7 @@ module ::Sushi::Core
       TransactionPool.all
 
       if response = TransactionPool.receive
-        return Transactions.from_json(response)
+        return TXP_RES_ALL.from_json(response).transactions
       end
 
       Transactions.new
@@ -359,6 +380,7 @@ module ::Sushi::Core
     include DApps
     include Hashes
     include Logger
+    include Protocol
     include Consensus
     include TransactionModels
     include Common::Timestamp
