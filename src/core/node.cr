@@ -19,7 +19,7 @@ module ::Sushi::Core
       name: String,
     )
 
-    property flag : Int32
+    property phase : SETUP_PHASE
 
     getter network_type : String
     getter chord : Chord
@@ -53,7 +53,7 @@ module ::Sushi::Core
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl)
       @miners_manager = MinersManager.new(@blockchain)
-      @flag = FLAG_NONE
+      @phase = SETUP_PHASE::NONE
 
       debug "is_private: #{light_green(@is_private)}"
       debug "public url: #{light_green(@public_host)}:#{light_green(@public_port)}" unless @is_private
@@ -84,7 +84,7 @@ module ::Sushi::Core
     end
 
     private def sync_chain(socket : HTTP::WebSocket? = nil)
-      info "start synching blockchain."
+      info "start synching blockchain"
 
       s = if _socket = socket
             _socket
@@ -103,10 +103,41 @@ module ::Sushi::Core
           }
         )
       else
-        warning "successor not found. skip synching blockchain."
+        warning "successor not found. skip synching blockchain"
 
-        if @flag == FLAG_BLOCKCHAIN_SYNCING
-          @flag = FLAG_SETUP_PRE_DONE
+        if @phase == SETUP_PHASE::BLOCKCHAIN_SYNCING
+          @phase = SETUP_PHASE::TRANSACTION_SYNCING
+          proceed_setup
+        end
+      end
+    end
+
+    private def sync_transactions(socket : HTTP::WebSocket? = nil)
+      info "start synching transactions"
+
+      s = if _socket = socket
+            _socket
+          elsif predecessor = @chord.find_predecessor?
+            predecessor[:socket]
+          elsif successor = @chord.find_successor?
+            successor[:socket]
+          end
+
+      if _s = s
+        transactions = @blockchain.pending_transactions
+
+        send(
+          _s,
+          M_TYPE_NODE_REQUEST_TRANSACTIONS,
+          {
+            transactions: transactions,
+          }
+        )
+      else
+        warning "successor not found. skip synching transactions"
+
+        if @phase == SETUP_PHASE::TRANSACTION_SYNCING
+          @phase = SETUP_PHASE::PRE_DONE
           proceed_setup
         end
       end
@@ -157,6 +188,10 @@ module ::Sushi::Core
           _broadcast_block(socket, message_content)
         when M_TYPE_NODE_ASK_REQUEST_CHAIN
           _ask_request_chain(socket, message_content)
+        when M_TYPE_NODE_REQUEST_TRANSACTIONS
+          _request_transactions(socket, message_content)
+        when M_TYPE_NODE_RECEIVE_TRANSACTIONS
+          _receive_transactions(socket, message_content)
         end
       rescue e : Exception
         handle_exception(socket, e)
@@ -279,7 +314,7 @@ module ::Sushi::Core
     end
 
     private def _broadcast_transaction(socket, _content)
-      return unless @flag == FLAG_SETUP_DONE
+      return unless @phase == SETUP_PHASE::DONE
 
       _m_content = M_CONTENT_NODE_BROADCAST_TRANSACTION.from_json(_content)
 
@@ -290,7 +325,7 @@ module ::Sushi::Core
     end
 
     private def _broadcast_block(socket, _content)
-      return unless @flag == FLAG_SETUP_DONE
+      return unless @phase == SETUP_PHASE::DONE
 
       _m_content = M_CONTENT_NODE_BROADCAST_BLOCK.from_json(_content)
 
@@ -320,7 +355,7 @@ module ::Sushi::Core
       if _chain = chain
         info "received chain's size: #{_chain.size}"
       else
-        info "received empty chain."
+        info "received empty chain"
       end
 
       current_latest_index = @blockchain.latest_index
@@ -332,8 +367,8 @@ module ::Sushi::Core
         @conflicted_index = nil
       end
 
-      if @flag == FLAG_BLOCKCHAIN_SYNCING
-        @flag = FLAG_SETUP_PRE_DONE
+      if @phase == SETUP_PHASE::BLOCKCHAIN_SYNCING
+        @phase = SETUP_PHASE::TRANSACTION_SYNCING
         proceed_setup
       end
     end
@@ -351,6 +386,36 @@ module ::Sushi::Core
       end
     end
 
+    private def _request_transactions(socket, _content)
+      _m_content = M_CONTENT_NODE_REQUEST_TRANSACTIONS.from_json(_content)
+
+      debug "requested transactions"
+
+      transactions = @blockchain.pending_transactions
+
+      send(
+        socket,
+        M_TYPE_NODE_RECEIVE_TRANSACTIONS,
+        {
+          transactions: transactions,
+        }
+      )
+    end
+
+    private def _receive_transactions(socket, _content)
+      _m_content = M_CONTENT_NODE_RECEIVE_TRANSACTIONS.from_json(_content)
+
+      transactions = _m_content.transactions
+
+      TransactionPool.lock
+      TransactionPool.replace(transactions)
+
+      if @phase == SETUP_PHASE::TRANSACTION_SYNCING
+        @phase = SETUP_PHASE::PRE_DONE
+        proceed_setup
+      end
+    end
+
     private def handlers
       [
         peer_handler,
@@ -363,12 +428,12 @@ module ::Sushi::Core
     end
 
     def proceed_setup
-      return if @flag == FLAG_SETUP_DONE
+      return if @phase == SETUP_PHASE::DONE
 
-      case @flag
-      when FLAG_NONE
+      case @phase
+      when SETUP_PHASE::NONE
         if @connect_host && @connect_port
-          @flag = FLAG_CONNECTING_NODES
+          @phase = SETUP_PHASE::CONNECTING_NODES
 
           unless @is_private
             @chord.join_to(@connect_host.not_nil!, @connect_port.not_nil!)
@@ -379,11 +444,11 @@ module ::Sushi::Core
           warning "no connecting node has been specified"
           warning "so this node is standalone from other network"
 
-          @flag = FLAG_BLOCKCHAIN_LOADING
+          @phase = SETUP_PHASE::BLOCKCHAIN_LOADING
 
           proceed_setup
         end
-      when FLAG_BLOCKCHAIN_LOADING
+      when SETUP_PHASE::BLOCKCHAIN_LOADING
         @blockchain.setup(self)
 
         info "loaded blockchain's size: #{light_cyan(@blockchain.chain.size)}"
@@ -394,15 +459,17 @@ module ::Sushi::Core
           warning "no database has been specified"
         end
 
-        @flag = FLAG_BLOCKCHAIN_SYNCING
+        @phase = SETUP_PHASE::BLOCKCHAIN_SYNCING
 
         proceed_setup
-      when FLAG_BLOCKCHAIN_SYNCING
+      when SETUP_PHASE::BLOCKCHAIN_SYNCING
         sync_chain
-      when FLAG_SETUP_PRE_DONE
-        info "successfully setup the node."
+      when SETUP_PHASE::TRANSACTION_SYNCING
+        sync_transactions
+      when SETUP_PHASE::PRE_DONE
+        info "successfully setup the node"
 
-        @flag = FLAG_SETUP_DONE
+        @phase = SETUP_PHASE::DONE
       end
     end
 

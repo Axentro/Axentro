@@ -197,7 +197,7 @@ module ::Sushi::Core
 
         aligned_transactions = content.transactions
         aligned_transactions.each_with_index do |t, idx|
-          t.valid_with_dapps?(self, aligned_transactions[0..idx-1]) if idx > 0
+          t.valid_with_dapps?(self, aligned_transactions[0..idx - 1]) if idx > 0
         rescue e : Exception
           warning "invalid transaction found, will be removed from the pool"
           warning e.message.not_nil! if e.message

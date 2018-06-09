@@ -175,6 +175,18 @@ module ::Sushi::Core::Protocol
     })
   end
 
+  M_TYPE_NODE_REQUEST_TRANSACTIONS = 0x0106
+
+  struct M_CONTENT_NODE_REQUEST_TRANSACTIONS
+    JSON.mapping({ transactions: Array(Transaction) })
+  end
+
+  M_TYPE_NODE_RECEIVE_TRANSACTIONS = 0x0107
+
+  struct M_CONTENT_NODE_RECEIVE_TRANSACTIONS
+    JSON.mapping({ transactions: Array(Transaction) })
+  end
+
   ######################################
   # Transaction Pool
   ######################################
@@ -190,45 +202,48 @@ module ::Sushi::Core::Protocol
   end
 
   struct TXP_REQ_ADD
-    JSON.mapping({ transaction: Transaction })
+    JSON.mapping({transaction: Transaction})
   end
 
   struct TXP_REQ_DELETE
-    JSON.mapping({ transaction: Transaction })
+    JSON.mapping({transaction: Transaction})
   end
 
   struct TXP_REQ_REPLACE
-    JSON.mapping({ transactions: Array(Transaction) })
+    JSON.mapping({transactions: Array(Transaction)})
   end
 
   struct TXP_RES_ALL
-    JSON.mapping({ transactions: Array(Transaction) })
+    JSON.mapping({transactions: Array(Transaction)})
   end
 
   struct TXP_REQ_ALIGN
-    JSON.mapping({ coinbase_transaction: Transaction, coinbase_amount: Int64 })
+    JSON.mapping({coinbase_transaction: Transaction, coinbase_amount: Int64})
   end
 
   struct TXP_RES_ALIGN
-    JSON.mapping({ transactions: Array(Transaction), rejects: Array(NamedTuple(transaction_id: String, reason: String)) })
+    JSON.mapping({transactions: Array(Transaction), rejects: Array(NamedTuple(transaction_id: String, reason: String))})
   end
 
   struct TXP_REQ_VALIDATE
-    JSON.mapping({ coinbase_amount: Int64, transactions: Array(Transaction) })
+    JSON.mapping({coinbase_amount: Int64, transactions: Array(Transaction)})
   end
 
   struct TXP_RES_VALIDATE
-    JSON.mapping({ valid: Bool, reason: String })
+    JSON.mapping({valid: Bool, reason: String})
   end
 
   ######################################
   # Blockchain's setup phase
   ######################################
 
-  FLAG_NONE               = 0
-  FLAG_CONNECTING_NODES   = 1
-  FLAG_BLOCKCHAIN_LOADING = 2
-  FLAG_BLOCKCHAIN_SYNCING = 3
-  FLAG_SETUP_PRE_DONE     = 4
-  FLAG_SETUP_DONE         = 5
+  enum SETUP_PHASE
+    NONE
+    CONNECTING_NODES
+    BLOCKCHAIN_LOADING
+    BLOCKCHAIN_SYNCING
+    TRANSACTION_SYNCING
+    PRE_DONE
+    DONE
+  end
 end

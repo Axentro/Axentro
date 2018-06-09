@@ -34,7 +34,7 @@ module ::Sushi::Core
     end
 
     def self.add(transaction : Transaction)
-      request = create_request(TXP::ADD, { transaction: transaction })
+      request = create_request(TXP::ADD, {transaction: transaction})
       worker.exec(request)
     end
 
@@ -50,7 +50,7 @@ module ::Sushi::Core
     end
 
     def self.delete(transaction : Transaction)
-      request = create_request(TXP::DELETE, { transaction: transaction })
+      request = create_request(TXP::DELETE, {transaction: transaction})
       worker.exec(request)
     end
 
@@ -62,7 +62,7 @@ module ::Sushi::Core
     end
 
     def self.replace(transactions : Transactions)
-      request = create_request(TXP::REPLACE, { transactions: transactions })
+      request = create_request(TXP::REPLACE, {transactions: transactions})
       worker.exec(request)
     end
 
@@ -84,15 +84,15 @@ module ::Sushi::Core
     end
 
     def all
-      response({ transactions: @pool }.to_json)
+      response({transactions: @pool}.to_json)
     end
 
     def self.align(coinbase_transaction : Transaction, coinbase_amount : Int64)
       request = create_request(TXP::ALIGN,
-                               {
-                                 coinbase_transaction: coinbase_transaction,
-                                 coinbase_amount: coinbase_amount
-                               })
+        {
+          coinbase_transaction: coinbase_transaction,
+          coinbase_amount:      coinbase_amount,
+        })
       worker.exec(request)
     end
 
@@ -112,18 +112,18 @@ module ::Sushi::Core
 
         aligned_transactions << t
       rescue e : Exception
-        rejects << { transaction_id: t.id, reason: e.message || "unknown" }
+        rejects << {transaction_id: t.id, reason: e.message || "unknown"}
       end
 
-      response({ transactions: aligned_transactions, rejects: rejects }.to_json)
+      response({transactions: aligned_transactions, rejects: rejects}.to_json)
     end
 
     def self.validate(coinbase_amount : Int64, transactions : Transactions)
       request = create_request(TXP::VALIDATE,
-                               {
-                                 coinbase_amount: coinbase_amount,
-                                 transactions: transactions,
-                               })
+        {
+          coinbase_amount: coinbase_amount,
+          transactions:    transactions,
+        })
       worker.exec(request)
     end
 
@@ -136,10 +136,10 @@ module ::Sushi::Core
       transactions.each_with_index do |t, idx|
         t.valid_without_dapps?(coinbase_amount, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
       rescue e : Exception
-        return response({ valid: false, reason: e.message.not_nil! }.to_json)
+        return response({valid: false, reason: e.message.not_nil!}.to_json)
       end
 
-      response({ valid: true, reason: "" }.to_json)
+      response({valid: true, reason: ""}.to_json)
     end
 
     def self.lock

@@ -161,7 +161,7 @@ module ::Sushi::Core::NodeComponents
 
       @predecessor = {socket: socket, context: _context}
 
-      node.flag = FLAG_BLOCKCHAIN_LOADING
+      node.phase = SETUP_PHASE::BLOCKCHAIN_LOADING
       node.proceed_setup
     end
 
@@ -183,7 +183,7 @@ module ::Sushi::Core::NodeComponents
 
       connect_to_successor(node, _context)
 
-      node.flag = FLAG_BLOCKCHAIN_LOADING
+      node.phase = SETUP_PHASE::BLOCKCHAIN_LOADING
       node.proceed_setup
     end
 

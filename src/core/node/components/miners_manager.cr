@@ -32,7 +32,7 @@ module ::Sushi::Core::NodeComponents
     end
 
     def handshake(node, socket, _content)
-      return unless node.flag == FLAG_SETUP_DONE
+      return unless node.phase == SETUP_PHASE::DONE
 
       _m_content = M_CONTENT_MINER_HANDSHAKE.from_json(_content)
 
@@ -73,7 +73,7 @@ module ::Sushi::Core::NodeComponents
     end
 
     def found_nonce(node, socket, _content)
-      return unless node.flag == FLAG_SETUP_DONE
+      return unless node.phase == SETUP_PHASE::DONE
 
       _m_content = M_CONTENT_MINER_FOUND_NONCE.from_json(_content)
 
