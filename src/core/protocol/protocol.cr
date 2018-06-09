@@ -178,13 +178,13 @@ module ::Sushi::Core::Protocol
   M_TYPE_NODE_REQUEST_TRANSACTIONS = 0x0106
 
   struct M_CONTENT_NODE_REQUEST_TRANSACTIONS
-    JSON.mapping({ transactions: Array(Transaction) })
+    JSON.mapping({transactions: Array(Transaction)})
   end
 
   M_TYPE_NODE_RECEIVE_TRANSACTIONS = 0x0107
 
   struct M_CONTENT_NODE_RECEIVE_TRANSACTIONS
-    JSON.mapping({ transactions: Array(Transaction) })
+    JSON.mapping({transactions: Array(Transaction)})
   end
 
   ######################################

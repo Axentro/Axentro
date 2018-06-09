@@ -353,7 +353,7 @@ module ::Sushi::Core
       chain = _m_content.chain
 
       if _chain = chain
-        info "received chain's size: #{_chain.size}"
+        info "received #{_chain.size} blocks"
       else
         info "received empty chain"
       end
@@ -389,7 +389,7 @@ module ::Sushi::Core
     private def _request_transactions(socket, _content)
       _m_content = M_CONTENT_NODE_REQUEST_TRANSACTIONS.from_json(_content)
 
-      debug "requested transactions"
+      info "requested transactions"
 
       transactions = @blockchain.pending_transactions
 
@@ -406,6 +406,8 @@ module ::Sushi::Core
       _m_content = M_CONTENT_NODE_RECEIVE_TRANSACTIONS.from_json(_content)
 
       transactions = _m_content.transactions
+
+      info "received #{transactions.size} transactions"
 
       TransactionPool.lock
       TransactionPool.replace(transactions)
