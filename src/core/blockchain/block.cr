@@ -83,24 +83,19 @@ module ::Sushi::Core
         raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
 
         unless skip_transaction_validation
-          #
-          # todo
-          #
-          # step 1
-          # - validate for transaction structure
-          #
-          # step 2
-          # - validate for dApps
-          #
-          transactions.each_with_index do |transaction, idx|
-            # todo
-            # transaction.valid?(blockchain, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
-            coinbase_amount = blockchain.latest_block.coinbase_amount
-            transaction.valid_without_dapps?(coinbase_amount, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
-            #
-            # todo
-            #
-            blockchain.transaction_valid_dapps?(transaction, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
+          coinbase_amount = blockchain.latest_block.coinbase_amount
+
+          TransactionPool.validate(coinbase_amount, transactions)
+
+          if response = TransactionPool.receive
+            result = TXP_RES_VALIDATE.from_json(response)
+            raise result.reason unless result.valid
+          else
+            raise "failed to validate transactions for a block"
+          end
+
+          transactions.each_with_index do |t, idx|
+            t.valid_with_dapps?(blockchain, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
           end
         end
 
@@ -176,6 +171,7 @@ module ::Sushi::Core
     end
 
     include Hashes
+    include Protocol
     include Consensus
     include Common::Timestamp
   end

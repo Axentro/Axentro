@@ -28,13 +28,10 @@ module ::Sushi::Core
       difficulty: Int32,
     )
 
-    alias Transactions = Array(Transaction)
-
     getter chain : Chain = Chain.new
     getter wallet : Wallet
 
     @node : Node?
-    @queue : BlockQueue::Queue? # todo (deprecate)
 
     def initialize(@wallet : Wallet, @database : Database? = nil)
       initialize_dapps
@@ -43,8 +40,6 @@ module ::Sushi::Core
     end
 
     def setup(@node : Node)
-      @queue = BlockQueue::Queue.create_instance(self)
-
       setup_dapps
 
       if database = @database
@@ -56,10 +51,6 @@ module ::Sushi::Core
 
     def node
       @node.not_nil!
-    end
-
-    def queue
-      @queue.not_nil!
     end
 
     def set_genesis
@@ -102,8 +93,8 @@ module ::Sushi::Core
     end
 
     def clean_transactions
+      TransactionPool.lock
       transactions = pending_transactions.reject { |t| indices.get(t.id) }
-
       TransactionPool.replace(transactions)
     end
 
@@ -113,10 +104,6 @@ module ::Sushi::Core
 
       coinbase_transaction = create_coinbase_transaction(miners)
       coinbase_amount = latest_block.coinbase_amount
-
-      # transactions = pending_transactions
-      # transactions = [coinbase_transaction] + transactions
-      # transactions = align_transactions(transactions) # todo
 
       transactions = align_transactions(coinbase_transaction, coinbase_amount)
 
@@ -210,7 +197,7 @@ module ::Sushi::Core
 
         aligned_transactions = content.transactions
         aligned_transactions.each_with_index do |t, idx|
-          transaction_valid_dapps?(t, aligned_transactions[0..idx-1]) if idx > 0
+          t.valid_with_dapps?(self, aligned_transactions[0..idx-1]) if idx > 0
         rescue e : Exception
           warning "invalid transaction found, will be removed from the pool"
           warning e.message.not_nil! if e.message
@@ -223,38 +210,6 @@ module ::Sushi::Core
 
       raise "failed to get aligned transactions from pool"
     end
-
-    # def align_transactions(transactions : Array(Transaction))
-    #   return [] of Transaction if transactions.size == 0
-    #  
-    #   selected_transactions = [transactions[0]]
-    #  
-    #   # Get aligned transactions from transaction pool
-    #   #
-    #   # step 2
-    #   # - ~~ validate for dApps ~~
-    #   #
-    #   transactions[1..-1].each_with_index do |transaction, idx|
-    #     transaction.prev_hash = selected_transactions[-1].to_hash
-    #     # todo
-    #     # transaction.valid?(self, selected_transactions)
-    #     coinbase_amount = latest_block.coinbase_amount
-    #     transaction.valid_without_dapps?(coinbase_amount, selected_transactions)
-    #  
-    #     transaction_valid_dapps?(transaction, selected_transactions)
-    #  
-    #     selected_transactions << transaction
-    #   rescue e : Exception
-    #     warning "invalid transaction found, will be removed from the pool"
-    #     warning e.message.not_nil! if e.message
-    #  
-    #     rejects.record_reject(transaction.id, e)
-    #  
-    #     TransactionPool.delete(transaction)
-    #   end
-    #  
-    #   selected_transactions
-    # end
 
     def latest_block : Block
       @chain[-1]
@@ -340,18 +295,6 @@ module ::Sushi::Core
 
     def available_actions : Array(String)
       @dapps.map { |dapp| dapp.transaction_actions }.flatten
-    end
-
-    #
-    # todo
-    # move to Transaction
-    #
-    def transaction_valid_dapps?(transaction : Transaction, transactions : Transactions)
-      dapps.each do |dapp|
-        if dapp.transaction_related?(transaction.action) && transactions.size > 0
-          dapp.valid?(transaction, transactions)
-        end
-      end
     end
 
     def pending_transactions : Transactions

@@ -92,14 +92,13 @@ module ::Sushi::Core::NodeComponents
           })
         else
           info "miner #{miner[:context][:address][0..7]} found nonce (nonces: #{miner[:context][:nonces].size})"
-
           miner[:context][:nonces].push(nonce)
 
-          found = true
+          if block = @blockchain.valid_block?(nonce, @miners)
+            node.new_block(block, true)
+          end
         end
       end
-
-      @blockchain.queue.enqueue(BlockQueue::TaskFoundNonce.new(node, nonce, @miners)) if found
     end
 
     def clear_nonces

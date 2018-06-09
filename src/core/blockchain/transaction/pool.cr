@@ -14,9 +14,10 @@ module ::Sushi::Core
   class TransactionPool < Tokoroten::Worker
     @@worker : Tokoroten::Worker? = nil
 
-    alias Transactions = Array(Transaction)
-
     @pool : Transactions = Transactions.new
+    @pool_locked : Transactions = Transactions.new
+
+    @locked : Bool = false
 
     alias TxPoolWork = NamedTuple(call: Int32, content: String)
 
@@ -41,7 +42,11 @@ module ::Sushi::Core
       request = TXP_REQ_ADD.from_json(content)
       transaction = request.transaction
 
-      @pool << transaction
+      if @locked
+        @pool_locked << transaction
+      else
+        @pool << transaction
+      end
     end
 
     def self.delete(transaction : Transaction)
@@ -61,15 +66,16 @@ module ::Sushi::Core
       worker.exec(request)
     end
 
-    #
-    # todo
-    # 重複確認中にTransactionをdropしてしまう可能性がある
-    #
     def replace(content : String)
       request = TXP_REQ_REPLACE.from_json(content)
       transactions = request.transactions
 
       @pool = transactions
+      @pool.concat(@pool_locked)
+
+      @locked = false
+
+      @pool_locked.clear
     end
 
     def self.all
@@ -109,8 +115,40 @@ module ::Sushi::Core
         rejects << { transaction_id: t.id, reason: e.message || "unknown" }
       end
 
-      response({ transactions: aligned_transactions,
-                 rejects: rejects }.to_json)
+      response({ transactions: aligned_transactions, rejects: rejects }.to_json)
+    end
+
+    def self.validate(coinbase_amount : Int64, transactions : Transactions)
+      request = create_request(TXP::VALIDATE,
+                               {
+                                 coinbase_amount: coinbase_amount,
+                                 transactions: transactions,
+                               })
+      worker.exec(request)
+    end
+
+    def validate(content : String)
+      request = TXP_REQ_VALIDATE.from_json(content)
+
+      coinbase_amount = request.coinbase_amount
+
+      transactions = request.transactions
+      transactions.each_with_index do |t, idx|
+        t.valid_without_dapps?(coinbase_amount, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
+      rescue e : Exception
+        return response({ valid: false, reason: e.message.not_nil! }.to_json)
+      end
+
+      response({ valid: true, reason: "" }.to_json)
+    end
+
+    def self.lock
+      request = create_request(TXP::LOCK, "")
+      worker.exec(request)
+    end
+
+    def lock
+      @locked = true
     end
 
     def self.receive
@@ -120,34 +158,29 @@ module ::Sushi::Core
     def task(message : String)
       json = TxPoolWork.from_json(message)
 
-      p "----------------- task #{json[:call]} ----------------------"
-      #
-      # TODO:
-      # fix Protocol.**to_i**
-      #
       case json[:call]
       when TXP::ADD.to_i
-        p "--> add"
         add(json[:content])
       when TXP::DELETE.to_i
-        p "--> delete"
         delete(json[:content])
       when TXP::REPLACE.to_i
-        p "--> replace"
         replace(json[:content])
       when TXP::ALL.to_i
-        p "--> all"
         all
       when TXP::ALIGN.to_i
-        p "--> align"
         align(json[:content])
+      when TXP::VALIDATE.to_i
+        validate(json[:content])
+      when TXP::LOCK.to_i
+        lock
       end
     rescue e : Exception
       error e.message.not_nil!
       error e.backtrace.join("n")
     end
 
-    include Protocol
     include Logger
+    include Protocol
+    include TransactionModels
   end
 end

@@ -185,6 +185,8 @@ module ::Sushi::Core::Protocol
     REPLACE
     ALL
     ALIGN
+    LOCK
+    VALIDATE
   end
 
   struct TXP_REQ_ADD
@@ -209,6 +211,14 @@ module ::Sushi::Core::Protocol
 
   struct TXP_RES_ALIGN
     JSON.mapping({ transactions: Array(Transaction), rejects: Array(NamedTuple(transaction_id: String, reason: String)) })
+  end
+
+  struct TXP_REQ_VALIDATE
+    JSON.mapping({ coinbase_amount: Int64, transactions: Array(Transaction) })
+  end
+
+  struct TXP_RES_VALIDATE
+    JSON.mapping({ valid: Bool, reason: String })
   end
 
   ######################################

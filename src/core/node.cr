@@ -227,7 +227,9 @@ module ::Sushi::Core
       if @blockchain.latest_index + 1 == block.index
         info "new block coming: #{light_cyan(@blockchain.chain.size)}"
 
-        @blockchain.queue.enqueue(BlockQueue::TaskReceiveBlock.new(self, block))
+        if _block = @blockchain.valid_block?(block)
+          new_block(_block, false)
+        end
 
         send_block(block, from)
       elsif @blockchain.latest_index == block.index
@@ -259,7 +261,7 @@ module ::Sushi::Core
       end
     end
 
-    def callback(block : Block, by_self : Bool)
+    def new_block(block : Block, by_self : Bool)
       @blockchain.push_block(block)
 
       if by_self

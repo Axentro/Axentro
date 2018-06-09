@@ -46,4 +46,6 @@ module ::Sushi::Core::TransactionModels
   )
 
   alias RecipientsDecimal = Array(RecipientDecimal)
+
+  alias Transactions = Array(Transaction)
 end

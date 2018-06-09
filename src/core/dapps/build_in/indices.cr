@@ -89,7 +89,6 @@ module ::Sushi::Core::DApps::BuildIn
         end
       end
 
-      # todo
       if transaction = blockchain.pending_transactions.find { |t| t.id == transaction_id }
         return {
           status:      "pending",
