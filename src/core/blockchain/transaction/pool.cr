@@ -90,7 +90,7 @@ module ::Sushi::Core
 
       {
         transactions: aligned_transactions,
-        rejects: rejects,
+        rejects:      rejects,
       }
     end
 
@@ -102,10 +102,10 @@ module ::Sushi::Core
       transactions.each_with_index do |t, idx|
         t.valid_without_dapps?(coinbase_amount, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
       rescue e : Exception
-        return { valid: false, reason: e.message.not_nil! }
+        return {valid: false, reason: e.message.not_nil!}
       end
 
-      { valid: true, reason: "" }
+      {valid: true, reason: ""}
     end
 
     def self.lock

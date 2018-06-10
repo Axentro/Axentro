@@ -15,7 +15,6 @@ require "./utils"
 
 module ::E2E
   class Client < Tokoroten::Worker
-
     @@client : Tokoroten::Worker? = nil
 
     alias ClientWork = NamedTuple(call: Int32, content: String)
