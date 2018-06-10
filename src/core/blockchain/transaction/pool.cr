@@ -11,8 +11,8 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core
-  class TransactionPool < Tokoroten::Worker
-    @@worker : Tokoroten::Worker? = nil
+  class TransactionPool
+    @@worker : TransactionPool? = nil
 
     @pool : Transactions = Transactions.new
     @pool_locked : Transactions = Transactions.new
@@ -22,26 +22,18 @@ module ::Sushi::Core
     alias TxPoolWork = NamedTuple(call: Int32, content: String)
 
     def self.setup
-      @@worker ||= TransactionPool.create(1)[0]
+      @@worker ||= TransactionPool.new
     end
 
-    def self.worker : Tokoroten::Worker
+    def self.worker : TransactionPool
       @@worker.not_nil!
     end
 
-    def self.create_request(protocol : TXP, content)
-      {call: protocol, content: content.to_json}.to_json
-    end
-
     def self.add(transaction : Transaction)
-      request = create_request(TXP::ADD, {transaction: transaction})
-      worker.exec(request)
+      worker.add(transaction)
     end
 
-    def add(content : String)
-      request = TXP_REQ_ADD.from_json(content)
-      transaction = request.transaction
-
+    def add(transaction : Transaction)
       if @locked
         @pool_locked << transaction
       else
@@ -50,26 +42,18 @@ module ::Sushi::Core
     end
 
     def self.delete(transaction : Transaction)
-      request = create_request(TXP::DELETE, {transaction: transaction})
-      worker.exec(request)
+      worker.delete(transaction)
     end
 
-    def delete(content : String)
-      request = TXP_REQ_DELETE.from_json(content)
-      transaction = request.transaction
-
+    def delete(transaction : Transaction)
       @pool.reject! { |t| t.id == transaction.id }
     end
 
     def self.replace(transactions : Transactions)
-      request = create_request(TXP::REPLACE, {transactions: transactions})
-      worker.exec(request)
+      worker.replace(transactions)
     end
 
-    def replace(content : String)
-      request = TXP_REQ_REPLACE.from_json(content)
-      transactions = request.transactions
-
+    def replace(transactions : Transactions)
       @pool = transactions
       @pool.concat(@pool_locked)
 
@@ -79,29 +63,18 @@ module ::Sushi::Core
     end
 
     def self.all
-      request = create_request(TXP::ALL, "")
-      worker.exec(request)
+      worker.all
     end
 
     def all
-      response({transactions: @pool}.to_json)
+      @pool
     end
 
     def self.align(coinbase_transaction : Transaction, coinbase_amount : Int64)
-      request = create_request(TXP::ALIGN,
-        {
-          coinbase_transaction: coinbase_transaction,
-          coinbase_amount:      coinbase_amount,
-        })
-      worker.exec(request)
+      worker.align(coinbase_transaction, coinbase_amount)
     end
 
-    def align(content : String)
-      request = TXP_REQ_ALIGN.from_json(content)
-
-      coinbase_transaction = request.coinbase_transaction
-      coinbase_amount = request.coinbase_amount
-
+    def align(coinbase_transaction : Transaction, coinbase_amount : Int64)
       aligned_transactions = [coinbase_transaction]
 
       rejects = [] of NamedTuple(transaction_id: String, reason: String)
@@ -115,72 +88,35 @@ module ::Sushi::Core
         rejects << {transaction_id: t.id, reason: e.message || "unknown"}
       end
 
-      response({transactions: aligned_transactions, rejects: rejects}.to_json)
+      {
+        transactions: aligned_transactions,
+        rejects: rejects,
+      }
     end
 
     def self.validate(coinbase_amount : Int64, transactions : Transactions)
-      request = create_request(TXP::VALIDATE,
-        {
-          coinbase_amount: coinbase_amount,
-          transactions:    transactions,
-        })
-      worker.exec(request)
+      worker.validate(coinbase_amount, transactions)
     end
 
-    def validate(content : String)
-      request = TXP_REQ_VALIDATE.from_json(content)
-
-      coinbase_amount = request.coinbase_amount
-
-      transactions = request.transactions
+    def validate(coinbase_amount : Int64, transactions : Transactions)
       transactions.each_with_index do |t, idx|
         t.valid_without_dapps?(coinbase_amount, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
       rescue e : Exception
-        return response({valid: false, reason: e.message.not_nil!}.to_json)
+        return { valid: false, reason: e.message.not_nil! }
       end
 
-      response({valid: true, reason: ""}.to_json)
+      { valid: true, reason: "" }
     end
 
     def self.lock
-      request = create_request(TXP::LOCK, "")
-      worker.exec(request)
+      worker.lock
     end
 
     def lock
       @locked = true
     end
 
-    def self.receive
-      worker.receive
-    end
-
-    def task(message : String)
-      json = TxPoolWork.from_json(message)
-
-      case json[:call]
-      when TXP::ADD.to_i
-        add(json[:content])
-      when TXP::DELETE.to_i
-        delete(json[:content])
-      when TXP::REPLACE.to_i
-        replace(json[:content])
-      when TXP::ALL.to_i
-        all
-      when TXP::ALIGN.to_i
-        align(json[:content])
-      when TXP::VALIDATE.to_i
-        validate(json[:content])
-      when TXP::LOCK.to_i
-        lock
-      end
-    rescue e : Exception
-      error e.message.not_nil!
-      error e.backtrace.join("n")
-    end
-
     include Logger
-    include Protocol
     include TransactionModels
   end
 end

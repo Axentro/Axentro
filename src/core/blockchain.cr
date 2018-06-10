@@ -190,25 +190,26 @@ module ::Sushi::Core
     end
 
     def align_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64)
-      TransactionPool.align(coinbase_transaction, coinbase_amount)
+      aligned = TransactionPool.align(coinbase_transaction, coinbase_amount)
+      #
+      # todo:
+      # record rejects
+      #
+      aligned_transactions = aligned[:transactions]
+      aligned_transactions.each_with_index do |t, idx|
+        t.valid_with_dapps?(self, aligned_transactions[0..idx - 1]) if idx > 0
+      rescue e : Exception
+        #
+        # todo:
+        # buggy. since prev_hash will be broken for this.
+        #
+        warning "invalid transaction found, will be removed from the pool"
+        warning e.message.not_nil! if e.message
 
-      if response = TransactionPool.receive
-        content = TXP_RES_ALIGN.from_json(response)
-
-        aligned_transactions = content.transactions
-        aligned_transactions.each_with_index do |t, idx|
-          t.valid_with_dapps?(self, aligned_transactions[0..idx - 1]) if idx > 0
-        rescue e : Exception
-          warning "invalid transaction found, will be removed from the pool"
-          warning e.message.not_nil! if e.message
-
-          TransactionPool.delete(t)
-        end
-
-        return aligned_transactions
+        TransactionPool.delete(t)
       end
 
-      raise "failed to get aligned transactions from pool"
+      return aligned_transactions
     end
 
     def latest_block : Block
@@ -299,12 +300,6 @@ module ::Sushi::Core
 
     def pending_transactions : Transactions
       TransactionPool.all
-
-      if response = TransactionPool.receive
-        return TXP_RES_ALL.from_json(response).transactions
-      end
-
-      Transactions.new
     end
 
     private def dapps_record

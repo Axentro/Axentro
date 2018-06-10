@@ -85,14 +85,12 @@ module ::Sushi::Core
         unless skip_transaction_validation
           coinbase_amount = blockchain.latest_block.coinbase_amount
 
-          TransactionPool.validate(coinbase_amount, transactions)
-
-          if response = TransactionPool.receive
-            result = TXP_RES_VALIDATE.from_json(response)
-            raise result.reason unless result.valid
-          else
-            raise "failed to validate transactions for a block"
-          end
+          #
+          # todo
+          # buggy.
+          #
+          validated = TransactionPool.validate(coinbase_amount, transactions)
+          raise validated[:reason] unless validated[:valid]
 
           transactions.each_with_index do |t, idx|
             t.valid_with_dapps?(blockchain, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
