@@ -297,6 +297,9 @@ module ::Sushi::Core
     end
 
     def new_block(block : Block, by_self : Bool)
+      p "---------------- new block"
+      p block.without_nonce.valid_nonce?
+
       @blockchain.push_block(block)
 
       if by_self
@@ -304,13 +307,17 @@ module ::Sushi::Core
         @miners_manager.clear_nonces
       end
 
-      @miners_manager.broadcast_latest_block
+      @miners_manager.broadcast
       @pubsub_controller.broadcast_latest_block
     end
 
     def clean_connection(socket : HTTP::WebSocket)
       @chord.clean_connection(socket)
       @miners_manager.clean_connection(socket)
+    end
+
+    def miners
+      @miners_manager.miners
     end
 
     private def _broadcast_transaction(socket, _content)
@@ -362,7 +369,7 @@ module ::Sushi::Core
 
       if @blockchain.replace_chain(chain)
         info "chain updated: #{light_green(current_latest_index)} -> #{light_green(@blockchain.latest_index)}"
-        @miners_manager.broadcast_latest_block
+        @miners_manager.broadcast
 
         @conflicted_index = nil
       end

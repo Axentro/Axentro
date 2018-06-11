@@ -51,6 +51,28 @@ module ::Sushi::Core
       }
     end
 
+    def with_nonce(nonce : UInt64) : Block
+      Block.new(
+        @index,
+        @transactions,
+        nonce,
+        @prev_hash,
+        @timestamp,
+        @difficulty
+      )
+    end
+
+    def without_nonce : Block
+      Block.new(
+        @index,
+        @transactions,
+        0_u64,
+        @prev_hash,
+        @timestamp,
+        @difficulty
+      )
+    end
+
     def calcluate_merkle_tree_root : String
       return "" if @transactions.size == 0
 
@@ -72,8 +94,11 @@ module ::Sushi::Core
       ripemd160(current_hashes[0])
     end
 
-    def valid_nonce?(nonce : UInt64, difficulty : Int32 = self.difficulty)
-      valid_nonce?(self.index, self.to_hash, nonce, difficulty)
+    def valid_nonce?(difficulty : Int32 = @difficulty)
+      p self.to_hash
+      p @nonce
+      p difficulty
+      valid_nonce?(self.to_hash, @nonce, difficulty)
     end
 
     def valid_as_latest?(blockchain : Blockchain, skip_transaction_validation : Bool = false) : Bool
@@ -81,6 +106,7 @@ module ::Sushi::Core
 
       unless is_genesis
         raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
+        raise "the nonce is invalid: #{@nonce}" if self.without_nonce.valid_nonce?
 
         unless skip_transaction_validation
           coinbase_amount = blockchain.latest_block.coinbase_amount
@@ -97,7 +123,24 @@ module ::Sushi::Core
           end
         end
 
-        return valid_for?(blockchain.latest_block)
+        prev_block = blockchain.latest_block
+
+        raise "mismatch index for the prev block(#{prev_block.index}): #{@index}" if prev_block.index + 1 != @index
+        raise "prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
+
+        next_timestamp = __timestamp
+        prev_timestamp = prev_block.timestamp
+
+        if prev_timestamp > @timestamp || next_timestamp < @timestamp
+          raise "timestamp is invalid: #{@timestamp} (timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
+        end
+
+        if @difficulty != block_difficulty(@timestamp, prev_block)
+          raise "difficulty is invalid (expected #{block_difficulty(@timestamp, prev_block)} but got #{@difficulty})"
+        end
+
+        merkle_tree_root = calcluate_merkle_tree_root
+        raise "invalid merkle tree root: #{merkle_tree_root} != #{@merkle_tree_root}" if merkle_tree_root != @merkle_tree_root
       else
         raise "index has to be '0' for genesis block: #{@index}" if @index != 0
         raise "transactions have to be empty for genesis block: #{@transactions}" if !@transactions.empty?
@@ -105,28 +148,6 @@ module ::Sushi::Core
         raise "prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
         raise "difficulty has to be '3' for genesis block: #{@difficulty}" if @difficulty != 3
       end
-
-      true
-    end
-
-    def valid_for?(prev_block : Block) : Bool
-      raise "mismatch index for the prev block(#{prev_block.index}): #{@index}" if prev_block.index + 1 != @index
-      raise "prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
-      raise "the nonce is invalid: #{@nonce}" if !prev_block.valid_nonce?(@nonce)
-
-      next_timestamp = __timestamp
-      prev_timestamp = prev_block.timestamp
-
-      if prev_timestamp > @timestamp || next_timestamp < @timestamp
-        raise "timestamp is invalid: #{@timestamp} (timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
-      end
-
-      if @difficulty != block_difficulty(@timestamp, prev_block)
-        raise "difficulty is invalid (expected #{block_difficulty(@timestamp, prev_block)} but got #{@difficulty})"
-      end
-
-      merkle_tree_root = calcluate_merkle_tree_root
-      raise "invalid merkle tree root: #{merkle_tree_root} != #{@merkle_tree_root}" if merkle_tree_root != @merkle_tree_root
 
       true
     end

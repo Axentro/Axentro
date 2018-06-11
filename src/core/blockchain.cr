@@ -32,6 +32,7 @@ module ::Sushi::Core
     getter wallet : Wallet
 
     @node : Node?
+    @mining_block : Block?
 
     def initialize(@wallet : Wallet, @database : Database? = nil)
       initialize_dapps
@@ -45,7 +46,7 @@ module ::Sushi::Core
       if database = @database
         restore_from_database(database)
       else
-        set_genesis
+        push_genesis
       end
     end
 
@@ -53,15 +54,19 @@ module ::Sushi::Core
       @node.not_nil!
     end
 
-    def set_genesis
-      @chain.push(genesis_block)
-
-      dapps_record
-
-      if database = @database
-        database.push_block(genesis_block)
-      end
+    def push_genesis
+      push_block(genesis_block)
     end
+
+    # def set_genesis
+    #   @chain.push(genesis_block)
+    #  
+    #   dapps_record
+    #  
+    #   if database = @database
+    #     database.push_block(genesis_block)
+    #   end
+    # end
 
     def restore_from_database(database : Database)
       info "start loding blockchain from #{database.path}"
@@ -89,7 +94,7 @@ module ::Sushi::Core
 
       database.delete_blocks(current_index.not_nil!)
     ensure
-      set_genesis if @chain.size == 0
+      push_genesis if @chain.size == 0
     end
 
     def clean_transactions
@@ -99,26 +104,8 @@ module ::Sushi::Core
     end
 
     def valid_block?(nonce : UInt64, miners : NodeComponents::MinersManager::Miners) : Block?
-      return nil unless latest_block.valid_nonce?(nonce)
-      index = @chain.size.to_i64
-
-      coinbase_transaction = create_coinbase_transaction(miners)
-      coinbase_amount = latest_block.coinbase_amount
-
-      transactions = align_transactions(coinbase_transaction, coinbase_amount)
-
-      timestamp = __timestamp
-
-      difficulty = block_difficulty(timestamp, latest_block)
-
-      Block.new(
-        index,
-        transactions,
-        nonce,
-        latest_block.to_hash,
-        timestamp,
-        difficulty,
-      )
+      return mining_block.with_nonce(nonce) if mining_block.valid_nonce?
+      nil
     end
 
     def valid_block?(block : Block) : Block?
@@ -127,12 +114,12 @@ module ::Sushi::Core
       block
     end
 
-    def block_difficulty_latest : Int32
-      latest_block.difficulty
+    def mining_block_difficulty : Int32
+      mining_block.difficulty
     end
 
-    def miner_difficulty_latest : Int32
-      Math.max(block_difficulty_latest - 1, 1)
+    def mining_block_difficulty_miner : Int32
+      Math.max(mining_block_difficulty - 1, 1)
     end
 
     def push_block(block : Block)
@@ -145,6 +132,9 @@ module ::Sushi::Core
       end
 
       clean_transactions
+
+      refresh_mining_block
+
       block
     end
 
@@ -182,6 +172,10 @@ module ::Sushi::Core
         database.replace_chain(@chain)
       end
 
+      clean_transactions
+
+      refresh_mining_block
+
       true
     end
 
@@ -189,7 +183,7 @@ module ::Sushi::Core
       TransactionPool.add(transaction)
     end
 
-    def align_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64)
+    def align_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
       aligned = TransactionPool.align(coinbase_transaction, coinbase_amount)
       #
       # todo:
@@ -300,6 +294,31 @@ module ::Sushi::Core
 
     def pending_transactions : Transactions
       TransactionPool.all
+    end
+
+    def mining_block : Block
+      refresh_mining_block unless @mining_block
+      @mining_block.not_nil!
+    end
+
+    def refresh_mining_block
+      miners = node.miners
+
+      coinbase_transaction = create_coinbase_transaction(miners)
+      coinbase_amount = latest_block.coinbase_amount
+
+      transactions = align_transactions(coinbase_transaction, coinbase_amount)
+      timestamp = __timestamp
+      difficulty = block_difficulty(timestamp, latest_block)
+
+      @mining_block = Block.new(
+        latest_index + 1,
+        transactions,
+        0_u64, # nonce
+        latest_block.to_hash,
+        timestamp,
+        difficulty,
+      )
     end
 
     private def dapps_record

@@ -12,7 +12,7 @@
 
 module ::Sushi::Core::Consensus
   # SHA256 Implementation
-  def valid_sha256?(block_index : Int64, block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
+  def valid_sha256?(block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
     guess_nonce = "#{block_hash}#{nonce}"
     guess_hash = sha256(guess_nonce)
     guess_hash[0, difficulty] == "0" * difficulty
@@ -24,7 +24,7 @@ module ::Sushi::Core::Consensus
   K = 512
 
   # Scrypt Implementation
-  def valid_scryptn?(block_index : Int64, block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
+  def valid_scryptn?(block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
     nonce_salt = nonce.to_s(16)
     nonce_salt = "0" + nonce_salt if nonce_salt.bytesize % 2 != 0
 
@@ -44,9 +44,9 @@ module ::Sushi::Core::Consensus
     buffer.hexstring[0, difficulty] == "0" * difficulty
   end
 
-  def valid_nonce?(block_index : Int64, block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
+  def valid_nonce?(block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
     difficulty = ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY") # for unit test
-    valid_scryptn?(block_index, block_hash, nonce, difficulty)
+    valid_scryptn?(block_hash, nonce, difficulty)
   end
 
   BASE_TIME = 300.0

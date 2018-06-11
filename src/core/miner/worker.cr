@@ -23,7 +23,7 @@ module ::Sushi::Core
       latest_time = Time.now
 
       loop do
-        break if valid_nonce?(work[:index], work[:hash], nonce, work[:difficulty])
+        break if valid_nonce?(work[:hash], nonce, work[:difficulty])
 
         nonce += 1
 
@@ -43,6 +43,9 @@ module ::Sushi::Core
       end
 
       info "found new nonce(#{work[:difficulty]}): #{light_green(nonce)}"
+
+      p nonce
+      p work[:hash]
 
       response(nonce.to_s)
     rescue e : Exception
