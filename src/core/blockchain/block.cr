@@ -94,11 +94,8 @@ module ::Sushi::Core
       ripemd160(current_hashes[0])
     end
 
-    def valid_nonce?(difficulty : Int32 = @difficulty)
-      p self.to_hash
-      p @nonce
-      p difficulty
-      valid_nonce?(self.to_hash, @nonce, difficulty)
+    def valid_nonce?(nonce : UInt64, difficulty : Int32) : Bool
+      valid_nonce?(self.to_hash, nonce, difficulty)
     end
 
     def valid_as_latest?(blockchain : Blockchain, skip_transaction_validation : Bool = false) : Bool
@@ -106,7 +103,7 @@ module ::Sushi::Core
 
       unless is_genesis
         raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
-        raise "the nonce is invalid: #{@nonce}" if self.without_nonce.valid_nonce?
+        raise "the nonce is invalid: #{@nonce}" unless self.without_nonce.valid_nonce?(@nonce, @difficulty)
 
         unless skip_transaction_validation
           coinbase_amount = blockchain.latest_block.coinbase_amount

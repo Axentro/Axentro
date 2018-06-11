@@ -44,9 +44,6 @@ module ::Sushi::Core
 
       info "found new nonce(#{work[:difficulty]}): #{light_green(nonce)}"
 
-      p nonce
-      p work[:hash]
-
       response(nonce.to_s)
     rescue e : Exception
       error e.message.not_nil!

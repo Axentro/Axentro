@@ -297,9 +297,6 @@ module ::Sushi::Core
     end
 
     def new_block(block : Block, by_self : Bool)
-      p "---------------- new block"
-      p block.without_nonce.valid_nonce?
-
       @blockchain.push_block(block)
 
       if by_self

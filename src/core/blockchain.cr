@@ -104,7 +104,7 @@ module ::Sushi::Core
     end
 
     def valid_block?(nonce : UInt64, miners : NodeComponents::MinersManager::Miners) : Block?
-      return mining_block.with_nonce(nonce) if mining_block.valid_nonce?
+      return mining_block.with_nonce(nonce) if mining_block.valid_nonce?(nonce, mining_block_difficulty)
       nil
     end
 
