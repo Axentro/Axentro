@@ -58,16 +58,6 @@ module ::Sushi::Core
       push_block(genesis_block)
     end
 
-    # def set_genesis
-    #   @chain.push(genesis_block)
-    #  
-    #   dapps_record
-    #  
-    #   if database = @database
-    #     database.push_block(genesis_block)
-    #   end
-    # end
-
     def restore_from_database(database : Database)
       info "start loding blockchain from #{database.path}"
       info "there are #{database.max_index + 1} blockes recorded"
