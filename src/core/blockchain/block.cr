@@ -21,7 +21,7 @@ module ::Sushi::Core
       prev_hash:        String,
       merkle_tree_root: String,
       timestamp:        Int64,
-      difficulty:       Int32,
+      next_difficulty:  Int32,
     })
 
     def initialize(
@@ -30,7 +30,7 @@ module ::Sushi::Core
       @nonce : UInt64,
       @prev_hash : String,
       @timestamp : Int64,
-      @difficulty : Int32
+      @next_difficulty : Int32
     )
       @merkle_tree_root = calcluate_merkle_tree_root
     end
@@ -47,30 +47,12 @@ module ::Sushi::Core
         prev_hash:        @prev_hash,
         merkle_tree_root: @merkle_tree_root,
         timestamp:        @timestamp,
-        difficulty:       @difficulty,
+        next_difficulty:  @next_difficulty,
       }
     end
 
-    def with_nonce(nonce : UInt64) : Block
-      Block.new(
-        @index,
-        @transactions,
-        nonce,
-        @prev_hash,
-        @timestamp,
-        @difficulty
-      )
-    end
-
-    def without_nonce : Block
-      Block.new(
-        @index,
-        @transactions,
-        0_u64,
-        @prev_hash,
-        @timestamp,
-        @difficulty
-      )
+    def with_nonce(@nonce : UInt64) : Block
+      self
     end
 
     def calcluate_merkle_tree_root : String
@@ -94,18 +76,20 @@ module ::Sushi::Core
       ripemd160(current_hashes[0])
     end
 
-    def valid_nonce?(nonce : UInt64, difficulty : Int32) : Bool
-      valid_nonce?(self.to_hash, nonce, difficulty)
+    def valid_nonce?(difficulty : Int32) : Bool
+      valid_nonce?(self.to_hash, @nonce, difficulty)
     end
 
-    def valid_as_latest?(blockchain : Blockchain, skip_transaction_validation : Bool = false) : Bool
+    def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool = false) : Bool
       is_genesis = (@index == 0)
 
       unless is_genesis
-        raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
-        raise "the nonce is invalid: #{@nonce}" unless self.without_nonce.valid_nonce?(@nonce, @difficulty)
+        prev_block = blockchain.latest_block
 
-        unless skip_transaction_validation
+        raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
+        raise "the nonce is invalid: #{@nonce}" unless self.valid_nonce?(prev_block.next_difficulty)
+
+        unless skip_transactions
           transactions.each_with_index do |t, idx|
             if idx == 0
               t.valid_as_coinbase?(blockchain, @index, transactions[1..-1])
@@ -114,8 +98,6 @@ module ::Sushi::Core
             end
           end
         end
-
-        prev_block = blockchain.latest_block
 
         raise "mismatch index for the prev block(#{prev_block.index}): #{@index}" if prev_block.index + 1 != @index
         raise "prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
@@ -127,8 +109,8 @@ module ::Sushi::Core
           raise "timestamp is invalid: #{@timestamp} (timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
         end
 
-        if @difficulty != block_difficulty(@timestamp, prev_block)
-          raise "difficulty is invalid (expected #{block_difficulty(@timestamp, prev_block)} but got #{@difficulty})"
+        if @next_difficulty != block_difficulty(@timestamp, prev_block)
+          raise "difficulty is invalid (expected #{block_difficulty(@timestamp, prev_block)} but got #{@next_difficulty})"
         end
 
         merkle_tree_root = calcluate_merkle_tree_root
@@ -138,7 +120,7 @@ module ::Sushi::Core
         raise "transactions have to be empty for genesis block: #{@transactions}" if !@transactions.empty?
         raise "nonce has to be '0' for genesis block: #{@nonce}" if @nonce != 0
         raise "prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
-        raise "difficulty has to be '3' for genesis block: #{@difficulty}" if @difficulty != 3
+        raise "difficulty has to be '3' for genesis block: #{@next_difficulty}" if @next_difficulty != 3
       end
 
       true
@@ -147,39 +129,6 @@ module ::Sushi::Core
     def find_transaction(transaction_id : String) : Transaction?
       @transactions.find { |t| t.id == transaction_id }
     end
-
-    # def total_fees : Int64
-    #   return 0_i64 if @transactions.size < 2
-    #   @transactions[1..-1].reduce(0_i64) { |fees, transaction| fees + transaction.total_fees }
-    # end
-
-    #
-    # y : coinbase amount
-    # x : index
-    # r : radius
-    #
-    # Aim to be the total coinbase amount: 20000000 [SUSHI]
-    #
-    # y = sqrt(r^2 - x^2)
-    #
-    # (r * r * PI) / 4 == 100000000000000
-    # => r = sqrt(8000000000000000 / PI)
-    # => r = 50462650.4404032
-    # => r ^ 2 = 2546479089470325
-    #
-    # < result >
-    # Total amount : 20000000.00004112 [SUSHI]
-    # Last index   : 50462651
-    #
-    # RR = 2546479089470325
-    #  
-    # def coinbase_amount : Int64
-    #   index_index = @index * @index
-    #  
-    #   return total_fees if index_index > RR
-    #  
-    #   Math.sqrt(RR - index_index).to_i64
-    # end
 
     include Hashes
     include Protocol

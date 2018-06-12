@@ -69,16 +69,15 @@ module ::Sushi::Core
     private def _handshake_miner_accepted(_content)
       _m_content = M_CONTENT_MINER_HANDSHAKE_ACCEPTED.from_json(_content)
 
-      latest_index = _m_content.block.index
-      latest_hash = _m_content.block.to_hash
+      block = _m_content.block
       difficulty = _m_content.difficulty
 
       info "handshake has been accepted"
 
       debug "set difficulty: #{light_cyan(difficulty)}"
-      debug "set latest hash: #{light_green(latest_hash)}"
+      debug "set block: #{light_green(block.index)}"
 
-      start_workers(difficulty, latest_index, latest_hash)
+      start_workers(difficulty, block)
     end
 
     private def _handshake_miner_rejected(_content)
@@ -93,18 +92,17 @@ module ::Sushi::Core
     private def _block_update(_content)
       _m_content = M_CONTENT_MINER_BLOCK_UPDATE.from_json(_content)
 
-      latest_index = _m_content.block.index
-      latest_hash = _m_content.block.to_hash
+      block = _m_content.block
       difficulty = _m_content.difficulty
 
-      info "latest block has been updated"
+      info "block has been updated"
 
       debug "set difficulty: #{light_cyan(difficulty)}"
-      debug "set latest_hash: #{light_green(latest_hash)}"
+      debug "set block: #{light_green(block.index)}"
 
       clean_workers
 
-      start_workers(difficulty, latest_index, latest_hash)
+      start_workers(difficulty, block)
     end
 
     def clean_connection(socket)
@@ -115,7 +113,7 @@ module ::Sushi::Core
       exit -1
     end
 
-    def start_workers(difficulty, latest_index, latest_hash)
+    def start_workers(difficulty, block)
       @workers = MinerWorker.create(@num_processes)
       @workers.each do |w|
         spawn do
@@ -126,26 +124,26 @@ module ::Sushi::Core
 
             send(socket, M_TYPE_MINER_FOUND_NONCE, {nonce: nonce}) unless nonce == -1
 
-            update(w, difficulty, latest_index, latest_hash)
+            update(w, difficulty, block)
           rescue ioe : IO::EOFError
             warning "received invalid message. will be ignored"
           end
         end
       end
 
-      update(difficulty, latest_index, latest_hash)
+      update(difficulty, block)
     end
 
-    def update(difficulty, latest_index, latest_hash)
+    def update(difficulty, block)
       debug "update new workers"
 
       @workers.each do |w|
-        update(w, difficulty, latest_index, latest_hash)
+        update(w, difficulty, block)
       end
     end
 
-    def update(worker, difficulty, latest_index, latest_hash)
-      worker.exec({start_nonce: Random.rand(UInt64::MAX), difficulty: difficulty, index: latest_index, hash: latest_hash}.to_json)
+    def update(worker, difficulty, block)
+      worker.exec({start_nonce: Random.rand(UInt64::MAX), difficulty: difficulty, block: block}.to_json)
     end
 
     def clean_workers

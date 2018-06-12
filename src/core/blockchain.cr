@@ -25,7 +25,7 @@ module ::Sushi::Core
       prev_hash: String,
       merkle_tree_root: String,
       timestamp: Int64,
-      difficulty: Int32,
+      next_difficulty: Int32,
     )
 
     getter chain : Chain = Chain.new
@@ -94,18 +94,17 @@ module ::Sushi::Core
     end
 
     def valid_block?(nonce : UInt64, miners : NodeComponents::MinersManager::Miners) : Block?
-      return mining_block.with_nonce(nonce) if mining_block.valid_nonce?(nonce, mining_block_difficulty)
+      return mining_block.with_nonce(nonce) if mining_block.with_nonce(nonce).valid_nonce?(mining_block_difficulty)
       nil
     end
 
     def valid_block?(block : Block) : Block?
-      return nil unless block.valid_as_latest?(self)
-
-      block
+      return block if block.valid_as_latest?(self)
+      nil
     end
 
     def mining_block_difficulty : Int32
-      mining_block.difficulty
+      latest_block.next_difficulty
     end
 
     def mining_block_difficulty_miner : Int32
@@ -170,6 +169,9 @@ module ::Sushi::Core
     end
 
     def add_transaction(transaction : Transaction)
+      #
+      # todo: check singing (validating)
+      #
       TransactionPool.add(transaction)
     end
 
@@ -251,6 +253,8 @@ module ::Sushi::Core
         timestamp,
         difficulty,
       )
+
+      node.miners_broadcast
     end
 
     def align_transactions(embedded_transactions : Array(Transaction), coinbase_transaction : Transaction,

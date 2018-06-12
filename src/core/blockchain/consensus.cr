@@ -58,11 +58,11 @@ module ::Sushi::Core::Consensus
 
     ratio = (timestamp - block.timestamp).to_f / BASE_TIME
 
-    return block.difficulty + 1 if ratio < 0.1
-    return Math.max(Math.max(block.difficulty - 2, 1), MIN_DIFF) if ratio > 100.0
-    return Math.max(Math.max(block.difficulty - 1, 1), MIN_DIFF) if ratio > 10.0
+    return block.next_difficulty + 1 if ratio < 0.1
+    return Math.max(Math.max(block.next_difficulty - 2, 1), MIN_DIFF) if ratio > 100.0
+    return Math.max(Math.max(block.next_difficulty - 1, 1), MIN_DIFF) if ratio > 10.0
 
-    block.difficulty
+    block.next_difficulty
   end
 
   include Hashes

@@ -304,7 +304,6 @@ module ::Sushi::Core
         @miners_manager.clear_nonces
       end
 
-      @miners_manager.broadcast
       @pubsub_controller.broadcast_latest_block
     end
 
@@ -315,6 +314,10 @@ module ::Sushi::Core
 
     def miners
       @miners_manager.miners
+    end
+
+    def miners_broadcast
+      @miners_manager.broadcast
     end
 
     private def _broadcast_transaction(socket, _content)

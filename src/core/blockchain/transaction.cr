@@ -55,7 +55,7 @@ module ::Sushi::Core
       sha256(string)
     end
 
-    def valid_as_embedded?(blockchain : Blockchain, prev_transactions : Array(Transaction)) : Bool
+    def valid_as_embedded?(blockchain : Blockchain, prev_transactions : Array(Transaction), skip_prev_hash = false) : Bool
       debug "validating embedded transactions"
 
       if sender_total_amount != recipient_total_amount
@@ -63,8 +63,10 @@ module ::Sushi::Core
               "and recipients (#{scale_decimal(recipient_total_amount)})"
       end
 
-      if @prev_hash != prev_transactions[-1].to_hash
-        raise "invalid prev_hash: expected #{prev_transactions[-1].to_hash} but got #{@prev_hash}"
+      unless skip_prev_hash
+        if @prev_hash != prev_transactions[-1].to_hash
+          raise "invalid prev_hash: expected #{prev_transactions[-1].to_hash} but got #{@prev_hash}"
+        end
       end
 
       blockchain.dapps.each do |dapp|
