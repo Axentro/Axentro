@@ -80,48 +80,55 @@ module ::Sushi::Core
       valid_nonce?(self.to_hash, @nonce, difficulty)
     end
 
-    def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool = false) : Bool
-      is_genesis = (@index == 0)
+    def valid?(blockchain : Blockchain, skip_transactions : Bool = false) : Bool
+      return valid_as_latest?(blockchain, skip_transactions) unless @index == 0
+      valid_as_genesis?
+    end
 
-      unless is_genesis
-        prev_block = blockchain.latest_block
+    def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool) : Bool
+      prev_block = blockchain.latest_block
 
-        raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
-        raise "the nonce is invalid: #{@nonce}" unless self.valid_nonce?(prev_block.next_difficulty)
+      raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
+      raise "the nonce is invalid: #{@nonce}" unless self.valid_nonce?(prev_block.next_difficulty)
 
-        unless skip_transactions
-          transactions.each_with_index do |t, idx|
-            if idx == 0
-              t.valid_as_coinbase?(blockchain, @index, transactions[1..-1])
-            else
-              t.valid_as_embedded?(blockchain, transactions[0..idx - 1])
-            end
+      unless skip_transactions
+        transactions.each_with_index do |t, idx|
+          t.valid_common? # todo: heavy
+
+          if idx == 0
+            t.valid_as_coinbase?(blockchain, @index, transactions[1..-1])
+          else
+            t.valid_as_embedded?(blockchain, transactions[0..idx - 1])
           end
         end
-
-        raise "mismatch index for the prev block(#{prev_block.index}): #{@index}" if prev_block.index + 1 != @index
-        raise "prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
-
-        next_timestamp = __timestamp
-        prev_timestamp = prev_block.timestamp
-
-        if prev_timestamp > @timestamp || next_timestamp < @timestamp
-          raise "timestamp is invalid: #{@timestamp} (timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
-        end
-
-        if @next_difficulty != block_difficulty(@timestamp, prev_block)
-          raise "difficulty is invalid (expected #{block_difficulty(@timestamp, prev_block)} but got #{@next_difficulty})"
-        end
-
-        merkle_tree_root = calcluate_merkle_tree_root
-        raise "invalid merkle tree root: #{merkle_tree_root} != #{@merkle_tree_root}" if merkle_tree_root != @merkle_tree_root
-      else
-        raise "index has to be '0' for genesis block: #{@index}" if @index != 0
-        raise "transactions have to be empty for genesis block: #{@transactions}" if !@transactions.empty?
-        raise "nonce has to be '0' for genesis block: #{@nonce}" if @nonce != 0
-        raise "prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
-        raise "difficulty has to be '3' for genesis block: #{@next_difficulty}" if @next_difficulty != 3
       end
+
+      raise "mismatch index for the prev block(#{prev_block.index}): #{@index}" if prev_block.index + 1 != @index
+      raise "prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
+
+      next_timestamp = __timestamp
+      prev_timestamp = prev_block.timestamp
+
+      if prev_timestamp > @timestamp || next_timestamp < @timestamp
+        raise "timestamp is invalid: #{@timestamp} (timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
+      end
+
+      if @next_difficulty != block_difficulty(@timestamp, prev_block)
+        raise "difficulty is invalid (expected #{block_difficulty(@timestamp, prev_block)} but got #{@next_difficulty})"
+      end
+
+      merkle_tree_root = calcluate_merkle_tree_root
+      raise "invalid merkle tree root: #{merkle_tree_root} != #{@merkle_tree_root}" if merkle_tree_root != @merkle_tree_root
+
+      true
+    end
+
+    def valid_as_genesis? : Bool
+      raise "index has to be '0' for genesis block: #{@index}" if @index != 0
+      raise "transactions have to be empty for genesis block: #{@transactions}" if !@transactions.empty?
+      raise "nonce has to be '0' for genesis block: #{@nonce}" if @nonce != 0
+      raise "prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
+      raise "difficulty has to be '3' for genesis block: #{@next_difficulty}" if @next_difficulty != 3
 
       true
     end
@@ -131,6 +138,7 @@ module ::Sushi::Core
     end
 
     include Hashes
+    include Logger
     include Protocol
     include Consensus
     include Common::Timestamp

@@ -55,6 +55,8 @@ module ::Sushi::Core
       @miners_manager = MinersManager.new(@blockchain)
       @phase = SETUP_PHASE::NONE
 
+      info "your log level is #{light_green(log_level_text)}"
+
       debug "is_private: #{light_green(@is_private)}"
       debug "public url: #{light_green(@public_host)}:#{light_green(@public_port)}" unless @is_private
       debug "connecting node is using ssl?: #{light_green(@use_ssl)}"
@@ -241,7 +243,7 @@ module ::Sushi::Core
     end
 
     def broadcast_transaction(transaction : Transaction, from : Chord::NodeContext? = nil)
-      info "new transaction coming: #{transaction.id}"
+      info "new transaction coming: #{transaction.short_id}"
 
       @blockchain.add_transaction(transaction)
 
@@ -385,8 +387,8 @@ module ::Sushi::Core
 
       _latest_index = _m_content.latest_index
 
-      debug "be asked to request new chain"
-      debug "requested: #{_latest_index}, yours #{@blockchain.latest_block.index}"
+      verbose "be asked to request new chain"
+      verbose "requested: #{_latest_index}, yours #{@blockchain.latest_block.index}"
 
       if _latest_index > @blockchain.latest_block.index
         sync_chain(socket)
@@ -412,12 +414,21 @@ module ::Sushi::Core
     private def _receive_transactions(socket, _content)
       _m_content = M_CONTENT_NODE_RECEIVE_TRANSACTIONS.from_json(_content)
 
+      replace_transactions = [] of Transaction
+
       transactions = _m_content.transactions
+      transactions.each do |t|
+        t.valid_common?
+
+        replace_transactions << t
+      rescue e : Exception
+        @blockchain.rejects.record_reject(t.id, e)
+      end
 
       info "received #{transactions.size} transactions"
 
       TransactionPool.lock
-      TransactionPool.replace(transactions)
+      TransactionPool.replace(replace_transactions)
 
       if @phase == SETUP_PHASE::TRANSACTION_SYNCING
         @phase = SETUP_PHASE::PRE_DONE

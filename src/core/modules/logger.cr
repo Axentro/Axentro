@@ -12,29 +12,59 @@
 require "./welcome"
 
 module ::Sushi::Core::Logger
+  LL_VERBOSE = 0
+  LL_DEBUG = 1
+  LL_INFO = 2
+
+  def log_level
+    return LL_VERBOSE if ENV["SC_LOG"]? == "verbose"
+    return LL_DEBUG if ENV["SC_LOG"]? == "debug"
+    LL_INFO
+  end
+
+  def log_level_text : String
+    case log_level
+    when LL_VERBOSE
+      "verbose"
+    when LL_DEBUG
+      "debug"
+    when LL_INFO
+      "info"
+    end
+
+    "unknown"
+  end
+
   def welcome
     return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E")
     puts welcome_message
   end
 
+  def verbose(msg : String)
+    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E")
+    return if log_level > LL_VERBOSE
+    log_out("Verb", msg, :dark_gray)
+  end
+
   def debug(msg : String)
     return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E")
-    return unless ENV.has_key?("SC_DEBUG")
-    log_out("Debug", msg, :dark_gray)
+    return if log_level > LL_DEBUG
+    log_out("Debg", msg, :dark_gray)
   end
 
   def info(msg : String)
     return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E")
+    return if log_level > LL_INFO
     log_out("Info", msg, :light_green)
   end
 
   def warning(msg : String)
     return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E")
-    log_out("Warning", msg, :yellow)
+    log_out("Warn", msg, :yellow)
   end
 
   def error(msg : String)
-    log_out("Error", msg, :red)
+    log_out("Erro", msg, :red)
   end
 
   PROGRESS_BAR_WIDTH = 30

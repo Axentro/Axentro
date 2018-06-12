@@ -68,7 +68,7 @@ module ::Sushi::Core
         _block = database.get_block(current_index)
 
         break unless block = _block
-        break unless block.valid_as_latest?(self, true)
+        break unless block.valid?(self, true)
 
         @chain.push(block)
 
@@ -93,13 +93,13 @@ module ::Sushi::Core
       TransactionPool.replace(transactions)
     end
 
-    def valid_block?(nonce : UInt64, miners : NodeComponents::MinersManager::Miners) : Block?
+    def valid_nonce?(nonce : UInt64) : Block?
       return mining_block.with_nonce(nonce) if mining_block.with_nonce(nonce).valid_nonce?(mining_block_difficulty)
       nil
     end
 
     def valid_block?(block : Block) : Block?
-      return block if block.valid_as_latest?(self)
+      return block if block.valid?(self)
       nil
     end
 
@@ -143,7 +143,7 @@ module ::Sushi::Core
       dapps_clear_record
 
       subchain.each_with_index do |block, i|
-        block.valid_as_latest?(self)
+        block.valid?(self)
         @chain << block
 
         progress "block ##{block.index} was imported", i + 1, subchain.size
@@ -169,10 +169,11 @@ module ::Sushi::Core
     end
 
     def add_transaction(transaction : Transaction)
-      #
-      # todo: check singing (validating)
-      #
-      TransactionPool.add(transaction)
+      if transaction.valid_common?
+        TransactionPool.add(transaction)
+      end
+    rescue e : Exception
+      rejects.record_reject(transaction.id, e)
     end
 
     def latest_block : Block
@@ -248,7 +249,7 @@ module ::Sushi::Core
       @mining_block = Block.new(
         latest_index + 1,
         transactions,
-        0_u64, # nonce
+        0_u64,
         latest_block.to_hash,
         timestamp,
         difficulty,

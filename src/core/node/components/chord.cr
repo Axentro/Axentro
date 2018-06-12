@@ -249,8 +249,8 @@ module ::Sushi::Core::NodeComponents
       end
     end
 
-    def debug_table_line(col0 : String, col1 : String, delimiter = "|")
-      debug "#{delimiter} %20s #{delimiter} %20s #{delimiter}" % [col0, col1]
+    def table_line(col0 : String, col1 : String, delimiter = "|")
+      verbose "#{delimiter} %20s #{delimiter} %20s #{delimiter}" % [col0, col1]
     end
 
     def stabilize_process
@@ -259,29 +259,29 @@ module ::Sushi::Core::NodeComponents
           sleep Random.rand
 
           if (@show_network += 1) % 20 == 0
-            debug_table_line("-" * 20, "-" * 20, "+")
+            table_line("-" * 20, "-" * 20, "+")
 
             if @successor_list.size > 0
               @successor_list.each_with_index do |successor, i|
-                debug_table_line "successor (#{i})",
+                table_line "successor (#{i})",
                   "#{successor[:context][:host]}:#{successor[:context][:port]}"
               end
             else
-              debug_table_line "successor", "Not found"
+              table_line "successor", "Not found"
             end
 
             if predecessor = @predecessor
-              debug_table_line "predecessor",
+              table_line "predecessor",
                 "#{predecessor[:context][:host]}:#{predecessor[:context][:port]}"
             else
-              debug_table_line "predecessor", "Not found"
+              table_line "predecessor", "Not found"
             end
 
             if @private_nodes.size > 0
-              debug_table_line "private nodes", @private_nodes.size.to_s
+              table_line "private nodes", @private_nodes.size.to_s
             end
 
-            debug_table_line("-" * 20, "-" * 20, "+")
+            table_line("-" * 20, "-" * 20, "+")
           end
 
           ping_all

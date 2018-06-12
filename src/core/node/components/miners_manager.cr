@@ -34,6 +34,8 @@ module ::Sushi::Core::NodeComponents
     def handshake(node, socket, _content)
       return unless node.phase == SETUP_PHASE::DONE
 
+      verbose "requested handshake from a miner"
+
       _m_content = M_CONTENT_MINER_HANDSHAKE.from_json(_content)
 
       version = _m_content.version
@@ -75,6 +77,8 @@ module ::Sushi::Core::NodeComponents
     def found_nonce(node, socket, _content)
       return unless node.phase == SETUP_PHASE::DONE
 
+      verbose "miner sent a new nonce"
+
       _m_content = M_CONTENT_MINER_FOUND_NONCE.from_json(_content)
 
       nonce = _m_content.nonce
@@ -94,7 +98,7 @@ module ::Sushi::Core::NodeComponents
           info "miner #{miner[:context][:address][0..7]} found nonce (nonces: #{miner[:context][:nonces].size})"
           miner[:context][:nonces].push(nonce)
 
-          if block = @blockchain.valid_block?(nonce, @miners)
+          if block = @blockchain.valid_nonce?(nonce)
             node.new_block(block, true)
           end
         end
@@ -108,8 +112,8 @@ module ::Sushi::Core::NodeComponents
     end
 
     def broadcast
-      info "new block difficulty: #{@blockchain.mining_block_difficulty}, " +
-           "mining difficulty: #{@blockchain.mining_block_difficulty_miner}"
+      debug "new block difficulty: #{@blockchain.mining_block_difficulty}, " +
+            "mining difficulty: #{@blockchain.mining_block_difficulty_miner}"
 
       @miners.each do |miner|
         send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
