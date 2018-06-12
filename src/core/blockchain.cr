@@ -168,6 +168,23 @@ module ::Sushi::Core
       true
     end
 
+    def replace_transactions(transactions : Array(Transaction))
+      replace_transactions = [] of Transaction
+
+      transactions.each_with_index do |t, i|
+        progress "validating transaction #{t.short_id}", i + 1, transactions.size
+
+        t.valid_common?
+
+        replace_transactions << t
+      rescue e : Exception
+        rejects.record_reject(t.id, e)
+      end
+
+      TransactionPool.lock
+      TransactionPool.replace(replace_transactions)
+    end
+
     def add_transaction(transaction : Transaction)
       if transaction.valid_common?
         TransactionPool.add(transaction)

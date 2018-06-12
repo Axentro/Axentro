@@ -80,6 +80,8 @@ module ::Sushi::Core::NodeComponents
 
       spawn do
         socket.run
+      rescue e : Exception
+        handle_exception(socket, e)
       end
 
       send(
@@ -376,6 +378,8 @@ module ::Sushi::Core::NodeComponents
 
       spawn do
         socket.run
+      rescue e : Exception
+        handle_exception(socket, e)
       end
 
       if @successor_list.size > 0

@@ -408,21 +408,11 @@ module ::Sushi::Core
     private def _receive_transactions(socket, _content)
       _m_content = M_CONTENT_NODE_RECEIVE_TRANSACTIONS.from_json(_content)
 
-      replace_transactions = [] of Transaction
-
       transactions = _m_content.transactions
-      transactions.each do |t|
-        t.valid_common?
-
-        replace_transactions << t
-      rescue e : Exception
-        @blockchain.rejects.record_reject(t.id, e)
-      end
 
       info "received #{transactions.size} transactions"
 
-      TransactionPool.lock
-      TransactionPool.replace(replace_transactions)
+      @blockchain.replace_transactions(transactions)
 
       if @phase == SETUP_PHASE::TRANSACTION_SYNCING
         @phase = SETUP_PHASE::PRE_DONE
