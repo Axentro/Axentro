@@ -245,9 +245,9 @@ module ::Sushi::Core
     def broadcast_transaction(transaction : Transaction, from : Chord::NodeContext? = nil)
       info "new transaction coming: #{transaction.short_id}"
 
-      @blockchain.add_transaction(transaction)
-
       send_transaction(transaction, from)
+
+      @blockchain.add_transaction(transaction)
     end
 
     def send_block(block : Block, from : Chord::NodeContext? = nil)
@@ -265,7 +265,7 @@ module ::Sushi::Core
         info "new block coming: #{light_cyan(@blockchain.chain.size)}"
 
         if _block = @blockchain.valid_block?(block)
-          new_block(_block, false)
+          new_block(_block)
         end
 
         send_block(block, from)
@@ -298,14 +298,8 @@ module ::Sushi::Core
       end
     end
 
-    def new_block(block : Block, by_self : Bool)
+    def new_block(block : Block)
       @blockchain.push_block(block)
-
-      if by_self
-        send_block(block)
-        @miners_manager.clear_nonces
-      end
-
       @pubsub_controller.broadcast_latest_block
     end
 

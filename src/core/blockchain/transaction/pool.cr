@@ -78,6 +78,14 @@ module ::Sushi::Core
       @locked = true
     end
 
+    def self.find(transaction : Transaction)
+      worker.find(transaction)
+    end
+
+    def find(transaction : Transaction) : Transaction?
+      @pool.find { |t| t == transaction }
+    end
+
     include Logger
     include TransactionModels
   end

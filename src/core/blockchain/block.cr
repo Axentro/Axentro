@@ -93,7 +93,8 @@ module ::Sushi::Core
 
       unless skip_transactions
         transactions.each_with_index do |t, idx|
-          t.valid_common? # todo: heavy
+          t = TransactionPool.find(t) || t
+          t.valid_common?
 
           if idx == 0
             t.valid_as_coinbase?(blockchain, @index, transactions[1..-1])
@@ -110,15 +111,20 @@ module ::Sushi::Core
       prev_timestamp = prev_block.timestamp
 
       if prev_timestamp > @timestamp || next_timestamp < @timestamp
-        raise "timestamp is invalid: #{@timestamp} (timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
+        raise "timestamp is invalid: #{@timestamp} " +
+              "(timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
       end
 
       if @next_difficulty != block_difficulty(@timestamp, prev_block)
-        raise "difficulty is invalid (expected #{block_difficulty(@timestamp, prev_block)} but got #{@next_difficulty})"
+        raise "difficulty is invalid " +
+              "(expected #{block_difficulty(@timestamp, prev_block)} but got #{@next_difficulty})"
       end
 
       merkle_tree_root = calcluate_merkle_tree_root
-      raise "invalid merkle tree root: #{merkle_tree_root} != #{@merkle_tree_root}" if merkle_tree_root != @merkle_tree_root
+
+      if merkle_tree_root != @merkle_tree_root
+        raise "invalid merkle tree root (expected #{@merkle_tree_root} but got #{merkle_tree_root})"
+      end
 
       true
     end

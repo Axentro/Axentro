@@ -99,7 +99,10 @@ module ::Sushi::Core::NodeComponents
           miner[:context][:nonces].push(nonce)
 
           if block = @blockchain.valid_nonce?(nonce)
-            node.new_block(block, true)
+            node.new_block(block)
+            node.send_block(block)
+
+            clear_nonces
           end
         end
       end
