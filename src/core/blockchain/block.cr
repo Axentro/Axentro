@@ -106,17 +106,12 @@ module ::Sushi::Core
         raise "the nonce is invalid: #{@nonce}" unless self.without_nonce.valid_nonce?(@nonce, @difficulty)
 
         unless skip_transaction_validation
-          coinbase_amount = blockchain.latest_block.coinbase_amount
-
-          #
-          # todo
-          # buggy.
-          #
-          validated = TransactionPool.validate(coinbase_amount, transactions)
-          raise validated[:reason] unless validated[:valid]
-
           transactions.each_with_index do |t, idx|
-            t.valid_with_dapps?(blockchain, idx == 0 ? [] of Transaction : transactions[0..idx - 1])
+            if idx == 0
+              t.valid_as_coinbase?(blockchain, @index, transactions[1..-1])
+            else
+              t.valid_as_embedded?(blockchain, transactions[0..idx - 1])
+            end
           end
         end
 
@@ -153,10 +148,10 @@ module ::Sushi::Core
       @transactions.find { |t| t.id == transaction_id }
     end
 
-    def total_fees : Int64
-      return 0_i64 if @transactions.size < 2
-      @transactions[1..-1].reduce(0_i64) { |fees, transaction| fees + transaction.total_fees }
-    end
+    # def total_fees : Int64
+    #   return 0_i64 if @transactions.size < 2
+    #   @transactions[1..-1].reduce(0_i64) { |fees, transaction| fees + transaction.total_fees }
+    # end
 
     #
     # y : coinbase amount
@@ -176,15 +171,15 @@ module ::Sushi::Core
     # Total amount : 20000000.00004112 [SUSHI]
     # Last index   : 50462651
     #
-    RR = 2546479089470325
-
-    def coinbase_amount : Int64
-      index_index = @index * @index
-
-      return total_fees if index_index > RR
-
-      Math.sqrt(RR - index_index).to_i64
-    end
+    # RR = 2546479089470325
+    #  
+    # def coinbase_amount : Int64
+    #   index_index = @index * @index
+    #  
+    #   return total_fees if index_index > RR
+    #  
+    #   Math.sqrt(RR - index_index).to_i64
+    # end
 
     include Hashes
     include Protocol

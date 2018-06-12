@@ -173,29 +173,6 @@ module ::Sushi::Core
       TransactionPool.add(transaction)
     end
 
-    def align_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
-      aligned = TransactionPool.align(coinbase_transaction, coinbase_amount)
-      #
-      # todo:
-      # record rejects
-      #
-      aligned_transactions = aligned[:transactions]
-      aligned_transactions.each_with_index do |t, idx|
-        t.valid_with_dapps?(self, aligned_transactions[0..idx - 1]) if idx > 0
-      rescue e : Exception
-        #
-        # todo:
-        # buggy. since prev_hash will be broken for this.
-        #
-        warning "invalid transaction found, will be removed from the pool"
-        warning e.message.not_nil! if e.message
-
-        TransactionPool.delete(t)
-      end
-
-      return aligned_transactions
-    end
-
     def latest_block : Block
       @chain[-1]
     end
@@ -225,40 +202,6 @@ module ::Sushi::Core
         genesis_prev_hash,
         genesis_timestamp,
         genesis_difficulty,
-      )
-    end
-
-    def create_coinbase_transaction(miners : NodeComponents::MinersManager::Miners) : Transaction
-      rewards_total = latest_block.coinbase_amount
-
-      miners_nonces_size = miners.reduce(0) { |sum, m| sum + m[:context][:nonces].size }
-      miners_rewards_total = (rewards_total * 3_i64) / 4_i64
-      miners_recipients = if miners_nonces_size > 0
-                            miners.map { |m|
-                              amount = (miners_rewards_total * m[:context][:nonces].size) / miners_nonces_size
-                              {address: m[:context][:address], amount: amount}
-                            }.reject { |m| m[:amount] == 0 }
-                          else
-                            [] of NamedTuple(address: String, amount: Int64)
-                          end
-
-      node_reccipient = {
-        address: @wallet.address,
-        amount:  rewards_total - miners_recipients.reduce(0_i64) { |sum, m| sum + m[:amount] },
-      }
-
-      senders = [] of Transaction::Sender # No senders
-
-      Transaction.new(
-        Transaction.create_id,
-        "head",
-        senders,
-        [node_reccipient] + miners_recipients,
-        "0",           # message
-        TOKEN_DEFAULT, # token
-        "0",           # prev_hash
-        __timestamp,   # timestamp
-        1,             # scaled
       )
     end
 
@@ -292,12 +235,11 @@ module ::Sushi::Core
     end
 
     def refresh_mining_block
-      miners = node.miners
+      embedded_transactions = pending_transactions
+      coinbase_amount = coinbase_amount(latest_index + 1, embedded_transactions)
+      coinbase_transaction = create_coinbase_transaction(coinbase_amount, node.miners)
 
-      coinbase_transaction = create_coinbase_transaction(miners)
-      coinbase_amount = latest_block.coinbase_amount
-
-      transactions = align_transactions(coinbase_transaction, coinbase_amount)
+      transactions = align_transactions(embedded_transactions, coinbase_transaction, coinbase_amount)
       timestamp = __timestamp
       difficulty = block_difficulty(timestamp, latest_block)
 
@@ -309,6 +251,67 @@ module ::Sushi::Core
         timestamp,
         difficulty,
       )
+    end
+
+    def align_transactions(embedded_transactions : Array(Transaction), coinbase_transaction : Transaction,
+                           coinbase_amount : Int64) : Transactions
+      aligned_transactions = [coinbase_transaction]
+
+      pending_transactions.each do |t|
+        t.prev_hash = aligned_transactions[-1].to_hash
+        t.valid_as_embedded?(self, aligned_transactions)
+
+        aligned_transactions << t
+      rescue e : Exception
+        rejects.record_reject(t.id, e)
+      end
+
+      aligned_transactions
+    end
+
+    def create_coinbase_transaction(coinbase_amount : Int64, miners : NodeComponents::MinersManager::Miners) : Transaction
+      miners_nonces_size = miners.reduce(0) { |sum, m| sum + m[:context][:nonces].size }
+      miners_rewards_total = (coinbase_amount * 3_i64) / 4_i64
+      miners_recipients = if miners_nonces_size > 0
+                            miners.map { |m|
+                              amount = (miners_rewards_total * m[:context][:nonces].size) / miners_nonces_size
+                              {address: m[:context][:address], amount: amount}
+                            }.reject { |m| m[:amount] == 0 }
+                          else
+                            [] of NamedTuple(address: String, amount: Int64)
+                          end
+
+      node_reccipient = {
+        address: @wallet.address,
+        amount:  coinbase_amount - miners_recipients.reduce(0_i64) { |sum, m| sum + m[:amount] },
+      }
+
+      senders = [] of Transaction::Sender # No senders
+
+      Transaction.new(
+        Transaction.create_id,
+        "head",
+        senders,
+        [node_reccipient] + miners_recipients,
+        "0",           # message
+        TOKEN_DEFAULT, # token
+        "0",           # prev_hash
+        __timestamp,   # timestamp
+        1,             # scaled
+      )
+    end
+
+    RR = 2546479089470325
+
+    def coinbase_amount(index, transactions) : Int64
+      index_index = index * index
+      return total_fees(transactions) if index_index > RR
+      Math.sqrt(RR - index_index).to_i64
+    end
+
+    def total_fees(transactions) : Int64
+      return 0_i64 if transactions.size < 2
+      transactions.reduce(0_i64) { |fees, transaction| fees + transaction.total_fees }
     end
 
     private def dapps_record
