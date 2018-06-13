@@ -52,6 +52,15 @@ module ::Sushi::Core
       tmp_id
     end
 
+    def self.secp256k1 : ECDSA::Secp256k1
+      @@secp256k1 ||= ECDSA::Secp256k1.new
+      @@secp256k1.not_nil!
+    end
+
+    def secp256k1
+      Transaction.secp256k1
+    end
+
     def to_hash : String
       string = self.to_json
       sha256(string)
@@ -115,8 +124,6 @@ module ::Sushi::Core
       raise "message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
       raise "token size exceeds: #{self.token.bytesize} for #{TOKEN_SIZE_LIMIT}" if self.token.bytesize > TOKEN_SIZE_LIMIT
       raise "unscaled transaction" if @scaled != 1
-
-      secp256k1 : ECDSA::Secp256k1 = ECDSA::Secp256k1.new
 
       @senders.each do |sender|
         network = Keys::Address.from(sender[:address], "sender").network

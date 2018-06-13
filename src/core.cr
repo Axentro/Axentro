@@ -32,11 +32,3 @@ require "./core/modules"
 require "./core/protocol"
 require "./core/keys"
 require "./core/*"
-
-#
-# todo:
-# 1. checking signing of transaction when receive it.
-# 2. align without checking signing
-# 3. nonce will not be fixed with 0.
-# 4. integrate valid_with(out)_dapps again.
-#

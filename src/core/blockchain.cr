@@ -286,6 +286,8 @@ module ::Sushi::Core
         aligned_transactions << t
       rescue e : Exception
         rejects.record_reject(t.id, e)
+
+        TransactionPool.delete(t)
       end
 
       aligned_transactions
