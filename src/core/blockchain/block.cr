@@ -116,7 +116,7 @@ module ::Sushi::Core
       end
 
       if @next_difficulty != block_difficulty(@timestamp, prev_block)
-        raise "difficulty is invalid " +
+        raise "next_difficulty is invalid " +
               "(expected #{block_difficulty(@timestamp, prev_block)} but got #{@next_difficulty})"
       end
 
@@ -134,7 +134,8 @@ module ::Sushi::Core
       raise "transactions have to be empty for genesis block: #{@transactions}" if !@transactions.empty?
       raise "nonce has to be '0' for genesis block: #{@nonce}" if @nonce != 0
       raise "prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
-      raise "difficulty has to be '3' for genesis block: #{@next_difficulty}" if @next_difficulty != 3
+      raise "next_difficulty has to be '3' for genesis block: #{@next_difficulty}" if @next_difficulty != 3
+      raise "timestamp has to be '0' for genesis block: #{@timestammp}" if @timestamp != 0
 
       true
     end
