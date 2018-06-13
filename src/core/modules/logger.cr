@@ -13,8 +13,8 @@ require "./welcome"
 
 module ::Sushi::Core::Logger
   LL_VERBOSE = 0
-  LL_DEBUG = 1
-  LL_INFO = 2
+  LL_DEBUG   = 1
+  LL_INFO    = 2
 
   def log_level
     return LL_VERBOSE if ENV["SC_LOG"]? == "verbose"

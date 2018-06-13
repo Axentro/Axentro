@@ -232,7 +232,6 @@ module ::Sushi::Core
       return false unless @senders == other.senders
       return false unless @recipients == other.recipients
       return false unless @token == other.token
-      return false unless @prev_hash == other.prev_hash
       return false unless @timestamp == other.timestamp
       return false unless @scaled == other.scaled
 
