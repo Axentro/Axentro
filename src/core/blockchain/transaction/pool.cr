@@ -25,12 +25,12 @@ module ::Sushi::Core
       @@instance ||= TransactionPool.new
     end
 
-    def self.worker : TransactionPool
+    def self.instance : TransactionPool
       @@instance.not_nil!
     end
 
     def self.add(transaction : Transaction)
-      worker.add(transaction)
+      instance.add(transaction)
     end
 
     def add(transaction : Transaction)
@@ -42,7 +42,7 @@ module ::Sushi::Core
     end
 
     def self.delete(transaction : Transaction)
-      worker.delete(transaction)
+      instance.delete(transaction)
     end
 
     def delete(transaction : Transaction)
@@ -50,7 +50,7 @@ module ::Sushi::Core
     end
 
     def self.replace(transactions : Transactions)
-      worker.replace(transactions)
+      instance.replace(transactions)
     end
 
     def replace(transactions : Transactions)
@@ -63,7 +63,7 @@ module ::Sushi::Core
     end
 
     def self.all
-      worker.all
+      instance.all
     end
 
     def all
@@ -71,7 +71,7 @@ module ::Sushi::Core
     end
 
     def self.lock
-      worker.lock
+      instance.lock
     end
 
     def lock
@@ -79,10 +79,11 @@ module ::Sushi::Core
     end
 
     def self.find(transaction : Transaction)
-      worker.find(transaction)
+      instance.find(transaction)
     end
 
     def find(transaction : Transaction) : Transaction?
+      puts "pool.size: #{@pool.size} (#{@pool.find { |t| t == transaction }})"
       @pool.find { |t| t == transaction }
     end
 

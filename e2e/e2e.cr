@@ -20,7 +20,7 @@ include ::Sushi::Common::Color
 class SushiChainE2E
   @mode : String = "all_public"
   @num_nodes : Int32 = 3
-  @num_miners : Int32 = 1
+  @num_miners : Int32 = 3
   @time : Int32 = 300
 
   def initialize

@@ -56,8 +56,9 @@ module ::E2E::Utils::API
   def create(port : Int32, n_sender : Int32, n_recipient : Int32) : String?
     a = amount(port, n_sender)
 
-    puts "not enough amounts" if a < BigDecimal.new("0.00010001") # todo
+    # puts "not enough amounts" if a < BigDecimal.new("0.00010001") # todo
     return nil if a < BigDecimal.new("0.00010001")
+    puts "enough amounts: #{a}" # todo
 
     recipient_address = ::Sushi::Core::Wallet.from_path(wallet(n_recipient)).address
 
