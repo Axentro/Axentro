@@ -370,6 +370,13 @@ module ::Sushi::Core::NodeComponents
     end
 
     def connect_to_successor(node, _context : NodeContext)
+      if _context[:is_private]
+        error "the connecting node is private"
+        error "please specify a public node as connecting node"
+        error "exit with -1"
+        exit -1
+      end
+
       info "found new successor: #{_context[:host]}:#{_context[:port]}"
 
       socket = HTTP::WebSocket.new(_context[:host], "/peer", _context[:port], @use_ssl)
