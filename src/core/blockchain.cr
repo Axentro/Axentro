@@ -174,6 +174,7 @@ module ::Sushi::Core
       transactions.each_with_index do |t, i|
         progress "validating transaction #{t.short_id}", i + 1, transactions.size
 
+        t = TransactionPool.find(t) || t
         t.valid_common?
 
         replace_transactions << t
@@ -186,11 +187,15 @@ module ::Sushi::Core
     end
 
     def add_transaction(transaction : Transaction)
-      if transaction.valid_common?
-        TransactionPool.add(transaction)
+      spawn do
+        begin
+          if transaction.valid_common?
+            TransactionPool.add(transaction)
+          end
+        rescue e : Exception
+          rejects.record_reject(transaction.id, e)
+        end
       end
-    rescue e : Exception
-      rejects.record_reject(transaction.id, e)
     end
 
     def latest_block : Block

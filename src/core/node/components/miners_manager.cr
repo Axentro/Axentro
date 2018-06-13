@@ -96,11 +96,15 @@ module ::Sushi::Core::NodeComponents
           })
         else
           info "miner #{miner[:context][:address][0..7]} found nonce (nonces: #{miner[:context][:nonces].size})"
+          puts "point 0" # todo
           miner[:context][:nonces].push(nonce)
-
+          puts "point 1" # todo
           if block = @blockchain.valid_nonce?(nonce)
+            puts "point 2" # todo
             node.new_block(block)
+            puts "point 3" # todo
             node.send_block(block)
+            puts "point 4" # todo
 
             clear_nonces
           end

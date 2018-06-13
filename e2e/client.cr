@@ -82,13 +82,13 @@ module ::E2E
       recipient = Random.rand(@num_miners)
 
       if transaction_id = create(@node_ports.sample, sender, recipient)
+        @launch_time ||= Time.now
         @transaction_ids << transaction_id
+        puts "total: #{@transaction_ids.size}" # todo
       end
     end
 
     def launch
-      @launch_time = Time.now
-
       spawn do
         while @alive
           begin
