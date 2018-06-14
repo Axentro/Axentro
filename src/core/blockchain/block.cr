@@ -91,11 +91,8 @@ module ::Sushi::Core
       raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
       raise "the nonce is invalid: #{@nonce}" unless self.valid_nonce?(prev_block.next_difficulty)
 
-      p "---- valid_as_latest?"
-      p "start validation of transactions"
       unless skip_transactions
         transactions.each_with_index do |t, idx|
-          p "#{t.short_id} found: #{TransactionPool.find(t)}"
           t = TransactionPool.find(t) || t
           t.valid_common?
 
@@ -106,7 +103,6 @@ module ::Sushi::Core
           end
         end
       end
-      p "end validation of transactions"
 
       raise "mismatch index for the prev block(#{prev_block.index}): #{@index}" if prev_block.index + 1 != @index
       raise "prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash

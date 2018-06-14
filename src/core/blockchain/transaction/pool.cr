@@ -83,8 +83,10 @@ module ::Sushi::Core
     end
 
     def find(transaction : Transaction) : Transaction?
-      puts "pool.size: #{@pool.size} (#{@pool.find { |t| t == transaction }})"
-      @pool.find { |t| t == transaction }
+      return nil unless found_transaction = @pool.find { |t| t == transaction }
+
+      found_transaction.prev_hash = transaction.prev_hash
+      found_transaction
     end
 
     include Logger

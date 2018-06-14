@@ -231,13 +231,12 @@ module ::Sushi::Core
     #
     def ==(other : Transaction) : Bool
       return false unless @id == other.id
-      # todo
-      # return false unless @action == other.action
-      # return false unless @senders == other.senders
-      # return false unless @recipients == other.recipients
-      # return false unless @token == other.token
-      # return false unless @timestamp == other.timestamp
-      # return false unless @scaled == other.scaled
+      return false unless @action == other.action
+      return false unless @senders == other.senders
+      return false unless @recipients == other.recipients
+      return false unless @token == other.token
+      return false unless @timestamp == other.timestamp
+      return false unless @scaled == other.scaled
 
       true
     end

@@ -47,22 +47,19 @@ module ::Sushi::Core::Logger
   end
 
   def debug(msg : String)
-    # todo
-    # return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E")
+    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E")
     return if log_level > LL_DEBUG
     log_out("Debg", msg, :dark_gray)
   end
 
   def info(msg : String)
-    # todo
-    # return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E")
+    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E")
     return if log_level > LL_INFO
     log_out("Info", msg, :light_green)
   end
 
   def warning(msg : String)
-    # todo
-    # return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E")
+    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E")
     log_out("Warn", msg, :yellow)
   end
 

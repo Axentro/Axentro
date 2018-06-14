@@ -81,12 +81,9 @@ module ::E2E
       sender = Random.rand(@num_miners)
       recipient = Random.rand(@num_miners)
 
-      # todo
-      # if transaction_id = create(@node_ports.sample, sender, recipient)
-      if transaction_id = create(4000, sender, recipient)
+      if transaction_id = create(@node_ports.sample, sender, recipient)
         @launch_time ||= Time.now
         @transaction_ids << transaction_id
-        puts "total: #{@transaction_ids.size}" # todo
       end
     end
 
