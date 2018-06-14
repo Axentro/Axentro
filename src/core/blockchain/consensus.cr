@@ -11,7 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::Consensus
-
   # SHA256 Implementation
   def valid_sha256?(block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
     guess_nonce = "#{block_hash}#{nonce}"
