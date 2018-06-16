@@ -241,9 +241,9 @@ module ::Sushi::Core
         .flatten
         .select { |transaction| actions.empty? || actions.includes?(transaction.action) }
         .select { |transaction|
-        transaction.senders.any? { |sender| sender[:address] == address } ||
-          transaction.recipients.any? { |recipient| recipient[:address] == address }
-      }.skip(page*page_size).first(page_size)
+          transaction.senders.any? { |sender| sender[:address] == address } ||
+            transaction.recipients.any? { |recipient| recipient[:address] == address }
+        }.skip(page*page_size).first(page_size)
     end
 
     def available_actions : Array(String)
