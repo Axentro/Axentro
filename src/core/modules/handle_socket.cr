@@ -28,7 +28,9 @@ module ::Sushi::Core
         if error_message = e.message
           if error_message == "Error writing to socket: Broken pipe"
             clean_connection(socket)
-          elsif error_message = "Error writing to socket: Protocol wrong type for socket"
+          elsif error_message == "Error writing to socket: Protocol wrong type for socket"
+            clean_connection(socket)
+          elsif error_message == "Connection refused"
             clean_connection(socket)
           else
             show_exception(e)

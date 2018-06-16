@@ -58,7 +58,7 @@ module ::Sushi::Core::NodeComponents
       stabilize_process
     end
 
-    def join_to(connect_host : String, connect_port : Int32)
+    def join_to(node, connect_host : String, connect_port : Int32)
       debug "joining network: #{connect_host}:#{connect_port}"
 
       send_once(
@@ -69,6 +69,12 @@ module ::Sushi::Core::NodeComponents
           version: Core::CORE_VERSION,
           context: context,
         })
+    rescue e : Exception
+      error "failed to connect #{connect_host}:#{connect_port}"
+      error "please specify another public host if you need successor"
+
+      node.phase = SETUP_PHASE::BLOCKCHAIN_LOADING
+      node.proceed_setup
     end
 
     def join_to_private(node, connect_host : String, connect_port : Int32)
@@ -92,6 +98,12 @@ module ::Sushi::Core::NodeComponents
           context: context,
         }
       )
+    rescue e : Exception
+      error "failed to connect #{connect_host}:#{connect_port}"
+      error "please specify another public host if you need successor"
+
+      node.phase = SETUP_PHASE::BLOCKCHAIN_LOADING
+      node.proceed_setup
     end
 
     def join(node, socket, _content)

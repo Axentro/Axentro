@@ -440,7 +440,7 @@ module ::Sushi::Core
           @phase = SETUP_PHASE::CONNECTING_NODES
 
           unless @is_private
-            @chord.join_to(@connect_host.not_nil!, @connect_port.not_nil!)
+            @chord.join_to(self, @connect_host.not_nil!, @connect_port.not_nil!)
           else
             @chord.join_to_private(self, @connect_host.not_nil!, @connect_port.not_nil!)
           end
