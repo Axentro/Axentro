@@ -206,7 +206,7 @@ module ::Sushi::Interface::Sushi
         puts_info("  | %30s | %30s |" % ["action", "fee"])
         puts_info("  | %30s | %30s |" % ["-" * 30, "-" * 30])
 
-        json.each do |action, fee|
+        json.as_h.each do |action, fee|
           puts_info("  | %30s | %30s |" % [action, fee])
         end
 

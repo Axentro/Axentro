@@ -81,7 +81,8 @@ module ::Sushi::Core
     def run!
       info "start running Sushi's node on #{light_green(@bind_host)}:#{light_green(@bind_port)}"
 
-      node = HTTP::Server.new(@bind_host, @bind_port, handlers)
+      node = HTTP::Server.new(handlers)
+      node.bind_tcp(@bind_host, @bind_port)
       node.listen
     end
 

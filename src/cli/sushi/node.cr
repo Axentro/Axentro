@@ -62,7 +62,7 @@ module ::Sushi::Interface::Sushi
 
         puts_title
 
-        json["successor_list"].each_with_index do |successor, i|
+        json["successor_list"].as_a.each_with_index do |successor, i|
           puts_node_context("successor (#{i})", node_context(successor))
           puts_line if i == 0
         end
@@ -72,7 +72,7 @@ module ::Sushi::Interface::Sushi
           puts_line
         end
 
-        json["private_nodes"].each_with_index do |private_node, i|
+        json["private_nodes"].as_a.each_with_index do |private_node, i|
           puts_node_context("private node (#{i})", node_context(private_node))
           puts_line if i == 0
         end

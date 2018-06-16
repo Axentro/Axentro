@@ -193,7 +193,7 @@ module ::Sushi::Interface::Sushi
         puts "   %20s | %64s | %s" % ["Domain", "Address", "Price"]
 
         json = JSON.parse(body)
-        json.each do |domain|
+        json.as_a.each do |domain|
           puts " - %20s | %64s | %s" % [domain["domain_name"].as_s, domain["address"].as_s, domain["price"].as_s]
         end
 
