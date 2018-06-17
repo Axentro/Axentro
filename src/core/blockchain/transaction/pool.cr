@@ -12,6 +12,8 @@
 
 module ::Sushi::Core
   class TransactionPool
+    LIMIT = 2000
+
     @@instance : TransactionPool? = nil
 
     @pool : Transactions = Transactions.new
@@ -47,15 +49,6 @@ module ::Sushi::Core
       end
 
       @pool.insert(index || @pool.size, transaction)
-      debug
-    end
-
-    def debug
-      puts "--------------------------------------"
-      @pool.each_with_index do |t, i|
-        puts "#{i} #{t.short_id}: #{t.total_fees} (#{t.action})"
-      end
-      puts "--------------------------------------"
     end
 
     def self.delete(transaction : Transaction)
@@ -92,6 +85,14 @@ module ::Sushi::Core
 
     def all
       @pool
+    end
+
+    def self.embedded
+      instance.embedded
+    end
+
+    def embedded
+      @pool[0..LIMIT-1]
     end
 
     def self.lock

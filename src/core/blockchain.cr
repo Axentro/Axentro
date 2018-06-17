@@ -254,17 +254,20 @@ module ::Sushi::Core
       TransactionPool.all
     end
 
+    def embedded_transactions : Transactions
+      TransactionPool.embedded
+    end
+
     def mining_block : Block
       refresh_mining_block unless @mining_block
       @mining_block.not_nil!
     end
 
     def refresh_mining_block
-      embedded_transactions = pending_transactions
       coinbase_amount = coinbase_amount(latest_index + 1, embedded_transactions)
       coinbase_transaction = create_coinbase_transaction(coinbase_amount, node.miners)
 
-      transactions = align_transactions(embedded_transactions, coinbase_transaction, coinbase_amount)
+      transactions = align_transactions(coinbase_transaction, coinbase_amount)
       timestamp = __timestamp
       difficulty = block_difficulty(timestamp, latest_block)
 
@@ -280,11 +283,10 @@ module ::Sushi::Core
       node.miners_broadcast
     end
 
-    def align_transactions(embedded_transactions : Array(Transaction), coinbase_transaction : Transaction,
-                           coinbase_amount : Int64) : Transactions
+    def align_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
       aligned_transactions = [coinbase_transaction]
 
-      pending_transactions.each do |t|
+      embedded_transactions.each do |t|
         t.prev_hash = aligned_transactions[-1].to_hash
         t.valid_as_embedded?(self, aligned_transactions)
 
