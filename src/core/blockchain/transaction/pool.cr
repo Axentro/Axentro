@@ -37,8 +37,25 @@ module ::Sushi::Core
       if @locked
         @pool_locked << transaction
       else
-        @pool << transaction
+        insert(transaction)
       end
+    end
+
+    def insert(transaction : Transaction)
+      index = @pool.index do |t|
+        transaction.total_fees > t.total_fees
+      end
+
+      @pool.insert(index || @pool.size, transaction)
+      debug
+    end
+
+    def debug
+      puts "--------------------------------------"
+      @pool.each_with_index do |t, i|
+        puts "#{i} #{t.short_id}: #{t.total_fees} (#{t.action})"
+      end
+      puts "--------------------------------------"
     end
 
     def self.delete(transaction : Transaction)
@@ -54,8 +71,15 @@ module ::Sushi::Core
     end
 
     def replace(transactions : Transactions)
-      @pool = transactions
-      @pool.concat(@pool_locked)
+      @pool.clear
+
+      transactions.each do |t|
+        insert(t)
+      end
+
+      @pool_locked.each do |t|
+        insert(t)
+      end
 
       @locked = false
 
