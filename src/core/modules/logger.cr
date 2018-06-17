@@ -16,7 +16,7 @@ module ::Sushi::Core::Logger
   LL_DEBUG   = 1
   LL_INFO    = 2
 
-  def log_level
+  def log_level : Int32
     return LL_VERBOSE if ENV["SC_LOG"]? == "verbose"
     return LL_DEBUG if ENV["SC_LOG"]? == "debug"
     LL_INFO
@@ -25,11 +25,11 @@ module ::Sushi::Core::Logger
   def log_level_text : String
     case log_level
     when LL_VERBOSE
-      "verbose"
+      return "verbose"
     when LL_DEBUG
-      "debug"
+      return "debug"
     when LL_INFO
-      "info"
+      return "info"
     end
 
     "unknown"

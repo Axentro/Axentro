@@ -32,6 +32,8 @@ module ::Sushi::Core
             clean_connection(socket)
           elsif error_message == "Connection refused"
             clean_connection(socket)
+          elsif error_message == "Connection reset by peer"
+            clean_connection(socket)
           else
             show_exception(e)
           end
