@@ -92,7 +92,7 @@ module ::Sushi::Core
     end
 
     def embedded
-      @pool[0..LIMIT-1]
+      @pool[0..LIMIT - 1]
     end
 
     def self.lock
