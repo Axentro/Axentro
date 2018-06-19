@@ -38,7 +38,7 @@ module ::Units::Utils::ChainGenerator
       @node_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @miner_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, nil, false)
-      @blockchain = Blockchain.new(node_wallet)
+      @blockchain = @node.blockchain
       @blockchain.setup(@node)
       @miner = {context: {address: miner_wallet.address, nonces: [] of UInt64}, socket: MockWebSocket.new}
       @transaction_factory = TransactionFactory.new(@node_wallet)
