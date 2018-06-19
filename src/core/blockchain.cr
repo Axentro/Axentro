@@ -122,7 +122,7 @@ module ::Sushi::Core
 
       clean_transactions
 
-#      refresh_mining_block
+      refresh_mining_block
 
       block
     end
