@@ -22,9 +22,9 @@ describe Fees do
   describe "default non implemented methods" do
     it "should perform #setup" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.addBlock.chain
-        fees = Fees.new(blockchain_node(transaction_factory.sender_wallet))
-        fees.setup.should be_nil
+#        chain = block_factory.addBlock.chain
+#        fees = Fees.new(blockchain_node(transaction_factory.sender_wallet))
+#        fees.setup.should be_nil
       end
     end
     it "should perform #transaction_actions" do

@@ -89,13 +89,22 @@ module ::Units::Utils::ChainGenerator
     end
 
     private def add_valid_block(nonce : UInt64, miners : Array(NodeComponents::MinersManager::Miner))
-      valid_block = @blockchain.valid_block?(nonce, miners)
-      case valid_block
-      when Block
-        @blockchain.push_block(valid_block)
-      else
-        raise "error could not push block onto blockchain - block was not valid"
-      end
+       block = @blockchain.mining_block
+            valid_block = @blockchain.valid_block?(block)
+            case valid_block
+            when Block
+              @blockchain.push_block(valid_block)
+            else
+              raise "error could not push block onto blockchain - block was not valid"
+            end
+
+#      valid_block = @blockchain.valid_block?(nonce, miners)
+#      case valid_block
+#      when Block
+#        @blockchain.push_block(valid_block)
+#      else
+#        raise "error could not push block onto blockchain - block was not valid"
+#      end
     end
   end
 
