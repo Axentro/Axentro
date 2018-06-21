@@ -26,6 +26,7 @@ module ::Sushi::Core
 
     @blockchain : Blockchain
     @miners_manager : MinersManager
+    @clients_manager : ClientsManager
 
     @rpc_controller : Controllers::RPCController
     @rest_controller : Controllers::RESTController
@@ -53,6 +54,7 @@ module ::Sushi::Core
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl)
       @miners_manager = MinersManager.new(@blockchain)
+      @clients_manager = ClientsManager.new(@blockchain)
       @phase = SETUP_PHASE::NONE
 
       info "your log level is #{light_green(log_level_text)}"
@@ -165,6 +167,8 @@ module ::Sushi::Core
           @miners_manager.handshake(self, socket, message_content)
         when M_TYPE_MINER_FOUND_NONCE
           @miners_manager.found_nonce(self, socket, message_content)
+        when M_TYPE_CLIENT_HANDSHAKE
+          @clients_manager.handshake(self, socket, message_content)
         when M_TYPE_CHORD_JOIN
           @chord.join(self, socket, message_content)
         when M_TYPE_CHORD_JOIN_PRIVATE
