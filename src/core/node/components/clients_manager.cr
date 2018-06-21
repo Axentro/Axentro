@@ -13,16 +13,16 @@
 module ::Sushi::Core::NodeComponents
   class ClientsManager < HandleSocket
     alias ClientContext = NamedTuple(
-            id: String,
-            address: String?,
-          )
+      id: String,
+      address: String?,
+    )
 
     alias ClientContexts = Array(ClientContext)
 
     alias Client = NamedTuple(
-            context: ClientContext,
-            socket: HTTP::WebSocket,
-          )
+      context: ClientContext,
+      socket: HTTP::WebSocket,
+    )
 
     alias Clients = Array(Client)
 
@@ -46,8 +46,8 @@ module ::Sushi::Core::NodeComponents
       info "new client: #{light_green(client[:context][:id][0..7])}"
 
       send(socket, M_TYPE_CLIENT_HANDSHAKE_ACCEPTED, {
-             id: id
-           })
+        id: id,
+      })
     end
 
     def create_id : String

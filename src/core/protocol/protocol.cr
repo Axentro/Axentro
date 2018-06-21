@@ -67,16 +67,16 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_CLIENT_HANDSHAKE
     JSON.mapping({
-                   address: String?
-                 })
+      address: String?,
+    })
   end
 
   M_TYPE_CLIENT_HANDSHAKE_ACCEPTED = 0x1002
 
   struct M_CONTENT_CLIENT_HANDSHAKE_ACCEPTED
     JSON.mapping({
-                   id: String,
-                 })
+      id: String,
+    })
   end
 
   ######################################

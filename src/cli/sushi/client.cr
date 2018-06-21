@@ -18,9 +18,9 @@ module ::Sushi::Interface::Sushi
 
     def option_parser
       create_option_parser([
-                             Options::CONNECT_NODE,
-                             Options::CONFIG_NAME,
-                           ])
+        Options::CONNECT_NODE,
+        Options::CONFIG_NAME,
+      ])
     end
 
     def run_impl(action_name)
