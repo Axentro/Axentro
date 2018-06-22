@@ -192,7 +192,7 @@ describe RESTController do
         block_factory.addBlock([transaction]).addBlocks(2)
         exec_rest_api(block_factory.rest.__v1_transaction_id_confirmations(context("/api/v1/transaction/#{transaction.id}/confirmations"), {id: transaction.id})) do |result|
           result["status"].to_s.should eq("success")
-          result["result"]["confirmations"].should eq(3_i64)
+          result["result"]["confirmations"].should eq(2_i64)
         end
       end
     end
