@@ -23,7 +23,7 @@ describe UTXO do
     it "should return 0 when the number of blocks is less than confirmations" do
       with_factory do |block_factory, transaction_factory|
         chain = block_factory.addBlock.chain
-        utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+        utxo = UTXO.new(block_factory.blockchain)
         utxo.record(chain)
 
         address = chain[1].transactions.first.recipients.first[:address]
@@ -34,7 +34,7 @@ describe UTXO do
     it "should return address amount when the number of blocks is greater than confirmations" do
       with_factory do |block_factory, transaction_factory|
         chain = block_factory.addBlocks(10).chain
-        utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+        utxo = UTXO.new(block_factory.blockchain)
         utxo.record(chain)
 
         address = chain[1].transactions.first.recipients.first[:address]
@@ -48,7 +48,7 @@ describe UTXO do
       it "should return 0 when the number of blocks is less than confirmations and the address is not found" do
         with_factory do |block_factory, transaction_factory|
           chain = block_factory.addBlock.chain
-          utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+          utxo = UTXO.new(block_factory.blockchain)
           utxo.record(chain)
 
           utxo.get("address-does-not-exist", TOKEN_DEFAULT, 1).should eq(0)
@@ -58,7 +58,7 @@ describe UTXO do
       it "should return address amount when the number of blocks is greater than confirmations and the address is not found" do
         with_factory do |block_factory, transaction_factory|
           chain = block_factory.addBlocks(10).chain
-          utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+          utxo = UTXO.new(block_factory.blockchain)
           utxo.record(chain)
 
           utxo.get("address-does-not-exist", TOKEN_DEFAULT, 1).should eq(0)
@@ -70,7 +70,7 @@ describe UTXO do
       it "should return 0 when the number of blocks is less than confirmations and the token is not found" do
         with_factory do |block_factory, transaction_factory|
           chain = block_factory.addBlock.chain
-          utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+          utxo = UTXO.new(block_factory.blockchain)
           utxo.record(chain)
           address = chain[1].transactions.first.recipients.first[:address]
 
@@ -81,7 +81,7 @@ describe UTXO do
       it "should return address amount when the number of blocks is greater than confirmations and the token is not found" do
         with_factory do |block_factory, transaction_factory|
           chain = block_factory.addBlocks(10).chain
-          utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+          utxo = UTXO.new(block_factory.blockchain)
           utxo.record(chain)
           address = chain[1].transactions.first.recipients.first[:address]
 
@@ -95,7 +95,7 @@ describe UTXO do
     it "should get pending transactions amount for the supplied address in the supplied transactions" do
       with_factory do |block_factory, transaction_factory|
         chain = block_factory.addBlock.chain
-        utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+        utxo = UTXO.new(block_factory.blockchain)
         utxo.record(chain)
 
         transactions = chain.reject { |blk| blk.prev_hash == "genesis" }.flat_map { |blk| blk.transactions }
@@ -108,7 +108,7 @@ describe UTXO do
     it "should get pending transactions amount for the supplied address when no transactions are supplied" do
       with_factory do |block_factory, transaction_factory|
         chain = block_factory.addBlock.chain
-        utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+        utxo = UTXO.new(block_factory.blockchain)
         utxo.record(chain)
 
         transactions = [] of Transaction
@@ -122,7 +122,7 @@ describe UTXO do
       it "should get pending transactions amount for the supplied address when no transactions are supplied and the chain is empty" do
         with_factory do |block_factory, transaction_factory|
           chain = [] of Block
-          utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+          utxo = UTXO.new(block_factory.blockchain)
           utxo.record(chain)
 
           transactions = [] of Transaction
@@ -134,7 +134,7 @@ describe UTXO do
       it "should get pending transactions when no transactions are supplied and the chain is empty and the address is unknown" do
         with_factory do |block_factory, transaction_factory|
           chain = [] of Block
-          utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+          utxo = UTXO.new(block_factory.blockchain)
           utxo.record(chain)
 
           transactions = [] of Transaction
@@ -147,7 +147,7 @@ describe UTXO do
   describe "#transaction_actions" do
     it "should return actions" do
       with_factory do |block_factory, transaction_factory|
-        utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+        utxo = UTXO.new(block_factory.blockchain)
         utxo.transaction_actions.should eq(["send"])
       end
     end
@@ -156,7 +156,7 @@ describe UTXO do
   describe "#transaction_related?" do
     it "should always return true" do
       with_factory do |block_factory, transaction_factory|
-        utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+        utxo = UTXO.new(block_factory.blockchain)
         utxo.transaction_related?("whatever").should be_true
       end
     end
@@ -168,7 +168,7 @@ describe UTXO do
         transaction1 = transaction_factory.make_send(100_i64)
         transaction2 = transaction_factory.make_send(200_i64)
         chain = block_factory.addBlocks(10).chain
-        utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+        utxo = UTXO.new(block_factory.blockchain)
         utxo.record(chain)
         utxo.valid_transaction?(transaction2, [transaction1]).should be_true
       end
@@ -179,7 +179,7 @@ describe UTXO do
         transaction1 = transaction_factory.make_send(100_i64)
         transaction2 = transaction_factory.make_send(200_i64)
         chain = block_factory.addBlock.chain
-        utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+        utxo = UTXO.new(block_factory.blockchain)
         transaction2.recipients = [a_recipient(transaction_factory.recipient_wallet, 10_i64), a_recipient(transaction_factory.recipient_wallet, 10_i64)]
         utxo.record(chain)
         expect_raises(Exception, "there must be 1 or less recipients") do
@@ -193,7 +193,7 @@ describe UTXO do
         transaction1 = transaction_factory.make_send(100_i64)
         transaction2 = transaction_factory.make_send(200_i64)
         chain = block_factory.addBlock.chain
-        utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+        utxo = UTXO.new(block_factory.blockchain)
         transaction2.senders = [] of Transaction::Sender
         utxo.record(chain)
         expect_raises(Exception, "there must be 1 sender") do
@@ -207,7 +207,7 @@ describe UTXO do
         transaction1 = transaction_factory.make_send(100000000_i64)
         transaction2 = transaction_factory.make_send(200000000_i64)
         chain = block_factory.addBlocks(1).chain
-        utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+        utxo = UTXO.new(block_factory.blockchain)
 
         utxo.record(chain)
         expect_raises(Exception, "sender has not enough token(#{TOKEN_DEFAULT}). sender has -.4954735 + 0 but try to pay 2") do
@@ -221,7 +221,7 @@ describe UTXO do
         transaction1 = transaction_factory.make_send(1000000_i64, "KINGS")
         transaction2 = transaction_factory.make_send(2000000_i64, "KINGS")
         chain = block_factory.addBlock.chain
-        utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+        utxo = UTXO.new(block_factory.blockchain)
 
         utxo.record(chain)
         expect_raises(Exception, "sender has not enough token(KINGS). sender has -0.01 + 0 but try to pay 0.02") do
@@ -237,7 +237,7 @@ describe UTXO do
         transaction1 = transaction_factory.make_send(100_i64)
         transaction2 = transaction_factory.make_send(200_i64)
         chain = block_factory.addBlock.chain
-        utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+        utxo = UTXO.new(block_factory.blockchain)
         utxo.record(chain)
         expected = {TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -10200_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64}}
         utxo.calculate_for_transaction(transaction2).should eq(expected)
@@ -249,7 +249,7 @@ describe UTXO do
         transaction1 = transaction_factory.make_send(100_i64, "KINGS")
         transaction2 = transaction_factory.make_send(200_i64, "KINGS")
         chain = block_factory.addBlock.chain
-        utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+        utxo = UTXO.new(block_factory.blockchain)
         utxo.record(chain)
         expected = {"KINGS"       => {"#{transaction_factory.sender_wallet.address}" => -200_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64},
                     TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -10000_i64},
@@ -265,7 +265,7 @@ describe UTXO do
         transaction1 = transaction_factory.make_send(100_i64, "KINGS")
         transaction2 = transaction_factory.make_send(200_i64)
         chain = block_factory.addBlock.chain
-        utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+        utxo = UTXO.new(block_factory.blockchain)
         utxo.record(chain)
         expected = {"KINGS"       => {"#{transaction_factory.sender_wallet.address}" => -100_i64, "#{transaction_factory.recipient_wallet.address}" => 100_i64},
                     TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -20200_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64}}
@@ -278,7 +278,7 @@ describe UTXO do
     it "should create a custom token" do
       with_factory do |block_factory, transaction_factory|
         chain = block_factory.addBlock.chain
-        utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+        utxo = UTXO.new(block_factory.blockchain)
         utxo.record(chain)
         utxo.@utxo_internal.reject(&.empty?).flat_map { |t| t.keys }.should eq([TOKEN_DEFAULT])
         utxo.create_token(transaction_factory.sender_wallet.address, 1200_i64, "KINGS")
@@ -291,7 +291,7 @@ describe UTXO do
     it "should clear the internal transaction lists with #clear" do
       with_factory do |block_factory, transaction_factory|
         chain = block_factory.addBlocks(10).chain
-        utxo = UTXO.new(blockchain_node(transaction_factory.sender_wallet))
+        utxo = UTXO.new(block_factory.blockchain)
         utxo.record(chain)
 
         utxo.@utxo_internal.size.should eq(11)
