@@ -186,15 +186,17 @@ module ::Sushi::Core
       TransactionPool.replace(replace_transactions)
     end
 
-    def add_transaction(transaction : Transaction)
-      spawn do
-        begin
-          if transaction.valid_common?
-            TransactionPool.add(transaction)
-          end
-        rescue e : Exception
-          rejects.record_reject(transaction.id, e)
+    def add_transaction(transaction : Transaction, with_spawn : Bool = true)
+      with_spawn ? spawn { _add_transaction(transaction) } : _add_transaction(transaction)
+    end
+
+    private def _add_transaction(transaction : Transaction)
+      begin
+        if transaction.valid_common?
+          TransactionPool.add(transaction)
         end
+      rescue e : Exception
+        rejects.record_reject(transaction.id, e)
       end
     end
 

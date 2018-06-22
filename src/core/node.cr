@@ -21,10 +21,10 @@ module ::Sushi::Core
 
     property phase : SETUP_PHASE
 
+    getter blockchain : Blockchain
     getter network_type : String
     getter chord : Chord
 
-    @blockchain : Blockchain
     @miners_manager : MinersManager
 
     @rpc_controller : Controllers::RPCController

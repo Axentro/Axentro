@@ -22,35 +22,35 @@ describe Rejects do
   it "should perform #setup" do
     with_factory do |block_factory, transaction_factory|
       chain = block_factory.addBlock.chain
-      rejects = Rejects.new(blockchain_node(transaction_factory.sender_wallet))
+      rejects = Rejects.new(block_factory.blockchain)
       rejects.setup.should be_nil
     end
   end
   it "should perform #transaction_actions" do
     with_factory do |block_factory, transaction_factory|
       chain = block_factory.addBlock.chain
-      rejects = Rejects.new(blockchain_node(transaction_factory.sender_wallet))
+      rejects = Rejects.new(block_factory.blockchain)
       rejects.transaction_actions.size.should eq(0)
     end
   end
   it "should perform #transaction_related?" do
     with_factory do |block_factory, transaction_factory|
       chain = block_factory.addBlock.chain
-      rejects = Rejects.new(blockchain_node(transaction_factory.sender_wallet))
+      rejects = Rejects.new(block_factory.blockchain)
       rejects.transaction_related?("action").should be_false
     end
   end
   it "should perform #valid_transaction?" do
     with_factory do |block_factory, transaction_factory|
       chain = block_factory.addBlocks(2).chain
-      rejects = Rejects.new(blockchain_node(transaction_factory.sender_wallet))
+      rejects = Rejects.new(block_factory.blockchain)
       rejects.valid_transaction?(chain.last.transactions.first, chain.last.transactions).should be_true
     end
   end
   it "should perform #record" do
     with_factory do |block_factory, transaction_factory|
       chain = block_factory.addBlocks(2).chain
-      rejects = Rejects.new(blockchain_node(transaction_factory.sender_wallet))
+      rejects = Rejects.new(block_factory.blockchain)
       rejects.record(chain).should be_nil
     end
   end
@@ -60,7 +60,7 @@ describe Rejects do
       with_factory do |block_factory, transaction_factory|
         chain = block_factory.addBlocks(2).chain
         transaction_id = chain.last.transactions.last.id
-        rejects = Rejects.new(blockchain_node(transaction_factory.sender_wallet))
+        rejects = Rejects.new(block_factory.blockchain)
         rejects.record_reject(transaction_id, Exception.new("oops"))
         rejects.@rejects.should eq({transaction_id => "oops"})
       end
@@ -69,7 +69,7 @@ describe Rejects do
       with_factory do |block_factory, transaction_factory|
         chain = block_factory.addBlocks(2).chain
         transaction_id = chain.last.transactions.last.id
-        rejects = Rejects.new(blockchain_node(transaction_factory.sender_wallet))
+        rejects = Rejects.new(block_factory.blockchain)
         rejects.record_reject(transaction_id, Exception.new)
         rejects.@rejects.should eq({transaction_id => "unknown"})
       end
@@ -78,7 +78,7 @@ describe Rejects do
   it "should perform #clear" do
     with_factory do |block_factory, transaction_factory|
       chain = block_factory.addBlocks(2).chain
-      rejects = Rejects.new(blockchain_node(transaction_factory.sender_wallet))
+      rejects = Rejects.new(block_factory.blockchain)
       rejects.record_reject(chain.last.transactions.last.id, Exception.new)
       rejects.clear
       rejects.@rejects.size.should eq(0)
