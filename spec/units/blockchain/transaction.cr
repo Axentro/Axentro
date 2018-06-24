@@ -15,6 +15,7 @@ require "./../utils"
 
 include Units::Utils
 include Sushi::Core
+include Sushi::Core::TransactionModels
 include Hashes
 
 describe Transaction do
@@ -58,12 +59,43 @@ describe Transaction do
 
   describe "#valid_as_embedded?" do
     it "should return true when valid" do
+      with_factory do |block_factory, transaction_factory|
+        chain = block_factory.addBlock([transaction_factory.make_send(2000_i64)]).chain
+        transactions = chain.last.transactions
+
+        transaction = transaction_factory.make_send(1000_i64)
+        transaction.valid_common?.should be_true
+        transaction.prev_hash = transactions.last.to_hash
+        transaction.valid_as_embedded?(block_factory.blockchain, transactions).should be_true
+      end
     end
 
     it "should raise not checked signing if not common checked" do
+      with_factory do |block_factory, transaction_factory|
+        chain = block_factory.addBlock([transaction_factory.make_send(2000_i64)]).chain
+        transactions = chain.last.transactions
+
+        transaction = transaction_factory.make_send(1000_i64)
+        expect_raises(Exception, "be not checked signing") do
+          transaction.valid_as_embedded?(block_factory.blockchain, transactions)
+        end
+      end
     end
 
-    it "should raise amount mismatch fir senders and recipients if they are not equal" do
+    it "should raise amount mismatch for senders and recipients if they are not equal" do
+      with_factory do |block_factory, transaction_factory|
+        chain = block_factory.addBlock([transaction_factory.make_send(2000_i64)]).chain
+        transactions = chain.last.transactions
+
+        transaction = transaction_factory.make_send(1000_i64)
+        transaction.valid_common?.should be_true
+        transaction.prev_hash = transactions.last.to_hash
+
+        modified_sender = transaction.senders.last
+        modified_sender = modified_sender.merge({amount: 1_u64})
+        transaction.senders = [modified_sender]
+        transaction.valid_as_embedded?(block_factory.blockchain, transactions).should be_true
+      end
     end
 
     it "should raise invalid prev hash if prev hash is invalid" do
