@@ -58,7 +58,7 @@ module ::Sushi::Core::NodeComponents
       stabilize_process
     end
 
-    def join_to(connect_host : String, connect_port : Int32)
+    def join_to(node, connect_host : String, connect_port : Int32)
       debug "joining network: #{connect_host}:#{connect_port}"
 
       send_once(
@@ -69,6 +69,12 @@ module ::Sushi::Core::NodeComponents
           version: Core::CORE_VERSION,
           context: context,
         })
+    rescue e : Exception
+      error "failed to connect #{connect_host}:#{connect_port}"
+      error "please specify another public host if you need successor"
+
+      node.phase = SETUP_PHASE::BLOCKCHAIN_LOADING
+      node.proceed_setup
     end
 
     def join_to_private(node, connect_host : String, connect_port : Int32)
@@ -80,6 +86,8 @@ module ::Sushi::Core::NodeComponents
 
       spawn do
         socket.run
+      rescue e : Exception
+        handle_exception(socket, e)
       end
 
       send(
@@ -90,6 +98,12 @@ module ::Sushi::Core::NodeComponents
           context: context,
         }
       )
+    rescue e : Exception
+      error "failed to connect #{connect_host}:#{connect_port}"
+      error "please specify another public host if you need successor"
+
+      node.phase = SETUP_PHASE::BLOCKCHAIN_LOADING
+      node.proceed_setup
     end
 
     def join(node, socket, _content)
@@ -161,7 +175,7 @@ module ::Sushi::Core::NodeComponents
 
       @predecessor = {socket: socket, context: _context}
 
-      node.flag = FLAG_BLOCKCHAIN_LOADING
+      node.phase = SETUP_PHASE::BLOCKCHAIN_LOADING
       node.proceed_setup
     end
 
@@ -183,7 +197,7 @@ module ::Sushi::Core::NodeComponents
 
       connect_to_successor(node, _context)
 
-      node.flag = FLAG_BLOCKCHAIN_LOADING
+      node.phase = SETUP_PHASE::BLOCKCHAIN_LOADING
       node.proceed_setup
     end
 
@@ -249,8 +263,8 @@ module ::Sushi::Core::NodeComponents
       end
     end
 
-    def debug_table_line(col0 : String, col1 : String, delimiter = "|")
-      debug "#{delimiter} %20s #{delimiter} %20s #{delimiter}" % [col0, col1]
+    def table_line(col0 : String, col1 : String, delimiter = "|")
+      verbose "#{delimiter} %20s #{delimiter} %20s #{delimiter}" % [col0, col1]
     end
 
     def stabilize_process
@@ -259,29 +273,29 @@ module ::Sushi::Core::NodeComponents
           sleep Random.rand
 
           if (@show_network += 1) % 20 == 0
-            debug_table_line("-" * 20, "-" * 20, "+")
+            table_line("-" * 20, "-" * 20, "+")
 
             if @successor_list.size > 0
               @successor_list.each_with_index do |successor, i|
-                debug_table_line "successor (#{i})",
+                table_line "successor (#{i})",
                   "#{successor[:context][:host]}:#{successor[:context][:port]}"
               end
             else
-              debug_table_line "successor", "Not found"
+              table_line "successor", "Not found"
             end
 
             if predecessor = @predecessor
-              debug_table_line "predecessor",
+              table_line "predecessor",
                 "#{predecessor[:context][:host]}:#{predecessor[:context][:port]}"
             else
-              debug_table_line "predecessor", "Not found"
+              table_line "predecessor", "Not found"
             end
 
             if @private_nodes.size > 0
-              debug_table_line "private nodes", @private_nodes.size.to_s
+              table_line "private nodes", @private_nodes.size.to_s
             end
 
-            debug_table_line("-" * 20, "-" * 20, "+")
+            table_line("-" * 20, "-" * 20, "+")
           end
 
           ping_all
@@ -368,6 +382,13 @@ module ::Sushi::Core::NodeComponents
     end
 
     def connect_to_successor(node, _context : NodeContext)
+      if _context[:is_private]
+        error "the connecting node is private"
+        error "please specify a public node as connecting node"
+        error "exit with -1"
+        exit -1
+      end
+
       info "found new successor: #{_context[:host]}:#{_context[:port]}"
 
       socket = HTTP::WebSocket.new(_context[:host], "/peer", _context[:port], @use_ssl)
@@ -376,6 +397,8 @@ module ::Sushi::Core::NodeComponents
 
       spawn do
         socket.run
+      rescue e : Exception
+        handle_exception(socket, e)
       end
 
       if @successor_list.size > 0

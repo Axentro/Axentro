@@ -29,7 +29,7 @@ describe Block do
 
   it "should return the header for #to_header" do
     block = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 0_i64, 3_i32)
-    block.to_header.should eq({index: 0_i64, nonce: 0_u64, prev_hash: "genesis", merkle_tree_root: "", timestamp: 0_i64, difficulty: 3})
+    block.to_header.should eq({index: 0_i64, nonce: 0_u64, prev_hash: "genesis", merkle_tree_root: "", timestamp: 0_i64, next_difficulty: 3})
   end
 
   describe "#calcluate_merkle_tree_root" do
@@ -56,162 +56,196 @@ describe Block do
     it "should return true when valid" do
       with_factory do |block_factory|
         block = block_factory.addBlock.chain.first
-        block.valid_nonce?(68_u64, 2).should be_true
+        block.valid_nonce?(0).should be_true
       end
     end
 
     it "should return false when invalid" do
       with_factory do |block_factory|
         block = block_factory.addBlock.chain.first
-        block.valid_nonce?(69_u64, 2).should be_false
+        block.valid_nonce?(2).should be_false
       end
     end
   end
 
   describe "#valid_as_latest?" do
-    context "when not a genesis block" do
-      it "should be valid" do
-        blockchain = blockchain_node(a_fixed_sender_wallet)
-        prev_hash = blockchain.chain[0].to_hash
-        coinbase_transaction = a_fixed_coinbase_transaction
-
-        with_difficulty(2) do
-          block = Block.new(1_i64, [coinbase_transaction], 68_u64, prev_hash, 0_i64, 2_i32)
-          block.valid_as_latest?(blockchain).should be_true
-        end
+    it "should return true when valid" do
+      with_factory do |block_factory|
+        chain = block_factory.addBlocks(1).chain
+        prev_hash = chain[1].to_hash
+        timestamp = chain[1].timestamp
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 1_i32)
+        block.valid_as_latest?(block_factory.blockchain, false).should be_true
       end
+    end
 
-      it "should raise an error: invalid index" do
-        blockchain = blockchain_node(a_fixed_sender_wallet)
-        prev_hash = blockchain.chain[0].to_hash
-        block = Block.new(2_i64, [a_fixed_signed_transaction], 0_u64, prev_hash, 0_i64, 3_i32)
-        expect_raises(Exception, "invalid index, 2 have to be 1") do
-          block.valid_as_latest?(blockchain)
-        end
-      end
+    it "should raise invalid index if index does not equal blockchain size" do
+      with_factory do |block_factory|
+        chain = block_factory.addBlocks(1).chain
+        prev_hash = chain[1].to_hash
+        timestamp = chain[1].timestamp
+        block = Block.new(99_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 1_i32)
 
-      it "should raise an error: invalid transaction" do
-        with_factory do |block_factory, transaction_factory|
-          senders = [a_sender(transaction_factory.sender_wallet, 1000_i64)]
-          recipients = [a_recipient(transaction_factory.recipient_wallet, 100_i64)]
-
-          unsigned_transaction = Transaction.new(
-            Transaction.create_id,
-            "send", # action
-            senders,
-            recipients,
-            "0",           # message
-            TOKEN_DEFAULT, # token
-            "0",           # prev_hash
-            0_i64,         # timestamp
-            1              # scaled
-          )
-
-          signed_transaction = unsigned_transaction.as_signed([transaction_factory.sender_wallet])
-
-          blockchain = blockchain_node(transaction_factory.sender_wallet)
-          block = Block.new(1_i64, [signed_transaction], 0_u64, "prev_hash", 0_i64, 3_i32)
-          expect_raises(Exception, "actions has to be 'head' for coinbase transaction") do
-            block.valid_as_latest?(blockchain)
-          end
+        expect_raises(Exception, "invalid index, 99 have to be 2") do
+          block.valid_as_latest?(block_factory.blockchain, false)
         end
       end
     end
 
-    context "when a genesis block" do
-      it "should be valid" do
-        blockchain = blockchain_node(a_fixed_sender_wallet)
-        block = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 0_i64, 3_i32)
-        block.valid_as_latest?(blockchain).should be_true
-      end
+    it "should raise error if the nonce is invalid" do
+      with_factory do |block_factory|
+        chain = block_factory.addBlocks(1).chain
+        prev_hash = chain[1].to_hash
+        timestamp = chain[1].timestamp
 
-      it "should raise an error: transactions have to be empty" do
-        blockchain = blockchain_node(a_fixed_sender_wallet)
-        block = Block.new(0_i64, [a_fixed_signed_transaction], 0_u64, "genesis", 0_i64, 3_i32)
-        expect_raises(Exception, /transactions have to be empty for genesis block/) do
-          block.valid_as_latest?(blockchain)
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 0_u64, prev_hash, timestamp, 1_i32)
+        block_factory.enable_difficulty("5")
+        expect_raises(Exception, "the nonce is invalid: 0") do
+          block.valid_as_latest?(block_factory.blockchain, false)
+        end
+        block_factory.enable_difficulty("0")
+      end
+    end
+
+    it "should raise error if there is an index mismatch with the prev block" do
+      with_factory do |block_factory|
+        chain = block_factory.addBlocks(1).chain
+        prev_hash = chain[1].to_hash
+        timestamp = chain[1].timestamp
+        block = chain.last
+        block.index = 2
+        expect_raises(Exception, "mismatch index for the prev block(2): 2") do
+          block.valid_as_latest?(block_factory.blockchain, false)
         end
       end
+    end
 
-      it "should raise an error: nonce has to be '0'" do
-        blockchain = blockchain_node(a_fixed_sender_wallet)
-        block = Block.new(0_i64, [] of Transaction, 1_u64, "genesis", 0_i64, 3_i32)
-        expect_raises(Exception, "nonce has to be '0' for genesis block: 1") do
-          block.valid_as_latest?(blockchain)
+    it "should raise error if prev hash is invalid" do
+      with_factory do |block_factory|
+        chain = block_factory.addBlocks(1).chain
+        prev_hash = "invalid"
+        timestamp = chain[1].timestamp
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 99_i32)
+
+        expect_raises(Exception, /prev_hash is invalid:/) do
+          block.valid_as_latest?(block_factory.blockchain, false)
         end
       end
+    end
 
-      it "should raise an error: prev_hash has to be 'genesis'" do
-        blockchain = blockchain_node(a_fixed_sender_wallet)
-        block = Block.new(0_i64, [] of Transaction, 0_u64, "not-genesis", 0_i64, 3_i32)
-        expect_raises(Exception, "prev_hash has to be 'genesis' for genesis block: not-genesis") do
-          block.valid_as_latest?(blockchain)
+    it "should raise error if timestamp is invalid because is smaller than prev timestamp" do
+      with_factory do |block_factory|
+        chain = block_factory.addBlocks(1).chain
+        prev_hash = chain[1].to_hash
+        timestamp = chain[1].timestamp - 10000000
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 1_i32)
+
+        expect_raises(Exception, /timestamp is invalid:/) do
+          block.valid_as_latest?(block_factory.blockchain, false)
+        end
+      end
+    end
+
+    it "should raise error if timestamp is invalid because is bigger than next timestamp" do
+      with_factory do |block_factory|
+        chain = block_factory.addBlocks(1).chain
+        prev_hash = chain[1].to_hash
+        timestamp = chain[1].timestamp + 10000000
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 1_i32)
+
+        expect_raises(Exception, /timestamp is invalid:/) do
+          block.valid_as_latest?(block_factory.blockchain, false)
+        end
+      end
+    end
+
+    it "should raise error if difficulty is invalid" do
+      with_factory do |block_factory|
+        chain = block_factory.addBlocks(1).chain
+        prev_hash = chain[1].to_hash
+        timestamp = chain[1].timestamp
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 99_i32)
+
+        expect_raises(Exception, "next_difficulty is invalid (expected 1 but got 99)") do
+          block.valid_as_latest?(block_factory.blockchain, false)
+        end
+      end
+    end
+
+    it "should raise error if merkle tree root is invalid" do
+      with_factory do |block_factory|
+        chain = block_factory.addBlocks(1).chain
+        prev_hash = chain[1].to_hash
+        timestamp = chain[1].timestamp
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 1_i32)
+        block.merkle_tree_root = "invalid"
+        expect_raises(Exception, "invalid merkle tree root (expected invalid but got d91329bca593bbae22fb70b7f450b4748002ac65)") do
+          block.valid_as_latest?(block_factory.blockchain, false)
         end
       end
     end
   end
 
-  describe "#valid_for?" do
+  describe "#valid_as_genesis?" do
     it "should return true when valid" do
       with_factory do |block_factory|
-        chain = block_factory.addBlocks(2).chain
-        block_factory.enable_difficulty
-        block1 = chain[1]
-        block2 = chain[2]
-
-        block2.valid_for?(block1).should be_true
-        block_factory.remove_difficulty
+        chain = block_factory.blockchain.chain
+        block = chain.first
+        block.valid?(block_factory.blockchain, false).should be_true
       end
     end
 
-    it "should raise an error: mismatch index" do
-      transaction1 = a_fixed_signed_transaction
-      prev_block = Block.new(3_i64, [transaction1], 0_u64, "prev_hash_1", 0_i64, 3_i32)
-      prev_hash = prev_block.to_hash
-      block = Block.new(2_i64, [transaction1], 0_u64, prev_hash, 1_i64, 3_i32)
-      expect_raises(Exception, "mismatch index for the prev block(3): 2") do
-        block.valid_for?(prev_block)
+    it "should raise error if transactions are not empty" do
+      with_factory do |block_factory|
+        chain = block_factory.blockchain.chain
+        block = chain.first
+        block.transactions = [a_fixed_coinbase_transaction]
+        expect_raises(Exception, /transactions have to be empty for genesis block/) do
+          block.valid?(block_factory.blockchain, false)
+        end
       end
     end
 
-    it "should raise an error: prev_hash does not match" do
-      transaction1 = a_fixed_signed_transaction
-      prev_block = Block.new(1_i64, [transaction1], 0_u64, "prev_hash_1", 0_i64, 3_i32)
-      prev_hash = prev_block.to_hash
-      block = Block.new(2_i64, [transaction1], 0_u64, "incorrect_prev_hash", 1_i64, 3_i32)
-      expect_raises(Exception, "prev_hash is invalid: #{prev_hash} != incorrect_prev_hash") do
-        block.valid_for?(prev_block)
+    it "should raise error if nonce is not 0" do
+      with_factory do |block_factory|
+        chain = block_factory.blockchain.chain
+        block = chain.first
+        block.nonce = 1_u64
+        expect_raises(Exception, "nonce has to be '0' for genesis block: 1") do
+          block.valid?(block_factory.blockchain, false)
+        end
       end
     end
 
-    it "should raise an error: nonce is invalid" do
-      transaction1 = a_fixed_signed_transaction
-      prev_block = Block.new(1_i64, [transaction1], 10_u64, "prev_hash_1", 0_i64, 3_i32)
-      prev_hash = prev_block.to_hash
-      block = Block.new(2_i64, [transaction1], 99_u64, prev_hash, 1_i64, 3_i32)
-
-      expect_raises(Exception, "the nonce is invalid: 99") do
-        block.valid_for?(prev_block)
+    it "should raise error if prev hash is not 'genesis'" do
+      with_factory do |block_factory|
+        chain = block_factory.blockchain.chain
+        block = chain.first
+        block.prev_hash = "invalid"
+        expect_raises(Exception, "prev_hash has to be 'genesis' for genesis block: invalid") do
+          block.valid?(block_factory.blockchain, false)
+        end
       end
     end
 
-    it "should raise an error: Invalid merkle tree root" do
-      # someone tried to add into block2 a duplicate of a transaction already in block 1 - but with a different amount
-      with_factory do |block_factory, transaction_factory|
-        chain = block_factory.addBlocks(2).chain
-        block_factory.enable_difficulty
-        block1 = chain[1]
-        block2 = chain[2]
+    it "should raise error if next_difficulty is not 3" do
+      with_factory do |block_factory|
+        chain = block_factory.blockchain.chain
+        block = chain.first
+        block.next_difficulty = 99
+        expect_raises(Exception, "next_difficulty has to be '3' for genesis block: 99") do
+          block.valid?(block_factory.blockchain, false)
+        end
+      end
+    end
 
-        block2.valid_for?(block1).should eq(true)
-
-        source_recipient = block2.transactions.first.recipients.first
-        target_recipient = a_recipient_with_address(source_recipient["address"], source_recipient["amount"] + 12500_i64)
-        block2.transactions.first.recipients = [target_recipient]
-
-        expect_raises(Exception, "invalid merkle tree root: #{block2.calcluate_merkle_tree_root} != #{block2.merkle_tree_root}") do
-          block2.valid_for?(block1)
-          block_factory.remove_difficulty
+    it "should raise error if timestamp is not 0" do
+      with_factory do |block_factory|
+        chain = block_factory.blockchain.chain
+        block = chain.first
+        block.timestamp = 99
+        expect_raises(Exception, "timestamp has to be '0' for genesis block: 99") do
+          block.valid?(block_factory.blockchain, false)
         end
       end
     end

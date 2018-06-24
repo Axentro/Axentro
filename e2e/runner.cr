@@ -23,18 +23,21 @@ module ::E2E
   CONFIRMATION = 3
 
   class Runner
-    @client : Client
     @db_name : String
 
     @node_ports : Array(Int32)
     @node_ports_public : Array(Int32) = [] of Int32
+
+    @num_transactions : Int32 = 0
+    @duration : Float64 = 0.0
 
     getter exit_code : Int32 = 0
 
     def initialize(@mode : Int32, @num_nodes : Int32, @num_miners : Int32, @time : Int32)
       @node_ports = (4000..4000 + (@num_nodes - 1)).to_a
 
-      @client = Client.new(@node_ports, @num_miners)
+      Client.initialize(@node_ports, @num_miners)
+
       @db_name = Random.new.hex
     end
 
@@ -91,11 +94,18 @@ module ::E2E
     end
 
     def launch_client
-      @client.launch
+      Client.launch
     end
 
     def kill_client
-      @client.kill
+      Client.finish
+
+      if response = Client.receive
+        result = Client::Result.from_json(response)
+
+        @num_transactions = result.num_transactions
+        @duration = result.duration
+      end
     end
 
     def block_sizes : Array(NamedTuple(port: Int32, size: Int32))
@@ -205,9 +215,9 @@ module ::E2E
     def benchmark_result
       STDERR.puts
       STDERR.puts "**************** #{light_yellow("benchmark")} ****************"
-      STDERR.puts "- transactions  : #{@client.num_transactions}"
-      STDERR.puts "- duration      : #{@client.duration} [sec]"
-      STDERR.puts "- result        : #{light_green(@client.num_transactions/@client.duration)} [transactions/sec]"
+      STDERR.puts "- transactions  : #{@num_transactions}"
+      STDERR.puts "- duration      : #{@duration} [sec]"
+      STDERR.puts "- result        : #{light_green(@num_transactions/@duration)} [transactions/sec]"
       STDERR.puts "- # of nodes    : #{@num_nodes}"
       STDERR.puts "- # of miners   : #{@num_miners}"
       STDERR.puts "**************** #{light_yellow("status")} ****************"
@@ -253,8 +263,7 @@ module ::E2E
       end
     end
 
-    def running
-    end
+    def running; end
 
     macro step(func, interval, desc)
       STDERR.puts "__ step __ (sleep: #{{{interval.id}}}) " + {{desc}} if {{desc}}.size > 0

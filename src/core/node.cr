@@ -19,12 +19,12 @@ module ::Sushi::Core
       name: String,
     )
 
-    property flag : Int32
+    property phase : SETUP_PHASE
 
+    getter blockchain : Blockchain
     getter network_type : String
     getter chord : Chord
 
-    @blockchain : Blockchain
     @miners_manager : MinersManager
 
     @rpc_controller : Controllers::RPCController
@@ -53,7 +53,9 @@ module ::Sushi::Core
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl)
       @miners_manager = MinersManager.new(@blockchain)
-      @flag = FLAG_NONE
+      @phase = SETUP_PHASE::NONE
+
+      info "your log level is #{light_green(log_level_text)}"
 
       debug "is_private: #{light_green(@is_private)}"
       debug "public url: #{light_green(@public_host)}:#{light_green(@public_port)}" unless @is_private
@@ -79,12 +81,13 @@ module ::Sushi::Core
     def run!
       info "start running Sushi's node on #{light_green(@bind_host)}:#{light_green(@bind_port)}"
 
-      node = HTTP::Server.new(@bind_host, @bind_port, handlers)
+      node = HTTP::Server.new(handlers)
+      node.bind_tcp(@bind_host, @bind_port)
       node.listen
     end
 
     private def sync_chain(socket : HTTP::WebSocket? = nil)
-      info "start synching blockchain."
+      info "start synching blockchain"
 
       s = if _socket = socket
             _socket
@@ -103,10 +106,41 @@ module ::Sushi::Core
           }
         )
       else
-        warning "successor not found. skip synching blockchain."
+        warning "successor not found. skip synching blockchain"
 
-        if @flag == FLAG_BLOCKCHAIN_SYNCING
-          @flag = FLAG_SETUP_PRE_DONE
+        if @phase == SETUP_PHASE::BLOCKCHAIN_SYNCING
+          @phase = SETUP_PHASE::TRANSACTION_SYNCING
+          proceed_setup
+        end
+      end
+    end
+
+    private def sync_transactions(socket : HTTP::WebSocket? = nil)
+      info "start synching transactions"
+
+      s = if _socket = socket
+            _socket
+          elsif predecessor = @chord.find_predecessor?
+            predecessor[:socket]
+          elsif successor = @chord.find_successor?
+            successor[:socket]
+          end
+
+      if _s = s
+        transactions = @blockchain.pending_transactions
+
+        send(
+          _s,
+          M_TYPE_NODE_REQUEST_TRANSACTIONS,
+          {
+            transactions: transactions,
+          }
+        )
+      else
+        warning "successor not found. skip synching transactions"
+
+        if @phase == SETUP_PHASE::TRANSACTION_SYNCING
+          @phase = SETUP_PHASE::PRE_DONE
           proceed_setup
         end
       end
@@ -157,6 +191,10 @@ module ::Sushi::Core
           _broadcast_block(socket, message_content)
         when M_TYPE_NODE_ASK_REQUEST_CHAIN
           _ask_request_chain(socket, message_content)
+        when M_TYPE_NODE_REQUEST_TRANSACTIONS
+          _request_transactions(socket, message_content)
+        when M_TYPE_NODE_RECEIVE_TRANSACTIONS
+          _receive_transactions(socket, message_content)
         end
       rescue e : Exception
         handle_exception(socket, e)
@@ -206,11 +244,11 @@ module ::Sushi::Core
     end
 
     def broadcast_transaction(transaction : Transaction, from : Chord::NodeContext? = nil)
-      info "new transaction coming: #{transaction.id}"
+      info "new transaction coming: #{transaction.short_id}"
 
-      if @blockchain.add_transaction(transaction)
-        send_transaction(transaction, from)
-      end
+      send_transaction(transaction, from)
+
+      @blockchain.add_transaction(transaction)
     end
 
     def send_block(block : Block, from : Chord::NodeContext? = nil)
@@ -227,7 +265,9 @@ module ::Sushi::Core
       if @blockchain.latest_index + 1 == block.index
         info "new block coming: #{light_cyan(@blockchain.chain.size)}"
 
-        @blockchain.queue.enqueue(BlockQueue::TaskReceiveBlock.new(self, block))
+        if _block = @blockchain.valid_block?(block)
+          new_block(_block)
+        end
 
         send_block(block, from)
       elsif @blockchain.latest_index == block.index
@@ -259,15 +299,8 @@ module ::Sushi::Core
       end
     end
 
-    def callback(block : Block, by_self : Bool)
+    def new_block(block : Block)
       @blockchain.push_block(block)
-
-      if by_self
-        send_block(block)
-        @miners_manager.clear_nonces
-      end
-
-      @miners_manager.broadcast_latest_block
       @pubsub_controller.broadcast_latest_block
     end
 
@@ -276,8 +309,16 @@ module ::Sushi::Core
       @miners_manager.clean_connection(socket)
     end
 
+    def miners
+      @miners_manager.miners
+    end
+
+    def miners_broadcast
+      @miners_manager.broadcast
+    end
+
     private def _broadcast_transaction(socket, _content)
-      return unless @flag == FLAG_SETUP_DONE
+      return unless @phase == SETUP_PHASE::DONE
 
       _m_content = M_CONTENT_NODE_BROADCAST_TRANSACTION.from_json(_content)
 
@@ -288,7 +329,7 @@ module ::Sushi::Core
     end
 
     private def _broadcast_block(socket, _content)
-      return unless @flag == FLAG_SETUP_DONE
+      return unless @phase == SETUP_PHASE::DONE
 
       _m_content = M_CONTENT_NODE_BROADCAST_BLOCK.from_json(_content)
 
@@ -316,22 +357,22 @@ module ::Sushi::Core
       chain = _m_content.chain
 
       if _chain = chain
-        info "received chain's size: #{_chain.size}"
+        info "received #{_chain.size} blocks"
       else
-        info "received empty chain."
+        info "received empty chain"
       end
 
       current_latest_index = @blockchain.latest_index
 
       if @blockchain.replace_chain(chain)
         info "chain updated: #{light_green(current_latest_index)} -> #{light_green(@blockchain.latest_index)}"
-        @miners_manager.broadcast_latest_block
+        @miners_manager.broadcast
 
         @conflicted_index = nil
       end
 
-      if @flag == FLAG_BLOCKCHAIN_SYNCING
-        @flag = FLAG_SETUP_PRE_DONE
+      if @phase == SETUP_PHASE::BLOCKCHAIN_SYNCING
+        @phase = SETUP_PHASE::TRANSACTION_SYNCING
         proceed_setup
       end
     end
@@ -341,11 +382,42 @@ module ::Sushi::Core
 
       _latest_index = _m_content.latest_index
 
-      debug "be asked to request new chain"
-      debug "requested: #{_latest_index}, yours #{@blockchain.latest_block.index}"
+      verbose "be asked to request new chain"
+      verbose "requested: #{_latest_index}, yours #{@blockchain.latest_block.index}"
 
       if _latest_index > @blockchain.latest_block.index
         sync_chain(socket)
+      end
+    end
+
+    private def _request_transactions(socket, _content)
+      _m_content = M_CONTENT_NODE_REQUEST_TRANSACTIONS.from_json(_content)
+
+      info "requested transactions"
+
+      transactions = @blockchain.pending_transactions
+
+      send(
+        socket,
+        M_TYPE_NODE_RECEIVE_TRANSACTIONS,
+        {
+          transactions: transactions,
+        }
+      )
+    end
+
+    private def _receive_transactions(socket, _content)
+      _m_content = M_CONTENT_NODE_RECEIVE_TRANSACTIONS.from_json(_content)
+
+      transactions = _m_content.transactions
+
+      info "received #{transactions.size} transactions"
+
+      @blockchain.replace_transactions(transactions)
+
+      if @phase == SETUP_PHASE::TRANSACTION_SYNCING
+        @phase = SETUP_PHASE::PRE_DONE
+        proceed_setup
       end
     end
 
@@ -361,15 +433,15 @@ module ::Sushi::Core
     end
 
     def proceed_setup
-      return if @flag == FLAG_SETUP_DONE
+      return if @phase == SETUP_PHASE::DONE
 
-      case @flag
-      when FLAG_NONE
+      case @phase
+      when SETUP_PHASE::NONE
         if @connect_host && @connect_port
-          @flag = FLAG_CONNECTING_NODES
+          @phase = SETUP_PHASE::CONNECTING_NODES
 
           unless @is_private
-            @chord.join_to(@connect_host.not_nil!, @connect_port.not_nil!)
+            @chord.join_to(self, @connect_host.not_nil!, @connect_port.not_nil!)
           else
             @chord.join_to_private(self, @connect_host.not_nil!, @connect_port.not_nil!)
           end
@@ -377,11 +449,11 @@ module ::Sushi::Core
           warning "no connecting node has been specified"
           warning "so this node is standalone from other network"
 
-          @flag = FLAG_BLOCKCHAIN_LOADING
+          @phase = SETUP_PHASE::BLOCKCHAIN_LOADING
 
           proceed_setup
         end
-      when FLAG_BLOCKCHAIN_LOADING
+      when SETUP_PHASE::BLOCKCHAIN_LOADING
         @blockchain.setup(self)
 
         info "loaded blockchain's size: #{light_cyan(@blockchain.chain.size)}"
@@ -392,15 +464,17 @@ module ::Sushi::Core
           warning "no database has been specified"
         end
 
-        @flag = FLAG_BLOCKCHAIN_SYNCING
+        @phase = SETUP_PHASE::BLOCKCHAIN_SYNCING
 
         proceed_setup
-      when FLAG_BLOCKCHAIN_SYNCING
+      when SETUP_PHASE::BLOCKCHAIN_SYNCING
         sync_chain
-      when FLAG_SETUP_PRE_DONE
-        info "successfully setup the node."
+      when SETUP_PHASE::TRANSACTION_SYNCING
+        sync_transactions
+      when SETUP_PHASE::PRE_DONE
+        info "successfully setup the node"
 
-        @flag = FLAG_SETUP_DONE
+        @phase = SETUP_PHASE::DONE
       end
     end
 

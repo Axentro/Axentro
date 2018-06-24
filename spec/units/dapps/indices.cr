@@ -22,7 +22,7 @@ describe Indices do
   it "should perform #setup" do
     with_factory do |block_factory, transaction_factory|
       chain = block_factory.addBlock.chain
-      indices = Indices.new(blockchain_node(transaction_factory.sender_wallet))
+      indices = Indices.new(block_factory.blockchain)
       indices.setup.should be_nil
     end
   end
@@ -31,7 +31,7 @@ describe Indices do
     it "should return the indice for the given transaction" do
       with_factory do |block_factory, transaction_factory|
         chain = block_factory.addBlocks(2).chain
-        indices = Indices.new(blockchain_node(transaction_factory.sender_wallet))
+        indices = Indices.new(block_factory.blockchain)
         indices.record(chain)
         indices.get(chain.last.transactions.last.id).should eq(2)
       end
@@ -39,7 +39,7 @@ describe Indices do
     it "should return nil if the transaction is not found in the chain" do
       with_factory do |block_factory, transaction_factory|
         chain = block_factory.addBlocks(2).chain
-        indices = Indices.new(blockchain_node(transaction_factory.sender_wallet))
+        indices = Indices.new(block_factory.blockchain)
         indices.record(chain)
         indices.get("non-existing-transaction-id").should be_nil
       end
@@ -49,21 +49,21 @@ describe Indices do
   it "should perform #transaction_actions" do
     with_factory do |block_factory, transaction_factory|
       chain = block_factory.addBlock.chain
-      indices = Indices.new(blockchain_node(transaction_factory.sender_wallet))
+      indices = Indices.new(block_factory.blockchain)
       indices.transaction_actions.size.should eq(0)
     end
   end
   it "should perform #transaction_related?" do
     with_factory do |block_factory, transaction_factory|
       chain = block_factory.addBlock.chain
-      indices = Indices.new(blockchain_node(transaction_factory.sender_wallet))
+      indices = Indices.new(block_factory.blockchain)
       indices.transaction_related?("action").should be_true
     end
   end
   it "should perform #valid_transaction?" do
     with_factory do |block_factory, transaction_factory|
       chain = block_factory.addBlocks(2).chain
-      indices = Indices.new(blockchain_node(transaction_factory.sender_wallet))
+      indices = Indices.new(block_factory.blockchain)
 
       indices.valid_transaction?(chain.last.transactions.first, chain.last.transactions[1..-1]).should be_true
     end
@@ -71,7 +71,7 @@ describe Indices do
   it "should perform #record" do
     with_factory do |block_factory, transaction_factory|
       chain = block_factory.addBlocks(2).chain
-      indices = Indices.new(blockchain_node(transaction_factory.sender_wallet))
+      indices = Indices.new(block_factory.blockchain)
       indices.record(chain)
       indices.@indices.reject(&.empty?).size.should eq(2)
     end
@@ -79,7 +79,7 @@ describe Indices do
   it "should perform #clear" do
     with_factory do |block_factory, transaction_factory|
       chain = block_factory.addBlocks(2).chain
-      indices = Indices.new(blockchain_node(transaction_factory.sender_wallet))
+      indices = Indices.new(block_factory.blockchain)
       indices.record(chain)
       indices.clear
       indices.@indices.size.should eq(0)

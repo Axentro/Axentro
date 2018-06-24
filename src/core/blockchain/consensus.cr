@@ -11,9 +11,8 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::Consensus
-
   # SHA256 Implementation
-  def valid_sha256?(block_index : Int64, block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
+  def valid_sha256?(block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
     guess_nonce = "#{block_hash}#{nonce}"
     guess_hash = sha256(guess_nonce)
     guess_hash[0, difficulty] == "0" * difficulty
@@ -25,7 +24,7 @@ module ::Sushi::Core::Consensus
   K = 512
 
   # Scrypt Implementation
-  def valid_scryptn?(block_index : Int64, block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
+  def valid_scryptn?(block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
     nonce_salt = nonce.to_s(16)
     nonce_salt = "0" + nonce_salt if nonce_salt.bytesize % 2 != 0
 
@@ -45,13 +44,13 @@ module ::Sushi::Core::Consensus
     buffer.hexstring[0, difficulty] == "0" * difficulty
   end
 
-  def valid_nonce?(block_index : Int64, block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
+  def valid_nonce?(block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
     difficulty = ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY") # for unit test
-    valid_scryptn?(block_index, block_hash, nonce, difficulty)
+    valid_scryptn?(block_hash, nonce, difficulty)
   end
 
   BASE_TIME = 300.0
-  MIN_DIFF = 3
+  MIN_DIFF  =     3
 
   def block_difficulty(timestamp : Int64, block : Block) : Int32
     return MIN_DIFF if ENV.has_key?("SC_E2E") # for e2e test
@@ -59,11 +58,11 @@ module ::Sushi::Core::Consensus
 
     ratio = (timestamp - block.timestamp).to_f / BASE_TIME
 
-    return block.difficulty + 1 if ratio < 0.1
-    return Math.max(Math.max(block.difficulty - 2, 1), MIN_DIFF) if ratio > 100.0
-    return Math.max(Math.max(block.difficulty - 1, 1), MIN_DIFF) if ratio > 10.0
+    return block.next_difficulty + 1 if ratio < 0.1
+    return Math.max(Math.max(block.next_difficulty - 2, 1), MIN_DIFF) if ratio > 100.0
+    return Math.max(Math.max(block.next_difficulty - 1, 1), MIN_DIFF) if ratio > 10.0
 
-    block.difficulty
+    block.next_difficulty
   end
 
   include Hashes

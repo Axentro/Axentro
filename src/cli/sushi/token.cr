@@ -93,7 +93,7 @@ module ::Sushi::Interface::Sushi
       unless __json
         puts_success "show a list of evenry tokens on SushiChain"
 
-        json.each do |token|
+        json.as_a.each do |token|
           puts_info "- #{token}"
         end
       else

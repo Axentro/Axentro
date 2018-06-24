@@ -175,10 +175,29 @@ module ::Sushi::Core::Protocol
     })
   end
 
-  FLAG_NONE               = 0
-  FLAG_CONNECTING_NODES   = 1
-  FLAG_BLOCKCHAIN_LOADING = 2
-  FLAG_BLOCKCHAIN_SYNCING = 3
-  FLAG_SETUP_PRE_DONE     = 4
-  FLAG_SETUP_DONE         = 5
+  M_TYPE_NODE_REQUEST_TRANSACTIONS = 0x0106
+
+  struct M_CONTENT_NODE_REQUEST_TRANSACTIONS
+    JSON.mapping({transactions: Array(Transaction)})
+  end
+
+  M_TYPE_NODE_RECEIVE_TRANSACTIONS = 0x0107
+
+  struct M_CONTENT_NODE_RECEIVE_TRANSACTIONS
+    JSON.mapping({transactions: Array(Transaction)})
+  end
+
+  ######################################
+  # Blockchain's setup phase
+  ######################################
+
+  enum SETUP_PHASE
+    NONE
+    CONNECTING_NODES
+    BLOCKCHAIN_LOADING
+    BLOCKCHAIN_SYNCING
+    TRANSACTION_SYNCING
+    PRE_DONE
+    DONE
+  end
 end

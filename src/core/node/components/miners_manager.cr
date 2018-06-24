@@ -32,7 +32,9 @@ module ::Sushi::Core::NodeComponents
     end
 
     def handshake(node, socket, _content)
-      return unless node.flag == FLAG_SETUP_DONE
+      return unless node.phase == SETUP_PHASE::DONE
+
+      verbose "requested handshake from a miner"
 
       _m_content = M_CONTENT_MINER_HANDSHAKE.from_json(_content)
 
@@ -67,13 +69,15 @@ module ::Sushi::Core::NodeComponents
 
       send(socket, M_TYPE_MINER_HANDSHAKE_ACCEPTED, {
         version:    Core::CORE_VERSION,
-        block:      @blockchain.latest_block,
-        difficulty: @blockchain.miner_difficulty_latest,
+        block:      @blockchain.mining_block,
+        difficulty: @blockchain.mining_block_difficulty_miner,
       })
     end
 
     def found_nonce(node, socket, _content)
-      return unless node.flag == FLAG_SETUP_DONE
+      return unless node.phase == SETUP_PHASE::DONE
+
+      verbose "miner sent a new nonce"
 
       _m_content = M_CONTENT_MINER_FOUND_NONCE.from_json(_content)
 
@@ -83,23 +87,26 @@ module ::Sushi::Core::NodeComponents
       if miner = find?(socket)
         if @miners.map { |m| m[:context][:nonces] }.flatten.includes?(nonce)
           warning "nonce #{nonce} has already been discoverd"
-        elsif !@blockchain.latest_block.valid_nonce?(nonce, @blockchain.miner_difficulty_latest)
+        elsif !@blockchain.mining_block.with_nonce(nonce).valid_nonce?(@blockchain.mining_block_difficulty_miner)
           warning "received nonce is invalid, try to update latest block"
 
           send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
-            block:      @blockchain.latest_block,
-            difficulty: @blockchain.miner_difficulty_latest,
+            block:      @blockchain.mining_block,
+            difficulty: @blockchain.mining_block_difficulty_miner,
           })
         else
           info "miner #{miner[:context][:address][0..7]} found nonce (nonces: #{miner[:context][:nonces].size})"
 
           miner[:context][:nonces].push(nonce)
 
-          found = true
+          if block = @blockchain.valid_nonce?(nonce)
+            node.new_block(block)
+            node.send_block(block)
+
+            clear_nonces
+          end
         end
       end
-
-      @blockchain.queue.enqueue(BlockQueue::TaskFoundNonce.new(node, nonce, @miners)) if found
     end
 
     def clear_nonces
@@ -108,14 +115,14 @@ module ::Sushi::Core::NodeComponents
       end
     end
 
-    def broadcast_latest_block
-      info "new block difficulty: #{@blockchain.block_difficulty_latest}, " +
-           "mining difficulty: #{@blockchain.miner_difficulty_latest}"
+    def broadcast
+      debug "new block difficulty: #{@blockchain.mining_block_difficulty}, " +
+            "mining difficulty: #{@blockchain.mining_block_difficulty_miner}"
 
       @miners.each do |miner|
         send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
-          block:      @blockchain.latest_block,
-          difficulty: @blockchain.miner_difficulty_latest,
+          block:      @blockchain.mining_block,
+          difficulty: @blockchain.mining_block_difficulty_miner,
         })
       end
     end

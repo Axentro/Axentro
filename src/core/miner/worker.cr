@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core
-  alias MinerWork = NamedTuple(start_nonce: UInt64, difficulty: Int32, index: Int64, hash: String)
+  alias MinerWork = NamedTuple(start_nonce: UInt64, difficulty: Int32, block: Block)
 
   class MinerWorker < Tokoroten::Worker
     def task(message : String)
@@ -23,7 +23,7 @@ module ::Sushi::Core
       latest_time = Time.now
 
       loop do
-        break if valid_nonce?(work[:index], work[:hash], nonce, work[:difficulty])
+        break if valid_nonce?(work[:block].with_nonce(nonce).to_hash, nonce, work[:difficulty])
 
         nonce += 1
 
@@ -42,7 +42,7 @@ module ::Sushi::Core
         end
       end
 
-      info "found new nonce(#{work[:difficulty]}): #{light_green(nonce)})"
+      info "found new nonce(#{work[:difficulty]}): #{light_green(nonce)}"
 
       response(nonce.to_s)
     rescue e : Exception

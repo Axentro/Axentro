@@ -31,6 +31,8 @@ module ::Sushi::Core
 
     setter prev_hash : String
 
+    @common_checked : Bool = false
+
     def initialize(
       @id : String,
       @action : String,
@@ -50,20 +52,78 @@ module ::Sushi::Core
       tmp_id
     end
 
+    def self.secp256k1 : ECDSA::Secp256k1
+      @@secp256k1 ||= ECDSA::Secp256k1.new
+      @@secp256k1.not_nil!
+    end
+
+    def secp256k1
+      Transaction.secp256k1
+    end
+
     def to_hash : String
       string = self.to_json
       sha256(string)
     end
 
-    def valid?(blockchain : Blockchain, transactions : Array(Transaction)) : Bool
+    def short_id : String
+      @id[0..7]
+    end
+
+    def valid_as_embedded?(blockchain : Blockchain, prev_transactions : Array(Transaction)) : Bool
+      verbose "tx -- #{short_id}: validating embedded transactions"
+
+      raise "be not checked signing" unless @common_checked
+
+      if sender_total_amount != recipient_total_amount
+        raise "amount mismatch for senders (#{scale_decimal(sender_total_amount)}) " +
+              "and recipients (#{scale_decimal(recipient_total_amount)})"
+      end
+
+      if @prev_hash != prev_transactions[-1].to_hash
+        raise "invalid prev_hash: expected #{prev_transactions[-1].to_hash} but got #{@prev_hash}"
+      end
+
+      blockchain.dapps.each do |dapp|
+        if dapp.transaction_related?(@action) && prev_transactions.size > 0
+          dapp.valid?(self, prev_transactions)
+        end
+      end
+
+      true
+    end
+
+    def valid_as_coinbase?(blockchain : Blockchain, block_index : Int64, embedded_transactions : Array(Transaction)) : Bool
+      verbose "tx -- #{short_id}: validating coinbase transaction"
+
+      raise "be not checked signing" unless @common_checked
+
+      raise "actions has to be 'head' for coinbase transaction " if @action != "head"
+      raise "message has to be '0' for coinbase transaction" if @message != "0"
+      raise "token has to be #{TOKEN_DEFAULT} for coinbase transaction" if @token != TOKEN_DEFAULT
+      raise "there should be no Sender for a coinbase transaction" if @senders.size != 0
+      raise "prev_hash of coinbase transaction has to be '0'" if @prev_hash != "0"
+
+      served_sum = @recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
+      served_sum_expected = blockchain.coinbase_amount(block_index, embedded_transactions)
+
+      if served_sum != served_sum_expected
+        raise "invalid served amount for coinbase transaction: " +
+              "expected #{served_sum_expected} but got #{served_sum} "
+      end
+
+      true
+    end
+
+    def valid_common? : Bool
+      return true if @common_checked
+
+      verbose "tx -- #{short_id}: validating common"
+
       raise "length of transaction id have to be 64: #{@id}" if @id.size != 64
       raise "message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
       raise "token size exceeds: #{self.token.bytesize} for #{TOKEN_SIZE_LIMIT}" if self.token.bytesize > TOKEN_SIZE_LIMIT
-      raise "unscaled transaction" if scaled != 1
-
-      is_coinbase = transactions.size == 0
-
-      secp256k1 : ECDSA::Secp256k1 = ECDSA::Secp256k1.new
+      raise "unscaled transaction" if @scaled != 1
 
       @senders.each do |sender|
         network = Keys::Address.from(sender[:address], "sender").network
@@ -93,33 +153,7 @@ module ::Sushi::Core
         valid_amount?(recipient[:amount])
       end
 
-      if !is_coinbase
-        if sender_total_amount != recipient_total_amount
-          raise "amount mismatch for senders (#{scale_decimal(sender_total_amount)}) and recipients (#{scale_decimal(recipient_total_amount)})"
-        end
-
-        if @prev_hash != transactions[-1].to_hash
-          raise "invalid prev_hash: expected #{transactions[-1].to_hash} but got #{@prev_hash}"
-        end
-
-        blockchain.dapps.each do |dapp|
-          dapp.valid?(self, transactions) if dapp.transaction_related?(@action)
-        end
-      else
-        raise "actions has to be 'head' for coinbase transaction " if @action != "head"
-        raise "message has to be '0' for coinbase transaction" if @message != "0"
-        raise "token has to be #{TOKEN_DEFAULT} for coinbase transaction" if @token != TOKEN_DEFAULT
-        raise "there should be no Sender for a coinbase transaction" if @senders.size != 0
-        raise "prev_hash of coinbase transaction has to be '0'" if @prev_hash != "0"
-
-        served_sum = @recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
-        served_sum_expected = blockchain.latest_block.coinbase_amount
-
-        if served_sum != served_sum_expected
-          raise "invalid served amount for coinbase transaction: " +
-                "expected #{served_sum_expected} but got #{served_sum} "
-        end
-      end
+      @common_checked = true
 
       true
     end
@@ -192,7 +226,23 @@ module ::Sushi::Core
       senders.reduce(0_i64) { |sum, sender| sum + sender[:fee] }
     end
 
+    #
+    # ignore prev_hash for comparision
+    #
+    def ==(other : Transaction) : Bool
+      return false unless @id == other.id
+      return false unless @action == other.action
+      return false unless @senders == other.senders
+      return false unless @recipients == other.recipients
+      return false unless @token == other.token
+      return false unless @timestamp == other.timestamp
+      return false unless @scaled == other.scaled
+
+      true
+    end
+
     include Hashes
+    include Logger
     include TransactionModels
     include Common::Validator
     include Common::Denomination
