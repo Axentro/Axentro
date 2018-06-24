@@ -35,7 +35,7 @@ module ::Sushi::Core
       @timestamp : Int64,
       @scaled : Int32
     )
-      raise "invalid decimal transaction (expected scaled: 0 bug receive #{@scaled})" if @scaled != 0
+      raise "invalid decimal transaction (expected scaled: 0 but received #{@scaled})" if @scaled != 0
     end
 
     def to_transaction : Transaction
@@ -49,20 +49,6 @@ module ::Sushi::Core
         @prev_hash,
         @timestamp,
         1,
-      )
-    end
-
-    def self.from_transaction(transaction : Transaction) : TransactionDecimal
-      TransactionDecimal.new(
-        transaction.id,
-        transaction.action,
-        scale_decimal(transaction.senders),
-        scale_decimal(transaction.recipients),
-        transaction.message,
-        transaction.token,
-        transaction.prev_hash,
-        transaction.timestamp,
-        0,
       )
     end
 
