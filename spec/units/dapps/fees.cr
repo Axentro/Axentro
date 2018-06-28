@@ -23,8 +23,8 @@ describe Fees do
     it "should perform #setup" do
       with_factory do |block_factory, transaction_factory|
         chain = block_factory.addBlock.chain
-       fees = Fees.new(block_factory.blockchain)
-       fees.setup.should be_nil
+        fees = Fees.new(block_factory.blockchain)
+        fees.setup.should be_nil
       end
     end
     it "should perform #transaction_actions" do
@@ -37,14 +37,14 @@ describe Fees do
     it "should perform #transaction_related?" do
       with_factory do |block_factory, transaction_factory|
         chain = block_factory.addBlock.chain
-          fees = Fees.new(block_factory.blockchain)
+        fees = Fees.new(block_factory.blockchain)
         fees.transaction_related?("action").should be_false
       end
     end
     it "should perform #valid_transaction?" do
       with_factory do |block_factory, transaction_factory|
         chain = block_factory.addBlocks(2).chain
-          fees = Fees.new(block_factory.blockchain)
+        fees = Fees.new(block_factory.blockchain)
         fees.valid_transaction?(chain.last.transactions.first, chain.last.transactions).should be_true
       end
     end

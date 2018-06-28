@@ -12,7 +12,6 @@
 
 module ::Sushi::Interface::Sushi
   class Client < CLI
-
     @client_id : String?
     @socket : HTTP::WebSocket?
 
@@ -127,7 +126,6 @@ module ::Sushi::Interface::Sushi
         puts "  input `> help` to show available commands"
         puts ""
       end
-
     rescue e : Exception
       puts ""
       puts "  #{red("error happens!")}"
@@ -152,7 +150,7 @@ module ::Sushi::Interface::Sushi
 
       content = {
         from_id: from_id,
-        to_id: to_id,
+        to_id:   to_id,
         message: message,
       }.to_json
 
