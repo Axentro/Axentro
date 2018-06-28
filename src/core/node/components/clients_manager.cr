@@ -50,6 +50,22 @@ module ::Sushi::Core::NodeComponents
       })
     end
 
+    # todo
+    # develop as dApps?
+    def send_message(node, socket, _content)
+      return unless node.phase == SETUP_PHASE::DONE
+
+      _m_content = M_CONTENT_CLIENT_SEND_MESSAGE.from_json(_content)
+
+      from_id = _m_content.from_id
+      to_id = _m_content.to_id
+      message = _m_content.message
+
+      if client = find(to_id)
+        send(client[:socket], M_TYPE_CLIENT_RECEIVE_MESSAGE, {from_id: from_id, to_id: to_id, message: message})
+      end
+    end
+
     def create_id : String
       Random::Secure.hex(16)
     end
@@ -59,6 +75,10 @@ module ::Sushi::Core::NodeComponents
       @clients.reject! { |client| client[:socket] == socket }
 
       info "a client has been removed. (#{current_size} -> #{@clients.size})" if current_size > @clients.size
+    end
+
+    def find(client_id : String)
+      @clients.find { |c| c[:context][:id] == client_id }
     end
 
     include Protocol

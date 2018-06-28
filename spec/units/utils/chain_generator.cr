@@ -38,7 +38,7 @@ module ::Units::Utils::ChainGenerator
       @node_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @miner_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, nil, false)
-      @blockchain = Blockchain.new(node_wallet)
+      @blockchain = @node.blockchain
       @blockchain.setup(@node)
       @miner = {context: {address: miner_wallet.address, nonces: [] of UInt64}, socket: MockWebSocket.new}
       @transaction_factory = TransactionFactory.new(@node_wallet)
@@ -48,7 +48,7 @@ module ::Units::Utils::ChainGenerator
     end
 
     def addBlock
-      add_valid_block(1_u64, [@miner])
+      add_valid_block
       self
     end
 
@@ -58,8 +58,8 @@ module ::Units::Utils::ChainGenerator
     end
 
     def addBlock(transactions : Array(Transaction))
-      transactions.each { |txn| @blockchain.add_transaction(txn) }
-      add_valid_block(1_u64, [@miner])
+      transactions.each { |txn| @blockchain.add_transaction(txn, false) }
+      add_valid_block
       self
     end
 
@@ -88,8 +88,11 @@ module ::Units::Utils::ChainGenerator
       @rest
     end
 
-    private def add_valid_block(nonce : UInt64, miners : Array(NodeComponents::MinersManager::Miner))
-      valid_block = @blockchain.valid_block?(nonce, miners)
+    private def add_valid_block
+      enable_difficulty("0")
+      block = @blockchain.mining_block
+      block.next_difficulty = 0 # set next_difficulty to 0 for unit tests
+      valid_block = @blockchain.valid_block?(block)
       case valid_block
       when Block
         @blockchain.push_block(valid_block)

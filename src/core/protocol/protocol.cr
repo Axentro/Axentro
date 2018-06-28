@@ -79,6 +79,26 @@ module ::Sushi::Core::Protocol
     })
   end
 
+  M_TYPE_CLIENT_SEND_MESSAGE = 0x1003
+
+  struct M_CONTENT_CLIENT_SEND_MESSAGE
+    JSON.mapping({
+                   from_id: String,
+                   to_id: String,
+                   message: String,
+                 })
+  end
+
+  M_TYPE_CLIENT_RECEIVE_MESSAGE = 0x1004
+
+  struct M_CONTENT_CLIENT_RECEIVE_MESSAGE
+    JSON.mapping({
+                   from_id: String,
+                   to_id: String,
+                   message: String,
+                 })
+  end
+
   ######################################
   # CHORD
   ######################################

@@ -21,10 +21,10 @@ module ::Sushi::Core
 
     property phase : SETUP_PHASE
 
+    getter blockchain : Blockchain
     getter network_type : String
     getter chord : Chord
 
-    @blockchain : Blockchain
     @miners_manager : MinersManager
     @clients_manager : ClientsManager
 
@@ -55,6 +55,7 @@ module ::Sushi::Core
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl)
       @miners_manager = MinersManager.new(@blockchain)
       @clients_manager = ClientsManager.new(@blockchain)
+
       @phase = SETUP_PHASE::NONE
 
       info "your log level is #{light_green(log_level_text)}"
@@ -160,7 +161,7 @@ module ::Sushi::Core
       socket.on_message do |message|
         message_json = JSON.parse(message)
         message_type = message_json["type"].as_i
-        message_content = message_json["content"].to_s
+        message_content = message_json["content"].as_s
 
         case message_type
         when M_TYPE_MINER_HANDSHAKE
@@ -169,6 +170,8 @@ module ::Sushi::Core
           @miners_manager.found_nonce(self, socket, message_content)
         when M_TYPE_CLIENT_HANDSHAKE
           @clients_manager.handshake(self, socket, message_content)
+        when M_TYPE_CLIENT_SEND_MESSAGE
+          @clients_manager.send_message(self, socket, message_content)
         when M_TYPE_CHORD_JOIN
           @chord.join(self, socket, message_content)
         when M_TYPE_CHORD_JOIN_PRIVATE
@@ -311,6 +314,7 @@ module ::Sushi::Core
     def clean_connection(socket : HTTP::WebSocket)
       @chord.clean_connection(socket)
       @miners_manager.clean_connection(socket)
+      @clients_manager.clean_connection(socket)
     end
 
     def miners

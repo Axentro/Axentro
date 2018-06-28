@@ -27,7 +27,7 @@ All documents are written on [wiki](https://github.com/SushiChain/SushiChain/wik
 
 We are discussing many things everyday in [Slack](https://bit.ly/2HJBu1z), [Discord](https://discord.gg/qBqfJPv), [Gitter](https://gitter.im/SushiChain/Lobby) and [Telegram](https://t.me/joinchat/Inebcg83C4ccxydPkzTdSw).
 
-These channels are bridged each other.
+These channels are bridged to each other.
 
 🍣 We are welcome your joining! 🍣
 
