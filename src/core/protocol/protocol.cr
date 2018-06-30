@@ -227,11 +227,9 @@ module ::Sushi::Core::Protocol
     JSON.mapping({transactions: Array(Transaction)})
   end
 
-  # todo
-  # broadcast?
-  M_TYPE_NODE_BROADCAST_MESSAGE = 0x0108
+  M_TYPE_NODE_SEND_MESSAGE = 0x0108
 
-  struct M_CONTENT_NODE_BROADCAST_MESSAGE
+  struct M_CONTENT_NODE_SEND_MESSAGE
     JSON.mapping({
       message: String,
       from:    Core::NodeComponents::Chord::NodeContext,

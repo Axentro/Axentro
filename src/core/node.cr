@@ -202,8 +202,8 @@ module ::Sushi::Core
           _request_transactions(socket, message_content)
         when M_TYPE_NODE_RECEIVE_TRANSACTIONS
           _receive_transactions(socket, message_content)
-        when M_TYPE_NODE_BROADCAST_MESSAGE
-          _broadcast_message(socket, message_content)
+        when M_TYPE_NODE_SEND_MESSAGE
+          _send_message(socket, message_content)
         end
       rescue e : Exception
         handle_exception(socket, e)
@@ -277,7 +277,7 @@ module ::Sushi::Core
                   {message: message, from: from}
                 end
 
-      send_on_chord(M_TYPE_NODE_BROADCAST_MESSAGE, content, from)
+      send_on_chord(M_TYPE_NODE_SEND_MESSAGE, content, from)
     end
 
     def broadcast_block(socket : HTTP::WebSocket, block : Block, from : Chord::NodeContext? = nil)
@@ -359,10 +359,10 @@ module ::Sushi::Core
       broadcast_block(socket, block, from)
     end
 
-    private def _broadcast_message(socket, _content)
+    private def _send_message(socket, _content)
       return unless @phase == SETUP_PHASE::DONE
 
-      _m_content = M_CONTENT_NODE_BROADCAST_MESSAGE.from_json(_content)
+      _m_content = M_CONTENT_NODE_SEND_MESSAGE.from_json(_content)
 
       message = _m_content.message
       from = _m_content.from
