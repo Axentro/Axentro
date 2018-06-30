@@ -38,7 +38,6 @@ module ::Sushi::Core::NodeComponents
 
     @successor_list : Nodes = Nodes.new
     @predecessor : Node?
-
     @private_nodes : Nodes = Nodes.new
 
     @show_network = 0

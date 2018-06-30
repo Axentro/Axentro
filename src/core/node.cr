@@ -26,6 +26,7 @@ module ::Sushi::Core
     getter chord : Chord
 
     @miners_manager : MinersManager
+    @clients_manager : ClientsManager
 
     @rpc_controller : Controllers::RPCController
     @rest_controller : Controllers::RESTController
@@ -53,6 +54,8 @@ module ::Sushi::Core
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl)
       @miners_manager = MinersManager.new(@blockchain)
+      @clients_manager = ClientsManager.new(@blockchain)
+
       @phase = SETUP_PHASE::NONE
 
       info "your log level is #{light_green(log_level_text)}"
@@ -158,13 +161,17 @@ module ::Sushi::Core
       socket.on_message do |message|
         message_json = JSON.parse(message)
         message_type = message_json["type"].as_i
-        message_content = message_json["content"].to_s
+        message_content = message_json["content"].as_s
 
         case message_type
         when M_TYPE_MINER_HANDSHAKE
-          @miners_manager.handshake(self, socket, message_content)
+          @miners_manager.handshake(socket, message_content)
         when M_TYPE_MINER_FOUND_NONCE
-          @miners_manager.found_nonce(self, socket, message_content)
+          @miners_manager.found_nonce(socket, message_content)
+        when M_TYPE_CLIENT_HANDSHAKE
+          @clients_manager.handshake(socket, message_content)
+        when M_TYPE_CLIENT_SEND
+          @clients_manager.send_message(message_content)
         when M_TYPE_CHORD_JOIN
           @chord.join(self, socket, message_content)
         when M_TYPE_CHORD_JOIN_PRIVATE
@@ -195,6 +202,8 @@ module ::Sushi::Core
           _request_transactions(socket, message_content)
         when M_TYPE_NODE_RECEIVE_TRANSACTIONS
           _receive_transactions(socket, message_content)
+        when M_TYPE_NODE_SEND_MESSAGE
+          _send_message(socket, message_content)
         end
       rescue e : Exception
         handle_exception(socket, e)
@@ -261,6 +270,16 @@ module ::Sushi::Core
       send_on_chord(M_TYPE_NODE_BROADCAST_BLOCK, content, from)
     end
 
+    def send_message(message : String, from : Chord::NodeContext? = nil)
+      content = if from.nil? || (!from.nil? && from[:is_private])
+                  {message: message, from: @chord.context}
+                else
+                  {message: message, from: from}
+                end
+
+      send_on_chord(M_TYPE_NODE_SEND_MESSAGE, content, from)
+    end
+
     def broadcast_block(socket : HTTP::WebSocket, block : Block, from : Chord::NodeContext? = nil)
       if @blockchain.latest_index + 1 == block.index
         info "new block coming: #{light_cyan(@blockchain.chain.size)}"
@@ -307,6 +326,7 @@ module ::Sushi::Core
     def clean_connection(socket : HTTP::WebSocket)
       @chord.clean_connection(socket)
       @miners_manager.clean_connection(socket)
+      @clients_manager.clean_connection(socket)
     end
 
     def miners
@@ -337,6 +357,17 @@ module ::Sushi::Core
       from = _m_content.from
 
       broadcast_block(socket, block, from)
+    end
+
+    private def _send_message(socket, _content)
+      return unless @phase == SETUP_PHASE::DONE
+
+      _m_content = M_CONTENT_NODE_SEND_MESSAGE.from_json(_content)
+
+      message = _m_content.message
+      from = _m_content.from
+
+      @clients_manager.send_message(message, from)
     end
 
     private def _request_chain(socket, _content)

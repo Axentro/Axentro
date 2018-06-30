@@ -31,7 +31,7 @@ module ::Sushi::Core::NodeComponents
     def initialize(@blockchain : Blockchain)
     end
 
-    def handshake(node, socket, _content)
+    def handshake(socket, _content)
       return unless node.phase == SETUP_PHASE::DONE
 
       verbose "requested handshake from a miner"
@@ -74,7 +74,7 @@ module ::Sushi::Core::NodeComponents
       })
     end
 
-    def found_nonce(node, socket, _content)
+    def found_nonce(socket, _content)
       return unless node.phase == SETUP_PHASE::DONE
 
       verbose "miner sent a new nonce"
@@ -144,6 +144,10 @@ module ::Sushi::Core::NodeComponents
 
     def miner_contexts : MinerContexts
       @miners.map { |m| m[:context] }
+    end
+
+    private def node
+      @blockchain.node
     end
 
     include Protocol

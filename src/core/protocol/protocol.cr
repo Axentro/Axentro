@@ -60,6 +60,46 @@ module ::Sushi::Core::Protocol
   end
 
   ######################################
+  # CLIENT
+  ######################################
+
+  M_TYPE_CLIENT_HANDSHAKE = 0x1001
+
+  struct M_CONTENT_CLIENT_HANDSHAKE
+    JSON.mapping({
+      address: String?,
+    })
+  end
+
+  M_TYPE_CLIENT_HANDSHAKE_ACCEPTED = 0x1002
+
+  struct M_CONTENT_CLIENT_HANDSHAKE_ACCEPTED
+    JSON.mapping({
+      id: String,
+    })
+  end
+
+  M_TYPE_CLIENT_SEND = 0x1003
+
+  struct M_CONTENT_CLIENT_SEND
+    JSON.mapping({
+      from_id: String,
+      to_id:   String,
+      message: String,
+    })
+  end
+
+  M_TYPE_CLIENT_RECEIVE = 0x1004
+
+  struct M_CONTENT_CLIENT_RECEIVE
+    JSON.mapping({
+      from_id: String,
+      to_id:   String,
+      message: String,
+    })
+  end
+
+  ######################################
   # CHORD
   ######################################
 
@@ -185,6 +225,15 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_NODE_RECEIVE_TRANSACTIONS
     JSON.mapping({transactions: Array(Transaction)})
+  end
+
+  M_TYPE_NODE_SEND_MESSAGE = 0x0108
+
+  struct M_CONTENT_NODE_SEND_MESSAGE
+    JSON.mapping({
+      message: String,
+      from:    Core::NodeComponents::Chord::NodeContext,
+    })
   end
 
   ######################################

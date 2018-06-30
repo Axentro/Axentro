@@ -49,6 +49,10 @@ module ::Sushi::Interface::Sushi
           name: "pubsub",
           desc: "receive blocks in realtime",
         },
+        {
+          name: "client",
+          desc: "connect to node as peer clients",
+        },
       ]
     end
 
@@ -96,6 +100,11 @@ module ::Sushi::Interface::Sushi
       when "pubsub", "ps"
         return Pubsub.new(
           {name: "pubsub", desc: "receive blocks in realtime"},
+          next_parents,
+        ).run
+      when "client", "cl"
+        return Client.new(
+          {name: "client", desc: "connect to node as peer clients"},
           next_parents,
         ).run
       end
