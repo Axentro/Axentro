@@ -45,7 +45,7 @@ module ::Sushi::Core
       puts ""
       puts light_green("  start client for sushi...")
 
-      send(socket, M_TYPE_CLIENT_HANDSHAKE, { address: nil })
+      send(socket, M_TYPE_CLIENT_HANDSHAKE, {address: nil})
 
       spawn do
         socket.run
@@ -75,7 +75,7 @@ module ::Sushi::Core
       _m_content = M_CONTENT_CLIENT_RECEIVE.from_json(_content)
 
       from_id = _m_content.from_id
-      to_id   = _m_content.to_id
+      to_id = _m_content.to_id
       message = _m_content.message
 
       puts ""
@@ -92,7 +92,7 @@ module ::Sushi::Core
     def send_message(to_id : String, message : String)
       raise "client id is unknown" unless from_id = @client_id
 
-      send(socket, M_TYPE_CLIENT_SEND, { from_id: from_id, to_id: to_id, message: message })
+      send(socket, M_TYPE_CLIENT_SEND, {from_id: from_id, to_id: to_id, message: message})
 
       show_cursor
     end

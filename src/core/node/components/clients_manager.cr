@@ -56,7 +56,7 @@ module ::Sushi::Core::NodeComponents
       _m_content = M_CONTENT_CLIENT_SEND.from_json(_content)
 
       from_id = _m_content.from_id
-      to_id   = _m_content.to_id
+      to_id = _m_content.to_id
       message = _m_content.message
 
       if client = find(to_id)

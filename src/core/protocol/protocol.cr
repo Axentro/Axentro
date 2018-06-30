@@ -234,7 +234,7 @@ module ::Sushi::Core::Protocol
   struct M_CONTENT_NODE_BROADCAST_MESSAGE
     JSON.mapping({
       message: String,
-      from:  Core::NodeComponents::Chord::NodeContext,
+      from:    Core::NodeComponents::Chord::NodeContext,
     })
   end
 

@@ -364,7 +364,7 @@ module ::Sushi::Core
 
       _m_content = M_CONTENT_NODE_BROADCAST_MESSAGE.from_json(_content)
 
-      message= _m_content.message
+      message = _m_content.message
       from = _m_content.from
 
       @clients_manager.send_message(message, from)
