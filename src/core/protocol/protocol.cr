@@ -79,9 +79,9 @@ module ::Sushi::Core::Protocol
     })
   end
 
-  M_TYPE_CLIENT_SEND_MESSAGE = 0x1003
+  M_TYPE_CLIENT_SEND = 0x1003
 
-  struct M_CONTENT_CLIENT_SEND_MESSAGE
+  struct M_CONTENT_CLIENT_SEND
     JSON.mapping({
       from_id: String,
       to_id:   String,
@@ -89,9 +89,9 @@ module ::Sushi::Core::Protocol
     })
   end
 
-  M_TYPE_CLIENT_RECEIVE_MESSAGE = 0x1004
+  M_TYPE_CLIENT_RECEIVE = 0x1004
 
-  struct M_CONTENT_CLIENT_RECEIVE_MESSAGE
+  struct M_CONTENT_CLIENT_RECEIVE
     JSON.mapping({
       from_id: String,
       to_id:   String,
@@ -225,6 +225,17 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_NODE_RECEIVE_TRANSACTIONS
     JSON.mapping({transactions: Array(Transaction)})
+  end
+
+  # todo
+  # broadcast?
+  M_TYPE_NODE_BROADCAST_MESSAGE = 0x0108
+
+  struct M_CONTENT_NODE_BROADCAST_MESSAGE
+    JSON.mapping({
+      message: String,
+      from:  Core::NodeComponents::Chord::NodeContext,
+    })
   end
 
   ######################################

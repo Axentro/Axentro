@@ -37,9 +37,8 @@ module ::Sushi::Core::NodeComponents
     @node_id : NodeID
 
     @successor_list : Nodes = Nodes.new
-    @predecessor : Node?
-
-    @private_nodes : Nodes = Nodes.new
+    @predecessor    : Node?
+    @private_nodes  : Nodes = Nodes.new
 
     @show_network = 0
 

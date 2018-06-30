@@ -21,7 +21,6 @@ module ::Sushi::Core
     end
 
     def handle_exception(socket : HTTP::WebSocket, e : Exception)
-      p e
       case e
       when IO::Error
         clean_connection(socket)

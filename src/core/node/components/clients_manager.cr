@@ -31,7 +31,7 @@ module ::Sushi::Core::NodeComponents
     def initialize(@blockchain : Blockchain)
     end
 
-    def handshake(node, socket, _content)
+    def handshake(socket, _content)
       return unless node.phase == SETUP_PHASE::DONE
 
       _m_content = M_CONTENT_CLIENT_HANDSHAKE.from_json(_content)
@@ -50,19 +50,19 @@ module ::Sushi::Core::NodeComponents
       })
     end
 
-    # todo
-    # develop as dApps?
-    def send_message(node, socket, _content)
+    def send_message(_content : String, from = nil)
       return unless node.phase == SETUP_PHASE::DONE
 
-      _m_content = M_CONTENT_CLIENT_SEND_MESSAGE.from_json(_content)
+      _m_content = M_CONTENT_CLIENT_SEND.from_json(_content)
 
       from_id = _m_content.from_id
-      to_id = _m_content.to_id
+      to_id   = _m_content.to_id
       message = _m_content.message
 
       if client = find(to_id)
-        send(client[:socket], M_TYPE_CLIENT_RECEIVE_MESSAGE, {from_id: from_id, to_id: to_id, message: message})
+        send(client[:socket], M_TYPE_CLIENT_RECEIVE, {from_id: from_id, to_id: to_id, message: message})
+      else
+        node.send_message(_content, from)
       end
     end
 
@@ -79,6 +79,14 @@ module ::Sushi::Core::NodeComponents
 
     def find(client_id : String)
       @clients.find { |c| c[:context][:id] == client_id }
+    end
+
+    def node
+      @blockchain.node
+    end
+
+    private def node
+      @blockchain.node
     end
 
     include Protocol
