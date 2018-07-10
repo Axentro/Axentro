@@ -92,9 +92,17 @@ module ::Sushi::Core
     def send_message(to_id : String, message : String)
       raise "client id is unknown" unless from_id = @client_id
 
-      send(socket, M_TYPE_CLIENT_SEND, {from_id: from_id, to_id: to_id, message: message})
+      # send(socket, M_TYPE_CLIENT_SEND, {from_id: from_id, to_id: to_id, message: message})
+
+      content = {to_id: to_id, message: message}.to_json
+      create_content("send", from_id, content)
 
       show_cursor
+    end
+
+    def create_content(action : String, from_id : String, content : String)
+      content = {action: action, from_id: from_id, content: content}
+      send(socket, M_TYPE_CLIENT_CONTENT, content)
     end
 
     def clean_connection(socket)

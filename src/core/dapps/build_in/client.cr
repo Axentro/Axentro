@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::DApps::BuildIn
-  class Fees < DApp
+  class Client < DApp
     def setup
     end
 
@@ -34,32 +34,11 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def define_rpc?(call, json, context, params)
-      case call
-      when "fees"
-        return fees(json, context, params)
-      end
-
       nil
     end
 
-    def fees(json, context, params)
-      context.response.print api_success(fees_impl)
-      context
-    end
-
-    def fees_impl
-      fees = Hash(String, String).new
-
-      blockchain.dapps.each do |dapp|
-        dapp.transaction_actions.each do |action|
-          fees[action] = scale_decimal(dapp.class.fee(action)) if dapp.class.fee(action) > 0
-        end
-      end
-
-      fees
-    end
-
     def on_message(action : String, from_id : String, content : String)
+      p content
     end
   end
 end

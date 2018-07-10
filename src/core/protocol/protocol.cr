@@ -79,12 +79,19 @@ module ::Sushi::Core::Protocol
     })
   end
 
-  M_TYPE_CLIENT_SEND = 0x1003
+  M_TYPE_CLIENT_CONTENT = 0x1003
 
-  struct M_CONTENT_CLIENT_SEND
+  struct M_CONTENT_CLIENT_CONTENT
     JSON.mapping({
+      action: String,
       from_id: String,
-      to_id:   String,
+      content: String,
+    })
+  end
+
+  struct M_CONTENT_CLIENT_MESSAGE
+    JSON.mapping({
+      to_id: String,
       message: String,
     })
   end

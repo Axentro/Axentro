@@ -104,6 +104,9 @@ module ::Sushi::Core::DApps::BuildIn
       transaction
     end
 
+    def on_message(action : String, from_id : String, content : String)
+    end
+
     include TransactionModels
     include Common::Timestamp
   end

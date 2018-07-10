@@ -26,6 +26,11 @@ module ::Sushi::Core::DApps
       context : HTTP::Server::Context,
       params : Hash(String, String)
     ) : HTTP::Server::Context?
+    abstract def on_message(
+      action : String,
+      from_id : String,
+      content : String,
+    )
 
     def initialize(@blockchain : Blockchain)
     end

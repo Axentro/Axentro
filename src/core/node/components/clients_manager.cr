@@ -53,16 +53,24 @@ module ::Sushi::Core::NodeComponents
     def send_message(_content : String, from = nil)
       return unless node.phase == SETUP_PHASE::DONE
 
-      _m_content = M_CONTENT_CLIENT_SEND.from_json(_content)
+      _m_content = M_CONTENT_CLIENT_CONTENT.from_json(_content)
 
+      # from_id = _m_content.from_id
+      # to_id = _m_content.to_id
+      # message = _m_content.message
+      #  
+      # if client = find(to_id)
+      #   send(client[:socket], M_TYPE_CLIENT_RECEIVE, {from_id: from_id, to_id: to_id, message: message})
+      # else
+      #   node.send_message(_content, from)
+      # end
+
+      action = _m_content.action
       from_id = _m_content.from_id
-      to_id = _m_content.to_id
-      message = _m_content.message
+      content = _m_content.content
 
-      if client = find(to_id)
-        send(client[:socket], M_TYPE_CLIENT_RECEIVE, {from_id: from_id, to_id: to_id, message: message})
-      else
-        node.send_message(_content, from)
+      @blockchain.dapps.each do |dapp|
+        dapp.on_message(action, from_id, content)
       end
     end
 
@@ -79,10 +87,6 @@ module ::Sushi::Core::NodeComponents
 
     def find(client_id : String)
       @clients.find { |c| c[:context][:id] == client_id }
-    end
-
-    def node
-      @blockchain.node
     end
 
     private def node

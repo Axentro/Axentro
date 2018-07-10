@@ -128,5 +128,8 @@ module ::Sushi::Core::DApps::BuildIn
         confirmations: latest_index - block_index,
       }
     end
+
+    def on_message(action : String, from_id : String, content : String)
+    end
   end
 end

@@ -74,5 +74,8 @@ module ::Sushi::Core::DApps::BuildIn
     def node_id_impl(id : String)
       node.chord.find_node(id)
     end
+
+    def on_message(action : String, from_id : String, content : String)
+    end
   end
 end

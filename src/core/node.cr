@@ -170,7 +170,9 @@ module ::Sushi::Core
           @miners_manager.found_nonce(socket, message_content)
         when M_TYPE_CLIENT_HANDSHAKE
           @clients_manager.handshake(socket, message_content)
-        when M_TYPE_CLIENT_SEND
+        when M_TYPE_CLIENT_CONTENT
+          # todo rename
+          p message
           @clients_manager.send_message(message_content)
         when M_TYPE_CHORD_JOIN
           @chord.join(self, socket, message_content)

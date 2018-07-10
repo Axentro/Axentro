@@ -131,5 +131,8 @@ module ::Sushi::Core::DApps::BuildIn
     def transactions_impl(address : String, page : Int32 = 0, page_size : Int32 = 20, actions : Array(String) = [] of String)
       blockchain.transactions_for_address(address, page, page_size, actions)
     end
+
+    def on_message(action : String, from_id : String, content : String)
+    end
   end
 end

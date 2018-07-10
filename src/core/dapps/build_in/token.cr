@@ -127,5 +127,8 @@ RULE
     def self.fee(action : String) : Int64
       scale_i64("0.1")
     end
+
+    def on_message(action : String, from_id : String, content : String)
+    end
   end
 end
