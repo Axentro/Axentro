@@ -29,7 +29,7 @@ module ::Sushi::Core::DApps
     abstract def on_message(
       action : String,
       from_id : String,
-      content : String,
+      content : String
     )
 
     def initialize(@blockchain : Blockchain)

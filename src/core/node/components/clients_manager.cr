@@ -58,7 +58,7 @@ module ::Sushi::Core::NodeComponents
       # from_id = _m_content.from_id
       # to_id = _m_content.to_id
       # message = _m_content.message
-      #  
+      #
       # if client = find(to_id)
       #   send(client[:socket], M_TYPE_CLIENT_RECEIVE, {from_id: from_id, to_id: to_id, message: message})
       # else

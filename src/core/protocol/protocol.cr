@@ -83,7 +83,7 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_CLIENT_CONTENT
     JSON.mapping({
-      action: String,
+      action:  String,
       from_id: String,
       content: String,
     })
@@ -91,7 +91,7 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_CLIENT_MESSAGE
     JSON.mapping({
-      to_id: String,
+      to_id:   String,
       message: String,
     })
   end
