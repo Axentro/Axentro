@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::DApps::BuildIn
-  class Client < DApp
+  class Messenger < DApp
     def setup
     end
 
@@ -37,8 +37,15 @@ module ::Sushi::Core::DApps::BuildIn
       nil
     end
 
-    def on_message(action : String, from_id : String, content : String)
-      p content
+    def on_message(action : String, from_id : String, content : String, from = nil)
+      return false unless action == "message"
+
+      _m_content = M_CONTENT_CLIENT_MESSAGE.from_json(content)
+
+      to_id = _m_content.to_id
+      message = _m_content.message
+
+      node.send_message_to_client(from_id, to_id, message, from)
     end
   end
 end

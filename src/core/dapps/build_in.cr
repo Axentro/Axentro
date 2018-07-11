@@ -13,7 +13,7 @@
 require "./build_in/*"
 
 module ::Sushi::Core::DApps::BuildIn
-  BUILD_IN_DAPPS = %w(BlockchainInfo NodeInfo TransactionCreator UTXO Scars Token Indices Rejects Fees Client)
+  BUILD_IN_DAPPS = %w(BlockchainInfo NodeInfo TransactionCreator UTXO Scars Token Indices Rejects Fees Messenger)
 
   {% for dapp in BUILD_IN_DAPPS %}
     @{{ dapp.id.underscore }} : {{ dapp.id }}?

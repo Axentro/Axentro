@@ -56,7 +56,8 @@ module ::Sushi::Core::DApps::BuildIn
       nil
     end
 
-    def on_message(action : String, from_id : String, content : String)
+    def on_message(action : String, from_id : String, content : String, from = nil)
+      false
     end
   end
 end

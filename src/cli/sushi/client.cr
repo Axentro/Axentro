@@ -52,8 +52,8 @@ module ::Sushi::Interface::Sushi
       command = input.split(" ", 2)[0]
 
       case command
-      when "send"
-        send(input)
+      when "message"
+        message(input)
       when "help"
         show_help
       else
@@ -70,9 +70,9 @@ module ::Sushi::Interface::Sushi
       puts ""
     end
 
-    def send(input : String)
-      unless input =~ /^send\s(.+?)\s(.+)$/
-        raise "make sure you input `> send [client_id] [message]`"
+    def message(input : String)
+      unless input =~ /^message\s(.+?)\s(.+)$/
+        raise "make sure you input `> message [client_id] [message]`"
       end
 
       to_id = $1.to_s
@@ -90,7 +90,7 @@ module ::Sushi::Interface::Sushi
       puts ""
       puts "  available commands"
       puts ""
-      puts "  - send [client_id] [message]"
+      puts "  - message [client_id] [message]"
       puts "    send a message for the client_id"
       puts ""
       puts "  - help"

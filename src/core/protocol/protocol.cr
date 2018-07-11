@@ -89,6 +89,9 @@ module ::Sushi::Core::Protocol
     })
   end
 
+  #
+  # Content structure of content of M_CONTENT_CLIENT_CONTENT
+  #
   struct M_CONTENT_CLIENT_MESSAGE
     JSON.mapping({
       to_id:   String,
@@ -96,6 +99,9 @@ module ::Sushi::Core::Protocol
     })
   end
 
+  #
+  # Used in clients
+  #
   M_TYPE_CLIENT_RECEIVE = 0x1004
 
   struct M_CONTENT_CLIENT_RECEIVE
@@ -234,11 +240,11 @@ module ::Sushi::Core::Protocol
     JSON.mapping({transactions: Array(Transaction)})
   end
 
-  M_TYPE_NODE_SEND_MESSAGE = 0x0108
+  M_TYPE_NODE_SEND_CLIENT_CONTENT = 0x0108
 
-  struct M_CONTENT_NODE_SEND_MESSAGE
+  struct M_CONTENT_NODE_SEND_CLIENT_CONTENT
     JSON.mapping({
-      message: String,
+      content: String,
       from:    Core::NodeComponents::Chord::NodeContext,
     })
   end

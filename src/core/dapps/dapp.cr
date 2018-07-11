@@ -29,15 +29,17 @@ module ::Sushi::Core::DApps
     abstract def on_message(
       action : String,
       from_id : String,
-      content : String
-    )
+      content : String,
+      from : NodeComponents::Chord::NodeContext? = nil,
+    ) : Bool
 
     def initialize(@blockchain : Blockchain)
     end
 
     def valid?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
       if transaction.total_fees < self.class.fee(transaction.action)
-        raise "not enough fee, should be #{scale_decimal(transaction.total_fees)} >= #{scale_decimal(self.class.fee(transaction.action))}"
+        raise "not enough fee, should be #{scale_decimal(transaction.total_fees)} " +
+              ">= #{scale_decimal(self.class.fee(transaction.action))}"
       end
 
       valid_transaction?(transaction, prev_transactions)
@@ -61,8 +63,9 @@ module ::Sushi::Core::DApps
     end
 
     include Logger
-    include NodeComponents::APIFormat
+    include Protocol
     include Common::Denomination
+    include NodeComponents::APIFormat
   end
 end
 
