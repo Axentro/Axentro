@@ -30,7 +30,7 @@ module ::Sushi::Core::DApps
       action : String,
       from_id : String,
       content : String,
-      from : NodeComponents::Chord::NodeContext? = nil,
+      from : NodeComponents::Chord::NodeContext? = nil
     ) : Bool
 
     def initialize(@blockchain : Blockchain)

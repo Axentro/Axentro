@@ -12,30 +12,30 @@
 
 module ::Sushi::Interface::Sushi
   class Client < CLI
-    @node   : String?
+    @node : String?
     @client : Core::Client?
     @wallet : Core::Wallet?
 
     COMMANDS = [
       {
         command: "message [client_id] [message]",
-        desc: "send a message for the client_id",
-        regex: /^message\s(.+?)\s(.+)$/,
+        desc:    "send a message for the client_id",
+        regex:   /^message\s(.+?)\s(.+)$/,
       },
       {
         command: "send [address] [token] [amount] [fee] [message]",
-        desc: "send the amount of the token to the client_id",
-        regex: /^send\s(.+?)\s(.+?)\s(.+?)\s(.+?)\s(.+)$/,
+        desc:    "send the amount of the token to the client_id",
+        regex:   /^send\s(.+?)\s(.+?)\s(.+?)\s(.+?)\s(.+)$/,
       },
       {
         command: "fee",
-        desc: "show transaction fees for each action",
-        regex: /^fee$/,
+        desc:    "show transaction fees for each action",
+        regex:   /^fee$/,
       },
       {
         command: "help",
-        desc: "show help message",
-        regex: /^help$/,
+        desc:    "show help message",
+        regex:   /^help$/,
       },
     ]
 
@@ -151,12 +151,12 @@ module ::Sushi::Interface::Sushi
       senders = SendersDecimal.new
       senders.push(
         {
-          address: wallets[0].address,
+          address:    wallets[0].address,
           public_key: wallets[0].public_key,
-          amount: amount,
-          fee: fee,
-          sign_r: "0",
-          sign_s: "0",
+          amount:     amount,
+          fee:        fee,
+          sign_r:     "0",
+          sign_s:     "0",
         }
       )
 
@@ -164,7 +164,7 @@ module ::Sushi::Interface::Sushi
       recipients.push(
         {
           address: address,
-          amount: amount,
+          amount:  amount,
         }
       )
 
