@@ -60,7 +60,9 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def on_message(action : String, from_id : String, content : String, from = nil)
-      false
+      return false unless action == "fee"
+
+      node.send_content_to_client(from_id, from_id, fees_impl.to_json, from)
     end
   end
 end

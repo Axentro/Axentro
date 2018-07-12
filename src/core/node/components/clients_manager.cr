@@ -14,7 +14,7 @@ module ::Sushi::Core::NodeComponents
   class ClientsManager < HandleSocket
     alias ClientContext = NamedTuple(
       id: String,
-      address: String?,
+      address: String,
     )
 
     alias ClientContexts = Array(ClientContext)
@@ -43,7 +43,8 @@ module ::Sushi::Core::NodeComponents
 
       @clients << client
 
-      info "new client: #{light_green(client[:context][:id][0..7])}"
+      info "new client: #{light_green(client[:context][:id][0..7] + "...")} " +
+           "(#{light_green(client[:context][:address][0..7] + "...")})"
 
       send(socket, M_TYPE_CLIENT_HANDSHAKE_ACCEPTED, {
         id: id,
@@ -65,19 +66,29 @@ module ::Sushi::Core::NodeComponents
         result ||= dapp.on_message(action, from_id, content, from)
       end
 
-      unless result
-        p "come here (result == false)"
-        node.send_client_content(_content, from)
-      end
+      node.send_client_content(_content, from) unless result
     end
 
-    def send_message(from_id : String, to_id : String, message : String, from = nil) : Bool
+    def send_content(from_id : String, to_id : String, content : String, from = nil) : Bool
       if client = find(to_id)
-        send(client[:socket], M_TYPE_CLIENT_RECEIVE, {from_id: from_id, to_id: to_id, message: message})
+        send(client[:socket], M_TYPE_CLIENT_RECEIVE, {from_id: from_id, to_id: to_id, content: content})
         return true
       end
 
       false
+    end
+
+    def notify(recipient : Recipient, transaction : Transaction)
+      if client = find_by_address(recipient[:address])
+        from_id = client[:context][:id]
+        token = transaction.token
+        amount = recipient[:amount]
+        senders = transaction.senders.map { |s| s[:address] }.join(", ")
+
+        message = "you've received #{amount} of #{token} from #{senders} (not confirmed)"
+
+        send(client[:socket], M_TYPE_CLIENT_RECEIVE, {from_id: from_id, to_id: from_id, content: message})
+      end
     end
 
     def create_id : String
@@ -95,11 +106,16 @@ module ::Sushi::Core::NodeComponents
       @clients.find { |c| c[:context][:id] == client_id }
     end
 
+    def find_by_address(address : String)
+      @clients.find { |c| c[:context][:address] == address }
+    end
+
     private def node
       @blockchain.node
     end
 
     include Protocol
+    include TransactionModels
     include Common::Color
   end
 end

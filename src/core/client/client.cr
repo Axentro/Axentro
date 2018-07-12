@@ -15,7 +15,7 @@ module ::Sushi::Core
     @client_id : String?
     @socket : HTTP::WebSocket?
 
-    def initialize(@host : String, @port : Int32, @use_ssl : Bool)
+    def initialize(@host : String, @port : Int32, @use_ssl : Bool, @wallet : Wallet)
     end
 
     def run
@@ -45,7 +45,7 @@ module ::Sushi::Core
       puts ""
       puts light_green("  start client for sushi...")
 
-      send(socket, M_TYPE_CLIENT_HANDSHAKE, {address: nil})
+      send(socket, M_TYPE_CLIENT_HANDSHAKE, {address: @wallet.address})
 
       spawn do
         socket.run
@@ -76,24 +76,38 @@ module ::Sushi::Core
 
       from_id = _m_content.from_id
       to_id = _m_content.to_id
-      message = _m_content.message
+      content = _m_content.content
+
+      if from_id != to_id
+        puts ""
+        puts "  received message from #{light_green(from_id)}"
+        puts ""
+      end
 
       puts ""
-      puts "  received message from #{light_green(from_id)}"
       puts ""
       puts "```"
-      puts "#{message}"
+      puts "#{content}"
       puts "```"
       puts ""
 
       show_cursor
     end
 
-    def send_message(to_id : String, message : String)
+    def message(to_id : String, message : String)
       raise "client id is unknown" unless from_id = @client_id
 
       content = {to_id: to_id, message: message}.to_json
       create_content("message", from_id, content)
+
+      show_cursor
+    end
+
+    def fee
+      raise "client id is unknown" unless from_id = @client_id
+
+      content = ""
+      create_content("fee", from_id, content)
 
       show_cursor
     end

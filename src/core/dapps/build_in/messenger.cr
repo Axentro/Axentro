@@ -45,7 +45,7 @@ module ::Sushi::Core::DApps::BuildIn
       to_id = _m_content.to_id
       message = _m_content.message
 
-      node.send_message_to_client(from_id, to_id, message, from)
+      node.send_content_to_client(from_id, to_id, message, from)
     end
   end
 end

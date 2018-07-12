@@ -67,7 +67,7 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_CLIENT_HANDSHAKE
     JSON.mapping({
-      address: String?,
+      address: String,
     })
   end
 
@@ -108,7 +108,7 @@ module ::Sushi::Core::Protocol
     JSON.mapping({
       from_id: String,
       to_id:   String,
-      message: String,
+      content: String,
     })
   end
 

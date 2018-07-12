@@ -12,7 +12,40 @@
 
 module ::Sushi::Interface::Sushi
   class Client < CLI
+    @node   : String?
     @client : Core::Client?
+    @wallet : Core::Wallet?
+
+    COMMANDS = [
+      {
+        command: "message [client_id] [message]",
+        desc: "send a message for the client_id",
+        regex: /^message\s(.+?)\s(.+)$/,
+      },
+      {
+        command: "send [address] [token] [amount] [fee] [message]",
+        desc: "send the amount of the token to the client_id",
+        regex: /^send\s(.+?)\s(.+?)\s(.+?)\s(.+?)\s(.+)$/,
+      },
+      {
+        command: "fee",
+        desc: "show transaction fees for each action",
+        regex: /^fee$/,
+      },
+      {
+        command: "help",
+        desc: "show help message",
+        regex: /^help$/,
+      },
+    ]
+
+    def find_command(name : String)
+      unless command = COMMANDS.find { |command| command[:command].split(" ")[0] == name }
+        raise "failed to find #{name} as a command"
+      end
+
+      command
+    end
 
     def sub_actions
       [] of SushiAction
@@ -22,6 +55,8 @@ module ::Sushi::Interface::Sushi
       create_option_parser([
         Options::CONNECT_NODE,
         Options::CONFIG_NAME,
+        Options::WALLET_PATH,
+        Options::WALLET_PASSWORD,
       ])
     end
 
@@ -30,12 +65,15 @@ module ::Sushi::Interface::Sushi
     end
 
     def run_impl(action_name)
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+      puts_help(HELP_CONNECTING_NODE) unless @node = __connect_node
+      puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
 
-      node_uri = URI.parse(node)
+      @wallet = get_wallet(wallet_path, __wallet_password)
+
+      node_uri = URI.parse(@node.not_nil!)
       use_ssl = (node_uri.scheme == "https")
 
-      @client = Core::Client.new(node_uri.host.not_nil!, node_uri.port.not_nil!, use_ssl)
+      @client = Core::Client.new(node_uri.host.not_nil!, node_uri.port.not_nil!, use_ssl, @wallet.not_nil!)
 
       client.run
 
@@ -54,6 +92,10 @@ module ::Sushi::Interface::Sushi
       case command
       when "message"
         message(input)
+      when "send"
+        send(input)
+      when "fee"
+        fee(input)
       when "help"
         show_help
       else
@@ -61,6 +103,7 @@ module ::Sushi::Interface::Sushi
         puts "  unknown command #{yellow(command)} (will be ignored.)"
         puts "  input `> help` to show available commands"
         puts ""
+        client.show_cursor
       end
     rescue e : Exception
       puts ""
@@ -68,11 +111,14 @@ module ::Sushi::Interface::Sushi
       puts "  the reason is '#{red(e.message)}'."
       puts "  input `> help` to show available commands"
       puts ""
+      client.show_cursor
     end
 
     def message(input : String)
-      unless input =~ /^message\s(.+?)\s(.+)$/
-        raise "make sure you input `> message [client_id] [message]`"
+      command = find_command("message")
+
+      unless input =~ command[:regex]
+        raise "make sure your input `> #{command[:command]}`"
       end
 
       to_id = $1.to_s
@@ -83,19 +129,81 @@ module ::Sushi::Interface::Sushi
       puts "send a message \"#{message_print}\" to #{light_green(to_id)}"
       puts ""
 
-      client.send_message(to_id, message)
+      client.message(to_id, message)
+    end
+
+    def send(input : String)
+      command = find_command("send")
+
+      unless input =~ command[:regex]
+        raise "make sure your input `> #{command[:command]}`"
+      end
+
+      address = $1.to_s
+      token = $2.to_s
+      amount = $3.to_s
+      fee = $4.to_s
+      message = $5.to_s
+
+      to_address = Address.from(address, "recipient")
+      wallets = [@wallet.not_nil!]
+
+      senders = SendersDecimal.new
+      senders.push(
+        {
+          address: wallets[0].address,
+          public_key: wallets[0].public_key,
+          amount: amount,
+          fee: fee,
+          sign_r: "0",
+          sign_s: "0",
+        }
+      )
+
+      recipients = RecipientsDecimal.new
+      recipients.push(
+        {
+          address: address,
+          amount: amount,
+        }
+      )
+
+      puts ""
+      puts "send #{amount} of #{token} to #{address}"
+      puts ""
+
+      add_transaction(@node.not_nil!, "send", wallets, senders, recipients, message, token)
+
+      puts ""
+      client.show_cursor
+    end
+
+    def fee(input : String)
+      command = find_command("fee")
+
+      unless input =~ command[:regex]
+        raise "make sure your input `> #{command[:command]}`"
+      end
+
+      puts ""
+      puts "show transaction fees for each action"
+      puts ""
+
+      client.fee
     end
 
     def show_help
       puts ""
       puts "  available commands"
       puts ""
-      puts "  - message [client_id] [message]"
-      puts "    send a message for the client_id"
-      puts ""
-      puts "  - help"
-      puts "    show this help"
-      puts ""
+
+      COMMANDS.each do |command|
+        puts "  - #{command[:command]}"
+        puts "    #{command[:desc]}"
+        puts ""
+      end
+
+      client.show_cursor
     end
 
     include Core::Protocol
