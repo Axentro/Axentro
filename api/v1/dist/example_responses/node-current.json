@@ -1,0 +1,11 @@
+{
+  "status": "success",
+  "result": {
+    "id": "72402194f72f70ed4bf1288eb177252b",
+    "host": "ec2-52-87-190-26.compute-1.amazonaws.com",
+    "port": 3000,
+    "ssl": false,
+    "type": "testnet",
+    "is_private": false
+  }
+}

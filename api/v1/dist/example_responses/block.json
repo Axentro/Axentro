@@ -1,0 +1,12 @@
+{
+  "status": "success",
+  "result": {
+    "index": 0,
+    "transactions": [],
+    "nonce": 0,
+    "prev_hash": "genesis",
+    "merkle_tree_root": "",
+    "timestamp": 0,
+    "difficulty": 3
+  }
+}
