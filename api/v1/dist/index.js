@@ -2077,7 +2077,7 @@ class $ApiDetailItem extends Component {
   }
 
   render() {
-    return (this.state.initialized ? _createElement("div", {
+    return _createElement("div", {
       className: `row`
     }, [_createElement("div", {
       className: `col-mr-2`
@@ -2105,9 +2105,7 @@ class $ApiDetailItem extends Component {
       className: `alert alert-primary`
     }, [this.detail.example]), _createElement("hr", {}), _createElement("h5", {}, [`Response`]), $Maybe.withDefault(_createElement("div", {}), this.detail.responseDesc), _createElement($CodeMirror, { "onChange": ((s) => {
     return null
-    }), "value": this.state.source, "readOnly": true }), _createElement("hr", {}), _createElement($TryMe, { "url": this.detail.try.url, "hasBody": this.detail.try.hasBody }), _createElement("div", {})])])])])])]) : _createElement("div", {
-      className: `api-detail-item-loader`
-    }, [`Initializing`]))
+    }), "value": this.state.source, "readOnly": true }), _createElement("hr", {}), _createElement($TryMe, { "url": this.detail.try.url, "hasBody": this.detail.try.hasBody }), _createElement("div", {})])])])])])])
   }
 }
 
