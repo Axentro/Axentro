@@ -1,0 +1,16 @@
+{
+  "status": "success",
+  "result": {
+    "confirmation": 1,
+    "pairs": [
+      {
+        "token": "SUSHI",
+        "amount": "19.68043428"
+      },
+      {
+        "token": "EAGLE",
+        "amount": "0"
+      }
+    ]
+  }
+}

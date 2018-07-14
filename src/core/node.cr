@@ -154,7 +154,7 @@ module ::Sushi::Core
     end
 
     private def v1_api_documentation_handler : ApiDocumentationHandler
-      ApiDocumentationHandler.new("/docs/api/v1", "api/v1/index.html")
+      ApiDocumentationHandler.new("/", "api/v1/dist/index.html")
     end
 
     def peer(socket : HTTP::WebSocket)
@@ -458,8 +458,8 @@ module ::Sushi::Core
         @rpc_controller.get_handler,
         @rest_controller.get_handler,
         @pubsub_controller.get_handler,
+        HTTP::StaticFileHandler.new("api/v1/dist", true, false),
         v1_api_documentation_handler,
-        HTTP::StaticFileHandler.new("api/v1", false),
       ]
     end
 
