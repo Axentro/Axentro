@@ -42,7 +42,7 @@ module ::Sushi::Core::NodeComponents
 
       info "new client: #{light_green(client[:context][:address][0..7] + "...")}"
 
-      send(socket, M_TYPE_CLIENT_HANDSHAKE_ACCEPTED, { address: client_context[:address] })
+      send(socket, M_TYPE_CLIENT_HANDSHAKE_ACCEPTED, {address: client_context[:address]})
     end
 
     def receive_content(_content : String, from = nil)

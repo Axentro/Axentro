@@ -175,7 +175,8 @@ module ::Sushi::Interface::Sushi
       add_transaction(@node.not_nil!, "send", wallets, senders, recipients, message, token)
 
       puts ""
-      client.show_cursor
+
+      client.message(address, message)
     end
 
     def fee(input : String)
