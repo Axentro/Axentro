@@ -179,7 +179,19 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def on_message(action : String, from_address : String, content : String, from = nil)
-      false
+      return false unless action == "amount"
+
+      _m_content = M_CONTENT_CLIENT_AMOUNT.from_json(content)
+
+      token = _m_content.token
+      confirmation = _m_content.confirmation
+
+      node.send_content_to_client(
+        from_address,
+        from_address,
+        amount_impl(from_address, token, confirmation).to_json,
+        from,
+      )
     end
 
     include Consensus

@@ -28,6 +28,11 @@ module ::Sushi::Interface::Sushi
         regex:   /^send\s(.+?)\s(.+?)\s(.+?)\s(.+?)\s(.+)$/,
       },
       {
+        command: "amount [token] [confirmation]",
+        desc: "show the amount of the token of the client for the confirmation",
+        regex: /^amount\s(.+?)\s(\d+)$/,
+      },
+      {
         command: "fee",
         desc:    "show transaction fees for each action",
         regex:   /^fee$/,
@@ -94,6 +99,8 @@ module ::Sushi::Interface::Sushi
         message(input)
       when "send"
         send(input)
+      when "amount"
+        amount(input)
       when "fee"
         fee(input)
       when "help"
@@ -177,6 +184,19 @@ module ::Sushi::Interface::Sushi
       puts ""
 
       client.message(address, message)
+    end
+
+    def amount(input : String)
+      command = find_command("amount")
+
+      unless input =~ command[:regex]
+        raise "make sure your input `> #{command[:command]}`"
+      end
+
+      token = $1.to_s
+      confirmation = $2.to_i
+
+      client.amount(token, confirmation)
     end
 
     def fee(input : String)

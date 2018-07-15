@@ -99,6 +99,13 @@ module ::Sushi::Core::Protocol
     })
   end
 
+  struct M_CONTENT_CLIENT_AMOUNT
+    JSON.mapping({
+                   token: String,
+                   confirmation: Int32,
+                 })
+  end
+
   #
   # Used in clients
   #
