@@ -59,10 +59,10 @@ module ::Sushi::Core::DApps::BuildIn
       fees
     end
 
-    def on_message(action : String, from_id : String, content : String, from = nil)
+    def on_message(action : String, from_address : String, content : String, from = nil)
       return false unless action == "fee"
 
-      node.send_content_to_client(from_id, from_id, fees_impl.to_json, from)
+      node.send_content_to_client(from_address, from_address, fees_impl.to_json, from)
     end
   end
 end

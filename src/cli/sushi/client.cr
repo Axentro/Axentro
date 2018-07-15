@@ -18,13 +18,13 @@ module ::Sushi::Interface::Sushi
 
     COMMANDS = [
       {
-        command: "message [client_id] [message]",
-        desc:    "send a message for the client_id",
+        command: "message [address] [message]",
+        desc:    "send a message for the address",
         regex:   /^message\s(.+?)\s(.+)$/,
       },
       {
         command: "send [address] [token] [amount] [fee] [message]",
-        desc:    "send the amount of the token to the client_id",
+        desc:    "send the amount of the token to the address",
         regex:   /^send\s(.+?)\s(.+?)\s(.+?)\s(.+?)\s(.+)$/,
       },
       {
@@ -121,15 +121,15 @@ module ::Sushi::Interface::Sushi
         raise "make sure your input `> #{command[:command]}`"
       end
 
-      to_id = $1.to_s
+      to = $1.to_s
       message = $2.to_s
       message_print = light_green(message[0..9]) + (message.size > 10 ? "..." : "")
 
       puts ""
-      puts "send a message \"#{message_print}\" to #{light_green(to_id)}"
+      puts "send a message \"#{message_print}\" to #{light_green(to + "...")}"
       puts ""
 
-      client.message(to_id, message)
+      client.message(to, message)
     end
 
     def send(input : String)

@@ -75,7 +75,7 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_CLIENT_HANDSHAKE_ACCEPTED
     JSON.mapping({
-      id: String,
+      address: String,
     })
   end
 
@@ -84,7 +84,7 @@ module ::Sushi::Core::Protocol
   struct M_CONTENT_CLIENT_CONTENT
     JSON.mapping({
       action:  String,
-      from_id: String,
+      from:    String,
       content: String,
     })
   end
@@ -94,7 +94,7 @@ module ::Sushi::Core::Protocol
   #
   struct M_CONTENT_CLIENT_MESSAGE
     JSON.mapping({
-      to_id:   String,
+      to:      String,
       message: String,
     })
   end
@@ -106,8 +106,8 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_CLIENT_RECEIVE
     JSON.mapping({
-      from_id: String,
-      to_id:   String,
+      from:    String,
+      to:      String,
       content: String,
     })
   end

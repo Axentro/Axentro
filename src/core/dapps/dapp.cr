@@ -28,7 +28,7 @@ module ::Sushi::Core::DApps
     ) : HTTP::Server::Context?
     abstract def on_message(
       action : String,
-      from_id : String,
+      from_address : String,
       content : String,
       from : NodeComponents::Chord::NodeContext? = nil
     ) : Bool

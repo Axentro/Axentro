@@ -258,10 +258,6 @@ module ::Sushi::Core
       send_transaction(transaction, from)
 
       @blockchain.add_transaction(transaction)
-
-      transaction.recipients.each do |recipient|
-        @clients_manager.notify(recipient, transaction)
-      end
     end
 
     def send_block(block : Block, from : Chord::NodeContext? = nil)
@@ -513,8 +509,8 @@ module ::Sushi::Core
       end
     end
 
-    def send_content_to_client(from_id : String, to_id : String, message : String, from = nil) : Bool
-      @clients_manager.send_content(from_id, to_id, message, from)
+    def send_content_to_client(from_address : String, to : String, message : String, from = nil) : Bool
+      @clients_manager.send_content(from_address, to, message, from)
     end
 
     include Protocol

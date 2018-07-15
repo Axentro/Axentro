@@ -104,7 +104,7 @@ module ::Sushi::Core::DApps::BuildIn
       transaction
     end
 
-    def on_message(action : String, from_id : String, content : String, from = nil)
+    def on_message(action : String, from_address : String, content : String, from = nil)
       false
     end
 

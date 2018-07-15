@@ -37,15 +37,15 @@ module ::Sushi::Core::DApps::BuildIn
       nil
     end
 
-    def on_message(action : String, from_id : String, content : String, from = nil)
+    def on_message(action : String, from_address : String, content : String, from = nil)
       return false unless action == "message"
 
       _m_content = M_CONTENT_CLIENT_MESSAGE.from_json(content)
 
-      to_id = _m_content.to_id
+      to = _m_content.to
       message = _m_content.message
 
-      node.send_content_to_client(from_id, to_id, message, from)
+      node.send_content_to_client(from_address, to, message, from)
     end
   end
 end

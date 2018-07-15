@@ -132,7 +132,7 @@ module ::Sushi::Core::DApps::BuildIn
       blockchain.transactions_for_address(address, page, page_size, actions)
     end
 
-    def on_message(action : String, from_id : String, content : String, from = nil)
+    def on_message(action : String, from_address : String, content : String, from = nil)
       false
     end
   end

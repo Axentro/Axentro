@@ -12,7 +12,6 @@
 
 module ::Sushi::Core
   class Client < HandleSocket
-    @client_id : String?
     @socket : HTTP::WebSocket?
 
     def initialize(@host : String, @port : Int32, @use_ssl : Bool, @wallet : Wallet)
@@ -61,11 +60,8 @@ module ::Sushi::Core
     def _handshake_accepted(_content : String)
       _m_content = M_CONTENT_CLIENT_HANDSHAKE_ACCEPTED.from_json(_content)
 
-      @client_id = _m_content.id
-
       puts ""
       puts light_green("  successfully connected to the node!")
-      puts light_green("  your client id is #{@client_id}")
       puts ""
 
       show_cursor
@@ -74,17 +70,17 @@ module ::Sushi::Core
     def _receive_message(_content : String)
       _m_content = M_CONTENT_CLIENT_RECEIVE.from_json(_content)
 
-      from_id = _m_content.from_id
-      to_id = _m_content.to_id
+      from = _m_content.from
+      to = _m_content.to
       content = _m_content.content
 
-      if from_id != to_id
+      if from != to
         puts ""
-        puts "  received message from #{light_green(from_id)}"
+        puts ""
+        puts "  received message from #{light_green(from[0..7] + "...")}"
         puts ""
       end
 
-      puts ""
       puts ""
       puts "```"
       puts "#{content}"
@@ -94,26 +90,22 @@ module ::Sushi::Core
       show_cursor
     end
 
-    def message(to_id : String, message : String)
-      raise "client id is unknown" unless from_id = @client_id
-
-      content = {to_id: to_id, message: message}.to_json
-      create_content("message", from_id, content)
+    def message(to : String, message : String)
+      content = {to: to, message: message}.to_json
+      create_content("message", content)
 
       show_cursor
     end
 
     def fee
-      raise "client id is unknown" unless from_id = @client_id
-
       content = ""
-      create_content("fee", from_id, content)
+      create_content("fee", content)
 
       show_cursor
     end
 
-    def create_content(action : String, from_id : String, content : String)
-      content = {action: action, from_id: from_id, content: content}
+    def create_content(action : String, content : String)
+      content = {action: action, from: from, content: content}
       send(socket, M_TYPE_CLIENT_CONTENT, content)
     end
 
@@ -128,6 +120,10 @@ module ::Sushi::Core
 
     def show_cursor
       print "> "
+    end
+
+    def from : String
+      @wallet.address
     end
 
     include Protocol
