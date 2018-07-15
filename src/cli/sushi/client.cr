@@ -29,8 +29,8 @@ module ::Sushi::Interface::Sushi
       },
       {
         command: "amount [token] [confirmation]",
-        desc: "show the amount of the token of the client for the confirmation",
-        regex: /^amount\s(.+?)\s(\d+)$/,
+        desc:    "show the amount of the token of the client for the confirmation",
+        regex:   /^amount\s(.+?)\s(\d+)$/,
       },
       {
         command: "fee",
