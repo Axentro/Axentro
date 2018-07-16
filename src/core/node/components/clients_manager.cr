@@ -57,11 +57,11 @@ module ::Sushi::Core::NodeComponents
       hash_salt = sha256(@salt + _m_content.public_key)
 
       if secp256k1.verify(
-          public_key.point,
-          hash_salt,
-          BigInt.new(sign_r, base: 16),
-          BigInt.new(sign_s, base: 16)
-        )
+           public_key.point,
+           hash_salt,
+           BigInt.new(sign_r, base: 16),
+           BigInt.new(sign_s, base: 16)
+         )
         client_context = {address: _m_content.address}
         client = {context: client_context, socket: socket}
 

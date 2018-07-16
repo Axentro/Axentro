@@ -66,11 +66,11 @@ module ::Sushi::Core
       sign = Core::ECDSA::Secp256k1.new.sign(private_key.as_big_i, _m_content.salt)
 
       send(socket, M_TYPE_CLIENT_UPGRADE, {
-             address: @wallet.address,
-             public_key: @wallet.public_key,
-             sign_r: sign[0].to_s(base: 16),
-             sign_s: sign[1].to_s(base: 16)
-           })
+        address:    @wallet.address,
+        public_key: @wallet.public_key,
+        sign_r:     sign[0].to_s(base: 16),
+        sign_s:     sign[1].to_s(base: 16),
+      })
     end
 
     def _handshake_accepted(_content : String)

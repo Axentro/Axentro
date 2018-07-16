@@ -67,7 +67,7 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_CLIENT_HANDSHAKE
     JSON.mapping({
-                   public_key: String,
+      public_key: String,
     })
   end
 
@@ -75,19 +75,19 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_CLIENT_SALT
     JSON.mapping({
-                   salt: String,
-                 })
+      salt: String,
+    })
   end
 
   M_TYPE_CLIENT_UPGRADE = 0x1006
 
   struct M_CONTENT_CLIENT_UPGRADE
     JSON.mapping({
-                   address: String,
-                   public_key: String,
-                   sign_r: String,
-                   sign_s: String,
-                 })
+      address:    String,
+      public_key: String,
+      sign_r:     String,
+      sign_s:     String,
+    })
   end
 
   M_TYPE_CLIENT_HANDSHAKE_ACCEPTED = 0x1002
