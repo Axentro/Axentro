@@ -72,6 +72,7 @@ module ::Sushi::Interface::Sushi
     def run_impl(action_name)
       puts_help(HELP_CONNECTING_NODE) unless @node = __connect_node
       puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
+      puts_help(HELP_WALLET_MUST_BE_ENCRYPTED) unless encrypted?(wallet_path, __wallet_password)
 
       @wallet = get_wallet(wallet_path, __wallet_password)
 
@@ -133,7 +134,7 @@ module ::Sushi::Interface::Sushi
       message_print = light_green(message[0..9]) + (message.size > 10 ? "..." : "")
 
       puts ""
-      puts "send a message \"#{message_print}\" to #{light_green(to + "...")}"
+      puts "send a message \"#{message_print}\" to #{light_green(to[0..7] + "...")}"
       puts ""
 
       client.message(to, message)

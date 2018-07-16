@@ -28,6 +28,8 @@ module ::Sushi::Core
         case message_type
         when M_TYPE_CLIENT_HANDSHAKE_ACCEPTED
           _handshake_accepted(message_content)
+        when M_TYPE_CLIENT_SALT
+          _salt(message_content)
         when M_TYPE_CLIENT_RECEIVE
           _receive_message(message_content)
         else
@@ -44,7 +46,7 @@ module ::Sushi::Core
       puts ""
       puts light_green("  start client for sushi...")
 
-      send(socket, M_TYPE_CLIENT_HANDSHAKE, {address: @wallet.address})
+      send(socket, M_TYPE_CLIENT_HANDSHAKE, {public_key: @wallet.public_key})
 
       spawn do
         socket.run
@@ -55,6 +57,20 @@ module ::Sushi::Core
 
     def socket : HTTP::WebSocket
       @socket.not_nil!
+    end
+
+    def _salt(_content : String)
+      _m_content = M_CONTENT_CLIENT_SALT.from_json(_content)
+
+      private_key = Core::Keys::Wif.new(@wallet.wif).private_key
+      sign = Core::ECDSA::Secp256k1.new.sign(private_key.as_big_i, _m_content.salt)
+
+      send(socket, M_TYPE_CLIENT_UPGRADE, {
+             address: @wallet.address,
+             public_key: @wallet.public_key,
+             sign_r: sign[0].to_s(base: 16),
+             sign_s: sign[1].to_s(base: 16)
+           })
     end
 
     def _handshake_accepted(_content : String)

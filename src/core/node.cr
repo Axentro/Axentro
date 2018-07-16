@@ -170,6 +170,8 @@ module ::Sushi::Core
           @miners_manager.found_nonce(socket, message_content)
         when M_TYPE_CLIENT_HANDSHAKE
           @clients_manager.handshake(socket, message_content)
+        when M_TYPE_CLIENT_UPGRADE
+          @clients_manager.upgrade(socket, message_content)
         when M_TYPE_CLIENT_CONTENT
           @clients_manager.receive_content(message_content)
         when M_TYPE_CHORD_JOIN

@@ -27,7 +27,10 @@ module ::Sushi::Core::NodeComponents
 
     getter clients : Clients = Clients.new
 
+    @salt : String
+
     def initialize(@blockchain : Blockchain)
+      @salt = Random::Secure.hex(32)
     end
 
     def handshake(socket, _content)
@@ -35,14 +38,41 @@ module ::Sushi::Core::NodeComponents
 
       _m_content = M_CONTENT_CLIENT_HANDSHAKE.from_json(_content)
 
-      client_context = {address: _m_content.address}
-      client = {context: client_context, socket: socket}
+      hash_salt = sha256(@salt + _m_content.public_key)
 
-      @clients << client
+      send(socket, M_TYPE_CLIENT_SALT, {salt: hash_salt})
+    end
 
-      info "new client: #{light_green(client[:context][:address][0..7] + "...")}"
+    def upgrade(socket, _content)
+      return unless node.phase == SETUP_PHASE::DONE
 
-      send(socket, M_TYPE_CLIENT_HANDSHAKE_ACCEPTED, {address: client_context[:address]})
+      _m_content = M_CONTENT_CLIENT_UPGRADE.from_json(_content)
+
+      network = Keys::Address.from(_m_content.address, "client").network
+      public_key = Keys::PublicKey.new(_m_content.public_key, network)
+
+      sign_r = _m_content.sign_r
+      sign_s = _m_content.sign_s
+
+      hash_salt = sha256(@salt + _m_content.public_key)
+
+      if secp256k1.verify(
+          public_key.point,
+          hash_salt,
+          BigInt.new(sign_r, base: 16),
+          BigInt.new(sign_s, base: 16)
+        )
+        client_context = {address: _m_content.address}
+        client = {context: client_context, socket: socket}
+
+        @clients << client
+
+        info "new client: #{light_green(client[:context][:address][0..7] + "...")}"
+
+        send(socket, M_TYPE_CLIENT_HANDSHAKE_ACCEPTED, {address: client_context[:address]})
+      else
+        clean_connection(socket)
+      end
     end
 
     def receive_content(_content : String, from = nil)
@@ -83,10 +113,20 @@ module ::Sushi::Core::NodeComponents
       @clients.find { |c| c[:context][:address] == address }
     end
 
+    def self.secp256k1 : ECDSA::Secp256k1
+      @@secp256k1 ||= ECDSA::Secp256k1.new
+      @@secp256k1.not_nil!
+    end
+
+    private def secp256k1
+      ClientsManager.secp256k1
+    end
+
     private def node
       @blockchain.node
     end
 
+    include Hashes
     include Protocol
     include TransactionModels
     include Common::Color
