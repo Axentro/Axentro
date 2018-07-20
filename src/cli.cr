@@ -55,20 +55,33 @@ module ::Sushi::Interface
       exit exit_code
     end
 
+    def encrypted?(wallet_path, wallet_password) : Bool
+      Core::Wallet.from_path(wallet_path)
+      false
+    rescue Core::WalletException
+      password_from_env = ENV["SC_WALLET_PASSWORD"]?
+      password = password_from_env || wallet_password
+
+      return false unless password
+
+      wallet = Core::EncryptedWallet.from_path(wallet_path)
+      Core::Wallet.from_json(Core::Wallet.decrypt(password, wallet))
+
+      true
+    end
+
     def get_wallet(wallet_path, wallet_password) : Core::Wallet
-      begin
-        Core::Wallet.from_path(wallet_path)
-      rescue Core::WalletException
-        password_from_env = ENV["SC_WALLET_PASSWORD"]?
-        password = password_from_env || wallet_password
+      Core::Wallet.from_path(wallet_path)
+    rescue Core::WalletException
+      password_from_env = ENV["SC_WALLET_PASSWORD"]?
+      password = password_from_env || wallet_password
 
-        unless password
-          puts_help(HELP_WALLET_PASSWORD)
-        end
-
-        wallet = Core::EncryptedWallet.from_path(wallet_path)
-        Core::Wallet.from_json(Core::Wallet.decrypt(password, wallet))
+      unless password
+        puts_help(HELP_WALLET_PASSWORD)
       end
+
+      wallet = Core::EncryptedWallet.from_path(wallet_path)
+      Core::Wallet.from_json(Core::Wallet.decrypt(password, wallet))
     end
 
     def command_line

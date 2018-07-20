@@ -67,7 +67,26 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_CLIENT_HANDSHAKE
     JSON.mapping({
-      address: String?,
+      public_key: String,
+    })
+  end
+
+  M_TYPE_CLIENT_SALT = 0x1005
+
+  struct M_CONTENT_CLIENT_SALT
+    JSON.mapping({
+      salt: String,
+    })
+  end
+
+  M_TYPE_CLIENT_UPGRADE = 0x1006
+
+  struct M_CONTENT_CLIENT_UPGRADE
+    JSON.mapping({
+      address:    String,
+      public_key: String,
+      sign_r:     String,
+      sign_s:     String,
     })
   end
 
@@ -75,27 +94,47 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_CLIENT_HANDSHAKE_ACCEPTED
     JSON.mapping({
-      id: String,
+      address: String,
     })
   end
 
-  M_TYPE_CLIENT_SEND = 0x1003
+  M_TYPE_CLIENT_CONTENT = 0x1003
 
-  struct M_CONTENT_CLIENT_SEND
+  struct M_CONTENT_CLIENT_CONTENT
     JSON.mapping({
-      from_id: String,
-      to_id:   String,
+      action:  String,
+      from:    String,
+      content: String,
+    })
+  end
+
+  #
+  # Content structure of content of M_CONTENT_CLIENT_CONTENT
+  #
+  struct M_CONTENT_CLIENT_MESSAGE
+    JSON.mapping({
+      to:      String,
       message: String,
     })
   end
 
+  struct M_CONTENT_CLIENT_AMOUNT
+    JSON.mapping({
+      token:        String,
+      confirmation: Int32,
+    })
+  end
+
+  #
+  # Used in clients
+  #
   M_TYPE_CLIENT_RECEIVE = 0x1004
 
   struct M_CONTENT_CLIENT_RECEIVE
     JSON.mapping({
-      from_id: String,
-      to_id:   String,
-      message: String,
+      from:    String,
+      to:      String,
+      content: String,
     })
   end
 
@@ -227,11 +266,11 @@ module ::Sushi::Core::Protocol
     JSON.mapping({transactions: Array(Transaction)})
   end
 
-  M_TYPE_NODE_SEND_MESSAGE = 0x0108
+  M_TYPE_NODE_SEND_CLIENT_CONTENT = 0x0108
 
-  struct M_CONTENT_NODE_SEND_MESSAGE
+  struct M_CONTENT_NODE_SEND_CLIENT_CONTENT
     JSON.mapping({
-      message: String,
+      content: String,
       from:    Core::NodeComponents::Chord::NodeContext,
     })
   end

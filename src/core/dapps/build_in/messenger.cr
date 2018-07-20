@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::DApps::BuildIn
-  class NodeInfo < DApp
+  class Messenger < DApp
     def setup
     end
 
@@ -34,49 +34,18 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def define_rpc?(call, json, context, params)
-      case call
-      when "nodes"
-        return nodes(json, context, params)
-      when "node"
-        return node(json, context, params)
-      when "node_id"
-        return node_id(json, context, params)
-      end
-
       nil
     end
 
-    def nodes(json, context, params)
-      context.response.print api_success(nodes_impl)
-      context
-    end
-
-    def nodes_impl
-      node.chord.connected_nodes
-    end
-
-    def node(json, context, params)
-      context.response.print api_success(node_impl)
-      context
-    end
-
-    def node_impl
-      node.chord.context
-    end
-
-    def node_id(json, context, params)
-      id = json["id"].as_s
-
-      context.response.print api_success(node_id_impl(id))
-      context
-    end
-
-    def node_id_impl(id : String)
-      node.chord.find_node(id)
-    end
-
     def on_message(action : String, from_address : String, content : String, from = nil)
-      false
+      return false unless action == "message"
+
+      _m_content = M_CONTENT_CLIENT_MESSAGE.from_json(content)
+
+      to = _m_content.to
+      message = _m_content.message
+
+      node.send_content_to_client(from_address, to, message, from)
     end
   end
 end

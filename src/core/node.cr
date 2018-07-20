@@ -170,8 +170,10 @@ module ::Sushi::Core
           @miners_manager.found_nonce(socket, message_content)
         when M_TYPE_CLIENT_HANDSHAKE
           @clients_manager.handshake(socket, message_content)
-        when M_TYPE_CLIENT_SEND
-          @clients_manager.send_message(message_content)
+        when M_TYPE_CLIENT_UPGRADE
+          @clients_manager.upgrade(socket, message_content)
+        when M_TYPE_CLIENT_CONTENT
+          @clients_manager.receive_content(message_content)
         when M_TYPE_CHORD_JOIN
           @chord.join(self, socket, message_content)
         when M_TYPE_CHORD_JOIN_PRIVATE
@@ -202,8 +204,8 @@ module ::Sushi::Core
           _request_transactions(socket, message_content)
         when M_TYPE_NODE_RECEIVE_TRANSACTIONS
           _receive_transactions(socket, message_content)
-        when M_TYPE_NODE_SEND_MESSAGE
-          _send_message(socket, message_content)
+        when M_TYPE_NODE_SEND_CLIENT_CONTENT
+          _receive_client_content(socket, message_content)
         end
       rescue e : Exception
         handle_exception(socket, e)
@@ -270,14 +272,14 @@ module ::Sushi::Core
       send_on_chord(M_TYPE_NODE_BROADCAST_BLOCK, content, from)
     end
 
-    def send_message(message : String, from : Chord::NodeContext? = nil)
-      content = if from.nil? || (!from.nil? && from[:is_private])
-                  {message: message, from: @chord.context}
-                else
-                  {message: message, from: from}
-                end
+    def send_client_content(content : String, from : Chord::NodeContext? = nil)
+      _content = if from.nil? || (!from.nil? && from[:is_private])
+                   {content: content, from: @chord.context}
+                 else
+                   {content: content, from: from}
+                 end
 
-      send_on_chord(M_TYPE_NODE_SEND_MESSAGE, content, from)
+      send_on_chord(M_TYPE_NODE_SEND_CLIENT_CONTENT, _content, from)
     end
 
     def broadcast_block(socket : HTTP::WebSocket, block : Block, from : Chord::NodeContext? = nil)
@@ -359,15 +361,15 @@ module ::Sushi::Core
       broadcast_block(socket, block, from)
     end
 
-    private def _send_message(socket, _content)
+    private def _receive_client_content(socket, _content)
       return unless @phase == SETUP_PHASE::DONE
 
-      _m_content = M_CONTENT_NODE_SEND_MESSAGE.from_json(_content)
+      _m_content = M_CONTENT_NODE_SEND_CLIENT_CONTENT.from_json(_content)
 
-      message = _m_content.message
+      content = _m_content.content
       from = _m_content.from
 
-      @clients_manager.send_message(message, from)
+      @clients_manager.receive_content(content, from)
     end
 
     private def _request_chain(socket, _content)
@@ -507,6 +509,10 @@ module ::Sushi::Core
 
         @phase = SETUP_PHASE::DONE
       end
+    end
+
+    def send_content_to_client(from_address : String, to : String, message : String, from = nil) : Bool
+      @clients_manager.send_content(from_address, to, message, from)
     end
 
     include Protocol
