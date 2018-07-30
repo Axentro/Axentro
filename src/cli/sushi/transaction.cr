@@ -38,7 +38,7 @@ module ::Sushi::Interface::Sushi
     end
 
     def option_parser
-      create_option_parser([
+      G.op.create_option_parser([
         Options::CONNECT_NODE,
         Options::WALLET_PATH,
         Options::WALLET_PASSWORD,
@@ -77,25 +77,25 @@ module ::Sushi::Interface::Sushi
     end
 
     def create
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
-      puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
-      puts_help(HELP_AMOUNT) unless amount = __amount
-      puts_help(HELP_FEE) unless fee = __fee
-      puts_help(HELP_ADDRESS_DOMAIN_RECIPIENT) if __address.nil? && __domain.nil?
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
+      puts_help(HELP_WALLET_PATH) unless wallet_path = G.op.__wallet_path
+      puts_help(HELP_AMOUNT) unless amount = G.op.__amount
+      puts_help(HELP_FEE) unless fee = G.op.__fee
+      puts_help(HELP_ADDRESS_DOMAIN_RECIPIENT) if G.op.__address.nil? && G.op.__domain.nil?
 
-      action = __action || "send"
+      action = G.op.__action || "send"
 
-      recipient_address = if address = __address
+      recipient_address = if address = G.op.__address
                             address
                           else
-                            resolved = resolve_internal(node, __domain.not_nil!, __confirmation)
-                            raise "domain #{__domain.not_nil!} is not resolved" unless resolved["resolved"].as_bool
+                            resolved = resolve_internal(node, G.op.__domain.not_nil!, G.op.__confirmation)
+                            raise "domain #{G.op.__domain.not_nil!} is not resolved" unless resolved["resolved"].as_bool
                             resolved["domain"]["address"].as_s
                           end
 
       to_address = Address.from(recipient_address, "recipient")
 
-      wallet = get_wallet(wallet_path, __wallet_password)
+      wallet = get_wallet(wallet_path, G.op.__wallet_password)
       wallets = [wallet]
 
       senders = SendersDecimal.new
@@ -118,17 +118,17 @@ module ::Sushi::Interface::Sushi
         }
       )
 
-      add_transaction(node, action, wallets, senders, recipients, __message, __token || TOKEN_DEFAULT)
+      add_transaction(node, action, wallets, senders, recipients, G.op.__message, G.op.__token || TOKEN_DEFAULT)
     end
 
     def transactions
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
-      puts_help(HELP_BLOCK_INDEX_OR_ADDRESS) if __block_index.nil? && __address.nil?
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
+      puts_help(HELP_BLOCK_INDEX_OR_ADDRESS) if G.op.__block_index.nil? && G.op.__address.nil?
 
-      payload = if block_index = __block_index
+      payload = if block_index = G.op.__block_index
                   success_message = "show transactions in a block #{block_index}"
                   {call: "transactions", index: block_index}.to_json
-                elsif address = __address
+                elsif address = G.op.__address
                   success_message = "show transactions for an address #{address}"
                   {call: "transactions", address: address}.to_json
                 else
@@ -137,20 +137,20 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
-      puts_success(success_message) unless __json
+      puts_success(success_message) unless G.op.__json
       puts body
     end
 
     def transaction
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
-      puts_help(HELP_TRANSACTION_ID) unless transaction_id = __transaction_id
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
+      puts_help(HELP_TRANSACTION_ID) unless transaction_id = G.op.__transaction_id
 
       payload = {call: "transaction", transaction_id: transaction_id}.to_json
 
       body = rpc(node, payload)
       json = JSON.parse(body)
 
-      unless __json
+      unless G.op.__json
         case json["status"].as_s
         when "accepted"
           puts_success("show the transaction")
@@ -158,8 +158,8 @@ module ::Sushi::Interface::Sushi
         when "pending"
           puts_success("the transaction is still pending in transaction pool")
         when "rejected"
-          puts_error("the transaction was rejected")
-          puts_error("the reason: #{json["reason"].as_s}")
+          puts_error("the transaction was rejected. " +
+                     "the reason: #{json["reason"].as_s}")
         when "not found"
           puts_error("the transcation was not found")
         else
@@ -171,14 +171,14 @@ module ::Sushi::Interface::Sushi
     end
 
     def confirmation
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
-      puts_help(HELP_TRANSACTION_ID) unless transaction_id = __transaction_id
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
+      puts_help(HELP_TRANSACTION_ID) unless transaction_id = G.op.__transaction_id
 
       payload = {call: "confirmation", transaction_id: transaction_id}.to_json
 
       body = rpc(node, payload)
 
-      unless __json
+      unless G.op.__json
         puts_success("show the number of confirmations of #{transaction_id}")
 
         json = JSON.parse(body)
@@ -192,14 +192,14 @@ module ::Sushi::Interface::Sushi
     end
 
     def fees
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
 
       payload = {call: "fees"}.to_json
 
       body = rpc(node, payload)
       json = JSON.parse(body)
 
-      unless __json
+      unless G.op.__json
         puts_success("\n  showing fees for each action.\n")
 
         puts_info("  + %30s - %30s +" % ["-" * 30, "-" * 30])
@@ -216,7 +216,5 @@ module ::Sushi::Interface::Sushi
         puts body
       end
     end
-
-    include GlobalOptionParser
   end
 end

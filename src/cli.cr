@@ -33,6 +33,13 @@ module ::Sushi::Interface
     end
 
     def puts_help(message = "showing help message.", exit_code = -1)
+      if G.op.__json
+        puts ({
+                error: true,
+                message: message,
+        }.to_json)
+        exit exit_code
+      end
       available_sub_actions =
         sub_actions.map { |a| " - #{light_green("%-20s" % a[:name])} | #{"%-40s" % a[:desc]}" }.join("\n")
       available_sub_actions = "nothing" if available_sub_actions == ""
@@ -112,11 +119,7 @@ module ::Sushi::Interface
 
       run_impl(action_name)
     rescue e : Exception
-      if error_message = e.message
-        puts_error(e.message)
-      end
-
-      puts_error(e.backtrace.join("\n"))
+      puts_error(e.message.not_nil!)
     end
 
     def specify_sub_action!(_sub_action : String? = nil)
@@ -127,13 +130,6 @@ module ::Sushi::Interface
       end
     end
 
-    def option_error(option_name : String, parser : OptionParser)
-      puts_error("please specify #{option_name}")
-      puts ""
-      puts parser.to_s
-      exit -1
-    end
-
     def rpc(node, payload : String) : String
       res = HTTP::Client.post("#{node}/rpc", HTTP::Headers.new, payload)
       verify_response!(res)
@@ -142,20 +138,16 @@ module ::Sushi::Interface
     def verify_response!(res) : String
       unless body = res.body
         puts_error "returned body is empty"
-        exit -1
       end
 
       json = JSON.parse(body)
 
       if json["status"].as_s == "error"
         puts_error json["reason"].as_s
-        exit -1
       end
 
       unless res.status_code == 200
-        puts_error "failed to call an API."
-        puts_error res.body
-        exit -1
+        puts_error "failed to call an API. (#{res.body})"
       end
 
       json["result"].to_json
@@ -182,7 +174,7 @@ module ::Sushi::Interface
 
       rpc(node, payload)
 
-      unless __json
+      unless G.op.__json
         puts_success "successfully create your transaction!"
         puts_success "=> #{signed_transaction.id}"
       else

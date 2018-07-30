@@ -26,7 +26,7 @@ module ::Sushi::Interface::Sushi
     end
 
     def option_parser
-      create_option_parser([
+      G.op.create_option_parser([
         Options::CONNECT_NODE,
         Options::JSON,
         Options::NODE_ID,
@@ -47,13 +47,13 @@ module ::Sushi::Interface::Sushi
     end
 
     def nodes
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
 
       payload = {call: "nodes"}.to_json
 
       body = rpc(node, payload)
 
-      unless __json
+      unless G.op.__json
         json = JSON.parse(body)
 
         puts_success ""
@@ -84,9 +84,9 @@ module ::Sushi::Interface::Sushi
     end
 
     def node
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
 
-      payload = if node_id = __node_id
+      payload = if node_id = G.op.__node_id
                   {call: "node_id", id: node_id}.to_json
                 else
                   {call: "node"}.to_json
@@ -94,7 +94,7 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
-      unless __json
+      unless G.op.__json
         json = JSON.parse(body)
 
         puts_success ""
@@ -142,7 +142,5 @@ module ::Sushi::Interface::Sushi
         is_private: json["is_private"].as_bool,
       }
     end
-
-    include GlobalOptionParser
   end
 end

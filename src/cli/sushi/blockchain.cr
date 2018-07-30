@@ -30,7 +30,7 @@ module ::Sushi::Interface::Sushi
     end
 
     def option_parser
-      create_option_parser([
+      G.op.create_option_parser([
         Options::CONNECT_NODE,
         Options::JSON,
         Options::BLOCK_INDEX,
@@ -56,13 +56,13 @@ module ::Sushi::Interface::Sushi
     end
 
     def size
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
 
       payload = {call: "blockchain_size"}.to_json
 
       body = rpc(node, payload)
 
-      unless __json
+      unless G.op.__json
         json = JSON.parse(body)
         puts_success("current blockchain size is #{json["size"]}")
       else
@@ -71,13 +71,13 @@ module ::Sushi::Interface::Sushi
     end
 
     def all
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
 
-      payload = {call: "blockchain", header: __header}.to_json
+      payload = {call: "blockchain", header: G.op.__header}.to_json
 
       body = rpc(node, payload)
 
-      unless __json
+      unless G.op.__json
         puts_success("show current blockchain")
         puts_info(body)
       else
@@ -86,29 +86,27 @@ module ::Sushi::Interface::Sushi
     end
 
     def block
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
-      puts_help(HELP_BLOCK_INDEX_OR_TRANSACTION_ID) if __block_index.nil? && __transaction_id.nil?
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
+      puts_help(HELP_BLOCK_INDEX_OR_TRANSACTION_ID) if G.op.__block_index.nil? && G.op.__transaction_id.nil?
 
-      payload = if block_index = __block_index
-                  success_message = "show a block for index: #{__block_index}"
-                  {call: "block", index: block_index, header: __header}.to_json
-                elsif transaction_id = __transaction_id
-                  success_message = "show a block for transaction: #{__transaction_id}"
-                  {call: "block", transaction_id: transaction_id, header: __header}.to_json
+      payload = if block_index = G.op.__block_index
+                  success_message = "show a block for index: #{G.op.__block_index}"
+                  {call: "block", index: block_index, header: G.op.__header}.to_json
+                elsif transaction_id = G.op.__transaction_id
+                  success_message = "show a block for transaction: #{G.op.__transaction_id}"
+                  {call: "block", transaction_id: transaction_id, header: G.op.__header}.to_json
                 else
                   puts_help(HELP_BLOCK_INDEX_OR_TRANSACTION_ID)
                 end
 
       body = rpc(node, payload)
 
-      unless __json
+      unless G.op.__json
         puts_success(success_message)
         puts_info(body)
       else
         puts body
       end
     end
-
-    include GlobalOptionParser
   end
 end

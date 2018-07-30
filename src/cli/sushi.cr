@@ -57,7 +57,9 @@ module ::Sushi::Interface::Sushi
     end
 
     def option_parser
-      nil
+      G.op.create_option_parser([
+        Options::JSON,
+      ])
     end
 
     def run_impl(action_name)

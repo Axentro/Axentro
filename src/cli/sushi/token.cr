@@ -26,7 +26,7 @@ module ::Sushi::Interface::Sushi
     end
 
     def option_parser
-      create_option_parser([
+      G.op.create_option_parser([
         Options::CONNECT_NODE,
         Options::WALLET_PATH,
         Options::WALLET_PASSWORD,
@@ -53,15 +53,15 @@ module ::Sushi::Interface::Sushi
     end
 
     def create
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
-      puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
-      puts_help(HELP_FEE) unless fee = __fee
-      puts_help(HELP_AMOUNT) unless amount = __amount
-      puts_help(HELP_TOKEN) unless token = __token
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
+      puts_help(HELP_WALLET_PATH) unless wallet_path = G.op.__wallet_path
+      puts_help(HELP_FEE) unless fee = G.op.__fee
+      puts_help(HELP_AMOUNT) unless amount = G.op.__amount
+      puts_help(HELP_TOKEN) unless token = G.op.__token
 
       raise "please specify your original token name" if token == TOKEN_DEFAULT
 
-      wallet = get_wallet(wallet_path, __wallet_password)
+      wallet = get_wallet(wallet_path, G.op.__wallet_password)
 
       senders = SendersDecimal.new
       senders.push({
@@ -83,14 +83,14 @@ module ::Sushi::Interface::Sushi
     end
 
     def list
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
 
       payload = {call: "token_list"}.to_json
 
       body = rpc(node, payload)
       json = JSON.parse(body)
 
-      unless __json
+      unless G.op.__json
         puts_success "show a list of evenry tokens on SushiChain"
 
         json.as_a.each do |token|
@@ -100,7 +100,5 @@ module ::Sushi::Interface::Sushi
         puts body
       end
     end
-
-    include GlobalOptionParser
   end
 end

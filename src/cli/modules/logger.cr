@@ -23,7 +23,17 @@ module ::Sushi::Interface::Logger
 
   def puts_error(_msg : String?)
     return unless msg = _msg
-    puts red(msg)
+
+    if G.op.__json
+      puts ({
+              error: true,
+              message: _msg,
+            }.to_json)
+    else
+      puts red(msg)
+    end
+
+    exit -1
   end
 
   def puts_warning(_msg : String?)

@@ -46,7 +46,7 @@ module ::Sushi::Interface::Sushi
     end
 
     def option_parser
-      create_option_parser([
+      G.op.create_option_parser([
         Options::CONNECT_NODE,
         Options::WALLET_PATH,
         Options::WALLET_PASSWORD,
@@ -94,23 +94,27 @@ module ::Sushi::Interface::Sushi
       puts_error e.message
     end
 
+    def cm
+      G.op.cm
+    end
+
     def save
       cm.set_enabled_state(ConfigStatus::Disabled)
       cm.set_override_state(false)
-      cm.set("connect_node", __connect_node)
-      cm.set("wallet_path", absolute_path(__wallet_path))
-      cm.set("is_testnet", __is_testnet)
-      cm.set("is_private", __is_private)
-      cm.set("bind_host", __bind_host)
-      cm.set("bind_port", __bind_port)
-      cm.set("public_url", __public_url)
-      cm.set("database_path", __database_path)
-      cm.set("processes", __processes)
-      cm.set("encrypted", __encrypted)
-      cm.set("wallet_password", __wallet_password)
-      cm.set("address", __address)
-      cm.set("domain", __domain)
-      cm.save(__name)
+      cm.set("connect_node", G.op.__connect_node)
+      cm.set("wallet_path", absolute_path(G.op.__wallet_path))
+      cm.set("is_testnet", G.op.__is_testnet)
+      cm.set("is_private", G.op.__is_private)
+      cm.set("bind_host", G.op.__bind_host)
+      cm.set("bind_port", G.op.__bind_port)
+      cm.set("public_url", G.op.__public_url)
+      cm.set("database_path", G.op.__database_path)
+      cm.set("processes", G.op.__processes)
+      cm.set("encrypted", G.op.__encrypted)
+      cm.set("wallet_password", G.op.__wallet_password)
+      cm.set("address", G.op.__address)
+      cm.set("domain", G.op.__domain)
+      cm.save(G.op.__name)
       cm.set_enabled_state(ConfigStatus::Enabled)
       cm.set_override_state(true)
       puts_success "saved the configuration at #{cm.config_path}"
@@ -121,11 +125,11 @@ module ::Sushi::Interface::Sushi
 
     def show
       with_config do |configs, current_config|
-        if __name.nil?
+        if G.op.__name.nil?
           puts_success "current configuration is for: '#{current_config.name}' in file #{cm.config_path}"
           puts_info current_config.to_s
         else
-          with_name(__name, configs) do |config, name|
+          with_name(G.op.__name, configs) do |config, name|
             puts_success "showing configuration for: '#{name}' in file #{cm.config_path}"
             puts_info ConfigItem.new(name, current_config.status, config).to_s
           end
@@ -135,12 +139,12 @@ module ::Sushi::Interface::Sushi
 
     def remove
       with_config do |configs, current_config|
-        __name.nil? ? remove_all : with_name(__name, configs) { |config, name| configs.keys.size > 1 ? remove_config(name, current_config.name) : remove_all }
+        G.op.__name.nil? ? remove_all : with_name(G.op.__name, configs) { |config, name| configs.keys.size > 1 ? remove_config(name, current_config.name) : remove_all }
       end
     end
 
     def use
-      puts_help(HELP_CONFIG_NAME) unless name = __name
+      puts_help(HELP_CONFIG_NAME) unless name = G.op.__name
       with_config do |configs, current_config|
         with_name(name, configs) do
           cm.save(name, true)
@@ -154,7 +158,8 @@ module ::Sushi::Interface::Sushi
       with_config do |configs, current_config|
         puts_info "configuration is #{current_config.status}"
         if configs.keys.empty?
-          puts_error "there are no configurations yet - to create, exec `sushi config save [your_options]`"
+          puts_error "there are no configurations yet " +
+                     "- to create, exec `sushi config save [your_options]`"
         else
           puts_success "the following configs exist at #{cm.config_path}"
           configs.keys.each { |config| puts_info config }
@@ -211,7 +216,5 @@ module ::Sushi::Interface::Sushi
         puts_info config.to_s
       end
     end
-
-    include GlobalOptionParser
   end
 end
