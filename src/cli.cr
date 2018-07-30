@@ -35,8 +35,8 @@ module ::Sushi::Interface
     def puts_help(message = "showing help message.", exit_code = -1)
       if G.op.__json
         puts ({
-                error: true,
-                message: message,
+          error:   true,
+          message: message,
         }.to_json)
         exit exit_code
       end

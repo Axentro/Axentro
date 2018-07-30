@@ -26,9 +26,9 @@ module ::Sushi::Interface::Logger
 
     if G.op.__json
       puts ({
-              error: true,
-              message: _msg,
-            }.to_json)
+        error:   true,
+        message: _msg,
+      }.to_json)
     else
       puts red(msg)
     end
