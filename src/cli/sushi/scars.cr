@@ -38,7 +38,7 @@ module ::Sushi::Interface::Sushi
     end
 
     def option_parser
-      create_option_parser([
+      G.op.create_option_parser([
         Options::CONNECT_NODE,
         Options::WALLET_PATH,
         Options::WALLET_PASSWORD,
@@ -68,21 +68,20 @@ module ::Sushi::Interface::Sushi
       specify_sub_action!
     rescue e : Exception
       puts_error e.message
-      exit -1
     end
 
     def buy
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
-      puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
-      puts_help(HELP_FEE) unless fee = __fee
-      puts_help(HELP_PRICE) unless price = __price
-      puts_help(HELP_DOMAIN) unless domain = __domain
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
+      puts_help(HELP_WALLET_PATH) unless wallet_path = G.op.__wallet_path
+      puts_help(HELP_FEE) unless fee = G.op.__fee
+      puts_help(HELP_PRICE) unless price = G.op.__price
+      puts_help(HELP_DOMAIN) unless domain = G.op.__domain
 
       Core::DApps::BuildIn::Scars.valid_domain?(domain)
 
       resolved = resolve_internal(node, domain, 1)
 
-      wallet = get_wallet(wallet_path, __wallet_password)
+      wallet = get_wallet(wallet_path, G.op.__wallet_password)
 
       senders = SendersDecimal.new
       senders.push({
@@ -110,11 +109,11 @@ module ::Sushi::Interface::Sushi
     end
 
     def sell
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
-      puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
-      puts_help(HELP_FEE) unless fee = __fee
-      puts_help(HELP_PRICE) unless price = __price
-      puts_help(HELP_DOMAIN) unless domain = __domain
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
+      puts_help(HELP_WALLET_PATH) unless wallet_path = G.op.__wallet_path
+      puts_help(HELP_FEE) unless fee = G.op.__fee
+      puts_help(HELP_PRICE) unless price = G.op.__price
+      puts_help(HELP_DOMAIN) unless domain = G.op.__domain
 
       resolved = resolve_internal(node, domain, 1)
 
@@ -124,7 +123,7 @@ module ::Sushi::Interface::Sushi
         raise "the domain #{domain} is already for sale"
       end
 
-      wallet = get_wallet(wallet_path, __wallet_password)
+      wallet = get_wallet(wallet_path, G.op.__wallet_password)
 
       senders = SendersDecimal.new
       senders.push({
@@ -146,10 +145,10 @@ module ::Sushi::Interface::Sushi
     end
 
     def cancel
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
-      puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
-      puts_help(HELP_FEE) unless fee = __fee
-      puts_help(HELP_DOMAIN) unless domain = __domain
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
+      puts_help(HELP_WALLET_PATH) unless wallet_path = G.op.__wallet_path
+      puts_help(HELP_FEE) unless fee = G.op.__fee
+      puts_help(HELP_DOMAIN) unless domain = G.op.__domain
 
       resolved = resolve_internal(node, domain, 1)
 
@@ -159,7 +158,7 @@ module ::Sushi::Interface::Sushi
         raise "the domain #{domain} is not for sale"
       end
 
-      wallet = get_wallet(wallet_path, __wallet_password)
+      wallet = get_wallet(wallet_path, G.op.__wallet_password)
 
       senders = SendersDecimal.new
       senders.push({
@@ -181,13 +180,13 @@ module ::Sushi::Interface::Sushi
     end
 
     def sales
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
 
       payload = {call: "scars_for_sale"}.to_json
 
       body = rpc(node, payload)
 
-      unless __json
+      unless G.op.__json
         puts_success "\n SCARS domains for sale!\n"
 
         puts "   %20s | %64s | %s" % ["Domain", "Address", "Price"]
@@ -204,12 +203,12 @@ module ::Sushi::Interface::Sushi
     end
 
     def resolve
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
-      puts_help(HELP_DOMAIN) unless domain = __domain
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
+      puts_help(HELP_DOMAIN) unless domain = G.op.__domain
 
-      resolved = resolve_internal(node, domain, __confirmation)
+      resolved = resolve_internal(node, domain, G.op.__confirmation)
 
-      unless __json
+      unless G.op.__json
         puts_success "show information of domain #{domain}"
         puts_success "resolved : #{resolved["resolved"]}"
 
@@ -229,7 +228,5 @@ module ::Sushi::Interface::Sushi
         puts resolved.to_json
       end
     end
-
-    include GlobalOptionParser
   end
 end

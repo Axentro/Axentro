@@ -19,7 +19,7 @@ module ::Sushi::Interface::SushiM
     end
 
     def option_parser
-      create_option_parser([
+      G.op.create_option_parser([
         Options::CONNECT_NODE,
         Options::WALLET_PATH,
         Options::WALLET_PASSWORD,
@@ -30,8 +30,8 @@ module ::Sushi::Interface::SushiM
     end
 
     def run_impl(action_name)
-      puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+      puts_help(HELP_WALLET_PATH) unless wallet_path = G.op.__wallet_path
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
 
       node_uri = URI.parse(node)
       use_ssl = (node_uri.scheme == "https")
@@ -39,16 +39,14 @@ module ::Sushi::Interface::SushiM
       puts_help(HELP_CONNECTING_NODE) unless host = node_uri.host
       puts_help(HELP_CONNECTING_NODE) unless port = node_uri.port
 
-      wallet = get_wallet(wallet_path, __wallet_password)
+      wallet = get_wallet(wallet_path, G.op.__wallet_password)
       wallet_is_testnet = (Core::Wallet.address_network_type(wallet.address)[:name] == "testnet")
 
-      raise "wallet type mismatch" if __is_testnet != wallet_is_testnet
+      raise "wallet type mismatch" if G.op.__is_testnet != wallet_is_testnet
 
-      miner = Core::Miner.new(__is_testnet, host, port, wallet, __processes, use_ssl)
+      miner = Core::Miner.new(G.op.__is_testnet, host, port, wallet, G.op.__processes, use_ssl)
       miner.run
     end
-
-    include GlobalOptionParser
   end
 end
 

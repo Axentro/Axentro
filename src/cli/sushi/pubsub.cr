@@ -17,7 +17,7 @@ module ::Sushi::Interface::Sushi
     end
 
     def option_parser
-      create_option_parser([
+      G.op.create_option_parser([
         Options::CONNECT_NODE,
         Options::JSON,
         Options::CONFIG_NAME,
@@ -33,14 +33,14 @@ module ::Sushi::Interface::Sushi
     end
 
     def run_impl(action_name)
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
 
       node_uri = URI.parse(node)
       use_ssl = (node_uri.scheme == "https")
 
       socket = HTTP::WebSocket.new(node_uri.host.not_nil!, "/pubsub", node_uri.port.not_nil!, use_ssl)
       socket.on_message do |message|
-        if __json
+        if G.op.__json
           puts message
         else
           block = Core::Block.from_json(message)
@@ -54,11 +54,9 @@ module ::Sushi::Interface::Sushi
         end
       end
 
-      puts_success "Start listening new blocks..." unless __json
+      puts_success "Start listening new blocks..." unless G.op.__json
 
       socket.run
     end
-
-    include GlobalOptionParser
   end
 end

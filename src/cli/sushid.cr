@@ -19,7 +19,7 @@ module ::Sushi::Interface::SushiD
     end
 
     def option_parser
-      create_option_parser([
+      G.op.create_option_parser([
         Options::CONNECT_NODE,
         Options::WALLET_PATH,
         Options::WALLET_PASSWORD,
@@ -34,10 +34,10 @@ module ::Sushi::Interface::SushiD
     end
 
     def run_impl(action_name)
-      puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
+      puts_help(HELP_WALLET_PATH) unless wallet_path = G.op.__wallet_path
 
-      unless __is_private
-        puts_help(HELP_PUBLIC_URL) unless public_url = __public_url
+      unless G.op.__is_private
+        puts_help(HELP_PUBLIC_URL) unless public_url = G.op.__public_url
 
         public_uri = URI.parse(public_url)
 
@@ -50,31 +50,30 @@ module ::Sushi::Interface::SushiD
       has_first_connection = false
       use_ssl = false
 
-      if connect_node = __connect_node
+      if connect_node = G.op.__connect_node
         connect_uri = URI.parse(connect_node)
         use_ssl = (connect_uri.scheme == "https")
         has_first_connection = !connect_uri.host.nil? && !connect_uri.port.nil?
       end
 
-      wallet = get_wallet(wallet_path, __wallet_password)
+      wallet = get_wallet(wallet_path, G.op.__wallet_password)
 
-      database = if database_path = __database_path
+      database = if database_path = G.op.__database_path
                    Core::Database.new(database_path)
                  else
                    nil
                  end
 
       node = if has_first_connection
-               Core::Node.new(__is_private, __is_testnet, __bind_host, __bind_port, public_host, public_port, ssl, connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, use_ssl)
+               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, use_ssl)
              else
-               Core::Node.new(__is_private, __is_testnet, __bind_host, __bind_port, public_host, public_port, ssl, nil, nil, wallet, database, use_ssl)
+               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, nil, nil, wallet, database, use_ssl)
              end
       node.run!
     end
 
     include Core::Protocol
     include Logger
-    include GlobalOptionParser
   end
 end
 

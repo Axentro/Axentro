@@ -11,7 +11,14 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Interface
-  module GlobalOptionParser
+  class GlobalOptionParser
+    @@instance : GlobalOptionParser? = nil
+
+    def self.op : GlobalOptionParser
+      @@instance ||= GlobalOptionParser.new
+      @@instance.not_nil!
+    end
+
     @connect_node : String?
     @wallet_path : String?
     @wallet_password : String?
@@ -353,7 +360,6 @@ module ::Sushi::Interface
       yield value
     rescue e : InvalidBigDecimalException
       puts_error "please supply valid decimal number: #{value}"
-      exit -1
     end
 
     private def with_string_config(name, var)
@@ -364,4 +370,7 @@ module ::Sushi::Interface
     include Logger
     include Common::Validator
   end
+
+  alias G = GlobalOptionParser
+  alias Options = G::Options
 end

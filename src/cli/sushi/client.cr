@@ -57,7 +57,7 @@ module ::Sushi::Interface::Sushi
     end
 
     def option_parser
-      create_option_parser([
+      G.op.create_option_parser([
         Options::CONNECT_NODE,
         Options::CONFIG_NAME,
         Options::WALLET_PATH,
@@ -70,11 +70,11 @@ module ::Sushi::Interface::Sushi
     end
 
     def run_impl(action_name)
-      puts_help(HELP_CONNECTING_NODE) unless @node = __connect_node
-      puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
-      puts_help(HELP_WALLET_MUST_BE_ENCRYPTED) unless encrypted?(wallet_path, __wallet_password)
+      puts_help(HELP_CONNECTING_NODE) unless @node = G.op.__connect_node
+      puts_help(HELP_WALLET_PATH) unless wallet_path = G.op.__wallet_path
+      puts_help(HELP_WALLET_MUST_BE_ENCRYPTED) unless encrypted?(wallet_path, G.op.__wallet_password)
 
-      @wallet = get_wallet(wallet_path, __wallet_password)
+      @wallet = get_wallet(wallet_path, G.op.__wallet_password)
 
       node_uri = URI.parse(@node.not_nil!)
       use_ssl = (node_uri.scheme == "https")
@@ -229,6 +229,5 @@ module ::Sushi::Interface::Sushi
     end
 
     include Core::Protocol
-    include GlobalOptionParser
   end
 end

@@ -38,7 +38,7 @@ module ::Sushi::Interface::Sushi
     end
 
     def option_parser
-      create_option_parser([
+      G.op.create_option_parser([
         Options::CONNECT_NODE,
         Options::WALLET_PATH,
         Options::WALLET_PASSWORD,
@@ -73,16 +73,16 @@ module ::Sushi::Interface::Sushi
     end
 
     def create
-      puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
+      puts_help(HELP_WALLET_PATH) unless wallet_path = G.op.__wallet_path
 
       wallet_path = wallet_path.ends_with?(".json") ? wallet_path : wallet_path + ".json"
 
       puts_help(HELP_WALLET_ALREADY_EXISTS % wallet_path) if File.exists?(wallet_path)
 
-      wallet = Core::Wallet.from_json(Core::Wallet.create(__is_testnet).to_json)
+      wallet = Core::Wallet.from_json(Core::Wallet.create(G.op.__is_testnet).to_json)
 
-      if __encrypted
-        puts_help(HELP_WALLET_PASSWORD) unless wallet_password = (__wallet_password || ENV["SC_WALLET_PASSWORD"]?)
+      if G.op.__encrypted
+        puts_help(HELP_WALLET_PASSWORD) unless wallet_password = (G.op.__wallet_password || ENV["SC_WALLET_PASSWORD"]?)
 
         encrypted_wallet = Core::Wallet.encrypt(wallet_password, wallet)
 
@@ -91,7 +91,7 @@ module ::Sushi::Interface::Sushi
         File.write(wallet_path, wallet.to_json)
       end
 
-      unless __json
+      unless G.op.__json
         puts_success("your new wallet has been created at #{wallet_path}")
         puts_success("please take backup of the json file and keep it secret.")
       else
@@ -100,9 +100,9 @@ module ::Sushi::Interface::Sushi
     end
 
     def verify
-      puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
+      puts_help(HELP_WALLET_PATH) unless wallet_path = G.op.__wallet_path
 
-      wallet = get_wallet(wallet_path, __wallet_password)
+      wallet = get_wallet(wallet_path, G.op.__wallet_password)
 
       puts_success "#{wallet_path} is perfect!" if wallet.verify!
       puts_success "address: #{wallet.address}"
@@ -112,8 +112,8 @@ module ::Sushi::Interface::Sushi
     end
 
     def encrypt
-      puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
-      puts_help(HELP_WALLET_PASSWORD) unless wallet_password = __wallet_password
+      puts_help(HELP_WALLET_PATH) unless wallet_path = G.op.__wallet_path
+      puts_help(HELP_WALLET_PASSWORD) unless wallet_password = G.op.__wallet_password
 
       encrypted_wallet_json = Core::Wallet.encrypt(wallet_password, wallet_path).to_json
       encrypted_wallet_path = File.dirname(wallet_path) + "/encrypted-" + File.basename(wallet_path)
@@ -122,7 +122,7 @@ module ::Sushi::Interface::Sushi
 
       File.write(encrypted_wallet_path, encrypted_wallet_json)
 
-      unless __json
+      unless G.op.__json
         puts_success("your wallet has been encrypted at #{encrypted_wallet_path}")
         puts_success("please don't forget your password - there is no way to recover an encrypted wallet.")
       else
@@ -131,8 +131,8 @@ module ::Sushi::Interface::Sushi
     end
 
     def decrypt
-      puts_help(HELP_WALLET_PATH) unless wallet_path = __wallet_path
-      puts_help(HELP_WALLET_PASSWORD) unless wallet_password = __wallet_password
+      puts_help(HELP_WALLET_PATH) unless wallet_path = G.op.__wallet_path
+      puts_help(HELP_WALLET_PASSWORD) unless wallet_password = G.op.__wallet_password
 
       decrypted_wallet_json = Core::Wallet.decrypt(wallet_password, wallet_path)
       decrypted_wallet_path = File.dirname(wallet_path) + "/decrypted-" + File.basename(wallet_path)
@@ -141,7 +141,7 @@ module ::Sushi::Interface::Sushi
 
       File.write(decrypted_wallet_path, decrypted_wallet_json)
 
-      unless __json
+      unless G.op.__json
         puts_success("your wallet has been decrypted at #{decrypted_wallet_path}")
       else
         puts decrypted_wallet_json
@@ -149,36 +149,36 @@ module ::Sushi::Interface::Sushi
     end
 
     def amount
-      puts_help(HELP_WALLET_PATH_OR_ADDRESS_OR_DOMAIN) if __wallet_path.nil? && __address.nil? && __domain.nil?
-      puts_help(HELP_CONNECTING_NODE) unless node = __connect_node
+      puts_help(HELP_WALLET_PATH_OR_ADDRESS_OR_DOMAIN) if G.op.__wallet_path.nil? && G.op.__address.nil? && G.op.__domain.nil?
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
 
-      token = if _token = __token
+      token = if _token = G.op.__token
                 _token
               else
                 "all"
               end
 
-      address = if wallet_path = __wallet_path
-                  wallet = get_wallet(wallet_path, __wallet_password)
+      address = if wallet_path = G.op.__wallet_path
+                  wallet = get_wallet(wallet_path, G.op.__wallet_password)
                   wallet.address
-                elsif _address = __address
+                elsif _address = G.op.__address
                   _address
-                elsif _domain = __domain
-                  resolved = resolve_internal(node, _domain, __confirmation)
+                elsif _domain = G.op.__domain
+                  resolved = resolve_internal(node, _domain, G.op.__confirmation)
                   raise "domain #{_domain} is not resolved" unless resolved["resolved"].as_bool
                   resolved["domain"]["address"].as_s
                 else
                   puts_help(HELP_WALLET_PATH_OR_ADDRESS_OR_DOMAIN)
                 end
 
-      payload = {call: "amount", address: address, confirmation: __confirmation, token: token}.to_json
+      payload = {call: "amount", address: address, confirmation: G.op.__confirmation, token: token}.to_json
 
       body = rpc(node, payload)
       json = JSON.parse(body)
 
-      unless __json
+      unless G.op.__json
         puts_success("\n  showing amount of each token for #{address}.")
-        puts_success("  confirmation: #{__confirmation}\n")
+        puts_success("  confirmation: #{G.op.__confirmation}\n")
 
         puts_info("  + %20s - %20s +" % ["-" * 20, "-" * 20])
         puts_info("  | %20s | %20s |" % ["token", "amount"])
@@ -197,7 +197,5 @@ module ::Sushi::Interface::Sushi
         puts body
       end
     end
-
-    include GlobalOptionParser
   end
 end
