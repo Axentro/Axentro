@@ -55,8 +55,11 @@ module ::Sushi::Core::Consensus
   def block_difficulty(timestamp : Int64, block : Block, block_averages : Array(Int64)) : Int32
     return 3 if ENV.has_key?("SC_E2E") # for e2e test
     return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
-    return 1 if block_averages.size < 2 
+    return 1 if block_averages.size < 2
 
+    elapsed_block = timestamp - block.timestamp
+    block_averages.push(elapsed_block)
+    block_averages = block_averages.select {|a| a > 0_i64}
     block_average = block_averages.reduce { |a, b| a + b } / block_averages.size
 
     if block_average > BLOCK_TARGET_UPPER
