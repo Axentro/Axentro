@@ -49,19 +49,29 @@ module ::Sushi::Core::Consensus
     valid_scryptn?(block_hash, nonce, difficulty)
   end
 
-  BASE_TIME = 300.0
-  MIN_DIFF  =     3
+  BLOCK_TARGET_LOWER = 10_i64
+  BLOCK_TARGET_UPPER = 40_i64
 
-  def block_difficulty(timestamp : Int64, block : Block) : Int32
-    return MIN_DIFF if ENV.has_key?("SC_E2E") # for e2e test
+  def block_difficulty(timestamp : Int64, block : Block, block_averages : Array(Int64)) : Int32
+    return 3 if ENV.has_key?("SC_E2E") # for e2e test
     return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
+    return 1 if block_averages.size < 2 
 
-    ratio = (timestamp - block.timestamp).to_f / BASE_TIME
+    block_average = block_averages.reduce { |a, b| a + b } / block_averages.size
 
-    return block.next_difficulty + 1 if ratio < 0.1
-    return Math.max(Math.max(block.next_difficulty - 2, 1), MIN_DIFF) if ratio > 100.0
-    return Math.max(Math.max(block.next_difficulty - 1, 1), MIN_DIFF) if ratio > 10.0
-
+    if block_average > BLOCK_TARGET_UPPER
+      new_difficulty = Math.max(block.next_difficulty - 1, 1)
+      info "reducing difficulty from '#{block.next_difficulty}' to '#{new_difficulty}' with block average of (#{block_average} secs)"
+      new_difficulty
+    elsif block_average < BLOCK_TARGET_LOWER
+      new_difficulty = block.next_difficulty + 1
+      info "increasing difficulty from '#{block.next_difficulty}' to '#{new_difficulty}' with block average of (#{block_average} secs)"
+      new_difficulty
+    else
+      info "maintaining block difficulty at '#{block.next_difficulty}' with block average: (#{block_average} secs)"
+      block.next_difficulty
+    end
+  rescue Enumerable::EmptyError
     block.next_difficulty
   end
 

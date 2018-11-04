@@ -111,6 +111,15 @@ module ::Sushi::Core
       Math.max(mining_block_difficulty - 1, 1)
     end
 
+    def average_block_generation(amount : Int = 1008) : Array(Int64)
+      averages = [] of Int64
+      if @chain.size > 2
+        @chain.last(amount).map {|b| b.timestamp }.each_cons(2){|n| averages.push(n.last - n.first)}
+        averages.delete_at(0)
+      end
+      averages
+    end
+
     def push_block(block : Block)
       @chain.push(block)
 
@@ -271,7 +280,7 @@ module ::Sushi::Core
 
       transactions = align_transactions(coinbase_transaction, coinbase_amount)
       timestamp = __timestamp
-      difficulty = block_difficulty(timestamp, latest_block)
+      difficulty = block_difficulty(timestamp, latest_block, average_block_generation)
 
       @mining_block = Block.new(
         latest_index + 1,
