@@ -64,7 +64,7 @@ module ::Sushi::Core::Consensus
     elapsed_block = timestamp - block.timestamp
     block_average = block_averages.push(elapsed_block).reduce { |a, b| a + b } / block_averages.size
 
-    current_target = block_averages.size > BLOCK_AVERAGE_LIMIT ? block_average : elapsed_block
+    current_target = block_averages.size > 10 ? block_average : elapsed_block
 
     if current_target > BLOCK_TARGET_UPPER
       new_difficulty = Math.max(block.next_difficulty - 1, 1)

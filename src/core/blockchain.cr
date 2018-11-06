@@ -59,8 +59,8 @@ module ::Sushi::Core
     end
 
     def restore_from_database(database : Database)
-      info "start loding blockchain from #{database.path}"
-      info "there are #{database.max_index + 1} blockes recorded"
+      info "start loading blockchain from #{database.path}"
+      info "there are #{database.max_index + 1} blocks recorded"
 
       current_index = 0_i64
 
