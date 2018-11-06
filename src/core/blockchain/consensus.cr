@@ -12,11 +12,11 @@
 
 module ::Sushi::Core::Consensus
   # SHA256 Implementation
-  def valid_sha256?(block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
-    guess_nonce = "#{block_hash}#{nonce}"
-    guess_hash = sha256(guess_nonce)
-    guess_hash[0, difficulty] == "0" * difficulty
-  end
+  # def valid_sha256?(block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
+  #   guess_nonce = "#{block_hash}#{nonce}"
+  #   guess_hash = sha256(guess_nonce)
+  #   guess_hash[0, difficulty] == "0" * difficulty
+  # end
 
   N = 1 << 16
   R =   1
@@ -41,7 +41,9 @@ module ::Sushi::Core::Consensus
 
     raise "LibScrypt throws an error: #{res}" unless res == 0
 
-    buffer.hexstring[0, difficulty] == "0" * difficulty
+    bits = buffer.flat_map { |b| (0..7).map {|n| b.bit(n) }.reverse }
+
+    bits[0, difficulty].join("") == "0" * difficulty
   end
 
   def valid_nonce?(block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
@@ -49,22 +51,34 @@ module ::Sushi::Core::Consensus
     valid_scryptn?(block_hash, nonce, difficulty)
   end
 
-  BLOCK_TARGET_LOWER = 10_i64
-  BLOCK_TARGET_UPPER = 40_i64
+  BLOCK_TARGET = 40_i64
+  BLOCK_AVERAGE_LIMIT = 1008
 
   def block_difficulty(timestamp : Int64, block : Block, block_averages : Array(Int64)) : Int32
     return 3 if ENV.has_key?("SC_E2E") # for e2e test
     return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
-    return 1 if block_averages.size < 2
-
+    return 10 unless block_averages.size > 0
     block_averages = block_averages.select {|a| a > 0_i64}
-    block_average = block_averages.reduce { |a, b| a + b } / block_averages.size
 
-    if block_average > BLOCK_TARGET_UPPER
+    p block_averages
+
+    p timestamp - block.timestamp
+
+    # block_average = if block_averages.size < BLOCK_AVERAGE_LIMIT
+      # block_average = block_averages.reduce { |a, b| a + b } / block_averages.size
+    # else
+      block_average = timestamp - block.timestamp
+    # end
+
+    if block_average > BLOCK_TARGET
+      value = block_averages.size < BLOCK_AVERAGE_LIMIT ? (block_average.to_f / BLOCK_TARGET.to_f).ceil.to_i : 1
+      # ratio = (block_average.to_f / BLOCK_TARGET.to_f).ceil.to_i
       new_difficulty = Math.max(block.next_difficulty - 1, 1)
       info "reducing difficulty from '#{block.next_difficulty}' to '#{new_difficulty}' with block average of (#{block_average} secs)"
       new_difficulty
-    elsif block_average < BLOCK_TARGET_LOWER
+    elsif block_average < BLOCK_TARGET
+      value = block_averages.size < BLOCK_AVERAGE_LIMIT ? (BLOCK_TARGET.to_f / block_average.to_f ).ceil.to_i : 1
+      # ratio = (BLOCK_TARGET.to_f / block_average.to_f ).ceil.to_i
       new_difficulty = block.next_difficulty + 1
       info "increasing difficulty from '#{block.next_difficulty}' to '#{new_difficulty}' with block average of (#{block_average} secs)"
       new_difficulty

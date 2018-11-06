@@ -108,10 +108,11 @@ module ::Sushi::Core
     end
 
     def mining_block_difficulty_miner : Int32
-      Math.max(mining_block_difficulty - 1, 1)
+      value = (mining_block_difficulty.to_f / 3).ceil.to_i
+      Math.max(mining_block_difficulty - value, 1)
     end
 
-    def average_block_generation(amount : Int = 1008) : Array(Int64)
+    def average_block_generation(amount : Int = Consensus::BLOCK_AVERAGE_LIMIT) : Array(Int64)
       averages = [] of Int64
       if @chain.size > 2
         @chain.last(amount).map {|b| b.timestamp }.each_cons(2){|n| averages.push(n.last - n.first)}
@@ -229,7 +230,7 @@ module ::Sushi::Core
       genesis_nonce = 0_u64
       genesis_prev_hash = "genesis"
       genesis_timestamp = 0_i64
-      genesis_difficulty = 3
+      genesis_difficulty = 10
 
       Block.new(
         genesis_index,

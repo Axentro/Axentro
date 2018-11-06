@@ -116,7 +116,7 @@ module ::Sushi::Core::NodeComponents
     end
 
     def broadcast
-      debug "new block difficulty: #{@blockchain.mining_block_difficulty}, " +
+      info "new block difficulty: #{@blockchain.mining_block_difficulty}, " +
             "mining difficulty: #{@blockchain.mining_block_difficulty_miner}"
 
       @miners.each do |miner|
