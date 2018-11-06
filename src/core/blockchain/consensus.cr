@@ -59,10 +59,12 @@ module ::Sushi::Core::Consensus
     return 3 if ENV.has_key?("SC_E2E") # for e2e test
     return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
     return 10 unless block_averages.size > 0
-    block_averages = block_averages.select {|a| a > 0_i64}
+    block_averages = block_averages.select {|a| a > 0_i64 || a < 60_i64}
+
+    p block_averages
 
     elapsed_block = timestamp - block.timestamp
-    block_average = block_averages.push(elapsed_block).reduce { |a, b| a + b } / block_averages.size
+    block_average = block_averages.reduce { |a, b| a + b } / block_averages.size
 
     current_target = block_averages.size > 10 ? block_average : elapsed_block
 
