@@ -114,8 +114,10 @@ module ::Sushi::Core
     end
 
     def push_block_average(avg : Int64)
-      @block_averages.shift if block_averages.size > Consensus::BLOCK_AVERAGE_LIMIT
       @block_averages.push(avg)
+      if block_averages.size > Consensus::BLOCK_AVERAGE_LIMIT + 10
+        @block_averages.shift
+      end
     end
 
     def block_averages

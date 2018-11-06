@@ -46,7 +46,7 @@ module ::Sushi::Core::Consensus
 
   BLOCK_TARGET_LOWER  = 10_i64
   BLOCK_TARGET_UPPER  = 40_i64
-  BLOCK_AVERAGE_LIMIT =    108
+  BLOCK_AVERAGE_LIMIT =    720
 
   def block_difficulty(timestamp : Int64, elapsed_block_time : Int64, block : Block, block_averages : Array(Int64)) : Int32
     return 3 if ENV.has_key?("SC_E2E") # for e2e test
@@ -56,14 +56,14 @@ module ::Sushi::Core::Consensus
     block_averages.delete_at(0) if block_averages.size > 0
     return 10 unless block_averages.size > 0
 
-    info "elapsed block time was: #{elapsed_block_time} secs"
+    debug "elapsed block time was: #{elapsed_block_time} secs"
 
     block_average = block_averages.reduce { |a, b| a + b } / block_averages.size
     current_target = if block_averages.size < BLOCK_AVERAGE_LIMIT
-                       info "using elapsed block time as block averages: #{block_averages.size} is less than cache limit: #{BLOCK_AVERAGE_LIMIT}"
+                       debug "using elapsed block time as block averages: #{block_averages.size} is less than cache limit: #{BLOCK_AVERAGE_LIMIT}"
                        elapsed_block_time
                      else
-                       info "using block average time as block averages: #{block_averages.size} has reached cache limit: #{BLOCK_AVERAGE_LIMIT}"
+                       debug "using block average time as block averages: #{block_averages.size} has exceeded cache limit: #{BLOCK_AVERAGE_LIMIT}"
                        block_average
                      end
 

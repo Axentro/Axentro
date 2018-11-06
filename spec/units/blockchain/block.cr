@@ -74,7 +74,7 @@ describe Block do
         chain = block_factory.addBlocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
-        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 1_i32)
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 10_i32)
         block.valid_as_latest?(block_factory.blockchain, false).should be_true
       end
     end
@@ -138,7 +138,7 @@ describe Block do
         chain = block_factory.addBlocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp - 10000000
-        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 1_i32)
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 10_i32)
 
         expect_raises(Exception, /timestamp is invalid:/) do
           block.valid_as_latest?(block_factory.blockchain, false)
@@ -151,7 +151,7 @@ describe Block do
         chain = block_factory.addBlocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp + 10000000
-        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 1_i32)
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 10_i32)
 
         expect_raises(Exception, /timestamp is invalid:/) do
           block.valid_as_latest?(block_factory.blockchain, false)
@@ -166,7 +166,7 @@ describe Block do
         timestamp = chain[1].timestamp
         block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 99_i32)
 
-        expect_raises(Exception, "next_difficulty is invalid (expected 1 but got 99)") do
+        expect_raises(Exception, "next_difficulty is invalid (expected 10 but got 99)") do
           block.valid_as_latest?(block_factory.blockchain, false)
         end
       end
@@ -177,7 +177,7 @@ describe Block do
         chain = block_factory.addBlocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
-        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 1_i32)
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 10_i32)
         block.merkle_tree_root = "invalid"
         expect_raises(Exception, "invalid merkle tree root (expected invalid but got d91329bca593bbae22fb70b7f450b4748002ac65)") do
           block.valid_as_latest?(block_factory.blockchain, false)
@@ -233,7 +233,7 @@ describe Block do
         chain = block_factory.blockchain.chain
         block = chain.first
         block.next_difficulty = 99
-        expect_raises(Exception, "next_difficulty has to be '3' for genesis block: 99") do
+        expect_raises(Exception, "next_difficulty has to be '10' for genesis block: 99") do
           block.valid?(block_factory.blockchain, false)
         end
       end
