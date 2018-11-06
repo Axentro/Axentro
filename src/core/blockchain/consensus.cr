@@ -11,13 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::Consensus
-  # SHA256 Implementation
-  # def valid_sha256?(block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
-  #   guess_nonce = "#{block_hash}#{nonce}"
-  #   guess_hash = sha256(guess_nonce)
-  #   guess_hash[0, difficulty] == "0" * difficulty
-  # end
-
   N = 1 << 16
   R =   1
   P =   1
@@ -41,7 +34,7 @@ module ::Sushi::Core::Consensus
 
     raise "LibScrypt throws an error: #{res}" unless res == 0
 
-    bits = buffer.flat_map { |b| (0..7).map {|n| b.bit(n) }.reverse }
+    bits = buffer.flat_map { |b| (0..7).map { |n| b.bit(n) }.reverse }
 
     bits[0, difficulty].join("") == "0" * difficulty
   end
@@ -51,24 +44,28 @@ module ::Sushi::Core::Consensus
     valid_scryptn?(block_hash, nonce, difficulty)
   end
 
-  BLOCK_TARGET_LOWER = 10_i64
-  BLOCK_TARGET_UPPER = 40_i64
-  BLOCK_AVERAGE_LIMIT = 108
+  BLOCK_TARGET_LOWER  = 10_i64
+  BLOCK_TARGET_UPPER  = 40_i64
+  BLOCK_AVERAGE_LIMIT =    108
 
   def block_difficulty(timestamp : Int64, elapsed_block_time : Int64, block : Block, block_averages : Array(Int64)) : Int32
     return 3 if ENV.has_key?("SC_E2E") # for e2e test
     return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
 
-    block_averages = block_averages.select {|a| a > 0_i64}
+    block_averages = block_averages.select { |a| a > 0_i64 }
     block_averages.delete_at(0) if block_averages.size > 0
     return 10 unless block_averages.size > 0
-
-    p block_averages
 
     info "elapsed block time was: #{elapsed_block_time} secs"
 
     block_average = block_averages.reduce { |a, b| a + b } / block_averages.size
-    current_target = block_averages.size > BLOCK_AVERAGE_LIMIT ? block_average : elapsed_block_time
+    current_target = if block_averages.size < BLOCK_AVERAGE_LIMIT
+                       info "using elapsed block time as block averages: #{block_averages.size} is less than cache limit: #{BLOCK_AVERAGE_LIMIT}"
+                       elapsed_block_time
+                     else
+                       info "using block average time as block averages: #{block_averages.size} has reached cache limit: #{BLOCK_AVERAGE_LIMIT}"
+                       block_average
+                     end
 
     if current_target > BLOCK_TARGET_UPPER
       new_difficulty = Math.max(block.next_difficulty - 1, 1)
