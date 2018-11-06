@@ -33,6 +33,7 @@ module ::Sushi::Core
 
     @node : Node?
     @mining_block : Block?
+    @block_averages : Array(Int64) = [] of Int64
 
     def initialize(@wallet : Wallet, @database : Database? = nil)
       initialize_dapps
@@ -112,13 +113,13 @@ module ::Sushi::Core
       Math.max(mining_block_difficulty - value, 1)
     end
 
-    def average_block_generation(amount : Int = Consensus::BLOCK_AVERAGE_LIMIT) : Array(Int64)
-      averages = [] of Int64
-      if @chain.size > 2
-        @chain.last(amount).map {|b| b.timestamp }.each_cons(2){|n| averages.push(n.last - n.first)}
-        averages.delete_at(0)
-      end
-      averages
+    def push_block_average(avg : Int64)
+      @block_averages.shift if block_averages.size > Consensus::BLOCK_AVERAGE_LIMIT
+      @block_averages.push(avg)
+    end
+
+    def block_averages
+      @block_averages
     end
 
     def push_block(block : Block)
@@ -281,7 +282,11 @@ module ::Sushi::Core
 
       transactions = align_transactions(coinbase_transaction, coinbase_amount)
       timestamp = __timestamp
-      difficulty = block_difficulty(timestamp, latest_block, average_block_generation)
+
+      elapsed_block_time = timestamp - latest_block.timestamp
+
+      push_block_average(elapsed_block_time)
+      difficulty = block_difficulty(timestamp, elapsed_block_time, latest_block, block_averages)
 
       @mining_block = Block.new(
         latest_index + 1,

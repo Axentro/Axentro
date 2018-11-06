@@ -53,20 +53,22 @@ module ::Sushi::Core::Consensus
 
   BLOCK_TARGET_LOWER = 10_i64
   BLOCK_TARGET_UPPER = 40_i64
-  BLOCK_AVERAGE_LIMIT = 1008
+  BLOCK_AVERAGE_LIMIT = 108
 
-  def block_difficulty(timestamp : Int64, block : Block, block_averages : Array(Int64)) : Int32
+  def block_difficulty(timestamp : Int64, elapsed_block_time : Int64, block : Block, block_averages : Array(Int64)) : Int32
     return 3 if ENV.has_key?("SC_E2E") # for e2e test
     return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
+
+    block_averages = block_averages.select {|a| a > 0_i64}
+    block_averages.delete_at(0) if block_averages.size > 0
     return 10 unless block_averages.size > 0
-    block_averages = block_averages.select {|a| a > 0_i64 || a < 60_i64}
 
     p block_averages
 
-    elapsed_block = timestamp - block.timestamp
-    block_average = block_averages.reduce { |a, b| a + b } / block_averages.size
+    info "elapsed block time was: #{elapsed_block_time} secs"
 
-    current_target = block_averages.size > 10 ? block_average : elapsed_block
+    block_average = block_averages.reduce { |a, b| a + b } / block_averages.size
+    current_target = block_averages.size > BLOCK_AVERAGE_LIMIT ? block_average : elapsed_block_time
 
     if current_target > BLOCK_TARGET_UPPER
       new_difficulty = Math.max(block.next_difficulty - 1, 1)
