@@ -51,7 +51,8 @@ module ::Sushi::Core::Consensus
     valid_scryptn?(block_hash, nonce, difficulty)
   end
 
-  BLOCK_TARGET = 40_i64
+  BLOCK_TARGET_LOWER = 10_i64
+  BLOCK_TARGET_UPPER = 40_i64
   BLOCK_AVERAGE_LIMIT = 1008
 
   def block_difficulty(timestamp : Int64, block : Block, block_averages : Array(Int64)) : Int32
@@ -60,25 +61,16 @@ module ::Sushi::Core::Consensus
     return 10 unless block_averages.size > 0
     block_averages = block_averages.select {|a| a > 0_i64}
 
-    p block_averages
+    elapsed_block = timestamp - block.timestamp
+    block_average = block_averages.push(elapsed_block).reduce { |a, b| a + b } / block_averages.size
 
-    p timestamp - block.timestamp
+    current_target = block_averages.size > BLOCK_AVERAGE_LIMIT ? block_average : elapsed_block
 
-    # block_average = if block_averages.size < BLOCK_AVERAGE_LIMIT
-      # block_average = block_averages.reduce { |a, b| a + b } / block_averages.size
-    # else
-      block_average = timestamp - block.timestamp
-    # end
-
-    if block_average > BLOCK_TARGET
-      value = block_averages.size < BLOCK_AVERAGE_LIMIT ? (block_average.to_f / BLOCK_TARGET.to_f).ceil.to_i : 1
-      # ratio = (block_average.to_f / BLOCK_TARGET.to_f).ceil.to_i
+    if current_target > BLOCK_TARGET_UPPER
       new_difficulty = Math.max(block.next_difficulty - 1, 1)
       info "reducing difficulty from '#{block.next_difficulty}' to '#{new_difficulty}' with block average of (#{block_average} secs)"
       new_difficulty
-    elsif block_average < BLOCK_TARGET
-      value = block_averages.size < BLOCK_AVERAGE_LIMIT ? (BLOCK_TARGET.to_f / block_average.to_f ).ceil.to_i : 1
-      # ratio = (BLOCK_TARGET.to_f / block_average.to_f ).ceil.to_i
+    elsif current_target < BLOCK_TARGET_LOWER
       new_difficulty = block.next_difficulty + 1
       info "increasing difficulty from '#{block.next_difficulty}' to '#{new_difficulty}' with block average of (#{block_average} secs)"
       new_difficulty
