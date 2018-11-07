@@ -54,7 +54,6 @@ module ::Sushi::Core::Consensus
 
     block_averages = block_averages.select { |a| a > 0_i64 }
     block_averages.delete_at(0) if block_averages.size > 0
-    # return 10 unless block_averages.size > 0
 
     debug "elapsed block time was: #{elapsed_block_time} secs"
 
