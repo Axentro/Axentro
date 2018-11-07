@@ -167,7 +167,7 @@ describe Block do
         timestamp = chain[1].timestamp
         block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 99_i32)
 
-        expect_raises(Exception, "next_difficulty is invalid (expected 0 but got 99)") do
+        expect_raises(Exception, /next_difficulty is invalid/) do
           block.valid_as_latest?(block_factory.blockchain, false)
         end
       end
