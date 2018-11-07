@@ -3,6 +3,7 @@ version: 0.1.0
 
 authors:
   - tbrand <taichiro0709@gmail.com>
+  - kingsleyh <kingsley.hendrickse@gmail.com>
 
 scripts:
   postinstall: cd ext && make
@@ -27,6 +28,6 @@ dependencies:
   scrypt:
     github: ysbaddaden/scrypt-crystal
 
-crystal: 0.24.1
+crystal: 0.27.0
 
 license: MIT
