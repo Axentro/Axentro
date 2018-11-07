@@ -36,12 +36,6 @@ describe Consensus do
       current_env = ENV["SC_SET_DIFFICULTY"]?
       ENV.delete("SC_SET_DIFFICULTY")
 
-      it "should return 10 when block averages are empty" do
-        block = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 0_i64, 20_i32)
-        block_times = [] of Int64
-        block_difficulty(100000_i64, 10_i64, block, block_times).should eq(10)
-      end
-
       describe "when using elapsed block time (before block averages are built)" do
         it "should maintain difficulty when average block time is within lower and upper bounds (10 secs -> 40 secs)" do
           block = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 0_i64, 20_i32)
