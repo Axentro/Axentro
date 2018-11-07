@@ -73,6 +73,7 @@ module ::Sushi::Core
 
         @chain.push(block)
 
+        refresh_mining_block
         dapps_record
 
         current_index += 1
@@ -80,11 +81,12 @@ module ::Sushi::Core
         progress "block ##{current_index} was imported", current_index, database.max_index
       end
     rescue e : Exception
-      error "an error happens during restoring a blockchain from database"
+      error "Error could not restore blockchain from database"
       error e.message.not_nil! if e.message
       warning "removing invalid blocks from database"
       database.delete_blocks(current_index.not_nil!)
     ensure
+      clean_block_averages
       push_genesis if @chain.size == 0
     end
 
@@ -122,6 +124,10 @@ module ::Sushi::Core
 
     def block_averages
       @block_averages
+    end
+
+    def clean_block_averages
+      @block_averages = [] of Int64
     end
 
     def push_block(block : Block)

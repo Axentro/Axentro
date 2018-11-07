@@ -54,7 +54,7 @@ module ::Sushi::Core::Consensus
 
     block_averages = block_averages.select { |a| a > 0_i64 }
     block_averages.delete_at(0) if block_averages.size > 0
-    return 10 unless block_averages.size > 0
+    # return 10 unless block_averages.size > 0
 
     debug "elapsed block time was: #{elapsed_block_time} secs"
 
@@ -69,14 +69,14 @@ module ::Sushi::Core::Consensus
 
     if current_target > BLOCK_TARGET_UPPER
       new_difficulty = Math.max(block.next_difficulty - 1, 1)
-      info "reducing difficulty from '#{block.next_difficulty}' to '#{new_difficulty}' with block average of (#{block_average} secs)"
+      debug "reducing difficulty from '#{block.next_difficulty}' to '#{new_difficulty}' with block average of (#{block_average} secs)"
       new_difficulty
     elsif current_target < BLOCK_TARGET_LOWER
       new_difficulty = block.next_difficulty + 1
-      info "increasing difficulty from '#{block.next_difficulty}' to '#{new_difficulty}' with block average of (#{block_average} secs)"
+      debug "increasing difficulty from '#{block.next_difficulty}' to '#{new_difficulty}' with block average of (#{block_average} secs)"
       new_difficulty
     else
-      info "maintaining block difficulty at '#{block.next_difficulty}' with block average: (#{block_average} secs)"
+      debug "maintaining block difficulty at '#{block.next_difficulty}' with block average: (#{block_average} secs)"
       block.next_difficulty
     end
   rescue Enumerable::EmptyError
