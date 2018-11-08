@@ -49,7 +49,7 @@ module ::Sushi::Core::Consensus
   BLOCK_AVERAGE_LIMIT =    720
 
   def block_difficulty(timestamp : Int64, elapsed_block_time : Int64, block : Block, block_averages : Array(Int64)) : Int32
-    return 3 if ENV.has_key?("SC_E2E") # for e2e test
+    return 10 if ENV.has_key?("SC_E2E") # for e2e test
     return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
 
     block_averages = block_averages.select { |a| a > 0_i64 }
