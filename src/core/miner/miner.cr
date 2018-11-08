@@ -95,7 +95,7 @@ module ::Sushi::Core
       block = _m_content.block
       difficulty = _m_content.difficulty
 
-      info "#{magenta("MINED BLOCK")}: #{light_green(block.index)} at chain difficulty: #{light_cyan(block.next_difficulty - 1)} with miner difficulty: #{light_cyan(difficulty)}"
+      info "#{magenta("UPDATED BLOCK")}: #{light_green(block.index)} at chain difficulty: #{light_cyan(block.next_difficulty - 1)} with miner difficulty: #{light_cyan(difficulty)}"
 
       debug "set difficulty: #{light_cyan(difficulty)}"
       debug "set block: #{light_green(block.index)}"
