@@ -115,9 +115,9 @@ module ::Sushi::Core
               "(timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
       end
 
-      if @next_difficulty != block_difficulty(@timestamp, prev_block)
+      if @next_difficulty != block_difficulty(@timestamp, (@timestamp - prev_timestamp), prev_block, blockchain.block_averages)
         raise "next_difficulty is invalid " +
-              "(expected #{block_difficulty(@timestamp, prev_block)} but got #{@next_difficulty})"
+              "(expected #{block_difficulty(@timestamp, (@timestamp - prev_timestamp), prev_block, blockchain.block_averages)} but got #{@next_difficulty})"
       end
 
       merkle_tree_root = calcluate_merkle_tree_root
@@ -134,7 +134,7 @@ module ::Sushi::Core
       raise "transactions have to be empty for genesis block: #{@transactions}" if !@transactions.empty?
       raise "nonce has to be '0' for genesis block: #{@nonce}" if @nonce != 0
       raise "prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
-      raise "next_difficulty has to be '3' for genesis block: #{@next_difficulty}" if @next_difficulty != 3
+      raise "next_difficulty has to be '10' for genesis block: #{@next_difficulty}" if @next_difficulty != 10
       raise "timestamp has to be '0' for genesis block: #{@timestamp}" if @timestamp != 0
 
       true

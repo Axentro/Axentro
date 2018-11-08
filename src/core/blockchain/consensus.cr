@@ -11,13 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::Consensus
-  # SHA256 Implementation
-  def valid_sha256?(block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
-    guess_nonce = "#{block_hash}#{nonce}"
-    guess_hash = sha256(guess_nonce)
-    guess_hash[0, difficulty] == "0" * difficulty
-  end
-
   N = 1 << 16
   R =   1
   P =   1
@@ -41,7 +34,9 @@ module ::Sushi::Core::Consensus
 
     raise "LibScrypt throws an error: #{res}" unless res == 0
 
-    buffer.hexstring[0, difficulty] == "0" * difficulty
+    bits = buffer.flat_map { |b| (0..7).map { |n| b.bit(n) }.reverse }
+
+    bits[0, difficulty].join("") == "0" * difficulty
   end
 
   def valid_nonce?(block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
@@ -49,19 +44,41 @@ module ::Sushi::Core::Consensus
     valid_scryptn?(block_hash, nonce, difficulty)
   end
 
-  BASE_TIME = 300.0
-  MIN_DIFF  =     3
+  BLOCK_TARGET_LOWER  = 10_i64
+  BLOCK_TARGET_UPPER  = 40_i64
+  BLOCK_AVERAGE_LIMIT =    720
 
-  def block_difficulty(timestamp : Int64, block : Block) : Int32
-    return MIN_DIFF if ENV.has_key?("SC_E2E") # for e2e test
+  def block_difficulty(timestamp : Int64, elapsed_block_time : Int64, block : Block, block_averages : Array(Int64)) : Int32
+    return 10 if ENV.has_key?("SC_E2E") # for e2e test
     return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
 
-    ratio = (timestamp - block.timestamp).to_f / BASE_TIME
+    block_averages = block_averages.select { |a| a > 0_i64 }
+    block_averages.delete_at(0) if block_averages.size > 0
 
-    return block.next_difficulty + 1 if ratio < 0.1
-    return Math.max(Math.max(block.next_difficulty - 2, 1), MIN_DIFF) if ratio > 100.0
-    return Math.max(Math.max(block.next_difficulty - 1, 1), MIN_DIFF) if ratio > 10.0
+    debug "elapsed block time was: #{elapsed_block_time} secs"
 
+    block_average = block_averages.reduce { |a, b| a + b } / block_averages.size
+    current_target = if block_averages.size < BLOCK_AVERAGE_LIMIT
+                       debug "using elapsed block time as block averages: #{block_averages.size} is less than cache limit: #{BLOCK_AVERAGE_LIMIT}"
+                       elapsed_block_time
+                     else
+                       debug "using block average time as block averages: #{block_averages.size} has exceeded cache limit: #{BLOCK_AVERAGE_LIMIT}"
+                       block_average
+                     end
+
+    if current_target > BLOCK_TARGET_UPPER
+      new_difficulty = Math.max(block.next_difficulty - 1, 1)
+      debug "reducing difficulty from '#{block.next_difficulty}' to '#{new_difficulty}' with block average of (#{block_average} secs)"
+      new_difficulty
+    elsif current_target < BLOCK_TARGET_LOWER
+      new_difficulty = block.next_difficulty + 1
+      debug "increasing difficulty from '#{block.next_difficulty}' to '#{new_difficulty}' with block average of (#{block_average} secs)"
+      new_difficulty
+    else
+      debug "maintaining block difficulty at '#{block.next_difficulty}' with block average: (#{block_average} secs)"
+      block.next_difficulty
+    end
+  rescue Enumerable::EmptyError
     block.next_difficulty
   end
 

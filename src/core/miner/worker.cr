@@ -42,7 +42,7 @@ module ::Sushi::Core
         end
       end
 
-      info "found new nonce(#{work[:difficulty]}): #{light_green(nonce)}"
+      debug "found new nonce(#{work[:difficulty]}): #{light_green(nonce)}"
 
       response(nonce.to_s)
     rescue e : Exception

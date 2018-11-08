@@ -84,7 +84,9 @@ module ::Sushi::Core::Logger
     bar_right = ""
 
     (PROGRESS_BAR_WIDTH - ratio).times do |_|
-      bar_right += dark_gray(PROGRESS_CHARS[Random.rand(current % PROGRESS_CHARS.size)])
+      value = current % PROGRESS_CHARS.size
+      value = 1 if value == 0
+      bar_right += dark_gray(PROGRESS_CHARS[Random.rand(value)])
     end
 
     bar = "#{bar_left}#{bar_right}"

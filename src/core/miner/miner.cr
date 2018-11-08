@@ -95,7 +95,7 @@ module ::Sushi::Core
       block = _m_content.block
       difficulty = _m_content.difficulty
 
-      info "block has been updated"
+      info "#{magenta("UPDATED BLOCK")}: #{light_green(block.index)} at chain difficulty: #{light_cyan(block.next_difficulty - 1)} with miner difficulty: #{light_cyan(difficulty)}"
 
       debug "set difficulty: #{light_cyan(difficulty)}"
       debug "set block: #{light_green(block.index)}"
@@ -147,7 +147,7 @@ module ::Sushi::Core
     end
 
     def clean_workers
-      info "clean workers"
+      debug "clean workers"
       @workers.each(&.kill)
     end
 
