@@ -26,6 +26,7 @@ require "tokoroten"
 require "http/server"
 require "openssl/pkcs5"
 require "openssl/digest"
+require "humanhash"
 
 require "./common"
 require "./core/modules"

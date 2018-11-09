@@ -284,7 +284,7 @@ module ::Sushi::Core
 
     def broadcast_block(socket : HTTP::WebSocket, block : Block, from : Chord::NodeContext? = nil)
       if @blockchain.latest_index + 1 == block.index
-        info "new block coming: #{light_cyan(@blockchain.chain.size)}"
+        debug "new block coming: #{light_cyan(@blockchain.chain.size)}"
 
         if _block = @blockchain.valid_block?(block)
           new_block(_block)

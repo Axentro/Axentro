@@ -21,6 +21,7 @@ module ::Sushi::Core::Protocol
     JSON.mapping({
       version: Int32,
       address: String,
+      mid: String
     })
   end
 
@@ -46,7 +47,7 @@ module ::Sushi::Core::Protocol
 
   struct M_CONTENT_MINER_FOUND_NONCE
     JSON.mapping({
-      nonce: UInt64,
+      nonce: UInt64
     })
   end
 
@@ -55,7 +56,7 @@ module ::Sushi::Core::Protocol
   struct M_CONTENT_MINER_BLOCK_UPDATE
     JSON.mapping({
       block:      Block,
-      difficulty: Int32,
+      difficulty: Int32
     })
   end
 

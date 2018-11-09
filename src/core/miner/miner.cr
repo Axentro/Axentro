@@ -14,6 +14,7 @@ module ::Sushi::Core
   class Miner < HandleSocket
     @wallet : Wallet
     @use_ssl : Bool
+    @mid : String = HumanHash.uuid.digest
 
     @workers : Array(Tokoroten::Worker) = [] of Tokoroten::Worker
 
@@ -52,6 +53,7 @@ module ::Sushi::Core
       send(socket, M_TYPE_MINER_HANDSHAKE, {
         version: Core::CORE_VERSION,
         address: @wallet.address,
+        mid: @mid
       })
 
       socket.run
@@ -95,7 +97,7 @@ module ::Sushi::Core
       block = _m_content.block
       difficulty = _m_content.difficulty
 
-      info "#{magenta("UPDATED BLOCK")}: #{light_green(block.index)} at chain difficulty: #{light_cyan(block.next_difficulty - 1)} with miner difficulty: #{light_cyan(difficulty)}"
+      info "#{magenta("MINED BLOCK")}: #{light_green(block.index)} at chain difficulty: #{light_cyan(block.next_difficulty - 1)} with miner difficulty: #{light_cyan(difficulty)}"
 
       debug "set difficulty: #{light_cyan(difficulty)}"
       debug "set block: #{light_green(block.index)}"
