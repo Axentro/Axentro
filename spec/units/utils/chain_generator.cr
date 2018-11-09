@@ -40,7 +40,7 @@ module ::Units::Utils::ChainGenerator
       @node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, nil, false)
       @blockchain = @node.blockchain
       @blockchain.setup(@node)
-      @miner = {context: {address: miner_wallet.address, nonces: [] of UInt64}, socket: MockWebSocket.new}
+      @miner = {context: {address: miner_wallet.address, nonces: [] of UInt64}, socket: MockWebSocket.new, mid: "535061bddb0549f691c8b9c012a55ee2"}
       @transaction_factory = TransactionFactory.new(@node_wallet)
       @rpc = RPCController.new(@blockchain)
       @rest = RESTController.new(@blockchain)
