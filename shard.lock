@@ -2,7 +2,11 @@ version: 1.0
 shards:
   db:
     github: crystal-lang/crystal-db
-    version: 0.5.0
+    version: 0.5.1
+
+  humanhash:
+    github: kingsleyh/humanhash
+    commit: aa533045dcc8986d6dba7f6408b8a10e578dad1e
 
   radix:
     github: luislavena/radix
@@ -10,7 +14,7 @@ shards:
 
   router:
     github: tbrand/router.cr
-    version: 0.2.3
+    version: 0.2.7
 
   scrypt:
     github: ysbaddaden/scrypt-crystal
@@ -18,9 +22,9 @@ shards:
 
   sqlite3:
     github: crystal-lang/crystal-sqlite3
-    version: 0.9.0
+    version: 0.10.0
 
   tokoroten:
     github: tbrand/tokoroten
-    version: 0.1.2
+    version: 0.1.3
 

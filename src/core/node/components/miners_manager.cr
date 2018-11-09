@@ -22,6 +22,7 @@ module ::Sushi::Core::NodeComponents
     alias Miner = NamedTuple(
       context: MinerContext,
       socket: HTTP::WebSocket,
+      mid: String
     )
 
     alias Miners = Array(Miner)
@@ -40,6 +41,7 @@ module ::Sushi::Core::NodeComponents
 
       version = _m_content.version
       address = _m_content.address
+      mid = _m_content.mid
 
       if Core::CORE_VERSION > version
         return send(socket,
@@ -61,11 +63,12 @@ module ::Sushi::Core::NodeComponents
       end
 
       miner_context = {address: address, nonces: [] of UInt64}
-      miner = {context: miner_context, socket: socket}
+      miner = {context: miner_context, socket: socket, mid: mid}
 
       @miners << miner
 
-      info "new miner: #{light_green(miner[:context][:address][0..7])} (#{@miners.size})"
+      miner_name = HumanHash.humanize(mid)
+      info "new miner: #{light_green(miner_name)} (#{@miners.size})"
 
       send(socket, M_TYPE_MINER_HANDSHAKE_ACCEPTED, {
         version:    Core::CORE_VERSION,
@@ -92,10 +95,11 @@ module ::Sushi::Core::NodeComponents
 
           send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
             block:      @blockchain.mining_block,
-            difficulty: @blockchain.mining_block_difficulty_miner,
+            difficulty: @blockchain.mining_block_difficulty_miner
           })
         else
-          info "miner #{miner[:context][:address][0..7]} found nonce (nonces: #{miner[:context][:nonces].size})"
+          miner_name = HumanHash.humanize(miner[:mid])
+          debug "miner #{miner_name} found nonce (nonces: #{miner[:context][:nonces].size})"
 
           miner[:context][:nonces].push(nonce)
 
@@ -116,13 +120,14 @@ module ::Sushi::Core::NodeComponents
     end
 
     def broadcast
+      info "#{magenta("MINED BLOCK")}: #{light_green(@blockchain.mining_block.index)} at chain difficulty: #{light_cyan(@blockchain.mining_block_difficulty)} with miner difficulty: #{light_cyan(@blockchain.mining_block_difficulty_miner)}"
       debug "new block difficulty: #{@blockchain.mining_block_difficulty}, " +
             "mining difficulty: #{@blockchain.mining_block_difficulty_miner}"
 
       @miners.each do |miner|
         send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
           block:      @blockchain.mining_block,
-          difficulty: @blockchain.mining_block_difficulty_miner,
+          difficulty: @blockchain.mining_block_difficulty_miner
         })
       end
     end
