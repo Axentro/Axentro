@@ -74,8 +74,7 @@ describe Block do
         chain = block_factory.addBlocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
-        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 0_i32)
-        block.next_difficulty = 0
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 1_i32)
         block.valid_as_latest?(block_factory.blockchain, false).should be_true
       end
     end
@@ -178,9 +177,8 @@ describe Block do
         chain = block_factory.addBlocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
-        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 0_i32)
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 1_i32)
         block.merkle_tree_root = "invalid"
-        block.next_difficulty = 0
         expect_raises(Exception, "invalid merkle tree root (expected invalid but got d91329bca593bbae22fb70b7f450b4748002ac65)") do
           block.valid_as_latest?(block_factory.blockchain, false)
         end

@@ -55,9 +55,14 @@ module ::Sushi::Core::Consensus
     block_averages = block_averages.select { |a| a > 0_i64 }
     block_averages.delete_at(0) if block_averages.size > 0
 
-    debug "elapsed block time was: #{elapsed_block_time} secs"
+    debug "elapsed block time was: #{elapsed_block_time} secs between current block: #{block.index + 1} and previous block: #{block.index}"
 
-    block_average = block_averages.reduce { |a, b| a + b } / block_averages.size
+    block_average = begin
+      block_averages.reduce { |a, b| a + b } / block_averages.size
+    rescue
+      elapsed_block_time
+    end
+
     current_target = if block_averages.size < BLOCK_AVERAGE_LIMIT
                        debug "using elapsed block time as block averages: #{block_averages.size} is less than cache limit: #{BLOCK_AVERAGE_LIMIT}"
                        elapsed_block_time
@@ -78,8 +83,6 @@ module ::Sushi::Core::Consensus
       debug "maintaining block difficulty at '#{block.next_difficulty}' with block average: (#{block_average} secs)"
       block.next_difficulty
     end
-  rescue Enumerable::EmptyError
-    block.next_difficulty
   end
 
   include Hashes

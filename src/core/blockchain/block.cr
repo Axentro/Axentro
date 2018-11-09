@@ -115,9 +115,12 @@ module ::Sushi::Core
               "(timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
       end
 
-      if @next_difficulty != block_difficulty(@timestamp, (@timestamp - prev_timestamp), prev_block, blockchain.block_averages)
+      difficulty_for_block = block_difficulty(@timestamp, (@timestamp - prev_timestamp), prev_block, blockchain.block_averages)
+      difficulty_for_block = prev_block.index == 0 ? @next_difficulty : difficulty_for_block
+
+      if @next_difficulty != difficulty_for_block
         raise "next_difficulty is invalid " +
-              "(expected #{block_difficulty(@timestamp, (@timestamp - prev_timestamp), prev_block, blockchain.block_averages)} but got #{@next_difficulty})"
+              "(expected #{difficulty_for_block} but got #{@next_difficulty})"
       end
 
       merkle_tree_root = calcluate_merkle_tree_root
