@@ -13,7 +13,12 @@
 module ::Sushi::Interface::Sushi
   class Pubsub < CLI
     def sub_actions
-      [] of SushiAction
+      [
+        {
+          name: "listen",
+          desc: "listen for new blocks",
+        }
+      ]
     end
 
     def option_parser
@@ -33,6 +38,17 @@ module ::Sushi::Interface::Sushi
     end
 
     def run_impl(action_name)
+      case action_name
+      when "listen"
+        return listen
+      end
+
+      specify_sub_action!(action_name)
+    rescue e : Exception
+      puts_error e.message
+    end
+
+    def listen
       puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
 
       node_uri = URI.parse(node)

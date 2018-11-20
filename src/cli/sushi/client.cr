@@ -53,7 +53,12 @@ module ::Sushi::Interface::Sushi
     end
 
     def sub_actions
-      [] of SushiAction
+      [
+        {
+          name: "connect",
+          desc: "connect to the node for realtime communications",
+        },
+      ]
     end
 
     def option_parser
@@ -70,6 +75,17 @@ module ::Sushi::Interface::Sushi
     end
 
     def run_impl(action_name)
+      case action_name
+      when "connect"
+        return connect
+      end
+
+      specify_sub_action!(action_name)
+    rescue e : Exception
+      puts_error e.message
+    end
+
+    def connect
       puts_help(HELP_CONNECTING_NODE) unless @node = G.op.__connect_node
       puts_help(HELP_WALLET_PATH) unless wallet_path = G.op.__wallet_path
       puts_help(HELP_WALLET_MUST_BE_ENCRYPTED) unless encrypted?(wallet_path, G.op.__wallet_password)
