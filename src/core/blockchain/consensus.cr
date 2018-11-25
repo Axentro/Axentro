@@ -26,13 +26,19 @@ module ::Sushi::Core::Consensus
       nonce_slice[i] = nonce_salt[i*2..i*2 + 1].to_u8(16)
     end
 
-    buffer = Slice(UInt8).new(K)
+    # buffer = Slice(UInt8).new(K)
 
-    res = LibScrypt.crypto_scrypt(block_hash, block_hash.bytesize,
-      nonce_slice, nonce_slice.size,
-      N, R, P, buffer, K)
+    # res = LibScrypt.crypto_scrypt(block_hash, block_hash.bytesize,
+    #   nonce_slice, nonce_slice.size,
+    #   N, R, P, buffer, K)
+    #
+    # raise "LibScrypt throws an error: #{res}" unless res == 0
 
-    raise "LibScrypt throws an error: #{res}" unless res == 0
+    buffer = Argon2::Engine.raw_hash_buffer(
+      Argon2::Engine::EngineType::ARGON2ID, block_hash, nonce_slice.hexstring, 1, 16, 512)
+
+
+    # p res
 
     bits = buffer.flat_map { |b| (0..7).map { |n| b.bit(n) }.reverse }
 

@@ -27,6 +27,7 @@ require "http/server"
 require "openssl/pkcs5"
 require "openssl/digest"
 require "humanhash"
+require "crystal-argon2"
 
 require "./common"
 require "./core/modules"
