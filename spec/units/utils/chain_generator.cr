@@ -91,6 +91,8 @@ module ::Units::Utils::ChainGenerator
     private def add_valid_block
       enable_difficulty("0")
       block = @blockchain.mining_block
+      # block.nonce = Random.rand(UInt64::MAX)
+      block.nonce = 11719215035155661212_u64
       block.next_difficulty = 0 # set next_difficulty to 0 for unit tests
       valid_block = @blockchain.valid_block?(block)
       case valid_block

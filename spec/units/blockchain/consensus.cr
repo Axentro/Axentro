@@ -20,14 +20,16 @@ include Sushi::Interface::Logger
 describe Consensus do
   describe "#valid?, #valid_pow?" do
     it "should return true when is valid" do
-      valid_nonce?("block_hash", 656_u64, 2).should be_true
-      valid_pow?("block_hash", 656_u64, 2).should be_true
+      nonce = 5995816054692193019_u64
+      valid_nonce?("block_hash", nonce, 2).should be_true
+      valid_pow?("block_hash", nonce, 2).should be_true
     end
 
     it "should return false when is invalid" do
       ENV.delete("SC_SET_DIFFICULTY")
-      valid_nonce?("block_hash", 0_u64, 20).should be_false
-      valid_pow?("block_hash", 0_u64, 20).should be_false
+      nonce = 2978736204850283095_u64
+      valid_nonce?("block_hash", nonce, 20).should be_false
+      valid_pow?("block_hash", nonce, 20).should be_false
     end
   end
 

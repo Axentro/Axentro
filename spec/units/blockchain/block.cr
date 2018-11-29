@@ -34,7 +34,7 @@ describe Block do
 
   describe "#calcluate_merkle_tree_root" do
     it "should return empty merkle tree root value when no transactions" do
-      block = Block.new(0_i64, [] of Transaction, 0_u64, "prev_hash", 0_i64, 3_i32)
+      block = Block.new(0_i64, [] of Transaction, a_nonce, "prev_hash", 0_i64, 3_i32)
       block.calcluate_merkle_tree_root.should eq("")
     end
 
@@ -56,6 +56,7 @@ describe Block do
     it "should return true when valid" do
       with_factory do |block_factory|
         block = block_factory.addBlock.chain.first
+        block.nonce = a_nonce
         block.valid_nonce?(0).should be_true
       end
     end
@@ -63,6 +64,7 @@ describe Block do
     it "should return false when invalid" do
       with_factory do |block_factory|
         block = block_factory.addBlock.chain.first
+        block.nonce = a_nonce
         block.valid_nonce?(2).should be_false
       end
     end
@@ -74,7 +76,7 @@ describe Block do
         chain = block_factory.addBlocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
-        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 1_i32)
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 1_i32)
         block.valid_as_latest?(block_factory.blockchain, false).should be_true
       end
     end
@@ -84,7 +86,7 @@ describe Block do
         chain = block_factory.addBlocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
-        block = Block.new(99_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 1_i32)
+        block = Block.new(99_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 1_i32)
 
         expect_raises(Exception, "invalid index, 99 have to be 2") do
           block.valid_as_latest?(block_factory.blockchain, false)
@@ -98,9 +100,9 @@ describe Block do
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
 
-        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 0_u64, prev_hash, timestamp, 1_i32)
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 1_i32)
         block_factory.enable_difficulty("5")
-        expect_raises(Exception, "the nonce is invalid: 0") do
+        expect_raises(Exception, /the nonce is invalid:/) do
           block.valid_as_latest?(block_factory.blockchain, false)
         end
         block_factory.enable_difficulty("0")
@@ -125,7 +127,7 @@ describe Block do
         chain = block_factory.addBlocks(1).chain
         prev_hash = "invalid"
         timestamp = chain[1].timestamp
-        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 99_i32)
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 99_i32)
 
         expect_raises(Exception, /prev_hash is invalid:/) do
           block.valid_as_latest?(block_factory.blockchain, false)
@@ -138,7 +140,7 @@ describe Block do
         chain = block_factory.addBlocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp - 10000000
-        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 10_i32)
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 10_i32)
 
         expect_raises(Exception, /timestamp is invalid:/) do
           block.valid_as_latest?(block_factory.blockchain, false)
@@ -151,7 +153,7 @@ describe Block do
         chain = block_factory.addBlocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp + 10000000
-        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 10_i32)
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 10_i32)
 
         expect_raises(Exception, /timestamp is invalid:/) do
           block.valid_as_latest?(block_factory.blockchain, false)
@@ -164,7 +166,7 @@ describe Block do
         chain = block_factory.addBlocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
-        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 99_i32)
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 99_i32)
 
         expect_raises(Exception, /next_difficulty is invalid/) do
           block.valid_as_latest?(block_factory.blockchain, false)
@@ -177,7 +179,7 @@ describe Block do
         chain = block_factory.addBlocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
-        block = Block.new(2_i64, [a_fixed_coinbase_transaction], 68_u64, prev_hash, timestamp, 1_i32)
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 1_i32)
         block.merkle_tree_root = "invalid"
         expect_raises(Exception, "invalid merkle tree root (expected invalid but got d91329bca593bbae22fb70b7f450b4748002ac65)") do
           block.valid_as_latest?(block_factory.blockchain, false)
@@ -254,18 +256,22 @@ describe Block do
   describe "#find_transaction" do
     it "should find a transaction when an matching one exists" do
       coinbase_transaction = a_fixed_coinbase_transaction
-      block = Block.new(1_i64, [coinbase_transaction, a_fixed_signed_transaction], 0_u64, "prev_hash_1", 0_i64, 3_i32)
+      block = Block.new(1_i64, [coinbase_transaction, a_fixed_signed_transaction], a_nonce, "prev_hash_1", 0_i64, 3_i32)
       block.find_transaction(coinbase_transaction.id).should eq(coinbase_transaction)
     end
 
     it "should return nil when cannot find a matching transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
-      block = Block.new(1_i64, [coinbase_transaction, a_fixed_signed_transaction], 0_u64, "prev_hash_1", 0_i64, 3_i32)
+      block = Block.new(1_i64, [coinbase_transaction, a_fixed_signed_transaction], a_nonce, "prev_hash_1", 0_i64, 3_i32)
       block.find_transaction("transaction-not-found").should be_nil
     end
   end
 
   STDERR.puts "< Block"
+end
+
+def a_nonce
+  5995816054692193019_u64
 end
 
 def a_fixed_coinbase_transaction
