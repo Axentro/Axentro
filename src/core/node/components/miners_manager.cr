@@ -120,7 +120,7 @@ module ::Sushi::Core::NodeComponents
     end
 
     def broadcast
-      info "#{magenta("MINED BLOCK")}: #{light_green(@blockchain.mining_block.index)} at chain difficulty: #{light_cyan(@blockchain.mining_block_difficulty)} with miner difficulty: #{light_cyan(@blockchain.mining_block_difficulty_miner)}"
+      info "#{magenta("UPDATED BLOCK")}: #{light_green(@blockchain.mining_block.index)} at difficulty: #{light_cyan(@blockchain.mining_block_difficulty)}"
       debug "new block difficulty: #{@blockchain.mining_block_difficulty}, " +
             "mining difficulty: #{@blockchain.mining_block_difficulty_miner}"
 

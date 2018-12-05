@@ -11,13 +11,8 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::Consensus
-  N = 1 << 16
-  R =   1
-  P =   1
-  K = 512
 
-  # Scrypt Implementation
-  def valid_scryptn?(block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
+  def valid_pow?(block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
     nonce_salt = nonce.to_s(16)
     nonce_salt = "0" + nonce_salt if nonce_salt.bytesize % 2 != 0
 
@@ -26,22 +21,16 @@ module ::Sushi::Core::Consensus
       nonce_slice[i] = nonce_salt[i*2..i*2 + 1].to_u8(16)
     end
 
-    buffer = Slice(UInt8).new(K)
-
-    res = LibScrypt.crypto_scrypt(block_hash, block_hash.bytesize,
-      nonce_slice, nonce_slice.size,
-      N, R, P, buffer, K)
-
-    raise "LibScrypt throws an error: #{res}" unless res == 0
+    buffer = Argon2::Engine.raw_hash_buffer(
+      Argon2::Engine::EngineType::ARGON2ID, block_hash, nonce_slice.hexstring, 1, 16, 512)
 
     bits = buffer.flat_map { |b| (0..7).map { |n| b.bit(n) }.reverse }
-
     bits[0, difficulty].join("") == "0" * difficulty
   end
 
   def valid_nonce?(block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
     difficulty = ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY") # for unit test
-    valid_scryptn?(block_hash, nonce, difficulty)
+    valid_pow?(block_hash, nonce, difficulty)
   end
 
   BLOCK_TARGET_LOWER  = 10_i64

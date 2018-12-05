@@ -1,12 +1,16 @@
 version: 1.0
 shards:
+  crystal-argon2:
+    github: sushichain/crystal-argon2
+    commit: d55e44847ea390bca0bf910f6698a57cde3d4aaa
+
   db:
     github: crystal-lang/crystal-db
     version: 0.5.1
 
   humanhash:
     github: kingsleyh/humanhash
-    commit: aa533045dcc8986d6dba7f6408b8a10e578dad1e
+    version: 0.1.1
 
   radix:
     github: luislavena/radix
