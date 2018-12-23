@@ -56,11 +56,11 @@ module ::Sushi::Core::NodeComponents
 
       hash_salt = sha256(@salt + _m_content.public_key)
 
-      if secp256k1.verify(
-           public_key.point,
+      if ECCrypto.verify(
+           public_key.as_hex,
            hash_salt,
-           BigInt.new(sign_r, base: 16),
-           BigInt.new(sign_s, base: 16)
+           sign_r,
+           sign_s
          )
         client_context = {address: _m_content.address}
         client = {context: client_context, socket: socket}
@@ -113,14 +113,14 @@ module ::Sushi::Core::NodeComponents
       @clients.find { |c| c[:context][:address] == address }
     end
 
-    def self.secp256k1 : ECDSA::Secp256k1
-      @@secp256k1 ||= ECDSA::Secp256k1.new
-      @@secp256k1.not_nil!
-    end
-
-    private def secp256k1
-      ClientsManager.secp256k1
-    end
+    # def self.secp256k1 : ECDSA::Secp256k1
+    #   @@secp256k1 ||= ECDSA::Secp256k1.new
+    #   @@secp256k1.not_nil!
+    # end
+    #
+    # private def secp256k1
+    #   ClientsManager.secp256k1
+    # end
 
     private def node
       @blockchain.node
