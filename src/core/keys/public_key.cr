@@ -39,25 +39,12 @@ module ::Sushi::Core::Keys
       @hex.to_big_i(16)
     end
 
-    def x : BigInt
-      @hex[0..63].to_big_i(16)
-    end
-
-    def y : BigInt
-      @hex[64..-1].to_big_i(16)
-    end
-
-    def point : ECDSA::Point
-      secp256k1 = ECDSA::Secp256k1.new
-      public_key_point = ECDSA::Point.new(secp256k1, x, y)
-    end
-
     def address : Address
       Address.new(KeyUtils.get_address_from_public_key(self), @network)
     end
 
     def is_valid? : Bool
-      @hex.hexbytes? != nil && @hex.size == 128
+      @hex.hexbytes? != nil && @hex.size == 130
     end
   end
 end

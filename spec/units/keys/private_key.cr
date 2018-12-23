@@ -19,9 +19,8 @@ include Sushi::Core::Keys
 describe PrivateKey do
   describe "#initialize" do
     it "should create a private key object from a private key string" do
-      secp256k1 = ECDSA::Secp256k1.new
-      key_pair = secp256k1.create_key_pair
-      hex_private_key = key_pair[:secret_key].to_s(16)
+      key_pair = ECCrypto.create_key_pair
+      hex_private_key = key_pair[:hex_private_key]
 
       private_key = PrivateKey.new(hex_private_key)
       private_key.as_hex.should eq(hex_private_key)
@@ -36,9 +35,8 @@ describe PrivateKey do
 
   describe "#from hex" do
     it "should create a private key object from a private key string" do
-      secp256k1 = ECDSA::Secp256k1.new
-      key_pair = secp256k1.create_key_pair
-      hex_private_key = key_pair[:secret_key].to_s(16)
+      key_pair = ECCrypto.create_key_pair
+      hex_private_key = key_pair[:hex_private_key]
 
       private_key = PrivateKey.from(hex_private_key)
       private_key.as_hex.should eq(hex_private_key)
@@ -47,9 +45,8 @@ describe PrivateKey do
 
   describe "#from bytes" do
     it "should create a private key object from a private key byte array" do
-      secp256k1 = ECDSA::Secp256k1.new
-      key_pair = secp256k1.create_key_pair
-      hex_private_key = key_pair[:secret_key].to_s(16)
+      key_pair = ECCrypto.create_key_pair
+      hex_private_key = key_pair[:hex_private_key]
       hexbytes = hex_private_key.hexbytes
 
       private_key = PrivateKey.from(hexbytes)
@@ -59,9 +56,8 @@ describe PrivateKey do
   end
 
   it "should convert a private key from hex to bytes with #as_bytes" do
-    secp256k1 = ECDSA::Secp256k1.new
-    key_pair = secp256k1.create_key_pair
-    hex_private_key = key_pair[:secret_key].to_s(16)
+    key_pair = ECCrypto.create_key_pair
+    hex_private_key = key_pair[:hex_private_key]
     hexbytes = hex_private_key.hexbytes
 
     private_key = PrivateKey.from(hex_private_key)
@@ -69,9 +65,8 @@ describe PrivateKey do
   end
 
   it "should convert a private key from bytes to hex with #as_hex" do
-    secp256k1 = ECDSA::Secp256k1.new
-    key_pair = secp256k1.create_key_pair
-    hex_private_key = key_pair[:secret_key].to_s(16)
+    key_pair = ECCrypto.create_key_pair
+    hex_private_key = key_pair[:hex_private_key]
     hexbytes = hex_private_key.hexbytes
 
     private_key = PrivateKey.from(hexbytes)
@@ -89,10 +84,10 @@ describe PrivateKey do
 
   describe "#address" do
     it "should return the address" do
-      hex_private_key = "5509e2f567bbe25ef90d2682e3fed09266117ce493438a3c20c05b34293a29a6"
+      hex_private_key = "e70f8fef23401466cebd0d9c51d5740f98cbc6694ae60b09c945ba6b67dbec8d"
 
       private_key = PrivateKey.from(hex_private_key)
-      private_key.address.as_hex.should eq("TTA0YTQzZDQ1M2UwNzdlZDA5YTI1NGYxZGNiNTNhYmY0OTE4NmEyMzg5YTJmMGI0")
+      private_key.address.as_hex.should eq("TTBkYjYyZGZiZWM3ZWJlNjllYjJhYTQyMGQ2ZmNhOWMwZGU4ZDQwNmI5YjM4YTUx")
     end
 
     it "should return a mainnet address" do

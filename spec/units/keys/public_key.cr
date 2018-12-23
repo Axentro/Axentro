@@ -19,9 +19,8 @@ include Sushi::Core::Keys
 describe PublicKey do
   describe "#initialize" do
     it "should create a public key object from a public key string" do
-      secp256k1 = ECDSA::Secp256k1.new
-      key_pair = secp256k1.create_key_pair
-      hex_public_key = key_pair[:public_key].x.to_s(16) + key_pair[:public_key].y.to_s(16)
+      key_pair = ECCrypto.create_key_pair
+      hex_public_key = key_pair[:hex_public_key]
 
       public_key = PublicKey.new(hex_public_key)
       public_key.as_hex.should eq(hex_public_key)
@@ -36,45 +35,18 @@ describe PublicKey do
 
   describe "#from hex" do
     it "should create a public key object from a public key string" do
-      secp256k1 = ECDSA::Secp256k1.new
-      key_pair = secp256k1.create_key_pair
-      hex_public_key = key_pair[:public_key].x.to_s(16) + key_pair[:public_key].y.to_s(16)
+      key_pair = ECCrypto.create_key_pair
+      hex_public_key = key_pair[:hex_public_key]
 
       public_key = PublicKey.from(hex_public_key)
       public_key.as_hex.should eq(hex_public_key)
     end
   end
 
-  describe "#x and #y" do
-    it "should return values for x and y identical to the original x and y" do
-      secp256k1 = ECDSA::Secp256k1.new
-      key_pair = secp256k1.create_key_pair
-      public_key_x = key_pair[:public_key].x
-      public_key_y = key_pair[:public_key].y
-      hex_public_key = key_pair[:public_key].x.to_s(16) + key_pair[:public_key].y.to_s(16)
-
-      public_key = PublicKey.from(hex_public_key)
-      public_key.x.should eq(public_key_x)
-      public_key.y.should eq(public_key_y)
-    end
-
-    it "should return an ECDSA Point for public key" do
-      secp256k1 = ECDSA::Secp256k1.new
-      key_pair = secp256k1.create_key_pair
-      hex_public_key = key_pair[:public_key].x.to_s(16) + key_pair[:public_key].y.to_s(16)
-
-      public_key = PublicKey.from(hex_public_key)
-      public_key.point.x.should eq(key_pair[:public_key].x)
-      public_key.point.y.should eq(key_pair[:public_key].y)
-      public_key.point.infinity?.should eq(key_pair[:public_key].infinity?)
-    end
-  end
-
   describe "#from bytes" do
     it "should create a public key object from a public key byte array" do
-      secp256k1 = ECDSA::Secp256k1.new
-      key_pair = secp256k1.create_key_pair
-      hex_public_key = key_pair[:public_key].x.to_s(16) + key_pair[:public_key].y.to_s(16)
+      key_pair = ECCrypto.create_key_pair
+      hex_public_key = key_pair[:hex_public_key]
       hexbytes = hex_public_key.hexbytes
 
       public_key = PublicKey.from(hexbytes)
@@ -86,9 +58,8 @@ describe PublicKey do
   end
 
   it "should convert a public key from hex to bytes with #as_bytes" do
-    secp256k1 = ECDSA::Secp256k1.new
-    key_pair = secp256k1.create_key_pair
-    hex_public_key = key_pair[:public_key].x.to_s(16) + key_pair[:public_key].y.to_s(16)
+    key_pair = ECCrypto.create_key_pair
+    hex_public_key = key_pair[:hex_public_key]
     hexbytes = hex_public_key.hexbytes
 
     public_key = PublicKey.from(hex_public_key)
@@ -96,9 +67,8 @@ describe PublicKey do
   end
 
   it "should convert a public key from bytes to hex with #as_hex" do
-    secp256k1 = ECDSA::Secp256k1.new
-    key_pair = secp256k1.create_key_pair
-    hex_public_key = key_pair[:public_key].x.to_s(16) + key_pair[:public_key].y.to_s(16)
+    key_pair = ECCrypto.create_key_pair
+    hex_public_key = key_pair[:hex_public_key]
     hexbytes = hex_public_key.hexbytes
 
     public_key = PublicKey.from(hexbytes)
@@ -116,10 +86,10 @@ describe PublicKey do
 
   describe "#address" do
     it "should return the address" do
-      hex_public_key = "b9a152547ec31de50a726896293c7b99e63e6d9588b6d48fde5c926a1794d0616af3598724f335ec71b00509a69e3ce376a285ca5dd77ed5cce8e558c9d5b7e7"
+      hex_public_key = "049ec703e3eab6beba4b1ea5745da006ecce8a556144cfb7d8bbbe0f31896c08f9aac3aee3410b38fe61b6cfc5afd447faa1ca051f1e0adf1d466addf55fc77d50"
 
       public_key = PublicKey.from(hex_public_key)
-      public_key.address.as_hex.should eq("TTA5YjVkYTA1NWVkNWQyNDYyMmNiMWU5M2EwZWVhZmFmODA4MDg3MjU5NzAxNTll")
+      public_key.address.as_hex.should eq("TTAzZGQxYzhmMDMyYmFhM2VmZDBmNTI5YTRmNTY0MjVhOWI3NjljOGYwODgyNDlk")
     end
 
     it "should return a mainnet address" do

@@ -44,12 +44,8 @@ module ::Sushi::Core::Keys
     end
 
     def public_key : PublicKey
-      secp256k1 = ECDSA::Secp256k1.new
-      key_pair = secp256k1.create_key_pair(@hex.to_big_i(16))
-
-      raise "private key mismatch when finding public key" unless key_pair[:secret_key].to_s(16) == @hex
-
-      PublicKey.new(key_pair[:public_key].x.to_s(16) + key_pair[:public_key].y.to_s(16), @network)
+      hex_public_key = ECCrypto.get_public_key_from_private(@hex)
+      PublicKey.new(hex_public_key, @network)
     end
 
     def address : Address

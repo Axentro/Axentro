@@ -25,7 +25,7 @@ describe Keys do
       keys.private_key.as_hex.size.should eq(64)
 
       keys.public_key.should be_a(PublicKey)
-      keys.public_key.as_hex.size.should eq(128)
+      keys.public_key.as_hex.size.should eq(130)
     end
 
     it "should generate a key pair for the mainnet when no network supplied" do
