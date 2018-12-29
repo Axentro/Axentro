@@ -52,14 +52,14 @@ module ::Sushi::Core
       tmp_id
     end
 
-    def self.secp256k1 : ECDSA::Secp256k1
-      @@secp256k1 ||= ECDSA::Secp256k1.new
-      @@secp256k1.not_nil!
-    end
-
-    def secp256k1
-      Transaction.secp256k1
-    end
+    # def self.secp256k1 : ECDSA::Secp256k1
+    #   @@secp256k1 ||= ECDSA::Secp256k1.new
+    #   @@secp256k1.not_nil!
+    # end
+    #
+    # def secp256k1
+    #   Transaction.secp256k1
+    # end
 
     def to_hash : String
       string = self.to_json
@@ -129,11 +129,11 @@ module ::Sushi::Core
         network = Keys::Address.from(sender[:address], "sender").network
         public_key = Keys::PublicKey.new(sender[:public_key], network)
 
-        if !secp256k1.verify(
-             public_key.not_nil!.point,
+        if !ECCrypto.verify(
+             public_key.as_hex,
              self.as_unsigned.to_hash,
-             BigInt.new(sender[:sign_r], base: 16),
-             BigInt.new(sender[:sign_s], base: 16),
+             sender[:sign_r],
+             sender[:sign_s]
            )
           raise "invalid signing for sender: #{sender[:address]}"
         end
@@ -184,20 +184,18 @@ module ::Sushi::Core
     end
 
     def as_signed(wallets : Array(Wallet)) : Transaction
-      secp256k1 = Core::ECDSA::Secp256k1.new
-
       signed_senders = self.senders.map_with_index { |s, i|
         private_key = Wif.new(wallets[i].wif).private_key
 
-        sign = secp256k1.sign(private_key.as_big_i, self.to_hash)
+        sign = ECCrypto.sign(private_key.as_hex, self.to_hash)
 
         {
           address:    s[:address],
           public_key: s[:public_key],
           amount:     s[:amount],
           fee:        s[:fee],
-          sign_r:     sign[0].to_s(base: 16),
-          sign_s:     sign[1].to_s(base: 16),
+          sign_r:     sign["r"],
+          sign_s:     sign["s"],
         }
       }
 

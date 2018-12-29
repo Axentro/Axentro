@@ -31,6 +31,8 @@ dependencies:
     github: kingsleyh/humanhash
   crystal-argon2:
     github: sushichain/crystal-argon2
+  crystal-ecdsa:
+    github: sushichain/crystal-ecdsa  
 
 crystal: 0.27.0
 

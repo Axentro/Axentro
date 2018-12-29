@@ -26,10 +26,9 @@ module ::Sushi::Core::Keys
     end
 
     def self.generate(network : Core::Node::Network = MAINNET)
-      secp256k1 = ECDSA::Secp256k1.new
-      key_pair = secp256k1.create_key_pair
-      private_key = PrivateKey.new(key_pair[:secret_key].to_s(16), network)
-      public_key = PublicKey.new(key_pair[:public_key].x.to_s(16) + key_pair[:public_key].y.to_s(16), network)
+      key_pair = ECCrypto.create_key_pair
+      private_key = PrivateKey.new(key_pair[:hex_private_key], network)
+      public_key = PublicKey.new(key_pair[:hex_public_key], network)
       Keys.new(private_key, public_key, private_key.wif, public_key.address)
     end
 

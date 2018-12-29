@@ -2,7 +2,11 @@ version: 1.0
 shards:
   crystal-argon2:
     github: sushichain/crystal-argon2
-    commit: d55e44847ea390bca0bf910f6698a57cde3d4aaa
+    version: 0.1.0
+
+  crystal-ecdsa:
+    github: sushichain/crystal-ecdsa
+    version: 0.1.1
 
   db:
     github: crystal-lang/crystal-db

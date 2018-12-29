@@ -28,6 +28,7 @@ require "openssl/pkcs5"
 require "openssl/digest"
 require "humanhash"
 require "crystal-argon2"
+require "crystal-ecdsa"
 
 require "./common"
 require "./core/modules"

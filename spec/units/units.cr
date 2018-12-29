@@ -13,7 +13,6 @@
 require "./blockchain/*"
 require "./blowfish/*"
 require "./node/*"
-require "./ecdsa/*"
 require "./keys/*"
 require "./dapps/*"
 require "./license"

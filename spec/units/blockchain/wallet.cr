@@ -128,11 +128,9 @@ describe Wallet do
 end
 
 def create_unknown_network_address
-  secp256k1 = ECDSA::Secp256k1.new
-  public_key = secp256k1.create_key_pair[:public_key]
+  public_key = ECCrypto.create_key_pair[:hex_public_key]
   prefix = "U0"
-  raw_address = (public_key.x + public_key.y).to_s(base: 16)
-  hashed_address = ripemd160(sha256(raw_address))
+  hashed_address = ripemd160(sha256(public_key))
   version_address = prefix + hashed_address
   hashed_address_again = sha256(sha256(version_address))
   checksum = hashed_address_again[0..5]
