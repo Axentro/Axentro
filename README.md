@@ -13,6 +13,10 @@
 <a href="https://t.me/joinchat/Inebcg83C4ccxydPkzTdSw"><img src="https://img.shields.io/badge/chat-telegram-brightgreen.svg"></a>
 <a href="https://github.com/SushiChain/SushiChain/wiki"><img src="https://img.shields.io/badge/document-wiki-yellow.svg"></a></p>
 
+## Testnet
+
+* Currently the testnet is down as our AWS free tier subscription has now expired.
+
 ## Document
 
 All documents are written on [wiki](https://github.com/SushiChain/SushiChain/wiki)
