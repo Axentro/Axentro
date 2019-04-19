@@ -71,23 +71,26 @@ describe TransactionDecimal do
         1              # scaled
       )
     end
+  end
 
-    it "should convert to a non decimal transaction" do
-      transaction_id = Transaction.create_id
-      transaction = TransactionDecimal.new(
-        transaction_id,
-        "send", # action
-        [a_decimal_sender(sender_wallet, "1000000")],
-        [a_decimal_recipient(recipient_wallet, "1000000")],
-        "0",           # message
-        TOKEN_DEFAULT, # token
-        "0",           # prev_hash
-        0_i64,         # timestamp
-        0              # scaled
-      )
-      non_decimal = transaction.to_transaction
-      typeof(non_decimal).should eq(Sushi::Core::Transaction)
-    end
+  it "should convert to a non decimal transaction" do
+    transaction_id = Transaction.create_id
+    sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
+    recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
+
+    transaction = TransactionDecimal.new(
+      transaction_id,
+      "send", # action
+      [a_decimal_sender(sender_wallet, "1000000")],
+      [a_decimal_recipient(recipient_wallet, "1000000")],
+      "0",           # message
+      TOKEN_DEFAULT, # token
+      "0",           # prev_hash
+      0_i64,         # timestamp
+      0              # scaled
+    )
+    non_decimal = transaction.to_transaction
+    typeof(non_decimal).should eq(Sushi::Core::Transaction)
   end
 
   STDERR.puts "< TransactionDecimal"
