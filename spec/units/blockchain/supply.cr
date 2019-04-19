@@ -43,4 +43,5 @@ describe Blockchain do
       scale_decimal(t_amount).should eq("20000000.00004112") # total supply
     end
   end
+  STDERR.puts "< Total Supply"
 end
