@@ -9,7 +9,6 @@ jobs:
       - run: |
           apt-get update
           apt-get install curl libsqlite3-dev -y
-          apt-get install clang -y
       - run: |
           shards build --release
           crystal spec
