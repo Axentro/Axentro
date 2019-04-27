@@ -6,7 +6,7 @@ shards:
 
   crystal-ecdsa:
     github: sushichain/crystal-ecdsa
-    version: 0.1.3
+    version: 0.1.4
 
   db:
     github: crystal-lang/crystal-db
