@@ -9,6 +9,7 @@ jobs:
       - run: |
           apt-get update
           apt-get install curl libsqlite3-dev -y
+          apt-get install llvm-3.4 libclang1-3.4 llvm-3.4-dev -y
       - run: |
           shards build --release
           crystal spec
