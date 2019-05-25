@@ -6,11 +6,8 @@
 
 <p align="center">
 <a href="https://circleci.com/gh/SushiChain/SushiChain/tree/master"><img src="https://circleci.com/gh/SushiChain/SushiChain/tree/master.png?circle-token=099c1a2ed8be9aebf10eb09f79d65dfa4b05cf8e"></a>
-
 <a href="https://t.me/sushichainhq"><img src="https://img.shields.io/static/v1.svg?label=chat&message=telegram&color=informational"/></a>
-
 <a href="https://twitter/sushichainhq"><img src="https://img.shields.io/twitter/follow/sushichainhq.svg?label=Follow&style=social"/></a>
-
 </p>
 
 
