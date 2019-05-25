@@ -1,40 +1,50 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/SushiChain/SushiChain/master/imgs/sushichain.png" width="150" height="150" />
-</p1>
+  <img src="https://raw.githubusercontent.com/SushiChain/SushiChain/master/imgs/sc_logo_light.svg" width="150" height="150"/>
+</p>
 
-<p align="center">🍣 <i>An awesome developable blockchain implementation.</i> 🍣</p>
+<p align="center"><i>To be the go to platform for building dApps quickly and cheaply for business and gaming</i></p>
 
-<p align="center"><a href="https://circleci.com/gh/SushiChain/SushiChain/tree/master"><img src="https://circleci.com/gh/SushiChain/SushiChain/tree/master.png?circle-token=099c1a2ed8be9aebf10eb09f79d65dfa4b05cf8e"></a>
-<a href="https://sushicoin.xyz/viewType.html?buildTypeId=SushiChain_1MainBuild&guest=1">
-<img src="https://sushicoin.xyz/app/rest/builds/buildType:(id:SushiChain_1MainBuild)/statusIcon"/></a>
-<a href="https://bit.ly/2HJBu1z"><img src="https://img.shields.io/badge/chat-slack-brightgreen.svg"></a>
-<a href="https://discord.gg/qBqfJPv"><img src="https://img.shields.io/discord/441519469810941953.svg"></a>
-<a href="https://gitter.im/SushiChain/Lobby"><img src="https://img.shields.io/gitter/room/nwjs/nw.js.svg"></a>
-<a href="https://t.me/joinchat/Inebcg83C4ccxydPkzTdSw"><img src="https://img.shields.io/badge/chat-telegram-brightgreen.svg"></a>
-<a href="https://github.com/SushiChain/SushiChain/wiki"><img src="https://img.shields.io/badge/document-wiki-yellow.svg"></a></p>
+<p align="center">
+<a href="https://circleci.com/gh/SushiChain/SushiChain/tree/master"><img src="https://circleci.com/gh/SushiChain/SushiChain/tree/master.png?circle-token=099c1a2ed8be9aebf10eb09f79d65dfa4b05cf8e"></a>
 
-## Testnet
+<a href="https://t.me/sushichainhq"><img src="https://img.shields.io/static/v1.svg?label=chat&message=telegram&color=informational"/></a>
 
-* Currently the testnet is down as our AWS free tier subscription has now expired.
+<a href="https://twitter/sushichainhq"><img src="https://img.shields.io/twitter/follow/sushichainhq.svg?label=Follow&style=social"/></a>
 
-## Document
+</p>
 
-All documents are written on [wiki](https://github.com/SushiChain/SushiChain/wiki)
 
-* [What is SushiChain?](https://github.com/SushiChain/SushiChain/wiki/What-is-SushiChain%3F)
-* [How to build SushiChain?](https://github.com/SushiChain/SushiChain/wiki/How-to-build-SushiChain%3F)
-* [QuickStart guide!](https://github.com/SushiChain/SushiChain/wiki/SushiChain-QuickStart)
-* [I want to do mining on SushiChain!](https://github.com/SushiChain/SushiChain/wiki/Mining-SushiChain)
-* [I want to build a SushiChain node!](https://github.com/SushiChain/SushiChain/wiki/Build-a-SushiChain-node)
 
-## Communities
+Sushichain is an original proof of work blockchain platform that empowers developers to build decentralised apps quickly and cheaply. It features the following:
 
-We are discussing many things everyday in [Slack](https://bit.ly/2HJBu1z), [Discord](https://discord.gg/qBqfJPv), [Gitter](https://gitter.im/SushiChain/Lobby) and [Telegram](https://t.me/joinchat/Inebcg83C4ccxydPkzTdSw).
+* CPU mining using the award winning Argon2d hashing algorithm
+* human readable addresses
+* smart assets
+* distributed two factor authentication.
 
-These channels are bridged to each other.
+## Platform status
 
-🍣 We are welcome your joining! 🍣
+The platform is still in development but the testnet is up and running. See the roadmap for more information about the delivery schedule.
 
-## Contributors
-- [@tbrand](https://github.com/tbrand) Taichiro Suzuki - core developer, founder
-- [@kingsleyh](https://github.com/kingsleyh) Kingsley Hendrickse - core developer, co-creator
+Follow the Getting Started documentation to explore further.
+
+## Documentation
+
+* Offical docs
+* Roadmap
+
+## Community
+
+Questions or suggestions? Join our community here on [Telegram](https://t.me/sushichainhq)
+
+## Active Team
+
+- [@kingsleyh](https://github.com/kingsleyh) Kingsley Hendrickse - founder & lead developer
+- [@jferas](https://github.com/jferas) John Feras - core developer
+- [@mamalisk](https://github.com/mamalisk) Kostas Mamalis - core developer
+- [@fenicks](https://github.com/fenicks) Christian Kakesa - contributor 
+
+## Past Contributors
+
+- [@tbrand](https://github.com/tbrand) Taichiro Suzuki - original founder
+- [@watzon](https://github.com/watzon) Chris Watson - contributor
