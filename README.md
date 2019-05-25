@@ -28,7 +28,7 @@ Follow the [Getting Started]() documentation to explore further.
 
 ## Documentation
 
-* [Offical docs]()
+* [Offical docs](https://guide.sushichain.io/)
 * [Roadmap]()
 
 ## Community
