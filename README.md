@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/SushiChain/SushiChain/master/imgs/sc_logo_light.svg" width="150" height="150"/>
+  <img src="https://raw.githubusercontent.com/SushiChain/SushiChain/master/imgs/sc_logo_light_chain.svg?sanitize=true"/>
 </p>
 
 <p align="center"><i>To be the go to platform for building dApps quickly and cheaply for business and gaming</i></p>
