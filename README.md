@@ -31,6 +31,24 @@ Follow the [Getting Started]() documentation to explore further.
 * [Offical docs](https://guide.sushichain.io/)
 * [Roadmap]()
 
+## Blockchain Specification
+
+|            Coin name |          Sushi           |
+| -------------------: | :----------------------: |
+|          Coin ticker |          SUSHI           |
+|            Consensus |           PoW            |
+|         Block reward |        0.5 SUSHI         |
+|         Miner reward | Prorated on contribution |
+|        Block spacing |     10 to 40 seconds     |
+|             Pre-mine |  2,000,000 SUSHI (10%)   |
+|         Total Supply |     20,000,000 SUSHI     |
+|             Maturity |        20 Blocks         |
+|      Minimum txn fee |       0.0001 SUSHI       |
+| PoW mining algorithm |         Argon2d          |
+|                 Port |           3000           |
+
+
+
 ## Community
 
 Questions or suggestions? Join our community here on [Telegram](https://t.me/sushichainhq)
