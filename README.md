@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/SushiChain/SushiChain/master/imgs/sc_logo_light.svg?sanitize=true"/>
 </p>
 
-<p align="center"><i>To be the go to platform for building dApps quickly and cheaply for business and gaming</i></p>
+<p align="center"><i>To be the <b>go to</b> platform for building <b>dApps</b> quickly and cheaply for business and gaming</i></p>
 
 <p align="center">
 <a href="https://circleci.com/gh/SushiChain/SushiChain/tree/master"><img src="https://circleci.com/gh/SushiChain/SushiChain/tree/master.png?circle-token=099c1a2ed8be9aebf10eb09f79d65dfa4b05cf8e"></a>
@@ -15,20 +15,21 @@
 Sushichain is an original proof of work blockchain platform that empowers developers to build decentralised apps quickly and cheaply. It features the following:
 
 * CPU mining using the award winning Argon2d hashing algorithm
-* human readable addresses
-* smart assets
-* distributed two factor authentication.
+* Decentralised apps platform
+* Human readable addresses
+* Smart assets
+* Distributed two factor authentication.
 
 ## Platform status
 
 The platform is still in development but the testnet is up and running. See the roadmap for more information about the delivery schedule.
 
-Follow the Getting Started documentation to explore further.
+Follow the [Getting Started]() documentation to explore further.
 
 ## Documentation
 
-* Offical docs
-* Roadmap
+* [Offical docs]()
+* [Roadmap]()
 
 ## Community
 
