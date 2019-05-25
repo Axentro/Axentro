@@ -24,7 +24,7 @@ Sushichain is an original proof of work blockchain platform that empowers develo
 
 The platform is still in development but the testnet is up and running. See the roadmap for more information about the delivery schedule.
 
-Follow the [Getting Started]() documentation to explore further.
+Follow the [Getting Started](https://guide.sushichain.io/getting-started/creating-a-wallet) documentation to explore further.
 
 ## Documentation
 
@@ -58,7 +58,7 @@ Questions or suggestions? Join our community here on [Telegram](https://t.me/sus
 - [@kingsleyh](https://github.com/kingsleyh) Kingsley Hendrickse - founder & lead developer
 - [@jferas](https://github.com/jferas) John Feras - core developer
 - [@mamalisk](https://github.com/mamalisk) Kostas Mamalis - core developer
-- [@fenicks](https://github.com/fenicks) Christian Kakesa - contributor 
+- [@fenicks](https://github.com/fenicks) Christian Kakesa - contributor
 
 ## Past Contributors
 
