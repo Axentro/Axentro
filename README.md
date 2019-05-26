@@ -10,8 +10,6 @@
 <a href="https://twitter/sushichainhq"><img src="https://img.shields.io/twitter/follow/sushichainhq.svg?label=Follow&style=social"/></a>
 </p>
 
-
-
 Sushichain is an original proof of work blockchain platform that empowers developers to build decentralised apps quickly and cheaply. It features the following:
 
 * CPU mining using the award winning Argon2d hashing algorithm
@@ -22,7 +20,11 @@ Sushichain is an original proof of work blockchain platform that empowers develo
 
 ## Platform status
 
-The platform is still in development but the testnet is up and running. See the roadmap for more information about the delivery schedule.
+The platform is still in development but the testnet is up and running however it is currently unstable due to ongoing heavy development which requires frequency restarts and updates. See the roadmap for more information about the delivery schedule.
+
+|          Environment |                Url                |    Status    |
+| -------------------: | :-------------------------------: | :----------: |
+|              Testnet | http://testnet.sushichain.io:3000 |   Unstable   |
 
 Follow the [Getting Started](https://guide.sushichain.io/getting-started/creating-a-wallet) documentation to explore further.
 
