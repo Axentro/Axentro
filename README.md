@@ -20,7 +20,7 @@ Sushichain is an original proof of work blockchain platform that empowers develo
 
 ## Platform status
 
-The platform is still in development but the testnet is up and running however it is currently unstable due to ongoing heavy development which requires frequency restarts and updates. See the roadmap for more information about the delivery schedule.
+The platform is still in heavy development but the [TestNet](https://testnet.sushichain.io:3000) is up and running however it is currently unstable due to ongoing  development which requires frequent restarts and updates. See the roadmap for more information about the delivery schedule.
 
 |          Environment |                Url                |    Status    |
 | -------------------: | :-------------------------------: | :----------: |
