@@ -12,6 +12,7 @@ jobs:
       - run: |
           shards build --release
           crystal spec
+          bin/ameba
 
   e2e-tests-all-public:
     docker:
