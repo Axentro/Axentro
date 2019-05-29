@@ -34,6 +34,11 @@ dependencies:
   crystal-ecdsa:
     github: sushichain/crystal-ecdsa
 
+development_dependencies:
+  ameba:
+    github: veelenga/ameba
+    version: ~> 0.9.1    
+
 crystal: 0.28.0
 
 license: MIT

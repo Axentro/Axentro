@@ -1,5 +1,9 @@
 version: 1.0
 shards:
+  ameba:
+    github: veelenga/ameba
+    version: 0.9.1
+
   crystal-argon2:
     github: sushichain/crystal-argon2
     version: 0.1.0
@@ -26,7 +30,7 @@ shards:
 
   scrypt:
     github: ysbaddaden/scrypt-crystal
-    version: 0.2.2
+    version: 0.3.0
 
   sqlite3:
     github: crystal-lang/crystal-sqlite3
