@@ -138,14 +138,14 @@ module ::Sushi::Interface::Sushi
     end
 
     def remove
-      with_config do |configs, current_config|
-        G.op.__name.nil? ? remove_all : with_name(G.op.__name, configs) { |config, name| configs.keys.size > 1 ? remove_config(name, current_config.name) : remove_all }
+      with_config do |_, current_config|
+        G.op.__name.nil? ? remove_all : with_name(G.op.__name, configs) {|_, name| configs.keys.size > 1 ? remove_config(name, current_config.name) : remove_all }
       end
     end
 
     def use
       puts_help(HELP_CONFIG_NAME) unless name = G.op.__name
-      with_config do |configs, current_config|
+      with_config do |configs, _|
         with_name(name, configs) do
           cm.save(name, true)
           puts_success "using configuration '#{name}' at #{cm.config_path}"
@@ -168,7 +168,7 @@ module ::Sushi::Interface::Sushi
     end
 
     def enabled(status : ConfigStatus)
-      with_config do |configs, current_config|
+      with_config do |_, _|
         cm.set_enabled_state(status)
         puts_success "configuration has been #{status} - #{cm.config_path}"
       end
