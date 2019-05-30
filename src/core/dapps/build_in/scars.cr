@@ -42,8 +42,8 @@ module ::Sushi::Core::DApps::BuildIn
       end
 
       domain_all
-        .select { |domain_name, domain| domain[:status] == Status::ForSale }
-        .map { |domain_name, domain| scale_decimal(domain) }
+        .select { |_, domain| domain[:status] == Status::ForSale }
+        .map { |_, domain| scale_decimal(domain) }
     end
 
     def resolve(domain_name : String, confirmation : Int32) : Domain?

@@ -21,7 +21,7 @@ include Hashes
 
 describe Blockchain do
   it "should calculate the total supply" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |block_factory, _|
       t_amount = 0_i64
       c_amount = 0_i64
       i = 0_i64

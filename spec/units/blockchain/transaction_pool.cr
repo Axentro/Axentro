@@ -25,7 +25,7 @@ describe TransactionPool do
   end
 
   it "should add a transaction to the pool using static methods" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |_, transaction_factory|
       transaction = transaction_factory.make_send(2000_i64)
 
       TransactionPool.setup
@@ -36,7 +36,7 @@ describe TransactionPool do
   end
 
   it "should add a transaction to the pool using instance methods" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |_, transaction_factory|
       transaction = transaction_factory.make_send(2000_i64)
 
       pool = TransactionPool.setup
@@ -47,7 +47,7 @@ describe TransactionPool do
   end
 
   it "should insert a transaction" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |_, transaction_factory|
       transaction = transaction_factory.make_send(2000_i64)
 
       pool = TransactionPool.setup
@@ -58,7 +58,7 @@ describe TransactionPool do
   end
 
   it "should delete a transaction using static methods" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |_, transaction_factory|
       transaction = transaction_factory.make_send(2000_i64)
 
       TransactionPool.setup
@@ -72,7 +72,7 @@ describe TransactionPool do
   end
 
   it "should delete a transaction using instance methods" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |_, transaction_factory|
       transaction = transaction_factory.make_send(2000_i64)
 
       pool = TransactionPool.setup
@@ -86,7 +86,7 @@ describe TransactionPool do
   end
 
   it "should replace the transactions using static methods" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |_, transaction_factory|
       transaction1 = transaction_factory.make_send(1000_i64)
       transaction2 = transaction_factory.make_send(2000_i64)
       transaction3 = transaction_factory.make_send(3000_i64)
@@ -105,7 +105,7 @@ describe TransactionPool do
   end
 
   it "should replace the transactions using instance methods" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |_, transaction_factory|
       transaction1 = transaction_factory.make_send(1000_i64)
       transaction2 = transaction_factory.make_send(2000_i64)
       transaction3 = transaction_factory.make_send(3000_i64)
@@ -124,7 +124,7 @@ describe TransactionPool do
   end
 
   it "should embed using static methods" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |_, transaction_factory|
       pool = TransactionPool.setup
 
       transactions = (0..2001).map do
@@ -148,7 +148,7 @@ describe TransactionPool do
   end
 
   it "should embed using instance methods" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |_, transaction_factory|
       pool = TransactionPool.setup
       transactions = (0..2001).map do
         Transaction.new(
@@ -171,7 +171,7 @@ describe TransactionPool do
   end
 
   it "should lock using static methods" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |_, transaction_factory|
       transaction1 = transaction_factory.make_send(2000_i64)
       transaction2 = transaction_factory.make_send(2000_i64)
       TransactionPool.setup
@@ -185,7 +185,7 @@ describe TransactionPool do
   end
 
   it "should lock using instance methods" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |_, transaction_factory|
       transaction1 = transaction_factory.make_send(2000_i64)
       transaction2 = transaction_factory.make_send(2000_i64)
       pool = TransactionPool.setup

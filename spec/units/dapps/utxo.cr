@@ -21,7 +21,7 @@ include Sushi::Core::Controllers
 describe UTXO do
   describe "#get" do
     it "should return 0 when the number of blocks is less than confirmations" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         chain = block_factory.addBlock.chain
         utxo = UTXO.new(block_factory.blockchain)
         utxo.record(chain)
@@ -32,7 +32,7 @@ describe UTXO do
     end
 
     it "should return address amount when the number of blocks is greater than confirmations" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         chain = block_factory.addBlocks(10).chain
         utxo = UTXO.new(block_factory.blockchain)
         utxo.record(chain)
@@ -46,7 +46,7 @@ describe UTXO do
 
     context "when address does not exist" do
       it "should return 0 when the number of blocks is less than confirmations and the address is not found" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           chain = block_factory.addBlock.chain
           utxo = UTXO.new(block_factory.blockchain)
           utxo.record(chain)
@@ -56,7 +56,7 @@ describe UTXO do
       end
 
       it "should return address amount when the number of blocks is greater than confirmations and the address is not found" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           chain = block_factory.addBlocks(10).chain
           utxo = UTXO.new(block_factory.blockchain)
           utxo.record(chain)
@@ -68,7 +68,7 @@ describe UTXO do
 
     context "when token does not exist" do
       it "should return 0 when the number of blocks is less than confirmations and the token is not found" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           chain = block_factory.addBlock.chain
           utxo = UTXO.new(block_factory.blockchain)
           utxo.record(chain)
@@ -79,7 +79,7 @@ describe UTXO do
       end
 
       it "should return address amount when the number of blocks is greater than confirmations and the token is not found" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           chain = block_factory.addBlocks(10).chain
           utxo = UTXO.new(block_factory.blockchain)
           utxo.record(chain)
@@ -93,7 +93,7 @@ describe UTXO do
 
   describe "#get_pending" do
     it "should get pending transactions amount for the supplied address in the supplied transactions" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         chain = block_factory.addBlock.chain
         utxo = UTXO.new(block_factory.blockchain)
         utxo.record(chain)
@@ -106,7 +106,7 @@ describe UTXO do
     end
 
     it "should get pending transactions amount for the supplied address when no transactions are supplied" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         chain = block_factory.addBlock.chain
         utxo = UTXO.new(block_factory.blockchain)
         utxo.record(chain)
@@ -120,7 +120,7 @@ describe UTXO do
 
     context "when chain is empty" do
       it "should get pending transactions amount for the supplied address when no transactions are supplied and the chain is empty" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           chain = [] of Block
           utxo = UTXO.new(block_factory.blockchain)
           utxo.record(chain)
@@ -132,7 +132,7 @@ describe UTXO do
       end
 
       it "should get pending transactions when no transactions are supplied and the chain is empty and the address is unknown" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           chain = [] of Block
           utxo = UTXO.new(block_factory.blockchain)
           utxo.record(chain)
@@ -146,7 +146,7 @@ describe UTXO do
 
   describe "#transaction_actions" do
     it "should return actions" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         utxo = UTXO.new(block_factory.blockchain)
         utxo.transaction_actions.should eq(["send"])
       end
@@ -155,7 +155,7 @@ describe UTXO do
 
   describe "#transaction_related?" do
     it "should always return true" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         utxo = UTXO.new(block_factory.blockchain)
         utxo.transaction_related?("whatever").should be_true
       end
@@ -289,7 +289,7 @@ describe UTXO do
 
   describe "#clear" do
     it "should clear the internal transaction lists with #clear" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         chain = block_factory.addBlocks(10).chain
         utxo = UTXO.new(block_factory.blockchain)
         utxo.record(chain)
@@ -304,7 +304,7 @@ describe UTXO do
   describe "#define_rpc?" do
     describe "#amount" do
       it "should return the unconfirmed amount" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           block_factory.addBlocks(10)
           recipient_address = block_factory.chain.last.transactions.first.recipients.first[:address]
           payload = {call: "amount", address: recipient_address, confirmation: 5, token: TOKEN_DEFAULT}.to_json
@@ -317,7 +317,7 @@ describe UTXO do
       end
 
       it "should return the confirmed amount" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           block_factory.addBlocks(10)
           recipient_address = block_factory.chain.last.transactions.first.recipients.first[:address]
           payload = {call: "amount", address: recipient_address, confirmation: 10, token: TOKEN_DEFAULT}.to_json

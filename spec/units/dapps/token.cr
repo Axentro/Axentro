@@ -20,14 +20,14 @@ include Sushi::Core::Controllers
 
 describe Token do
   it "should perform #setup" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |block_factory, _|
       chain = block_factory.addBlock.chain
       token = Token.new(block_factory.blockchain)
       token.setup.should be_nil
     end
   end
   it "should perform #transaction_actions" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |block_factory, _|
       chain = block_factory.addBlock.chain
       token = Token.new(block_factory.blockchain)
       token.transaction_actions.should eq(["create_token"])
@@ -35,14 +35,14 @@ describe Token do
   end
   describe "#transaction_related?" do
     it "should return true when action is related" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         chain = block_factory.addBlock.chain
         token = Token.new(block_factory.blockchain)
         token.transaction_related?("create_token").should be_true
       end
     end
     it "should return false when action is not related" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         chain = block_factory.addBlock.chain
         token = Token.new(block_factory.blockchain)
         token.transaction_related?("unrelated").should be_false
@@ -144,14 +144,14 @@ describe Token do
 
   describe "#valid_token_name?" do
     it "should return true when token name is valid" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         token = Token.new(block_factory.blockchain)
         token.valid_token_name?("KINGS").should be_true
       end
     end
 
     it "should raise an error with a message when " do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         token_name = "kings"
         message = <<-RULE
         You token '#{token_name}' is not valid
@@ -168,7 +168,7 @@ describe Token do
     end
 
     it "should raise an error when domain name is longer than 20 characters" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         token = Token.new(block_factory.blockchain)
         expect_raises(Exception) do
           token.valid_token_name?("123456789012345678901.sc")
@@ -177,7 +177,7 @@ describe Token do
     end
 
     it "should raise an error when domain name contains empty spaces" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         token = Token.new(block_factory.blockchain)
         expect_raises(Exception) do
           token.valid_token_name?("K I N G S")
@@ -191,7 +191,7 @@ describe Token do
   end
 
   it "should #record a chain" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |block_factory, _|
       chain = block_factory.addBlocks(10).chain
       token = Token.new(block_factory.blockchain)
       token.record(chain).should eq(11)
@@ -199,7 +199,7 @@ describe Token do
   end
 
   it "should #clear correctly" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |block_factory, _|
       chain = block_factory.addBlocks(10).chain
       token = Token.new(block_factory.blockchain)
       token.record(chain).should eq(11)
@@ -211,7 +211,7 @@ describe Token do
   describe "#define_rpc?" do
     describe "#token_list" do
       it "should list the tokens" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           payload = {call: "token_list"}.to_json
           json = JSON.parse(payload)
 

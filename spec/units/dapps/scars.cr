@@ -21,7 +21,7 @@ include Sushi::Core::Controllers
 describe Scars do
   describe "#resolve" do
     it "should return nil if the domain is not found" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         chain = block_factory.addBlock.chain
         scars = Scars.new(block_factory.blockchain)
         scars.record(chain)
@@ -30,7 +30,7 @@ describe Scars do
     end
 
     it "should return nil if the number internal domains is less than confirmations" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         chain = block_factory.addBlocks(10).chain
         scars = Scars.new(block_factory.blockchain)
         scars.record(chain)
@@ -56,7 +56,7 @@ describe Scars do
 
     describe "#resolve_pending" do
       it "should return nil if the domain is not found" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           chain = block_factory.addBlock.chain
           scars = Scars.new(block_factory.blockchain)
           scars.record(chain)
@@ -84,7 +84,7 @@ describe Scars do
 
     describe "#transaction_actions" do
       it "should return scars actions" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           scars = Scars.new(block_factory.blockchain)
           scars.transaction_actions.should eq(["scars_buy", "scars_sell", "scars_cancel"])
         end
@@ -93,13 +93,13 @@ describe Scars do
 
     describe "#transaction_related" do
       it "should return true if action is a scars related action" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           scars = Scars.new(block_factory.blockchain)
           scars.transaction_related?("scars_buy").should be_true
         end
       end
       it "should return false if the action is not a scars related action" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           scars = Scars.new(block_factory.blockchain)
           scars.transaction_related?("not_related").should be_false
         end
@@ -409,7 +409,7 @@ describe Scars do
         end
 
         it "should not resolve the address if the domain does not exist" do
-          with_factory do |block_factory, transaction_factory|
+          with_factory do |block_factory, _|
             domain = "awesome.sc"
             block_factory.addBlock
 
@@ -471,14 +471,14 @@ describe Scars do
 
     describe "#valid_domain?" do
       it "should return true when domain name is valid" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           scars = Scars.new(block_factory.blockchain)
           scars.valid_domain?("sushi.sc").should be_true
         end
       end
 
       it "should raise an error with a message when " do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           domain_rule = <<-RULE
           Your domain '123456789012345678901.sc' is not valid
 
@@ -495,7 +495,7 @@ describe Scars do
       end
 
       it "should raise an error when domain name is longer than 20 characters" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           scars = Scars.new(block_factory.blockchain)
           expect_raises(Exception) do
             scars.valid_domain?("123456789012345678901.sc")
@@ -504,7 +504,7 @@ describe Scars do
       end
 
       it "should raise an error when domain name does not contain a dot" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           scars = Scars.new(block_factory.blockchain)
           expect_raises(Exception) do
             scars.valid_domain?("nodotsc")
@@ -513,7 +513,7 @@ describe Scars do
       end
 
       it "should raise an error when domain name does not end with .sc prefix" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           scars = Scars.new(block_factory.blockchain)
           expect_raises(Exception) do
             scars.valid_domain?("domain.rt")
@@ -522,7 +522,7 @@ describe Scars do
       end
 
       it "should raise an error when domain name contains empty spaces" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           scars = Scars.new(block_factory.blockchain)
           expect_raises(Exception) do
             scars.valid_domain?("h e l l o.sc")
@@ -599,7 +599,7 @@ describe Scars do
       end
 
       it "should return empty list when no domains are for sale" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           scars = Scars.new(block_factory.blockchain)
           scars.sales.size.should eq(0)
         end

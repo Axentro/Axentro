@@ -54,7 +54,7 @@ describe RPCController do
 
     describe "#unpermitted_call" do
       it "should raise an error: Missing hash key call" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           payload = {unknown: "unknown"}.to_json
           json = JSON.parse(payload)
 
@@ -65,7 +65,7 @@ describe RPCController do
       end
 
       it "should return a 403 when the rpc call is unknown" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           payload = {call: "unknown"}.to_json
           json = JSON.parse(payload)
 
@@ -79,7 +79,7 @@ describe RPCController do
 
   describe "#exec_internal_get" do
     it "should return an unpermitted call response" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         payload = {call: "unknown"}.to_json
         json = JSON.parse(payload)
 

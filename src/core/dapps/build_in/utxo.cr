@@ -101,7 +101,7 @@ module ::Sushi::Core::DApps::BuildIn
     def calculate_for_transactions(transactions : Array(Transaction)) : Hash(String, Hash(String, Int64))
       utxo = Hash(String, Hash(String, Int64)).new
 
-      transactions.each_with_index do |transaction, i|
+      transactions.each_with_index do |transaction, _|
         utxo_transaction = calculate_for_transaction(transaction)
         utxo_transaction.each do |token, address_amount|
           utxo[token] ||= Hash(String, Int64).new

@@ -41,7 +41,7 @@ module ::Sushi::Core::Controllers
     end
 
     def get_handler
-      WebSocketHandler.new("/pubsub") { |socket, context| pubsub(socket) }
+      WebSocketHandler.new("/pubsub") { |socket, _| pubsub(socket) }
     end
 
     include Logger

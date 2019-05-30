@@ -21,7 +21,7 @@ include Sushi::Core::Keys
 describe RESTController do
   describe "__v1_blockchain" do
     it "should return the full blockchain" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         block_factory.addBlocks(2)
         exec_rest_api(block_factory.rest.__v1_blockchain(context("/api/v1/blockchain"), no_params)) do |result|
           result["status"].to_s.should eq("success")
@@ -33,7 +33,7 @@ describe RESTController do
 
   describe "__v1_blockchain_header" do
     it "should return the only blockchain headers" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         block_factory.addBlocks(2)
         exec_rest_api(block_factory.rest.__v1_blockchain_header(context("/api/v1/blockchain/header"), no_params)) do |result|
           result["status"].to_s.should eq("success")
@@ -45,7 +45,7 @@ describe RESTController do
 
   describe "__v1_blockchain_size" do
     it "should return the full blockchain size" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         block_factory.addBlocks(2)
         exec_rest_api(block_factory.rest.__v1_blockchain_size(context("/api/v1/blockchain/size"), no_params)) do |result|
           result["status"].to_s.should eq("success")
@@ -57,7 +57,7 @@ describe RESTController do
 
   describe "__v1_block_index" do
     it "should return the block for the specified index" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         block_factory.addBlocks(2)
         exec_rest_api(block_factory.rest.__v1_block_index(context("/api/v1/block"), {index: 0})) do |result|
           result["status"].to_s.should eq("success")
@@ -66,7 +66,7 @@ describe RESTController do
       end
     end
     it "should failure when block index is invalid" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         block_factory.addBlocks(2)
         exec_rest_api(block_factory.rest.__v1_block_index(context("/api/v1/block/99"), {index: 99})) do |result|
           result["status"].to_s.should eq("error")
@@ -78,7 +78,7 @@ describe RESTController do
 
   describe "__v1_block_index_header" do
     it "should return the block header for the specified index" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         block_factory.addBlocks(2)
         exec_rest_api(block_factory.rest.__v1_block_index_header(context("/api/v1/block/0/header"), {index: 0})) do |result|
           result["status"].to_s.should eq("success")
@@ -87,7 +87,7 @@ describe RESTController do
       end
     end
     it "should return failure when block index is invalid" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         block_factory.addBlocks(2)
         exec_rest_api(block_factory.rest.__v1_block_index_header(context("/api/v1/block/99/header"), {index: 99})) do |result|
           result["status"].to_s.should eq("error")
@@ -99,7 +99,7 @@ describe RESTController do
 
   describe "__v1_block_index_transactions" do
     it "should return the block transactions for the specified index" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         block_factory.addBlocks(2)
         exec_rest_api(block_factory.rest.__v1_block_index_transactions(context("/api/v1/block/0/header"), {index: 0})) do |result|
           result["status"].to_s.should eq("success")
@@ -108,7 +108,7 @@ describe RESTController do
       end
     end
     it "should return failure when block index is invalid" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         block_factory.addBlocks(2)
         exec_rest_api(block_factory.rest.__v1_block_index_transactions(context("/api/v1/block/99/header"), {index: 99})) do |result|
           result["status"].to_s.should eq("error")
@@ -131,7 +131,7 @@ describe RESTController do
       end
     end
     it "should return not found when specified transaction is not found" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         block_factory.addBlocks(2)
         exec_rest_api(block_factory.rest.__v1_transaction_id(context("/api/v1/transaction/non-existing-txn-id"), {id: "non-existing-txn-id"})) do |result|
           result["status"].to_s.should eq("success")
@@ -153,7 +153,7 @@ describe RESTController do
       end
     end
     it "should return not found when transaction is not found" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         block_factory.addBlocks(2)
         exec_rest_api(block_factory.rest.__v1_transaction_id_block(context("/api/v1/transaction/non-existing-txn-id/block"), {id: "non-existing-txn-id"})) do |result|
           result["status"].to_s.should eq("error")
@@ -175,7 +175,7 @@ describe RESTController do
       end
     end
     it "should return not found when transaction is not found" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         block_factory.addBlocks(2)
         exec_rest_api(block_factory.rest.__v1_transaction_id_block_header(context("/api/v1/transaction/non-existing-txn-id/block/header"), {id: "non-existing-txn-id"})) do |result|
           result["status"].to_s.should eq("error")
@@ -197,7 +197,7 @@ describe RESTController do
       end
     end
     it "should return not found when transaction is not found" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         block_factory.addBlocks(2)
         exec_rest_api(block_factory.rest.__v1_transaction_id_confirmations(context("/api/v1/transaction/non-existing-txn-id/confirmations"), {id: "non-existing-txn-id"})) do |result|
           result["status"].to_s.should eq("error")
@@ -209,7 +209,7 @@ describe RESTController do
 
   describe "__v1_transaction_fees" do
     it "should return the transaction fees" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         block_factory.addBlocks(2)
         exec_rest_api(block_factory.rest.__v1_transaction_fees(context("/api/v1/transaction/fees"), no_params)) do |result|
           result["status"].to_s.should eq("success")
@@ -236,7 +236,7 @@ describe RESTController do
       end
     end
     it "should return zero amount when address is not found" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         block_factory.addBlocks(2)
         exec_rest_api(block_factory.rest.__v1_address(context("/api/v1/address/non-existing-address"), {address: "non-existing-address"})) do |result|
           result["status"].to_s.should eq("success")
@@ -260,7 +260,7 @@ describe RESTController do
       end
     end
     it "should return no pairs when address and token is not found" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         block_factory.addBlocks(2)
         exec_rest_api(block_factory.rest.__v1_address_token(context("/api/v1/address/non-existing-address/token/NONE"), {address: "non-existing-address", token: "NONE"})) do |result|
           result["status"].to_s.should eq("success")
@@ -354,7 +354,7 @@ describe RESTController do
       end
     end
     it "should return error amount when domain is not found" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         block_factory.addBlocks(2)
         exec_rest_api(block_factory.rest.__v1_domain(context("/api/v1/domain/non-existing-domain"), {domain: "non-existing-domain"})) do |result|
           result["status"].to_s.should eq("error")
@@ -476,7 +476,7 @@ describe RESTController do
       end
     end
     it "should return false when domain is not resolved" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         domain = "sushi.sc"
         block_factory.addBlocks(2)
         exec_rest_api(block_factory.rest.__v1_scars(context("/api/v1/scars/#{domain}"), {domain: domain})) do |result|
@@ -502,7 +502,7 @@ describe RESTController do
 
   describe "__v1_node" do
     it "should return info about the connecting node" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         exec_rest_api(block_factory.rest.__v1_node(context("/api/v1/node"), no_params)) do |result|
           result["status"].to_s.should eq("success")
           NodeResult.from_json(result["result"].to_json)
@@ -513,7 +513,7 @@ describe RESTController do
 
   describe "__v1_nodes" do
     it "should return info about the connecting node" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         exec_rest_api(block_factory.rest.__v1_nodes(context("/api/v1/nodes"), no_params)) do |result|
           result["status"].to_s.should eq("success")
           NodesResult.from_json(result["result"].to_json)
@@ -524,7 +524,7 @@ describe RESTController do
 
   describe "__v1_node_id" do
     it "should return a message when node is not connected to any other nodes" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         exec_rest_api(block_factory.rest.__v1_node_id(context("/api/v1/node/node_id"), {id: "node_id"})) do |result|
           result["status"].to_s.should eq("error")
           result["reason"].to_s.should eq("the node node_id not found. (currently only search for the nodes which are directly connected.)")
