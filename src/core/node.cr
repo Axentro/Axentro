@@ -150,7 +150,7 @@ module ::Sushi::Core
     end
 
     private def peer_handler : WebSocketHandler
-      WebSocketHandler.new("/peer") { |socket, context| peer(socket) }
+      WebSocketHandler.new("/peer") { |socket, _| peer(socket) }
     end
 
     private def v1_api_documentation_handler : ApiDocumentationHandler

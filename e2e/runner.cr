@@ -83,7 +83,7 @@ module ::E2E
     end
 
     def launch_miners
-      @num_miners.times do |i|
+      @num_miners.times do |_|
         port = @node_ports.sample
         step mining(port, Random.rand(@num_miners)), 1, "launch miner for #{port}"
       end
@@ -295,7 +295,7 @@ module ::E2E
       step launch_client, 1, "launch client"
 
       running_steps = @time/300
-      running_steps.times do |i|
+      running_steps.times do |_|
         step running, 300, "running..."
       end
 

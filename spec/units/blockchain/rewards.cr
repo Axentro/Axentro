@@ -24,7 +24,7 @@ TOTAL_BLOCK_REWARD = 50462650_i64
 
 describe Blockchain do
   it "should calculate the block rewards for a single miner" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |block_factory, _|
       miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
       coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction)
       transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1])
@@ -43,7 +43,7 @@ describe Blockchain do
   end
 
   it "should calculate the block rewards for multiple miners" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |block_factory, _|
       miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
       miner2 = {context: {address: "Miner 2", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner2"}
       miner3 = {context: {address: "Miner 3", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner3"}
@@ -85,7 +85,7 @@ describe Blockchain do
 end
 
 def assert_reward_distribution(nonces1, nonces2, expected_percent_1, expected_percent_2)
-  with_factory do |block_factory, transaction_factory|
+  with_factory do |block_factory, _|
     miner1 = {context: {address: "Miner 1", nonces: (1..nonces1).map { |n| n.to_u64 }}, socket: MockWebSocket.new, mid: "miner1"}
     miner2 = {context: {address: "Miner 2", nonces: (1..nonces2).map { |n| n.to_u64 }}, socket: MockWebSocket.new, mid: "miner2"}
     coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction)

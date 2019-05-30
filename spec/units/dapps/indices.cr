@@ -20,7 +20,7 @@ include Sushi::Core::Controllers
 
 describe Indices do
   it "should perform #setup" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |block_factory, _|
       chain = block_factory.addBlock.chain
       indices = Indices.new(block_factory.blockchain)
       indices.setup.should be_nil
@@ -29,7 +29,7 @@ describe Indices do
 
   describe "#get" do
     it "should return the indice for the given transaction" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         chain = block_factory.addBlocks(2).chain
         indices = Indices.new(block_factory.blockchain)
         indices.record(chain)
@@ -37,7 +37,7 @@ describe Indices do
       end
     end
     it "should return nil if the transaction is not found in the chain" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         chain = block_factory.addBlocks(2).chain
         indices = Indices.new(block_factory.blockchain)
         indices.record(chain)
@@ -47,21 +47,21 @@ describe Indices do
   end
 
   it "should perform #transaction_actions" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |block_factory, _|
       chain = block_factory.addBlock.chain
       indices = Indices.new(block_factory.blockchain)
       indices.transaction_actions.size.should eq(0)
     end
   end
   it "should perform #transaction_related?" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |block_factory, _|
       chain = block_factory.addBlock.chain
       indices = Indices.new(block_factory.blockchain)
       indices.transaction_related?("action").should be_true
     end
   end
   it "should perform #valid_transaction?" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |block_factory, _|
       chain = block_factory.addBlocks(2).chain
       indices = Indices.new(block_factory.blockchain)
 
@@ -69,7 +69,7 @@ describe Indices do
     end
   end
   it "should perform #record" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |block_factory, _|
       chain = block_factory.addBlocks(2).chain
       indices = Indices.new(block_factory.blockchain)
       indices.record(chain)
@@ -77,7 +77,7 @@ describe Indices do
     end
   end
   it "should perform #clear" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |block_factory, _|
       chain = block_factory.addBlocks(2).chain
       indices = Indices.new(block_factory.blockchain)
       indices.record(chain)
@@ -89,7 +89,7 @@ describe Indices do
   describe "#define_rpc?" do
     describe "#transaction" do
       it "should return a transaction for the supplied transaction id" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           block_factory.addBlocks(10)
           transaction = block_factory.chain[2].transactions.first
           payload = {call: "transaction", transaction_id: transaction.id}.to_json
@@ -104,7 +104,7 @@ describe Indices do
       end
 
       it "should raise an exception for the invalid transaction id" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           payload = {call: "transaction", transaction_id: "invalid-transaction-id"}.to_json
           json = JSON.parse(payload)
 
@@ -117,7 +117,7 @@ describe Indices do
 
     describe "#confirmation" do
       it "should return confirmation info for the supplied transaction id" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           block_factory.addBlocks(9)
           payload = {call: "confirmation", transaction_id: block_factory.chain[2].transactions.first.id}.to_json
           json = JSON.parse(payload)
@@ -129,7 +129,7 @@ describe Indices do
         end
       end
       it "should fail to find a block for the supplied transaction id" do
-        with_factory do |block_factory, transaction_factory|
+        with_factory do |block_factory, _|
           payload = {call: "confirmation", transaction_id: "non-existing-transaction-id"}.to_json
           json = JSON.parse(payload)
 
