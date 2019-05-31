@@ -22,22 +22,19 @@ describe Fees do
   describe "default non implemented methods" do
     it "should perform #setup" do
       with_factory do |block_factory, _|
-        chain = block_factory.add_block.chain
-        fees = Fees.new(block_factory.blockchain)
+        fees = Fees.new(block_factory.add_block.blockchain)
         fees.setup.should be_nil
       end
     end
     it "should perform #transaction_actions" do
       with_factory do |block_factory, _|
-        chain = block_factory.add_block.chain
-        fees = Fees.new(block_factory.blockchain)
+        fees = Fees.new(block_factory.add_block.blockchain)
         fees.transaction_actions.size.should eq(0)
       end
     end
     it "should perform #transaction_related?" do
       with_factory do |block_factory, _|
-        chain = block_factory.add_block.chain
-        fees = Fees.new(block_factory.blockchain)
+        fees = Fees.new(block_factory.add_block.blockchain)
         fees.transaction_related?("action").should be_false
       end
     end
@@ -57,8 +54,7 @@ describe Fees do
     end
     it "should perform #clear" do
       with_factory do |block_factory, _|
-        chain = block_factory.add_blocks(2).chain
-        fees = Fees.new(block_factory.blockchain)
+        fees = Fees.new(block_factory.add_blocks(2).blockchain)
         fees.clear.should be_nil
       end
     end

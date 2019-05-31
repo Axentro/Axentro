@@ -21,22 +21,19 @@ include Sushi::Core::Controllers
 describe Rejects do
   it "should perform #setup" do
     with_factory do |block_factory, _|
-      chain = block_factory.add_block.chain
-      rejects = Rejects.new(block_factory.blockchain)
+      rejects = Rejects.new(block_factory.add_block.blockchain)
       rejects.setup.should be_nil
     end
   end
   it "should perform #transaction_actions" do
     with_factory do |block_factory, _|
-      chain = block_factory.add_block.chain
-      rejects = Rejects.new(block_factory.blockchain)
+      rejects = Rejects.new(block_factory.add_block.blockchain)
       rejects.transaction_actions.size.should eq(0)
     end
   end
   it "should perform #transaction_related?" do
     with_factory do |block_factory, _|
-      chain = block_factory.add_block.chain
-      rejects = Rejects.new(block_factory.blockchain)
+      rejects = Rejects.new(block_factory.add_block.blockchain)
       rejects.transaction_related?("action").should be_false
     end
   end

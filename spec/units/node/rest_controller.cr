@@ -308,7 +308,6 @@ describe RESTController do
     end
     it "should return empty result when specified address and filter is not found" do
       with_factory do |block_factory, transaction_factory|
-        address = transaction_factory.sender_wallet.address
         transaction = transaction_factory.make_send(100_i64)
         block_factory.add_block([transaction]).add_blocks(2)
         exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/no-address/transactions?actions=unknown"), {address: "no-address", actions: "unknown"})) do |result|

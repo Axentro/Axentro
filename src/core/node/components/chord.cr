@@ -108,7 +108,6 @@ module ::Sushi::Core::NodeComponents
     def join(node, socket, _content)
       _m_content = M_CONTENT_CHORD_JOIN.from_json(_content)
 
-      _version = _m_content.version
       _context = _m_content.context
 
       debug "#{_context[:host]}:#{_context[:port]} try to join SushiChain"
@@ -130,7 +129,6 @@ module ::Sushi::Core::NodeComponents
     def join_private(node, socket, _content)
       _m_content = M_CONTENT_CHORD_JOIN_PRIVATE.from_json(_content)
 
-      _version = _m_content.version
       _context = _m_content.context
 
       debug "private node try to join SushiChain"

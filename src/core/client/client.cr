@@ -74,7 +74,7 @@ module ::Sushi::Core
     end
 
     def _handshake_accepted(_content : String)
-      _m_content = M_CONTENT_CLIENT_HANDSHAKE_ACCEPTED.from_json(_content)
+      M_CONTENT_CLIENT_HANDSHAKE_ACCEPTED.from_json(_content)
 
       puts ""
       puts light_green("  successfully connected to the node!")

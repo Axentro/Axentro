@@ -22,22 +22,19 @@ describe BlockchainInfo do
   describe "default non implemented methods" do
     it "should perform #setup" do
       with_factory do |block_factory, _|
-        chain = block_factory.add_block.chain
-        transaction_creator = BlockchainInfo.new(block_factory.blockchain)
+        transaction_creator = BlockchainInfo.new(block_factory.add_block.blockchain)
         transaction_creator.setup.should be_nil
       end
     end
     it "should perform #transaction_actions" do
       with_factory do |block_factory, _|
-        chain = block_factory.add_block.chain
-        transaction_creator = BlockchainInfo.new(block_factory.blockchain)
+        transaction_creator = BlockchainInfo.new(block_factory.add_block.blockchain)
         transaction_creator.transaction_actions.size.should eq(0)
       end
     end
     it "should perform #transaction_related?" do
       with_factory do |block_factory, _|
-        chain = block_factory.add_block.chain
-        transaction_creator = BlockchainInfo.new(block_factory.blockchain)
+        transaction_creator = BlockchainInfo.new(block_factory.add_block.blockchain)
         transaction_creator.transaction_related?("action").should be_false
       end
     end
@@ -57,8 +54,7 @@ describe BlockchainInfo do
     end
     it "should perform #clear" do
       with_factory do |block_factory, _|
-        chain = block_factory.add_blocks(2).chain
-        transaction_creator = BlockchainInfo.new(block_factory.blockchain)
+        transaction_creator = BlockchainInfo.new(block_factory.add_blocks(2).blockchain)
         transaction_creator.clear.should be_nil
       end
     end

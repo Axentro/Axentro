@@ -125,7 +125,7 @@ describe TransactionPool do
 
   it "should embed using static methods" do
     with_factory do |_, transaction_factory|
-      pool = TransactionPool.setup
+      TransactionPool.setup
 
       transactions = (0..2001).map do
         Transaction.new(

@@ -112,8 +112,6 @@ describe Block do
     it "should raise error if there is an index mismatch with the prev block" do
       with_factory do |block_factory|
         chain = block_factory.add_blocks(1).chain
-        prev_hash = chain[1].to_hash
-        timestamp = chain[1].timestamp
         block = chain.last
         block.index = 2
         expect_raises(Exception, "mismatch index for the prev block(2): 2") do
@@ -310,7 +308,7 @@ def a_fixed_signed_transaction
     "TTA0MGQyMjc2ODMxNmE2MzlmZTNmNDZmNzRlYTU0NDFmNDM3MGY0MDBmNzU3NGVlMDE2OThkNDM4MjcxMTk0NzY4NjM4NWVj",
     "TTA4ZGViYmM1NTdiNTkyNmU1MmUwZmQ5NThkZWQ1M2E1ODE5NjU2NDg1OWM2MWQw")
 
-  signed_transaction = Transaction.new(
+  Transaction.new(
     "ded1ea5373f55b4e84ea9c140761ba181af31a94cc6c2bb22685b2f86639ca1e",
     "send", # action
     [a_signed_sender(sender_wallet, 1000_i64, "6fee937285f5bfb59d84d4e371ab28f6e2a9226091ef781b6039781778662b0f", "c033714ab9a447ac08b7e2774b42ff894a143663147923403b2da171ffd6f7e9")],

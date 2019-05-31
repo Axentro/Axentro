@@ -424,7 +424,7 @@ module ::Sushi::Core
     end
 
     private def _request_transactions(socket, _content)
-      _m_content = M_CONTENT_NODE_REQUEST_TRANSACTIONS.from_json(_content)
+      M_CONTENT_NODE_REQUEST_TRANSACTIONS.from_json(_content)
 
       info "requested transactions"
 
