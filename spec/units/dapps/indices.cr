@@ -21,7 +21,7 @@ include Sushi::Core::Controllers
 describe Indices do
   it "should perform #setup" do
     with_factory do |block_factory, _|
-      chain = block_factory.addBlock.chain
+      chain = block_factory.add_block.chain
       indices = Indices.new(block_factory.blockchain)
       indices.setup.should be_nil
     end
@@ -30,7 +30,7 @@ describe Indices do
   describe "#get" do
     it "should return the indice for the given transaction" do
       with_factory do |block_factory, _|
-        chain = block_factory.addBlocks(2).chain
+        chain = block_factory.add_blocks(2).chain
         indices = Indices.new(block_factory.blockchain)
         indices.record(chain)
         indices.get(chain.last.transactions.last.id).should eq(2)
@@ -38,7 +38,7 @@ describe Indices do
     end
     it "should return nil if the transaction is not found in the chain" do
       with_factory do |block_factory, _|
-        chain = block_factory.addBlocks(2).chain
+        chain = block_factory.add_blocks(2).chain
         indices = Indices.new(block_factory.blockchain)
         indices.record(chain)
         indices.get("non-existing-transaction-id").should be_nil
@@ -48,21 +48,21 @@ describe Indices do
 
   it "should perform #transaction_actions" do
     with_factory do |block_factory, _|
-      chain = block_factory.addBlock.chain
+      chain = block_factory.add_block.chain
       indices = Indices.new(block_factory.blockchain)
       indices.transaction_actions.size.should eq(0)
     end
   end
   it "should perform #transaction_related?" do
     with_factory do |block_factory, _|
-      chain = block_factory.addBlock.chain
+      chain = block_factory.add_block.chain
       indices = Indices.new(block_factory.blockchain)
       indices.transaction_related?("action").should be_true
     end
   end
   it "should perform #valid_transaction?" do
     with_factory do |block_factory, _|
-      chain = block_factory.addBlocks(2).chain
+      chain = block_factory.add_blocks(2).chain
       indices = Indices.new(block_factory.blockchain)
 
       indices.valid_transaction?(chain.last.transactions.first, chain.last.transactions[1..-1]).should be_true
@@ -70,7 +70,7 @@ describe Indices do
   end
   it "should perform #record" do
     with_factory do |block_factory, _|
-      chain = block_factory.addBlocks(2).chain
+      chain = block_factory.add_blocks(2).chain
       indices = Indices.new(block_factory.blockchain)
       indices.record(chain)
       indices.@indices.reject(&.empty?).size.should eq(2)
@@ -78,7 +78,7 @@ describe Indices do
   end
   it "should perform #clear" do
     with_factory do |block_factory, _|
-      chain = block_factory.addBlocks(2).chain
+      chain = block_factory.add_blocks(2).chain
       indices = Indices.new(block_factory.blockchain)
       indices.record(chain)
       indices.clear
@@ -90,7 +90,7 @@ describe Indices do
     describe "#transaction" do
       it "should return a transaction for the supplied transaction id" do
         with_factory do |block_factory, _|
-          block_factory.addBlocks(10)
+          block_factory.add_blocks(10)
           transaction = block_factory.chain[2].transactions.first
           payload = {call: "transaction", transaction_id: transaction.id}.to_json
           json = JSON.parse(payload)
@@ -118,7 +118,7 @@ describe Indices do
     describe "#confirmation" do
       it "should return confirmation info for the supplied transaction id" do
         with_factory do |block_factory, _|
-          block_factory.addBlocks(9)
+          block_factory.add_blocks(9)
           payload = {call: "confirmation", transaction_id: block_factory.chain[2].transactions.first.id}.to_json
           json = JSON.parse(payload)
 

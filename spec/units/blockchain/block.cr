@@ -55,7 +55,7 @@ describe Block do
   describe "#valid_nonce?" do
     it "should return true when valid" do
       with_factory do |block_factory|
-        block = block_factory.addBlock.chain.first
+        block = block_factory.add_block.chain.first
         block.nonce = a_nonce
         block.valid_nonce?(0).should be_true
       end
@@ -63,7 +63,7 @@ describe Block do
 
     it "should return false when invalid" do
       with_factory do |block_factory|
-        block = block_factory.addBlock.chain.first
+        block = block_factory.add_block.chain.first
         block.nonce = a_nonce
         block.valid_nonce?(2).should be_false
       end
@@ -73,7 +73,7 @@ describe Block do
   describe "#valid_as_latest?" do
     it "should return true when valid" do
       with_factory do |block_factory|
-        chain = block_factory.addBlocks(1).chain
+        chain = block_factory.add_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
         block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 1_i32)
@@ -83,7 +83,7 @@ describe Block do
 
     it "should raise invalid index if index does not equal blockchain size" do
       with_factory do |block_factory|
-        chain = block_factory.addBlocks(1).chain
+        chain = block_factory.add_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
         block = Block.new(99_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 1_i32)
@@ -96,7 +96,7 @@ describe Block do
 
     it "should raise error if the nonce is invalid" do
       with_factory do |block_factory|
-        chain = block_factory.addBlocks(1).chain
+        chain = block_factory.add_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
 
@@ -111,7 +111,7 @@ describe Block do
 
     it "should raise error if there is an index mismatch with the prev block" do
       with_factory do |block_factory|
-        chain = block_factory.addBlocks(1).chain
+        chain = block_factory.add_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
         block = chain.last
@@ -124,7 +124,7 @@ describe Block do
 
     it "should raise error if prev hash is invalid" do
       with_factory do |block_factory|
-        chain = block_factory.addBlocks(1).chain
+        chain = block_factory.add_blocks(1).chain
         prev_hash = "invalid"
         timestamp = chain[1].timestamp
         block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 99_i32)
@@ -137,7 +137,7 @@ describe Block do
 
     it "should raise error if timestamp is invalid because is smaller than prev timestamp" do
       with_factory do |block_factory|
-        chain = block_factory.addBlocks(1).chain
+        chain = block_factory.add_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp - 10000000
         block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 10_i32)
@@ -150,7 +150,7 @@ describe Block do
 
     it "should raise error if timestamp is invalid because is bigger than next timestamp" do
       with_factory do |block_factory|
-        chain = block_factory.addBlocks(1).chain
+        chain = block_factory.add_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp + 10000000
         block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 10_i32)
@@ -163,7 +163,7 @@ describe Block do
 
     it "should raise error if difficulty is invalid" do
       with_factory do |block_factory|
-        chain = block_factory.addBlocks(1).chain
+        chain = block_factory.add_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
         block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 99_i32)
@@ -176,7 +176,7 @@ describe Block do
 
     it "should raise error if merkle tree root is invalid" do
       with_factory do |block_factory|
-        chain = block_factory.addBlocks(1).chain
+        chain = block_factory.add_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
         block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 1_i32)

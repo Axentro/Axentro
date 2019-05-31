@@ -21,35 +21,35 @@ include Sushi::Core::Controllers
 describe Rejects do
   it "should perform #setup" do
     with_factory do |block_factory, _|
-      chain = block_factory.addBlock.chain
+      chain = block_factory.add_block.chain
       rejects = Rejects.new(block_factory.blockchain)
       rejects.setup.should be_nil
     end
   end
   it "should perform #transaction_actions" do
     with_factory do |block_factory, _|
-      chain = block_factory.addBlock.chain
+      chain = block_factory.add_block.chain
       rejects = Rejects.new(block_factory.blockchain)
       rejects.transaction_actions.size.should eq(0)
     end
   end
   it "should perform #transaction_related?" do
     with_factory do |block_factory, _|
-      chain = block_factory.addBlock.chain
+      chain = block_factory.add_block.chain
       rejects = Rejects.new(block_factory.blockchain)
       rejects.transaction_related?("action").should be_false
     end
   end
   it "should perform #valid_transaction?" do
     with_factory do |block_factory, _|
-      chain = block_factory.addBlocks(2).chain
+      chain = block_factory.add_blocks(2).chain
       rejects = Rejects.new(block_factory.blockchain)
       rejects.valid_transaction?(chain.last.transactions.first, chain.last.transactions).should be_true
     end
   end
   it "should perform #record" do
     with_factory do |block_factory, _|
-      chain = block_factory.addBlocks(2).chain
+      chain = block_factory.add_blocks(2).chain
       rejects = Rejects.new(block_factory.blockchain)
       rejects.record(chain).should be_nil
     end
@@ -58,7 +58,7 @@ describe Rejects do
   describe "record_reject" do
     it "should record a rejected transaction with exception message" do
       with_factory do |block_factory, _|
-        chain = block_factory.addBlocks(2).chain
+        chain = block_factory.add_blocks(2).chain
         transaction_id = chain.last.transactions.last.id
         rejects = Rejects.new(block_factory.blockchain)
         rejects.record_reject(transaction_id, Exception.new("oops"))
@@ -67,7 +67,7 @@ describe Rejects do
     end
     it "should record a rejected transaction with default exception message" do
       with_factory do |block_factory, _|
-        chain = block_factory.addBlocks(2).chain
+        chain = block_factory.add_blocks(2).chain
         transaction_id = chain.last.transactions.last.id
         rejects = Rejects.new(block_factory.blockchain)
         rejects.record_reject(transaction_id, Exception.new)
@@ -77,7 +77,7 @@ describe Rejects do
   end
   it "should perform #clear" do
     with_factory do |block_factory, _|
-      chain = block_factory.addBlocks(2).chain
+      chain = block_factory.add_blocks(2).chain
       rejects = Rejects.new(block_factory.blockchain)
       rejects.record_reject(chain.last.transactions.last.id, Exception.new)
       rejects.clear
