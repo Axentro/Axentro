@@ -47,17 +47,17 @@ module ::Units::Utils::ChainGenerator
       enable_difficulty
     end
 
-    def addBlock
+    def add_block
       add_valid_block
       self
     end
 
-    def addBlocks(number : Int)
-      (1..number).each { |_| addBlock }
+    def add_blocks(number : Int)
+      (1..number).each { |_| add_block }
       self
     end
 
-    def addBlock(transactions : Array(Transaction))
+    def add_block(transactions : Array(Transaction))
       transactions.each { |txn| @blockchain.add_transaction(txn, false) }
       add_valid_block
       self

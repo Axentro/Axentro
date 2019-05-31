@@ -45,7 +45,7 @@ describe Scars do
         scars = Scars.new(block_factory.blockchain)
         scars.record(chain)
 
-        onSuccess(scars.resolve(domain, 1)) do |result|
+        on_success(scars.resolve(domain, 1)) do |result|
           result["domain_name"].should eq(domain)
           result["address"].should eq(transaction_factory.sender_wallet.address)
           result["status"].should eq(0)
@@ -72,7 +72,7 @@ describe Scars do
           scars = Scars.new(block_factory.blockchain)
           scars.record(chain)
 
-          onSuccess(scars.resolve_pending(domain, transactions)) do |result|
+          on_success(scars.resolve_pending(domain, transactions)) do |result|
             result["domain_name"].should eq(domain)
             result["address"].should eq(transaction_factory.sender_wallet.address)
             result["status"].should eq(0)
@@ -609,7 +609,7 @@ describe Scars do
   STDERR.puts "< dApps::Scars"
 end
 
-def onSuccess(result, &block)
+def on_success(result, &block)
   if result.nil?
     fail("value should not be nil")
   else

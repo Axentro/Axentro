@@ -29,15 +29,6 @@ Lint/UselessAssign:
   - src/core/client/client.cr
   - src/cli/sushi/client.cr
 
-# Problems found: 4
-# Run `ameba --only Style/MethodNames` for details
-Style/MethodNames:
-  Description: Enforces method names to be in underscored case
-  Enabled: true
-  Excluded:
-  - spec/units/dapps/scars.cr
-  - spec/units/utils/chain_generator.cr
-
 # Problems found: 3
 # Run `ameba --only Performance/FirstLastAfterFilter` for details
 Performance/FirstLastAfterFilter:
