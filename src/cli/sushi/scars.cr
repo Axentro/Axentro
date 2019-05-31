@@ -119,7 +119,7 @@ module ::Sushi::Interface::Sushi
 
       raise "the domain #{domain} is not resolved" unless resolved["resolved"].as_bool
 
-      if resolved["domain"]["status"] == Core::DApps::BuildIn::Scars::Status::ForSale
+      if resolved["domain"]["status"] == Core::DApps::BuildIn::Scars::Status::FOR_SALE
         raise "the domain #{domain} is already for sale"
       end
 
@@ -154,7 +154,7 @@ module ::Sushi::Interface::Sushi
 
       raise "the domain #{domain} is not resolved" unless resolved["resolved"].as_bool
 
-      unless resolved["domain"]["status"] == Core::DApps::BuildIn::Scars::Status::ForSale
+      unless resolved["domain"]["status"] == Core::DApps::BuildIn::Scars::Status::FOR_SALE
         raise "the domain #{domain} is not for sale"
       end
 
@@ -213,11 +213,11 @@ module ::Sushi::Interface::Sushi
         puts_success "resolved : #{resolved["resolved"]}"
 
         status = case resolved["domain"]["status"].as_i
-                 when Core::DApps::BuildIn::Scars::Status::Acquired
+                 when Core::DApps::BuildIn::Scars::Status::ACQUIRED
                    "acquired"
-                 when Core::DApps::BuildIn::Scars::Status::ForSale
+                 when Core::DApps::BuildIn::Scars::Status::FOR_SALE
                    "for sale"
-                 when Core::DApps::BuildIn::Scars::Status::NotFound
+                 when Core::DApps::BuildIn::Scars::Status::NOT_FOUND
                    "not found"
                  end
 

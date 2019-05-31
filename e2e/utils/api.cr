@@ -79,7 +79,7 @@ module ::E2E::Utils::API
   end
 
   def parse_json(command_res : String) : JSON::Any?
-    return JSON.parse(command_res)
+    JSON.parse(command_res)
   rescue e : Exception
     STDERR.puts "invalid json found during executing API"
     STDERR.puts "original message"

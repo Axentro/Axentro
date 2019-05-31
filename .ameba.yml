@@ -25,24 +25,6 @@ Performance/SizeAfterFilter:
   - spec/units/dapps/indices.cr
   - src/core/dapps/build_in/indices.cr
 
-# Problems found: 1
-# Run `ameba --only Style/RedundantReturn` for details
-Style/RedundantReturn:
-  Description: Reports redundant return expressions
-  AllowMultiReturn: true
-  AllowEmptyReturn: true
-  Enabled: true
-  Excluded:
-  - e2e/utils/api.cr
-
-# Problems found: 3
-# Run `ameba --only Style/ConstantNames` for details
-Style/ConstantNames:
-  Description: Enforces constant names to be in screaming case
-  Enabled: true
-  Excluded:
-  - src/core/dapps/build_in/scars.cr
-
 # Problems found: 30
 # Run `ameba --only Style/TypeNames` for details
 Style/TypeNames:
