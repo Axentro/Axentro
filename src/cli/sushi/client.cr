@@ -169,7 +169,6 @@ module ::Sushi::Interface::Sushi
       fee = $4.to_s
       message = $5.to_s
 
-      to_address = Address.from(address, "recipient")
       wallets = [@wallet.not_nil!]
 
       senders = SendersDecimal.new

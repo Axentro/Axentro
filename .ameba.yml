@@ -3,32 +3,6 @@
 # The point is for the user to remove these configuration records
 # one by one as the reported problems are removed from the code base.
 
-# Problems found: 54
-# Run `ameba --only Lint/UselessAssign` for details
-Lint/UselessAssign:
-  Description: Disallows useless variable assignments
-  Enabled: true
-  Excluded:
-  - spec/units/dapps/transaction.cr
-  - spec/units/dapps/fees.cr
-  - spec/units/dapps/blockchain_info.cr
-  - spec/units/dapps/token.cr
-  - spec/units/dapps/rejects.cr
-  - spec/units/dapps/utxo.cr
-  - spec/units/dapps/indices.cr
-  - spec/units/blockchain/transaction_decimal.cr
-  - spec/units/blockchain/transaction.cr
-  - spec/units/blockchain/transaction_pool.cr
-  - spec/units/blockchain/block.cr
-  - spec/units/node/rest_controller.cr
-  - spec/units/node/rpc_controller.cr
-  - src/core/dapps/build_in/scars.cr
-  - src/core/node.cr
-  - src/core/node/components/miners_manager.cr
-  - src/core/node/components/chord.cr
-  - src/core/client/client.cr
-  - src/cli/sushi/client.cr
-
 # Problems found: 3
 # Run `ameba --only Performance/FirstLastAfterFilter` for details
 Performance/FirstLastAfterFilter:

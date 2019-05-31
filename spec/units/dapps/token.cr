@@ -21,30 +21,26 @@ include Sushi::Core::Controllers
 describe Token do
   it "should perform #setup" do
     with_factory do |block_factory, _|
-      chain = block_factory.add_block.chain
-      token = Token.new(block_factory.blockchain)
+      token = Token.new(block_factory.add_block.blockchain)
       token.setup.should be_nil
     end
   end
   it "should perform #transaction_actions" do
     with_factory do |block_factory, _|
-      chain = block_factory.add_block.chain
-      token = Token.new(block_factory.blockchain)
+      token = Token.new(block_factory.add_block.blockchain)
       token.transaction_actions.should eq(["create_token"])
     end
   end
   describe "#transaction_related?" do
     it "should return true when action is related" do
       with_factory do |block_factory, _|
-        chain = block_factory.add_block.chain
-        token = Token.new(block_factory.blockchain)
+        token = Token.new(block_factory.add_block.blockchain)
         token.transaction_related?("create_token").should be_true
       end
     end
     it "should return false when action is not related" do
       with_factory do |block_factory, _|
-        chain = block_factory.add_block.chain
-        token = Token.new(block_factory.blockchain)
+        token = Token.new(block_factory.add_block.blockchain)
         token.transaction_related?("unrelated").should be_false
       end
     end
@@ -120,8 +116,7 @@ describe Token do
       with_factory do |block_factory, transaction_factory|
         transaction1 = transaction_factory.make_create_token("KINGS", 10_i64)
         transaction2 = transaction_factory.make_create_token("KINGS", 10_i64)
-        chain = block_factory.add_blocks(10).chain
-        token = Token.new(block_factory.blockchain)
+        token = Token.new(block_factory.add_blocks(10).blockchain)
         expect_raises(Exception, "the token KINGS is already created") do
           token.valid_transaction?(transaction2, [transaction1])
         end

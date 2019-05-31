@@ -85,7 +85,6 @@ module ::Sushi::Core::NodeComponents
       _m_content = M_CONTENT_MINER_FOUND_NONCE.from_json(_content)
 
       nonce = _m_content.nonce
-      found = false
 
       if miner = find?(socket)
         if @miners.map { |m| m[:context][:nonces] }.flatten.includes?(nonce)

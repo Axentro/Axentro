@@ -88,7 +88,6 @@ module ::Sushi::Core::DApps::BuildIn
       sender = transaction.senders[0]
       recipients = transaction.recipients
       domain_name = transaction.message
-      address = sender[:address]
       price = sender[:amount]
 
       valid_domain?(domain_name)

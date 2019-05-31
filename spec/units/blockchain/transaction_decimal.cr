@@ -59,7 +59,7 @@ describe TransactionDecimal do
 
     transaction_id = Transaction.create_id
     expect_raises(Exception, "invalid decimal transaction (expected scaled: 0 but received 1)") do
-      transaction = TransactionDecimal.new(
+      TransactionDecimal.new(
         transaction_id,
         "send", # action
         [a_decimal_sender(sender_wallet, "1000000")],

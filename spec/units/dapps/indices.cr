@@ -21,8 +21,7 @@ include Sushi::Core::Controllers
 describe Indices do
   it "should perform #setup" do
     with_factory do |block_factory, _|
-      chain = block_factory.add_block.chain
-      indices = Indices.new(block_factory.blockchain)
+      indices = Indices.new(block_factory.add_block.blockchain)
       indices.setup.should be_nil
     end
   end
@@ -48,15 +47,13 @@ describe Indices do
 
   it "should perform #transaction_actions" do
     with_factory do |block_factory, _|
-      chain = block_factory.add_block.chain
-      indices = Indices.new(block_factory.blockchain)
+      indices = Indices.new(block_factory.add_block.blockchain)
       indices.transaction_actions.size.should eq(0)
     end
   end
   it "should perform #transaction_related?" do
     with_factory do |block_factory, _|
-      chain = block_factory.add_block.chain
-      indices = Indices.new(block_factory.blockchain)
+      indices = Indices.new(block_factory.add_block.blockchain)
       indices.transaction_related?("action").should be_true
     end
   end

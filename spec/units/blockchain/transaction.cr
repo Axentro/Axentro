@@ -323,8 +323,7 @@ describe Transaction do
   describe "#valid_common?" do
     it "should return true when valid" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.add_block([transaction_factory.make_send(2000_i64)]).chain
-        transactions = chain.last.transactions
+        block_factory.add_block([transaction_factory.make_send(2000_i64)])
 
         transaction = transaction_factory.make_send(2000_i64)
         transaction.valid_common?.should be_true
@@ -333,8 +332,7 @@ describe Transaction do
 
     it "should raise transaction id length error if not 64" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.add_block([transaction_factory.make_send(2000_i64)]).chain
-        transactions = chain.last.transactions
+        block_factory.add_block([transaction_factory.make_send(2000_i64)])
 
         transaction = transaction_factory.make_send(2000_i64)
         transaction.id = "123"
@@ -346,8 +344,7 @@ describe Transaction do
 
     it "should raise message size error if size > max" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.add_block([transaction_factory.make_send(2000_i64)]).chain
-        transactions = chain.last.transactions
+        block_factory.add_block([transaction_factory.make_send(2000_i64)])
 
         transaction = transaction_factory.make_send(2000_i64)
         transaction.message = ("exceeds"*100)
@@ -359,8 +356,7 @@ describe Transaction do
 
     it "should raise token size error if size > max" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.add_block([transaction_factory.make_send(2000_i64)]).chain
-        transactions = chain.last.transactions
+        block_factory.add_block([transaction_factory.make_send(2000_i64)])
 
         transaction = transaction_factory.make_send(2000_i64)
         transaction.token = ("exceeds"*100)
@@ -372,8 +368,7 @@ describe Transaction do
 
     it "should raise unscaled error if transaction is unscaled" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.add_block([transaction_factory.make_send(2000_i64)]).chain
-        transactions = chain.last.transactions
+        block_factory.add_block([transaction_factory.make_send(2000_i64)])
 
         transaction = transaction_factory.make_send(2000_i64)
         transaction.scaled = 0
@@ -385,8 +380,7 @@ describe Transaction do
 
     it "should raise invalid signing for sender if sender not signed" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.add_block([transaction_factory.make_send(2000_i64)]).chain
-        transactions = chain.last.transactions
+        block_factory.add_block([transaction_factory.make_send(2000_i64)])
 
         transaction = transaction_factory.make_send(2000_i64)
         transaction = transaction.as_unsigned
@@ -398,8 +392,7 @@ describe Transaction do
 
     it "should raise checksum error if sender address checksum is invalid" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.add_block([transaction_factory.make_send(2000_i64)]).chain
-        transactions = chain.last.transactions
+        block_factory.add_block([transaction_factory.make_send(2000_i64)])
 
         invalid_sender = {
           address:    Base64.strict_encode("T0invalid-wallet-address"),
@@ -429,8 +422,8 @@ describe Transaction do
 
     it "should raise checksum error if recipient address checksum is invalid" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.add_block([transaction_factory.make_send(2000_i64)]).chain
-        transactions = chain.last.transactions
+        block_factory.add_block([transaction_factory.make_send(2000_i64)])
+
         invalid_recipient = {
           address: Base64.strict_encode("T0invalid-wallet-address"),
           amount:  1000_i64,
@@ -456,7 +449,7 @@ describe Transaction do
   end
 
   it "should add the signatures to the transaction using #as_signed" do
-    with_factory do |block_factory|
+    with_factory do |_|
       sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
 
       unsigned_transaction = Transaction.new(
@@ -471,7 +464,6 @@ describe Transaction do
         1              # scaled
       )
 
-      blockchain = block_factory.blockchain
       signed_transaction = unsigned_transaction.as_signed([sender_wallet])
 
       signed_transaction.senders.first["sign_r"].should_not eq("0")
@@ -480,7 +472,7 @@ describe Transaction do
   end
 
   it "should transform a signed transaction to an unsigned one using #as_unsigned" do
-    with_factory do |block_factory|
+    with_factory do |_|
       sender_wallet = Wallet.from_json(Wallet.create(true).to_json)
 
       unsigned_transaction = Transaction.new(
@@ -495,7 +487,6 @@ describe Transaction do
         1              # scaled
       )
 
-      blockchain = block_factory.blockchain
       signed_transaction = unsigned_transaction.as_signed([sender_wallet])
 
       signed_transaction.senders.first["sign_r"].should_not eq("0")
@@ -508,10 +499,9 @@ describe Transaction do
   end
 
   it "should get the sender amount with #sender_total_amount" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |_, transaction_factory|
       sender_wallet = transaction_factory.sender_wallet
       recipient_wallet = transaction_factory.recipient_wallet
-      blockchain = block_factory.blockchain
 
       transaction = Transaction.new(
         Transaction.create_id,
@@ -530,10 +520,9 @@ describe Transaction do
   end
 
   it "should get the recipient amount with #recipient_total_amount" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |_, transaction_factory|
       sender_wallet = transaction_factory.sender_wallet
       recipient_wallet = transaction_factory.recipient_wallet
-      blockchain = block_factory.blockchain
 
       transaction = Transaction.new(
         Transaction.create_id,
@@ -552,10 +541,9 @@ describe Transaction do
   end
 
   it "should get the sender fee amount with #total_fees" do
-    with_factory do |block_factory, transaction_factory|
+    with_factory do |_, transaction_factory|
       sender_wallet = transaction_factory.sender_wallet
       recipient_wallet = transaction_factory.recipient_wallet
-      blockchain = block_factory.blockchain
 
       transaction = Transaction.new(
         Transaction.create_id,

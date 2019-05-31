@@ -80,9 +80,6 @@ describe RPCController do
   describe "#exec_internal_get" do
     it "should return an unpermitted call response" do
       with_factory do |block_factory, _|
-        payload = {call: "unknown"}.to_json
-        json = JSON.parse(payload)
-
         with_rpc_exec_internal_get(block_factory.rpc, 403) do |result|
           result.should eq("unpermitted method: GET")
         end
