@@ -54,10 +54,3 @@ Layout/TrailingWhitespace:
   Excluded:
   - src/core/modules/welcome.cr
 
-# Problems found: 1
-# Run `ameba --only Style/RedundantBegin` for details
-Style/RedundantBegin:
-  Description: Disallows redundant begin blocks
-  Enabled: true
-  Excluded:
-  - src/core/blockchain.cr
