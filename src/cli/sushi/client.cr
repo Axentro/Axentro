@@ -45,7 +45,7 @@ module ::Sushi::Interface::Sushi
     ]
 
     def find_command(name : String)
-      unless command = COMMANDS.find { |command| command[:command].split(" ")[0] == name }
+      unless command = COMMANDS.find { |command_| command_[:command].split(" ")[0] == name }
         raise "failed to find #{name} as a command"
       end
 

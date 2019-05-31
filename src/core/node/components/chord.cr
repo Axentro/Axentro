@@ -542,8 +542,8 @@ module ::Sushi::Core::NodeComponents
         return extract_context(n) if n[:context][:id] == id
       end
 
-      @private_nodes.each do |n|
-        return extract_context(n) if n[:context][:id] == id
+      @private_nodes.each do |node|
+        return extract_context(node) if node[:context][:id] == id
       end
 
       raise "the node #{id} not found. (currently only search for the nodes which are directly connected.)"
