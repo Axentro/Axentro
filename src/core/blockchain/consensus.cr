@@ -52,7 +52,7 @@ module ::Sushi::Core::Consensus
       elapsed_block_time
     end
 
-    current_target = if block_averages.size < BLOCK_AVERAGE_LIMIT
+    current_target = if block_averages.size < BLOCK_AVERAGE_LIMIT + 10
                        debug "using elapsed block time as block averages: #{block_averages.size} is less than cache limit: #{BLOCK_AVERAGE_LIMIT}"
                        elapsed_block_time
                      else
