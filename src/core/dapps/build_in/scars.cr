@@ -19,9 +19,9 @@ module ::Sushi::Core::DApps::BuildIn
 
   class Scars < DApp
     module Status
-      Acquired =  0
-      ForSale  =  1
-      NotFound = -1
+      ACQUIRED =  0
+      FOR_SALE  =  1
+      NOT_FOUND = -1
     end
 
     alias Domain = NamedTuple(domain_name: String, address: String, status: Int32, price: Int64)
@@ -42,7 +42,7 @@ module ::Sushi::Core::DApps::BuildIn
       end
 
       domain_all
-        .select { |_, domain| domain[:status] == Status::ForSale }
+        .select { |_, domain| domain[:status] == Status::FOR_SALE }
         .map { |_, domain| scale_decimal(domain) }
     end
 
@@ -93,7 +93,7 @@ module ::Sushi::Core::DApps::BuildIn
       valid_domain?(domain_name)
 
       sale_price = if domain = resolve_pending(domain_name, transactions)
-                     raise "domain #{domain_name} is not for sale now" unless domain[:status] == Status::ForSale
+                     raise "domain #{domain_name} is not for sale now" unless domain[:status] == Status::FOR_SALE
                      raise "you have to the set a domain owner as a recipient" if recipients.size == 0
                      raise "you cannot set multiple recipients" if recipients.size > 1
 
@@ -126,7 +126,7 @@ module ::Sushi::Core::DApps::BuildIn
       recipient = transaction.recipients[0]
 
       raise "domain #{domain_name} not found" unless domain = resolve_pending(domain_name, transactions)
-      raise "domain #{domain_name} is already for sale now" if domain[:status] == Status::ForSale
+      raise "domain #{domain_name} is already for sale now" if domain[:status] == Status::FOR_SALE
       raise "domain address mismatch: expected #{address} but got #{domain[:address]}" unless address == domain[:address]
       raise "address mismatch for scars_sell: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
       raise "price mismatch for scars_sell: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
@@ -149,7 +149,7 @@ module ::Sushi::Core::DApps::BuildIn
       recipient = transaction.recipients[0]
 
       raise "domain #{domain_name} not found" unless domain = resolve_pending(domain_name, transactions)
-      raise "domain #{domain_name} is not for sale" if domain[:status] != Status::ForSale
+      raise "domain #{domain_name} is not for sale" if domain[:status] != Status::FOR_SALE
       raise "domain address mismatch: expected #{address} but got #{domain[:address]}" unless address == domain[:address]
       raise "address mismatch for scars_cancel: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
       raise "price mismatch for scars_cancel: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
@@ -213,21 +213,21 @@ RULE
             domain_name: domain_name,
             address:     address,
             price:       price,
-            status:      Status::Acquired,
+            status:      Status::ACQUIRED,
           }
         when "scars_sell"
           domain_map[domain_name] = {
             domain_name: domain_name,
             address:     address,
             price:       price,
-            status:      Status::ForSale,
+            status:      Status::FOR_SALE,
           }
         when "scars_cancel"
           domain_map[domain_name] = {
             domain_name: domain_name,
             address:     address,
             price:       price,
-            status:      Status::Acquired,
+            status:      Status::ACQUIRED,
           }
         end
       end
@@ -273,7 +273,7 @@ RULE
       if domain
         {resolved: true, confirmation: confirmation, domain: scale_decimal(domain)}
       else
-        default_domain = {domain_name: domain_name, address: "", status: Status::NotFound, price: "0.0"}
+        default_domain = {domain_name: domain_name, address: "", status: Status::NOT_FOUND, price: "0.0"}
         {resolved: false, confirmation: confirmation, domain: default_domain}
       end
     end

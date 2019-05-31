@@ -60,7 +60,7 @@ module ::Sushi::Core
     end
 
     def _salt(_content : String)
-      _m_content = M_CONTENT_CLIENT_SALT.from_json(_content)
+      _m_content = MContentClientSalt.from_json(_content)
 
       private_key = Core::Keys::Wif.new(@wallet.wif).private_key
       sign = ECCrypto.sign(private_key.as_hex, _m_content.salt)
@@ -74,7 +74,7 @@ module ::Sushi::Core
     end
 
     def _handshake_accepted(_content : String)
-      M_CONTENT_CLIENT_HANDSHAKE_ACCEPTED.from_json(_content)
+      MContentClientHandshakeAccepted.from_json(_content)
 
       puts ""
       puts light_green("  successfully connected to the node!")
@@ -84,7 +84,7 @@ module ::Sushi::Core
     end
 
     def _receive_message(_content : String)
-      _m_content = M_CONTENT_CLIENT_RECEIVE.from_json(_content)
+      _m_content = MContentClientReceive.from_json(_content)
 
       from = _m_content.from
       to = _m_content.to

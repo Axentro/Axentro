@@ -210,13 +210,11 @@ module ::Sushi::Core
     end
 
     private def _add_transaction(transaction : Transaction)
-      begin
-        if transaction.valid_common?
-          TransactionPool.add(transaction)
-        end
-      rescue e : Exception
-        rejects.record_reject(transaction.id, e)
+      if transaction.valid_common?
+        TransactionPool.add(transaction)
       end
+    rescue e : Exception
+      rejects.record_reject(transaction.id, e)
     end
 
     def latest_block : Block

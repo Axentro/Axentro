@@ -34,9 +34,9 @@ module ::Sushi::Core::NodeComponents
     end
 
     def handshake(socket, _content)
-      return unless node.phase == SETUP_PHASE::DONE
+      return unless node.phase == SetupPhase::DONE
 
-      _m_content = M_CONTENT_CLIENT_HANDSHAKE.from_json(_content)
+      _m_content = MContentClientHandshake.from_json(_content)
 
       hash_salt = sha256(@salt + _m_content.public_key)
 
@@ -44,9 +44,9 @@ module ::Sushi::Core::NodeComponents
     end
 
     def upgrade(socket, _content)
-      return unless node.phase == SETUP_PHASE::DONE
+      return unless node.phase == SetupPhase::DONE
 
-      _m_content = M_CONTENT_CLIENT_UPGRADE.from_json(_content)
+      _m_content = MContentClientUpgrade.from_json(_content)
 
       network = Keys::Address.from(_m_content.address, "client").network
       public_key = Keys::PublicKey.new(_m_content.public_key, network)
@@ -76,9 +76,9 @@ module ::Sushi::Core::NodeComponents
     end
 
     def receive_content(_content : String, from = nil)
-      return unless node.phase == SETUP_PHASE::DONE
+      return unless node.phase == SetupPhase::DONE
 
-      _m_content = M_CONTENT_CLIENT_CONTENT.from_json(_content)
+      _m_content = MContentClientContent.from_json(_content)
 
       action = _m_content.action
       from_address = _m_content.from

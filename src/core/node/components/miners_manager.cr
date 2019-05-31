@@ -33,11 +33,11 @@ module ::Sushi::Core::NodeComponents
     end
 
     def handshake(socket, _content)
-      return unless node.phase == SETUP_PHASE::DONE
+      return unless node.phase == SetupPhase::DONE
 
       verbose "requested handshake from a miner"
 
-      _m_content = M_CONTENT_MINER_HANDSHAKE.from_json(_content)
+      _m_content = MContentMinerHandshake.from_json(_content)
 
       version = _m_content.version
       address = _m_content.address
@@ -78,11 +78,11 @@ module ::Sushi::Core::NodeComponents
     end
 
     def found_nonce(socket, _content)
-      return unless node.phase == SETUP_PHASE::DONE
+      return unless node.phase == SetupPhase::DONE
 
       verbose "miner sent a new nonce"
 
-      _m_content = M_CONTENT_MINER_FOUND_NONCE.from_json(_content)
+      _m_content = MContentMinerFoundNonce.from_json(_content)
 
       nonce = _m_content.nonce
 

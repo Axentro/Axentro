@@ -17,7 +17,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_MINER_HANDSHAKE = 0x0001
 
-  struct M_CONTENT_MINER_HANDSHAKE
+  struct MContentMinerHandshake
     JSON.mapping({
       version: Int32,
       address: String,
@@ -27,7 +27,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_MINER_HANDSHAKE_ACCEPTED = 0x0002
 
-  struct M_CONTENT_MINER_HANDSHAKE_ACCEPTED
+  struct MContentMinerHandshakeAccepted
     JSON.mapping({
       version:    Int32,
       block:      Block,
@@ -37,7 +37,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_MINER_HANDSHAKE_REJECTED = 0x0003
 
-  struct M_CONTENT_MINER_HANDSHAKE_REJECTED
+  struct MContentMinerHandshakeRejected
     JSON.mapping({
       reason: String,
     })
@@ -45,7 +45,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_MINER_FOUND_NONCE = 0x0004
 
-  struct M_CONTENT_MINER_FOUND_NONCE
+  struct MContentMinerFoundNonce
     JSON.mapping({
       nonce: UInt64
     })
@@ -53,7 +53,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_MINER_BLOCK_UPDATE = 0x0005
 
-  struct M_CONTENT_MINER_BLOCK_UPDATE
+  struct MContentMinerBlockUpdate
     JSON.mapping({
       block:      Block,
       difficulty: Int32
@@ -66,7 +66,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_CLIENT_HANDSHAKE = 0x1001
 
-  struct M_CONTENT_CLIENT_HANDSHAKE
+  struct MContentClientHandshake
     JSON.mapping({
       public_key: String,
     })
@@ -74,7 +74,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_CLIENT_SALT = 0x1005
 
-  struct M_CONTENT_CLIENT_SALT
+  struct MContentClientSalt
     JSON.mapping({
       salt: String,
     })
@@ -82,7 +82,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_CLIENT_UPGRADE = 0x1006
 
-  struct M_CONTENT_CLIENT_UPGRADE
+  struct MContentClientUpgrade
     JSON.mapping({
       address:    String,
       public_key: String,
@@ -93,7 +93,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_CLIENT_HANDSHAKE_ACCEPTED = 0x1002
 
-  struct M_CONTENT_CLIENT_HANDSHAKE_ACCEPTED
+  struct MContentClientHandshakeAccepted
     JSON.mapping({
       address: String,
     })
@@ -101,7 +101,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_CLIENT_CONTENT = 0x1003
 
-  struct M_CONTENT_CLIENT_CONTENT
+  struct MContentClientContent
     JSON.mapping({
       action:  String,
       from:    String,
@@ -110,16 +110,16 @@ module ::Sushi::Core::Protocol
   end
 
   #
-  # Content structure of content of M_CONTENT_CLIENT_CONTENT
+  # Content structure of content of MContentClientContent
   #
-  struct M_CONTENT_CLIENT_MESSAGE
+  struct MContentClientMessage
     JSON.mapping({
       to:      String,
       message: String,
     })
   end
 
-  struct M_CONTENT_CLIENT_AMOUNT
+  struct MContentClientAmount
     JSON.mapping({
       token:        String,
       confirmation: Int32,
@@ -131,7 +131,7 @@ module ::Sushi::Core::Protocol
   #
   M_TYPE_CLIENT_RECEIVE = 0x1004
 
-  struct M_CONTENT_CLIENT_RECEIVE
+  struct MContentClientReceive
     JSON.mapping({
       from:    String,
       to:      String,
@@ -145,7 +145,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_CHORD_JOIN = 0x0011
 
-  struct M_CONTENT_CHORD_JOIN
+  struct MContentChordJoin
     JSON.mapping({
       version: Int32,
       context: Core::NodeComponents::Chord::NodeContext,
@@ -154,7 +154,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_CHORD_JOIN_PRIVATE = 0x0012
 
-  struct M_CONTENT_CHORD_JOIN_PRIVATE
+  struct MContentChordJoinProvate
     JSON.mapping({
       version: Int32,
       context: Core::NodeComponents::Chord::NodeContext,
@@ -163,7 +163,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED = 0x0013
 
-  struct M_CONTENT_CHORD_JOIN_PRIVATE_ACCEPTED
+  struct MContentChordJoinPrivateAccepted
     JSON.mapping({
       context: Core::NodeComponents::Chord::NodeContext,
     })
@@ -171,7 +171,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_CHORD_FOUND_SUCCESSOR = 0x0014
 
-  struct M_CONTENT_CHORD_FOUND_SUCCESSOR
+  struct MContentChordFoundSuccessor
     JSON.mapping({
       context: Core::NodeComponents::Chord::NodeContext,
     })
@@ -179,7 +179,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_CHORD_SEARCH_SUCCESSOR = 0x0015
 
-  struct M_CONTENT_CHORD_SEARCH_SUCCESSOR
+  struct MContentChordSearchSuccessor
     JSON.mapping({
       context: Core::NodeComponents::Chord::NodeContext,
     })
@@ -187,7 +187,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_CHORD_STABILIZE_AS_SUCCESSOR = 0x0016
 
-  struct M_CONTENT_CHORD_STABILIZE_AS_SCCESSOR
+  struct MContentChordStabilizeAsSuccessor
     JSON.mapping({
       predecessor_context: Core::NodeComponents::Chord::NodeContext,
     })
@@ -195,7 +195,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_CHORD_STABILIZE_AS_PREDECESSOR = 0x0017
 
-  struct M_CONTENT_CHORD_STABILIZE_AS_PREDECESSOR
+  struct MContentChordStabilizeAsPredecessor
     JSON.mapping({
       successor_context: Core::NodeComponents::Chord::NodeContext,
     })
@@ -203,7 +203,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_CHORD_JOIN_REJECTED = 0x0018
 
-  struct M_CONTENT_CHORD_JOIN_REJECTED
+  struct MContentChordJoinRejected
     JSON.mapping({
       reason: String,
     })
@@ -215,7 +215,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_NODE_BROADCAST_TRANSACTION = 0x0101
 
-  struct M_CONTENT_NODE_BROADCAST_TRANSACTION
+  struct MContentNodeBroadcastTransaction
     JSON.mapping({
       transaction: Transaction,
       from:        Core::NodeComponents::Chord::NodeContext,
@@ -224,7 +224,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_NODE_BROADCAST_BLOCK = 0x0102
 
-  struct M_CONTENT_NODE_BROADCAST_BLOCK
+  struct MContentNodeBroadcastBlock
     JSON.mapping({
       block: Block,
       from:  Core::NodeComponents::Chord::NodeContext,
@@ -233,7 +233,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_NODE_REQUEST_CHAIN = 0x0103
 
-  struct M_CONTENT_NODE_REQUEST_CHAIN
+  struct MContentNodeRequestChain
     JSON.mapping({
       latest_index: Int64,
     })
@@ -241,7 +241,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_NODE_RECEIVE_CHAIN = 0x0104
 
-  struct M_CONTENT_NODE_RECEIVE_CHAIN
+  struct MContentNodeReceiveChain
     JSON.mapping({
       chain: Blockchain::Chain?,
     })
@@ -249,7 +249,7 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_NODE_ASK_REQUEST_CHAIN = 0x0105
 
-  struct M_CONTENT_NODE_ASK_REQUEST_CHAIN
+  struct MContentNodeAskRequestChain
     JSON.mapping({
       latest_index: Int64,
     })
@@ -257,19 +257,19 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_NODE_REQUEST_TRANSACTIONS = 0x0106
 
-  struct M_CONTENT_NODE_REQUEST_TRANSACTIONS
+  struct MContentNodeRequestTransactions
     JSON.mapping({transactions: Array(Transaction)})
   end
 
   M_TYPE_NODE_RECEIVE_TRANSACTIONS = 0x0107
 
-  struct M_CONTENT_NODE_RECEIVE_TRANSACTIONS
+  struct MContentNodeReceiveTransactions
     JSON.mapping({transactions: Array(Transaction)})
   end
 
   M_TYPE_NODE_SEND_CLIENT_CONTENT = 0x0108
 
-  struct M_CONTENT_NODE_SEND_CLIENT_CONTENT
+  struct MContentNodeSendClientContent
     JSON.mapping({
       content: String,
       from:    Core::NodeComponents::Chord::NodeContext,
@@ -280,7 +280,7 @@ module ::Sushi::Core::Protocol
   # Blockchain's setup phase
   ######################################
 
-  enum SETUP_PHASE
+  enum SetupPhase
     NONE
     CONNECTING_NODES
     BLOCKCHAIN_LOADING

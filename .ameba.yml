@@ -25,67 +25,16 @@ Performance/SizeAfterFilter:
   - spec/units/dapps/indices.cr
   - src/core/dapps/build_in/indices.cr
 
-# Problems found: 1
-# Run `ameba --only Style/RedundantReturn` for details
-Style/RedundantReturn:
-  Description: Reports redundant return expressions
-  AllowMultiReturn: true
-  AllowEmptyReturn: true
-  Enabled: true
-  Excluded:
-  - e2e/utils/api.cr
-
-# Problems found: 3
-# Run `ameba --only Style/ConstantNames` for details
-Style/ConstantNames:
-  Description: Enforces constant names to be in screaming case
-  Enabled: true
-  Excluded:
-  - src/core/dapps/build_in/scars.cr
-
-# Problems found: 30
-# Run `ameba --only Style/TypeNames` for details
-Style/TypeNames:
-  Description: Enforces type names in camelcase manner
-  Enabled: true
-  Excluded:
-  - src/core/protocol/protocol.cr
-
 # Problems found: 3
 # Run `ameba --only Metrics/CyclomaticComplexity` for details
 Metrics/CyclomaticComplexity:
   Description: Disallows methods with a cyclomatic complexity higher than `MaxComplexity`
-  MaxComplexity: 10
+  MaxComplexity: 11
   Enabled: true
   Excluded:
   - src/core/blockchain/block.cr
   - src/core/node.cr
   - src/cli/modules/global_optionparser.cr
-
-# Problems found: 18
-# Run `ameba --only Style/UnlessElse` for details
-Style/UnlessElse:
-  Description: Disallows the use of an `else` block with the `unless`
-  Enabled: true
-  Excluded:
-  - src/core/node.cr
-  - src/cli/sushi/transaction.cr
-  - src/cli/sushi/scars.cr
-  - src/cli/sushi/token.cr
-  - src/cli/sushi/node.cr
-  - src/cli/sushi/wallet.cr
-  - src/cli/sushi/blockchain.cr
-  - src/cli.cr
-
-# Problems found: 2
-# Run `ameba --only Lint/ShadowingOuterLocalVar` for details
-Lint/ShadowingOuterLocalVar:
-  Description: Disallows the usage of the same name as outer local variables for block
-    or proc arguments.
-  Enabled: true
-  Excluded:
-  - src/core/node/components/chord.cr
-  - src/cli/sushi/client.cr
 
 # Problems found: 6
 # Run `ameba --only Layout/TrailingWhitespace` for details
@@ -95,10 +44,3 @@ Layout/TrailingWhitespace:
   Excluded:
   - src/core/modules/welcome.cr
 
-# Problems found: 1
-# Run `ameba --only Style/RedundantBegin` for details
-Style/RedundantBegin:
-  Description: Disallows redundant begin blocks
-  Enabled: true
-  Excluded:
-  - src/core/blockchain.cr

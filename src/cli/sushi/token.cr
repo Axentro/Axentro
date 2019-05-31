@@ -90,14 +90,14 @@ module ::Sushi::Interface::Sushi
       body = rpc(node, payload)
       json = JSON.parse(body)
 
-      unless G.op.__json
+      if G.op.__json
+        puts body
+      else
         puts_success "show a list of evenry tokens on SushiChain"
 
         json.as_a.each do |token|
           puts_info "- #{token}"
         end
-      else
-        puts body
       end
     end
   end

@@ -69,7 +69,7 @@ module ::Sushi::Core
     end
 
     private def _handshake_miner_accepted(_content)
-      _m_content = M_CONTENT_MINER_HANDSHAKE_ACCEPTED.from_json(_content)
+      _m_content = MContentMinerHandshakeAccepted.from_json(_content)
 
       block = _m_content.block
       difficulty = _m_content.difficulty
@@ -83,7 +83,7 @@ module ::Sushi::Core
     end
 
     private def _handshake_miner_rejected(_content)
-      _m_content = M_CONTENT_MINER_HANDSHAKE_REJECTED.from_json(_content)
+      _m_content = MContentMinerHandshakeRejected.from_json(_content)
 
       reason = _m_content.reason
 
@@ -92,7 +92,7 @@ module ::Sushi::Core
     end
 
     private def _block_update(_content)
-      _m_content = M_CONTENT_MINER_BLOCK_UPDATE.from_json(_content)
+      _m_content = MContentMinerBlockUpdate.from_json(_content)
 
       block = _m_content.block
       difficulty = _m_content.difficulty

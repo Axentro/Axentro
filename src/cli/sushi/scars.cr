@@ -119,7 +119,7 @@ module ::Sushi::Interface::Sushi
 
       raise "the domain #{domain} is not resolved" unless resolved["resolved"].as_bool
 
-      if resolved["domain"]["status"] == Core::DApps::BuildIn::Scars::Status::ForSale
+      if resolved["domain"]["status"] == Core::DApps::BuildIn::Scars::Status::FOR_SALE
         raise "the domain #{domain} is already for sale"
       end
 
@@ -154,7 +154,7 @@ module ::Sushi::Interface::Sushi
 
       raise "the domain #{domain} is not resolved" unless resolved["resolved"].as_bool
 
-      unless resolved["domain"]["status"] == Core::DApps::BuildIn::Scars::Status::ForSale
+      unless resolved["domain"]["status"] == Core::DApps::BuildIn::Scars::Status::FOR_SALE
         raise "the domain #{domain} is not for sale"
       end
 
@@ -186,7 +186,9 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
-      unless G.op.__json
+      if G.op.__json
+        puts body
+      else
         puts_success "\n SCARS domains for sale!\n"
 
         puts "   %20s | %64s | %s" % ["Domain", "Address", "Price"]
@@ -197,8 +199,6 @@ module ::Sushi::Interface::Sushi
         end
 
         puts
-      else
-        puts body
       end
     end
 
@@ -208,24 +208,24 @@ module ::Sushi::Interface::Sushi
 
       resolved = resolve_internal(node, domain, G.op.__confirmation)
 
-      unless G.op.__json
+      if G.op.__json
+        puts resolved.to_json
+      else
         puts_success "show information of domain #{domain}"
         puts_success "resolved : #{resolved["resolved"]}"
 
         status = case resolved["domain"]["status"].as_i
-                 when Core::DApps::BuildIn::Scars::Status::Acquired
+                 when Core::DApps::BuildIn::Scars::Status::ACQUIRED
                    "acquired"
-                 when Core::DApps::BuildIn::Scars::Status::ForSale
+                 when Core::DApps::BuildIn::Scars::Status::FOR_SALE
                    "for sale"
-                 when Core::DApps::BuildIn::Scars::Status::NotFound
+                 when Core::DApps::BuildIn::Scars::Status::NOT_FOUND
                    "not found"
                  end
 
         puts_success "address  : #{resolved["domain"]["address"]}"
         puts_success "status   : #{status}"
         puts_success "price    : #{resolved["domain"]["price"].as_s}"
-      else
-        puts resolved.to_json
       end
     end
   end
