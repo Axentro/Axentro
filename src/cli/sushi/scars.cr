@@ -186,7 +186,9 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
-      unless G.op.__json
+      if G.op.__json
+        puts body
+      else
         puts_success "\n SCARS domains for sale!\n"
 
         puts "   %20s | %64s | %s" % ["Domain", "Address", "Price"]
@@ -197,8 +199,6 @@ module ::Sushi::Interface::Sushi
         end
 
         puts
-      else
-        puts body
       end
     end
 
@@ -208,7 +208,9 @@ module ::Sushi::Interface::Sushi
 
       resolved = resolve_internal(node, domain, G.op.__confirmation)
 
-      unless G.op.__json
+      if G.op.__json
+        puts resolved.to_json
+      else
         puts_success "show information of domain #{domain}"
         puts_success "resolved : #{resolved["resolved"]}"
 
@@ -224,8 +226,6 @@ module ::Sushi::Interface::Sushi
         puts_success "address  : #{resolved["domain"]["address"]}"
         puts_success "status   : #{status}"
         puts_success "price    : #{resolved["domain"]["price"].as_s}"
-      else
-        puts resolved.to_json
       end
     end
   end

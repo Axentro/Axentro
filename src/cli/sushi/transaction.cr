@@ -150,7 +150,9 @@ module ::Sushi::Interface::Sushi
       body = rpc(node, payload)
       json = JSON.parse(body)
 
-      unless G.op.__json
+      if G.op.__json
+        puts body
+      else
         case json["status"].as_s
         when "accepted"
           puts_success("show the transaction")
@@ -165,8 +167,6 @@ module ::Sushi::Interface::Sushi
         else
           puts_error("unknown status for the transaction")
         end
-      else
-        puts body
       end
     end
 
@@ -178,7 +178,9 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
-      unless G.op.__json
+      if G.op.__json
+        puts body
+      else
         puts_success("show the number of confirmations of #{transaction_id}")
 
         json = JSON.parse(body)
@@ -186,8 +188,6 @@ module ::Sushi::Interface::Sushi
         puts_info("transaction id: #{transaction_id}")
         puts_info("--------------")
         puts_info("confirmations: #{json["confirmations"]}")
-      else
-        puts body
       end
     end
 
@@ -199,7 +199,9 @@ module ::Sushi::Interface::Sushi
       body = rpc(node, payload)
       json = JSON.parse(body)
 
-      unless G.op.__json
+      if G.op.__json
+        puts body
+      else
         puts_success("\n  showing fees for each action.\n")
 
         puts_info("  + %30s - %30s +" % ["-" * 30, "-" * 30])
@@ -212,8 +214,6 @@ module ::Sushi::Interface::Sushi
 
         puts_info("  + %30s - %30s +" % ["-" * 30, "-" * 30])
         puts_info("")
-      else
-        puts body
       end
     end
   end

@@ -53,7 +53,9 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
-      unless G.op.__json
+      if G.op.__json
+        puts body
+      else
         json = JSON.parse(body)
 
         puts_success ""
@@ -78,8 +80,6 @@ module ::Sushi::Interface::Sushi
         end
 
         puts_info ""
-      else
-        puts body
       end
     end
 
@@ -94,7 +94,9 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
-      unless G.op.__json
+      if G.op.__json
+        puts body
+      else
         json = JSON.parse(body)
 
         puts_success ""
@@ -108,8 +110,6 @@ module ::Sushi::Interface::Sushi
         puts_line
 
         puts_info ""
-      else
-        puts body
       end
     end
 

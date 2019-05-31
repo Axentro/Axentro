@@ -29,27 +29,12 @@ Performance/SizeAfterFilter:
 # Run `ameba --only Metrics/CyclomaticComplexity` for details
 Metrics/CyclomaticComplexity:
   Description: Disallows methods with a cyclomatic complexity higher than `MaxComplexity`
-  MaxComplexity: 10
+  MaxComplexity: 11
   Enabled: true
   Excluded:
   - src/core/blockchain/block.cr
   - src/core/node.cr
   - src/cli/modules/global_optionparser.cr
-
-# Problems found: 18
-# Run `ameba --only Style/UnlessElse` for details
-Style/UnlessElse:
-  Description: Disallows the use of an `else` block with the `unless`
-  Enabled: true
-  Excluded:
-  - src/core/node.cr
-  - src/cli/sushi/transaction.cr
-  - src/cli/sushi/scars.cr
-  - src/cli/sushi/token.cr
-  - src/cli/sushi/node.cr
-  - src/cli/sushi/wallet.cr
-  - src/cli/sushi/blockchain.cr
-  - src/cli.cr
 
 # Problems found: 2
 # Run `ameba --only Lint/ShadowingOuterLocalVar` for details

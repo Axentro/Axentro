@@ -91,11 +91,11 @@ module ::Sushi::Interface::Sushi
         File.write(wallet_path, wallet.to_json)
       end
 
-      unless G.op.__json
+      if G.op.__json
+        puts wallet.to_json
+      else
         puts_success("your new wallet has been created at #{wallet_path}")
         puts_success("please take backup of the json file and keep it secret.")
-      else
-        puts wallet.to_json
       end
     end
 
@@ -122,11 +122,11 @@ module ::Sushi::Interface::Sushi
 
       File.write(encrypted_wallet_path, encrypted_wallet_json)
 
-      unless G.op.__json
+      if G.op.__json
+        puts encrypted_wallet_json
+      else
         puts_success("your wallet has been encrypted at #{encrypted_wallet_path}")
         puts_success("please don't forget your password - there is no way to recover an encrypted wallet.")
-      else
-        puts encrypted_wallet_json
       end
     end
 
@@ -141,10 +141,10 @@ module ::Sushi::Interface::Sushi
 
       File.write(decrypted_wallet_path, decrypted_wallet_json)
 
-      unless G.op.__json
-        puts_success("your wallet has been decrypted at #{decrypted_wallet_path}")
-      else
+      if G.op.__json
         puts decrypted_wallet_json
+      else
+        puts_success("your wallet has been decrypted at #{decrypted_wallet_path}")
       end
     end
 
@@ -176,7 +176,9 @@ module ::Sushi::Interface::Sushi
       body = rpc(node, payload)
       json = JSON.parse(body)
 
-      unless G.op.__json
+      if G.op.__json
+        puts body
+      else
         puts_success("\n  showing amount of each token for #{address}.")
         puts_success("  confirmation: #{G.op.__confirmation}\n")
 
@@ -193,8 +195,6 @@ module ::Sushi::Interface::Sushi
 
         puts_info("  + %20s - %20s +" % ["-" * 20, "-" * 20])
         puts_info("")
-      else
-        puts body
       end
     end
   end

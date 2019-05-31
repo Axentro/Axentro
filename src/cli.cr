@@ -174,11 +174,11 @@ module ::Sushi::Interface
 
       rpc(node, payload)
 
-      unless G.op.__json
+      if G.op.__json
+        puts signed_transaction.to_json
+      else
         puts_success "successfully create your transaction!"
         puts_success "=> #{signed_transaction.id}"
-      else
-        puts signed_transaction.to_json
       end
     end
 

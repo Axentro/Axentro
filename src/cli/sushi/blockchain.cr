@@ -62,11 +62,11 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
-      unless G.op.__json
+      if G.op.__json
+        puts body
+      else
         json = JSON.parse(body)
         puts_success("current blockchain size is #{json["size"]}")
-      else
-        puts body
       end
     end
 
@@ -77,11 +77,11 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
-      unless G.op.__json
+      if G.op.__json
+        puts body
+      else
         puts_success("show current blockchain")
         puts_info(body)
-      else
-        puts body
       end
     end
 
@@ -101,11 +101,11 @@ module ::Sushi::Interface::Sushi
 
       body = rpc(node, payload)
 
-      unless G.op.__json
+      if G.op.__json
+        puts body
+      else
         puts_success(success_message)
         puts_info(body)
-      else
-        puts body
       end
     end
   end

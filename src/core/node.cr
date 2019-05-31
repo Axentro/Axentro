@@ -221,7 +221,16 @@ module ::Sushi::Core
     def send_on_chord(message_type, content, from : Chord::NodeContext? = nil)
       _nodes = @chord.find_nodes
 
-      unless @is_private
+      if @is_private
+        if successor = _nodes[:successor]
+          #
+          # prevent the self-connecting case
+          #
+          if (successor[:context][:id] != @chord.context[:id]) && (from.nil? || from[:is_private])
+            send(successor[:socket], message_type, content)
+          end
+        end
+      else
         _nodes[:private_nodes].each do |private_node|
           next if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
           send(private_node[:socket], message_type, content)
@@ -229,15 +238,6 @@ module ::Sushi::Core
 
         if successor = _nodes[:successor]
           if successor[:context][:id] != content[:from][:id]
-            send(successor[:socket], message_type, content)
-          end
-        end
-      else
-        if successor = _nodes[:successor]
-          #
-          # prevent the self-connecting case
-          #
-          if (successor[:context][:id] != @chord.context[:id]) && (from.nil? || from[:is_private])
             send(successor[:socket], message_type, content)
           end
         end
@@ -473,10 +473,10 @@ module ::Sushi::Core
         if @connect_host && @connect_port
           @phase = SetupPhase::CONNECTING_NODES
 
-          unless @is_private
-            @chord.join_to(self, @connect_host.not_nil!, @connect_port.not_nil!)
-          else
+          if @is_private
             @chord.join_to_private(self, @connect_host.not_nil!, @connect_port.not_nil!)
+          else
+            @chord.join_to(self, @connect_host.not_nil!, @connect_port.not_nil!)
           end
         else
           warning "no connecting node has been specified"
