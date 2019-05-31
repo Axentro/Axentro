@@ -25,14 +25,6 @@ Performance/SizeAfterFilter:
   - spec/units/dapps/indices.cr
   - src/core/dapps/build_in/indices.cr
 
-# Problems found: 30
-# Run `ameba --only Style/TypeNames` for details
-Style/TypeNames:
-  Description: Enforces type names in camelcase manner
-  Enabled: true
-  Excluded:
-  - src/core/protocol/protocol.cr
-
 # Problems found: 3
 # Run `ameba --only Metrics/CyclomaticComplexity` for details
 Metrics/CyclomaticComplexity:

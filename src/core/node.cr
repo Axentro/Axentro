@@ -19,7 +19,7 @@ module ::Sushi::Core
       name: String,
     )
 
-    property phase : SETUP_PHASE
+    property phase : SetupPhase
 
     getter blockchain : Blockchain
     getter network_type : String
@@ -56,7 +56,7 @@ module ::Sushi::Core
       @miners_manager = MinersManager.new(@blockchain)
       @clients_manager = ClientsManager.new(@blockchain)
 
-      @phase = SETUP_PHASE::NONE
+      @phase = SetupPhase::NONE
 
       info "your log level is #{light_green(log_level_text)}"
 
@@ -111,8 +111,8 @@ module ::Sushi::Core
       else
         warning "successor not found. skip synching blockchain"
 
-        if @phase == SETUP_PHASE::BLOCKCHAIN_SYNCING
-          @phase = SETUP_PHASE::TRANSACTION_SYNCING
+        if @phase == SetupPhase::BLOCKCHAIN_SYNCING
+          @phase = SetupPhase::TRANSACTION_SYNCING
           proceed_setup
         end
       end
@@ -142,8 +142,8 @@ module ::Sushi::Core
       else
         warning "successor not found. skip synching transactions"
 
-        if @phase == SETUP_PHASE::TRANSACTION_SYNCING
-          @phase = SETUP_PHASE::PRE_DONE
+        if @phase == SetupPhase::TRANSACTION_SYNCING
+          @phase = SetupPhase::PRE_DONE
           proceed_setup
         end
       end
@@ -340,9 +340,9 @@ module ::Sushi::Core
     end
 
     private def _broadcast_transaction(socket, _content)
-      return unless @phase == SETUP_PHASE::DONE
+      return unless @phase == SetupPhase::DONE
 
-      _m_content = M_CONTENT_NODE_BROADCAST_TRANSACTION.from_json(_content)
+      _m_content = MContentNodeBroadcastTransaction.from_json(_content)
 
       transaction = _m_content.transaction
       from = _m_content.from
@@ -351,9 +351,9 @@ module ::Sushi::Core
     end
 
     private def _broadcast_block(socket, _content)
-      return unless @phase == SETUP_PHASE::DONE
+      return unless @phase == SetupPhase::DONE
 
-      _m_content = M_CONTENT_NODE_BROADCAST_BLOCK.from_json(_content)
+      _m_content = MContentNodeBroadcastBlock.from_json(_content)
 
       block = _m_content.block
       from = _m_content.from
@@ -362,9 +362,9 @@ module ::Sushi::Core
     end
 
     private def _receive_client_content(socket, _content)
-      return unless @phase == SETUP_PHASE::DONE
+      return unless @phase == SetupPhase::DONE
 
-      _m_content = M_CONTENT_NODE_SEND_CLIENT_CONTENT.from_json(_content)
+      _m_content = MContentNodeSendClientContent.from_json(_content)
 
       content = _m_content.content
       from = _m_content.from
@@ -373,7 +373,7 @@ module ::Sushi::Core
     end
 
     private def _request_chain(socket, _content)
-      _m_content = M_CONTENT_NODE_REQUEST_CHAIN.from_json(_content)
+      _m_content = MContentNodeRequestChain.from_json(_content)
 
       latest_index = _m_content.latest_index
 
@@ -385,7 +385,7 @@ module ::Sushi::Core
     end
 
     private def _receive_chain(socket, _content)
-      _m_content = M_CONTENT_NODE_RECEIVE_CHAIN.from_json(_content)
+      _m_content = MContentNodeReceiveChain.from_json(_content)
 
       chain = _m_content.chain
 
@@ -404,14 +404,14 @@ module ::Sushi::Core
         @conflicted_index = nil
       end
 
-      if @phase == SETUP_PHASE::BLOCKCHAIN_SYNCING
-        @phase = SETUP_PHASE::TRANSACTION_SYNCING
+      if @phase == SetupPhase::BLOCKCHAIN_SYNCING
+        @phase = SetupPhase::TRANSACTION_SYNCING
         proceed_setup
       end
     end
 
     private def _ask_request_chain(socket, _content)
-      _m_content = M_CONTENT_NODE_ASK_REQUEST_CHAIN.from_json(_content)
+      _m_content = MContentNodeAskRequestChain.from_json(_content)
 
       _latest_index = _m_content.latest_index
 
@@ -424,7 +424,7 @@ module ::Sushi::Core
     end
 
     private def _request_transactions(socket, _content)
-      M_CONTENT_NODE_REQUEST_TRANSACTIONS.from_json(_content)
+      MContentNodeRequestTransactions.from_json(_content)
 
       info "requested transactions"
 
@@ -440,7 +440,7 @@ module ::Sushi::Core
     end
 
     private def _receive_transactions(socket, _content)
-      _m_content = M_CONTENT_NODE_RECEIVE_TRANSACTIONS.from_json(_content)
+      _m_content = MContentNodeReceiveTransactions.from_json(_content)
 
       transactions = _m_content.transactions
 
@@ -448,8 +448,8 @@ module ::Sushi::Core
 
       @blockchain.replace_transactions(transactions)
 
-      if @phase == SETUP_PHASE::TRANSACTION_SYNCING
-        @phase = SETUP_PHASE::PRE_DONE
+      if @phase == SetupPhase::TRANSACTION_SYNCING
+        @phase = SetupPhase::PRE_DONE
         proceed_setup
       end
     end
@@ -466,12 +466,12 @@ module ::Sushi::Core
     end
 
     def proceed_setup
-      return if @phase == SETUP_PHASE::DONE
+      return if @phase == SetupPhase::DONE
 
       case @phase
-      when SETUP_PHASE::NONE
+      when SetupPhase::NONE
         if @connect_host && @connect_port
-          @phase = SETUP_PHASE::CONNECTING_NODES
+          @phase = SetupPhase::CONNECTING_NODES
 
           unless @is_private
             @chord.join_to(self, @connect_host.not_nil!, @connect_port.not_nil!)
@@ -482,11 +482,11 @@ module ::Sushi::Core
           warning "no connecting node has been specified"
           warning "so this node is standalone from other network"
 
-          @phase = SETUP_PHASE::BLOCKCHAIN_LOADING
+          @phase = SetupPhase::BLOCKCHAIN_LOADING
 
           proceed_setup
         end
-      when SETUP_PHASE::BLOCKCHAIN_LOADING
+      when SetupPhase::BLOCKCHAIN_LOADING
         @blockchain.setup(self)
 
         info "loaded blockchain's size: #{light_cyan(@blockchain.chain.size)}"
@@ -497,17 +497,17 @@ module ::Sushi::Core
           warning "no database has been specified"
         end
 
-        @phase = SETUP_PHASE::BLOCKCHAIN_SYNCING
+        @phase = SetupPhase::BLOCKCHAIN_SYNCING
 
         proceed_setup
-      when SETUP_PHASE::BLOCKCHAIN_SYNCING
+      when SetupPhase::BLOCKCHAIN_SYNCING
         sync_chain
-      when SETUP_PHASE::TRANSACTION_SYNCING
+      when SetupPhase::TRANSACTION_SYNCING
         sync_transactions
-      when SETUP_PHASE::PRE_DONE
+      when SetupPhase::PRE_DONE
         info "successfully setup the node"
 
-        @phase = SETUP_PHASE::DONE
+        @phase = SetupPhase::DONE
       end
     end
 

@@ -40,7 +40,7 @@ module ::Sushi::Core::DApps::BuildIn
     def on_message(action : String, from_address : String, content : String, from = nil)
       return false unless action == "message"
 
-      _m_content = M_CONTENT_CLIENT_MESSAGE.from_json(content)
+      _m_content = MContentClientMessage.from_json(content)
 
       to = _m_content.to
       message = _m_content.message

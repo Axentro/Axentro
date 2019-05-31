@@ -72,7 +72,7 @@ module ::Sushi::Core::NodeComponents
       error "failed to connect #{connect_host}:#{connect_port}"
       error "please specify another public host if you need successor"
 
-      node.phase = SETUP_PHASE::BLOCKCHAIN_LOADING
+      node.phase = SetupPhase::BLOCKCHAIN_LOADING
       node.proceed_setup
     end
 
@@ -101,12 +101,12 @@ module ::Sushi::Core::NodeComponents
       error "failed to connect #{connect_host}:#{connect_port}"
       error "please specify another public host if you need successor"
 
-      node.phase = SETUP_PHASE::BLOCKCHAIN_LOADING
+      node.phase = SetupPhase::BLOCKCHAIN_LOADING
       node.proceed_setup
     end
 
     def join(node, socket, _content)
-      _m_content = M_CONTENT_CHORD_JOIN.from_json(_content)
+      _m_content = MContentChordJoin.from_json(_content)
 
       _context = _m_content.context
 
@@ -127,7 +127,7 @@ module ::Sushi::Core::NodeComponents
     end
 
     def join_private(node, socket, _content)
-      _m_content = M_CONTENT_CHORD_JOIN_PRIVATE.from_json(_content)
+      _m_content = MContentChordJoinProvate.from_json(_content)
 
       _context = _m_content.context
 
@@ -159,7 +159,7 @@ module ::Sushi::Core::NodeComponents
     end
 
     def join_private_accepted(node, socket, _content)
-      _m_content = M_CONTENT_CHORD_JOIN_PRIVATE_ACCEPTED.from_json(_content)
+      _m_content = MContentChordJoinPrivateAccepted.from_json(_content)
 
       _context = _m_content.context
 
@@ -172,12 +172,12 @@ module ::Sushi::Core::NodeComponents
 
       @predecessor = {socket: socket, context: _context}
 
-      node.phase = SETUP_PHASE::BLOCKCHAIN_LOADING
+      node.phase = SetupPhase::BLOCKCHAIN_LOADING
       node.proceed_setup
     end
 
     def join_rejected(node, socket, _content)
-      _m_content = M_CONTENT_CHORD_JOIN_REJECTED.from_json(_content)
+      _m_content = MContentChordJoinRejected.from_json(_content)
 
       _reason = _m_content.reason
 
@@ -189,17 +189,17 @@ module ::Sushi::Core::NodeComponents
     end
 
     def found_successor(node, _content : String)
-      _m_content = M_CONTENT_CHORD_FOUND_SUCCESSOR.from_json(_content)
+      _m_content = MContentChordFoundSuccessor.from_json(_content)
       _context = _m_content.context
 
       connect_to_successor(node, _context)
 
-      node.phase = SETUP_PHASE::BLOCKCHAIN_LOADING
+      node.phase = SetupPhase::BLOCKCHAIN_LOADING
       node.proceed_setup
     end
 
     def stabilize_as_successor(node, socket, _content : String)
-      _m_content = M_CONTENT_CHORD_STABILIZE_AS_SCCESSOR.from_json(_content)
+      _m_content = MContentChordStabilizeAsSuccessor.from_json(_content)
 
       _context = _m_content.predecessor_context
 
@@ -238,7 +238,7 @@ module ::Sushi::Core::NodeComponents
     end
 
     def stabilize_as_predecessor(node, socket, _content : String)
-      _m_content = M_CONTENT_CHORD_STABILIZE_AS_PREDECESSOR.from_json(_content)
+      _m_content = MContentChordStabilizeAsPredecessor.from_json(_content)
 
       _context = _m_content.successor_context
 
@@ -303,7 +303,7 @@ module ::Sushi::Core::NodeComponents
     end
 
     def search_successor(node, _content : String)
-      _m_content = M_CONTENT_CHORD_SEARCH_SUCCESSOR.from_json(_content)
+      _m_content = MContentChordSearchSuccessor.from_json(_content)
 
       search_successor(node, _m_content.context)
     end

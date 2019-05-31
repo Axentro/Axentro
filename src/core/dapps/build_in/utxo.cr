@@ -181,7 +181,7 @@ module ::Sushi::Core::DApps::BuildIn
     def on_message(action : String, from_address : String, content : String, from = nil)
       return false unless action == "amount"
 
-      _m_content = M_CONTENT_CLIENT_AMOUNT.from_json(content)
+      _m_content = MContentClientAmount.from_json(content)
 
       token = _m_content.token
       confirmation = _m_content.confirmation
