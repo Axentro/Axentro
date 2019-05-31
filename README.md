@@ -60,9 +60,10 @@ Questions or suggestions? Join our community here on [Telegram](https://t.me/sus
 - [@kingsleyh](https://github.com/kingsleyh) Kingsley Hendrickse - founder & lead developer
 - [@jferas](https://github.com/jferas) John Feras - core developer
 - [@mamalisk](https://github.com/mamalisk) Kostas Mamalis - core developer
+- [@raymanoz](https://github.com/raymanoz) Raymond Barlow - core developer
+- [@watzon](https://github.com/watzon) Chris Watson - core developer
 - [@fenicks](https://github.com/fenicks) Christian Kakesa - contributor
 
 ## Past Contributors
 
 - [@tbrand](https://github.com/tbrand) Taichiro Suzuki - original founder
-- [@watzon](https://github.com/watzon) Chris Watson - contributor
