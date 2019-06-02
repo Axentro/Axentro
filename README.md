@@ -26,12 +26,12 @@ The platform is still in heavy development but the [TestNet](http://testnet.sush
 | -------------------: | :-------------------------------: | :----------: |
 |              Testnet | http://testnet.sushichain.io:3000 |   Unstable   |
 
-Follow the [Getting Started](https://guide.sushichain.io/getting-started/creating-a-wallet) documentation to explore further.
+Follow the [Getting Started](https://guide.sushichain.io/) documentation to explore further.
 
 ## Documentation
 
 * [Offical docs](https://guide.sushichain.io/)
-* [Roadmap]()
+* [Roadmap](https://sushichain.io/#roadmap)
 
 ## Blockchain Specification
 
@@ -63,6 +63,7 @@ Questions or suggestions? Join our community here on [Telegram](https://t.me/sus
 - [@raymanoz](https://github.com/raymanoz) Raymond Barlow - core developer
 - [@watzon](https://github.com/watzon) Chris Watson - core developer
 - [@fenicks](https://github.com/fenicks) Christian Kakesa - contributor
+- [@bararchy][https://github.com/bararchy] Bar Hofesh - Security advisor
 
 ## Past Contributors
 
