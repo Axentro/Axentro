@@ -63,7 +63,7 @@ Questions or suggestions? Join our community here on [Telegram](https://t.me/sus
 - [@raymanoz](https://github.com/raymanoz) Raymond Barlow - core developer
 - [@watzon](https://github.com/watzon) Chris Watson - core developer
 - [@fenicks](https://github.com/fenicks) Christian Kakesa - contributor
-- [@bararchy][https://github.com/bararchy] Bar Hofesh - Security advisor
+- [@bararchy](https://github.com/bararchy) Bar Hofesh - Security advisor
 
 ## Past Contributors
 
