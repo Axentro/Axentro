@@ -36,11 +36,3 @@ Metrics/CyclomaticComplexity:
   - src/core/node.cr
   - src/cli/modules/global_optionparser.cr
 
-# Problems found: 6
-# Run `ameba --only Layout/TrailingWhitespace` for details
-Layout/TrailingWhitespace:
-  Description: Disallows trailing whitespaces
-  Enabled: true
-  Excluded:
-  - src/core/modules/welcome.cr
-
