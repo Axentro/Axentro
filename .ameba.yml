@@ -13,18 +13,6 @@ Performance/FirstLastAfterFilter:
   Excluded:
   - spec/units/dapps/blockchain_info.cr
 
-# Problems found: 2
-# Run `ameba --only Performance/SizeAfterFilter` for details
-Performance/SizeAfterFilter:
-  FilterNames:
-  - select
-  - reject
-  Description: Identifies usage of `size` calls that follow filter
-  Enabled: true
-  Excluded:
-  - spec/units/dapps/indices.cr
-  - src/core/dapps/build_in/indices.cr
-
 # Problems found: 3
 # Run `ameba --only Metrics/CyclomaticComplexity` for details
 Metrics/CyclomaticComplexity:
