@@ -38,7 +38,7 @@ module ::Sushi::Core::DApps::BuildIn
         raise "the transaction #{transaction.id} is already included in #{index}"
       end
 
-      if prev_transactions.select { |t| t.id == transaction.id }.size > 0
+      if prev_transactions.count { |t| t.id == transaction.id } > 0
         raise "the transcation #{transaction.id} already exists in the same block"
       end
 

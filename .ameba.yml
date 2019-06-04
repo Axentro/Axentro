@@ -13,18 +13,6 @@ Performance/FirstLastAfterFilter:
   Excluded:
   - spec/units/dapps/blockchain_info.cr
 
-# Problems found: 2
-# Run `ameba --only Performance/SizeAfterFilter` for details
-Performance/SizeAfterFilter:
-  FilterNames:
-  - select
-  - reject
-  Description: Identifies usage of `size` calls that follow filter
-  Enabled: true
-  Excluded:
-  - spec/units/dapps/indices.cr
-  - src/core/dapps/build_in/indices.cr
-
 # Problems found: 3
 # Run `ameba --only Metrics/CyclomaticComplexity` for details
 Metrics/CyclomaticComplexity:
@@ -35,12 +23,4 @@ Metrics/CyclomaticComplexity:
   - src/core/blockchain/block.cr
   - src/core/node.cr
   - src/cli/modules/global_optionparser.cr
-
-# Problems found: 6
-# Run `ameba --only Layout/TrailingWhitespace` for details
-Layout/TrailingWhitespace:
-  Description: Disallows trailing whitespaces
-  Enabled: true
-  Excluded:
-  - src/core/modules/welcome.cr
 
