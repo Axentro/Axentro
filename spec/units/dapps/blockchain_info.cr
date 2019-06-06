@@ -174,7 +174,7 @@ describe BlockchainInfo do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            expected_block = block_factory.chain.select { |blk| blk.transactions.map { |txn| txn.id }.includes?(transaction_id) }.first.to_json
+            expected_block = block_factory.chain.find { |blk| blk.transactions.map { |txn| txn.id }.includes?(transaction_id) }.to_json
             result.should eq(expected_block)
           end
         end
@@ -188,7 +188,7 @@ describe BlockchainInfo do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            block_index = block_factory.chain.select { |blk| blk.transactions.map { |txn| txn.id }.includes?(transaction_id) }.first.index
+            block_index = block_factory.chain.select { |blk| blk.transactions.map { |txn| txn.id }.includes?(transaction_id) }.first.index # ameba:disable Performance/FirstLastAfterFilter
             expected_block_header = block_factory.blockchain.headers[block_index].to_json
             result.should eq(expected_block_header)
           end
