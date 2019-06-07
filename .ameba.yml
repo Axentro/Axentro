@@ -4,16 +4,6 @@
 # one by one as the reported problems are removed from the code base.
 
 # Problems found: 3
-# Run `ameba --only Performance/FirstLastAfterFilter` for details
-Performance/FirstLastAfterFilter:
-  FilterNames:
-  - select
-  Description: Identifies usage of `first/last/first?/last?` calls that follow filters.
-  Enabled: true
-  Excluded:
-  - spec/units/dapps/blockchain_info.cr
-
-# Problems found: 3
 # Run `ameba --only Metrics/CyclomaticComplexity` for details
 Metrics/CyclomaticComplexity:
   Description: Disallows methods with a cyclomatic complexity higher than `MaxComplexity`
@@ -23,4 +13,3 @@ Metrics/CyclomaticComplexity:
   - src/core/blockchain/block.cr
   - src/core/node.cr
   - src/cli/modules/global_optionparser.cr
-
