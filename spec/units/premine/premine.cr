@@ -35,5 +35,17 @@ describe Premine do
       Premine.validate("#{__DIR__}/../utils/data/premine-invalid.yml")
     end
   end
+
+  it "should raise an error if any of the supplied amounts are invalid" do
+    expect_raises(Exception, "The supplied amount: -40 for address: VDA2NjU5N2JlNDA3ZDk5Nzg4MGY2NjY5YjhhOTUwZTE2M2VmNjM5OWM2M2EyMWQz - the amount is out of range") do
+      Premine.validate("#{__DIR__}/../utils/data/premine-invalid-amounts.yml")
+    end
+  end
+
+  it "should generate the premine transactions" do
+    premine = Premine.validate("#{__DIR__}/../utils/data/premine.yml")
+    Premine.transactions(premine.not_nil!.get_config)
+  end
+
   STDERR.puts "< Premine"
 end

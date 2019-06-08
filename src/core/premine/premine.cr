@@ -12,6 +12,8 @@
 
 module ::Sushi::Core
   include Keys
+  include Common::Timestamp
+  include Common::Validator
 
   class Premine
     @config : PremineConfig
@@ -24,12 +26,36 @@ module ::Sushi::Core
       @config = validate(path)
     end
 
+    def get_config
+      @config
+    end
+
+    def self.transactions(config : PremineConfig)
+      recipients = config.addresses.map do |item|
+        {address: item["address"], amount: item["amount"].to_s}
+      end
+
+      TransactionDecimal.new(
+        Transaction.create_id,
+        "head",
+        [] of Transaction::SenderDecimal,
+        recipients,
+        "0",           # message
+        TOKEN_DEFAULT, # token
+        "0",           # prev_hash
+        __timestamp,   # timestamp
+        0,             # scaled
+      ).to_transaction
+    end
+
     private def validate(path : String)
       raise("Premine input file must be a valid .yml file - you supplied #{path}") unless File.extname(path) == ".yml"
       content = PremineConfig.from_yaml(File.read(path))
       content.addresses.each do |item|
         address = item["address"]
+        amount = item["amount"]
         raise("The supplied address: #{address} is invalid") unless Address.is_valid?(address)
+        valid_amount?(amount, "The supplied amount: #{amount} for address: #{address} - ")
       end
       content
     end
