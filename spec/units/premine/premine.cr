@@ -16,9 +16,12 @@ require "./../utils"
 include Sushi::Core
 
 describe Premine do
-
   it "should successfully parse the premine yml file and get the contents" do
-      Premine.validate("#{__DIR__}/../utils/data/premine.yml")
+    Premine.validate("#{__DIR__}/../utils/data/premine.yml")
+  end
+
+  it "should return nil if nil is supplied for path" do
+    Premine.validate(nil).should be_nil
   end
 
   it "should raise an invalid premine file if the file extension is not .yml" do
@@ -32,5 +35,5 @@ describe Premine do
       Premine.validate("#{__DIR__}/../utils/data/premine-invalid.yml")
     end
   end
-    STDERR.puts "< Premine"
+  STDERR.puts "< Premine"
 end

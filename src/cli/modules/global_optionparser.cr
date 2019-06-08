@@ -358,8 +358,8 @@ module ::Sushi::Interface
       @node_id
     end
 
-    def __premine : Premine?
-      Premine.validate(@premine_path)
+    def __premine : Core::Premine?
+      Core::Premine.validate(@premine_path)
     end
 
     def cm

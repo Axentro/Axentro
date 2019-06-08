@@ -11,20 +11,20 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core
-    include Keys
-  class Premine
+  include Keys
 
+  class Premine
     @config : PremineConfig
 
-    def self.validate(path : String)
-      self.new(path)
+    def self.validate(path : String | Nil)
+      path.nil? ? nil : self.new(path)
     end
 
     def initialize(path : String)
       @config = validate(path)
     end
 
-    private def validate(path)
+    private def validate(path : String)
       raise("Premine input file must be a valid .yml file - you supplied #{path}") unless File.extname(path) == ".yml"
       content = PremineConfig.from_yaml(File.read(path))
       content.addresses.each do |item|
@@ -33,7 +33,6 @@ module ::Sushi::Core
       end
       content
     end
-
   end
 
   class PremineConfig

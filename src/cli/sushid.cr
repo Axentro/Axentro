@@ -11,6 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "../cli"
+require "../core/premine/*"
 
 module ::Sushi::Interface::SushiD
   class Root < CLI
@@ -65,10 +66,7 @@ module ::Sushi::Interface::SushiD
                    nil
                  end
 
-     premine = if premine_path = G.op.__premine_path
-               else
-                 nil
-               end
+      premine = G.op.__premine
 
       node = if has_first_connection
                Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, premine, use_ssl)
