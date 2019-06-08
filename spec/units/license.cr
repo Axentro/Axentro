@@ -10,7 +10,7 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-require "./../../spec_helper"
+require "../spec_helper"
 
 describe "License" do
   it "should have a license at the top of every crystal file" do

@@ -10,8 +10,8 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-require "../../src/common"
-require "../../src/core"
+require "../src/common"
+require "../src/core"
 require "./runner"
 require "option_parser"
 
