@@ -233,7 +233,7 @@ module ::Sushi::Core
 
     def genesis_block : Block
       genesis_index = 0_i64
-      genesis_transactions = [] of Transaction
+      genesis_transactions = @premine ? Premine.transactions(@premine.not_nil!.get_config) : [] of Transaction
       genesis_nonce = 0_u64
       genesis_prev_hash = "genesis"
       genesis_timestamp = 0_i64

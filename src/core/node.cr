@@ -487,6 +487,9 @@ module ::Sushi::Core
 
           proceed_setup
         end
+        unless @premine.nil?
+          info "Premine has been invoked based on this configuration: #{@premine.not_nil!.get_path}"
+        end
       when SetupPhase::BLOCKCHAIN_LOADING
         @blockchain.setup(self)
 

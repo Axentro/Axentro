@@ -81,6 +81,11 @@ describe Blockchain do
     assert_reward_distribution(1, 70, 1, 74)
     assert_reward_distribution(1, 150, 0, 75) # miner 1 got no reward
   end
+
+  it "should not allocate rewards if the total supply has been reached" do
+    fail("implement this")
+  end
+
   STDERR.puts "< Block Rewards"
 end
 

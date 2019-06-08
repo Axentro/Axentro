@@ -44,7 +44,8 @@ describe Premine do
 
   it "should generate the premine transactions" do
     premine = Premine.validate("#{__DIR__}/../utils/data/premine.yml")
-    Premine.transactions(premine.not_nil!.get_config)
+    expected_recipients = [{address: "VDA2NjU5N2JlNDA3ZDk5Nzg4MGY2NjY5YjhhOTUwZTE2M2VmNjM5OWM2M2EyMWQz", amount: 500000000000}, {address: "VDAyMzEwODI2NmE1MWJiYTAxOTA2YjE0NzRjYTRjYjllYTk0ZDZhYmJhZGU3MmIz", amount: 900000000000}]
+    Premine.transactions(premine.not_nil!.get_config).flat_map(&.recipients).sort_by(&.["amount"]).should eq(expected_recipients)
   end
 
   STDERR.puts "< Premine"

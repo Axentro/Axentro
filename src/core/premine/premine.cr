@@ -11,18 +11,14 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core
-  include Keys
-  include Common::Timestamp
-
   class Premine
-    include Common::Validator
     @config : PremineConfig
 
     def self.validate(path : String | Nil)
       path.nil? ? nil : self.new(path)
     end
 
-    def initialize(path : String)
+    def initialize(@path : String)
       @config = validate(path)
     end
 
@@ -30,12 +26,16 @@ module ::Sushi::Core
       @config
     end
 
+    def get_path
+      @path.nil? ? "unknown" : @path
+    end
+
     def self.transactions(config : PremineConfig)
       recipients = config.addresses.map do |item|
         {address: item["address"], amount: item["amount"].to_s}
       end
 
-      TransactionDecimal.new(
+      [TransactionDecimal.new(
         Transaction.create_id,
         "head",
         [] of Transaction::SenderDecimal,
@@ -45,7 +45,7 @@ module ::Sushi::Core
         "0",           # prev_hash
         __timestamp,   # timestamp
         0,             # scaled
-      ).to_transaction
+      ).to_transaction]
     end
 
     private def validate(path : String)

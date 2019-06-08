@@ -10,4 +10,9 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
+require "../common/modules/*"
 require "./premine/premine.cr"
+
+include ::Sushi::Common::Timestamp
+include ::Sushi::Common::Validator
+include ::Sushi::Core::Keys
