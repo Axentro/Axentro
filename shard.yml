@@ -37,10 +37,6 @@ dependencies:
 development_dependencies:
   ameba:
     github: veelenga/ameba
-<<<<<<< HEAD
-    version: ~> 0.9.2
-=======
->>>>>>> upgrade to crystal 0.29
 
 crystal: 0.29.0
 
