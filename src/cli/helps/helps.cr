@@ -31,5 +31,6 @@ module ::Sushi::Interface
     HELP_TOKEN_AMOUNT                     = "please specify the token amount: -m [amount]"
     HELP_CONFIG_NAME                      = "please specify the config name: --name=[name]"
     HELP_NODE_ID                          = "please specify a node id: --node_id=[node_id]"
+    HELP_PREMINE                          = "please specify the path to a premine.yml file"
   end
 end

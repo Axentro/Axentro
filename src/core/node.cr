@@ -46,11 +46,12 @@ module ::Sushi::Core
       @connect_port : Int32?,
       @wallet : Wallet,
       @database : Database?,
+      @premine : Premine?,
       @use_ssl : Bool = false
     )
       welcome
 
-      @blockchain = Blockchain.new(@wallet, @database)
+      @blockchain = Blockchain.new(@wallet, @database, @premine)
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl)
       @miners_manager = MinersManager.new(@blockchain)

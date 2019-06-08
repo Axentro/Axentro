@@ -10,9 +10,4 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-require "spec"
-require "yaml"
-require "../src/common"
-require "../src/core"
-
-TOKEN_DEFAULT = Sushi::Core::DApps::BuildIn::UTXO::DEFAULT
+require "./premine/premine.cr"

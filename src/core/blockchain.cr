@@ -35,7 +35,7 @@ module ::Sushi::Core
     @mining_block : Block?
     @block_averages : Array(Int64) = [] of Int64
 
-    def initialize(@wallet : Wallet, @database : Database? = nil)
+    def initialize(@wallet : Wallet, @database : Database?, @premine : Premine?)
       initialize_dapps
 
       TransactionPool.setup
