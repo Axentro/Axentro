@@ -13,9 +13,9 @@
 module ::Sushi::Core
   include Keys
   include Common::Timestamp
-  include Common::Validator
 
   class Premine
+    include Common::Validator
     @config : PremineConfig
 
     def self.validate(path : String | Nil)
