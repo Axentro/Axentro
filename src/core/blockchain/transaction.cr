@@ -105,7 +105,7 @@ module ::Sushi::Core
       raise "prev_hash of coinbase transaction has to be '0'" if @prev_hash != "0"
 
       served_sum = @recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
-      served_sum_expected = blockchain.coinbase_amount(block_index, embedded_transactions)
+      served_sum_expected = blockchain.coinbase_amount(block_index, embedded_transactions, blockchain.get_premine_total_amount)
 
       if served_sum != served_sum_expected
         raise "invalid served amount for coinbase transaction: " +

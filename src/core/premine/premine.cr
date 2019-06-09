@@ -30,6 +30,10 @@ module ::Sushi::Core
       @path.nil? ? "unknown" : @path
     end
 
+    def get_total_amount : Int64
+      @config.addresses.reduce(0_i64){|total, item| total + scale_i64(item["amount"])}
+    end
+
     def self.transactions(config : PremineConfig)
       recipients = config.addresses.map do |item|
         {address: item["address"], amount: item["amount"].to_s}
