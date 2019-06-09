@@ -15,4 +15,5 @@ require "./premine/premine.cr"
 
 include ::Sushi::Common::Timestamp
 include ::Sushi::Common::Validator
+include ::Sushi::Common::Denomination
 include ::Sushi::Core::Keys

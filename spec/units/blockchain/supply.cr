@@ -27,7 +27,7 @@ describe Blockchain do
       i = 0_i64
 
       loop do
-        c_amount = block_factory.blockchain.coinbase_amount(i, [] of Transaction)
+        c_amount = block_factory.blockchain.coinbase_amount(i, [] of Transaction, 0_i64)
         break if c_amount == 0
 
         t_amount += c_amount
