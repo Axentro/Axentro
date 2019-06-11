@@ -101,15 +101,24 @@ describe Blockchain do
       node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
       miner1_reward = get_recipient_for(transaction.recipients, "Miner 1")[:amount]
 
-      total_reward = 33598146_i64
+      total_reward = 24123038_i64
 
-      node_reward.should eq(8399537_i64)
+      node_reward.should eq(6030760_i64)
       as_percentage(node_reward, total_reward).should eq(25)
 
-      miner1_reward.should eq(25198609_i64)
+      miner1_reward.should eq(18092278_i64)
       as_percentage(miner1_reward, total_reward).should eq(75)
 
       (node_reward + miner1_reward).should eq(total_reward)
+    end
+  end
+
+  it "should not allocate rewards if the total supply has been reached due to premine" do
+    with_factory do |block_factory, _|
+      miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
+      coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction, scale_i64("20000000.00004113"))
+      transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1])
+      transaction.recipients.should be_empty
     end
   end
 
