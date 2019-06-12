@@ -35,7 +35,7 @@ module ::Sushi::Core
     @mining_block : Block?
     @block_averages : Array(Int64) = [] of Int64
 
-    def initialize(@wallet : Wallet, @database : Database? = nil)
+    def initialize(@wallet : Wallet, @database : Database?, @premine : Premine?)
       initialize_dapps
 
       TransactionPool.setup
@@ -233,7 +233,7 @@ module ::Sushi::Core
 
     def genesis_block : Block
       genesis_index = 0_i64
-      genesis_transactions = [] of Transaction
+      genesis_transactions = @premine ? Premine.transactions(@premine.not_nil!.get_config) : [] of Transaction
       genesis_nonce = 0_u64
       genesis_prev_hash = "genesis"
       genesis_timestamp = 0_i64
@@ -282,8 +282,12 @@ module ::Sushi::Core
       @mining_block.not_nil!
     end
 
+   def get_premine_total_amount : Int64
+     @premine ? @premine.not_nil!.get_total_amount : 0_i64
+   end
+
     def refresh_mining_block
-      coinbase_amount = coinbase_amount(latest_index + 1, embedded_transactions)
+      coinbase_amount = coinbase_amount(latest_index + 1, embedded_transactions, get_premine_total_amount)
       coinbase_transaction = create_coinbase_transaction(coinbase_amount, node.miners)
 
       transactions = align_transactions(coinbase_transaction, coinbase_amount)
@@ -342,11 +346,13 @@ module ::Sushi::Core
 
       senders = [] of Transaction::Sender # No senders
 
+      recipients = miners_rewards_total > 0 ? [node_reccipient] + miners_recipients : [] of Transaction::Recipient
+
       Transaction.new(
         Transaction.create_id,
         "head",
         senders,
-        [node_reccipient] + miners_recipients,
+        recipients,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -357,10 +363,25 @@ module ::Sushi::Core
 
     RR = 2546479089470325
 
-    def coinbase_amount(index, transactions) : Int64
-      index_index = index * index
+    def coinbase_amount(index : Int64, transactions, premine_total_value : Int64) : Int64
+      premine_index = premine_as_index(premine_total_value, index)
+      index_index = (premine_index + index) * (premine_index + index)
       return total_fees(transactions) if index_index > RR
       Math.sqrt(RR - index_index).to_i64
+    end
+
+    def premine_as_index(premine_value : Int64, current_index : Int64) : Int64
+      return 0_i64 if (premine_value <= 0_i64 || current_index > 0)
+      accumulated_value = 0_i64
+      index = 0_i64
+      (0_i64..(Math.sqrt(RR).to_i64)).each do |_|
+        value = Math.sqrt(RR - (index * index)).to_i64
+        accumulated_value = accumulated_value + value
+        break if accumulated_value >= premine_value
+        index = index + 1
+      end
+      debug "accumulated_value: #{accumulated_value} -> premine_value: #{premine_value}, index: #{index}"
+      index
     end
 
     def total_fees(transactions) : Int64

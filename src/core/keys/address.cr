@@ -31,7 +31,11 @@ module ::Sushi::Core::Keys
     end
 
     def is_valid?
-      decoded_address = Base64.decode_string(@hex)
+      Address.is_valid?(@hex)
+    end
+
+    def self.is_valid?(hex_address : String)
+      decoded_address = Base64.decode_string(hex_address)
       return false unless decoded_address.size == 48
       version_address = decoded_address[0..-7]
       hashed_address = sha256(sha256(version_address))

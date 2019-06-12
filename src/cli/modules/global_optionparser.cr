@@ -58,6 +58,8 @@ module ::Sushi::Interface
 
     @node_id : String?
 
+    @premine_path : String?
+
     enum Options
       # common options
       CONNECT_NODE
@@ -96,6 +98,7 @@ module ::Sushi::Interface
       CONFIG_NAME
       # for node
       NODE_ID
+      PREMINE
     end
 
     def create_option_parser(actives : Array(Options)) : OptionParser
@@ -228,6 +231,10 @@ module ::Sushi::Interface
         parser.on("--node_id=NODE_ID", "specify a node id") { |node_id|
           @node_id = node_id
         } if is_active?(actives, Options::NODE_ID)
+
+        parser.on("--premine=PREMINE", "invoke premine with supplied configuration") { |premine|
+          @premine_path = premine
+        } if is_active?(actives, Options::PREMINE)
       end
     end
 
@@ -349,6 +356,10 @@ module ::Sushi::Interface
 
     def __node_id : String?
       @node_id
+    end
+
+    def __premine : Core::Premine?
+      Core::Premine.validate(@premine_path)
     end
 
     def cm

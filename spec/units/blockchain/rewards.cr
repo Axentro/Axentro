@@ -21,12 +21,13 @@ include ::Sushi::Core::NodeComponents
 include Hashes
 
 TOTAL_BLOCK_REWARD = 50462650_i64
+TOTAL_BLOCK_LIMIT = 50462651_i64
 
 describe Blockchain do
   it "should calculate the block rewards for a single miner" do
     with_factory do |block_factory, _|
       miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
-      coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction)
+      coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction, 0)
       transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1])
 
       node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
@@ -47,7 +48,7 @@ describe Blockchain do
       miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
       miner2 = {context: {address: "Miner 2", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner2"}
       miner3 = {context: {address: "Miner 3", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner3"}
-      coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction)
+      coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction, 0_i64)
       transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1, miner2, miner3])
 
       node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
@@ -81,6 +82,68 @@ describe Blockchain do
     assert_reward_distribution(1, 70, 1, 74)
     assert_reward_distribution(1, 150, 0, 75) # miner 1 got no reward
   end
+
+  it "should not allocate rewards if the total supply has been reached and there are no senders in the transactions" do
+    with_factory do |block_factory, _|
+      miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
+      coinbase_amount = block_factory.blockchain.coinbase_amount(TOTAL_BLOCK_LIMIT, [] of Transaction, 0_i64)
+      transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1])
+      transaction.recipients.should be_empty
+    end
+  end
+
+  it "should take into account premine when allocating rewards" do
+    with_factory do |block_factory, _|
+      miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
+      coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction, scale_i64("19000000"))
+      transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1])
+
+      node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
+      miner1_reward = get_recipient_for(transaction.recipients, "Miner 1")[:amount]
+
+      total_reward = 24123038_i64
+
+      node_reward.should eq(6030760_i64)
+      as_percentage(node_reward, total_reward).should eq(25)
+
+      miner1_reward.should eq(18092278_i64)
+      as_percentage(miner1_reward, total_reward).should eq(75)
+
+      (node_reward + miner1_reward).should eq(total_reward)
+    end
+  end
+
+  it "should not allocate rewards if the total supply has been reached due to premine" do
+    with_factory do |block_factory, _|
+      miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
+      coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction, scale_i64("20000000.00004113"))
+      transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1])
+      transaction.recipients.should be_empty
+    end
+  end
+
+  it "should allocate rewards from fees if the total supply has been reached and there are senders in the transactions" do
+    with_factory do |block_factory, transaction_factory|
+      miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
+      transactions = [transaction_factory.make_send(2000_i64), transaction_factory.make_send(9000_i64)]
+      total_reward = transactions.flat_map(&.senders).map(&.["fee"]).reduce(0){|total, fee| total + fee}
+
+      coinbase_amount = block_factory.blockchain.coinbase_amount(TOTAL_BLOCK_LIMIT, transactions, 0_i64)
+      transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1])
+
+      node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
+      miner1_reward = get_recipient_for(transaction.recipients, "Miner 1")[:amount]
+
+      node_reward.should eq(5000_i64)
+      as_percentage(node_reward, total_reward).should eq(25)
+
+      miner1_reward.should eq(15000_i64)
+      as_percentage(miner1_reward, total_reward).should eq(75)
+
+      (node_reward + miner1_reward).should eq(total_reward)
+    end
+  end
+
   STDERR.puts "< Block Rewards"
 end
 
@@ -88,7 +151,7 @@ def assert_reward_distribution(nonces1, nonces2, expected_percent_1, expected_pe
   with_factory do |block_factory, _|
     miner1 = {context: {address: "Miner 1", nonces: (1..nonces1).map { |n| n.to_u64 }}, socket: MockWebSocket.new, mid: "miner1"}
     miner2 = {context: {address: "Miner 2", nonces: (1..nonces2).map { |n| n.to_u64 }}, socket: MockWebSocket.new, mid: "miner2"}
-    coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction)
+    coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction, 0_i64)
     transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1, miner2])
 
     node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
@@ -107,6 +170,6 @@ def get_recipient_for(recipients, address)
   recipients.find { |r| r[:address] == address }.not_nil!
 end
 
-def as_percentage(percent_of)
-  ((percent_of.to_f64 / TOTAL_BLOCK_REWARD.to_f64) * 100).round.to_i32
+def as_percentage(percent_of, total = TOTAL_BLOCK_REWARD)
+  ((percent_of.to_f64 / total.to_f64) * 100).round.to_i32
 end

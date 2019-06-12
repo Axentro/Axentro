@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "spec"
-
+require "yaml"
 require "../src/common"
 require "../src/core"
 

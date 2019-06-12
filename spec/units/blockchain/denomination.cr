@@ -10,22 +10,19 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Common::Validator
-  def valid_amount?(amount : Int64) : Bool
-    if Int64::MAX < amount || 0 > amount
-      raise "the amount is out of range"
-    end
+require "./../../spec_helper"
+require "./../utils"
 
-    true
+include Units::Utils
+include Sushi::Core
+include Sushi::Common::Denomination
+
+describe Sushi::Common::Denomination do
+  it "should convert string value into Int64 for scale_i64" do
+    scale_i64("0.0001").should eq(10000)
   end
 
-  def valid_amount?(amount : String, message : String = "") : Bool
-    amount_decimal = BigDecimal.new(amount)
-
-    if BigDecimal.new(Int64::MAX, Denomination::SCALE_DECIMAL) < amount_decimal || 0 > amount_decimal
-      raise message + "the amount is out of range"
-    end
-
-    true
+  it "should convert an Int64 value into a scaled string" do
+    scale_decimal(10000.to_i64).should eq("0.0001")
   end
 end
