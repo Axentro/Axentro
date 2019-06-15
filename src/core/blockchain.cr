@@ -33,7 +33,6 @@ module ::Sushi::Core
 
     @node : Node?
     @mining_block : Block?
-    @block_averages : Array(Int64) = [] of Int64
 
     def initialize(@wallet : Wallet, @database : Database?, @premine : Premine?)
       initialize_dapps
@@ -86,7 +85,6 @@ module ::Sushi::Core
       warning "removing invalid blocks from database"
       database.delete_blocks(current_index.not_nil!)
     ensure
-      clean_block_averages
       push_genesis if @chain.size == 0
     end
 
@@ -111,23 +109,7 @@ module ::Sushi::Core
     end
 
     def mining_block_difficulty_miner : Int32
-      value = (mining_block_difficulty.to_f / 3).ceil.to_i
-      Math.max(mining_block_difficulty - value, 1)
-    end
-
-    def push_block_average(avg : Int64)
-      @block_averages.push(avg)
-      if block_averages.size > Consensus::BLOCK_AVERAGE_LIMIT + 10
-        @block_averages.shift
-      end
-    end
-
-    def block_averages
-      @block_averages
-    end
-
-    def clean_block_averages
-      @block_averages = [] of Int64
+      block_difficulty(chain)
     end
 
     def push_block(block : Block)
@@ -237,7 +219,7 @@ module ::Sushi::Core
       genesis_nonce = 0_u64
       genesis_prev_hash = "genesis"
       genesis_timestamp = 0_i64
-      genesis_difficulty = 10
+      genesis_difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
 
       Block.new(
         genesis_index,
@@ -295,8 +277,8 @@ module ::Sushi::Core
 
       elapsed_block_time = timestamp - latest_block.timestamp
 
-      push_block_average(elapsed_block_time)
-      difficulty = block_difficulty(timestamp, elapsed_block_time, latest_block, block_averages)
+      difficulty = block_difficulty(chain)
+      debug "Calculated a difficulty of #{difficulty} in refresh_mining_block"
 
       @mining_block = Block.new(
         latest_index + 1,
