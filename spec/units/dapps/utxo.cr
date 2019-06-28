@@ -202,7 +202,7 @@ describe UTXO do
       end
     end
 
-    it "should raise an error if sender has not enough default token to afford the transaction" do
+    it "should raise an error if sender does not have enough tokens to afford the transaction" do
       with_factory do |block_factory, transaction_factory|
         transaction1 = transaction_factory.make_send(100000000_i64)
         transaction2 = transaction_factory.make_send(200000000_i64)
@@ -210,13 +210,13 @@ describe UTXO do
         utxo = UTXO.new(block_factory.blockchain)
 
         utxo.record(chain)
-        expect_raises(Exception, "sender has not enough token(#{TOKEN_DEFAULT}). sender has -.4954735 + 0 but try to pay 2") do
+        expect_raises(Exception, "Unable to send 2 to recipient because you do not have enough. Current tokens: -.4954735 + 0") do
           utxo.valid_transaction?(transaction2, [transaction1])
         end
       end
     end
 
-    it "should raise an error if sender has not enough default token to afford the transaction" do
+    it "should raise an error if sender does not have enough default tokens to afford the transaction" do
       with_factory do |block_factory, transaction_factory|
         transaction1 = transaction_factory.make_send(1000000_i64, "KINGS")
         transaction2 = transaction_factory.make_send(2000000_i64, "KINGS")
@@ -224,7 +224,7 @@ describe UTXO do
         utxo = UTXO.new(block_factory.blockchain)
 
         utxo.record(chain)
-        expect_raises(Exception, "sender has not enough token(KINGS). sender has -0.01 + 0 but try to pay 0.02") do
+        expect_raises(Exception, "Unable to send 0.02 to recipient because you do not have enough. Current tokens: -0.01 + 0") do
           utxo.valid_transaction?(transaction2, [transaction1])
         end
       end

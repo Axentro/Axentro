@@ -137,7 +137,7 @@ module ::Sushi::Core::DApps::BuildIn
 
     def valid_cancel?(transaction : Transaction, transactions : Array(Transaction)) : Bool
       raise "senders can only be 1 for scars action" if transaction.senders.size != 1
-      raise "you have to set 1 recipient" if transaction.recipients.size != 1
+      raise "you have to set one recipient" if transaction.recipients.size != 1
 
       sender = transaction.senders[0]
       domain_name = transaction.message
