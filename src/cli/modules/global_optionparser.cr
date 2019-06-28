@@ -132,7 +132,7 @@ module ::Sushi::Interface
           @is_private_changed = true
         } if is_active?(actives, Options::IS_PRIVATE)
 
-        parser.on("--private", "launch a node in private mode. it will not be connected from other nodes.") {
+        parser.on("--private", "launch a node in private mode. it will not be connected to other nodes.") {
           @is_private = true
           @is_private_changed = true
         } if is_active?(actives, Options::IS_PRIVATE)
@@ -154,7 +154,7 @@ module ::Sushi::Interface
           @bind_port = bind_port.to_i
         } if is_active?(actives, Options::BIND_PORT)
 
-        parser.on("-u PUBLIC_URL", "--public_url=PUBLIC_URL", "public url of your node that can be accessed from internet. if your node is behind a NAT, you can add --private flag instread of this option") { |public_url|
+        parser.on("-u PUBLIC_URL", "--public_url=PUBLIC_URL", "public url of your node that can be accessed from internet. if your node is behind a NAT, you can add --private flag instead of this option") { |public_url|
           @public_url = public_url
         } if is_active?(actives, Options::PUBLIC_URL)
 

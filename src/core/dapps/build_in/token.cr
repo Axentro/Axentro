@@ -28,9 +28,9 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-      raise "senders have to be only one for token action" if transaction.senders.size != 1
-      raise "number of specified senders must be one for 'create_token'" if transaction.senders.size != 1
-      raise "number of specified recipients must be one for 'create_token'" if transaction.recipients.size != 1
+      raise "senders can only be 1 for token action" if transaction.senders.size != 1
+      raise "number of specified senders must be 1 for 'create_token'" if transaction.senders.size != 1
+      raise "number of specified recipients must be 1 for 'create_token'" if transaction.recipients.size != 1
 
       sender = transaction.senders[0]
       sender_address = sender[:address]
@@ -64,7 +64,7 @@ module ::Sushi::Core::DApps::BuildIn
         token_rule = <<-RULE
 You token '#{token}' is not valid
 
-1. token name must contain only uppercase letters or numbers
+1. token name can only contain uppercase letters or numbers
 2. token name length must be between 1 and 20 characters
 RULE
         raise token_rule

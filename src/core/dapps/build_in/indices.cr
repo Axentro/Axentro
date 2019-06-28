@@ -39,7 +39,7 @@ module ::Sushi::Core::DApps::BuildIn
       end
 
       if prev_transactions.count { |t| t.id == transaction.id } > 0
-        raise "the transcation #{transaction.id} already exists in the same block"
+        raise "the transaction #{transaction.id} already exists in the same block"
       end
 
       true

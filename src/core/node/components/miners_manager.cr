@@ -88,7 +88,7 @@ module ::Sushi::Core::NodeComponents
 
       if miner = find?(socket)
         if @miners.map { |m| m[:context][:nonces] }.flatten.includes?(nonce)
-          warning "nonce #{nonce} has already been discoverd"
+          warning "nonce #{nonce} has already been discovered"
         elsif !@blockchain.mining_block.with_nonce(nonce).valid_nonce?(@blockchain.mining_block_difficulty_miner)
           warning "received nonce is invalid, try to update latest block"
 
