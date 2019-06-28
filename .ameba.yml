@@ -10,6 +10,4 @@ Metrics/CyclomaticComplexity:
   MaxComplexity: 11
   Enabled: true
   Excluded:
-  - src/core/blockchain/block.cr
-  - src/core/node.cr
   - src/cli/modules/global_optionparser.cr

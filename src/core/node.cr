@@ -158,6 +158,7 @@ module ::Sushi::Core
       ApiDocumentationHandler.new("/", "api/v1/dist/index.html")
     end
 
+    # ameba:disable Metrics/CyclomaticComplexity
     def peer(socket : HTTP::WebSocket)
       socket.on_message do |message|
         message_json = JSON.parse(message)
