@@ -220,17 +220,18 @@ module ::Sushi::Core
       handle_exception(socket, e)
     end
 
+    private def prevent_self_connecting_case(message_type, content, from, successor)
+      if (successor[:context][:id] != @chord.context[:id]) && (from.nil? || from[:is_private])
+        send(successor[:socket], message_type, content)
+      end
+    end
+
     def send_on_chord(message_type, content, from : Chord::NodeContext? = nil)
       _nodes = @chord.find_nodes
 
       if @is_private
         if successor = _nodes[:successor]
-          #
-          # prevent the self-connecting case
-          #
-          if (successor[:context][:id] != @chord.context[:id]) && (from.nil? || from[:is_private])
-            send(successor[:socket], message_type, content)
-          end
+          prevent_self_connecting_case(message_type, content, from, successor)
         end
       else
         _nodes[:private_nodes].each do |private_node|
@@ -467,19 +468,23 @@ module ::Sushi::Core
       ]
     end
 
+    private def phase_connecting_nodes
+      @phase = SetupPhase::CONNECTING_NODES
+
+      if @is_private
+        @chord.join_to_private(self, @connect_host.not_nil!, @connect_port.not_nil!)
+      else
+        @chord.join_to(self, @connect_host.not_nil!, @connect_port.not_nil!)
+      end
+    end
+
     def proceed_setup
       return if @phase == SetupPhase::DONE
 
       case @phase
       when SetupPhase::NONE
         if @connect_host && @connect_port
-          @phase = SetupPhase::CONNECTING_NODES
-
-          if @is_private
-            @chord.join_to_private(self, @connect_host.not_nil!, @connect_port.not_nil!)
-          else
-            @chord.join_to(self, @connect_host.not_nil!, @connect_port.not_nil!)
-          end
+          phase_connecting_nodes
         else
           warning "no connecting node has been specified"
           warning "so this node is standalone from other network"

@@ -85,6 +85,17 @@ module ::Sushi::Core
       valid_as_genesis?
     end
 
+    private def process_transaction(blockchain, transaction, idx)
+      t = TransactionPool.find(transaction) || transaction
+      t.valid_common?
+
+      if idx == 0
+        t.valid_as_coinbase?(blockchain, @index, transactions[1..-1])
+      else
+        t.valid_as_embedded?(blockchain, transactions[0..idx - 1])
+      end
+    end
+
     def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool) : Bool
       prev_block = blockchain.latest_block
 
@@ -93,14 +104,7 @@ module ::Sushi::Core
 
       unless skip_transactions
         transactions.each_with_index do |t, idx|
-          t = TransactionPool.find(t) || t
-          t.valid_common?
-
-          if idx == 0
-            t.valid_as_coinbase?(blockchain, @index, transactions[1..-1])
-          else
-            t.valid_as_embedded?(blockchain, transactions[0..idx - 1])
-          end
+          process_transaction(blockchain, t, idx)
         end
       end
 
