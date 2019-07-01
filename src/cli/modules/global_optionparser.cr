@@ -103,139 +103,227 @@ module ::Sushi::Interface
 
     def create_option_parser(actives : Array(Options)) : OptionParser
       OptionParser.new do |parser|
-        parser.on("-n NODE", "--node=NODE", "a url of the connect node") { |connect_node|
-          @connect_node = connect_node
-        } if is_active?(actives, Options::CONNECT_NODE)
+        parse_node(parser, actives)
+        parse_wallet_path(parser, actives)
+        parse_password(parser, actives)
+        parse_mainnet(parser, actives)
+        parse_testnet(parser, actives)
+        parse_public(parser, actives)
+        parse_private(parser, actives)
+        parse_json(parser, actives)
+        parse_confirmation(parser, actives)
+        parse_bind_host(parser, actives)
+        parse_bind_port(parser, actives)
+        parse_public_url(parser, actives)
+        parse_database(parser, actives)
+        parse_address(parser, actives)
+        parse_amount(parser, actives)
+        parse_action(parser, actives)
+        parse_message(parser, actives)
+        parse_block_index(parser, actives)
+        parse_transaction_id(parser, actives)
+        parse_fee(parser, actives)
+        parse_header(parser, actives)
+        parse_processes(parser, actives)
+        parse_encrypted(parser, actives)
+        parse_price(parser, actives)
+        parse_domain(parser, actives)
+        parse_token(parser, actives)
+        parse_config_name(parser, actives)
+        parse_node_id(parser, actives)
+        parse_premine(parser, actives)
+      end
+    end
 
-        parser.on(
-          "-w WALLET_PATH",
-          "--wallet_path=WALLET_PATH",
-          "path to a wallet file (json)"
-        ) { |wallet_path| @wallet_path = wallet_path } if is_active?(actives, Options::WALLET_PATH)
+    private def parse_node(parser : OptionParser, actives : Array(Options))
+      parser.on("-n NODE", "--node=NODE", "a url of the connect node") { |connect_node|
+        @connect_node = connect_node
+      } if is_active?(actives, Options::CONNECT_NODE)
+    end
 
-        parser.on("--password=PASSWORD", "password for a encrypted wallet") { |password|
-          @wallet_password = password
-        } if is_active?(actives, Options::WALLET_PASSWORD)
+    private def parse_wallet_path(parser : OptionParser, actives : Array(Options))
+      parser.on(
+        "-w WALLET_PATH",
+        "--wallet_path=WALLET_PATH",
+        "path to a wallet file (json)"
+      ) { |wallet_path| @wallet_path = wallet_path } if is_active?(actives, Options::WALLET_PATH)
+    end
 
-        parser.on("--mainnet", "set network type as mainnet (default is mainnet)") {
-          @is_testnet = false
-          @is_testnet_changed = true
-        } if is_active?(actives, Options::IS_TESTNET)
+    private def parse_password(parser : OptionParser, actives : Array(Options))
+      parser.on("--password=PASSWORD", "password for a encrypted wallet") { |password|
+        @wallet_password = password
+      } if is_active?(actives, Options::WALLET_PASSWORD)
+    end
 
-        parser.on("--testnet", "set network type as testnet (default is mainnet)") {
-          @is_testnet = true
-          @is_testnet_changed = true
-        } if is_active?(actives, Options::IS_TESTNET)
+    private def parse_mainnet(parser : OptionParser, actives : Array(Options))
+      parser.on("--mainnet", "set network type as mainnet (default is mainnet)") {
+        @is_testnet = false
+        @is_testnet_changed = true
+      } if is_active?(actives, Options::IS_TESTNET)
+    end
 
-        parser.on("--public", "launch a node in public mode. (default is public mode)") {
-          @is_private = false
-          @is_private_changed = true
-        } if is_active?(actives, Options::IS_PRIVATE)
+    private def parse_testnet(parser : OptionParser, actives : Array(Options))
+      parser.on("--testnet", "set network type as testnet (default is mainnet)") {
+        @is_testnet = true
+        @is_testnet_changed = true
+      } if is_active?(actives, Options::IS_TESTNET)
+    end
 
-        parser.on("--private", "launch a node in private mode. it will not be connected from other nodes.") {
-          @is_private = true
-          @is_private_changed = true
-        } if is_active?(actives, Options::IS_PRIVATE)
+    private def parse_public(parser : OptionParser, actives : Array(Options))
+      parser.on("--public", "launch a node in public mode. (default is public mode)") {
+        @is_private = false
+        @is_private_changed = true
+      } if is_active?(actives, Options::IS_PRIVATE)
+    end
 
-        parser.on("-j", "--json", "print results as json") {
-          @json = true
-        } if is_active?(actives, Options::JSON)
+    private def parse_private(parser : OptionParser, actives : Array(Options))
+      parser.on("--private", "launch a node in private mode. it will not be connected from other nodes.") {
+        @is_private = true
+        @is_private_changed = true
+      } if is_active?(actives, Options::IS_PRIVATE)
+    end
 
-        parser.on("--confirmation=CONFIRMATION", "set the length for the confirmation") { |confirmation|
-          @confirmation = confirmation.to_i
-        } if is_active?(actives, Options::CONFIRMATION)
+    private def parse_json(parser : OptionParser, actives : Array(Options))
+      parser.on("-j", "--json", "print results as json") {
+        @json = true
+      } if is_active?(actives, Options::JSON)
+    end
 
-        parser.on("-h BIND_HOST", "--bind_host=BIND_HOST", "binding host; '0.0.0.0' by default") { |bind_host|
-          raise "invalid host: #{bind_host}" unless bind_host.count('.') == 3
-          @bind_host = bind_host
-        } if is_active?(actives, Options::BIND_HOST)
+    private def parse_confirmation(parser : OptionParser, actives : Array(Options))
+      parser.on("--confirmation=CONFIRMATION", "set the length for the confirmation") { |confirmation|
+        @confirmation = confirmation.to_i
+      } if is_active?(actives, Options::CONFIRMATION)
+    end
 
-        parser.on("-p BIND_PORT", "--bind_port=BIND_PORT", "binding port; 3000 by default") { |bind_port|
-          @bind_port = bind_port.to_i
-        } if is_active?(actives, Options::BIND_PORT)
+    private def parse_bind_host(parser : OptionParser, actives : Array(Options))
+      parser.on("-h BIND_HOST", "--bind_host=BIND_HOST", "binding host; '0.0.0.0' by default") { |bind_host|
+        raise "invalid host: #{bind_host}" unless bind_host.count('.') == 3
+        @bind_host = bind_host
+      } if is_active?(actives, Options::BIND_HOST)
+    end
 
-        parser.on("-u PUBLIC_URL", "--public_url=PUBLIC_URL", "public url of your node that can be accessed from internet. if your node is behind a NAT, you can add --private flag instread of this option") { |public_url|
-          @public_url = public_url
-        } if is_active?(actives, Options::PUBLIC_URL)
+    private def parse_bind_port(parser : OptionParser, actives : Array(Options))
+      parser.on("-p BIND_PORT", "--bind_port=BIND_PORT", "binding port; 3000 by default") { |bind_port|
+        @bind_port = bind_port.to_i
+      } if is_active?(actives, Options::BIND_PORT)
+    end
 
-        parser.on("-d DATABASE", "--database=DATABASE", "path to a database (SQLite3)") { |database_path|
-          @database_path = database_path
-        } if is_active?(actives, Options::DATABASE_PATH)
+    private def parse_public_url(parser : OptionParser, actives : Array(Options))
+      parser.on("-u PUBLIC_URL", "--public_url=PUBLIC_URL", "public url of your node that can be accessed from internet. if your node is behind a NAT, you can add --private flag instread of this option") { |public_url|
+        @public_url = public_url
+      } if is_active?(actives, Options::PUBLIC_URL)
+    end
 
-        parser.on("-a ADDRESS", "--address=ADDRESS", "public address") { |address|
-          @address = address
-        } if is_active?(actives, Options::ADDRESS)
+    private def parse_database(parser : OptionParser, actives : Array(Options))
+      parser.on("-d DATABASE", "--database=DATABASE", "path to a database (SQLite3)") { |database_path|
+        @database_path = database_path
+      } if is_active?(actives, Options::DATABASE_PATH)
+    end
 
-        parser.on("-m AMOUNT", "--amount=AMOUNT", "the amount of tokens") { |amount|
-          decimal_option(amount) do
-            @amount = amount
-          end
-        } if is_active?(actives, Options::AMOUNT)
+    private def parse_address(parser : OptionParser, actives : Array(Options))
+      parser.on("-a ADDRESS", "--address=ADDRESS", "public address") { |address|
+        @address = address
+      } if is_active?(actives, Options::ADDRESS)
+    end
 
-        parser.on("--action=ACTION", "specify an action name of the transaction") { |action|
-          @action = action
-        } if is_active?(actives, Options::ACTION)
+    private def parse_amount(parser : OptionParser, actives : Array(Options))
+      parser.on("-m AMOUNT", "--amount=AMOUNT", "the amount of tokens") { |amount|
+        decimal_option(amount) do
+          @amount = amount
+        end
+      } if is_active?(actives, Options::AMOUNT)
+    end
 
-        parser.on("--message=MESSAGE", "add message into transaction") { |message|
-          @message = message
-        } if is_active?(actives, Options::MESSAGE)
+    private def parse_action(parser : OptionParser, actives : Array(Options))
+      parser.on("--action=ACTION", "specify an action name of the transaction") { |action|
+        @action = action
+      } if is_active?(actives, Options::ACTION)
+    end
 
+    private def parse_message(parser : OptionParser, actives : Array(Options))
+      parser.on("--message=MESSAGE", "add message into transaction") { |message|
+        @message = message
+      } if is_active?(actives, Options::MESSAGE)
+    end
+
+    private def parse_block_index(parser : OptionParser, actives : Array(Options))
         parser.on("-i BLOCK_INDEX", "--index=BLOCK_INDEX", "block index") { |block_index|
           @block_index = block_index.to_i
         } if is_active?(actives, Options::BLOCK_INDEX)
+    end
 
-        parser.on(
-          "-t TRANSACTION_ID",
-          "--transaction_id=TRANSACTION_ID",
-          "transaction id"
-        ) { |transaction_id|
-          @transaction_id = transaction_id
-        } if is_active?(actives, Options::TRANSACTION_ID)
+    private def parse_transaction_id(parser : OptionParser, actives : Array(Options))
+      parser.on(
+        "-t TRANSACTION_ID",
+        "--transaction_id=TRANSACTION_ID",
+        "transaction id"
+      ) { |transaction_id|
+        @transaction_id = transaction_id
+      } if is_active?(actives, Options::TRANSACTION_ID)
+    end
 
-        parser.on("-f FEE", "--fee=FEE", "the amount of fee") { |fee|
-          decimal_option(fee) do
-            @fee = fee
-          end
-        } if is_active?(actives, Options::FEE)
+    private def parse_fee(parser : OptionParser, actives : Array(Options))
+      parser.on("-f FEE", "--fee=FEE", "the amount of fee") { |fee|
+        decimal_option(fee) do
+          @fee = fee
+        end
+      } if is_active?(actives, Options::FEE)
+    end
 
-        parser.on("-h", "--header", "get headers only when get a blockchain or blocks") {
-          @header = true
-        } if is_active?(actives, Options::HEADER)
+    private def parse_header(parser : OptionParser, actives : Array(Options))
+      parser.on("-h", "--header", "get headers only when get a blockchain or blocks") {
+        @header = true
+      } if is_active?(actives, Options::HEADER)
+    end
 
-        parser.on("--process=PROCESSES", "# of the work processes (default is 1)") { |processes|
-          @processes = processes.to_i
-        } if is_active?(actives, Options::PROCESSES)
+    private def parse_processes(parser : OptionParser, actives : Array(Options))
+      parser.on("--process=PROCESSES", "# of the work processes (default is 1)") { |processes|
+        @processes = processes.to_i
+      } if is_active?(actives, Options::PROCESSES)
+    end
 
-        parser.on("-e", "--encrypted", "set this flag when creating a wallet to create an encrypted wallet") {
-          @encrypted = true
-        } if is_active?(actives, Options::ENCRYPTED)
+    private def parse_encrypted(parser : OptionParser, actives : Array(Options))
+      parser.on("-e", "--encrypted", "set this flag when creating a wallet to create an encrypted wallet") {
+        @encrypted = true
+      } if is_active?(actives, Options::ENCRYPTED)
+    end
 
-        parser.on("--price=PRICE", "buy/sell price for SCARS") { |price|
-          decimal_option(price) do
-            @price = price
-          end
-        } if is_active?(actives, Options::PRICE)
+    private def parse_price(parser : OptionParser, actives : Array(Options))
+      parser.on("--price=PRICE", "buy/sell price for SCARS") { |price|
+        decimal_option(price) do
+          @price = price
+        end
+      } if is_active?(actives, Options::PRICE)
+    end
 
-        parser.on("--domain=DOMAIN", "specify a domain for SCARS") { |domain|
-          @domain = domain
-        } if is_active?(actives, Options::DOMAIN)
+    private def parse_domain(parser : OptionParser, actives : Array(Options))
+      parser.on("--domain=DOMAIN", "specify a domain for SCARS") { |domain|
+        @domain = domain
+      } if is_active?(actives, Options::DOMAIN)
+    end
 
-        parser.on("--token=TOKEN", "specify a target token") { |token|
-          @token = token
-        } if is_active?(actives, Options::TOKEN)
+    private def parse_token(parser : OptionParser, actives : Array(Options))
+      parser.on("--token=TOKEN", "specify a target token") { |token|
+        @token = token
+      } if is_active?(actives, Options::TOKEN)
+    end
 
-        parser.on("-c", "--config=CONFIG_NAME", "specify a config name") { |name|
-          @config_name = name
-        } if is_active?(actives, Options::CONFIG_NAME)
+    private def parse_config_name(parser : OptionParser, actives : Array(Options))
+      parser.on("-c", "--config=CONFIG_NAME", "specify a config name") { |name|
+        @config_name = name
+      } if is_active?(actives, Options::CONFIG_NAME)
+    end
 
-        parser.on("--node_id=NODE_ID", "specify a node id") { |node_id|
-          @node_id = node_id
-        } if is_active?(actives, Options::NODE_ID)
+    private def parse_node_id(parser : OptionParser, actives : Array(Options))
+      parser.on("--node_id=NODE_ID", "specify a node id") { |node_id|
+        @node_id = node_id
+      } if is_active?(actives, Options::NODE_ID)
+    end
 
-        parser.on("--premine=PREMINE", "invoke premine with supplied configuration") { |premine|
-          @premine_path = premine
-        } if is_active?(actives, Options::PREMINE)
-      end
+    private def parse_premine(parser : OptionParser, actives : Array(Options))
+      parser.on("--premine=PREMINE", "invoke premine with supplied configuration") { |premine|
+        @premine_path = premine
+      } if is_active?(actives, Options::PREMINE)
     end
 
     def is_active?(actives : Array(Options), option : Options) : Bool
