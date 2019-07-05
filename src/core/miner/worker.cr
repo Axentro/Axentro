@@ -18,33 +18,43 @@ module ::Sushi::Core
       work = MinerWork.from_json(message)
 
       nonce = work[:start_nonce]
+      nonce_counter = 0
 
-      latest_nonce = nonce
-      latest_time = Time.now
+      latest_nonce_counter = nonce_counter
+      time_now = __timestamp
+      latest_time = time_now
+      start_time = time_now
+      block = work[:block].with_nonce(nonce)
 
       loop do
-        break if valid_nonce?(work[:block].with_nonce(nonce).to_hash, nonce, work[:difficulty])
+        time_now = __timestamp
+        block = work[:block].with_nonce_and_mined_timestamp(nonce, time_now)
+        break if valid_nonce?(block.to_hash, nonce, work[:difficulty]) == work[:difficulty]
 
+        nonce_counter += 1
         nonce += 1
 
-        if nonce % 100 == 0
-          time_now = Time.now
-          time_diff = (time_now - latest_time).total_seconds
+        if nonce_counter % 100 == 0
+          time_diff = time_now - latest_time
 
           break if time_diff == 0
 
-          work_rate = (nonce - latest_nonce) / time_diff
+          nonce = Random.rand(UInt64::MAX)
 
-          info "#{nonce - latest_nonce} works, #{work_rate_with_unit(work_rate)}"
+          work_rate = (nonce_counter - latest_nonce_counter) / time_diff.to_f64
 
-          latest_nonce = nonce
+          info "#{nonce_counter - latest_nonce_counter} works, #{work_rate_with_unit(work_rate)}"
+
+          latest_nonce_counter = nonce_counter
           latest_time = time_now
         end
       end
 
       debug "found new nonce(#{work[:difficulty]}): #{light_green(nonce)}"
+      debug "Found block..."
+      block.to_s
 
-      response(nonce.to_s)
+      response({nonce: nonce, timestamp: time_now}.to_json)
     rescue e : Exception
       error e.message.not_nil!
       error e.backtrace.join("\n")
@@ -60,5 +70,6 @@ module ::Sushi::Core
     include Logger
     include Consensus
     include Common::Color
+    include Common::Timestamp
   end
 end

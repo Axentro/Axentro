@@ -27,9 +27,13 @@ module ::Sushi::Core::NodeComponents
 
     alias Miners = Array(Miner)
 
+    @most_difficult_block_so_far : Block
+
     getter miners : Miners = Miners.new
 
     def initialize(@blockchain : Blockchain)
+      @highest_difficulty_mined_so_far = 0
+      @most_difficult_block_so_far = @blockchain.genesis_block
     end
 
     def handshake(socket, _content)
@@ -85,12 +89,25 @@ module ::Sushi::Core::NodeComponents
       _m_content = MContentMinerFoundNonce.from_json(_content)
 
       nonce = _m_content.nonce
+      mined_timestamp = _m_content.timestamp
 
+      debug "received a nonce of #{nonce} from a miner at timestamp #{mined_timestamp}"
+      
       if miner = find?(socket)
+        block = @blockchain.mining_block.with_nonce_and_mined_timestamp(nonce, mined_timestamp)
+
+        debug "Received a freshly mined block..."
+        block.to_s
+
         if @miners.map { |m| m[:context][:nonces] }.flatten.includes?(nonce)
-          warning "nonce #{nonce} has already been discoverd"
-        elsif !@blockchain.mining_block.with_nonce(nonce).valid_nonce?(@blockchain.mining_block_difficulty_miner)
+          warning "nonce #{nonce} has already been discovered"
+          return
+        end
+
+        mined_difficulty = block.valid_nonce?(@blockchain.mining_block_difficulty)
+        if mined_difficulty < @blockchain.mining_block_difficulty_miner
           warning "received nonce is invalid, try to update latest block"
+          debug "mined difficulty is: #{mined_difficulty}"
 
           send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
             block:      @blockchain.mining_block,
@@ -98,18 +115,38 @@ module ::Sushi::Core::NodeComponents
           })
         else
           miner_name = HumanHash.humanize(miner[:mid])
-          debug "miner #{miner_name} found nonce (nonces: #{miner[:context][:nonces].size})"
+          debug "miner #{miner_name} found nonce at timestamp #{block.mined_timestamp }.. (nonces: #{miner[:context][:nonces].size}) mined with difficulty #{mined_difficulty} "
 
           miner[:context][:nonces].push(nonce)
 
-          if block = @blockchain.valid_nonce?(nonce)
-            node.new_block(block)
-            node.send_block(block)
-
-            clear_nonces
+          # for now only minting block on 120 boundaries .. threw the " * 1000 " in below to prevent block difficulty from being satisfied
+          if mined_difficulty == @blockchain.mining_block_difficulty * 1000
+            debug "found nonce of #{block.nonce} that satisfies block difficulty"
+            mint_block(block)
+          else
+            debug "found nonce of #{block.nonce} that doesn't satisfy block difficulty, checking if it is the best so far"
+            if mined_difficulty > @highest_difficulty_mined_so_far
+              debug "This block is now the most difficult recorded"
+              @most_difficult_block_so_far = block.dup
+              @highest_difficulty_mined_so_far = mined_difficulty
+            else
+              debug "This block was not the most difficult recorded, miner still gets credit for sending the nonce"
+            end
+            if block.mined_timestamp > block.timestamp + (Consensus::POW_TARGET_SPACING * 0.90).to_i32
+              debug "Time expired ... the most difficult recorded so far will be minted"
+              @most_difficult_block_so_far.to_s
+              mint_block(@most_difficult_block_so_far)
+            end
           end
         end
       end
+    end
+
+    def mint_block(block : Block)
+      node.new_block(block)
+      node.send_block(block)
+      @highest_difficulty_mined_so_far = 0
+      clear_nonces
     end
 
     def clear_nonces

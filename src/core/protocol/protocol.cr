@@ -47,7 +47,8 @@ module ::Sushi::Core::Protocol
 
   struct MContentMinerFoundNonce
     JSON.mapping({
-      nonce: UInt64
+      nonce: UInt64,
+      timestamp: Int64
     })
   end
 
