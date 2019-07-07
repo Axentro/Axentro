@@ -37,7 +37,6 @@ module ::Sushi::Core::Consensus
   def block_difficulty_to_miner_difficulty(diff : Int32)
     value = (diff.to_f / 3).ceil.to_i
     Math.max(diff - value, 1)
-    #diff / 2
   end
 
   # Dark Gravity Wave history lookback for averaging (in blocks)
