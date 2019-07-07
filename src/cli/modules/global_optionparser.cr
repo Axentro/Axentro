@@ -177,7 +177,7 @@ module ::Sushi::Interface
     end
 
     private def parse_private(parser : OptionParser, actives : Array(Options))
-      parser.on("--private", "launch a node in private mode. it will not be connected from other nodes.") {
+      parser.on("--private", "launch a node in private mode. it will not be connected to other nodes.") {
         @is_private = true
         @is_private_changed = true
       } if is_active?(actives, Options::IS_PRIVATE)

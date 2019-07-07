@@ -16,11 +16,11 @@ module ::Sushi::Interface::Sushi
       [
         {
           name: "create",
-          desc: "create a transaction. basically it's used for sending tokens. you can specify other actions. (the default action is 'send')",
+          desc: "create a transaction, generally used for sending tokens but you can specify other actions. (the default action is 'send')",
         },
         {
           name: "transactions",
-          desc: "get trasactions in a specified block or for an address (txs for short)",
+          desc: "get transactions in a specified block or for an address (txs for short)",
         },
         {
           name: "transaction",
@@ -28,7 +28,7 @@ module ::Sushi::Interface::Sushi
         },
         {
           name: "confirmation",
-          desc: "get a number of confirmations (cf for short)",
+          desc: "get the number of confirmations (cf for short)",
         },
         {
           name: "fees",
@@ -163,7 +163,7 @@ module ::Sushi::Interface::Sushi
           puts_error("the transaction was rejected. " +
                      "the reason: #{json["reason"].as_s}")
         when "not found"
-          puts_error("the transcation was not found")
+          puts_error("the transaction was not found")
         else
           puts_error("unknown status for the transaction")
         end

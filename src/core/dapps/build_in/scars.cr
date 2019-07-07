@@ -82,7 +82,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def valid_buy?(transaction : Transaction, transactions : Array(Transaction)) : Bool
-      raise "senders have to be only one for scars action" if transaction.senders.size != 1
+      raise "senders can only be 1 for scars action" if transaction.senders.size != 1
       raise "you must pay by #{UTXO::DEFAULT} for SCARS" unless transaction.token == UTXO::DEFAULT
 
       sender = transaction.senders[0]
@@ -103,17 +103,17 @@ module ::Sushi::Core::DApps::BuildIn
 
                      domain[:price]
                    else
-                     raise "you cannot set a recipient since no body has bought the domain: #{domain_name}" if recipients.size > 0
+                     raise "you cannot set a recipient since nobody has bought the domain: #{domain_name}" if recipients.size > 0
                      0 # default price
                    end
 
-      raise "the supplied price #{price} is different to expected price #{sale_price}" unless sale_price == price
+      raise "the supplied price #{price} is different than the expected price #{sale_price}" unless sale_price == price
 
       true
     end
 
     def valid_sell?(transaction : Transaction, transactions : Array(Transaction)) : Bool
-      raise "senders have to be only one for scars action" if transaction.senders.size != 1
+      raise "senders can only be 1 for scars action" if transaction.senders.size != 1
       raise "you have to set one recipient" if transaction.recipients.size != 1
 
       sender = transaction.senders[0]
@@ -126,7 +126,7 @@ module ::Sushi::Core::DApps::BuildIn
       recipient = transaction.recipients[0]
 
       raise "domain #{domain_name} not found" unless domain = resolve_pending(domain_name, transactions)
-      raise "domain #{domain_name} is already for sale now" if domain[:status] == Status::FOR_SALE
+      raise "domain #{domain_name} is already for sale" if domain[:status] == Status::FOR_SALE
       raise "domain address mismatch: expected #{address} but got #{domain[:address]}" unless address == domain[:address]
       raise "address mismatch for scars_sell: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
       raise "price mismatch for scars_sell: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
@@ -136,7 +136,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def valid_cancel?(transaction : Transaction, transactions : Array(Transaction)) : Bool
-      raise "senders have to be only one for scars action" if transaction.senders.size != 1
+      raise "senders can only be 1 for scars action" if transaction.senders.size != 1
       raise "you have to set one recipient" if transaction.recipients.size != 1
 
       sender = transaction.senders[0]
@@ -166,7 +166,7 @@ module ::Sushi::Core::DApps::BuildIn
         domain_rule = <<-RULE
 Your domain '#{domain_name}' is not valid
 
-1. domain name must contain only alphanumerics
+1. domain name can only contain only alphanumerics
 2. domain name must end with one of these suffixes: #{SUFFIX}
 3. domain name length must be between 1 and 20 characters (excluding suffix)
 RULE
@@ -245,7 +245,7 @@ RULE
         return scale_i64("0.0001")
       end
 
-      raise "got unknown action #{action} during getting a fee for scars"
+      raise "got unknown action #{action} while getting a fee for scars"
     end
 
     def define_rpc?(call, json, context, params)

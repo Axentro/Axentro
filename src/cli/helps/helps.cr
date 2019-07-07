@@ -24,7 +24,7 @@ module ::Sushi::Interface
     HELP_BLOCK_INDEX_OR_TRANSACTION_ID    = "please specify a block index or transaction id: -i [block index] or -t [transaction id]"
     HELP_TRANSACTION_ID                   = "please specify a transaction id: -t [transaction id]"
     HELP_PUBLIC_URL                       = "please specify a public url that can be accessed from internet: -u http://[host]:[port]. If your node is behind a NET, you can use --private flag instead of this option"
-    HELP_FEE                              = "please specify transaction fee: -f [fee]. you can check minimum fee by `sushi tx fees`"
+    HELP_FEE                              = "please specify transaction fee: -f [fee]. you can check minimum fee with `sushi tx fees`"
     HELP_PRICE                            = "please specify a price for scars --price=[PRICE]"
     HELP_DOMAIN                           = "please specify a domain for scars: --domain=[DOMAIN]"
     HELP_TOKEN                            = "please specify a token name: --token=[TOKEN]"

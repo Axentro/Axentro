@@ -62,7 +62,7 @@ describe Token do
         transaction = transaction_factory.make_create_token("KINGS", senders, recipients)
         chain = block_factory.add_blocks(10).chain
         token = Token.new(block_factory.blockchain)
-        expect_raises(Exception, "number of specified recipients must be one for 'create_token'") do
+        expect_raises(Exception, "number of specified recipients must be 1 for 'create_token'") do
           token.valid_transaction?(transaction, chain.last.transactions)
         end
       end
@@ -103,7 +103,7 @@ describe Token do
         message = <<-RULE
         You token '#{token_name}' is not valid
 
-        1. token name must contain only uppercase letters or numbers
+        1. token name can only contain uppercase letters or numbers
         2. token name length must be between 1 and 20 characters
         RULE
         expect_raises(Exception, message) do
@@ -151,7 +151,7 @@ describe Token do
         message = <<-RULE
         You token '#{token_name}' is not valid
 
-        1. token name must contain only uppercase letters or numbers
+        1. token name can only contain uppercase letters or numbers
         2. token name length must be between 1 and 20 characters
         RULE
 

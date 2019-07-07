@@ -73,6 +73,7 @@ module ::Sushi::Core
     def valid_as_embedded?(blockchain : Blockchain, prev_transactions : Array(Transaction)) : Bool
       verbose "tx -- #{short_id}: validating embedded transactions"
 
+      # TODO: Definitely needs changing, but to what?
       raise "be not checked signing" unless @common_checked
 
       if sender_total_amount != recipient_total_amount
@@ -96,6 +97,7 @@ module ::Sushi::Core
     def valid_as_coinbase?(blockchain : Blockchain, block_index : Int64, embedded_transactions : Array(Transaction)) : Bool
       verbose "tx -- #{short_id}: validating coinbase transaction"
 
+      # TODO: See above comment
       raise "be not checked signing" unless @common_checked
 
       raise "actions has to be 'head' for coinbase transaction " if @action != "head"
@@ -120,7 +122,7 @@ module ::Sushi::Core
 
       verbose "tx -- #{short_id}: validating common"
 
-      raise "length of transaction id have to be 64: #{@id}" if @id.size != 64
+      raise "length of transaction id has to be 64: #{@id}" if @id.size != 64
       raise "message size exceeds: #{self.message.bytesize} for #{MESSAGE_SIZE_LIMIT}" if self.message.bytesize > MESSAGE_SIZE_LIMIT
       raise "token size exceeds: #{self.token.bytesize} for #{TOKEN_SIZE_LIMIT}" if self.token.bytesize > TOKEN_SIZE_LIMIT
       raise "unscaled transaction" if @scaled != 1
@@ -225,7 +227,7 @@ module ::Sushi::Core
     end
 
     #
-    # ignore prev_hash for comparision
+    # ignore prev_hash for comparison
     #
     def ==(other : Transaction) : Bool
       return false unless @id == other.id

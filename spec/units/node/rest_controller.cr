@@ -526,7 +526,7 @@ describe RESTController do
       with_factory do |block_factory, _|
         exec_rest_api(block_factory.rest.__v1_node_id(context("/api/v1/node/node_id"), {id: "node_id"})) do |result|
           result["status"].to_s.should eq("error")
-          result["reason"].to_s.should eq("the node node_id not found. (currently only search for the nodes which are directly connected.)")
+          result["reason"].to_s.should eq("the node node_id not found. (only searching nodes which are currently connected.)")
         end
       end
     end

@@ -70,7 +70,7 @@ module ::Sushi::Core::NodeComponents
         })
     rescue e : Exception
       error "failed to connect #{connect_host}:#{connect_port}"
-      error "please specify another public host if you need successor"
+      error "please specify another public host if you need a successor"
 
       node.phase = SetupPhase::BLOCKCHAIN_LOADING
       node.proceed_setup
@@ -99,7 +99,7 @@ module ::Sushi::Core::NodeComponents
       )
     rescue e : Exception
       error "failed to connect #{connect_host}:#{connect_port}"
-      error "please specify another public host if you need successor"
+      error "please specify another public host if you need a successor"
 
       node.phase = SetupPhase::BLOCKCHAIN_LOADING
       node.proceed_setup
@@ -131,7 +131,7 @@ module ::Sushi::Core::NodeComponents
 
       _context = _m_content.context
 
-      debug "private node try to join SushiChain"
+      debug "private node trying to join SushiChain"
 
       unless _context[:type] == @network_type
         return send(
@@ -163,7 +163,7 @@ module ::Sushi::Core::NodeComponents
 
       _context = _m_content.context
 
-      debug "successfully joined to the network"
+      debug "successfully joined the network"
 
       @successor_list.push({
         socket:  socket,
@@ -181,9 +181,9 @@ module ::Sushi::Core::NodeComponents
 
       _reason = _m_content.reason
 
-      error "joining network was rejected."
+      error "attempt to join the network was rejected."
       error "the reason: #{_reason}"
-      error "the node will be exitted with -1."
+      error "the node will be exited with -1."
 
       exit -1
     end
@@ -546,7 +546,7 @@ module ::Sushi::Core::NodeComponents
         return extract_context(node) if node[:context][:id] == id
       end
 
-      raise "the node #{id} not found. (currently only search for the nodes which are directly connected.)"
+      raise "the node #{id} not found. (only searching nodes which are currently connected.)"
     end
 
     include Protocol

@@ -32,7 +32,7 @@ module ::Sushi::Core
       @timestamp : Int64,
       @next_difficulty : Int32
     )
-      @merkle_tree_root = calcluate_merkle_tree_root
+      @merkle_tree_root = calculate_merkle_tree_root
     end
 
     def to_hash : String
@@ -55,7 +55,7 @@ module ::Sushi::Core
       self
     end
 
-    def calcluate_merkle_tree_root : String
+    def calculate_merkle_tree_root : String
       return "" if @transactions.size == 0
 
       current_hashes = @transactions.map { |tx| tx.to_hash }
@@ -127,7 +127,7 @@ module ::Sushi::Core
               "(expected #{difficulty_for_block} but got #{@next_difficulty})"
       end
 
-      merkle_tree_root = calcluate_merkle_tree_root
+      merkle_tree_root = calculate_merkle_tree_root
 
       if merkle_tree_root != @merkle_tree_root
         raise "invalid merkle tree root (expected #{@merkle_tree_root} but got #{merkle_tree_root})"

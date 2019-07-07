@@ -93,7 +93,7 @@ module ::Sushi::Interface::Sushi
       if G.op.__json
         puts body
       else
-        puts_success "show a list of evenry tokens on SushiChain"
+        puts_success "show a list of every token in SushiChain"
 
         json.as_a.each do |token|
           puts_info "- #{token}"
