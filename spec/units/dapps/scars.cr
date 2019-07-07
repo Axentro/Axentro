@@ -146,7 +146,7 @@ describe Scars do
         with_factory do |block_factory, transaction_factory|
           tx1 = transaction_factory.make_buy_domain_from_seller("domain1.sc", 500_i64)
           scars = Scars.new(block_factory.blockchain)
-          expect_raises(Exception, "you cannot set a recipient since no body has bought the domain: domain1.sc") do
+          expect_raises(Exception, "you cannot set a recipient since nobody has bought the domain: domain1.sc") do
             scars.valid_buy?(tx1, [] of Transaction)
           end
         end
@@ -210,7 +210,7 @@ describe Scars do
 
           tx1 = transaction_factory.make_buy_domain_from_seller("domain1.sc", 0_i64)
           scars = Scars.new(block_factory.blockchain)
-          expect_raises(Exception, "the supplied price 0 is different to expected price 500") do
+          expect_raises(Exception, "the supplied price 0 is different than the expected price 500") do
             scars.valid_buy?(tx1, txns)
           end
         end
@@ -482,9 +482,9 @@ describe Scars do
           domain_rule = <<-RULE
           Your domain '123456789012345678901.sc' is not valid
 
-          1. domain name must contain only alphanumerics
+          1. domain name can only contain only alphanumerics
           2. domain name must end with one of these suffixes: ["sc"]
-          3. domain name length must be between 1 and 20 characters (excluding suffix)
+          3. domain name length must be between 1 and 20 characters (excluding suffix
           RULE
 
           scars = Scars.new(block_factory.blockchain)
@@ -569,7 +569,7 @@ describe Scars do
       end
 
       it "should raise an error if fee type is unknown" do
-        expect_raises(Exception, "got unknown action unknown during getting a fee for scars") do
+        expect_raises(Exception, "got unknown action unknown while getting a fee for scars") do
           Scars.fee("unknown").should eq(0_i64)
         end
       end

@@ -336,7 +336,7 @@ describe Transaction do
 
         transaction = transaction_factory.make_send(2000_i64)
         transaction.id = "123"
-        expect_raises(Exception, "length of transaction id have to be 64: 123") do
+        expect_raises(Exception, "length of transaction id has to be 64: 123") do
           transaction.valid_common?
         end
       end

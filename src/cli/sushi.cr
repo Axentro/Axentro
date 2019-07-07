@@ -47,7 +47,7 @@ module ::Sushi::Interface::Sushi
         },
         {
           name: "pubsub",
-          desc: "receive blocks in realtime",
+          desc: "receive blocks in real time",
         },
         {
           name: "client",
@@ -98,7 +98,7 @@ module ::Sushi::Interface::Sushi
         ).run
       when "pubsub", "ps"
         return Pubsub.new(
-          {name: "pubsub", desc: "receive blocks in realtime"},
+          {name: "pubsub", desc: "receive blocks in real time"},
           next_parents,
         ).run
       when "client", "cl"

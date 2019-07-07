@@ -65,14 +65,13 @@ module ::Sushi::Core::DApps::BuildIn
       pay_token = sender[:amount]
       pay_default = (transaction.token == DEFAULT ? sender[:amount] : 0_i64) + sender[:fee]
 
+      # TODO: Fix the error wording here. Needs discussion.
       if amount_token + amount_token_as_recipients - pay_token < 0
-        raise "sender has not enough token(#{transaction.token}). " +
-              "sender has #{scale_decimal(amount_token)} + #{scale_decimal(amount_token_as_recipients)} but try to pay #{scale_decimal(pay_token)}"
+        raise "Unable to send #{scale_decimal(pay_token)} to recipient because you do not have enough. Current tokens: #{scale_decimal(amount_token)} + #{scale_decimal(amount_token_as_recipients)}"
       end
 
       if amount_default + amount_default_as_recipients - pay_default < 0
-        raise "sender has not enough token(#{DEFAULT}). " +
-              "sender has #{scale_decimal(amount_default)} + #{scale_decimal(amount_default_as_recipients)} but try to pay #{scale_decimal(pay_default)}"
+          raise "Unable to send #{scale_decimal(pay_default)} to recipient because you do not have enough. Current tokens: #{scale_decimal(amount_default)} + #{scale_decimal(amount_default_as_recipients)}"
       end
 
       true

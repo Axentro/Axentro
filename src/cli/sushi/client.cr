@@ -56,7 +56,7 @@ module ::Sushi::Interface::Sushi
       [
         {
           name: "connect",
-          desc: "connect to the node for realtime communications",
+          desc: "connect to the node for real time communication",
         },
       ]
     end
