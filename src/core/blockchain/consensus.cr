@@ -35,9 +35,9 @@ module ::Sushi::Core::Consensus
   end
 
   def block_difficulty_to_miner_difficulty(diff : Int32)
-    # value = (diff.to_f / 3).ceil.to_i
-    # Math.max(diff - value, 1)
-    diff / 2
+    value = (diff.to_f / 3).ceil.to_i
+    Math.max(diff - value, 1)
+    #diff / 2
   end
 
   # Dark Gravity Wave history lookback for averaging (in blocks)
@@ -47,7 +47,7 @@ module ::Sushi::Core::Consensus
   POW_TARGET_SPACING     = 120_f64
 
   # Difficulty value to be used when there is absolutely no history reference
-  DEFAULT_DIFFICULTY_TARGET      = 18_i32
+  DEFAULT_DIFFICULTY_TARGET      = 17_i32
 
   # Dark Gravity Wave based difficulty adjustment calculation (Original algorithm created by Evan Duffield)
 
@@ -120,7 +120,10 @@ module ::Sushi::Core::Consensus
     calculated_difficulty_i32 = calculated_difficulty.round.to_i32
 
     debug "DGW calculated difficulty adjusted by timespans (and rounded): #{calculated_difficulty_i32}"
-
+    if calculated_difficulty_i32 < 0
+      info "DGW calculation yielded negative value, return default of #{DEFAULT_DIFFICULTY_TARGET}"
+      return DEFAULT_DIFFICULTY_TARGET
+    end
     calculated_difficulty_i32
   end
 

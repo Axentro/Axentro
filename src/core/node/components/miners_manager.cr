@@ -119,23 +119,22 @@ module ::Sushi::Core::NodeComponents
 
           miner[:context][:nonces].push(nonce)
 
-          # for now only minting block on 120 boundaries .. threw the " * 1000 " in below to prevent block difficulty from being satisfied
-          if mined_difficulty == @blockchain.mining_block_difficulty * 1000
-            debug "found nonce of #{block.nonce} that satisfies block difficulty"
-            mint_block(block)
+          debug "found nonce of #{block.nonce} that doesn't satisfy block difficulty, checking if it is the best so far"
+          current_miner_difficulty = block_difficulty_to_miner_difficulty(@blockchain.mining_block_difficulty)
+          if (mined_difficulty > current_miner_difficulty) && (mined_difficulty > @highest_difficulty_mined_so_far)
+            debug "This block is now the most difficult recorded"
+            @most_difficult_block_so_far = block.dup
+            @highest_difficulty_mined_so_far = mined_difficulty
           else
-            debug "found nonce of #{block.nonce} that doesn't satisfy block difficulty, checking if it is the best so far"
-            if mined_difficulty > @highest_difficulty_mined_so_far
-              debug "This block is now the most difficult recorded"
-              @most_difficult_block_so_far = block.dup
-              @highest_difficulty_mined_so_far = mined_difficulty
-            else
-              debug "This block was not the most difficult recorded, miner still gets credit for sending the nonce"
-            end
-            if block.mined_timestamp > block.timestamp + (Consensus::POW_TARGET_SPACING * 0.90).to_i32
-              debug "Time expired ... the most difficult recorded so far will be minted"
+            debug "This block was not the most difficult recorded, miner still gets credit for sending the nonce"
+          end
+          if block.mined_timestamp > block.timestamp + (Consensus::POW_TARGET_SPACING * 0.90).to_i32
+            if @highest_difficulty_mined_so_far > 0
+              debug "Time has expired ... the block with the most difficult nonce recorded so far will be minted: #{@highest_difficulty_mined_so_far}"
               @most_difficult_block_so_far.to_s
               mint_block(@most_difficult_block_so_far)
+            else
+              debug "Time has expired ... but no nonce with a difficulty larger than miner difficulty (#{current_miner_difficulty}) has been received.. keep waiting"
             end
           end
         end

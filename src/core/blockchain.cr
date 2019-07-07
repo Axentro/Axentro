@@ -64,46 +64,14 @@ module ::Sushi::Core
       info "there are #{database.max_index} blocks recorded"
 
       current_index = 0_i64
-      last_block_time = 0_i64
-      total_block_time = 0_i64
-      longest_block_time = -1_i64
-      shortest_block_time = 500000_i64
-      elapsed_time = 0_i64
-      _block = database.get_block(current_index)
-      block = _block
-
       loop do
         _block = database.get_block(current_index)
         break unless block = _block
-        debug "read block #{block.index} from DB with nonce of #{block.nonce} with timestamp #{block.timestamp}"
-        debug " and using difficulty of #{latest_block.difficulty}" if last_block_time > 0
         break unless block.valid?(self, true)
         @chain.push(block)
-        if block.index > 0
-          if last_block_time > 0 
-            elapsed_time = block.timestamp - last_block_time
-            debug "read an elapsed time from the database of #{elapsed_time}"
-          end
-          last_block_time = block.timestamp
-          total_block_time += elapsed_time
-
-          longest_block_time = elapsed_time if elapsed_time > longest_block_time
-          shortest_block_time = elapsed_time if (elapsed_time != 0) && (elapsed_time < shortest_block_time)
-        end
-
         current_index += 1
-
         progress "block ##{current_index} was imported", current_index, database.max_index
       end
-
-      if (@chain.size > 2)
-        info "Total block generation time: #{total_block_time}"
-        info "Number of evaluated block times: #{chain.size - 2}"
-        info "Average block time: #{total_block_time / (chain.size - 2)}"
-        info "Shortest block time: #{shortest_block_time}"
-        info "Longest block time: #{longest_block_time}"
-      end
-
       if @chain.size == 0
         push_genesis
       else
@@ -115,14 +83,6 @@ module ::Sushi::Core
     rescue e : Exception
       error "Error could not restore blockchain from database"
       error e.message.not_nil! if e.message
-      debug "Detected an invalid block..."
-      block.to_s
-      if @chain.size > 0
-        if block
-          debug "verifying nonce using difficulty #{block.difficulty}"
-          debug "calculated difficulty is: #{valid_pow?(block.to_hash, block.nonce, block.difficulty)}"
-        end
-      end
       warning "removing invalid blocks from database"
       database.delete_blocks(current_index.not_nil!)
     ensure

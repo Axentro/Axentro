@@ -29,7 +29,7 @@ describe Block do
 
   it "should return the header for #to_header" do
     block = Block.new(0_i64, [] of Transaction, 0_u64, "genesis", 0_i64, 3_i32)
-    block.to_header.should eq({index: 0_i64, nonce: 0_u64, prev_hash: "genesis", merkle_tree_root: "", timestamp: 0_i64, next_difficulty: 3})
+    block.to_header.should eq({index: 0_i64, nonce: 0_u64, prev_hash: "genesis", merkle_tree_root: "", timestamp: 0_i64, difficulty: 3})
   end
 
   describe "#calcluate_merkle_tree_root" do
@@ -166,7 +166,7 @@ describe Block do
         timestamp = chain[1].timestamp
         block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 99_i32)
 
-        expect_raises(Exception, /next_difficulty is invalid/) do
+        expect_raises(Exception, /difficulty is invalid/) do
           block.valid_as_latest?(block_factory.blockchain, false)
         end
       end
@@ -228,12 +228,12 @@ describe Block do
       end
     end
 
-    it "should raise error if next_difficulty is not 3" do
+    it "should raise error if difficulty is not 3" do
       with_factory do |block_factory|
         chain = block_factory.blockchain.chain
         block = chain.first
-        block.next_difficulty = 99
-        expect_raises(Exception, "next_difficulty has to be '10' for genesis block: 99") do
+        block.difficulty = 99
+        expect_raises(Exception, "difficulty has to be '10' for genesis block: 99") do
           block.valid?(block_factory.blockchain, false)
         end
       end
