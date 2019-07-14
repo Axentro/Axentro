@@ -226,7 +226,7 @@ module ::Sushi::Core
       genesis_transactions = @premine ? Premine.transactions(@premine.not_nil!.get_config) : [] of Transaction
       genesis_nonce = 0_u64
       genesis_prev_hash = "genesis"
-      genesis_timestamp = Time.now.to_unix 
+      genesis_timestamp = Time.now.to_unix
       genesis_difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
 
       Block.new(

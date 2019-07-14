@@ -92,7 +92,7 @@ module ::Sushi::Core::NodeComponents
       mined_timestamp = _m_content.timestamp
 
       debug "received a nonce of #{nonce} from a miner at timestamp #{mined_timestamp}"
-      
+
       if miner = find?(socket)
         block = @blockchain.mining_block.with_nonce(nonce)
 

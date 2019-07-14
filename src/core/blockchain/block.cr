@@ -40,7 +40,7 @@ module ::Sushi::Core
       sha256(string)
     end
 
-    def to_s 
+    def to_s
       debug "Block index: #{@index}"
       debug "Block transactions: #{@transactions.size}"
       debug "Block nonce: #{@nonce}"

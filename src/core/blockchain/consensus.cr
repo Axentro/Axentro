@@ -55,14 +55,14 @@ module ::Sushi::Core::Consensus
     last_block_time = 0
     past_difficulty_avg = 0_f64
     past_difficulty_avg_prev = 0_f64
-    
+
     # return difficulty from env var if it has be set
     return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
 
     # return difficulty default target if doing e2e test
     return DEFAULT_DIFFICULTY_TARGET if ENV.has_key?("SC_E2E") # for e2e test
 
-    # return difficulty default target if chain non-existant or not enough block history 
+    # return difficulty default target if chain non-existant or not enough block history
     chain = blockchain.chain
     #debug "entered block_difficulty with chain length of #{chain.size}" if chain
     if !chain || chain.size < 3
@@ -111,7 +111,7 @@ module ::Sushi::Core::Consensus
     target_timespan = count_blocks.to_f64 * POW_TARGET_SPACING
 
     # calculate average block time for the history block
-    average_block_time = (actual_timespan / count_blocks).to_f64
+    # average_block_time = (actual_timespan / count_blocks).to_f64
 
     #debug "calculated target timespan: #{target_timespan}"
     #debug "average generation time per block: #{average_block_time} seconds"

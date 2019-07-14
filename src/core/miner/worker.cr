@@ -23,7 +23,6 @@ module ::Sushi::Core
       latest_nonce_counter = nonce_counter
       time_now = __timestamp
       latest_time = time_now
-      start_time = time_now
       block = work[:block].with_nonce(nonce)
 
       loop do

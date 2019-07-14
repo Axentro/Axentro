@@ -124,7 +124,7 @@ module ::Sushi::Core
 
             debug "received nonce #{nonce_found_message} from worker"
 
-            send(socket, M_TYPE_MINER_FOUND_NONCE, MContentMinerFoundNonce.from_json(nonce_found_message)) unless nonce_found_message == "error" 
+            send(socket, M_TYPE_MINER_FOUND_NONCE, MContentMinerFoundNonce.from_json(nonce_found_message)) unless nonce_found_message == "error"
 
             update(w, difficulty, block)
           rescue ioe : IO::EOFError
