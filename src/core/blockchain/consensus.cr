@@ -64,9 +64,9 @@ module ::Sushi::Core::Consensus
 
     # return difficulty default target if chain non-existant or not enough block history 
     chain = blockchain.chain
-    debug "entered block_difficulty with chain length of #{chain.size}" if chain
+    #debug "entered block_difficulty with chain length of #{chain.size}" if chain
     if !chain || chain.size < 3
-      debug "entered block_difficulty with short initial chain (fewer than 3 blocks), returning default difficulty of #{DEFAULT_DIFFICULTY_TARGET}"
+      #debug "entered block_difficulty with short initial chain (fewer than 3 blocks), returning default difficulty of #{DEFAULT_DIFFICULTY_TARGET}"
       return DEFAULT_DIFFICULTY_TARGET
     end
 
@@ -74,7 +74,7 @@ module ::Sushi::Core::Consensus
     count_blocks = 0
     oldest_history_spot = Math.max(chain.size - HISTORY_LOOKBACK, 1)
     i = oldest_history_spot
-    debug "Oldest history spot: #{oldest_history_spot}"
+    #debug "Oldest history spot: #{oldest_history_spot}"
     while i < chain.size
       block_reading = chain[i]
       if count_blocks == 0
@@ -87,10 +87,10 @@ module ::Sushi::Core::Consensus
         diff = (block_reading.timestamp - last_block_time).to_f64
         if (diff > POW_TARGET_SPACING * 0.5) && (diff < POW_TARGET_SPACING * 1.5)
           actual_timespan += diff
-          debug "Had a difference of  #{diff} now actual timespan is #{actual_timespan}"
+          #debug "Had a difference of  #{diff} now actual timespan is #{actual_timespan}"
           count_blocks += 1
         else
-          debug "Had a difference of  #{diff} out of range for averaging probably due to a period of time with no miners"
+          #debug "Had a difference of  #{diff} out of range for averaging probably due to a period of time with no miners"
         end
       end
       last_block_time = block_reading.timestamp
@@ -98,9 +98,14 @@ module ::Sushi::Core::Consensus
     end
     calculated_difficulty = past_difficulty_avg
 
-    debug "Number of blocks in history lookback: #{count_blocks}"
-    debug "calculated average difficulty: #{calculated_difficulty}"
-    debug "calculated actual timespan: #{actual_timespan}"
+    #debug "Number of blocks in history lookback: #{count_blocks}"
+    #debug "calculated average difficulty: #{calculated_difficulty}"
+    #debug "calculated actual timespan: #{actual_timespan}"
+
+    if count_blocks == 0
+      #debug "No valid blocks in history for averaging, returning default difficulty"
+      return DEFAULT_DIFFICULTY_TARGET
+    end
 
     # calculate what the elapsed time for the historical block generation should have been
     target_timespan = count_blocks.to_f64 * POW_TARGET_SPACING
@@ -108,19 +113,19 @@ module ::Sushi::Core::Consensus
     # calculate average block time for the history block
     average_block_time = (actual_timespan / count_blocks).to_f64
 
-    debug "calculated target timespan: #{target_timespan}"
-    debug "average generation time per block: #{average_block_time} seconds"
+    #debug "calculated target timespan: #{target_timespan}"
+    #debug "average generation time per block: #{average_block_time} seconds"
 
     # Calculate the new difficulty based on actual and target timespan.
     calculated_difficulty *= target_timespan
     calculated_difficulty /= actual_timespan
-    debug "Difficulty adjusted by timespane #{calculated_difficulty}"
+    #debug "Difficulty adjusted by timespane #{calculated_difficulty}"
 
     calculated_difficulty_i32 = calculated_difficulty.round.to_i32
 
-    debug "DGW calculated difficulty adjusted by timespans (and rounded): #{calculated_difficulty_i32}"
+    #debug "DGW calculated difficulty adjusted by timespans (and rounded): #{calculated_difficulty_i32}"
     if calculated_difficulty_i32 < 0
-      info "DGW calculation yielded negative value, return default of #{DEFAULT_DIFFICULTY_TARGET}"
+      #info "DGW calculation yielded negative value, return default of #{DEFAULT_DIFFICULTY_TARGET}"
       return DEFAULT_DIFFICULTY_TARGET
     end
     calculated_difficulty_i32

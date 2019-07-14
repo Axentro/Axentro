@@ -25,7 +25,6 @@ module ::Sushi::Core
       prev_hash: String,
       merkle_tree_root: String,
       timestamp: Int64,
-      mined_timestamp: Int64,
       difficulty: Int32,
     )
 

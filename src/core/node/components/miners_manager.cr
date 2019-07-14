@@ -94,7 +94,7 @@ module ::Sushi::Core::NodeComponents
       debug "received a nonce of #{nonce} from a miner at timestamp #{mined_timestamp}"
       
       if miner = find?(socket)
-        block = @blockchain.mining_block.with_nonce_and_mined_timestamp(nonce, mined_timestamp)
+        block = @blockchain.mining_block.with_nonce(nonce)
 
         debug "Received a freshly mined block..."
         block.to_s
@@ -115,7 +115,7 @@ module ::Sushi::Core::NodeComponents
           })
         else
           miner_name = HumanHash.humanize(miner[:mid])
-          debug "miner #{miner_name} found nonce at timestamp #{block.mined_timestamp }.. (nonces: #{miner[:context][:nonces].size}) mined with difficulty #{mined_difficulty} "
+          debug "miner #{miner_name} found nonce at timestamp #{mined_timestamp }.. (nonces: #{miner[:context][:nonces].size}) mined with difficulty #{mined_difficulty} "
 
           miner[:context][:nonces].push(nonce)
 
@@ -128,7 +128,7 @@ module ::Sushi::Core::NodeComponents
           else
             debug "This block was not the most difficult recorded, miner still gets credit for sending the nonce"
           end
-          if block.mined_timestamp > block.timestamp + (Consensus::POW_TARGET_SPACING * 0.90).to_i32
+          if mined_timestamp > block.timestamp + (Consensus::POW_TARGET_SPACING * 0.90).to_i32
             if @highest_difficulty_mined_so_far > 0
               debug "Time has expired ... the block with the most difficult nonce recorded so far will be minted: #{@highest_difficulty_mined_so_far}"
               @most_difficult_block_so_far.to_s

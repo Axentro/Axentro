@@ -28,7 +28,7 @@ module ::Sushi::Core
 
       loop do
         time_now = __timestamp
-        block = work[:block].with_nonce_and_mined_timestamp(nonce, time_now)
+        block = work[:block].with_nonce(nonce)
         break if valid_nonce?(block.to_hash, nonce, work[:difficulty]) == work[:difficulty]
 
         nonce_counter += 1

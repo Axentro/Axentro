@@ -57,15 +57,15 @@ describe Block do
       with_factory do |block_factory|
         block = block_factory.add_block.chain.first
         block.nonce = a_nonce
-        block.valid_nonce?(0).should be_true
+        block.valid_nonce?(0).should eq(0)
       end
     end
 
-    it "should return false when invalid" do
+    it "should less that 3 when invalid" do
       with_factory do |block_factory|
         block = block_factory.add_block.chain.first
         block.nonce = a_nonce
-        block.valid_nonce?(2).should be_false
+        block.valid_nonce?(2).should be < 3
       end
     end
   end
@@ -76,7 +76,7 @@ describe Block do
         chain = block_factory.add_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
-        block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 1_i32)
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 0_i32)
         block.valid_as_latest?(block_factory.blockchain, false).should be_true
       end
     end
@@ -94,27 +94,12 @@ describe Block do
       end
     end
 
-    it "should raise error if the nonce is invalid" do
-      with_factory do |block_factory|
-        chain = block_factory.add_blocks(1).chain
-        prev_hash = chain[1].to_hash
-        timestamp = chain[1].timestamp
-
-        block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 1_i32)
-        block_factory.enable_difficulty("5")
-        expect_raises(Exception, /the nonce is invalid:/) do
-          block.valid_as_latest?(block_factory.blockchain, false)
-        end
-        block_factory.enable_difficulty("0")
-      end
-    end
-
     it "should raise error if there is an index mismatch with the prev block" do
       with_factory do |block_factory|
         chain = block_factory.add_blocks(1).chain
         block = chain.last
         block.index = 2
-        expect_raises(Exception, "mismatch index for the prev block(2): 2") do
+        expect_raises(Exception, "mismatch index for the most recent block(2): 2") do
           block.valid_as_latest?(block_factory.blockchain, false)
         end
       end
@@ -125,7 +110,7 @@ describe Block do
         chain = block_factory.add_blocks(1).chain
         prev_hash = "invalid"
         timestamp = chain[1].timestamp
-        block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 99_i32)
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 0_i32)
 
         expect_raises(Exception, /prev_hash is invalid:/) do
           block.valid_as_latest?(block_factory.blockchain, false)
@@ -138,7 +123,7 @@ describe Block do
         chain = block_factory.add_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp - 10000000
-        block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 10_i32)
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 0_i32)
 
         expect_raises(Exception, /timestamp is invalid:/) do
           block.valid_as_latest?(block_factory.blockchain, false)
@@ -151,22 +136,9 @@ describe Block do
         chain = block_factory.add_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp + 10000000
-        block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 10_i32)
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 0_i32)
 
         expect_raises(Exception, /timestamp is invalid:/) do
-          block.valid_as_latest?(block_factory.blockchain, false)
-        end
-      end
-    end
-
-    it "should raise error if difficulty is invalid" do
-      with_factory do |block_factory|
-        chain = block_factory.add_blocks(1).chain
-        prev_hash = chain[1].to_hash
-        timestamp = chain[1].timestamp
-        block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 99_i32)
-
-        expect_raises(Exception, /difficulty is invalid/) do
           block.valid_as_latest?(block_factory.blockchain, false)
         end
       end
@@ -177,7 +149,7 @@ describe Block do
         chain = block_factory.add_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
-        block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 1_i32)
+        block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 0_i32)
         block.merkle_tree_root = "invalid"
         expect_raises(Exception, "invalid merkle tree root (expected invalid but got d91329bca593bbae22fb70b7f450b4748002ac65)") do
           block.valid_as_latest?(block_factory.blockchain, false)
@@ -233,22 +205,12 @@ describe Block do
         chain = block_factory.blockchain.chain
         block = chain.first
         block.difficulty = 99
-        expect_raises(Exception, "difficulty has to be '10' for genesis block: 99") do
+        expect_raises(Exception, "difficulty has to be '17' for genesis block: 99") do
           block.valid?(block_factory.blockchain, false)
         end
       end
     end
 
-    it "should raise error if timestamp is not 0" do
-      with_factory do |block_factory|
-        chain = block_factory.blockchain.chain
-        block = chain.first
-        block.timestamp = 99
-        expect_raises(Exception, "timestamp has to be '0' for genesis block: 99") do
-          block.valid?(block_factory.blockchain, false)
-        end
-      end
-    end
   end
 
   describe "#find_transaction" do

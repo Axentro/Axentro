@@ -21,7 +21,6 @@ module ::Sushi::Core
       prev_hash:        String,
       merkle_tree_root: String,
       timestamp:        Int64,
-      mined_timestamp:  Int64,
       difficulty:  Int32,
     })
 
@@ -34,7 +33,6 @@ module ::Sushi::Core
       @difficulty : Int32
     )
       @merkle_tree_root = calcluate_merkle_tree_root
-      @mined_timestamp = 0
     end
 
     def to_hash : String
@@ -48,7 +46,6 @@ module ::Sushi::Core
       debug "Block nonce: #{@nonce}"
       debug "Block prev_hash: #{@prev_hash}"
       debug "Block timestamp: #{@timestamp}"
-      debug "Block mined_timestamp: #{mined_timestamp}"
       debug "Block difficulty: #{@difficulty}"
       debug "Block hash: #{self.to_hash}"
     end
@@ -60,16 +57,11 @@ module ::Sushi::Core
         prev_hash:        @prev_hash,
         merkle_tree_root: @merkle_tree_root,
         timestamp:        @timestamp,
-        mined_timestamp:  @mined_timestamp,
         difficulty:       @difficulty,
       }
     end
 
     def with_nonce(@nonce : UInt64) : Block
-      self
-    end
-
-    def with_nonce_and_mined_timestamp(@nonce : UInt64, @mined_timestamp : Int64) : Block
       self
     end
 
@@ -112,7 +104,9 @@ module ::Sushi::Core
 
       raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
       debug "in valid_as_latest?.. using difficulty: #{@difficulty}"
-      raise "the nonce is invalid: #{@nonce}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
+      if @difficulty > 0
+        raise "the nonce is invalid: #{@nonce} for difficulty #{@difficulty}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
+      end
       unless skip_transactions
         transactions.each_with_index do |t, idx|
           t = TransactionPool.find(t) || t
@@ -141,8 +135,10 @@ module ::Sushi::Core
       debug "Calculated a difficulty of #{difficulty_for_block} in validity check"
       difficulty_for_block = prev_block.index == 0 ? @difficulty : difficulty_for_block
 
-      if @difficulty != difficulty_for_block
-        raise "difficulty is invalid " + "(expected #{difficulty_for_block} but got #{@difficulty})"
+      if @difficulty > 0
+        if @difficulty != difficulty_for_block
+          raise "difficulty is invalid " + "(expected #{difficulty_for_block} but got #{@difficulty})"
+        end
       end
 
       merkle_tree_root = calcluate_merkle_tree_root
@@ -159,7 +155,7 @@ module ::Sushi::Core
       raise "transactions have to be empty for genesis block: #{@transactions}" if !@transactions.empty?
       raise "nonce has to be '0' for genesis block: #{@nonce}" if @nonce != 0
       raise "prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
-      raise "difficulty has to be #{Consensus::DEFAULT_DIFFICULTY_TARGET} for genesis block: #{@difficulty}" if @difficulty != Consensus::DEFAULT_DIFFICULTY_TARGET
+      raise "difficulty has to be '#{Consensus::DEFAULT_DIFFICULTY_TARGET}' for genesis block: #{@difficulty}" if @difficulty != Consensus::DEFAULT_DIFFICULTY_TARGET
 
       true
     end
