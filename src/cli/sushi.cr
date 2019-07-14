@@ -12,14 +12,15 @@
 
 require "../cli"
 require "./sushi/*"
+# I18n::Backend::Yaml.embed(["#{__DIR__}/../../locales/**/"])
 
 module ::Sushi::Interface::Sushi
   class Root < CLI
     def sub_actions
       [
         {
-          name: "wallet",
-          desc: "create, encrypt or decrypt your wallet (wt for short)",
+          name: I18n.translate("cli.wallet.title"),
+          desc: I18n.translate("cli.wallet.desc"),
         },
         {
           name: "blockchain",

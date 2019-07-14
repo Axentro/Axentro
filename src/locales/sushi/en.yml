@@ -1,0 +1,7 @@
+cli:
+  wallet:
+    title: "wallet"
+    desc: "create, encrypt or decrypt your wallet (wt for short)"
+    create:
+      title: "create"
+      desc: "create a wallet file"

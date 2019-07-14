@@ -1,0 +1,10 @@
+cli:
+  wallet:
+    title: "brieftasche"
+    desc: "erstellen, verschlüsseln oder entschlüsseln Sie Ihre Brieftasche (kurz wt)"
+    create:
+      title: "erstellen"
+      desc: "erstellen Sie eine Brieftaschendatei"
+  node:
+    options:
+      node: "eine URL des Verbindungsknotens"

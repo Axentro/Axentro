@@ -136,7 +136,7 @@ module ::Sushi::Interface
     end
 
     private def parse_node(parser : OptionParser, actives : Array(Options))
-      parser.on("-n NODE", "--node=NODE", "a url of the connect node") { |connect_node|
+      parser.on("-n NODE", "--node=NODE", I18n.translate("cli.options.node.url")) { |connect_node|
         @connect_node = connect_node
       } if is_active?(actives, Options::CONNECT_NODE)
     end
@@ -145,89 +145,89 @@ module ::Sushi::Interface
       parser.on(
         "-w WALLET_PATH",
         "--wallet_path=WALLET_PATH",
-        "path to a wallet file (json)"
+        I18n.translate("cli.options.wallet")
       ) { |wallet_path| @wallet_path = wallet_path } if is_active?(actives, Options::WALLET_PATH)
     end
 
     private def parse_password(parser : OptionParser, actives : Array(Options))
-      parser.on("--password=PASSWORD", "password for a encrypted wallet") { |password|
+      parser.on("--password=PASSWORD", I18n.translate("cli.options.password")) { |password|
         @wallet_password = password
       } if is_active?(actives, Options::WALLET_PASSWORD)
     end
 
     private def parse_mainnet(parser : OptionParser, actives : Array(Options))
-      parser.on("--mainnet", "set network type as mainnet (default is mainnet)") {
+      parser.on("--mainnet", I18n.translate("cli.options.mainnet")) {
         @is_testnet = false
         @is_testnet_changed = true
       } if is_active?(actives, Options::IS_TESTNET)
     end
 
     private def parse_testnet(parser : OptionParser, actives : Array(Options))
-      parser.on("--testnet", "set network type as testnet (default is mainnet)") {
+      parser.on("--testnet", I18n.translate("cli.options.testnet")) {
         @is_testnet = true
         @is_testnet_changed = true
       } if is_active?(actives, Options::IS_TESTNET)
     end
 
     private def parse_public(parser : OptionParser, actives : Array(Options))
-      parser.on("--public", "launch a node in public mode. (default is public mode)") {
+      parser.on("--public", I18n.translate("cli.options.public.mode")) {
         @is_private = false
         @is_private_changed = true
       } if is_active?(actives, Options::IS_PRIVATE)
     end
 
     private def parse_private(parser : OptionParser, actives : Array(Options))
-      parser.on("--private", "launch a node in private mode. it will not be connected to other nodes.") {
+      parser.on("--private", I18n.translate("cli.options.private")) {
         @is_private = true
         @is_private_changed = true
       } if is_active?(actives, Options::IS_PRIVATE)
     end
 
     private def parse_json(parser : OptionParser, actives : Array(Options))
-      parser.on("-j", "--json", "print results as json") {
+      parser.on("-j", "--json", I18n.translate("cli.options.json")) {
         @json = true
       } if is_active?(actives, Options::JSON)
     end
 
     private def parse_confirmation(parser : OptionParser, actives : Array(Options))
-      parser.on("--confirmation=CONFIRMATION", "set the length for the confirmation") { |confirmation|
+      parser.on("--confirmation=CONFIRMATION", I18n.translate("cli.options.confirmation")) { |confirmation|
         @confirmation = confirmation.to_i
       } if is_active?(actives, Options::CONFIRMATION)
     end
 
     private def parse_bind_host(parser : OptionParser, actives : Array(Options))
-      parser.on("-h BIND_HOST", "--bind_host=BIND_HOST", "binding host; '0.0.0.0' by default") { |bind_host|
+      parser.on("-h BIND_HOST", "--bind_host=BIND_HOST", I18n.translate("cli.options.binding.host")) { |bind_host|
         raise "invalid host: #{bind_host}" unless bind_host.count('.') == 3
         @bind_host = bind_host
       } if is_active?(actives, Options::BIND_HOST)
     end
 
     private def parse_bind_port(parser : OptionParser, actives : Array(Options))
-      parser.on("-p BIND_PORT", "--bind_port=BIND_PORT", "binding port; 3000 by default") { |bind_port|
+      parser.on("-p BIND_PORT", "--bind_port=BIND_PORT", I18n.translate("cli.options.binding.port")) { |bind_port|
         @bind_port = bind_port.to_i
       } if is_active?(actives, Options::BIND_PORT)
     end
 
     private def parse_public_url(parser : OptionParser, actives : Array(Options))
-      parser.on("-u PUBLIC_URL", "--public_url=PUBLIC_URL", "public url of your node that can be accessed from internet. if your node is behind a NAT, you can add --private flag instread of this option") { |public_url|
+      parser.on("-u PUBLIC_URL", "--public_url=PUBLIC_URL", I18n.translate("cli.options.public.url")) { |public_url|
         @public_url = public_url
       } if is_active?(actives, Options::PUBLIC_URL)
     end
 
     private def parse_database(parser : OptionParser, actives : Array(Options))
-      parser.on("-d DATABASE", "--database=DATABASE", "path to a database (SQLite3)") { |database_path|
+      parser.on("-d DATABASE", "--database=DATABASE", I18n.translate("cli.options.database")) { |database_path|
         @database_path = database_path
       } if is_active?(actives, Options::DATABASE_PATH)
     end
 
     private def parse_address(parser : OptionParser, actives : Array(Options))
-      parser.on("-a ADDRESS", "--address=ADDRESS", "public address") { |address|
+      parser.on("-a ADDRESS", "--address=ADDRESS", I18n.translate("cli.options.address")) { |address|
         @address = address
       } if is_active?(actives, Options::ADDRESS)
     end
 
     private def parse_amount(parser : OptionParser, actives : Array(Options))
-      parser.on("-m AMOUNT", "--amount=AMOUNT", "the amount of tokens") { |amount|
+      parser.on("-m AMOUNT", "--amount=AMOUNT", I18n.translate("cli.options.token.amount")) { |amount|
         decimal_option(amount) do
           @amount = amount
         end
@@ -235,19 +235,19 @@ module ::Sushi::Interface
     end
 
     private def parse_action(parser : OptionParser, actives : Array(Options))
-      parser.on("--action=ACTION", "specify an action name of the transaction") { |action|
+      parser.on("--action=ACTION", I18n.translate("cli.options.action")) { |action|
         @action = action
       } if is_active?(actives, Options::ACTION)
     end
 
     private def parse_message(parser : OptionParser, actives : Array(Options))
-      parser.on("--message=MESSAGE", "add message into transaction") { |message|
+      parser.on("--message=MESSAGE", I18n.translate("cli.options.message")) { |message|
         @message = message
       } if is_active?(actives, Options::MESSAGE)
     end
 
     private def parse_block_index(parser : OptionParser, actives : Array(Options))
-        parser.on("-i BLOCK_INDEX", "--index=BLOCK_INDEX", "block index") { |block_index|
+        parser.on("-i BLOCK_INDEX", "--index=BLOCK_INDEX", I18n.translate("cli.options.block")) { |block_index|
           @block_index = block_index.to_i
         } if is_active?(actives, Options::BLOCK_INDEX)
     end
@@ -256,14 +256,14 @@ module ::Sushi::Interface
       parser.on(
         "-t TRANSACTION_ID",
         "--transaction_id=TRANSACTION_ID",
-        "transaction id"
+        I18n.translate("cli.options.transaction")
       ) { |transaction_id|
         @transaction_id = transaction_id
       } if is_active?(actives, Options::TRANSACTION_ID)
     end
 
     private def parse_fee(parser : OptionParser, actives : Array(Options))
-      parser.on("-f FEE", "--fee=FEE", "the amount of fee") { |fee|
+      parser.on("-f FEE", "--fee=FEE", I18n.translate("cli.options.transaction")) { |fee|
         decimal_option(fee) do
           @fee = fee
         end
@@ -271,25 +271,25 @@ module ::Sushi::Interface
     end
 
     private def parse_header(parser : OptionParser, actives : Array(Options))
-      parser.on("-h", "--header", "get headers only when get a blockchain or blocks") {
+      parser.on("-h", "--header", I18n.translate("cli.options.headers")) {
         @header = true
       } if is_active?(actives, Options::HEADER)
     end
 
     private def parse_processes(parser : OptionParser, actives : Array(Options))
-      parser.on("--process=PROCESSES", "# of the work processes (default is 1)") { |processes|
+      parser.on("--process=PROCESSES", I18n.translate("cli.options.processes")) { |processes|
         @processes = processes.to_i
       } if is_active?(actives, Options::PROCESSES)
     end
 
     private def parse_encrypted(parser : OptionParser, actives : Array(Options))
-      parser.on("-e", "--encrypted", "set this flag when creating a wallet to create an encrypted wallet") {
+      parser.on("-e", "--encrypted", I18n.translate("cli.options.encrypted")) {
         @encrypted = true
       } if is_active?(actives, Options::ENCRYPTED)
     end
 
     private def parse_price(parser : OptionParser, actives : Array(Options))
-      parser.on("--price=PRICE", "buy/sell price for SCARS") { |price|
+      parser.on("--price=PRICE", I18n.translate("cli.options.scars.price")) { |price|
         decimal_option(price) do
           @price = price
         end
@@ -297,31 +297,31 @@ module ::Sushi::Interface
     end
 
     private def parse_domain(parser : OptionParser, actives : Array(Options))
-      parser.on("--domain=DOMAIN", "specify a domain for SCARS") { |domain|
+      parser.on("--domain=DOMAIN", I18n.translate("cli.options.scars.domain")) { |domain|
         @domain = domain
       } if is_active?(actives, Options::DOMAIN)
     end
 
     private def parse_token(parser : OptionParser, actives : Array(Options))
-      parser.on("--token=TOKEN", "specify a target token") { |token|
+      parser.on("--token=TOKEN", I18n.translate("cli.options.token.kind")) { |token|
         @token = token
       } if is_active?(actives, Options::TOKEN)
     end
 
     private def parse_config_name(parser : OptionParser, actives : Array(Options))
-      parser.on("-c", "--config=CONFIG_NAME", "specify a config name") { |name|
+      parser.on("-c", "--config=CONFIG_NAME", I18n.translate("cli.options.config")) { |name|
         @config_name = name
       } if is_active?(actives, Options::CONFIG_NAME)
     end
 
     private def parse_node_id(parser : OptionParser, actives : Array(Options))
-      parser.on("--node_id=NODE_ID", "specify a node id") { |node_id|
+      parser.on("--node_id=NODE_ID", I18n.translate("cli.options.node.id")) { |node_id|
         @node_id = node_id
       } if is_active?(actives, Options::NODE_ID)
     end
 
     private def parse_premine(parser : OptionParser, actives : Array(Options))
-      parser.on("--premine=PREMINE", "invoke premine with supplied configuration") { |premine|
+      parser.on("--premine=PREMINE", I18n.translate("cli.options.premine")) { |premine|
         @premine_path = premine
       } if is_active?(actives, Options::PREMINE)
     end
@@ -458,7 +458,7 @@ module ::Sushi::Interface
       valid_amount?(value)
       yield value
     rescue e : InvalidBigDecimalException
-      puts_error "please supply valid decimal number: #{value}"
+      puts_error I18n.translate("cli.errors.decimal", {value: value})
     end
 
     private def with_string_config(name, var)

@@ -1,0 +1,38 @@
+cli:
+  options:
+    node:
+      url:        "a url of the connect node"
+      id:         "specify a node id"
+    wallet:       "path to a wallet file (json)"
+    password:     "password for a encrypted wallet"
+    mainnet:      "set network type as mainnet (default is mainnet)"
+    testnet:      "set network type as testnet (default is mainnet)"
+    public:
+      mode:       "launch a node in public mode. (default is public mode)"
+      url:        "public url of your node that can be accessed from internet. if your node is behind a NAT, you can add --private flag instread of this option"
+    private:      "launch a node in private mode. it will not be connected to other nodes."
+    json:         "print results as json"
+    confirmation: "set the length for the confirmation"
+    binding:
+      host:       "binding host; '0.0.0.0' by default"
+      port:       "binding port; 3000 by default"
+    database:     "path to a database (SQLite3)"
+    address:      "public address"
+    token:
+      amount:     "the amount of tokens"
+      kind:       "specify a target token"
+    action:       "specify an action name of the transaction"
+    message:      "add message into transaction"
+    block:        "block index"
+    transaction:  "transaction id"
+    fee:          "the amount of fee"
+    headers:      "get headers only when get a blockchain or blocks"
+    processes:    "# of the work processes (default is 1)"
+    encrypted:    "set this flag when creating a wallet to create an encrypted wallet"
+    scars:
+      price:      "buy/sell price for SCARS"
+      domain:     "specify a domain for SCARS"
+    config:       "specify a config name"
+    premine:      "invoke premine with supplied configuration"
+  errors:
+    decimal: "please supply valid decimal number: %{value}"
