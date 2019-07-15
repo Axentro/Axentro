@@ -1,7 +1,33 @@
-cli:
-  wallet:
-    title: "wallet"
-    desc: "create, encrypt or decrypt your wallet (wt for short)"
-    create:
-      title: "create"
-      desc: "create a wallet file"
+sushi:
+  cli:
+    title:       "sushi's command line client"
+    wallet:
+      title:     "wallet"
+      desc:      "create, encrypt or decrypt your wallet (wt for short)"
+      create:
+        title:   "create"
+        desc:    "create a wallet file"
+    blockchain:
+      title:     "blockchain"
+      desc:      "get a whole blockchain or each block (bc for short)"
+    transaction:
+      title:     "transaction"
+      desc:      "get or create transactions (tx for short)"
+    node:
+      title:     "node"
+      desc:      "show information of nodes (nd for short)"
+    scars:
+      title:     "scars"
+      desc:      "SushiCon Address Resolution System (SCARS), buy/sell a readable domain for your address (sc for short)"
+    token:
+      title:     "token"
+      desc:      "create tokens."
+    config:
+      title:     "config"
+      desc:      "save default configuration used by sushi, sushid and sushim (cg for short)"
+    pubsub:
+      title:     "pubsub"
+      desc:      "receive blocks in real time"
+    client:
+      title:     "client"
+      desc:      "connect to node as peer clients"

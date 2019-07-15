@@ -15,8 +15,8 @@ module ::Sushi::Interface::Sushi
     def sub_actions
       [
         {
-          name: I18n.translate("cli.wallet.create.title"),
-          desc: I18n.translate("cli.wallet.create.desc"),
+          name: I18n.translate("sushi.cli.wallet.create.title"),
+          desc: I18n.translate("sushi.cli.wallet.create.desc"),
         },
         {
           name: "verify",
@@ -55,7 +55,7 @@ module ::Sushi::Interface::Sushi
 
     def run_impl(action_name)
       case action_name
-      when I18n.translate("cli.wallet.create.title")
+      when I18n.translate("sushi.cli.wallet.create.title")
         return create
       when "verify"
         return verify
