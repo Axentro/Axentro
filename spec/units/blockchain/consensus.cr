@@ -15,7 +15,7 @@ require "./../../../src/cli/modules/logger"
 
 include Sushi::Core
 include Sushi::Core::Consensus
-#include Sushi::Interface::Logger
+include Sushi::Interface::Logger
 
 describe Consensus do
   describe "#valid?, #valid_pow?" do
@@ -57,7 +57,7 @@ describe Consensus do
             chain.each do |block|
               block.timestamp = timestamp
               block.difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
-              timestamp += Consensus::POW_TARGET_SPACING.to_i64 + 30
+              timestamp += Consensus::POW_TARGET_SPACING.to_i64 + 5
             end
             block_difficulty(block_factory.blockchain).should be < Consensus::DEFAULT_DIFFICULTY_TARGET
           end
@@ -71,7 +71,7 @@ describe Consensus do
             chain.each do |block|
               block.timestamp = timestamp
               block.difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
-              timestamp += Consensus::POW_TARGET_SPACING.to_i64 - 30
+              timestamp += Consensus::POW_TARGET_SPACING.to_i64 - 5
             end
             block_difficulty(block_factory.blockchain).should be > Consensus::DEFAULT_DIFFICULTY_TARGET
           end

@@ -99,26 +99,25 @@ module ::Sushi::Core
       valid_as_genesis?
     end
 
+    def validate_transactions(blockchain : Blockchain, transactions : Array(Transaction))
+      transactions.each_with_index do |t, idx|
+        t = TransactionPool.find(t) || t
+        t.valid_common?
+
+        if idx == 0
+          t.valid_as_coinbase?(blockchain, @index, transactions[1..-1])
+        else
+          t.valid_as_embedded?(blockchain, transactions[0..idx - 1])
+        end
+      end
+    end
+
     def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool) : Bool
       prev_block = blockchain.latest_block
 
       raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
       debug "in valid_as_latest?.. using difficulty: #{@difficulty}"
-      if @difficulty > 0
-        raise "the nonce is invalid: #{@nonce} for difficulty #{@difficulty}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
-      end
-      unless skip_transactions
-        transactions.each_with_index do |t, idx|
-          t = TransactionPool.find(t) || t
-          t.valid_common?
-
-          if idx == 0
-            t.valid_as_coinbase?(blockchain, @index, transactions[1..-1])
-          else
-            t.valid_as_embedded?(blockchain, transactions[0..idx - 1])
-          end
-        end
-      end
+      validate_transactions(blockchain, transactions) unless skip_transactions
 
       raise "mismatch index for the most recent block(#{prev_block.index}): #{@index}" if prev_block.index + 1 != @index
       raise "prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
@@ -139,6 +138,7 @@ module ::Sushi::Core
         if @difficulty != difficulty_for_block
           raise "difficulty is invalid " + "(expected #{difficulty_for_block} but got #{@difficulty})"
         end
+        raise "the nonce is invalid: #{@nonce} for difficulty #{@difficulty}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
       end
 
       merkle_tree_root = calcluate_merkle_tree_root

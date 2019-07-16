@@ -52,9 +52,7 @@ module ::Sushi::Core::Consensus
 
   def block_difficulty(blockchain : Blockchain) : Int32
     actual_timespan = 0_f64
-    last_block_time = 0
-    past_difficulty_avg = 0_f64
-    past_difficulty_avg_prev = 0_f64
+    calculated_difficulty = 0_f64
 
     # return difficulty from env var if it has be set
     return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
@@ -74,29 +72,17 @@ module ::Sushi::Core::Consensus
     count_blocks = 0
     oldest_history_spot = Math.max(chain.size - HISTORY_LOOKBACK, 1)
     i = oldest_history_spot
+    last_block_time = chain[i].timestamp
     #debug "Oldest history spot: #{oldest_history_spot}"
     while i < chain.size
       block_reading = chain[i]
-      if count_blocks == 0
-        past_difficulty_avg = block_reading.difficulty
-      else
-        past_difficulty_avg = ((past_difficulty_avg_prev * count_blocks)+(block_reading.difficulty)) / (count_blocks + 1).to_f64
-      end
-      past_difficulty_avg_prev = past_difficulty_avg
-      if last_block_time > 0
-        diff = (block_reading.timestamp - last_block_time).to_f64
-        if (diff > POW_TARGET_SPACING * 0.5) && (diff < POW_TARGET_SPACING * 1.5)
-          actual_timespan += diff
-          #debug "Had a difference of  #{diff} now actual timespan is #{actual_timespan}"
-          count_blocks += 1
-        else
-          #debug "Had a difference of  #{diff} out of range for averaging probably due to a period of time with no miners"
-        end
-      end
+      calculated_difficulty = calculate_running_difficulty_avg(calculated_difficulty, block_reading.difficulty, count_blocks)
+      new_timespan = accumulate_timespan(actual_timespan, block_reading.timestamp, last_block_time)
+      count_blocks += 1 if new_timespan > actual_timespan
+      actual_timespan = new_timespan
       last_block_time = block_reading.timestamp
       i += 1
     end
-    calculated_difficulty = past_difficulty_avg
 
     #debug "Number of blocks in history lookback: #{count_blocks}"
     #debug "calculated average difficulty: #{calculated_difficulty}"
@@ -131,6 +117,26 @@ module ::Sushi::Core::Consensus
     calculated_difficulty_i32
   end
 
+  def calculate_running_difficulty_avg(calculated_difficulty : Float64, this_block_difficulty : Int32, count_blocks : Int32) : Float64
+    if count_blocks == 0
+      calculated_difficulty = this_block_difficulty.to_f64
+    else
+      calculated_difficulty = ((calculated_difficulty * count_blocks)+(this_block_difficulty)) / (count_blocks + 1).to_f64
+    end
+    calculated_difficulty
+  end
+
+  def accumulate_timespan(current_timespan : Float64, this_block_timestamp : Int64, last_block_time : Int64) : Float64
+    time_diff = (this_block_timestamp - last_block_time).to_f64
+    if (time_diff > POW_TARGET_SPACING * 0.5) && (time_diff < POW_TARGET_SPACING * 1.5)
+      accumulated_timespan = current_timespan + time_diff
+      #debug "Had a difference of  #{time_diff} now actual timespan is #{accumulated_timespan}"
+    else
+      accumulated_timespan = current_timespan
+      #debug "Had a difference of  #{time_diff} out of range for averaging probably due to a period of time with no miners"
+    end
+    accumulated_timespan
+  end
 
   include Hashes
 end
