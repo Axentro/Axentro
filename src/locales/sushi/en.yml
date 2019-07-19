@@ -1,33 +1,60 @@
 sushi:
   cli:
-    title:       "sushi's command line client"
+    title:          "sushi's command line client"
     wallet:
-      title:     "wallet"
-      desc:      "create, encrypt or decrypt your wallet (wt for short)"
+      title:        "wallet"
+      desc:         "create, encrypt or decrypt your wallet (wt for short)"
       create:
-        title:   "create"
-        desc:    "create a wallet file"
+        title:      "create"
+        desc:       "create a wallet file"
+        messages:
+          creation: "your new wallet has been created at %{wallet_path}"
+          backup:   "please make a backup of the json file and keep it secret."
+      verify:
+        title:      "verify"
+        desc:       "verify a wallet file"
+        messages:
+          verify:   "%{wallet_path} is perfect!"
+          address: "address: %{wallet.address}"
+          network: "network (%{network_prefix}): %{network_name}"
+      encrypt:
+        title:      "encrypt"
+        desc:       "encrypt a sushi wallet"
+        messages:
+          encrypt: "your wallet has been encrypted at %{encrypted_wallet_path}"
+          password: "please don't forget your password - there is no way to recover an encrypted wallet."
+      decrypt:
+        title:      "decrypt"
+        desc:       "decrypt a sushi wallet (that was encrypted using sushi)"
+        messages:
+          decrypt: "your wallet has been decrypted at %{decrypted_wallet_path}"
+      amount:
+        title:      "amount"
+        desc:       "show remaining amount of Sushi tokens for specified address"
+        messages:
+          amount: "\n  showing amount of each token for %{address}."
+          confirmation: "  confirmation: %{confirmation}\n"
     blockchain:
-      title:     "blockchain"
-      desc:      "get a whole blockchain or each block (bc for short)"
+      title:        "blockchain"
+      desc:         "get a whole blockchain or each block (bc for short)"
     transaction:
-      title:     "transaction"
-      desc:      "get or create transactions (tx for short)"
+      title:        "transaction"
+      desc:         "get or create transactions (tx for short)"
     node:
-      title:     "node"
-      desc:      "show information of nodes (nd for short)"
+      title:        "node"
+      desc:         "show information of nodes (nd for short)"
     scars:
-      title:     "scars"
-      desc:      "SushiCon Address Resolution System (SCARS), buy/sell a readable domain for your address (sc for short)"
+      title:        "scars"
+      desc:         "SushiCon Address Resolution System (SCARS), buy/sell a readable domain for your address (sc for short)"
     token:
-      title:     "token"
-      desc:      "create tokens."
+      title:        "token"
+      desc:         "create tokens."
     config:
-      title:     "config"
-      desc:      "save default configuration used by sushi, sushid and sushim (cg for short)"
+      title:        "config"
+      desc:         "save default configuration used by sushi, sushid and sushim (cg for short)"
     pubsub:
-      title:     "pubsub"
-      desc:      "receive blocks in real time"
+      title:        "pubsub"
+      desc:         "receive blocks in real time"
     client:
-      title:     "client"
-      desc:      "connect to node as peer clients"
+      title:        "client"
+      desc:         "connect to node as peer clients"
