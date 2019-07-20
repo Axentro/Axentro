@@ -1,10 +1,10 @@
-  help:
-    wallet:
-      path: "please specify your wallet: -w [your_wallet.json]"
-      some_path: "please specify a wallet or an address: -w [your_wallet.json], -a [public_address] or --domain=[some_domain]"
-      exists:    "the wallet at %s already exists, specify another path"
-      password:  "please specify the password for this wallet"
-      encrypted: "the wallet must be encrypted and you must supply the password"
+help:
+  wallet:
+    path: "please specify your wallet: -w [your_wallet.json]"
+    some_path: "please specify a wallet or an address: -w [your_wallet.json], -a [public_address] or --domain=[some_domain]"
+    exists:    "the wallet at %s already exists, specify another path"
+    password:  "please specify the password for this wallet"
+    encrypted: "the wallet must be encrypted and you must supply the password"
   address: "please specify a recipient's address or domain: -a [public address] or --domain=[domain]"
   amount: "please specify amount of token: -m [amount]"
   node:

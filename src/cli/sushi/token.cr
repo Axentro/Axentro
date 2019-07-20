@@ -15,12 +15,12 @@ module ::Sushi::Interface::Sushi
     def sub_actions
       [
         {
-          name: "create",
-          desc: "create your token",
+          name: I18n.translate("sushi.cli.token.create.title"),
+          desc: I18n.translate("sushi.cli.token.create.desc"),
         },
         {
-          name: "list",
-          desc: "list existing tokens",
+          name: I18n.translate("sushi.cli.token.list.title"),
+          desc: I18n.translate("sushi.cli.token.list.desc"),
         },
       ]
     end
@@ -41,9 +41,9 @@ module ::Sushi::Interface::Sushi
 
     def run_impl(action_name)
       case action_name
-      when "create"
+      when I18n.translate("sushi.cli.token.create.title")
         return create
-      when "list"
+      when I18n.translate("sushi.cli.token.list.title")
         return list
       end
 

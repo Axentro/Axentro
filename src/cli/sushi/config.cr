@@ -15,32 +15,32 @@ module ::Sushi::Interface::Sushi
     def sub_actions
       [
         {
-          name: "save",
-          desc: "save the specified options as default for sushi, sushid and sushim",
+          name: I18n.translate("sushi.cli.config.save.title"),
+          desc: I18n.translate("sushi.cli.config.save.desc"),
         },
         {
-          name: "show",
-          desc: "show current default configuration",
+          name: I18n.translate("sushi.cli.config.show.title"),
+          desc: I18n.translate("sushi.cli.config.show.desc"),
         },
         {
-          name: "remove",
-          desc: "remove the default configuration",
+          name: I18n.translate("sushi.cli.config.remove.title"),
+          desc: I18n.translate("sushi.cli.config.remove.desc"),
         },
         {
-          name: "use",
-          desc: "use the specified configuration",
+          name: I18n.translate("sushi.cli.config.use.title"),
+          desc: I18n.translate("sushi.cli.config.use.desc"),
         },
         {
-          name: "list",
-          desc: "list the available configurations",
+          name: I18n.translate("sushi.cli.config.list.title"),
+          desc: I18n.translate("sushi.cli.config.list.desc"),
         },
         {
-          name: "enable",
-          desc: "enable configurations",
+          name: I18n.translate("sushi.cli.config.enable.title"),
+          desc: I18n.translate("sushi.cli.config.enable.desc"),
         },
         {
-          name: "disable",
-          desc: "disable configurations",
+          name: I18n.translate("sushi.cli.config.disable.title"),
+          desc: I18n.translate("sushi.cli.config.disable.desc"),
         },
       ]
     end
@@ -73,19 +73,19 @@ module ::Sushi::Interface::Sushi
 
     def run_impl(action_name)
       case action_name
-      when "save"
+      when I18n.translate("sushi.cli.config.save.title")
         return save
-      when "show"
+      when I18n.translate("sushi.cli.config.show.title")
         return show
-      when "remove"
+      when I18n.translate("sushi.cli.config.remove.title")
         return remove
-      when "use"
+      when I18n.translate("sushi.cli.config.use.title")
         return use
-      when "list"
+      when I18n.translate("sushi.cli.config.list.title")
         return list
-      when "disable"
+      when I18n.translate("sushi.cli.config.disable.title")
         return enabled(ConfigStatus::Disabled)
-      when "enable"
+      when I18n.translate("sushi.cli.config.enable.title")
         return enabled(ConfigStatus::Enabled)
       end
 

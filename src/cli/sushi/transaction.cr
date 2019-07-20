@@ -15,24 +15,24 @@ module ::Sushi::Interface::Sushi
     def sub_actions
       [
         {
-          name: "create",
-          desc: "create a transaction, generally used for sending tokens but you can specify other actions. (the default action is 'send')",
+          name: I18n.translate("sushi.cli.transaction.create.title"),
+          desc: I18n.translate("sushi.cli.transaction.create.desc"),
         },
         {
-          name: "transactions",
-          desc: "get transactions in a specified block or for an address (txs for short)",
+          name: I18n.translate("sushi.cli.transaction.transactions.title"),
+          desc: I18n.translate("sushi.cli.transaction.transactions.desc"),
         },
         {
-          name: "transaction",
-          desc: "get a transaction for a transaction id (tx for short)",
+          name: I18n.translate("sushi.cli.transaction.transaction.title"),
+          desc: I18n.translate("sushi.cli.transaction.transaction.desc"),
         },
         {
-          name: "confirmation",
-          desc: "get the number of confirmations (cf for short)",
+          name: I18n.translate("sushi.cli.transaction.confirmation.title"),
+          desc: I18n.translate("sushi.cli.transaction.confirmation.desc"),
         },
         {
-          name: "fees",
-          desc: "show fees for each action",
+          name: I18n.translate("sushi.cli.transaction.fees.title"),
+          desc: I18n.translate("sushi.cli.transaction.fees.desc"),
         },
       ]
     end
@@ -59,15 +59,15 @@ module ::Sushi::Interface::Sushi
 
     def run_impl(action_name)
       case action_name
-      when "create"
+      when I18n.translate("sushi.cli.transaction.create.title")
         return create
-      when "transactions", "txs"
+      when I18n.translate("sushi.cli.transaction.transactions.title"), "txs"
         return transactions
-      when "transaction", "tx"
+      when I18n.translate("sushi.cli.transaction.transaction.title"), "tx"
         return transaction
-      when "confirmation", "cf"
+      when I18n.translate("sushi.cli.transaction.confirmation.title"), "cf"
         return confirmation
-      when "fees"
+      when I18n.translate("sushi.cli.transaction.fees.title")
         return fees
       end
 
@@ -126,10 +126,10 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_BLOCK_INDEX_OR_ADDRESS) if G.op.__block_index.nil? && G.op.__address.nil?
 
       payload = if block_index = G.op.__block_index
-                  success_message = "show transactions in a block #{block_index}"
+                  success_message = I18n.translate("sushi.cli.transaction.transactions.messages.index", {block_index: block_index})
                   {call: "transactions", index: block_index}.to_json
                 elsif address = G.op.__address
-                  success_message = "show transactions for an address #{address}"
+                  success_message = I18n.translate("sushi.cli.transaction.transactions.messages.index", {address: address})
                   {call: "transactions", address: address}.to_json
                 else
                   puts_help(HELP_BLOCK_INDEX_OR_ADDRESS)
@@ -155,17 +155,16 @@ module ::Sushi::Interface::Sushi
       else
         case json["status"].as_s
         when "accepted"
-          puts_success("show the transaction")
+          puts_success(I18n.translate("sushi.cli.transaction.transaction.messages.accepted"))
           puts body
         when "pending"
-          puts_success("the transaction is still pending in transaction pool")
+          puts_success(I18n.translate("sushi.cli.transaction.transaction.messages.pending"))
         when "rejected"
-          puts_error("the transaction was rejected. " +
-                     "the reason: #{json["reason"].as_s}")
+          puts_error(I18n.translate("sushi.cli.transaction.transaction.messages.rejected", {reason: json["reason"].as_s}))
         when "not found"
-          puts_error("the transaction was not found")
+          puts_error(I18n.translate("sushi.cli.transaction.transaction.messages.not_found"))
         else
-          puts_error("unknown status for the transaction")
+          puts_error(I18n.translate("sushi.cli.transaction.transaction.messages.unknown"))
         end
       end
     end
@@ -181,7 +180,7 @@ module ::Sushi::Interface::Sushi
       if G.op.__json
         puts body
       else
-        puts_success("show the number of confirmations of #{transaction_id}")
+        puts_success(I18n.translate("sushi.cli.transaction.confirmation.messages.rejected", {transaction_id: transaction_id}))
 
         json = JSON.parse(body)
 
@@ -202,7 +201,7 @@ module ::Sushi::Interface::Sushi
       if G.op.__json
         puts body
       else
-        puts_success("\n  showing fees for each action.\n")
+        puts_success(I18n.translate("sushi.cli.transaction.fees.messages.fees"))
 
         puts_info("  + %30s - %30s +" % ["-" * 30, "-" * 30])
         puts_info("  | %30s | %30s |" % ["action", "fee"])

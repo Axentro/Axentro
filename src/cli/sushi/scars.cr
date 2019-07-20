@@ -15,24 +15,24 @@ module ::Sushi::Interface::Sushi
     def sub_actions
       [
         {
-          name: "buy",
-          desc: "buy specified domain",
+          name: I18n.translate("sushi.cli.scars.buy.title"),
+          desc: I18n.translate("sushi.cli.scars.buy.desc"),
         },
         {
-          name: "sell",
-          desc: "sell your domain",
+          name: I18n.translate("sushi.cli.scars.sell.title"),
+          desc: I18n.translate("sushi.cli.scars.sell.desc"),
         },
         {
-          name: "cancel",
-          desc: "cancel selling",
+          name: I18n.translate("sushi.cli.scars.cancel.title"),
+          desc: I18n.translate("sushi.cli.scars.cancel.desc"),
         },
         {
-          name: "resolve",
-          desc: "show an address of the domain if it's registered",
+          name: I18n.translate("sushi.cli.scars.resolve.title"),
+          desc: I18n.translate("sushi.cli.scars.resolve.desc"),
         },
         {
-          name: "sales",
-          desc: "show a list of domains for sale",
+          name: I18n.translate("sushi.cli.scars.sales.title"),
+          desc: I18n.translate("sushi.cli.scars.sales.desc"),
         },
       ]
     end
@@ -53,15 +53,15 @@ module ::Sushi::Interface::Sushi
 
     def run_impl(action_name)
       case action_name
-      when "buy"
+      when I18n.translate("sushi.cli.scars.buy.title")
         return buy
-      when "cancel"
+      when I18n.translate("sushi.cli.scars.cancel.title")
         return cancel
-      when "sell"
+      when I18n.translate("sushi.cli.scars.sell.title")
         return sell
-      when "resolve"
+      when I18n.translate("sushi.cli.scars.resolve.title")
         return resolve
-      when "sales"
+      when I18n.translate("sushi.cli.scars.sales.title")
         return sales
       end
 
