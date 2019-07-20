@@ -32,7 +32,7 @@ module ::Sushi::Core
       @timestamp : Int64,
       @difficulty : Int32
     )
-      @merkle_tree_root = calcluate_merkle_tree_root
+      @merkle_tree_root = calculate_merkle_tree_root
     end
 
     def to_hash : String
@@ -69,7 +69,7 @@ module ::Sushi::Core
       self
     end
 
-    def calcluate_merkle_tree_root : String
+    def calculate_merkle_tree_root : String
       return "" if @transactions.size == 0
 
       current_hashes = @transactions.map { |tx| tx.to_hash }
@@ -141,7 +141,7 @@ module ::Sushi::Core
         raise "the nonce is invalid: #{@nonce} for difficulty #{@difficulty}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
       end
 
-      merkle_tree_root = calcluate_merkle_tree_root
+      merkle_tree_root = calculate_merkle_tree_root
 
       if merkle_tree_root != @merkle_tree_root
         raise "invalid merkle tree root (expected #{@merkle_tree_root} but got #{merkle_tree_root})"
