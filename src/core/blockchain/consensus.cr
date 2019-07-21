@@ -57,9 +57,6 @@ module ::Sushi::Core::Consensus
     # return difficulty from env var if it has be set
     return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
 
-    # return difficulty default target if doing e2e test
-    return DEFAULT_DIFFICULTY_TARGET if ENV.has_key?("SC_E2E") # for e2e test
-
     # return difficulty default target if chain non-existant or not enough block history
     chain = blockchain.chain
     #debug "entered block_difficulty with chain length of #{chain.size}" if chain

@@ -291,6 +291,7 @@ module ::Sushi::Core
 
         if _block = @blockchain.valid_block?(block)
           new_block(_block)
+          @miners_manager.forget_most_difficult
         end
 
         send_block(block, from)

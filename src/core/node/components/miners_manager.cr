@@ -81,6 +81,11 @@ module ::Sushi::Core::NodeComponents
       })
     end
 
+    def forget_most_difficult
+      @highest_difficulty_mined_so_far = 0
+      debug "Forgetting most difficult"
+    end
+
     def found_nonce(socket, _content)
       return unless node.phase == SetupPhase::DONE
 

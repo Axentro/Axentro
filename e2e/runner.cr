@@ -83,9 +83,16 @@ module ::E2E
     end
 
     def launch_miners
-      @num_miners.times do |_|
-        port = @node_ports.sample
-        step mining(port, Random.rand(@num_miners)), 1, "launch miner for #{port}"
+      if @num_miners != @node_ports.size
+        @num_miners.times do |_|
+          port = @node_ports.sample
+          step mining(port, Random.rand(@num_miners)), 1, "launch miner for #{port}"
+        end
+      else
+        @num_miners.times do |t|
+          port = @node_ports[t]
+          step mining(port, t), 1, "launch miner for #{port}"
+        end
       end
     end
 
