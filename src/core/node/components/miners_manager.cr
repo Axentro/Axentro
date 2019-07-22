@@ -81,11 +81,6 @@ module ::Sushi::Core::NodeComponents
       })
     end
 
-    def forget_most_difficult
-      @highest_difficulty_mined_so_far = 0
-      debug "Forgetting most difficult"
-    end
-
     def found_nonce(socket, _content)
       return unless node.phase == SetupPhase::DONE
 
@@ -157,6 +152,12 @@ module ::Sushi::Core::NodeComponents
       @miners.each do |m|
         m[:context][:nonces].clear
       end
+    end
+
+    def forget_most_difficult
+      debug "Forgetting most difficult"
+      @blockchain.clean_transactions
+      @highest_difficulty_mined_so_far = 0
     end
 
     def broadcast

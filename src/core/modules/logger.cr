@@ -36,7 +36,7 @@ module ::Sushi::Core::Logger
   end
 
   def welcome
-    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") 
+    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION")
     puts welcome_message
   end
 

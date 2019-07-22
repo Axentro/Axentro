@@ -300,6 +300,7 @@ module ::Sushi::Core
     def align_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
       aligned_transactions = [coinbase_transaction]
 
+      debug "entered align_transactions with embedded_transactions size: #{embedded_transactions.size}"
       embedded_transactions.each do |t|
         t.prev_hash = aligned_transactions[-1].to_hash
         t.valid_as_embedded?(self, aligned_transactions)
@@ -310,6 +311,7 @@ module ::Sushi::Core
 
         TransactionPool.delete(t)
       end
+      debug "exited align_transactions with embedded_transactions size: #{embedded_transactions.size}"
 
       aligned_transactions
     end
