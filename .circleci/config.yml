@@ -24,7 +24,7 @@ jobs:
           apt-get install curl libsqlite3-dev -y
       - run: |
           shards build --release
-          bin/e2e --mode=all_public --num_nodes=3 --num_miners=3 --time=300
+          bin/e2e --mode=all_public --num_nodes=3 --num_miners=3 --time=600
 
   e2e-tests-all-private:
     docker:
@@ -36,7 +36,7 @@ jobs:
           apt-get install curl libsqlite3-dev -y
       - run: |
           shards build --release
-          bin/e2e --mode=all_private --num_nodes=3 --num_miners=3 --time=300
+          bin/e2e --mode=all_private --num_nodes=3 --num_miners=3 --time=600
 
   e2e-tests-one-private:
     docker:
@@ -48,7 +48,7 @@ jobs:
           apt-get install curl libsqlite3-dev -y
       - run: |
           shards build --release
-          bin/e2e --mode=one_private --num_nodes=3 --num_miners=3 --time=300
+          bin/e2e --mode=one_private --num_nodes=3 --num_miners=3 --time=600
 
   docker-build:
     machine: true
