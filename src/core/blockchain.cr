@@ -126,10 +126,10 @@ module ::Sushi::Core
 
       dapps_record
 
+      clean_transactions
+
       debug "calling refresh_mining_block in push_block"
       refresh_mining_block(block_difficulty(self))
-
-      clean_transactions
 
       block
     end

@@ -156,7 +156,6 @@ module ::Sushi::Core::NodeComponents
 
     def forget_most_difficult
       debug "Forgetting most difficult"
-      @blockchain.clean_transactions
       @highest_difficulty_mined_so_far = 0
     end
 

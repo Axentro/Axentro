@@ -12,7 +12,7 @@
 
 module ::Sushi::Core
   class TransactionPool
-    LIMIT = 500
+    LIMIT = 2000
 
     @@instance : TransactionPool? = nil
 
