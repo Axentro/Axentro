@@ -65,10 +65,6 @@ module ::Sushi::Core
       self
     end
 
-    def with_timestamp(@timestamp : Int64) : Block
-      self
-    end
-
     def calcluate_merkle_tree_root : String
       return "" if @transactions.size == 0
 
