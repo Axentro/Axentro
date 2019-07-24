@@ -36,30 +36,30 @@ module ::Sushi::Core::Logger
   end
 
   def welcome
-    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION")
+    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E")
     puts welcome_message
   end
 
   def verbose(msg : String)
-    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION")
+    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E")
     return if log_level > LL_VERBOSE
     log_out("Verb", msg, :dark_gray)
   end
 
   def debug(msg : String)
-    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION")
+    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E")
     return if log_level > LL_DEBUG
     log_out("Debg", msg, :dark_gray)
   end
 
   def info(msg : String)
-    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION")
+    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E")
     return if log_level > LL_INFO
     log_out("Info", msg, :light_green)
   end
 
   def warning(msg : String)
-    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION")
+    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E")
     log_out("Warn", msg, :yellow)
   end
 
