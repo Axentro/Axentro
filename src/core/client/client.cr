@@ -44,7 +44,7 @@ module ::Sushi::Core
       end
 
       puts ""
-      puts light_green("  start client for sushi...")
+      puts light_green("  starting client for sushi...")
 
       send(socket, M_TYPE_CLIENT_HANDSHAKE, {public_key: @wallet.public_key})
 
@@ -137,7 +137,7 @@ module ::Sushi::Core
     end
 
     def disconnected
-      puts red("dissconnected. exit with -1")
+      puts red("disconnected. exited with -1.")
       exit -1
     end
 

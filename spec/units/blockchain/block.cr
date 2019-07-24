@@ -32,23 +32,23 @@ describe Block do
     block.to_header.should eq({index: 0_i64, nonce: 0_u64, prev_hash: "genesis", merkle_tree_root: "", timestamp: 0_i64, difficulty: 3})
   end
 
-  describe "#calcluate_merkle_tree_root" do
+  describe "#calculate_merkle_tree_root" do
     it "should return empty merkle tree root value when no transactions" do
       block = Block.new(0_i64, [] of Transaction, a_nonce, "prev_hash", 0_i64, 3_i32)
-      block.calcluate_merkle_tree_root.should eq("")
+      block.calculate_merkle_tree_root.should eq("")
     end
 
     it "should calculate merkle tree root when coinbase transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
       block = Block.new(1_i64, [coinbase_transaction], 1_u64, "prev_hash", 0_i64, 3_i32)
-      block.calcluate_merkle_tree_root.should eq("d91329bca593bbae22fb70b7f450b4748002ac65")
+      block.calculate_merkle_tree_root.should eq("d91329bca593bbae22fb70b7f450b4748002ac65")
     end
 
     it "should calculate merkle tree root when 2 transactions (first is coinbase)" do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = Block.new(1_i64, [coinbase_transaction, transaction1], 1_u64, "prev_hash", 0_i64, 3_i32)
-      block.calcluate_merkle_tree_root.should eq("9d052008919dae3810b3c7facc14dc7d9b3a9b28")
+      block.calculate_merkle_tree_root.should eq("9d052008919dae3810b3c7facc14dc7d9b3a9b28")
     end
   end
 

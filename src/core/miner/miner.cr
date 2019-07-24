@@ -58,7 +58,7 @@ module ::Sushi::Core
 
       socket.run
     rescue e : Exception
-      error "failed to start mining prosess"
+      error "failed to start mining process"
       error e.message.not_nil!
 
       exit -1
@@ -87,7 +87,7 @@ module ::Sushi::Core
 
       reason = _m_content.reason
 
-      error "handshake failed for the reason;"
+      error "handshake failed because:"
       error reason
     end
 

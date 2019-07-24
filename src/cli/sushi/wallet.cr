@@ -95,7 +95,7 @@ module ::Sushi::Interface::Sushi
         puts wallet.to_json
       else
         puts_success("your new wallet has been created at #{wallet_path}")
-        puts_success("please take backup of the json file and keep it secret.")
+        puts_success("please make a backup of the json file and keep it secret.")
       end
     end
 
