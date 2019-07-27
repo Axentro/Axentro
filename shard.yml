@@ -33,6 +33,8 @@ dependencies:
     github: sushichain/crystal-argon2
   crystal-ecdsa:
     github: sushichain/crystal-ecdsa
+  radix:
+    github: luislavena/radix    
 
 development_dependencies:
   ameba:

@@ -11,20 +11,120 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::DApps::BuildIn
+  class TokenQuantity
+    getter name : String
+    getter quantities : Array(AddressQuantity)
+
+    def initialize(@name : String, @quantities : Array(AddressQuantity))
+    end
+
+    def ==(other)
+      name == other.name && quantities == other.quantities
+    end
+
+    def self.find_amount(tokens : Array(TokenQuantity), token : String, address : String)
+      tokens.select { |tq| tq.name == token }.flat_map do |tq|
+        tq.quantities.select { |aq| aq.address == address }.reduce(0) { |acc, aq| acc + aq.quantity }
+      end.sum.to_i64
+    end
+
+    def self.upsert(tokens : Array(TokenQuantity), token : String, address : String, amount : Int64)
+      _tokens = tokens.select { |tq| tq.name == token }
+      if _tokens.empty?
+        tokens << TokenQuantity.new(token, [AddressQuantity.new(address, amount)])
+      else
+        tokens = tokens.map do |tq|
+          if tq.name == token
+            _addresses = tq.quantities.select { |aq| aq.address == address }
+            if _addresses.empty?
+              tq.quantities << AddressQuantity.new(address, amount)
+            else
+              tq.quantities = tq.quantities.map do |aq|
+                if aq.address == address
+                  aq.amount += amount
+                end
+                aq
+              end
+            end
+          end
+          tq
+        end
+      end
+      tokens
+    end
+  end
+
+  class AddressQuantity
+    getter address : String
+    getter quantity : Int64
+
+    def initialize(@address : String, @quantity : Int64)
+    end
+
+    def ==(other)
+      address == other.address && quantity == other.quantity
+    end
+  end
+
+  class GroupBy
+    getter label : String
+    getter items : Array(TokenAddressQuantity)
+
+    def initialize(@label : String, @items : Array(TokenAddressQuantity))
+    end
+  end
+
+  class TokenAddressQuantity
+    getter token : String
+    getter address : String
+    property amount : Int64
+
+    def initialize(@token : String, @address : String, @amount : Int64 = 0_i64)
+    end
+
+    def ==(other)
+      self.token == other.token && self.address == other.address
+    end
+
+    def self.find(items : Array(TokenAddressQuantity), token : String, address : String)
+      items.find { |taq| taq.token == token && taq.address = address }
+    end
+
+    def self.decrement_sender(items : Array(TokenAddressQuantity), token : String, address : String, amount : Int64, fee : Int64) : Array(TokenAddressQuantity)
+      items.map do |taq|
+        if taq.token == token && taq.address == address
+          taq.amount -= amount
+        end
+
+        if taq.token == TOKEN_DEFAULT && taq.address == address
+          taq.amount -= fee
+        end
+        taq
+      end
+    end
+
+    def self.increment_recipient(items : Array(TokenAddressQuantity), token : String, address : String, amount : Int64) : Array(TokenAddressQuantity)
+      items.map do |taq|
+        if taq.token == token && taq.address == address
+          taq.amount += amount
+          taq
+        else
+          taq
+        end
+      end
+    end
+  end
+
   class UTXO < DApp
     DEFAULT = "SUSHI"
 
-    @utxo_internal : Array(Hash(String, Hash(String, Int64))) = Array(Hash(String, Hash(String, Int64))).new
+    @utxo_internal : Array(TokenQuantity) = [] of TokenQuantity
 
     def setup
     end
 
-    def get_for(address : String, utxo : Array(Hash(String, Hash(String, Int64))), token : String) : Int64
-      utxo.each do |u|
-        return u[token][address] if u[token]? && u[token][address]?
-      end
-
-      0_i64
+    def get_for(address : String, utxo : Array(TokenQuantity), token : String) : Int64
+      TokenQuantity.find_amount(utxo, token, address)
     end
 
     def get(address : String, token : String, confirmation : Int32) : Int64
@@ -37,7 +137,7 @@ module ::Sushi::Core::DApps::BuildIn
       utxo_transactions = calculate_for_transactions(transactions)
 
       utxo_pending = get_for(address, @utxo_internal.reverse, token)
-      utxo_pending += utxo_transactions[token][address] if utxo_transactions[token]? && utxo_transactions[token][address]?
+      utxo_pending += TokenQuantity.find_amount(utxo_transactions, token, address)
       utxo_pending
     end
 
@@ -71,71 +171,111 @@ module ::Sushi::Core::DApps::BuildIn
       end
 
       if amount_default + amount_default_as_recipients - pay_default < 0
-          raise "Unable to send #{scale_decimal(pay_default)} to recipient because you do not have enough. Current tokens: #{scale_decimal(amount_default)} + #{scale_decimal(amount_default_as_recipients)}"
+        raise "Unable to send #{scale_decimal(pay_default)} to recipient because you do not have enough. Current tokens: #{scale_decimal(amount_default)} + #{scale_decimal(amount_default_as_recipients)}"
       end
 
       true
     end
 
-    def calculate_for_transaction(transaction : Transaction) : Hash(String, Hash(String, Int64))
-      utxo = Hash(String, Hash(String, Int64)).new
-      utxo[transaction.token] = Hash(String, Int64).new
-      utxo[DEFAULT] ||= Hash(String, Int64).new
+    # def calculate_for_transaction(transaction : Transaction) : Hash(String, Hash(String, Int64))
+    #   utxo = Hash(String, Hash(String, Int64)).new
+    #   utxo[transaction.token] = Hash(String, Int64).new
+    #   utxo[DEFAULT] ||= Hash(String, Int64).new
+    #
+    #   transaction.senders.each do |sender|
+    #     utxo[transaction.token][sender[:address]] ||= 0_i64
+    #     # puts "#{transaction.token}/#{sender[:address]} -> #{utxo[transaction.token][sender[:address]]}"
+    #     utxo[transaction.token][sender[:address]] -= sender[:amount]
+    #     # puts "#{transaction.token}/#{sender[:address]} -> #{utxo[transaction.token][sender[:address]]}"
+    #     # p utxo[transaction.token][sender[:address]]
+    #
+    #     # puts "#{DEFAULT}/#{sender[:address]} -> #{utxo[DEFAULT][sender[:address]]}"
+    #     utxo[DEFAULT][sender[:address]] ||= 0_i64
+    #     utxo[DEFAULT][sender[:address]] -= sender[:fee]
+    #   end
+    #
+    #   transaction.recipients.each do |recipient|
+    #     utxo[transaction.token][recipient[:address]] ||= 0_i64
+    #     utxo[transaction.token][recipient[:address]] += recipient[:amount]
+    #   end
+    #
+    #   utxo
+    # end
 
-      transaction.senders.each do |sender|
-        utxo[transaction.token][sender[:address]] ||= 0_i64
-        utxo[transaction.token][sender[:address]] -= sender[:amount]
-        utxo[DEFAULT][sender[:address]] ||= 0_i64
-        utxo[DEFAULT][sender[:address]] -= sender[:fee]
-      end
+    def calculate_for_transactions(transactions : Array(Transaction)) : Array(TokenQuantity)
+      unique_tokens = transactions.map { |txn| txn.token }.uniq
+      unique_addresses = transactions.flat_map { |txn| txn.senders.map { |s| s[:address] } + txn.recipients.map { |r| r[:address] } }.uniq
+      token_addresses = unique_addresses.flat_map { |address| unique_tokens.flat_map { |token| TokenAddressQuantity.new(token, address) } }
 
-      transaction.recipients.each do |recipient|
-        utxo[transaction.token][recipient[:address]] ||= 0_i64
-        utxo[transaction.token][recipient[:address]] += recipient[:amount]
-      end
-
-      utxo
-    end
-
-    def calculate_for_transactions(transactions : Array(Transaction)) : Hash(String, Hash(String, Int64))
-      utxo = Hash(String, Hash(String, Int64)).new
-
-      transactions.each_with_index do |transaction, _|
-        utxo_transaction = calculate_for_transaction(transaction)
-        utxo_transaction.each do |token, address_amount|
-          utxo[token] ||= Hash(String, Int64).new
-
-          address_amount.each do |address, amount|
-            utxo[token][address] ||= 0_i64
-            utxo[token][address] += amount
-          end
+      transactions.each do |transaction|
+        transaction.senders.each do |sender|
+          token_addresses = TokenAddressQuantity.decrement_sender(token_addresses, transaction.token, sender[:address], sender[:amount], sender[:fee])
+        end
+        transaction.recipients.each do |recipient|
+          token_addresses = TokenAddressQuantity.increment_recipient(token_addresses, transaction.token, recipient[:address], recipient[:amount])
         end
       end
 
-      utxo
+      unique_tokens.map do |token|
+        GroupBy.new(token, token_addresses.select { |taq| taq.token == token })
+      end.map do |group|
+        TokenQuantity.new(group.label, group.items.map { |taq| AddressQuantity.new(taq.address, taq.amount) })
+      end
     end
 
+    # def calculate_for_transactions(transactions : Array(Transaction)) : Hash(String, Hash(String, Int64))
+    #   utxo = Hash(String, Hash(String, Int64)).new
+    #
+    #   transactions.each_with_index do |transaction, _|
+    #     utxo_transaction = calculate_for_transaction(transaction)
+    #     utxo_transaction.each do |token, address_amount|
+    #       utxo[token] ||= Hash(String, Int64).new
+    #
+    #       address_amount.each do |address, amount|
+    #         utxo[token][address] ||= 0_i64
+    #         utxo[token][address] += amount
+    #       end
+    #     end
+    #   end
+    #
+    #   utxo
+    # end
+
+    # def create_token(address : String, amount : Int64, token : String)
+    #   @utxo_internal[-1][token] ||= Hash(String, Int64).new
+    #   @utxo_internal[-1][token][address] = amount
+    # end
+
     def create_token(address : String, amount : Int64, token : String)
-      @utxo_internal[-1][token] ||= Hash(String, Int64).new
-      @utxo_internal[-1][token][address] = amount
+      @utxo_internal << TokenQuantity.new(token, [AddressQuantity.new(address, amount)])
     end
 
     def record(chain : Blockchain::Chain)
       return if @utxo_internal.size >= chain.size
 
       chain[@utxo_internal.size..-1].each do |block|
-        @utxo_internal.push(Hash(String, Hash(String, Int64)).new)
-
-        utxo_block = calculate_for_transactions(block.transactions)
-        utxo_block.each do |token, utxo|
-          utxo.each do |address, amount|
-            @utxo_internal[-1][token] ||= Hash(String, Int64).new
-            @utxo_internal[-1][token][address] ||= get_pending(address, [] of Transaction, token)
-            @utxo_internal[-1][token][address] = @utxo_internal[-1][token][address] + amount
-          end
+        calculate_for_transactions(block.transactions).each do |tq|
+          @utxo_internal << tq
         end
       end
     end
+
+    # def record(chain : Blockchain::Chain)
+    #   return if @utxo_internal.size >= chain.size
+    #
+    #   chain[@utxo_internal.size..-1].each do |block|
+    #     @utxo_internal.push(Hash(String, Hash(String, Int64)).new)
+    #
+    #     utxo_block = calculate_for_transactions(block.transactions)
+    #     utxo_block.each do |token, utxo|
+    #       utxo.each do |address, amount|
+    #         @utxo_internal[-1][token] ||= Hash(String, Int64).new
+    #         @utxo_internal[-1][token][address] ||= get_pending(address, [] of Transaction, token)
+    #         @utxo_internal[-1][token][address] = @utxo_internal[-1][token][address] + amount
+    #       end
+    #     end
+    #   end
+    # end
 
     def clear
       @utxo_internal.clear
