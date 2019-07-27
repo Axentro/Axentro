@@ -303,7 +303,8 @@ module ::Sushi::Core
       debug "entered align_transactions with embedded_transactions size: #{embedded_transactions.size}"
       embedded_transactions.each do |t|
         t.prev_hash = aligned_transactions[-1].to_hash
-        t.valid_as_embedded?(self, aligned_transactions)
+        #commented out for e2e experiment - JJF
+        #t.valid_as_embedded?(self, aligned_transactions)
 
         aligned_transactions << t
       rescue e : Exception

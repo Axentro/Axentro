@@ -82,6 +82,12 @@ module ::Sushi::Core::DApps::BuildIn
       utxo[transaction.token] = Hash(String, Int64).new
       utxo[DEFAULT] ||= Hash(String, Int64).new
 
+      #transaction.senders.each do |sender|
+      #  token_address = utxo[transaction.token][sender[:address]] ||= 0_i64
+      #  token_address = token_address - sender[:amount]
+      #  deault_address = utxo[DEFAULT][sender[:address]] ||= 0_i64
+      #  deault_address = deault_address - sender[:fee]
+      #end
       transaction.senders.each do |sender|
         utxo[transaction.token][sender[:address]] ||= 0_i64
         utxo[transaction.token][sender[:address]] -= sender[:amount]

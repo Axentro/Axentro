@@ -288,13 +288,13 @@ module ::Sushi::Core
     def broadcast_block(socket : HTTP::WebSocket, block : Block, from : Chord::NodeContext? = nil)
       if @blockchain.latest_index + 1 == block.index
         debug "new block coming: #{light_cyan(@blockchain.chain.size)}"
+        debug "sending new block on to peer"
+        send_block(block, from)
 
         if _block = @blockchain.valid_block?(block)
           new_block(_block)
           @miners_manager.forget_most_difficult
         end
-
-        send_block(block, from)
       elsif @blockchain.latest_index == block.index
         warning "blockchain conflicted at #{block.index} (#{light_cyan(@blockchain.chain.size)})"
 

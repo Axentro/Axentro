@@ -99,11 +99,12 @@ module ::Sushi::Core
       t = TransactionPool.find(transaction) || transaction
       t.valid_common?
 
-      if idx == 0
-        t.valid_as_coinbase?(blockchain, @index, transactions[1..-1])
-      else
-        t.valid_as_embedded?(blockchain, transactions[0..idx - 1])
-      end
+      # commented out for e2e experiment - JJF
+      #if idx == 0
+      #  t.valid_as_coinbase?(blockchain, @index, transactions[1..-1])
+      #else
+      #  t.valid_as_embedded?(blockchain, transactions[0..idx - 1])
+      #end
     end
 
     def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool) : Bool
