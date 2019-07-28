@@ -266,13 +266,16 @@ module ::Sushi::Core
     end
 
     def send_block(block : Block, from : Chord::NodeContext? = nil)
+      debug "entering send_block"
       content = if from.nil? || (!from.nil? && from[:is_private])
                   {block: block, from: @chord.context}
                 else
                   {block: block, from: from}
                 end
 
+      debug "before send_on_chord"
       send_on_chord(M_TYPE_NODE_BROADCAST_BLOCK, content, from)
+      debug "after send_on_chord.. exiting send_block"
     end
 
     def send_client_content(content : String, from : Chord::NodeContext? = nil)
@@ -290,10 +293,11 @@ module ::Sushi::Core
         debug "new block coming: #{light_cyan(@blockchain.chain.size)}"
         debug "sending new block on to peer"
         send_block(block, from)
-
+        debug "finished sending new block on to peer"
         if _block = @blockchain.valid_block?(block)
-          new_block(_block)
           @miners_manager.forget_most_difficult
+          debug "about to create the new block locally"
+          new_block(_block)
         end
       elsif @blockchain.latest_index == block.index
         warning "blockchain conflicted at #{block.index} (#{light_cyan(@blockchain.chain.size)})"

@@ -28,11 +28,13 @@ module ::Sushi::Core::NodeComponents
     alias Miners = Array(Miner)
 
     @most_difficult_block_so_far : Block
+    @block_start_time : Int64
 
     getter miners : Miners = Miners.new
 
     def initialize(@blockchain : Blockchain)
       @highest_difficulty_mined_so_far = 0
+      @block_start_time = __timestamp
       @most_difficult_block_so_far = @blockchain.genesis_block
     end
 
@@ -128,7 +130,7 @@ module ::Sushi::Core::NodeComponents
           else
             debug "This block was not the most difficult recorded, miner still gets credit for sending the nonce"
           end
-          if mined_timestamp > block.timestamp + (Consensus::POW_TARGET_SPACING * 0.90).to_i32
+          if mined_timestamp > @block_start_time + (Consensus::POW_TARGET_SPACING * 0.90).to_i32
             if @highest_difficulty_mined_so_far > 0
               debug "Time has expired ... the block with the most difficult nonce recorded so far will be minted: #{@highest_difficulty_mined_so_far}"
               @most_difficult_block_so_far.to_s
@@ -142,9 +144,10 @@ module ::Sushi::Core::NodeComponents
     end
 
     def mint_block(block : Block)
+      @highest_difficulty_mined_so_far = 0
+      @block_start_time = __timestamp
       node.new_block(block)
       node.send_block(block)
-      @highest_difficulty_mined_so_far = 0
       clear_nonces
     end
 
@@ -157,6 +160,7 @@ module ::Sushi::Core::NodeComponents
     def forget_most_difficult
       debug "Forgetting most difficult"
       @highest_difficulty_mined_so_far = 0
+      @block_start_time = __timestamp
     end
 
     def broadcast
