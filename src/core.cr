@@ -30,6 +30,7 @@ require "openssl/digest"
 require "humanhash"
 require "crystal-argon2"
 require "crystal-ecdsa"
+require "radix"
 
 require "./common"
 require "./core/modules"

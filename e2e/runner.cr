@@ -34,7 +34,7 @@ module ::E2E
     getter exit_code : Int32 = 0
 
     def initialize(@mode : Int32, @num_nodes : Int32, @num_miners : Int32, @time : Int32)
-      @node_ports = (4000..4000 + (@num_nodes - 1)).to_a
+      @node_ports = (4001..4001 + (@num_nodes - 1)).to_a
 
       Client.initialize(@node_ports, @num_miners)
 
@@ -205,7 +205,7 @@ module ::E2E
       STDERR.puts
       STDERR.puts "verifying: #{green("blockchain can be restored from database")}"
 
-      size0 = blockchain_size(4000)
+      size0 = blockchain_size(4001)
 
       step create_wallet(100), 0, ""
       step launch_node(5000, true, nil, 100, @db_name), 10, ""

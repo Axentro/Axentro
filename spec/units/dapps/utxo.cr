@@ -231,31 +231,31 @@ describe UTXO do
     end
   end
 
-  describe "#calculate_for_transaction" do
-    it "should return the utxo for a transaction with default token" do
-      with_factory do |block_factory, transaction_factory|
-        transaction = transaction_factory.make_send(200_i64)
-        chain = block_factory.add_block.chain
-        utxo = UTXO.new(block_factory.blockchain)
-        utxo.record(chain)
-        expected = {TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -10200_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64}}
-        utxo.calculate_for_transaction(transaction).should eq(expected)
-      end
-    end
-
-    it "should return the utxo for a transaction with custom token" do
-      with_factory do |block_factory, transaction_factory|
-        transaction = transaction_factory.make_send(200_i64, "KINGS")
-        chain = block_factory.add_block.chain
-        utxo = UTXO.new(block_factory.blockchain)
-        utxo.record(chain)
-        expected = {"KINGS"       => {"#{transaction_factory.sender_wallet.address}" => -200_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64},
-                    TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -10000_i64},
-        }
-        utxo.calculate_for_transaction(transaction).should eq(expected)
-      end
-    end
-  end
+  # describe "#calculate_for_transaction" do
+  #   it "should return the utxo for a transaction with default token" do
+  #     with_factory do |block_factory, transaction_factory|
+  #       transaction = transaction_factory.make_send(200_i64)
+  #       chain = block_factory.add_block.chain
+  #       utxo = UTXO.new(block_factory.blockchain)
+  #       utxo.record(chain)
+  #       expected = {TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -10200_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64}}
+  #       utxo.calculate_for_transaction(transaction).should eq(expected)
+  #     end
+  #   end
+  #
+  #   it "should return the utxo for a transaction with custom token" do
+  #     with_factory do |block_factory, transaction_factory|
+  #       transaction = transaction_factory.make_send(200_i64, "KINGS")
+  #       chain = block_factory.add_block.chain
+  #       utxo = UTXO.new(block_factory.blockchain)
+  #       utxo.record(chain)
+  #       expected = {"KINGS"       => {"#{transaction_factory.sender_wallet.address}" => -200_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64},
+  #                   TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -10000_i64},
+  #       }
+  #       utxo.calculate_for_transaction(transaction).should eq(expected)
+  #     end
+  #   end
+  # end
 
   describe "#calculate_for_transactions" do
     it "should return utxo for transactions with mixed tokens" do
