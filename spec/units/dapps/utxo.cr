@@ -273,16 +273,16 @@ describe UTXO do
   end
 
   describe "#create_token" do
-    # it "should create a custom token" do
-    #   with_factory do |block_factory, transaction_factory|
-    #     chain = block_factory.add_block.chain
-    #     utxo = UTXO.new(block_factory.blockchain)
-    #     utxo.record(chain)
-    #     utxo.@utxo_internal.reject(&.empty?).flat_map { |t| t.keys }.should eq([TOKEN_DEFAULT])
-    #     utxo.create_token(transaction_factory.sender_wallet.address, 1200_i64, "KINGS")
-    #     utxo.@utxo_internal.reject(&.empty?).flat_map { |t| t.keys }.should eq([TOKEN_DEFAULT, "KINGS"])
-    #   end
-    # end
+    it "should create a custom token" do
+      with_factory do |block_factory, transaction_factory|
+        chain = block_factory.add_block.chain
+        utxo = UTXO.new(block_factory.blockchain)
+        utxo.record(chain)
+        utxo.@utxo_internal.reject(&.empty?).flat_map { |t| t.keys }.should eq([TOKEN_DEFAULT])
+        utxo.create_token(transaction_factory.sender_wallet.address, 1200_i64, "KINGS")
+        utxo.@utxo_internal.reject(&.empty?).flat_map { |t| t.keys }.should eq([TOKEN_DEFAULT, "KINGS"])
+      end
+    end
   end
 
   describe "#clear" do
