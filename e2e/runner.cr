@@ -313,7 +313,10 @@ module ::E2E
       step assertion!, 0, "start assertion"
     rescue e : Exception
       STDERR.puts "-> FAILED!"
-      STDERR.puts "   the reason: #{e.message}"
+      safe_error_message = e.message
+      if safe_error_message
+        STDERR.puts "   the reason: #{safe_error_message[0,200]}"
+      end
 
       @exit_code = -1
     ensure

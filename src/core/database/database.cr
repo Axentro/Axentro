@@ -9,6 +9,7 @@
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
+require "../blockchain/*"
 
 module ::Sushi::Core
   class Database
@@ -25,6 +26,7 @@ module ::Sushi::Core
       index = block.index
       json = block.to_json
 
+      debug "inserting block into database with size: #{json.size}"
       @db.exec "insert into blocks values (?, ?)", [index.to_i64, json]
     end
 
@@ -67,5 +69,7 @@ module ::Sushi::Core
 
       idx || -1_i64
     end
+
+    include Logger
   end
 end

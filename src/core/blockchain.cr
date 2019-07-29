@@ -124,11 +124,12 @@ module ::Sushi::Core
         database.push_block(block)
       end
 
+      debug "in node.push_block, before dapps_record"
       dapps_record
-
+      debug "after dapps record, before clean transactions"
       clean_transactions
 
-      debug "calling refresh_mining_block in push_block"
+      debug "after clean_transactions, now calling refresh_mining_block in push_block"
       refresh_mining_block(block_difficulty(self))
 
       block
@@ -303,8 +304,7 @@ module ::Sushi::Core
       debug "entered align_transactions with embedded_transactions size: #{embedded_transactions.size}"
       embedded_transactions.each do |t|
         t.prev_hash = aligned_transactions[-1].to_hash
-        #commented out for e2e experiment - JJF
-        #t.valid_as_embedded?(self, aligned_transactions)
+        t.valid_as_embedded?(self, aligned_transactions)
 
         aligned_transactions << t
       rescue e : Exception
