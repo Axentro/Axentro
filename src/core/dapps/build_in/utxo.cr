@@ -27,36 +27,11 @@ module ::Sushi::Core::DApps::BuildIn
         tq.quantities.select { |aq| aq.address == address }.reduce(0) { |acc, aq| acc + aq.quantity }
       end.sum.to_i64
     end
-
-    def self.upsert(tokens : Array(TokenQuantity), token : String, address : String, amount : Int64)
-      _tokens = tokens.select { |tq| tq.name == token }
-      if _tokens.empty?
-        tokens << TokenQuantity.new(token, [AddressQuantity.new(address, amount)])
-      else
-        tokens = tokens.map do |tq|
-          if tq.name == token
-            _addresses = tq.quantities.select { |aq| aq.address == address }
-            if _addresses.empty?
-              tq.quantities << AddressQuantity.new(address, amount)
-            else
-              tq.quantities = tq.quantities.map do |aq|
-                if aq.address == address
-                  aq.amount += amount
-                end
-                aq
-              end
-            end
-          end
-          tq
-        end
-      end
-      tokens
-    end
   end
 
   class AddressQuantity
     getter address : String
-    getter quantity : Int64
+    property quantity : Int64
 
     def initialize(@address : String, @quantity : Int64)
     end
@@ -254,10 +229,22 @@ module ::Sushi::Core::DApps::BuildIn
       return if @utxo_internal.size >= chain.size
 
       chain[@utxo_internal.size..-1].each do |block|
+        @utxo_internal << TokenQuantity.new(DEFAULT, [] of AddressQuantity) if block.transactions.empty?
+
         calculate_for_transactions(block.transactions).each do |tq|
-          @utxo_internal << tq
+          updated_quantities = tq.quantities.map do |aq|
+            aq.quantity += calculate_updated_address_amount(aq.address)
+            aq
+          end
+          @utxo_internal << TokenQuantity.new(tq.name, updated_quantities)
         end
       end
+    end
+
+    private def calculate_updated_address_amount(address : String)
+      @utxo_internal.select { |t| t.quantities.map { |a| a.address }.includes?(address) }.flat_map do |t|
+        t.quantities.map { |a| a.quantity }
+      end.reduce(0_i64) { |a, b| a + b }
     end
 
     # def record(chain : Blockchain::Chain)

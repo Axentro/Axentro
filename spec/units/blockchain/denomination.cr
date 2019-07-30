@@ -24,5 +24,9 @@ describe Sushi::Common::Denomination do
 
   it "should convert an Int64 value into a scaled string" do
     scale_decimal(10000.to_i64).should eq("0.0001")
+    p scale_decimal(50462650.to_i64)
+    p scale_decimal(100925300.to_i64)
+    p scale_decimal(151387950.to_i64)
+    p scale_decimal(201850600.to_i64)
   end
 end
