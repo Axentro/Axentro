@@ -33,7 +33,20 @@ describe Blockchain do
       puts Benchmark.measure {
         block_factory.blockchain.align_transactions(coinbase_transaction, 1)
       }
+    end
+  end
 
+  it "clean transactions" do
+    with_factory do |block_factory, transaction_factory|
+      transaction_total = 10
+      transactions = (1..transaction_total).to_a.map{|n| transaction_factory.make_send(n.to_i64) }
+
+      block_factory.add_block(transactions)
+      block_factory.blockchain.pending_transactions.size.should eq(transaction_total)
+
+      puts Benchmark.measure {
+        block_factory.blockchain.clean_transactions
+      }
     end
   end
 end

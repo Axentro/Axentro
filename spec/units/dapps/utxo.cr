@@ -21,7 +21,7 @@ include Sushi::Core::Controllers
 describe UTXO do
   describe "#get_for" do
     it "should get the amount for the supplied token and address" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         chain = block_factory.add_blocks(10).chain
         utxo = UTXO.new(block_factory.blockchain)
         utxo.record(chain)
@@ -37,14 +37,10 @@ describe UTXO do
         sender_wallet_1 = Wallet.from_json(Wallet.create(true).to_json)
         sender_wallet_2 = Wallet.from_json(Wallet.create(true).to_json)
         sender_wallet_3 = Wallet.from_json(Wallet.create(true).to_json)
-        sender_wallet_4 = Wallet.from_json(Wallet.create(true).to_json)
-        sender_wallet_5 = Wallet.from_json(Wallet.create(true).to_json)
 
         recipient_wallet_1 = Wallet.from_json(Wallet.create(true).to_json)
         recipient_wallet_2 = Wallet.from_json(Wallet.create(true).to_json)
         recipient_wallet_3 = Wallet.from_json(Wallet.create(true).to_json)
-        recipient_wallet_4 = Wallet.from_json(Wallet.create(true).to_json)
-        recipient_wallet_5 = Wallet.from_json(Wallet.create(true).to_json)
 
         transactions1 = [
           transaction_factory.make_send(1, "SUSHI", sender_wallet_1, recipient_wallet_1),
