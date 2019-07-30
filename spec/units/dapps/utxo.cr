@@ -27,7 +27,6 @@ describe UTXO do
         utxo.record(chain)
         address = chain[1].transactions.first.recipients.first[:address]
 
-        pp utxo.@utxo_internal
         utxo.get_for(address, utxo.@utxo_internal.reverse, "SUSHI").should eq(504626500_i64)
       end
     end
@@ -83,7 +82,7 @@ describe UTXO do
         utxo[0].should eq(TokenQuantity.new("SUSHI", [] of AddressQuantity))
         utxo[1].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 50462650_i64)]))
         utxo[2].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 100925300_i64)]))
-        utxo[3].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 201850600_i64)]))
+        utxo[3].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 151387950_i64)]))
         utxo[4].should eq(TokenQuantity.new("KINGS", [AddressQuantity.new(sender_wallet_1.address, 100000_i64)]))
         utxo[5].should eq(TokenQuantity.new("FOO", [AddressQuantity.new(sender_wallet_3.address, 100000_i64)]))
       end
@@ -331,16 +330,16 @@ describe UTXO do
   end
 
   describe "#create_token" do
-    # it "should create a custom token" do
-    #   with_factory do |block_factory, transaction_factory|
-    #     chain = block_factory.add_block.chain
-    #     utxo = UTXO.new(block_factory.blockchain)
-    #     utxo.record(chain)
-    #     utxo.@utxo_internal.reject(&.empty?).flat_map { |t| t.keys }.should eq([TOKEN_DEFAULT])
-    #     utxo.create_token(transaction_factory.sender_wallet.address, 1200_i64, "KINGS")
-    #     utxo.@utxo_internal.reject(&.empty?).flat_map { |t| t.keys }.should eq([TOKEN_DEFAULT, "KINGS"])
-    #   end
-    # end
+    it "should create a custom token" do
+      with_factory do |block_factory, transaction_factory|
+        chain = block_factory.add_block.chain
+        utxo = UTXO.new(block_factory.blockchain)
+        utxo.record(chain)
+        utxo.@utxo_internal.map{|tq| tq.name }.uniq.should eq([TOKEN_DEFAULT])
+        utxo.create_token(transaction_factory.sender_wallet.address, 1200_i64, "KINGS")
+        utxo.@utxo_internal.map{|tq| tq.name }.uniq.should eq([TOKEN_DEFAULT, "KINGS"])
+      end
+    end
   end
 
   describe "#clear" do

@@ -29,7 +29,6 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def self.find_last_amount(utxo : Array(TokenQuantity), token : String, address : String)
-      pp utxo
       utxo.each do |tq|
         if tq.name == token && !tq.quantities.empty?
           result = tq.quantities.find{|aq| aq.address == address}
@@ -165,31 +164,6 @@ module ::Sushi::Core::DApps::BuildIn
       true
     end
 
-    # def calculate_for_transaction(transaction : Transaction) : Hash(String, Hash(String, Int64))
-    #   utxo = Hash(String, Hash(String, Int64)).new
-    #   utxo[transaction.token] = Hash(String, Int64).new
-    #   utxo[DEFAULT] ||= Hash(String, Int64).new
-    #
-    #   transaction.senders.each do |sender|
-    #     utxo[transaction.token][sender[:address]] ||= 0_i64
-    #     # puts "#{transaction.token}/#{sender[:address]} -> #{utxo[transaction.token][sender[:address]]}"
-    #     utxo[transaction.token][sender[:address]] -= sender[:amount]
-    #     # puts "#{transaction.token}/#{sender[:address]} -> #{utxo[transaction.token][sender[:address]]}"
-    #     # p utxo[transaction.token][sender[:address]]
-    #
-    #     # puts "#{DEFAULT}/#{sender[:address]} -> #{utxo[DEFAULT][sender[:address]]}"
-    #     utxo[DEFAULT][sender[:address]] ||= 0_i64
-    #     utxo[DEFAULT][sender[:address]] -= sender[:fee]
-    #   end
-    #
-    #   transaction.recipients.each do |recipient|
-    #     utxo[transaction.token][recipient[:address]] ||= 0_i64
-    #     utxo[transaction.token][recipient[:address]] += recipient[:amount]
-    #   end
-    #
-    #   utxo
-    # end
-
     def calculate_for_transactions(transactions : Array(Transaction)) : Array(TokenQuantity)
       unique_tokens = transactions.map { |txn| txn.token }.uniq
       unique_addresses = transactions.flat_map { |txn| txn.senders.map { |s| s[:address] } + txn.recipients.map { |r| r[:address] } }.uniq
@@ -246,18 +220,12 @@ module ::Sushi::Core::DApps::BuildIn
 
         calculate_for_transactions(block.transactions).each do |tq|
           updated_quantities = tq.quantities.map do |aq|
-            aq.quantity += calculate_updated_address_amount(aq.address)
+            aq.quantity += TokenQuantity.find_last_amount(@utxo_internal.reverse, tq.name, aq.address)
             aq
           end
           @utxo_internal << TokenQuantity.new(tq.name, updated_quantities)
         end
       end
-    end
-
-    private def calculate_updated_address_amount(address : String)
-      @utxo_internal.select { |t| t.quantities.map { |a| a.address }.includes?(address) }.flat_map do |t|
-        t.quantities.map { |a| a.quantity }
-      end.reduce(0_i64) { |a, b| a + b }
     end
 
     # def record(chain : Blockchain::Chain)
