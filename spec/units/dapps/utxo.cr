@@ -19,6 +19,19 @@ include Sushi::Core::DApps::BuildIn
 include Sushi::Core::Controllers
 
 describe UTXO do
+  describe "#get_for" do
+    it "should get the amount for the supplied token and address" do
+      with_factory do |block_factory, transaction_factory|
+        chain = block_factory.add_blocks(10).chain
+        utxo = UTXO.new(block_factory.blockchain)
+        utxo.record(chain)
+        address = chain[1].transactions.first.recipients.first[:address]
+
+        pp utxo.@utxo_internal
+        utxo.get_for(address, utxo.@utxo_internal.reverse, "SUSHI").should eq(504626500_i64)
+      end
+    end
+  end
   describe "#record" do
     it "should record" do
       with_factory do |block_factory, transaction_factory|

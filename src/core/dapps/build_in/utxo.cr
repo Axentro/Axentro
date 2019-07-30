@@ -27,6 +27,19 @@ module ::Sushi::Core::DApps::BuildIn
         tq.quantities.select { |aq| aq.address == address }.reduce(0) { |acc, aq| acc + aq.quantity }
       end.sum.to_i64
     end
+
+    def self.find_last_amount(utxo : Array(TokenQuantity), token : String, address : String)
+      pp utxo
+      utxo.each do |tq|
+        if tq.name == token && !tq.quantities.empty?
+          result = tq.quantities.find{|aq| aq.address == address}
+          if !result.nil?
+            return result.quantity
+          end
+        end
+      end
+      0_i64
+    end
   end
 
   class AddressQuantity
@@ -99,7 +112,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def get_for(address : String, utxo : Array(TokenQuantity), token : String) : Int64
-      TokenQuantity.find_amount(utxo, token, address)
+      TokenQuantity.find_last_amount(utxo, token, address)
     end
 
     def get(address : String, token : String, confirmation : Int32) : Int64
