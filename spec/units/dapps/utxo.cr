@@ -19,6 +19,71 @@ include Sushi::Core::DApps::BuildIn
 include Sushi::Core::Controllers
 
 describe UTXO do
+  describe "#get_for" do
+    it "should get the amount for the supplied token and address" do
+      with_factory do |block_factory, _|
+        chain = block_factory.add_blocks(10).chain
+        utxo = UTXO.new(block_factory.blockchain)
+        utxo.record(chain)
+        address = chain[1].transactions.first.recipients.first[:address]
+
+        utxo.get_for(address, utxo.@utxo_internal.reverse, "SUSHI").should eq(504626500_i64)
+      end
+    end
+  end
+  describe "#record" do
+    it "should record" do
+      with_factory do |block_factory, transaction_factory|
+        sender_wallet_1 = Wallet.from_json(Wallet.create(true).to_json)
+        sender_wallet_2 = Wallet.from_json(Wallet.create(true).to_json)
+        sender_wallet_3 = Wallet.from_json(Wallet.create(true).to_json)
+
+        recipient_wallet_1 = Wallet.from_json(Wallet.create(true).to_json)
+        recipient_wallet_2 = Wallet.from_json(Wallet.create(true).to_json)
+        recipient_wallet_3 = Wallet.from_json(Wallet.create(true).to_json)
+
+        transactions1 = [
+          transaction_factory.make_send(1, "SUSHI", sender_wallet_1, recipient_wallet_1),
+          transaction_factory.make_send(1, "SUSHI", sender_wallet_2, recipient_wallet_2),
+        ]
+
+        transactions2 = [
+          transaction_factory.make_send(1, "SUSHI", sender_wallet_1, recipient_wallet_1),
+          transaction_factory.make_send(1, "SUSHI", sender_wallet_2, recipient_wallet_2),
+        ]
+
+        transactions3 = [
+          transaction_factory.make_send(1, "KINGS", sender_wallet_1, recipient_wallet_1),
+          transaction_factory.make_send(1, "KINGS", sender_wallet_2, recipient_wallet_2),
+          transaction_factory.make_send(1, "FOO", sender_wallet_3, recipient_wallet_3),
+        ]
+
+        blockchain = block_factory.add_block.blockchain
+        utxo = UTXO.new(blockchain)
+
+        chain1 = block_factory.add_block(transactions1).chain
+        utxo.record(chain1)
+
+        chain2 = block_factory.add_block(transactions2).chain
+        utxo.record(chain2)
+
+        utxo.create_token(sender_wallet_1.address, 100000_i64, "KINGS")
+        utxo.create_token(sender_wallet_3.address, 100000_i64, "FOO")
+
+        chain3 = block_factory.add_block(transactions3).chain
+        utxo.record(chain3)
+
+        utxo = utxo.@utxo_internal
+        utxo.size.should eq(6)
+        utxo[0].should eq(TokenQuantity.new("SUSHI", [] of AddressQuantity))
+        utxo[1].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 50462650_i64)]))
+        utxo[2].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 100925300_i64)]))
+        utxo[3].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 151387950_i64)]))
+        utxo[4].should eq(TokenQuantity.new("KINGS", [AddressQuantity.new(sender_wallet_1.address, 100000_i64)]))
+        utxo[5].should eq(TokenQuantity.new("FOO", [AddressQuantity.new(sender_wallet_3.address, 100000_i64)]))
+      end
+    end
+  end
   describe "#get" do
     it "should return 0 when the number of blocks is less than confirmations" do
       with_factory do |block_factory, _|
@@ -231,32 +296,6 @@ describe UTXO do
     end
   end
 
-  # describe "#calculate_for_transaction" do
-  #   it "should return the utxo for a transaction with default token" do
-  #     with_factory do |block_factory, transaction_factory|
-  #       transaction = transaction_factory.make_send(200_i64)
-  #       chain = block_factory.add_block.chain
-  #       utxo = UTXO.new(block_factory.blockchain)
-  #       utxo.record(chain)
-  #       expected = {TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -10200_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64}}
-  #       utxo.calculate_for_transaction(transaction).should eq(expected)
-  #     end
-  #   end
-  #
-  #   it "should return the utxo for a transaction with custom token" do
-  #     with_factory do |block_factory, transaction_factory|
-  #       transaction = transaction_factory.make_send(200_i64, "KINGS")
-  #       chain = block_factory.add_block.chain
-  #       utxo = UTXO.new(block_factory.blockchain)
-  #       utxo.record(chain)
-  #       expected = {"KINGS"       => {"#{transaction_factory.sender_wallet.address}" => -200_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64},
-  #                   TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -10000_i64},
-  #       }
-  #       utxo.calculate_for_transaction(transaction).should eq(expected)
-  #     end
-  #   end
-  # end
-
   describe "#calculate_for_transactions" do
     it "should return utxo for transactions with mixed tokens" do
       with_factory do |block_factory, transaction_factory|
@@ -265,9 +304,23 @@ describe UTXO do
         chain = block_factory.add_block.chain
         utxo = UTXO.new(block_factory.blockchain)
         utxo.record(chain)
-        expected = {"KINGS"       => {"#{transaction_factory.sender_wallet.address}" => -100_i64, "#{transaction_factory.recipient_wallet.address}" => 100_i64},
-                    TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -20200_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64}}
-        utxo.calculate_for_transactions([transaction1, transaction2]).should eq(expected)
+
+        expected1 =
+          TokenQuantity.new(
+            "KINGS",
+            [AddressQuantity.new(transaction_factory.sender_wallet.address, -100_i64),
+             AddressQuantity.new(transaction_factory.recipient_wallet.address, 100_i64)]
+          )
+
+        expected2 = TokenQuantity.new(
+          TOKEN_DEFAULT,
+          [AddressQuantity.new(transaction_factory.sender_wallet.address, -20200_i64),
+           AddressQuantity.new(transaction_factory.recipient_wallet.address, 200_i64)]
+        )
+
+        result = utxo.calculate_for_transactions([transaction1, transaction2])
+        result.first.should eq(expected1)
+        result.last.should eq(expected2)
       end
     end
   end
@@ -278,9 +331,9 @@ describe UTXO do
         chain = block_factory.add_block.chain
         utxo = UTXO.new(block_factory.blockchain)
         utxo.record(chain)
-        utxo.@utxo_internal.reject(&.empty?).flat_map { |t| t.keys }.should eq([TOKEN_DEFAULT])
+        utxo.@utxo_internal.map{|tq| tq.name }.uniq.should eq([TOKEN_DEFAULT])
         utxo.create_token(transaction_factory.sender_wallet.address, 1200_i64, "KINGS")
-        utxo.@utxo_internal.reject(&.empty?).flat_map { |t| t.keys }.should eq([TOKEN_DEFAULT, "KINGS"])
+        utxo.@utxo_internal.map{|tq| tq.name }.uniq.should eq([TOKEN_DEFAULT, "KINGS"])
       end
     end
   end

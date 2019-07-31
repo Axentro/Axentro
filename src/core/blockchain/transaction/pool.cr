@@ -37,6 +37,7 @@ module ::Sushi::Core
 
     def add(transaction : Transaction)
       if @locked
+        puts "LOCKED"
         @pool_locked << transaction
       else
         insert(transaction)

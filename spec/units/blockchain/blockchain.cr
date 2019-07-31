@@ -23,7 +23,7 @@ include Sushi::Core::Controllers
 describe Blockchain do
   it "align transactions" do
     with_factory do |block_factory, transaction_factory|
-      transaction_total = 2000
+      transaction_total = 10
       transactions = (1..transaction_total).to_a.map{|n| transaction_factory.make_send(n.to_i64) }
 
       block_factory.add_block(transactions)
@@ -33,40 +33,20 @@ describe Blockchain do
       puts Benchmark.measure {
         block_factory.blockchain.align_transactions(coinbase_transaction, 1)
       }
+    end
+  end
 
+  it "clean transactions" do
+    with_factory do |block_factory, transaction_factory|
+      transaction_total = 10
+      transactions = (1..transaction_total).to_a.map{|n| transaction_factory.make_send(n.to_i64) }
+
+      block_factory.add_block(transactions)
+      block_factory.blockchain.pending_transactions.size.should eq(transaction_total)
+
+      puts Benchmark.measure {
+        block_factory.blockchain.clean_transactions
+      }
     end
   end
 end
-
-# describe UTXO do
-#   it "should return utxo for transactions with mixed tokens" do
-#     with_factory do |block_factory, transaction_factory|
-#       transaction1 = transaction_factory.make_send(100_i64, "KINGS")
-#       transaction2 = transaction_factory.make_send(200_i64)
-#       chain = block_factory.add_block.chain
-#       utxo = UTXO.new(block_factory.blockchain)
-#       utxo.record(chain)
-#       # expected = {"KINGS"       => {"#{transaction_factory.sender_wallet.address}" => -100_i64, "#{transaction_factory.recipient_wallet.address}" => 100_i64},
-#       #             TOKEN_DEFAULT => {"#{transaction_factory.sender_wallet.address}" => -20200_i64, "#{transaction_factory.recipient_wallet.address}" => 200_i64}}
-#
-#       expected1 =
-#         TokenQuantity.new(
-#           "KINGS",
-#           [AddressQuantity.new(transaction_factory.sender_wallet.address,-100_i64),
-#           AddressQuantity.new(transaction_factory.recipient_wallet.address,100_i64)]
-#         )
-#
-#         expected2 = TokenQuantity.new(
-#           TOKEN_DEFAULT,
-#           [AddressQuantity.new(transaction_factory.sender_wallet.address,-20200_i64),
-#           AddressQuantity.new(transaction_factory.recipient_wallet.address,200_i64)]
-#         )
-#
-#
-#       # utxo.calculate_for_transactions([transaction1, transaction2]).should eq(expected)
-#       result = utxo.calculate_for_transactions([transaction1, transaction2])
-#       result.first.should eq(expected1)
-#       result.last.should eq(expected2)
-#     end
-#   end
-# end
