@@ -1,0 +1,152 @@
+sushi:
+  cli:
+    title:          "sushi's command line client"
+    wallet:
+      title:        "wallet"
+      desc:         "create, encrypt or decrypt your wallet (wt for short)"
+      create:
+        title:      "create"
+        desc:       "create a wallet file"
+        messages:
+          creation: "your new wallet has been created at %{wallet_path}"
+          backup:   "please make a backup of the json file and keep it secret."
+      verify:
+        title:      "verify"
+        desc:       "verify a wallet file"
+        messages:
+          verify:   "%{wallet_path} is perfect!"
+          address: "address: %{wallet.address}"
+          network: "network (%{network_prefix}): %{network_name}"
+      encrypt:
+        title:      "encrypt"
+        desc:       "encrypt a sushi wallet"
+        messages:
+          encrypt: "your wallet has been encrypted at %{encrypted_wallet_path}"
+          password: "please don't forget your password - there is no way to recover an encrypted wallet."
+      decrypt:
+        title:      "decrypt"
+        desc:       "decrypt a sushi wallet (that was encrypted using sushi)"
+        messages:
+          decrypt: "your wallet has been decrypted at %{decrypted_wallet_path}"
+      amount:
+        title:      "amount"
+        desc:       "show remaining amount of Sushi tokens for specified address"
+        messages:
+          amount: "\n  showing amount of each token for %{address}."
+          confirmation: "  confirmation: %{confirmation}\n"
+    blockchain:
+      title:        "blockchain"
+      desc:         "get a whole blockchain or each block (bc for short)"
+      size:
+        title: "size"
+        desc: "show current blockchain size"
+        messages:
+          size: "current blockchain size is %{size}"
+      all:
+        title: "all"
+        desc: "get whole blockchain. headers (without transactions) only with --header option"
+        messages:
+          all: "show current blockchain"
+      block:
+        title: "block"
+        desc: "get a block for a specified index or transaction id"
+        messages:
+          index: "show a block for index: %{block_index}"
+          transaction: "show a block for transaction: %{transaction_id}"
+    transaction:
+      title:        "transaction"
+      desc:         "get or create transactions (tx for short)"
+      create:
+        title: "create"
+        desc: "create a transaction, generally used for sending tokens but you can specify other actions. (the default action is 'send')"
+      transactions:
+        title: "transactions"
+        desc: "get transactions in a specified block or for an address (txs for short)"
+        messages:
+          index: "show transactions in a block %{block_index}"
+          address: "show transactions for an address %{address}"
+      transaction:
+        title: "transaction"
+        desc: "get a transaction for a transaction id (tx for short)"
+        messages:
+          accepted: "show the transaction"
+          pending: "the transaction is still pending in transaction pool"
+          rejected: "the transaction was rejected because: %{reason}"
+          not_found: "the transaction was not found"
+          unknown: "unknown status for the transaction"
+      confirmation:
+        title: "confirmation"
+        desc: "get the number of confirmations (cf for short)"
+        messages:
+          confirmation: "show the number of confirmations of %{transaction_id}"
+      fees:
+        title: "fees"
+        desc: "show fees for each action"
+        messages:
+          fees: "\n  showing fees for each action.\n"
+    node:
+      title:        "node"
+      desc:         "show information of nodes (nd for short)"
+      nodes:
+        title: "nodes"
+        desc: "show all connected nodes to the connecting node"
+      node:
+        title: "node"
+        desc: "show the specified node (connecting node by default)"
+    scars:
+      title:        "scars"
+      desc:         "SushiChain Address Resolution System (SCARS), buy/sell a readable domain for your address (sc for short)"
+      buy:
+        title: "buy"
+        desc: "buy specified domain"
+      sell:
+        title: "sell"
+        desc: "sell your domain"
+      cancel:
+        title: "cancel"
+        desc: "cancel selling"
+      resolve:
+        title: "resolve"
+        desc: "show an address of the domain if it's registered"
+      sales:
+        title: "sales"
+        desc: "show a list of domains for sale"
+    token:
+      title:        "token"
+      desc:         "create tokens."
+      create:
+        title: "create"
+        desc: "create your token"
+      list:
+        title: "list"
+        desc: "list existing tokens"
+    config:
+      title:        "config"
+      desc:         "save default configuration used by sushi, sushid and sushim (cg for short)"
+      save:
+        title: "save"
+        desc: "save the specified options as default for sushi, sushid and sushim"
+      show:
+        title: "show"
+        desc: "show current default configuration"
+      remove:
+        title: "remove"
+        desc: "remove the default configuration"
+      use:
+        title: "use"
+        desc: "use the specified configuration"
+      list:
+        title: "list"
+        desc: "list the available configurations"
+      enable:
+        title: "enable"
+        desc: "enable configurations"
+      disable:
+        title: "disable"
+        desc: "disable configurations"
+    pubsub:
+      title:        "pubsub"
+      desc:         "receive blocks in real time"
+    client:
+      title:        "client"
+      desc:         "connect to node as peer clients"

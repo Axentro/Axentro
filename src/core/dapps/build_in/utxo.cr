@@ -185,29 +185,6 @@ module ::Sushi::Core::DApps::BuildIn
       end
     end
 
-    # def calculate_for_transactions(transactions : Array(Transaction)) : Hash(String, Hash(String, Int64))
-    #   utxo = Hash(String, Hash(String, Int64)).new
-    #
-    #   transactions.each_with_index do |transaction, _|
-    #     utxo_transaction = calculate_for_transaction(transaction)
-    #     utxo_transaction.each do |token, address_amount|
-    #       utxo[token] ||= Hash(String, Int64).new
-    #
-    #       address_amount.each do |address, amount|
-    #         utxo[token][address] ||= 0_i64
-    #         utxo[token][address] += amount
-    #       end
-    #     end
-    #   end
-    #
-    #   utxo
-    # end
-
-    # def create_token(address : String, amount : Int64, token : String)
-    #   @utxo_internal[-1][token] ||= Hash(String, Int64).new
-    #   @utxo_internal[-1][token][address] = amount
-    # end
-
     def create_token(address : String, amount : Int64, token : String)
       @utxo_internal << TokenQuantity.new(token, [AddressQuantity.new(address, amount)])
     end
@@ -227,23 +204,6 @@ module ::Sushi::Core::DApps::BuildIn
         end
       end
     end
-
-    # def record(chain : Blockchain::Chain)
-    #   return if @utxo_internal.size >= chain.size
-    #
-    #   chain[@utxo_internal.size..-1].each do |block|
-    #     @utxo_internal.push(Hash(String, Hash(String, Int64)).new)
-    #
-    #     utxo_block = calculate_for_transactions(block.transactions)
-    #     utxo_block.each do |token, utxo|
-    #       utxo.each do |address, amount|
-    #         @utxo_internal[-1][token] ||= Hash(String, Int64).new
-    #         @utxo_internal[-1][token][address] ||= get_pending(address, [] of Transaction, token)
-    #         @utxo_internal[-1][token][address] = @utxo_internal[-1][token][address] + amount
-    #       end
-    #     end
-    #   end
-    # end
 
     def clear
       @utxo_internal.clear

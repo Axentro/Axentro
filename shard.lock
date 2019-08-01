@@ -20,6 +20,10 @@ shards:
     github: kingsleyh/humanhash
     version: 0.1.1
 
+  i18n:
+    github: TechMagister/i18n.cr
+    version: 0.3.0
+
   radix:
     github: luislavena/radix
     version: 0.3.9
@@ -39,3 +43,4 @@ shards:
   tokoroten:
     github: tbrand/tokoroten
     version: 0.1.3
+

@@ -10,30 +10,7 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Core
-  CORE_VERSION = 1
-end
-
-require "big"
-require "json"
-require "yaml"
-require "base64"
-require "router"
-require "random"
-require "scrypt"
-require "openssl"
-require "colorize"
-require "tokoroten"
-require "http/server"
-require "openssl/pkcs5"
-require "openssl/digest"
-require "humanhash"
-require "crystal-argon2"
-require "crystal-ecdsa"
-require "i18n"
-
-require "./common"
-require "./core/modules"
-require "./core/protocol"
-require "./core/keys"
-require "./core/*"
+I18n.load_path += ["#{__DIR__}/../../locales/**/"]
+I18n.init
+locale = ENV["SUSHI_LOCALE"]? ? ENV["SUSHI_LOCALE"] : "en"
+I18n.default_locale = locale

@@ -1,0 +1,25 @@
+help:
+  wallet:
+    path: "please specify your wallet: -w [your_wallet.json]"
+    some_path: "please specify a wallet or an address: -w [your_wallet.json], -a [public_address] or --domain=[some_domain]"
+    exists:    "the wallet at %s already exists, specify another path"
+    password:  "please specify the password for this wallet"
+    encrypted: "the wallet must be encrypted and you must supply the password"
+  address: "please specify a recipient's address or domain: -a [public address] or --domain=[domain]"
+  amount: "please specify amount of token: -m [amount]"
+  node:
+    connecting: "please specify a connecting node: -n http://[host]:[port]"
+    id: "please specify a node id: --node_id=[node_id]"
+  block:
+    address: "please specify a block index or an address: -i [block index] or -a [address]"
+    transaction: "please specify a block index or transaction id: -i [block index] or -t [transaction id]"
+  transaction: "please specify a transaction id: -t [transaction id]"
+  url: "please specify a public url that can be accessed from internet: -u http://[host]:[port]. If your node is behind a NET, you can use --private flag instead of this option"
+  fee: "please specify transaction fee: -f [fee]. you can check minimum fee with `sushi tx fees`"
+  price:         "please specify a price for scars --price=[PRICE]"
+  domain: "please specify a domain for scars: --domain=[DOMAIN]"
+  token:
+    name: "please specify a token name: --token=[TOKEN]"
+    amount: "please specify the token amount: -m [amount]"
+  config: "please specify the config name: --name=[name]"
+  premine:       "please specify the path to a premine.yml file"
