@@ -21,7 +21,7 @@ module ::Sushi::Core
       prev_hash:        String,
       merkle_tree_root: String,
       timestamp:        Int64,
-      next_difficulty:  Int32,
+      difficulty:  Int32,
     })
 
     def initialize(
@@ -30,7 +30,7 @@ module ::Sushi::Core
       @nonce : UInt64,
       @prev_hash : String,
       @timestamp : Int64,
-      @next_difficulty : Int32
+      @difficulty : Int32
     )
       @merkle_tree_root = calculate_merkle_tree_root
     end
@@ -40,6 +40,16 @@ module ::Sushi::Core
       sha256(string)
     end
 
+    def to_s
+      debug "Block index: #{@index}"
+      debug "Block transactions: #{@transactions.size}"
+      debug "Block nonce: #{@nonce}"
+      debug "Block prev_hash: #{@prev_hash}"
+      debug "Block timestamp: #{@timestamp}"
+      debug "Block difficulty: #{@difficulty}"
+      debug "Block hash: #{self.to_hash}"
+    end
+
     def to_header : Blockchain::Header
       {
         index:            @index,
@@ -47,7 +57,7 @@ module ::Sushi::Core
         prev_hash:        @prev_hash,
         merkle_tree_root: @merkle_tree_root,
         timestamp:        @timestamp,
-        next_difficulty:  @next_difficulty,
+        difficulty:       @difficulty,
       }
     end
 
@@ -76,7 +86,7 @@ module ::Sushi::Core
       ripemd160(current_hashes[0])
     end
 
-    def valid_nonce?(difficulty : Int32) : Bool
+    def valid_nonce?(difficulty : Int32)
       valid_nonce?(self.to_hash, @nonce, difficulty)
     end
 
@@ -100,7 +110,7 @@ module ::Sushi::Core
       prev_block = blockchain.latest_block
 
       raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
-      raise "the nonce is invalid: #{@nonce}" unless self.valid_nonce?(prev_block.next_difficulty)
+      debug "in valid_as_latest?.. using difficulty: #{@difficulty}"
 
       unless skip_transactions
         transactions.each_with_index do |t, idx|
@@ -108,7 +118,7 @@ module ::Sushi::Core
         end
       end
 
-      raise "mismatch index for the prev block(#{prev_block.index}): #{@index}" if prev_block.index + 1 != @index
+      raise "mismatch index for the most recent block(#{prev_block.index}): #{@index}" if prev_block.index + 1 != @index
       raise "prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
 
       next_timestamp = __timestamp
@@ -119,12 +129,15 @@ module ::Sushi::Core
               "(timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
       end
 
-      difficulty_for_block = block_difficulty(@timestamp, (@timestamp - prev_timestamp), prev_block, blockchain.block_averages)
-      difficulty_for_block = prev_block.index == 0 ? @next_difficulty : difficulty_for_block
+      difficulty_for_block = block_difficulty(blockchain)
+      debug "Calculated a difficulty of #{difficulty_for_block} in validity check"
+      difficulty_for_block = prev_block.index == 0 ? @difficulty : difficulty_for_block
 
-      if @next_difficulty != difficulty_for_block
-        raise "next_difficulty is invalid " +
-              "(expected #{difficulty_for_block} but got #{@next_difficulty})"
+      if @difficulty > 0
+        if @difficulty != difficulty_for_block
+          raise "difficulty is invalid " + "(expected #{difficulty_for_block} but got #{@difficulty})"
+        end
+        raise "the nonce is invalid: #{@nonce} for difficulty #{@difficulty}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
       end
 
       merkle_tree_root = calculate_merkle_tree_root
@@ -141,8 +154,7 @@ module ::Sushi::Core
       raise "transactions have to be empty for genesis block: #{@transactions}" if !@transactions.empty?
       raise "nonce has to be '0' for genesis block: #{@nonce}" if @nonce != 0
       raise "prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
-      raise "next_difficulty has to be '10' for genesis block: #{@next_difficulty}" if @next_difficulty != 10
-      raise "timestamp has to be '0' for genesis block: #{@timestamp}" if @timestamp != 0
+      raise "difficulty has to be '#{Consensus::DEFAULT_DIFFICULTY_TARGET}' for genesis block: #{@difficulty}" if @difficulty != Consensus::DEFAULT_DIFFICULTY_TARGET
 
       true
     end

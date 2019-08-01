@@ -97,7 +97,7 @@ module ::Sushi::Core
       block = _m_content.block
       difficulty = _m_content.difficulty
 
-      info "#{magenta("UPDATED BLOCK")}: #{light_green(block.index)} at approximate difficulty: #{light_cyan(block.next_difficulty)}"
+      info "#{magenta("UPDATED BLOCK")}: #{light_green(block.index)} at approximate difficulty: #{light_cyan(block.difficulty)}"
 
       debug "set difficulty: #{light_cyan(difficulty)}"
       debug "set block: #{light_green(block.index)}"
@@ -120,11 +120,11 @@ module ::Sushi::Core
       @workers.each do |w|
         spawn do
           loop do
-            nonce = w.receive.try &.to_u64 || -1
+            nonce_found_message = w.receive.try &.to_s || "error"
 
-            debug "received nonce #{nonce} from worker"
+            debug "received nonce #{nonce_found_message} from worker"
 
-            send(socket, M_TYPE_MINER_FOUND_NONCE, {nonce: nonce}) unless nonce == -1
+            send(socket, M_TYPE_MINER_FOUND_NONCE, MContentMinerFoundNonce.from_json(nonce_found_message)) unless nonce_found_message == "error"
 
             update(w, difficulty, block)
           rescue ioe : IO::EOFError

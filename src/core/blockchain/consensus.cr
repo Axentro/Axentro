@@ -12,7 +12,7 @@
 
 module ::Sushi::Core::Consensus
 
-  def valid_pow?(block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
+  def valid_pow?(block_hash : String, nonce : UInt64, difficulty : Int32) : Int32
     nonce_salt = nonce.to_s(16)
     nonce_salt = "0" + nonce_salt if nonce_salt.bytesize % 2 != 0
 
@@ -25,53 +25,114 @@ module ::Sushi::Core::Consensus
       Argon2::Engine::EngineType::ARGON2ID, block_hash, nonce_slice.hexstring, 1, 16, 512)
 
     bits = buffer.flat_map { |b| (0..7).map { |n| b.bit(n) }.reverse }
-    bits[0, difficulty].join("") == "0" * difficulty
+    leading_bits = bits[0, difficulty].join("")
+    leading_bits.split("1")[0].size
   end
 
-  def valid_nonce?(block_hash : String, nonce : UInt64, difficulty : Int32) : Bool
+  def valid_nonce?(block_hash : String, nonce : UInt64, difficulty : Int32)
     difficulty = ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY") # for unit test
     valid_pow?(block_hash, nonce, difficulty)
   end
 
-  BLOCK_TARGET_LOWER  = 10_i64
-  BLOCK_TARGET_UPPER  = 40_i64
-  BLOCK_AVERAGE_LIMIT =    720
+  def block_difficulty_to_miner_difficulty(diff : Int32)
+    value = (diff.to_f / 3).ceil.to_i
+    Math.max(diff - value, 1)
+  end
 
-  def block_difficulty(timestamp : Int64, elapsed_block_time : Int64, block : Block, block_averages : Array(Int64)) : Int32
-    return 10 if ENV.has_key?("SC_E2E") # for e2e test
+  # Dark Gravity Wave history lookback for averaging (in blocks)
+  HISTORY_LOOKBACK       =      24
+
+  # SushiChain desired block spacing (in seconds)
+  POW_TARGET_SPACING     = 120_f64
+
+  # Difficulty value to be used when there is absolutely no history reference
+  DEFAULT_DIFFICULTY_TARGET      = 17_i32
+
+  # Dark Gravity Wave based difficulty adjustment calculation (Original algorithm created by Evan Duffield)
+
+  def block_difficulty(blockchain : Blockchain) : Int32
+    actual_timespan = 0_f64
+    calculated_difficulty = 0_f64
+
+    # return difficulty from env var if it has be set
     return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
 
-    block_averages = block_averages.select { |a| a > 0_i64 }
-    block_averages.delete_at(0) if block_averages.size > 0
-
-    debug "elapsed block time was: #{elapsed_block_time} secs between current block: #{block.index + 1} and previous block: #{block.index}"
-
-    block_average = begin
-      block_averages.reduce { |a, b| a + b } / block_averages.size
-    rescue
-      elapsed_block_time
+    # return difficulty default target if chain non-existant or not enough block history
+    chain = blockchain.chain
+    #debug "entered block_difficulty with chain length of #{chain.size}" if chain
+    if !chain || chain.size < 3
+      #debug "entered block_difficulty with short initial chain (fewer than 3 blocks), returning default difficulty of #{DEFAULT_DIFFICULTY_TARGET}"
+      return DEFAULT_DIFFICULTY_TARGET
     end
 
-    current_target = if block_averages.size < BLOCK_AVERAGE_LIMIT
-                       debug "using elapsed block time as block averages: #{block_averages.size} is less than cache limit: #{BLOCK_AVERAGE_LIMIT}"
-                       elapsed_block_time
-                     else
-                       debug "using block average time as block averages: #{block_averages.size} has exceeded cache limit: #{BLOCK_AVERAGE_LIMIT}"
-                       block_average
-                     end
+    # construct an average difficulty from the historical blocks and calculate elapsed time of historical blocks
+    count_blocks = 0
+    oldest_history_spot = Math.max(chain.size - HISTORY_LOOKBACK, 1)
+    i = oldest_history_spot
+    last_block_time = chain[i].timestamp
+    #debug "Oldest history spot: #{oldest_history_spot}"
+    while i < chain.size
+      block_reading = chain[i]
+      calculated_difficulty = calculate_running_difficulty_avg(calculated_difficulty, block_reading.difficulty, count_blocks)
+      new_timespan = accumulate_timespan(actual_timespan, block_reading.timestamp, last_block_time)
+      count_blocks += 1 if new_timespan > actual_timespan
+      actual_timespan = new_timespan
+      last_block_time = block_reading.timestamp
+      i += 1
+    end
 
-    if current_target > BLOCK_TARGET_UPPER
-      new_difficulty = Math.max(block.next_difficulty - 1, 1)
-      debug "reducing difficulty from '#{block.next_difficulty}' to '#{new_difficulty}' with block average of (#{block_average} secs)"
-      new_difficulty
-    elsif current_target < BLOCK_TARGET_LOWER
-      new_difficulty = block.next_difficulty + 1
-      debug "increasing difficulty from '#{block.next_difficulty}' to '#{new_difficulty}' with block average of (#{block_average} secs)"
-      new_difficulty
+    #debug "Number of blocks in history lookback: #{count_blocks}"
+    #debug "calculated average difficulty: #{calculated_difficulty}"
+    #debug "calculated actual timespan: #{actual_timespan}"
+
+    if count_blocks == 0
+      #debug "No valid blocks in history for averaging, returning default difficulty"
+      return DEFAULT_DIFFICULTY_TARGET
+    end
+
+    # calculate what the elapsed time for the historical block generation should have been
+    target_timespan = count_blocks.to_f64 * POW_TARGET_SPACING
+
+    # calculate average block time for the history block
+    # average_block_time = (actual_timespan / count_blocks).to_f64
+
+    #debug "calculated target timespan: #{target_timespan}"
+    #debug "average generation time per block: #{average_block_time} seconds"
+
+    # Calculate the new difficulty based on actual and target timespan.
+    calculated_difficulty *= target_timespan
+    calculated_difficulty /= actual_timespan
+    #debug "Difficulty adjusted by timespane #{calculated_difficulty}"
+
+    calculated_difficulty_i32 = calculated_difficulty.round.to_i32
+
+    #debug "DGW calculated difficulty adjusted by timespans (and rounded): #{calculated_difficulty_i32}"
+    if calculated_difficulty_i32 < 0
+      #info "DGW calculation yielded negative value, return default of #{DEFAULT_DIFFICULTY_TARGET}"
+      return DEFAULT_DIFFICULTY_TARGET
+    end
+    calculated_difficulty_i32
+  end
+
+  def calculate_running_difficulty_avg(calculated_difficulty : Float64, this_block_difficulty : Int32, count_blocks : Int32) : Float64
+    if count_blocks == 0
+      calculated_difficulty = this_block_difficulty.to_f64
     else
-      debug "maintaining block difficulty at '#{block.next_difficulty}' with block average: (#{block_average} secs)"
-      block.next_difficulty
+      calculated_difficulty = ((calculated_difficulty * count_blocks)+(this_block_difficulty)) / (count_blocks + 1).to_f64
     end
+    calculated_difficulty
+  end
+
+  def accumulate_timespan(current_timespan : Float64, this_block_timestamp : Int64, last_block_time : Int64) : Float64
+    time_diff = (this_block_timestamp - last_block_time).to_f64
+    if (time_diff > POW_TARGET_SPACING * 0.5) && (time_diff < POW_TARGET_SPACING * 1.5)
+      accumulated_timespan = current_timespan + time_diff
+      #debug "Had a difference of  #{time_diff} now actual timespan is #{accumulated_timespan}"
+    else
+      accumulated_timespan = current_timespan
+      #debug "Had a difference of  #{time_diff} out of range for averaging probably due to a period of time with no miners"
+    end
+    accumulated_timespan
   end
 
   include Hashes

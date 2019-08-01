@@ -27,9 +27,15 @@ module ::Sushi::Core::NodeComponents
 
     alias Miners = Array(Miner)
 
+    @most_difficult_block_so_far : Block
+    @block_start_time : Int64
+
     getter miners : Miners = Miners.new
 
     def initialize(@blockchain : Blockchain)
+      @highest_difficulty_mined_so_far = 0
+      @block_start_time = __timestamp
+      @most_difficult_block_so_far = @blockchain.genesis_block
     end
 
     def handshake(socket, _content)
@@ -85,12 +91,30 @@ module ::Sushi::Core::NodeComponents
       _m_content = MContentMinerFoundNonce.from_json(_content)
 
       nonce = _m_content.nonce
+      mined_timestamp = _m_content.timestamp
+
+      debug "received a nonce of #{nonce} from a miner at timestamp #{mined_timestamp}"
 
       if miner = find?(socket)
+        block = @blockchain.mining_block.with_nonce(nonce)
+
+        debug "Received a freshly mined block..."
+        block.to_s
+
         if @miners.map { |m| m[:context][:nonces] }.flatten.includes?(nonce)
           warning "nonce #{nonce} has already been discovered"
-        elsif !@blockchain.mining_block.with_nonce(nonce).valid_nonce?(@blockchain.mining_block_difficulty_miner)
+          return
+        end
+
+        if mined_timestamp < @blockchain.mining_block.timestamp
+          warning "received nonce was mined before current mining block was created, ignore"
+          return
+        end
+
+        mined_difficulty = block.valid_nonce?(@blockchain.mining_block_difficulty)
+        if mined_difficulty < @blockchain.mining_block_difficulty_miner
           warning "received nonce is invalid, try to update latest block"
+          debug "mined difficulty is: #{mined_difficulty}"
 
           send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
             block:      @blockchain.mining_block,
@@ -98,24 +122,50 @@ module ::Sushi::Core::NodeComponents
           })
         else
           miner_name = HumanHash.humanize(miner[:mid])
-          debug "miner #{miner_name} found nonce (nonces: #{miner[:context][:nonces].size})"
+          debug "miner #{miner_name} found nonce at timestamp #{mined_timestamp }.. (nonces: #{miner[:context][:nonces].size}) mined with difficulty #{mined_difficulty} "
 
           miner[:context][:nonces].push(nonce)
 
-          if block = @blockchain.valid_nonce?(nonce)
-            node.new_block(block)
-            node.send_block(block)
-
-            clear_nonces
+          debug "found nonce of #{block.nonce} that doesn't satisfy block difficulty, checking if it is the best so far"
+          current_miner_difficulty = block_difficulty_to_miner_difficulty(@blockchain.mining_block_difficulty)
+          if (mined_difficulty > current_miner_difficulty) && (mined_difficulty > @highest_difficulty_mined_so_far)
+            debug "This block is now the most difficult recorded"
+            @most_difficult_block_so_far = block.dup
+            @highest_difficulty_mined_so_far = mined_difficulty
+          else
+            debug "This block was not the most difficult recorded, miner still gets credit for sending the nonce"
+          end
+          if mined_timestamp > @block_start_time + (Consensus::POW_TARGET_SPACING * 0.90).to_i32
+            if @highest_difficulty_mined_so_far > 0
+              debug "Time has expired ... the block with the most difficult nonce recorded so far will be minted: #{@highest_difficulty_mined_so_far}"
+              @most_difficult_block_so_far.to_s
+              mint_block(@most_difficult_block_so_far)
+            else
+              debug "Time has expired ... but no nonce with a difficulty larger than miner difficulty (#{current_miner_difficulty}) has been received.. keep waiting"
+            end
           end
         end
       end
+    end
+
+    def mint_block(block : Block)
+      @highest_difficulty_mined_so_far = 0
+      @block_start_time = __timestamp
+      node.new_block(block)
+      node.send_block(block)
+      clear_nonces
     end
 
     def clear_nonces
       @miners.each do |m|
         m[:context][:nonces].clear
       end
+    end
+
+    def forget_most_difficult
+      debug "Forgetting most difficult"
+      @highest_difficulty_mined_so_far = 0
+      @block_start_time = __timestamp
     end
 
     def broadcast

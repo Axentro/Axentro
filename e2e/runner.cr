@@ -34,7 +34,7 @@ module ::E2E
     getter exit_code : Int32 = 0
 
     def initialize(@mode : Int32, @num_nodes : Int32, @num_miners : Int32, @time : Int32)
-      @node_ports = (4000..4000 + (@num_nodes - 1)).to_a
+      @node_ports = (4001..4001 + (@num_nodes - 1)).to_a
 
       Client.initialize(@node_ports, @num_miners)
 
@@ -83,9 +83,16 @@ module ::E2E
     end
 
     def launch_miners
-      @num_miners.times do |_|
-        port = @node_ports.sample
-        step mining(port, Random.rand(@num_miners)), 1, "launch miner for #{port}"
+      if @num_miners != @node_ports.size
+        @num_miners.times do |_|
+          port = @node_ports.sample
+          step mining(port, Random.rand(@num_miners)), 1, "launch miner for #{port}"
+        end
+      else
+        @num_miners.times do |t|
+          port = @node_ports[t]
+          step mining(port, t), 1, "launch miner for #{port}"
+        end
       end
     end
 
@@ -198,7 +205,7 @@ module ::E2E
       STDERR.puts
       STDERR.puts "verifying: #{green("blockchain can be restored from database")}"
 
-      size0 = blockchain_size(4000)
+      size0 = blockchain_size(4001)
 
       step create_wallet(100), 0, ""
       step launch_node(5000, true, nil, 100, @db_name), 10, ""
@@ -306,7 +313,10 @@ module ::E2E
       step assertion!, 0, "start assertion"
     rescue e : Exception
       STDERR.puts "-> FAILED!"
-      STDERR.puts "   the reason: #{e.message}"
+      safe_error_message = e.message
+      if safe_error_message
+        STDERR.puts "   the reason: #{safe_error_message[0,200]}"
+      end
 
       @exit_code = -1
     ensure

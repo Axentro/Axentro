@@ -25,7 +25,7 @@ module ::Sushi::Core
       prev_hash: String,
       merkle_tree_root: String,
       timestamp: Int64,
-      next_difficulty: Int32,
+      difficulty: Int32,
     )
 
     getter chain : Chain = Chain.new
@@ -33,7 +33,6 @@ module ::Sushi::Core
 
     @node : Node?
     @mining_block : Block?
-    @block_averages : Array(Int64) = [] of Int64
 
     def initialize(@wallet : Wallet, @database : Database?, @premine : Premine?)
       initialize_dapps
@@ -61,32 +60,31 @@ module ::Sushi::Core
 
     def restore_from_database(database : Database)
       info "start loading blockchain from #{database.path}"
-      info "there are #{database.max_index + 1} blocks recorded"
+      info "there are #{database.max_index} blocks recorded"
 
       current_index = 0_i64
-
       loop do
         _block = database.get_block(current_index)
-
         break unless block = _block
         break unless block.valid?(self, true)
-
         @chain.push(block)
-
-        refresh_mining_block
-        dapps_record
-
         current_index += 1
-
         progress "block ##{current_index} was imported", current_index, database.max_index
       end
+      if @chain.size == 0
+        push_genesis
+      else
+        refresh_mining_block(block_difficulty(self))
+      end
+
+      dapps_record
+
     rescue e : Exception
       error "Error could not restore blockchain from database"
       error e.message.not_nil! if e.message
       warning "removing invalid blocks from database"
       database.delete_blocks(current_index.not_nil!)
     ensure
-      clean_block_averages
       push_genesis if @chain.size == 0
     end
 
@@ -107,41 +105,32 @@ module ::Sushi::Core
     end
 
     def mining_block_difficulty : Int32
-      latest_block.next_difficulty
-    end
-
-    def mining_block_difficulty_miner : Int32
-      value = (mining_block_difficulty.to_f / 3).ceil.to_i
-      Math.max(mining_block_difficulty - value, 1)
-    end
-
-    def push_block_average(avg : Int64)
-      @block_averages.push(avg)
-      if block_averages.size > Consensus::BLOCK_AVERAGE_LIMIT + 10
-        @block_averages.shift
+      the_mining_block = @mining_block
+      if the_mining_block
+        the_mining_block.difficulty
+      else
+        latest_block.difficulty
       end
     end
 
-    def block_averages
-      @block_averages
-    end
-
-    def clean_block_averages
-      @block_averages = [] of Int64
+    def mining_block_difficulty_miner : Int32
+      block_difficulty_to_miner_difficulty(mining_block_difficulty)
     end
 
     def push_block(block : Block)
       @chain.push(block)
-
-      dapps_record
-
       if database = @database
+        debug "sending to DB, block with nonce of #{block.nonce} and timestamp of #{block.timestamp}"
         database.push_block(block)
       end
 
+      debug "in node.push_block, before dapps_record"
+      dapps_record
+      debug "after dapps record, before clean transactions"
       clean_transactions
 
-      refresh_mining_block
+      debug "after clean_transactions, now calling refresh_mining_block in push_block"
+      refresh_mining_block(block_difficulty(self))
 
       block
     end
@@ -169,20 +158,22 @@ module ::Sushi::Core
 
         dapps_record
       rescue e : Exception
-        error "found invalid block while syncing a blocks"
+        error "found invalid block while syncing blocks"
         error "the reason:"
         error e.message.not_nil!
 
         break
       end
 
+      push_genesis if @chain.size == 0
       if database = @database
         database.replace_chain(@chain)
       end
 
       clean_transactions
 
-      refresh_mining_block
+      debug "calling refresh_mining_block in replace_chain"
+      refresh_mining_block(block_difficulty(self))
 
       true
     end
@@ -236,8 +227,8 @@ module ::Sushi::Core
       genesis_transactions = @premine ? Premine.transactions(@premine.not_nil!.get_config) : [] of Transaction
       genesis_nonce = 0_u64
       genesis_prev_hash = "genesis"
-      genesis_timestamp = 0_i64
-      genesis_difficulty = 10
+      genesis_timestamp = Time.now.to_unix
+      genesis_difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
 
       Block.new(
         genesis_index,
@@ -278,7 +269,8 @@ module ::Sushi::Core
     end
 
     def mining_block : Block
-      refresh_mining_block unless @mining_block
+      debug "calling refresh_mining_block in mining_block" unless @mining_block
+      refresh_mining_block(Consensus::DEFAULT_DIFFICULTY_TARGET) unless @mining_block
       @mining_block.not_nil!
     end
 
@@ -286,17 +278,13 @@ module ::Sushi::Core
      @premine ? @premine.not_nil!.get_total_amount : 0_i64
    end
 
-    def refresh_mining_block
+    def refresh_mining_block(difficulty)
       coinbase_amount = coinbase_amount(latest_index + 1, embedded_transactions, get_premine_total_amount)
       coinbase_transaction = create_coinbase_transaction(coinbase_amount, node.miners)
-
       transactions = align_transactions(coinbase_transaction, coinbase_amount)
       timestamp = __timestamp
 
-      elapsed_block_time = timestamp - latest_block.timestamp
-
-      push_block_average(elapsed_block_time)
-      difficulty = block_difficulty(timestamp, elapsed_block_time, latest_block, block_averages)
+      debug "We are in refresh_mining_block, the next block will have a difficulty of #{difficulty}"
 
       @mining_block = Block.new(
         latest_index + 1,
@@ -313,6 +301,7 @@ module ::Sushi::Core
     def align_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
       aligned_transactions = [coinbase_transaction]
 
+      debug "entered align_transactions with embedded_transactions size: #{embedded_transactions.size}"
       embedded_transactions.each do |t|
         t.prev_hash = aligned_transactions[-1].to_hash
         t.valid_as_embedded?(self, aligned_transactions)
@@ -323,6 +312,7 @@ module ::Sushi::Core
 
         TransactionPool.delete(t)
       end
+      debug "exited align_transactions with embedded_transactions size: #{embedded_transactions.size}"
 
       aligned_transactions
     end
