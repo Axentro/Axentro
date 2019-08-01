@@ -15,12 +15,12 @@ module ::Sushi::Interface::Sushi
     def sub_actions
       [
         {
-          name: "nodes",
-          desc: "show all connected nodes to the connecting node",
+          name: I18n.translate("sushi.cli.node.nodes.title"),
+          desc: I18n.translate("sushi.cli.node.nodes.desc"),
         },
         {
-          name: "node",
-          desc: "show the specified node (connecting node by default)",
+          name: I18n.translate("sushi.cli.node.node.title"),
+          desc: I18n.translate("sushi.cli.node.node.desc"),
         },
       ]
     end
@@ -35,9 +35,9 @@ module ::Sushi::Interface::Sushi
 
     def run_impl(action_name)
       case action_name
-      when "nodes"
+      when I18n.translate("sushi.cli.node.nodes.title")
         return nodes
-      when "node"
+      when I18n.translate("sushi.cli.node.node.title")
         return node
       end
 

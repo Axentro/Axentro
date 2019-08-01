@@ -15,16 +15,16 @@ module ::Sushi::Interface::Sushi
     def sub_actions
       [
         {
-          name: "size",
-          desc: "show current blockchain size",
+          name: I18n.translate("sushi.cli.blockchain.size.title"),
+          desc: I18n.translate("sushi.cli.blockchain.size.desc"),
         },
         {
-          name: "all",
-          desc: "get whole blockchain. headers (without transactions) only with --header option",
+          name: I18n.translate("sushi.cli.blockchain.all.title"),
+          desc: I18n.translate("sushi.cli.blockchain.all.desc"),
         },
         {
-          name: "block",
-          desc: "get a block for a specified index or transaction id",
+          name: I18n.translate("sushi.cli.blockchain.block.title"),
+          desc: I18n.translate("sushi.cli.blockchain.block.desc"),
         },
       ]
     end
@@ -42,11 +42,11 @@ module ::Sushi::Interface::Sushi
 
     def run_impl(action_name)
       case action_name
-      when "size"
+      when I18n.translate("sushi.cli.blockchain.size.title")
         return size
-      when "all"
+      when I18n.translate("sushi.cli.blockchain.all.title")
         return all
-      when "block"
+      when I18n.translate("sushi.cli.blockchain.block.title")
         return block
       end
 
@@ -66,7 +66,7 @@ module ::Sushi::Interface::Sushi
         puts body
       else
         json = JSON.parse(body)
-        puts_success("current blockchain size is #{json["size"]}")
+        puts_success(I18n.translate("sushi.cli.blockchain.size.messages.size", {size: json["size"]}))
       end
     end
 
@@ -80,7 +80,7 @@ module ::Sushi::Interface::Sushi
       if G.op.__json
         puts body
       else
-        puts_success("show current blockchain")
+        puts_success(I18n.translate("sushi.cli.blockchain.all.messages.all"))
         puts_info(body)
       end
     end
@@ -90,10 +90,10 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_BLOCK_INDEX_OR_TRANSACTION_ID) if G.op.__block_index.nil? && G.op.__transaction_id.nil?
 
       payload = if block_index = G.op.__block_index
-                  success_message = "show a block for index: #{G.op.__block_index}"
+                  success_message = I18n.translate("sushi.cli.blockchain.block.messages.index", {block_index: G.op.__block_index})
                   {call: "block", index: block_index, header: G.op.__header}.to_json
                 elsif transaction_id = G.op.__transaction_id
-                  success_message = "show a block for transaction: #{G.op.__transaction_id}"
+                  success_message = I18n.translate("sushi.cli.blockchain.block.messages.transaction", {block_index: G.op.__transaction_id})
                   {call: "block", transaction_id: transaction_id, header: G.op.__header}.to_json
                 else
                   puts_help(HELP_BLOCK_INDEX_OR_TRANSACTION_ID)

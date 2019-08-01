@@ -12,25 +12,25 @@
 
 module ::Sushi::Interface
   module Helps
-    HELP_WALLET_PATH                      = "please specify your wallet: -w [your_wallet.json]"
-    HELP_WALLET_PATH_OR_ADDRESS_OR_DOMAIN = "please specify a wallet or an address: -w [your_wallet.json], -a [public_address] or --domain=[some_domain]"
-    HELP_WALLET_ALREADY_EXISTS            = "the wallet at %s already exists, specify another path"
-    HELP_WALLET_PASSWORD                  = "please specify the password for this wallet"
-    HELP_WALLET_MUST_BE_ENCRYPTED         = "the wallet must be encrypted and you must supply the password"
-    HELP_ADDRESS_DOMAIN_RECIPIENT         = "please specify a recipient's address or domain: -a [public address] or --domain=[domain]"
-    HELP_AMOUNT                           = "please specify amount of token: -m [amount]"
-    HELP_CONNECTING_NODE                  = "please specify a connecting node: -n http://[host]:[port]"
-    HELP_BLOCK_INDEX_OR_ADDRESS           = "please specify a block index or an address: -i [block index] or -a [address]"
-    HELP_BLOCK_INDEX_OR_TRANSACTION_ID    = "please specify a block index or transaction id: -i [block index] or -t [transaction id]"
-    HELP_TRANSACTION_ID                   = "please specify a transaction id: -t [transaction id]"
-    HELP_PUBLIC_URL                       = "please specify a public url that can be accessed from internet: -u http://[host]:[port]. If your node is behind a NET, you can use --private flag instead of this option"
-    HELP_FEE                              = "please specify transaction fee: -f [fee]. you can check minimum fee with `sushi tx fees`"
-    HELP_PRICE                            = "please specify a price for scars --price=[PRICE]"
-    HELP_DOMAIN                           = "please specify a domain for scars: --domain=[DOMAIN]"
-    HELP_TOKEN                            = "please specify a token name: --token=[TOKEN]"
-    HELP_TOKEN_AMOUNT                     = "please specify the token amount: -m [amount]"
-    HELP_CONFIG_NAME                      = "please specify the config name: --name=[name]"
-    HELP_NODE_ID                          = "please specify a node id: --node_id=[node_id]"
-    HELP_PREMINE                          = "please specify the path to a premine.yml file"
+    HELP_WALLET_PATH                      = I18n.translate("help.wallet.path")
+    HELP_WALLET_PATH_OR_ADDRESS_OR_DOMAIN = I18n.translate("help.wallet.some_path")
+    HELP_WALLET_ALREADY_EXISTS            = I18n.translate("help.wallet.exists")
+    HELP_WALLET_PASSWORD                  = I18n.translate("help.wallet.password")
+    HELP_WALLET_MUST_BE_ENCRYPTED         = I18n.translate("help.wallet.encrypted")
+    HELP_ADDRESS_DOMAIN_RECIPIENT         = I18n.translate("help.address")
+    HELP_AMOUNT                           = I18n.translate("help.amount")
+    HELP_CONNECTING_NODE                  = I18n.translate("help.node.connecting")
+    HELP_BLOCK_INDEX_OR_ADDRESS           = I18n.translate("help.block.address")
+    HELP_BLOCK_INDEX_OR_TRANSACTION_ID    = I18n.translate("help.block.transaction")
+    HELP_TRANSACTION_ID                   = I18n.translate("help.transaction")
+    HELP_PUBLIC_URL                       = I18n.translate("help.url")
+    HELP_FEE                              = I18n.translate("help.fee")
+    HELP_PRICE                            = I18n.translate("help.price")
+    HELP_DOMAIN                           = I18n.translate("help.domain")
+    HELP_TOKEN                            = I18n.translate("help.token.name")
+    HELP_TOKEN_AMOUNT                     = I18n.translate("help.token.amount")
+    HELP_CONFIG_NAME                      = I18n.translate("help.config")
+    HELP_NODE_ID                          = I18n.translate("help.node.id")
+    HELP_PREMINE                          = I18n.translate("help.premine")
   end
 end

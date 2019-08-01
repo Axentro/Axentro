@@ -18,40 +18,40 @@ module ::Sushi::Interface::Sushi
     def sub_actions
       [
         {
-          name: "wallet",
-          desc: "create, encrypt or decrypt your wallet (wt for short)",
+          name: I18n.translate("sushi.cli.wallet.title"),
+          desc: I18n.translate("sushi.cli.wallet.desc"),
         },
         {
-          name: "blockchain",
-          desc: "get a whole blockchain or each block (bc for short)",
+          name: I18n.translate("sushi.cli.blockchain.title"),
+          desc: I18n.translate("sushi.cli.blockchain.desc"),
         },
         {
-          name: "transaction",
-          desc: "get or create transactions (tx for short)",
+          name: I18n.translate("sushi.cli.transaction.title"),
+          desc: I18n.translate("sushi.cli.transaction.desc"),
         },
         {
-          name: "node",
-          desc: "show information of nodes (nd for short)",
+          name: I18n.translate("sushi.cli.node.title"),
+          desc: I18n.translate("sushi.cli.node.desc"),
         },
         {
-          name: "scars",
-          desc: "SushiCon Address Resolution System (SCARS), buy/sell a readable domain for your address (sc for short)",
+          name: I18n.translate("sushi.cli.scars.title"),
+          desc: I18n.translate("sushi.cli.scars.desc"),
         },
         {
-          name: "token",
-          desc: "create tokens.",
+          name: I18n.translate("sushi.cli.token.title"),
+          desc: I18n.translate("sushi.cli.token.desc"),
         },
         {
-          name: "config",
-          desc: "save default configuration used by sushi, sushid and sushim (cg for short)",
+          name: I18n.translate("sushi.cli.config.title"),
+          desc: I18n.translate("sushi.cli.config.desc"),
         },
         {
-          name: "pubsub",
-          desc: "receive blocks in real time",
+          name: I18n.translate("sushi.cli.pubsub.title"),
+          desc: I18n.translate("sushi.cli.pubsub.desc"),
         },
         {
-          name: "client",
-          desc: "connect to node as peer clients",
+          name: I18n.translate("sushi.cli.client.title"),
+          desc: I18n.translate("sushi.cli.client.desc"),
         },
       ]
     end
@@ -61,49 +61,49 @@ module ::Sushi::Interface::Sushi
 
     def run_impl(action_name)
       case action_name
-      when "wallet", "wt"
+      when I18n.translate("sushi.cli.wallet.title"), "wt"
         return Wallet.new(
-          {name: "wallet", desc: "create, encrypt or decrypt your wallet"},
+          {name: I18n.translate("sushi.cli.wallet.title"), desc: I18n.translate("sushi.cli.wallet.desc")},
           next_parents,
         ).run
-      when "blockchain", "bc"
+      when I18n.translate("sushi.cli.blockchain.title"), "bc"
         return Blockchain.new(
-          {name: "blockchain", desc: "get a whole blockchain or each block"},
+          {name: I18n.translate("sushi.cli.blockchain.title"), desc: I18n.translate("sushi.cli.blockchain.desc")},
           next_parents,
         ).run
-      when "transaction", "tx"
+      when I18n.translate("sushi.cli.transaction.title"), "tx"
         return Transaction.new(
-          {name: "transaction", desc: "get or create transactions"},
+          {name: I18n.translate("sushi.cli.transaction.title"), desc: I18n.translate("sushi.cli.transaction.desc")},
           next_parents,
         ).run
-      when "node", "nd"
+      when I18n.translate("sushi.cli.node.title"), "nd"
         return Node.new(
-          {name: "node", desc: "show information of nodes"},
+          {name: I18n.translate("sushi.cli.node.title"), desc: I18n.translate("sushi.cli.node.desc")},
           next_parents,
         ).run
-      when "scars", "sc"
+      when I18n.translate("sushi.cli.scars.title"), "sc"
         return Scars.new(
-          {name: "scars", desc: "SushiCon Address Resolution System (SCARS), buy/sell a readable domain for your address"},
+          {name: I18n.translate("sushi.cli.scars.title"), desc: I18n.translate("sushi.cli.scars.desc")},
           next_parents,
         ).run
-      when "token", "tk"
+      when I18n.translate("sushi.cli.token.title"), "tk"
         return Token.new(
-          {name: "token", desc: "create tokens."},
+          {name: I18n.translate("sushi.cli.token.title"), desc: I18n.translate("sushi.cli.token.desc")},
           next_parents,
         ).run
-      when "config", "cg"
+      when I18n.translate("sushi.cli.config.title"), "cg"
         return Config.new(
-          {name: "config", desc: "save default configuration used by sushi, sushid and sushim"},
+          {name: I18n.translate("sushi.cli.config.title"), desc: I18n.translate("sushi.cli.config.title")},
           next_parents,
         ).run
-      when "pubsub", "ps"
+      when I18n.translate("sushi.cli.pubsub.title"), "ps"
         return Pubsub.new(
-          {name: "pubsub", desc: "receive blocks in real time"},
+          {name: I18n.translate("sushi.cli.pubsub.title"), desc: I18n.translate("sushi.cli.punsub.title")},
           next_parents,
         ).run
-      when "client", "cl"
+      when I18n.translate("sushi.cli.client.title"), "cl"
         return Client.new(
-          {name: "client", desc: "connect to node as peer clients"},
+          {name: I18n.translate("sushi.cli.client.title"), desc: I18n.translate("sushi.cli.client.desc")},
           next_parents,
         ).run
       end
@@ -117,5 +117,5 @@ include ::Sushi::Interface
 include ::Sushi::Core::Keys
 
 ::Sushi::Interface::Sushi::Root.new(
-  {name: "sushi", desc: "sushi's command line client"}, [] of SushiAction
+  {name: "sushi", desc: I18n.translate("sushi.cli.title")}, [] of SushiAction
 ).run

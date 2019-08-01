@@ -15,24 +15,24 @@ module ::Sushi::Interface::Sushi
     def sub_actions
       [
         {
-          name: "create",
-          desc: "create a wallet file",
+          name: I18n.translate("sushi.cli.wallet.create.title"),
+          desc: I18n.translate("sushi.cli.wallet.create.desc"),
         },
         {
-          name: "verify",
-          desc: "verify a wallet file",
+          name: I18n.translate("sushi.cli.wallet.verify.title"),
+          desc: I18n.translate("sushi.cli.wallet.verify.desc"),
         },
         {
-          name: "encrypt",
-          desc: "encrypt a sushi wallet",
+          name: I18n.translate("sushi.cli.wallet.encrypt.title"),
+          desc: I18n.translate("sushi.cli.wallet.encrypt.desc"),
         },
         {
-          name: "decrypt",
-          desc: "decrypt a sushi wallet (that was encrypted using sushi)",
+          name: I18n.translate("sushi.cli.wallet.decrypt.title"),
+          desc: I18n.translate("sushi.cli.wallet.decrypt.desc"),
         },
         {
-          name: "amount",
-          desc: "show remaining amount of Sushi tokens for specified address",
+          name: I18n.translate("sushi.cli.wallet.amount.title"),
+          desc: I18n.translate("sushi.cli.wallet.amount.desc"),
         },
       ]
     end
@@ -49,21 +49,21 @@ module ::Sushi::Interface::Sushi
         Options::ADDRESS,
         Options::DOMAIN,
         Options::TOKEN,
-        Options::CONFIG_NAME,
+        Options::CONFIG_NAME
       ])
     end
 
     def run_impl(action_name)
       case action_name
-      when "create"
+      when I18n.translate("sushi.cli.wallet.create.title")
         return create
-      when "verify"
+      when I18n.translate("sushi.cli.wallet.verify.title")
         return verify
-      when "encrypt"
+      when I18n.translate("sushi.cli.wallet.encrypt.title")
         return encrypt
-      when "decrypt"
+      when I18n.translate("sushi.cli.wallet.decrypt.title")
         return decrypt
-      when "amount"
+      when I18n.translate("sushi.cli.wallet.amount.title")
         return amount
       end
 
@@ -94,8 +94,8 @@ module ::Sushi::Interface::Sushi
       if G.op.__json
         puts wallet.to_json
       else
-        puts_success("your new wallet has been created at #{wallet_path}")
-        puts_success("please make a backup of the json file and keep it secret.")
+        puts_success(I18n.translate("sushi.cli.wallet.create.messages.creation", {wallet_path: wallet_path}))
+        puts_success(I18n.translate("sushi.cli.wallet.create.messages.backup"))
       end
     end
 
@@ -104,11 +104,11 @@ module ::Sushi::Interface::Sushi
 
       wallet = get_wallet(wallet_path, G.op.__wallet_password)
 
-      puts_success "#{wallet_path} is perfect!" if wallet.verify!
-      puts_success "address: #{wallet.address}"
+      puts_success I18n.translate("sushi.cli.wallet.verify.messages.verify", {wallet_path: wallet_path}) if wallet.verify!
+      puts_success I18n.translate("sushi.cli.wallet.verify.messages.address", {wallet_address: wallet.address})
 
       network = Core::Wallet.address_network_type(wallet.address)
-      puts_success "network (#{network[:prefix]}): #{network[:name]}"
+      puts_success I18n.translate("sushi.cli.wallet.verify.messages.network", {network_prefix: network[:prefix], network_name: network[:name]})
     end
 
     def encrypt
@@ -125,8 +125,8 @@ module ::Sushi::Interface::Sushi
       if G.op.__json
         puts encrypted_wallet_json
       else
-        puts_success("your wallet has been encrypted at #{encrypted_wallet_path}")
-        puts_success("please don't forget your password - there is no way to recover an encrypted wallet.")
+        puts_success(I18n.translate("sushi.cli.wallet.encrypt.messages.encrypt", {encrypted_wallet_path: encrypted_wallet_path}))
+        puts_success(I18n.translate("sushi.cli.wallet.encrypt.messages.password"))
       end
     end
 
@@ -144,7 +144,7 @@ module ::Sushi::Interface::Sushi
       if G.op.__json
         puts decrypted_wallet_json
       else
-        puts_success("your wallet has been decrypted at #{decrypted_wallet_path}")
+        puts_success(I18n.translate("sushi.cli.wallet.decrypt.messages.decrypt", {decrypted_wallet_path: decrypted_wallet_path}))
       end
     end
 
@@ -183,8 +183,8 @@ module ::Sushi::Interface::Sushi
       if G.op.__json
         puts body
       else
-        puts_success("\n  showing amount of each token for #{address}.")
-        puts_success("  confirmation: #{G.op.__confirmation}\n")
+        puts_success(I18n.translate("sushi.cli.wallet.amount.messages.amount", {address: address}))
+        puts_success(I18n.translate("sushi.cli.wallet.amount.messages.confirmation", {confirmation: G.op.__confirmation}))
 
         puts_info("  + %20s - %20s +" % ["-" * 20, "-" * 20])
         puts_info("  | %20s | %20s |" % ["token", "amount"])
