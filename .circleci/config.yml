@@ -66,7 +66,7 @@ jobs:
           docker login -u $DOCKER_USER -p $DOCKER_PASS
           docker build -t sushichain/sushichain .
           docker push sushichain/sushichain
-          docker build -t sushichain/sushid
+          docker build -t sushichain/sushid .
           docker push sushichain/sushid
 
 workflows:
