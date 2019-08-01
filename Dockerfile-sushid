@@ -20,8 +20,6 @@ RUN mkdir -p /usr/local/sc
 
 WORKDIR /usr/local/sc
 
-RUN sushi wallet create -w testnet-wallet-1.json --testnet
-
 EXPOSE 3000
 
 CMD sushid -w testnet-wallet-1.json --testnet -u http://testnet.sushichain.io:3000 -d testnet.sqlite3 -h 209.216.230.35
