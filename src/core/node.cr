@@ -102,6 +102,7 @@ module ::Sushi::Core
           end
 
       if _s = s
+        debug "asking to sync chain at index #{@conflicted_index.nil? ? @blockchain.latest_index : @conflicted_index.not_nil!}"
         send(
           _s,
           M_TYPE_NODE_REQUEST_CHAIN,
@@ -289,8 +290,9 @@ module ::Sushi::Core
     end
 
     def broadcast_block(socket : HTTP::WebSocket, block : Block, from : Chord::NodeContext? = nil)
+      debug "new block coming: #{light_cyan(@blockchain.chain.size)}"
+      debug "block index from peer: #{block.index}"
       if @blockchain.latest_index + 1 == block.index
-        debug "new block coming: #{light_cyan(@blockchain.chain.size)}"
         debug "sending new block on to peer"
         send_block(block, from)
         debug "finished sending new block on to peer"
@@ -388,6 +390,7 @@ module ::Sushi::Core
       info "requested new chain: #{latest_index}"
 
       send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {chain: @blockchain.subchain(latest_index)})
+      debug "chain sent to peer for sync"
 
       sync_chain(socket) if latest_index > @blockchain.latest_block.index
     end
