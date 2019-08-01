@@ -56,7 +56,7 @@ jobs:
       - checkout
       - run: |
           docker build -t sushichain/sushichain .
-          docker build -t sushichain/sushid -f ./Dockerfile-sushid
+          docker build -f ./Dockerfile-sushid -t sushichain/sushid .
 
   docker-deploy:
     machine: true
