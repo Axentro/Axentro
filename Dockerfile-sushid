@@ -18,6 +18,8 @@ RUN ln -s /usr/local/SushiChain/bin/sushi  /usr/local/bin/sushi
 
 RUN mkdir -p /usr/local/sc
 
+RUN cp -a /usr/local/SushiChain/api /usr/local/sc
+
 WORKDIR /usr/local/sc
 
 EXPOSE 3000
