@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::DApps::BuildIn
-  class TokenQuantity
+  struct TokenQuantity
     getter name : String
     getter quantities : Array(AddressQuantity)
 
@@ -41,7 +41,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
   end
 
-  class AddressQuantity
+  struct AddressQuantity
     getter address : String
     property quantity : Int64
 
@@ -53,7 +53,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
   end
 
-  class GroupBy
+  struct GroupBy
     getter label : String
     getter items : Array(TokenAddressQuantity)
 
@@ -61,7 +61,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
   end
 
-  class TokenAddressQuantity
+  struct TokenAddressQuantity
     getter token : String
     getter address : String
     property amount : Int64
