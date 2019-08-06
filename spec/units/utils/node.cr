@@ -15,7 +15,7 @@ module ::Units::Utils::NodeHelper
 
   class MockRequest < HTTP::Request
     def initialize(method : String, url : String = "/rpc", body : IO = IO::Memory.new, headers : HTTP::Headers = HTTP::Headers.new)
-      super(method, url, headers, body)
+      super(method, url, headers, body, "HTTP/1.1", internal: nil)
     end
   end
 

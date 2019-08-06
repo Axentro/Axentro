@@ -34,12 +34,12 @@ dependencies:
   crystal-ecdsa:
     github: sushichain/crystal-ecdsa
   i18n:
-    github: TechMagister/i18n.cr     
+    github: TechMagister/i18n.cr
 
 development_dependencies:
   ameba:
     github: veelenga/ameba
 
-crystal: 0.29.0
+crystal: 0.30.0
 
 license: MIT
