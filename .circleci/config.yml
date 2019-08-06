@@ -40,7 +40,7 @@ jobs:
 
   e2e-tests-one-private:
     docker:
-      - image: crystallang/crystal:0.29.0
+      - image: crystallang/crystal:0.30.0
     steps:
       - checkout
       - run: |
