@@ -20,8 +20,9 @@ include ::Sushi::Common::Denomination
 include ::Sushi::Core::NodeComponents
 include Hashes
 
-TOTAL_BLOCK_REWARD = 50462650_i64
-TOTAL_BLOCK_LIMIT = 50462651_i64
+TOTAL_BLOCK_REWARD = 1200000000_i64
+TOTAL_BLOCK_LIMIT  =  4_000_000_i64
+
 
 describe Blockchain do
   it "should calculate the block rewards for a single miner" do
@@ -33,10 +34,10 @@ describe Blockchain do
       node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
       miner1_reward = get_recipient_for(transaction.recipients, "Miner 1")[:amount]
 
-      node_reward.should eq(12615663_i64)
+      node_reward.should eq(300000000_i64)
       as_percentage(node_reward).should eq(25)
 
-      miner1_reward.should eq(37846987_i64)
+      miner1_reward.should eq(900000000_i64)
       as_percentage(miner1_reward).should eq(75)
 
       (node_reward + miner1_reward).should eq(TOTAL_BLOCK_REWARD)
@@ -56,16 +57,16 @@ describe Blockchain do
       miner2_reward = get_recipient_for(transaction.recipients, "Miner 2")[:amount]
       miner3_reward = get_recipient_for(transaction.recipients, "Miner 3")[:amount]
 
-      node_reward.should eq(12615664_i64)
+      node_reward.should eq(300000000_i64)
       as_percentage(node_reward).should eq(25)
 
-      miner1_reward.should eq(12615662_i64)
+      miner1_reward.should eq(300000000_i64)
       as_percentage(miner1_reward).should eq(25)
 
-      miner2_reward.should eq(12615662_i64)
+      miner2_reward.should eq(300000000_i64)
       as_percentage(miner2_reward).should eq(25)
 
-      miner3_reward.should eq(12615662_i64)
+      miner3_reward.should eq(300000000_i64)
       as_percentage(miner3_reward).should eq(25)
 
       (node_reward + miner1_reward + miner2_reward + miner3_reward).should eq(TOTAL_BLOCK_REWARD)
@@ -76,7 +77,7 @@ describe Blockchain do
     assert_reward_distribution(1, 2, 25, 50)
     assert_reward_distribution(1, 3, 19, 56)
     assert_reward_distribution(1, 4, 15, 60)
-    assert_reward_distribution(1, 5, 12, 62)
+    assert_reward_distribution(1, 5, 13, 63)
     assert_reward_distribution(1, 6, 11, 64)
     assert_reward_distribution(1, 7, 9, 66)
     assert_reward_distribution(1, 70, 1, 74)
@@ -126,7 +127,7 @@ describe Blockchain do
     with_factory do |block_factory, transaction_factory|
       miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
       transactions = [transaction_factory.make_send(2000_i64), transaction_factory.make_send(9000_i64)]
-      total_reward = transactions.flat_map(&.senders).map(&.["fee"]).reduce(0){|total, fee| total + fee}
+      total_reward = transactions.flat_map(&.senders).map(&.["fee"]).reduce(0) { |total, fee| total + fee }
 
       coinbase_amount = block_factory.blockchain.coinbase_amount(TOTAL_BLOCK_LIMIT, transactions, 0_i64)
       transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1])

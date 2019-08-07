@@ -18,6 +18,7 @@ module ::Sushi::Core
   class Blockchain
     TOKEN_DEFAULT = Core::DApps::BuildIn::UTXO::DEFAULT
 
+
     alias Chain = Array(Block)
     alias Header = NamedTuple(
       index: Int64,
@@ -33,10 +34,10 @@ module ::Sushi::Core
 
     @node : Node?
     @mining_block : Block?
+    @block_reward_calculator : BlockRewardCalculator = BlockRewardCalculator.init
 
     def initialize(@wallet : Wallet, @database : Database?, @premine : Premine?)
       initialize_dapps
-
       TransactionPool.setup
     end
 
@@ -351,13 +352,15 @@ module ::Sushi::Core
       )
     end
 
-    RR = 2546479089470325
+    # RR = 2546479089470325
 
     def coinbase_amount(index : Int64, transactions, premine_total_value : Int64) : Int64
-      premine_index = premine_as_index(premine_total_value, index)
-      index_index = (premine_index + index) * (premine_index + index)
-      return total_fees(transactions) if index_index > RR
-      Math.sqrt(RR - index_index).to_i64
+      # premine_index = premine_as_index(premine_total_value, index)
+      # index_index = (premine_index + index) * (premine_index + index)
+      # return total_fees(transactions) if index_index > RR
+      # Math.sqrt(RR - index_index).to_i64
+      return total_fees(transactions) if index > @block_reward_calculator.max_blocks
+      @block_reward_calculator.reward_for_block(index)
     end
 
     def premine_as_index(premine_value : Int64, current_index : Int64) : Int64
