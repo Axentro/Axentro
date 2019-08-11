@@ -12,21 +12,21 @@
 
 module ::Sushi::Core
   struct BlockRewardCalculator
-    getter exponential : Float32
+    getter exponential : BigDecimal
     getter max_blocks : Int64
 
-    def initialize(@first_block_reward : Float32, @total_reward : Float32, @max_blocks : Int64)
+    def initialize(@first_block_reward : BigDecimal, @total_reward : BigDecimal, @max_blocks : Int64)
       @exponential = 1 - @first_block_reward / @total_reward
     end
 
     def reward_for_block(block_index : Int64, total_premine_value : Int64)
-      premine_index = premine_as_index(total_premine_value, block_index)
+      p premine_index = premine_as_index(total_premine_value, block_index)
       get_block_reward(block_index + premine_index)
     end
 
     private def get_block_reward(block_index : Int64)
       return 0_i64 if block_index >= @max_blocks
-      scale_i64((@first_block_reward * (@exponential ** block_index)).to_s)
+      scale_i64((@first_block_reward * (BigDecimal.new(@exponential.to_f64 ** block_index))))
     end
 
     private def premine_as_index(premine_value : Int64, current_index : Int64) : Int64
@@ -44,9 +44,9 @@ module ::Sushi::Core
     end
 
     def self.init
-      BlockRewardCalculator.new(12, 23_000_000, 4_000_000_i64)
+      BlockRewardCalculator.new(BigDecimal.new(12), BigDecimal.new(23_000_000), 4_000_000_i64)
     end
-  end
 
-  include Logger
+    include Logger
+  end
 end

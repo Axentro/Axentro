@@ -19,18 +19,28 @@ include Sushi::Core::TransactionModels
 include ::Sushi::Common::Denomination
 include Hashes
 
-MAX_BLOCKS      =  4_000_000_i64
-COIN_CAP        = 23_000_000_f32
-STARTING_REWARD =         12_f32
+MAX_BLOCKS      = 4_000_000_i64
+COIN_CAP        = BigDecimal.new(23_000_000)
+STARTING_REWARD = BigDecimal.new(12)
 
 describe BlockRewardCalculator do
-  it "should return the correct block reward based on the supplied index" do
-    calc = BlockRewardCalculator.new(STARTING_REWARD, COIN_CAP, MAX_BLOCKS)
-    count = 0_i64
-    (0_i64..MAX_BLOCKS).each do |i|
-      c = calc.reward_for_block(i, 0_i64)
-      count += c
-    end
-    p scale_decimal(count)
+  it "should return the correct block reward based on the supplied index with init" do
+    assert_calcs(BlockRewardCalculator.init)
   end
+
+  it "should return the correct block reward based on the supplied index" do
+    assert_calcs(BlockRewardCalculator.new(STARTING_REWARD, COIN_CAP, MAX_BLOCKS))
+  end
+
+  it "should return correct block reward when premine is supplied" do
+    calc = BlockRewardCalculator.init
+    calc.reward_for_block(1_i64, 0_i64).should eq(1199999373)
+  end
+end
+
+def assert_calcs(calc)
+  calc.reward_for_block(0_i64, 0_i64).should eq(1200000000)
+  calc.reward_for_block(1238291_i64, 0_i64).should eq(628924864)
+  calc.reward_for_block(756752_i64, 0_i64).should eq(808555726)
+  calc.reward_for_block(MAX_BLOCKS, 0_i64).should eq(0)
 end
