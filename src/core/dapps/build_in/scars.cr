@@ -19,7 +19,7 @@ module ::Sushi::Core::DApps::BuildIn
 
   class Scars < DApp
     module Status
-      ACQUIRED =  0
+      ACQUIRED  =  0
       FOR_SALE  =  1
       NOT_FOUND = -1
     end
@@ -58,6 +58,10 @@ module ::Sushi::Core::DApps::BuildIn
       tmp_domains_internal.push(domain_map)
 
       resolve_for(domain_name, tmp_domains_internal.reverse)
+    end
+
+    def lookup(address : String) : Array(Domain)?
+      lookup_for(address)
     end
 
     def transaction_actions : Array(String)
@@ -195,6 +199,18 @@ RULE
       nil
     end
 
+    private def lookup_for(address : String) : Array(Domain)?
+      matched_domains = Array(Domain).new
+
+      @domains_internal.reverse.each do |domain_map|
+        domain_map.each do |domain_name, domain|
+          matched_domains << domain if domain[:address] == address
+        end
+      end
+
+      matched_domains
+    end
+
     private def create_domain_map_for_transactions(transactions : Array(Transaction)) : DomainMap
       domain_map = DomainMap.new
 
@@ -254,6 +270,8 @@ RULE
         return scars_resolve(json, context, params)
       when "scars_for_sale"
         return scars_for_sale(json, context, params)
+      when "scars_lookup"
+        return scars_lookup(json, context, params)
       end
 
       nil
@@ -285,6 +303,19 @@ RULE
 
     def scars_for_sale_impl
       sales
+    end
+
+    def scars_lookup(json, context, params)
+      address = json["address"].as_s
+
+      context.response.print api_success(scars_lookup_impl(address))
+      context
+    end
+
+    def scars_lookup_impl(address : String)
+      domains = lookup(address)
+
+      {address: address, domains: domains.to_json}
     end
 
     def scale_decimal(domain : Domain)

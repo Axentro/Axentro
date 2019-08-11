@@ -213,6 +213,13 @@ module ::Sushi::Interface
       JSON.parse(body)
     end
 
+    def lookup_internal(node, address) : JSON::Any
+      payload = {call: "scars_lookup", address: address}.to_json
+
+      body = rpc(node, payload)
+      JSON.parse(body)
+    end
+
     abstract def sub_actions : Array(SushiAction)
     abstract def option_parser : OptionParser?
     abstract def run_impl(action_name : String?) : OptionParser?

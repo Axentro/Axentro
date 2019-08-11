@@ -18,6 +18,7 @@ help:
   fee: "please specify transaction fee: -f [fee]. you can check minimum fee with `sushi tx fees`"
   price:         "please specify a price for scars --price=[PRICE]"
   domain: "please specify a domain for scars: --domain=[DOMAIN]"
+  lookup_address: "please specify an address: -a [address] or --address=[address]"
   token:
     name: "please specify a token name: --token=[TOKEN]"
     amount: "please specify the token amount: -m [amount]"
