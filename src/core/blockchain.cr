@@ -360,22 +360,22 @@ module ::Sushi::Core
       # return total_fees(transactions) if index_index > RR
       # Math.sqrt(RR - index_index).to_i64
       return total_fees(transactions) if index > @block_reward_calculator.max_blocks
-      @block_reward_calculator.reward_for_block(index)
+      @block_reward_calculator.reward_for_block(index, premine_total_value)
     end
 
-    def premine_as_index(premine_value : Int64, current_index : Int64) : Int64
-      return 0_i64 if (premine_value <= 0_i64 || current_index > 0)
-      accumulated_value = 0_i64
-      index = 0_i64
-      (0_i64..(Math.sqrt(RR).to_i64)).each do |_|
-        value = Math.sqrt(RR - (index * index)).to_i64
-        accumulated_value = accumulated_value + value
-        break if accumulated_value >= premine_value
-        index = index + 1
-      end
-      debug "accumulated_value: #{accumulated_value} -> premine_value: #{premine_value}, index: #{index}"
-      index
-    end
+    # def premine_as_index(premine_value : Int64, current_index : Int64) : Int64
+    #   return 0_i64 if (premine_value <= 0_i64 || current_index > 0)
+    #   accumulated_value = 0_i64
+    #   index = 0_i64
+    #   (0_i64..(Math.sqrt(RR).to_i64)).each do |_|
+    #     value = Math.sqrt(RR - (index * index)).to_i64
+    #     accumulated_value = accumulated_value + value
+    #     break if accumulated_value >= premine_value
+    #     index = index + 1
+    #   end
+    #   debug "accumulated_value: #{accumulated_value} -> premine_value: #{premine_value}, index: #{index}"
+    #   index
+    # end
 
     def total_fees(transactions) : Int64
       return 0_i64 if transactions.size < 2
