@@ -24,6 +24,13 @@ TOTAL_BLOCK_REWARD = 50462650_i64
 TOTAL_BLOCK_LIMIT = 50462651_i64
 
 describe Blockchain do
+
+  it "why does this fail" do
+    with_factory do |block_factory, _|
+      block_factory.add_blocks(900)
+    end
+  end
+
   it "should calculate the block rewards for a single miner" do
     with_factory do |block_factory, _|
       miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}

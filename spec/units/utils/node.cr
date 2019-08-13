@@ -39,13 +39,6 @@ module ::Units::Utils::NodeHelper
     end
   end
 
-  def blockchain_node(wallet : Wallet) : Blockchain
-    blockchain = Blockchain.new(wallet)
-    node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, wallet, nil, false)
-    blockchain.setup(node)
-    blockchain
-  end
-
   def exec_rest_api(res, status_code = 200, &block)
     res.response.output.flush
     res.response.output.close
