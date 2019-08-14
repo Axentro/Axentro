@@ -10,6 +10,6 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-require "../core/premine/*"
+require "../core/developer_fund/*"
 require "./modules/logger"
 require "./modules/*"

@@ -11,8 +11,8 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core
-  class Premine
-    @config : PremineConfig
+  class DeveloperFund
+    @config : DeveloperFundConfig
 
     def self.validate(path : String | Nil)
       path.nil? ? nil : self.new(path)
@@ -34,7 +34,7 @@ module ::Sushi::Core
       @config.addresses.reduce(0_i64){|total, item| total + scale_i64(item["amount"])}
     end
 
-    def self.transactions(config : PremineConfig)
+    def self.transactions(config : DeveloperFundConfig)
       recipients = config.addresses.map do |item|
         {address: item["address"], amount: item["amount"].to_s}
       end
@@ -53,8 +53,8 @@ module ::Sushi::Core
     end
 
     private def validate(path : String)
-      raise("Premine input file must be a valid .yml file - you supplied #{path}") unless File.extname(path) == ".yml"
-      content = PremineConfig.from_yaml(File.read(path))
+      raise("Developer fund input file must be a valid .yml file - you supplied #{path}") unless File.extname(path) == ".yml"
+      content = DeveloperFundConfig.from_yaml(File.read(path))
       content.addresses.each do |item|
         address = item["address"]
         amount = item["amount"]
@@ -65,7 +65,7 @@ module ::Sushi::Core
     end
   end
 
-  class PremineConfig
+  class DeveloperFundConfig
     YAML.mapping(addresses: Array(Hash(String, String)))
 
     def initialize(@addresses : Array(Hash(String, String)))

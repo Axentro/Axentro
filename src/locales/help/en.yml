@@ -22,4 +22,4 @@ help:
     name: "please specify a token name: --token=[TOKEN]"
     amount: "please specify the token amount: -m [amount]"
   config: "please specify the config name: --name=[name]"
-  premine:       "please specify the path to a premine.yml file"
+  developer_fund:       "please specify the path to a developer_fund.yml file"
