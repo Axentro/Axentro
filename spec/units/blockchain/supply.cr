@@ -20,33 +20,10 @@ include ::Sushi::Common::Denomination
 include Hashes
 
 describe Blockchain do
-  it "should calculate the total supply" do
+  ignored "should calculate the total supply" do
     with_factory do |block_factory, _|
-
-         p total = (0_i64..4000000_i64).reduce(0_i64){|acc, i| acc + block_factory.blockchain.coinbase_amount(i, [] of Transaction) }
-
-
-      # t_amount = 0_i64
-      # c_amount = 0_i64
-      # i = 0_i64
-      #
-      # spawn do
-      # loop do
-      #   c_amount = block_factory.blockchain.coinbase_amount(i, [] of Transaction, 0_i64)
-      #   break if c_amount == 0
-      #
-      #   t_amount += c_amount
-      #   i += 1
-      #   # puts "at #{i} (current amount: #{c_amount}, total amount: #{scale_decimal(t_amount)} [SUSHI])\r" if i % 1000000 == 0
-      # end
-    # end
-
-      # puts ""
-      # puts "Total amount : #{scale_decimal(t_amount)} [SUSHI]"
-      # puts "Last index   : #{i}"
-
-      # i.should eq(50462651_i64)                              # last index
-      # scale_decimal(t_amount).should eq("20000000.00004112") # total supply
+      total_supply = (0_i64..4000000_i64).to_a.reduce(0_i64) { |acc, i| block_factory.blockchain.coinbase_amount(i, [] of Transaction) + acc }
+      scale_decimal(total_supply).should eq("20146526.12090981")
     end
   end
   STDERR.puts "< Total Supply"

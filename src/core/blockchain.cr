@@ -353,9 +353,8 @@ module ::Sushi::Core
     end
 
     def coinbase_amount(index : Int64, transactions) : Int64
-      fees = total_fees(transactions)
-      return fees if index >= @block_reward_calculator.max_blocks
-      @block_reward_calculator.reward_for_block(index) #+ fees
+      return total_fees(transactions) if index >= @block_reward_calculator.max_blocks
+      @block_reward_calculator.reward_for_block(index)
     end
 
     def total_fees(transactions) : Int64
