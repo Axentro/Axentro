@@ -67,20 +67,20 @@ describe UTXO do
         chain2 = block_factory.add_block(transactions2).chain
         utxo.record(chain2)
 
-        # utxo.create_token(sender_wallet_1.address, 100000_i64, "KINGS")
-        # utxo.create_token(sender_wallet_3.address, 100000_i64, "FOO")
-        #
-        # chain3 = block_factory.add_block(transactions3).chain
-        # utxo.record(chain3)
-        #
-        # utxo = utxo.@utxo_internal
-        # utxo.size.should eq(6)
-        # utxo[0].should eq(TokenQuantity.new("SUSHI", [] of AddressQuantity))
-        # utxo[1].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 1199999373_i64)]))
-        # utxo[2].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 2399998120_i64)]))
-        # utxo[3].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 3599996241_i64)]))
-        # utxo[4].should eq(TokenQuantity.new("KINGS", [AddressQuantity.new(sender_wallet_1.address, 100000_i64)]))
-        # utxo[5].should eq(TokenQuantity.new("FOO", [AddressQuantity.new(sender_wallet_3.address, 100000_i64)]))
+        utxo.create_token(sender_wallet_1.address, 100000_i64, "KINGS")
+        utxo.create_token(sender_wallet_3.address, 100000_i64, "FOO")
+
+        chain3 = block_factory.add_block(transactions3).chain
+        utxo.record(chain3)
+
+        utxo = utxo.@utxo_internal
+        utxo.size.should eq(6)
+        utxo[0].should eq(TokenQuantity.new("SUSHI", [] of AddressQuantity))
+        utxo[1].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 1199999373_i64)]))
+        utxo[2].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 2399998120_i64)]))
+        utxo[3].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 3599996241_i64)]))
+        utxo[4].should eq(TokenQuantity.new("KINGS", [AddressQuantity.new(sender_wallet_1.address, 100000_i64)]))
+        utxo[5].should eq(TokenQuantity.new("FOO", [AddressQuantity.new(sender_wallet_3.address, 100000_i64)]))
       end
     end
   end

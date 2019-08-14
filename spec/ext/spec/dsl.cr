@@ -148,6 +148,7 @@ module Spec
   end
 
   # :nodoc:
+  # ameba:disable Metrics/CyclomaticComplexity
   def self.matches?(description, file, line, end_line = line)
     spec_pattern = @@pattern
     spec_line = @@line
@@ -216,7 +217,8 @@ module Spec
     at_exit do
       elapsed_time = Time.monotonic - start_time
       Spec::RootContext.finish(elapsed_time, @@aborted)
-      exit 1 unless Spec::RootContext.succeeded && !@@aborted
+
+      exit 1 if !Spec::RootContext.succeeded && !@@aborted
     end
   end
 end

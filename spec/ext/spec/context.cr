@@ -72,6 +72,7 @@ module Spec
       Spec.formatters.each(&.print_results(elapsed_time, aborted))
     end
 
+    # ameba:disable Metrics/CyclomaticComplexity
     def print_results(elapsed_time, aborted = false)
       pendings = @results[:pending]
       unless pendings.empty?
