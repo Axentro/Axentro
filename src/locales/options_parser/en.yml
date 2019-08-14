@@ -33,6 +33,6 @@ cli:
       price:      "buy/sell price for SCARS"
       domain:     "specify a domain for SCARS"
     config:       "specify a config name"
-    premine:      "invoke premine with supplied configuration"
+    developer_fund:      "invoke developer fund with supplied configuration"
   errors:
     decimal: "please supply valid decimal number: %{value}"

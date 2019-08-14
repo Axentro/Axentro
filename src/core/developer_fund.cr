@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "../common/modules/*"
-require "./premine/premine.cr"
+require "./developer_fund/developer_fund.cr"
 
 include ::Sushi::Common::Timestamp
 include ::Sushi::Common::Validator

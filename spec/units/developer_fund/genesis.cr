@@ -16,7 +16,7 @@ require "./../utils"
 include Sushi::Core
 
 describe Blockchain do
-  it "should create a genesis block with no transactions when no premine is provided" do
+  it "should create a genesis block with no transactions when no developer fund is provided" do
     node_wallet = Wallet.from_json(Wallet.create(true).to_json)
     node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, node_wallet, nil, nil, false)
     blockchain = node.blockchain
@@ -27,10 +27,10 @@ describe Blockchain do
     genesis_block.transactions.should eq([] of Transaction)
   end
 
-  it "should create a genesis block with the specified transactions when premine is provided" do
+  it "should create a genesis block with the specified transactions when developer fund is provided" do
     node_wallet = Wallet.from_json(Wallet.create(true).to_json)
-    premine = Premine.validate("#{__DIR__}/../utils/data/premine.yml")
-    node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, node_wallet, nil, premine, false)
+    developer_fund = DeveloperFund.validate("#{__DIR__}/../utils/data/developer_fund.yml")
+    node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, node_wallet, nil, developer_fund, false)
     blockchain = node.blockchain
     blockchain.setup(node)
 
@@ -40,5 +40,5 @@ describe Blockchain do
     genesis_block.transactions.flat_map(&.recipients).sort_by(&.["amount"]).should eq(expected_recipients)
   end
 
-    STDERR.puts "< Premine::Genesis"
+    STDERR.puts "< DeveloperFund::Genesis"
 end

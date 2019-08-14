@@ -35,7 +35,7 @@ module ::Sushi::Core
     @mining_block : Block?
     @block_reward_calculator = BlockRewardCalculator.init
 
-    def initialize(@wallet : Wallet, @database : Database?, @premine : Premine?)
+    def initialize(@wallet : Wallet, @database : Database?, @developer_fund : DeveloperFund?)
       initialize_dapps
 
       TransactionPool.setup
@@ -225,7 +225,7 @@ module ::Sushi::Core
 
     def genesis_block : Block
       genesis_index = 0_i64
-      genesis_transactions = @premine ? Premine.transactions(@premine.not_nil!.get_config) : [] of Transaction
+      genesis_transactions = @developer_fund ? DeveloperFund.transactions(@developer_fund.not_nil!.get_config) : [] of Transaction
       genesis_nonce = 0_u64
       genesis_prev_hash = "genesis"
       genesis_timestamp = Time.now.to_unix
@@ -274,10 +274,6 @@ module ::Sushi::Core
       refresh_mining_block(Consensus::DEFAULT_DIFFICULTY_TARGET) unless @mining_block
       @mining_block.not_nil!
     end
-
-   def get_premine_total_amount : Int64
-     @premine ? @premine.not_nil!.get_total_amount : 0_i64
-   end
 
     def refresh_mining_block(difficulty)
       coinbase_amount = coinbase_amount(latest_index + 1, embedded_transactions)
