@@ -17,6 +17,10 @@ module ::Sushi::Common::Denomination
     BigDecimal.new(value).scale_to(BigDecimal.new(1, SCALE_DECIMAL)).value.to_i64
   end
 
+  def scale_i64(value : BigDecimal) : Int64
+    value.scale_to(BigDecimal.new(1, SCALE_DECIMAL)).value.to_i64
+  end
+
   def scale_decimal(value : Int64) : String
     BigDecimal.new(value, 8).to_s
   end

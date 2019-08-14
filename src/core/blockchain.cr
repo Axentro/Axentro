@@ -33,6 +33,7 @@ module ::Sushi::Core
 
     @node : Node?
     @mining_block : Block?
+    @block_reward_calculator = BlockRewardCalculator.init
 
     def initialize(@wallet : Wallet, @database : Database?, @premine : Premine?)
       initialize_dapps
@@ -279,7 +280,7 @@ module ::Sushi::Core
    end
 
     def refresh_mining_block(difficulty)
-      coinbase_amount = coinbase_amount(latest_index + 1, embedded_transactions, get_premine_total_amount)
+      coinbase_amount = coinbase_amount(latest_index + 1, embedded_transactions)
       coinbase_transaction = create_coinbase_transaction(coinbase_amount, node.miners)
       transactions = align_transactions(coinbase_transaction, coinbase_amount)
       timestamp = __timestamp
@@ -351,27 +352,10 @@ module ::Sushi::Core
       )
     end
 
-    RR = 2546479089470325
-
-    def coinbase_amount(index : Int64, transactions, premine_total_value : Int64) : Int64
-      premine_index = premine_as_index(premine_total_value, index)
-      index_index = (premine_index + index) * (premine_index + index)
-      return total_fees(transactions) if index_index > RR
-      Math.sqrt(RR - index_index).to_i64
-    end
-
-    def premine_as_index(premine_value : Int64, current_index : Int64) : Int64
-      return 0_i64 if (premine_value <= 0_i64 || current_index > 0)
-      accumulated_value = 0_i64
-      index = 0_i64
-      (0_i64..(Math.sqrt(RR).to_i64)).each do |_|
-        value = Math.sqrt(RR - (index * index)).to_i64
-        accumulated_value = accumulated_value + value
-        break if accumulated_value >= premine_value
-        index = index + 1
-      end
-      debug "accumulated_value: #{accumulated_value} -> premine_value: #{premine_value}, index: #{index}"
-      index
+    def coinbase_amount(index : Int64, transactions) : Int64
+      fees = total_fees(transactions)
+      return fees if index >= @block_reward_calculator.max_blocks
+      @block_reward_calculator.reward_for_block(index) #+ fees
     end
 
     def total_fees(transactions) : Int64

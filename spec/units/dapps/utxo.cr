@@ -27,7 +27,7 @@ describe UTXO do
         utxo.record(chain)
         address = chain[1].transactions.first.recipients.first[:address]
 
-        utxo.get_for(address, utxo.@utxo_internal.reverse, "SUSHI").should eq(504626500_i64)
+        utxo.get_for(address, utxo.@utxo_internal.reverse, "SUSHI").should eq(11999965560_i64)
       end
     end
   end
@@ -76,9 +76,9 @@ describe UTXO do
         utxo = utxo.@utxo_internal
         utxo.size.should eq(6)
         utxo[0].should eq(TokenQuantity.new("SUSHI", [] of AddressQuantity))
-        utxo[1].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 50462650_i64)]))
-        utxo[2].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 100925300_i64)]))
-        utxo[3].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 151387950_i64)]))
+        utxo[1].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 1199999373_i64)]))
+        utxo[2].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 2399998120_i64)]))
+        utxo[3].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 3599996241_i64)]))
         utxo[4].should eq(TokenQuantity.new("KINGS", [AddressQuantity.new(sender_wallet_1.address, 100000_i64)]))
         utxo[5].should eq(TokenQuantity.new("FOO", [AddressQuantity.new(sender_wallet_3.address, 100000_i64)]))
       end
@@ -270,12 +270,12 @@ describe UTXO do
     it "should raise an error if sender does not have enough tokens to afford the transaction" do
       with_factory do |block_factory, transaction_factory|
         transaction1 = transaction_factory.make_send(100000000_i64)
-        transaction2 = transaction_factory.make_send(200000000_i64)
+        transaction2 = transaction_factory.make_send(2000000000_i64)
         chain = block_factory.add_blocks(1).chain
         utxo = UTXO.new(block_factory.blockchain)
 
         utxo.record(chain)
-        expect_raises(Exception, "Unable to send 2 to recipient because you do not have enough. Current tokens: -.4954735 + 0") do
+        expect_raises(Exception, "Unable to send 20 to recipient because you do not have enough. Current tokens: 10.99989373 + 0") do
           utxo.valid_transaction?(transaction2, [transaction1])
         end
       end
@@ -362,7 +362,7 @@ describe UTXO do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq("{\"confirmation\":5,\"pairs\":[{\"token\":\"SUSHI\",\"amount\":\"3.027759\"}]}")
+            result.should eq("{\"confirmation\":5,\"pairs\":[{\"token\":\"SUSHI\",\"amount\":\"71.99986848\"}]}")
           end
         end
       end
@@ -375,7 +375,7 @@ describe UTXO do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq(%{{"confirmation":10,"pairs":[{"token":"SUSHI","amount":"0.5046265"}]}})
+            result.should eq(%{{"confirmation":10,"pairs":[{"token":"SUSHI","amount":"11.99999373"}]}})
           end
         end
       end
