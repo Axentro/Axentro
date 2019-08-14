@@ -186,7 +186,7 @@ describe UTXO do
     context "when chain is empty" do
       it "should get pending transactions amount for the supplied address when no transactions are supplied and the chain is empty" do
         with_factory do |block_factory, _|
-          chain = [] of Block
+          chain = [] of SlowBlock
           utxo = UTXO.new(block_factory.blockchain)
           utxo.record(chain)
 
@@ -198,7 +198,7 @@ describe UTXO do
 
       it "should get pending transactions when no transactions are supplied and the chain is empty and the address is unknown" do
         with_factory do |block_factory, _|
-          chain = [] of Block
+          chain = [] of SlowBlock
           utxo = UTXO.new(block_factory.blockchain)
           utxo.record(chain)
 

@@ -30,7 +30,7 @@ module ::Sushi::Core::Protocol
   struct MContentMinerHandshakeAccepted
     JSON.mapping({
       version:    Int32,
-      block:      Block,
+      block:      SlowBlock,
       difficulty: Int32,
     })
   end
@@ -56,7 +56,7 @@ module ::Sushi::Core::Protocol
 
   struct MContentMinerBlockUpdate
     JSON.mapping({
-      block:      Block,
+      block:      SlowBlock,
       difficulty: Int32
     })
   end
@@ -227,7 +227,7 @@ module ::Sushi::Core::Protocol
 
   struct MContentNodeBroadcastBlock
     JSON.mapping({
-      block: Block,
+      block: SlowBlock,
       from:  Core::NodeComponents::Chord::NodeContext,
     })
   end

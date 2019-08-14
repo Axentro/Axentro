@@ -266,7 +266,7 @@ module ::Sushi::Core
       @blockchain.add_transaction(transaction)
     end
 
-    def send_block(block : Block, from : Chord::NodeContext? = nil)
+    def send_block(block : SlowBlock, from : Chord::NodeContext? = nil)
       debug "entering send_block"
       content = if from.nil? || (!from.nil? && from[:is_private])
                   {block: block, from: @chord.context}
@@ -289,7 +289,7 @@ module ::Sushi::Core
       send_on_chord(M_TYPE_NODE_SEND_CLIENT_CONTENT, _content, from)
     end
 
-    def broadcast_block(socket : HTTP::WebSocket, block : Block, from : Chord::NodeContext? = nil)
+    def broadcast_block(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
       debug "new block coming: #{light_cyan(@blockchain.chain.size)}"
       debug "block index from peer: #{block.index}"
       if @blockchain.latest_index + 1 == block.index
@@ -330,7 +330,7 @@ module ::Sushi::Core
       end
     end
 
-    def new_block(block : Block)
+    def new_block(block : SlowBlock)
       @blockchain.push_block(block)
       @pubsub_controller.broadcast_latest_block
     end

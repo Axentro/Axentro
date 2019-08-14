@@ -138,7 +138,7 @@ describe Blockchain do
 #     end
 #   end
 
-  STDERR.puts "< Block Rewards"
+  STDERR.puts "< SlowBlock Rewards"
 end
 
 def assert_reward_distribution(nonces1, nonces2, expected_percent_1, expected_percent_2)

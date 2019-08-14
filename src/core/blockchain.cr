@@ -12,13 +12,14 @@
 
 require "./blockchain/consensus"
 require "./blockchain/*"
+require "./blockchain/block/*"
 require "./dapps"
 
 module ::Sushi::Core
   class Blockchain
     TOKEN_DEFAULT = Core::DApps::BuildIn::UTXO::DEFAULT
 
-    alias Chain = Array(Block)
+    alias Chain = Array(SlowBlock)
     alias Header = NamedTuple(
       index: Int64,
       nonce: UInt64,
@@ -32,7 +33,7 @@ module ::Sushi::Core
     getter wallet : Wallet
 
     @node : Node?
-    @mining_block : Block?
+    @mining_block : SlowBlock?
     @block_reward_calculator = BlockRewardCalculator.init
 
     def initialize(@wallet : Wallet, @database : Database?, @developer_fund : DeveloperFund?)
@@ -95,12 +96,12 @@ module ::Sushi::Core
       TransactionPool.replace(transactions)
     end
 
-    def valid_nonce?(nonce : UInt64) : Block?
+    def valid_nonce?(nonce : UInt64) : SlowBlock?
       return mining_block.with_nonce(nonce) if mining_block.with_nonce(nonce).valid_nonce?(mining_block_difficulty)
       nil
     end
 
-    def valid_block?(block : Block) : Block?
+    def valid_block?(block : SlowBlock) : SlowBlock?
       return block if block.valid?(self)
       nil
     end
@@ -118,7 +119,7 @@ module ::Sushi::Core
       block_difficulty_to_miner_difficulty(mining_block_difficulty)
     end
 
-    def push_block(block : Block)
+    def push_block(block : SlowBlock)
       @chain.push(block)
       if database = @database
         debug "sending to DB, block with nonce of #{block.nonce} and timestamp of #{block.timestamp}"
@@ -144,7 +145,7 @@ module ::Sushi::Core
       first_index = subchain[0].index
 
       if first_index == 0
-        @chain = [] of Block
+        @chain = [] of SlowBlock
       else
         @chain = @chain[0..first_index - 1]
       end
@@ -209,7 +210,7 @@ module ::Sushi::Core
       rejects.record_reject(transaction.id, e)
     end
 
-    def latest_block : Block
+    def latest_block : SlowBlock
       @chain[-1]
     end
 
@@ -223,7 +224,7 @@ module ::Sushi::Core
       @chain[from..-1]
     end
 
-    def genesis_block : Block
+    def genesis_block : SlowBlock
       genesis_index = 0_i64
       genesis_transactions = @developer_fund ? DeveloperFund.transactions(@developer_fund.not_nil!.get_config) : [] of Transaction
       genesis_nonce = 0_u64
@@ -231,7 +232,7 @@ module ::Sushi::Core
       genesis_timestamp = Time.now.to_unix
       genesis_difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
 
-      Block.new(
+      SlowBlock.new(
         genesis_index,
         genesis_transactions,
         genesis_nonce,
@@ -269,7 +270,7 @@ module ::Sushi::Core
       TransactionPool.embedded
     end
 
-    def mining_block : Block
+    def mining_block : SlowBlock
       debug "calling refresh_mining_block in mining_block" unless @mining_block
       refresh_mining_block(Consensus::DEFAULT_DIFFICULTY_TARGET) unless @mining_block
       @mining_block.not_nil!
@@ -283,7 +284,7 @@ module ::Sushi::Core
 
       debug "We are in refresh_mining_block, the next block will have a difficulty of #{difficulty}"
 
-      @mining_block = Block.new(
+      @mining_block = SlowBlock.new(
         latest_index + 1,
         transactions,
         0_u64,

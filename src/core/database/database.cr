@@ -22,7 +22,7 @@ module ::Sushi::Core
       @db.exec "create table if not exists blocks (idx integer primary key, json text)"
     end
 
-    def push_block(block : Block)
+    def push_block(block : SlowBlock)
       index = block.index
       json = block.to_json
 
@@ -45,13 +45,13 @@ module ::Sushi::Core
       end
     end
 
-    def get_block(index : Int64) : Block?
-      block : Block? = nil
+    def get_block(index : Int64) : SlowBlock?
+      block : SlowBlock? = nil
 
       @db.query "select json from blocks where idx = ?", [index] do |rows|
         rows.each do
           json = rows.read(String)
-          block = Block.from_json(json)
+          block = SlowBlock.from_json(json)
         end
       end
 

@@ -98,7 +98,7 @@ module ::Units::Utils::ChainGenerator
       block.difficulty = 0  # difficulty will be set to 0 for most unit tests
       valid_block = @blockchain.valid_block?(block)
       case valid_block
-      when Block
+      when SlowBlock
         @blockchain.push_block(valid_block)
       else
         raise "error could not push block onto blockchain - block was not valid"
