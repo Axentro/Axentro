@@ -10,18 +10,34 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Common::Denomination
-  SCALE_DECIMAL = 8
+class Spec::TAPFormatter < Spec::Formatter
+  @counter = 0
 
-  def scale_i64(value : String) : Int64
-    BigDecimal.new(value).scale_to(BigDecimal.new(1, SCALE_DECIMAL)).value.to_i64
+  def report(result)
+    case result.kind
+    when :success
+      @io << "ok"
+    when :fail, :error
+      @io << "not ok"
+    when :pending
+      @io << "ok"
+    when :ignored
+      @io << "ok"
+    end
+
+    @counter += 1
+
+    @io << ' ' << @counter << " -"
+    if result.kind == :ignored
+      @io << " # IGNORED"
+    end
+    @io << ' ' << result.description
+
+    @io.puts
   end
 
-  def scale_i64(value : BigDecimal) : Int64
-    value.scale_to(BigDecimal.new(1, SCALE_DECIMAL)).value.to_i64
-  end
-
-  def scale_decimal(value : Int64) : String
-    BigDecimal.new(value, SCALE_DECIMAL).to_s
+  def finish
+    @io << "1.." << @counter
+    @io.puts
   end
 end

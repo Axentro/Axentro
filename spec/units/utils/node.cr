@@ -56,7 +56,7 @@ module ::Units::Utils::NodeHelper
       fail "expected an io response"
     end
   rescue e : Exception
-    yield e.message.not_nil!
+    fail "something failed: #{e}"
   end
 
   def with_rpc_exec_internal_post(rpc, json, status_code = 200, &block)
@@ -104,6 +104,6 @@ module ::Units::Utils::NodeHelper
       fail "expected an io response"
     end
   rescue e : Exception
-    yield e.message.not_nil!
+    fail "something failed: #{e}"
   end
 end

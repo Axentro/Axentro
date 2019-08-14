@@ -10,10 +10,27 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-require "spec"
-require "./ext/spec/*"
-require "yaml"
-require "../src/common"
-require "../src/core"
+module Spec
+  # :nodoc:
+  def self.lines_cache
+    @@lines_cache ||= {} of String => Array(String)
+  end
 
-TOKEN_DEFAULT = Sushi::Core::DApps::BuildIn::UTXO::DEFAULT
+  # :nodoc:
+  def self.read_line(file, line)
+    return nil unless File.file?(file)
+
+    lines = lines_cache[file] ||= File.read_lines(file)
+    lines[line - 1]?
+  end
+
+  # :nodoc:
+  def self.relative_file(file)
+    cwd = Dir.current
+    if basename = file.lchop? cwd
+      basename.lchop '/'
+    else
+      file
+    end
+  end
+end
