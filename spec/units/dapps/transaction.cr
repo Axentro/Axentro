@@ -74,6 +74,7 @@ describe TransactionCreator do
             recipients: recipients,
             message:    "",
             token:      TOKEN_DEFAULT,
+            kind:       "SLOW"
           }.to_json
 
           json = JSON.parse(payload)
@@ -88,6 +89,7 @@ describe TransactionCreator do
             transaction.message.should eq("")
             transaction.senders.should eq(expected_senders)
             transaction.recipients.should eq(expected_recipients)
+            transaction.kind.should eq(TransactionKind::SLOW)
           end
         end
       end
@@ -107,7 +109,8 @@ describe TransactionCreator do
               TOKEN_DEFAULT, # token
               "0",           # prev_hash
               0_i64,         # timestamp
-              1              # scaled
+              1,             # scaled
+              TransactionKind::SLOW
             )
 
             signed_transaction = unsigned_transaction.as_signed([transaction_factory.sender_wallet])

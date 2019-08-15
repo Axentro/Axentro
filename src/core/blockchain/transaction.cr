@@ -27,6 +27,7 @@ module ::Sushi::Core
       prev_hash: String,
       timestamp: Int64,
       scaled: Int32,
+      kind: TransactionKind
     )
 
     setter prev_hash : String
@@ -42,7 +43,8 @@ module ::Sushi::Core
       @token : String,
       @prev_hash : String,
       @timestamp : Int64,
-      @scaled : Int32
+      @scaled : Int32,
+      @kind : TransactionKind
     )
     end
 
@@ -173,6 +175,7 @@ module ::Sushi::Core
         "0",
         self.timestamp,
         self.scaled,
+        self.kind
       )
     end
 
@@ -202,6 +205,7 @@ module ::Sushi::Core
         "0",
         self.timestamp,
         self.scaled,
+        self.kind
       )
     end
 
@@ -228,6 +232,7 @@ module ::Sushi::Core
       return false unless @token == other.token
       return false unless @timestamp == other.timestamp
       return false unless @scaled == other.scaled
+      return false unless @kind == other.kind
 
       true
     end

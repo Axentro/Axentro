@@ -33,6 +33,7 @@ describe RPCController do
             recipients: recipients,
             message:    "",
             token:      TOKEN_DEFAULT,
+            kind:       "SLOW"
           }.to_json
 
           json = JSON.parse(payload)
@@ -47,6 +48,7 @@ describe RPCController do
             transaction.message.should eq("")
             transaction.senders.should eq(expected_senders)
             transaction.recipients.should eq(expected_recipients)
+            transaction.kind.should eq(TransactionKind::SLOW)
           end
         end
       end

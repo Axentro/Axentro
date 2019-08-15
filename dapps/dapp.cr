@@ -207,7 +207,8 @@ module ::Sushi::Core::DApps::User
       senders : SendersDecimal,
       recipients : RecipientsDecimal,
       message : String,
-      token : String
+      token : String,
+      kind : TransactionKind
     ) : Bool
       if blockchain.indices.get(id)
         info "skip creating transaction #{id}"
@@ -220,6 +221,7 @@ module ::Sushi::Core::DApps::User
         recipients,
         message,
         token,
+        kind,
         id,
       )
 

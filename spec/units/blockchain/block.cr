@@ -41,14 +41,14 @@ describe SlowBlock do
     it "should calculate merkle tree root when coinbase transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
       block = SlowBlock.new(1_i64, [coinbase_transaction], 1_u64, "prev_hash", 0_i64, 3_i32)
-      block.calculate_merkle_tree_root.should eq("9ce1e44574e6b8fc802f90c210ae7ba411cf8563")
+      block.calculate_merkle_tree_root.should eq("f1a5402b71f528bc6d34dfc2e1973eea822db0e4")
     end
 
     it "should calculate merkle tree root when 2 transactions (first is coinbase)" do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = SlowBlock.new(1_i64, [coinbase_transaction, transaction1], 1_u64, "prev_hash", 0_i64, 3_i32)
-      block.calculate_merkle_tree_root.should eq("f77658ae5febe989371944e5754bb9c798a871b9")
+      block.calculate_merkle_tree_root.should eq("f8443333f72316e88b954cbfdb6b61e8be0fc5cf")
     end
   end
 
@@ -152,7 +152,7 @@ describe SlowBlock do
         timestamp = chain[1].timestamp
         block = SlowBlock.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 0_i32)
         block.merkle_tree_root = "invalid"
-        expect_raises(Exception, "invalid merkle tree root (expected invalid but got 9ce1e44574e6b8fc802f90c210ae7ba411cf8563)") do
+        expect_raises(Exception, "invalid merkle tree root (expected invalid but got f1a5402b71f528bc6d34dfc2e1973eea822db0e4)") do
           block.valid_as_latest?(block_factory.blockchain, false)
         end
       end
@@ -249,7 +249,8 @@ def a_fixed_coinbase_transaction
     TOKEN_DEFAULT, # token
     "0",           # prev_hash
     0_i64,         # timestamp
-    1              # scaled
+    1,             # scaled
+    TransactionKind::SLOW
   )
 end
 
@@ -280,7 +281,8 @@ def a_fixed_signed_transaction
     TOKEN_DEFAULT, # token
     "0",           # prev_hash
     0_i64,         # timestamp
-    1              # scaled
+    1,              # scaled
+    TransactionKind::SLOW
   )
 end
 

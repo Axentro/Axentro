@@ -346,6 +346,7 @@ module ::Sushi::Core
         "0",           # prev_hash
         __timestamp,   # timestamp
         1,             # scaled
+        TransactionKind::SLOW
       )
     end
 

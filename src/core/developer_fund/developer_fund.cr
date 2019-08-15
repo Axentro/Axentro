@@ -49,6 +49,7 @@ module ::Sushi::Core
         "0",           # prev_hash
         __timestamp,   # timestamp
         0,             # scaled
+        TransactionKind::SLOW
       ).to_transaction]
     end
 
@@ -71,4 +72,5 @@ module ::Sushi::Core
     def initialize(@addresses : Array(Hash(String, String)))
     end
   end
+  include TransactionModels
 end

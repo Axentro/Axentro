@@ -37,7 +37,8 @@ describe Transaction do
       TOKEN_DEFAULT, # token
       "0",           # prev_hash
       0_i64,         # timestamp
-      1              # scaled
+      1,             # scaled
+      TransactionKind::SLOW
     )
 
     transaction.action.should eq("send")
@@ -100,7 +101,8 @@ describe Transaction do
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
         transaction = unsigned_transaction.as_signed([sender_wallet])
         transaction.valid_common?.should be_true
@@ -143,7 +145,8 @@ describe Transaction do
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
 
         transaction.valid_common?.should be_true
@@ -165,7 +168,8 @@ describe Transaction do
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
 
         expect_raises(Exception, "be not checked signing") do
@@ -188,7 +192,8 @@ describe Transaction do
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
 
         transaction.valid_common?.should be_true
@@ -212,7 +217,8 @@ describe Transaction do
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
 
         transaction.valid_common?.should be_true
@@ -236,7 +242,8 @@ describe Transaction do
           "INVALID", # token
           "0",       # prev_hash
           0_i64,     # timestamp
-          1          # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
 
         transaction.valid_common?.should be_true
@@ -260,7 +267,8 @@ describe Transaction do
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
 
         transaction.valid_common?.should be_true
@@ -285,7 +293,8 @@ describe Transaction do
           TOKEN_DEFAULT, # token
           "1",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
 
         transaction.valid_common?.should be_true
@@ -309,7 +318,8 @@ describe Transaction do
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
 
         transaction.valid_common?.should be_true
@@ -412,7 +422,8 @@ describe Transaction do
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
         expect_raises(Exception, "invalid sender address checksum for: VDBpbnZhbGlkLXdhbGxldC1hZGRyZXNz") do
           transaction.valid_common?
@@ -438,7 +449,8 @@ describe Transaction do
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
         transaction = unsigned_transaction.as_signed([transaction_factory.sender_wallet])
         expect_raises(Exception, "invalid recipient address checksum for: VDBpbnZhbGlkLXdhbGxldC1hZGRyZXNz") do
@@ -461,7 +473,8 @@ describe Transaction do
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
         0_i64,         # timestamp
-        1              # scaled
+        1,             # scaled
+        TransactionKind::SLOW
       )
 
       signed_transaction = unsigned_transaction.as_signed([sender_wallet])
@@ -484,7 +497,8 @@ describe Transaction do
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
         0_i64,         # timestamp
-        1              # scaled
+        1,             # scaled
+        TransactionKind::SLOW
       )
 
       signed_transaction = unsigned_transaction.as_signed([sender_wallet])
@@ -512,7 +526,8 @@ describe Transaction do
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
         0_i64,         # timestamp
-        1              # scaled
+        1,             # scaled
+        TransactionKind::SLOW
       )
 
       transaction.sender_total_amount.should eq(10_i64)
@@ -533,7 +548,8 @@ describe Transaction do
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
         0_i64,         # timestamp
-        1              # scaled
+        1,             # scaled
+        TransactionKind::SLOW
       )
 
       transaction.recipient_total_amount.should eq(10_i64)
@@ -554,7 +570,8 @@ describe Transaction do
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
         0_i64,         # timestamp
-        1              # scaled
+        1,             # scaled
+        TransactionKind::SLOW
       )
 
       transaction.total_fees.should eq(10000_i64)

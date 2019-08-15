@@ -33,7 +33,8 @@ describe TransactionDecimal do
       TOKEN_DEFAULT, # token
       "0",           # prev_hash
       0_i64,         # timestamp
-      0              # scaled
+      0,             # scaled
+      TransactionKind::SLOW
     )
 
     transaction.action.should eq("send")
@@ -68,7 +69,8 @@ describe TransactionDecimal do
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
         0_i64,         # timestamp
-        1              # scaled
+        1,             # scaled
+        TransactionKind::SLOW
       )
     end
   end
@@ -87,7 +89,8 @@ describe TransactionDecimal do
       TOKEN_DEFAULT, # token
       "0",           # prev_hash
       0_i64,         # timestamp
-      0              # scaled
+      0,             # scaled
+      TransactionKind::SLOW
     )
     non_decimal = transaction.to_transaction
     typeof(non_decimal).should eq(Sushi::Core::Transaction)
