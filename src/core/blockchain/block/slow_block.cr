@@ -69,7 +69,7 @@ module ::Sushi::Core
     end
 
     private def process_transaction(blockchain, transaction, idx)
-      t = TransactionPool.find(transaction) || transaction
+      t = SlowTransactionPool.find(transaction) || transaction
       t.valid_common?
 
       if idx == 0

@@ -209,6 +209,14 @@ module ::Sushi::Core
       )
     end
 
+    def is_slow_transaction?
+      self.kind == TransactionKind::SLOW
+    end
+
+    def is_fast_transaction?
+      self.kind == TransactionKind::FAST
+    end
+
     def sender_total_amount : Int64
       senders.reduce(0_i64) { |sum, sender| sum + sender[:amount] }
     end

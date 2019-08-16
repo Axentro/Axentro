@@ -11,7 +11,8 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core
-  class TransactionPool
+
+  abstract class TransactionPool
     LIMIT = 2000
 
     @@instance : TransactionPool? = nil
@@ -22,10 +23,6 @@ module ::Sushi::Core
     @locked : Bool = false
 
     alias TxPoolWork = NamedTuple(call: Int32, content: String)
-
-    def self.setup
-      @@instance ||= TransactionPool.new
-    end
 
     def self.instance : TransactionPool
       @@instance.not_nil!
@@ -117,4 +114,17 @@ module ::Sushi::Core
     include Logger
     include TransactionModels
   end
+
+  class SlowTransactionPool < TransactionPool
+    def self.setup
+      @@instance ||= SlowTransactionPool.new
+    end
+  end
+
+  class FastTransactionPool < TransactionPool
+    def self.setup
+      @@instance ||= FastTransactionPool.new
+    end
+  end
+  
 end

@@ -19,7 +19,7 @@ module ::Sushi::Core
   class Blockchain
     TOKEN_DEFAULT = Core::DApps::BuildIn::UTXO::DEFAULT
 
-    alias Chain = Array(SlowBlock)
+    alias Chain = Array(Block)
     alias Header = NamedTuple(
       index: Int64,
       nonce: UInt64,
@@ -39,7 +39,9 @@ module ::Sushi::Core
     def initialize(@wallet : Wallet, @database : Database?, @developer_fund : DeveloperFund?)
       initialize_dapps
 
-      TransactionPool.setup
+      #TODO - fix this
+      SlowTransactionPool.setup
+      FastTransactionPool.setup
     end
 
     def setup(@node : Node)
@@ -76,11 +78,11 @@ module ::Sushi::Core
       if @chain.size == 0
         push_genesis
       else
-        refresh_mining_block(block_difficulty(self))
+        # refresh_mining_block(block_difficulty(self))
+        refresh_pending_block(block_difficulty(self))
       end
 
       dapps_record
-
     rescue e : Exception
       error "Error could not restore blockchain from database"
       error e.message.not_nil! if e.message
@@ -90,22 +92,25 @@ module ::Sushi::Core
       push_genesis if @chain.size == 0
     end
 
+    #TODO - fix this
     def clean_transactions
-      TransactionPool.lock
-      transactions = pending_transactions.reject { |t| indices.get(t.id) }
-      TransactionPool.replace(transactions)
+      clean_slow_transactions
+      clean_fast_transactions
     end
 
+    #TODO - fix this
     def valid_nonce?(nonce : UInt64) : SlowBlock?
       return mining_block.with_nonce(nonce) if mining_block.with_nonce(nonce).valid_nonce?(mining_block_difficulty)
       nil
     end
 
+    #TODO - fix this
     def valid_block?(block : SlowBlock) : SlowBlock?
       return block if block.valid?(self)
       nil
     end
 
+    #TODO - fix this
     def mining_block_difficulty : Int32
       the_mining_block = @mining_block
       if the_mining_block
@@ -119,7 +124,8 @@ module ::Sushi::Core
       block_difficulty_to_miner_difficulty(mining_block_difficulty)
     end
 
-    def push_block(block : SlowBlock)
+     #TODO - fix this
+    def push_block(block : Block)
       @chain.push(block)
       if database = @database
         debug "sending to DB, block with nonce of #{block.nonce} and timestamp of #{block.timestamp}"
@@ -132,7 +138,7 @@ module ::Sushi::Core
       clean_transactions
 
       debug "after clean_transactions, now calling refresh_mining_block in push_block"
-      refresh_mining_block(block_difficulty(self))
+      refresh_pending_block(block_difficulty(self))
 
       block
     end
@@ -145,7 +151,7 @@ module ::Sushi::Core
       first_index = subchain[0].index
 
       if first_index == 0
-        @chain = [] of SlowBlock
+        @chain = [] of Block
       else
         @chain = @chain[0..first_index - 1]
       end
@@ -175,42 +181,36 @@ module ::Sushi::Core
       clean_transactions
 
       debug "calling refresh_mining_block in replace_chain"
-      refresh_mining_block(block_difficulty(self))
+      refresh_pending_block(block_difficulty(self))
 
       true
     end
 
+    #TODO - fix this
     def replace_transactions(transactions : Array(Transaction))
-      replace_transactions = [] of Transaction
-
-      transactions.each_with_index do |t, i|
-        progress "validating transaction #{t.short_id}", i + 1, transactions.size
-
-        t = TransactionPool.find(t) || t
-        t.valid_common?
-
-        replace_transactions << t
-      rescue e : Exception
-        rejects.record_reject(t.id, e)
-      end
-
-      TransactionPool.lock
-      TransactionPool.replace(replace_transactions)
+      replace_slow_transactions(transactions)
+      replace_fast_transactions(transactions)
     end
 
     def add_transaction(transaction : Transaction, with_spawn : Bool = true)
       with_spawn ? spawn { _add_transaction(transaction) } : _add_transaction(transaction)
     end
 
+    #TODO - fix this
     private def _add_transaction(transaction : Transaction)
       if transaction.valid_common?
-        TransactionPool.add(transaction)
+        if transaction.kind == TransactionKind::FAST
+          FastTransactionPool.add(transaction)
+          # 1. create a new fast pending_block unless already exists
+        else
+          SlowTransactionPool.add(transaction)
+        end
       end
     rescue e : Exception
       rejects.record_reject(transaction.id, e)
     end
 
-    def latest_block : SlowBlock
+    def latest_block : Block
       @chain[-1]
     end
 
@@ -224,7 +224,7 @@ module ::Sushi::Core
       @chain[from..-1]
     end
 
-    def genesis_block : SlowBlock
+    def genesis_block : Block
       genesis_index = 0_i64
       genesis_transactions = @developer_fund ? DeveloperFund.transactions(@developer_fund.not_nil!.get_config) : [] of Transaction
       genesis_nonce = 0_u64
@@ -262,29 +262,42 @@ module ::Sushi::Core
       @dapps.map { |dapp| dapp.transaction_actions }.flatten
     end
 
-    def pending_transactions : Transactions
-      TransactionPool.all
+    def pending_slow_transactions : Transactions
+      SlowTransactionPool.all
     end
 
-    def embedded_transactions : Transactions
-      TransactionPool.embedded
+    def pending_fast_transactions : Transactions
+      FastTransactionPool.all
     end
 
-    def mining_block : SlowBlock
-      debug "calling refresh_mining_block in mining_block" unless @mining_block
-      refresh_mining_block(Consensus::DEFAULT_DIFFICULTY_TARGET) unless @mining_block
-      @mining_block.not_nil!
+    def embedded_slow_transactions : Transactions
+      SlowTransactionPool.embedded
     end
 
-    def refresh_mining_block(difficulty)
-      coinbase_amount = coinbase_amount(latest_index + 1, embedded_transactions)
-      coinbase_transaction = create_coinbase_transaction(coinbase_amount, node.miners)
-      transactions = align_transactions(coinbase_transaction, coinbase_amount)
+    def embedded_fast_transactions : Transactions
+      FastTransactionPool.embedded
+    end
+
+    #TODO - fix this
+    def pending_block : Block
+      debug "calling refresh_mining_block in mining_block" unless @pending_block
+      refresh_pending_block(Consensus::DEFAULT_DIFFICULTY_TARGET) unless @pending_block
+      @pending_block.not_nil!
+    end
+
+    def refresh_pending_block : Block
+
+    end
+
+    def refresh_slow_pending_block(difficulty)
+      coinbase_amount = coinbase_slow_amount(latest_index + 1, embedded_slow_transactions)
+      coinbase_transaction = create_coinbase_slow_transaction(coinbase_amount, node.miners)
+      transactions = align_slow_transactions(coinbase_transaction, coinbase_amount)
       timestamp = __timestamp
 
       debug "We are in refresh_mining_block, the next block will have a difficulty of #{difficulty}"
 
-      @mining_block = SlowBlock.new(
+      @pending_block = SlowBlock.new(
         latest_index + 1,
         transactions,
         0_u64,
@@ -296,11 +309,28 @@ module ::Sushi::Core
       node.miners_broadcast
     end
 
-    def align_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
+    def refresh_fast_pending_block
+      coinbase_amount = coinbase_fast_amount(latest_index + 1, embedded_fast_transactions)
+      coinbase_transaction = create_coinbase_fast_transaction(coinbase_amount, node.miners)
+      transactions = align_fast_transactions(coinbase_transaction, coinbase_amount)
+      timestamp = __timestamp
+
+      debug "We are in refresh_mining_block, the next block will have a difficulty of #{difficulty}"
+
+      @pending_block = FastBlock.new(
+        latest_index + 1,
+        transactions,
+        latest_block.to_hash,
+        timestamp,
+      )
+    end
+
+    #TODO - fix this
+    def align_slow_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
       aligned_transactions = [coinbase_transaction]
 
-      debug "entered align_transactions with embedded_transactions size: #{embedded_transactions.size}"
-      embedded_transactions.each do |t|
+      debug "entered align_slow_transactions with embedded_slow_transactions size: #{embedded_slow_transactions.size}"
+      embedded_slow_transactions.each do |t|
         t.prev_hash = aligned_transactions[-1].to_hash
         t.valid_as_embedded?(self, aligned_transactions)
 
@@ -308,14 +338,34 @@ module ::Sushi::Core
       rescue e : Exception
         rejects.record_reject(t.id, e)
 
-        TransactionPool.delete(t)
+        SlowTransactionPool.delete(t)
       end
-      debug "exited align_transactions with embedded_transactions size: #{embedded_transactions.size}"
+      debug "exited align_slow_transactions with embedded_slow_transactions size: #{embedded_slow_transactions.size}"
 
       aligned_transactions
     end
 
-    def create_coinbase_transaction(coinbase_amount : Int64, miners : NodeComponents::MinersManager::Miners) : Transaction
+    def align_fast_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
+      aligned_transactions = [coinbase_transaction]
+
+      debug "entered align_fast_transactions with embedded_fast_transactions size: #{embedded_fast_transactions.size}"
+      embedded_fast_transactions.each do |t|
+        t.prev_hash = aligned_transactions[-1].to_hash
+        t.valid_as_embedded?(self, aligned_transactions)
+
+        aligned_transactions << t
+      rescue e : Exception
+        rejects.record_reject(t.id, e)
+
+        FastTransactionPool.delete(t)
+      end
+      debug "exited align_fast_transactions with embedded_fast_transactions size: #{embedded_fast_transactions.size}"
+
+      aligned_transactions
+    end
+
+    #TODO - fix this
+    def create_coinbase_slow_transaction(coinbase_amount : Int64, miners : NodeComponents::MinersManager::Miners) : Transaction
       miners_nonces_size = miners.reduce(0) { |sum, m| sum + m[:context][:nonces].size }
       miners_rewards_total = (coinbase_amount * 3_i64) / 4_i64
       miners_recipients = if miners_nonces_size > 0
@@ -350,14 +400,92 @@ module ::Sushi::Core
       )
     end
 
-    def coinbase_amount(index : Int64, transactions) : Int64
+    def create_coinbase_fast_transaction(coinbase_amount : Int64) : Transaction
+      node_reccipient = {
+        address: @wallet.address,
+        amount:  coinbase_amount},
+      }
+
+      senders = [] of Transaction::Sender # No senders
+
+      recipients = coinbase_amount > 0 ? [node_reccipient] : [] of Transaction::Recipient
+
+      Transaction.new(
+        Transaction.create_id,
+        "head",
+        senders,
+        recipients,
+        "0",           # message
+        TOKEN_DEFAULT, # token
+        "0",           # prev_hash
+        __timestamp,   # timestamp
+        1,             # scaled
+        TransactionKind::FAST
+      )
+    end
+
+    def coinbase_slow_amount(index : Int64, transactions) : Int64
       return total_fees(transactions) if index >= @block_reward_calculator.max_blocks
       @block_reward_calculator.reward_for_block(index)
+    end
+
+    def coinbase_fast_amount(index : Int64, transactions) : Int64
+      total_fees(transactions)
     end
 
     def total_fees(transactions) : Int64
       return 0_i64 if transactions.size < 2
       transactions.reduce(0_i64) { |fees, transaction| fees + transaction.total_fees }
+    end
+
+    def replace_fast_transactions(transactions : Array(Transaction))
+      transactions = transactions.select(&.is_fast_transaction?)
+      replace_transactions = [] of Transaction
+
+      transactions.each_with_index do |t, i|
+        progress "validating fast transaction #{t.short_id}", i + 1, transactions.size
+
+        t = FastTransactionPool.find(t) || t
+        t.valid_common?
+
+        replace_transactions << t
+      rescue e : Exception
+        rejects.record_reject(t.id, e)
+      end
+
+      FastTransactionPool.lock
+      FastTransactionPool.replace(replace_transactions)
+    end
+
+    def clean_fast_transactions
+      FastTransactionPool.lock
+      transactions = pending_transactions.reject { |t| indices.get(t.id) }.select(&.is_fast_transaction?)
+      FastTransactionPool.replace(transactions)
+    end
+
+    def replace_slow_transactions(transactions : Array(Transaction))
+      transactions = transactions.select(&.is_slow_transaction?)
+      replace_transactions = [] of Transaction
+
+      transactions.each_with_index do |t, i|
+        progress "validating slow transaction #{t.short_id}", i + 1, transactions.size
+
+        t = SlowTransactionPool.find(t) || t
+        t.valid_common?
+
+        replace_transactions << t
+      rescue e : Exception
+        rejects.record_reject(t.id, e)
+      end
+
+      SlowTransactionPool.lock
+      SlowTransactionPool.replace(replace_transactions)
+    end
+
+    def clean_transactions
+      SlowTransactionPool.lock
+      transactions = pending_transactions.reject { |t| indices.get(t.id) }.select(&.is_slow_transaction?)
+      SlowTransactionPool.replace(transactions)
     end
 
     private def dapps_record
