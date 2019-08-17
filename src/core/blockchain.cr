@@ -19,8 +19,8 @@ module ::Sushi::Core
   class Blockchain
     TOKEN_DEFAULT = Core::DApps::BuildIn::UTXO::DEFAULT
 
-    alias Chain = Array(Block)
-    alias Header = NamedTuple(
+    alias Chain = Array(SlowBlock | FastBlock)
+    alias SlowHeader = NamedTuple(
       index: Int64,
       nonce: UInt64,
       prev_hash: String,
@@ -29,7 +29,14 @@ module ::Sushi::Core
       difficulty: Int32,
     )
 
-    getter chain : Chain = Chain.new
+    alias FastHeader = NamedTuple(
+      index: Int64,
+      prev_hash: String,
+      merkle_tree_root: String,
+      timestamp: Int64,
+    )
+
+    getter chain : Chain = [] of (SlowBlock | FastBlock)
     getter wallet : Wallet
 
     @node : Node?
@@ -39,7 +46,7 @@ module ::Sushi::Core
     def initialize(@wallet : Wallet, @database : Database?, @developer_fund : DeveloperFund?)
       initialize_dapps
 
-      #TODO - fix this
+      # TODO - fix this
       SlowTransactionPool.setup
       FastTransactionPool.setup
     end
@@ -78,8 +85,7 @@ module ::Sushi::Core
       if @chain.size == 0
         push_genesis
       else
-        # refresh_mining_block(block_difficulty(self))
-        refresh_pending_block(block_difficulty(self))
+        refresh_mining_block(block_difficulty(self))
       end
 
       dapps_record
@@ -92,31 +98,31 @@ module ::Sushi::Core
       push_genesis if @chain.size == 0
     end
 
-    #TODO - fix this
+    # TODO - fix this
     def clean_transactions
       clean_slow_transactions
       clean_fast_transactions
     end
 
-    #TODO - fix this
+    # TODO - fix this
     def valid_nonce?(nonce : UInt64) : SlowBlock?
       return mining_block.with_nonce(nonce) if mining_block.with_nonce(nonce).valid_nonce?(mining_block_difficulty)
       nil
     end
 
-    #TODO - fix this
+    # TODO - fix this
     def valid_block?(block : SlowBlock) : SlowBlock?
       return block if block.valid?(self)
       nil
     end
 
-    #TODO - fix this
+    # TODO - fix this
     def mining_block_difficulty : Int32
       the_mining_block = @mining_block
       if the_mining_block
         the_mining_block.difficulty
       else
-        latest_block.difficulty
+        latest_slow_block.difficulty
       end
     end
 
@@ -124,8 +130,8 @@ module ::Sushi::Core
       block_difficulty_to_miner_difficulty(mining_block_difficulty)
     end
 
-     #TODO - fix this
-    def push_block(block : Block)
+    # TODO - fix this
+    def push_block(block : SlowBlock | FastBlock)
       @chain.push(block)
       if database = @database
         debug "sending to DB, block with nonce of #{block.nonce} and timestamp of #{block.timestamp}"
@@ -138,7 +144,7 @@ module ::Sushi::Core
       clean_transactions
 
       debug "after clean_transactions, now calling refresh_mining_block in push_block"
-      refresh_pending_block(block_difficulty(self))
+      refresh_mining_block(block_difficulty(self))
 
       block
     end
@@ -151,7 +157,7 @@ module ::Sushi::Core
       first_index = subchain[0].index
 
       if first_index == 0
-        @chain = [] of Block
+        @chain = [] of (SlowBlock | FastBlock)
       else
         @chain = @chain[0..first_index - 1]
       end
@@ -181,27 +187,26 @@ module ::Sushi::Core
       clean_transactions
 
       debug "calling refresh_mining_block in replace_chain"
-      refresh_pending_block(block_difficulty(self))
+      refresh_mining_block(block_difficulty(self))
 
       true
     end
 
-    #TODO - fix this
+    # TODO - fix this
     def replace_transactions(transactions : Array(Transaction))
       replace_slow_transactions(transactions)
-      replace_fast_transactions(transactions)
+      # replace_fast_transactions(transactions)
     end
 
     def add_transaction(transaction : Transaction, with_spawn : Bool = true)
       with_spawn ? spawn { _add_transaction(transaction) } : _add_transaction(transaction)
     end
 
-    #TODO - fix this
+    # TODO - fix this
     private def _add_transaction(transaction : Transaction)
       if transaction.valid_common?
         if transaction.kind == TransactionKind::FAST
           FastTransactionPool.add(transaction)
-          # 1. create a new fast pending_block unless already exists
         else
           SlowTransactionPool.add(transaction)
         end
@@ -210,12 +215,24 @@ module ::Sushi::Core
       rejects.record_reject(transaction.id, e)
     end
 
-    def latest_block : Block
+    def latest_block : SlowBlock | FastBlock
       @chain[-1]
+    end
+
+    def latest_slow_block : SlowBlock
+      @chain.select(&.is_slow_block?)[-1].as(SlowBlock)
+    end
+
+    def latest_fast_block : FastBlock
+      @chain.select(&.is_fast_block?)[-1].as(FastBlock)
     end
 
     def latest_index : Int64
       latest_block.index
+    end
+
+    def latest_slow_index : Int64
+      lastest_slow_block.index
     end
 
     def subchain(from : Int64) : Chain?
@@ -224,7 +241,7 @@ module ::Sushi::Core
       @chain[from..-1]
     end
 
-    def genesis_block : Block
+    def genesis_block : SlowBlock
       genesis_index = 0_i64
       genesis_transactions = @developer_fund ? DeveloperFund.transactions(@developer_fund.not_nil!.get_config) : [] of Transaction
       genesis_nonce = 0_u64
@@ -278,15 +295,15 @@ module ::Sushi::Core
       FastTransactionPool.embedded
     end
 
-    #TODO - fix this
-    def pending_block : Block
-      debug "calling refresh_mining_block in mining_block" unless @pending_block
-      refresh_pending_block(Consensus::DEFAULT_DIFFICULTY_TARGET) unless @pending_block
-      @pending_block.not_nil!
+    # TODO - fix this
+    def mining_block : SlowBlock
+      debug "calling refresh_mining_block in mining_block" unless @mining_block
+      refresh_mining_block(Consensus::DEFAULT_DIFFICULTY_TARGET) unless @mining_block
+      @mining_block.not_nil!
     end
 
-    def refresh_pending_block : Block
-
+    def refresh_mining_block(difficulty)
+      refresh_slow_pending_block(difficulty)
     end
 
     def refresh_slow_pending_block(difficulty)
@@ -297,11 +314,11 @@ module ::Sushi::Core
 
       debug "We are in refresh_mining_block, the next block will have a difficulty of #{difficulty}"
 
-      @pending_block = SlowBlock.new(
+      @mining_block = SlowBlock.new(
         latest_index + 1,
         transactions,
         0_u64,
-        latest_block.to_hash,
+        latest_slow_block.to_hash,
         timestamp,
         difficulty,
       )
@@ -320,12 +337,12 @@ module ::Sushi::Core
       @pending_block = FastBlock.new(
         latest_index + 1,
         transactions,
-        latest_block.to_hash,
+        latest_fast_block.to_hash,
         timestamp,
       )
     end
 
-    #TODO - fix this
+    # TODO - fix this
     def align_slow_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
       aligned_transactions = [coinbase_transaction]
 
@@ -364,7 +381,7 @@ module ::Sushi::Core
       aligned_transactions
     end
 
-    #TODO - fix this
+    # TODO - fix this
     def create_coinbase_slow_transaction(coinbase_amount : Int64, miners : NodeComponents::MinersManager::Miners) : Transaction
       miners_nonces_size = miners.reduce(0) { |sum, m| sum + m[:context][:nonces].size }
       miners_rewards_total = (coinbase_amount * 3_i64) / 4_i64
@@ -403,7 +420,7 @@ module ::Sushi::Core
     def create_coinbase_fast_transaction(coinbase_amount : Int64) : Transaction
       node_reccipient = {
         address: @wallet.address,
-        amount:  coinbase_amount},
+        amount:  coinbase_amount,
       }
 
       senders = [] of Transaction::Sender # No senders
@@ -459,7 +476,7 @@ module ::Sushi::Core
 
     def clean_fast_transactions
       FastTransactionPool.lock
-      transactions = pending_transactions.reject { |t| indices.get(t.id) }.select(&.is_fast_transaction?)
+      transactions = pending_fast_transactions.reject { |t| indices.get(t.id) }.select(&.is_fast_transaction?)
       FastTransactionPool.replace(transactions)
     end
 
@@ -482,9 +499,9 @@ module ::Sushi::Core
       SlowTransactionPool.replace(replace_transactions)
     end
 
-    def clean_transactions
+    def clean_slow_transactions
       SlowTransactionPool.lock
-      transactions = pending_transactions.reject { |t| indices.get(t.id) }.select(&.is_slow_transaction?)
+      transactions = pending_slow_transactions.reject { |t| indices.get(t.id) }.select(&.is_slow_transaction?)
       SlowTransactionPool.replace(transactions)
     end
 

@@ -58,7 +58,7 @@ module ::Sushi::Core::Consensus
     return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
 
     # return difficulty default target if chain non-existant or not enough block history
-    chain = blockchain.chain
+    chain = blockchain.chain.select(&.is_slow_block?)
     #debug "entered block_difficulty with chain length of #{chain.size}" if chain
     if !chain || chain.size < 3
       #debug "entered block_difficulty with short initial chain (fewer than 3 blocks), returning default difficulty of #{DEFAULT_DIFFICULTY_TARGET}"
@@ -72,7 +72,7 @@ module ::Sushi::Core::Consensus
     last_block_time = chain[i].timestamp
     #debug "Oldest history spot: #{oldest_history_spot}"
     while i < chain.size
-      block_reading = chain[i]
+      block_reading = chain[i].as(SlowBlock)
       calculated_difficulty = calculate_running_difficulty_avg(calculated_difficulty, block_reading.difficulty, count_blocks)
       new_timespan = accumulate_timespan(actual_timespan, block_reading.timestamp, last_block_time)
       count_blocks += 1 if new_timespan > actual_timespan

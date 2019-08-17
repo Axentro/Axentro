@@ -11,7 +11,8 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core
-  class FastBlock < Block
+  class FastBlock
+extend Hashes
 
     JSON.mapping({
       index:            Int64,
@@ -30,13 +31,52 @@ module ::Sushi::Core
       @merkle_tree_root = calculate_merkle_tree_root
     end
 
-    def to_header : Blockchain::Header
+    def to_header : Blockchain::FastHeader
       {
         index:            @index,
         prev_hash:        @prev_hash,
         merkle_tree_root: @merkle_tree_root,
         timestamp:        @timestamp,
       }
+    end
+
+    def to_hash : String
+      string = self.to_json
+      sha256(string)
+    end
+
+    def calculate_merkle_tree_root : String
+      return "" if @transactions.size == 0
+
+      current_hashes = @transactions.map { |tx| tx.to_hash }
+
+      loop do
+        tmp_hashes = [] of String
+
+        (current_hashes.size / 2).times do |i|
+          tmp_hashes.push(sha256(current_hashes[i*2] + current_hashes[i*2 + 1]))
+        end
+
+        tmp_hashes.push(current_hashes[-1]) if current_hashes.size % 2 == 1
+
+        current_hashes = tmp_hashes
+        break if current_hashes.size == 1
+      end
+
+      ripemd160(current_hashes[0])
+    end
+
+    def valid?(blockchain : Blockchain, skip_transactions : Bool = false) : Bool
+      return valid_as_latest?(blockchain, skip_transactions) unless @index == 0
+      valid_as_genesis?
+    end
+
+    def is_slow_block?
+      typeof(self) == SlowBlock
+    end
+
+    def is_fast_block?
+      typeof(self) == FastBlock
     end
 
     def valid?(blockchain : Blockchain, skip_transactions : Bool = false) : Bool
@@ -59,7 +99,7 @@ module ::Sushi::Core
       prev_block = blockchain.latest_block
 
       raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
-      debug "in valid_as_latest?.. using difficulty: #{@difficulty}"
+      # debug "in valid_as_latest?.. using difficulty: #{@difficulty}"
 
       unless skip_transactions
         transactions.each_with_index do |t, idx|
@@ -78,16 +118,16 @@ module ::Sushi::Core
               "(timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
       end
 
-      difficulty_for_block = block_difficulty(blockchain)
-      debug "Calculated a difficulty of #{difficulty_for_block} in validity check"
-      difficulty_for_block = prev_block.index == 0 ? @difficulty : difficulty_for_block
-
-      if @difficulty > 0
-        if @difficulty != difficulty_for_block
-          raise "difficulty is invalid " + "(expected #{difficulty_for_block} but got #{@difficulty})"
-        end
-        raise "the nonce is invalid: #{@nonce} for difficulty #{@difficulty}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
-      end
+      # difficulty_for_block = block_difficulty(blockchain)
+      # debug "Calculated a difficulty of #{difficulty_for_block} in validity check"
+      # difficulty_for_block = prev_block.index == 0 ? @difficulty : difficulty_for_block
+      #
+      # if @difficulty > 0
+      #   if @difficulty != difficulty_for_block
+      #     raise "difficulty is invalid " + "(expected #{difficulty_for_block} but got #{@difficulty})"
+      #   end
+      #   raise "the nonce is invalid: #{@nonce} for difficulty #{@difficulty}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
+      # end
 
       merkle_tree_root = calculate_merkle_tree_root
 
@@ -106,5 +146,10 @@ module ::Sushi::Core
       @transactions.find { |t| t.id == transaction_id }
     end
 
+    include Hashes
+    include Logger
+    include Protocol
+    include Consensus
+    include Common::Timestamp
   end
 end
