@@ -95,6 +95,10 @@ extend Hashes
       typeof(self) == FastBlock
     end
 
+    def kind : String
+      is_slow_block? ? "SLOW" : "FAST"
+    end
+
     def with_nonce(@nonce : UInt64) : SlowBlock
       self
     end
@@ -164,7 +168,6 @@ extend Hashes
 
     def valid_as_genesis? : Bool
       raise "index has to be '0' for genesis block: #{@index}" if @index != 0
-      raise "transactions have to be empty for genesis block: #{@transactions}" if !@transactions.empty?
       raise "nonce has to be '0' for genesis block: #{@nonce}" if @nonce != 0
       raise "prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
       raise "difficulty has to be '#{Consensus::DEFAULT_DIFFICULTY_TARGET}' for genesis block: #{@difficulty}" if @difficulty != Consensus::DEFAULT_DIFFICULTY_TARGET

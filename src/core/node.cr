@@ -132,8 +132,7 @@ module ::Sushi::Core
           end
 
       if _s = s
-        # TODO Fixme
-        transactions = @blockchain.pending_slow_transactions
+        transactions = @blockchain.pending_slow_transactions + @blockchain.pending_fast_transactions
 
         send(
           _s,
@@ -298,7 +297,7 @@ module ::Sushi::Core
         send_block(block, from)
         debug "finished sending new block on to peer"
         if _block = @blockchain.valid_block?(block)
-          @miners_manager.forget_most_difficult
+          @miners_manager.forget_most_difficult if block.is_slow_block?
           debug "about to create the new block locally"
           new_block(_block)
         end
@@ -440,8 +439,7 @@ module ::Sushi::Core
 
       info "requested transactions"
 
-      # TODO Fixme
-      transactions = @blockchain.pending_slow_transactions
+      transactions = @blockchain.pending_slow_transactions + @blockchain.pending_fast_transactions
 
       send(
         socket,
@@ -459,8 +457,8 @@ module ::Sushi::Core
 
       info "received #{transactions.size} transactions"
 
-      # TODO Fixme
-      @blockchain.replace_slow_transactions(transactions)
+      @blockchain.replace_slow_transactions(transactions.select(&.is_slow_transaction?))
+      @blockchain.replace_fast_transactions(transactions.select(&.is_fast_transaction?))
 
       if @phase == SetupPhase::TRANSACTION_SYNCING
         @phase = SetupPhase::PRE_DONE

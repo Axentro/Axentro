@@ -89,8 +89,7 @@ module ::Sushi::Core::DApps::BuildIn
         end
       end
 
-      # TODO Fixme
-      if transaction = blockchain.pending_slow_transactions.find { |t| t.id == transaction_id }
+      if transaction = (blockchain.pending_slow_transactions + blockchain.pending_fast_transactions).find { |t| t.id == transaction_id }
         return {
           status:      "pending",
           transaction: transaction,

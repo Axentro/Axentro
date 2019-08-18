@@ -22,7 +22,8 @@ module ::Sushi::Core
       @db.exec "create table if not exists blocks (idx integer primary key, json text)"
     end
 
-    def push_block(block : SlowBlock)
+    def push_block(block : SlowBlock | FastBlock)
+      debug "database.push_block with block of kind: #{block.kind}"
       index = block.index
       json = block.to_json
 
@@ -45,17 +46,25 @@ module ::Sushi::Core
       end
     end
 
-    def get_block(index : Int64) : SlowBlock?
-      block : SlowBlock? = nil
+    def get_block(index : Int64) : (SlowBlock? | FastBlock?)
+      block : (SlowBlock? | FastBlock?) = nil
 
       @db.query "select json from blocks where idx = ?", [index] do |rows|
         rows.each do
           json = rows.read(String)
-          block = SlowBlock.from_json(json)
+          block = determine_block_kind(json)
         end
       end
 
       block
+    end
+
+    def determine_block_kind(json) : SlowBlock | FastBlock
+      if json.includes?("nonce")
+        SlowBlock.from_json(json)
+      else
+        FastBlock.from_json(json)
+      end
     end
 
     def max_index : Int64
