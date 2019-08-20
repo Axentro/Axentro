@@ -331,7 +331,11 @@ module ::Sushi::Core
     end
 
     def new_block(block : SlowBlock | FastBlock)
-      @blockchain.push_block(block)
+      case block
+      when SlowBlock then @blockchain.push_slow_block(block)
+      when FastBlock then @blockchain.push_fast_block(block)
+      end
+
       @pubsub_controller.broadcast_latest_block
     end
 

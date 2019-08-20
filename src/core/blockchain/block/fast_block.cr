@@ -28,6 +28,7 @@ extend Hashes
       @prev_hash : String,
       @timestamp : Int64,
     )
+      raise "index must be odd number" if index.even?
       @merkle_tree_root = calculate_merkle_tree_root
     end
 
@@ -100,9 +101,14 @@ extend Hashes
     end
 
     def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool) : Bool
+      # TODO - fix this
+      return true
+
       prev_block = blockchain.latest_block
 
-      raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
+      expected_chain_size = blockchain.chain.select(&.is_fast_block?).size
+      p "FAST VALID: #{expected_chain_size}"
+      raise "invalid index, #{@index} have to be #{expected_chain_size}" if @index != expected_chain_size
       # debug "in valid_as_latest?.. using difficulty: #{@difficulty}"
 
       unless skip_transactions

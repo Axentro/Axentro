@@ -16,52 +16,51 @@ require "./blockchain/block/*"
 require "./dapps"
 
 module ::Sushi::Core
+  class BlockSynchronizer
+    @@instance : BlockSynchronizer? = nil
 
-   class BlockSynchronizer
-     @@instance : BlockSynchronizer? = nil
+    @locked : Bool = false
 
-     @locked : Bool = false
+    def self.instance : BlockSynchronizer
+      @@instance.not_nil!
+    end
 
-     def self.instance : BlockSynchronizer
-       @@instance.not_nil!
-     end
+    def self.setup
+      @@instance ||= BlockSynchronizer.new
+    end
 
-     def self.setup
-       @@instance ||= BlockSynchronizer.new
-     end
+    def self.lock
+      instance.lock
+    end
 
-     def self.lock
-       instance.lock
-     end
+    def self.unlock
+      instance.unlock
+    end
 
-     def self.unlock
-       instance.unlock
-     end
+    def self.locked?
+      instance.locked?
+    end
 
-     def self.locked?
-       instance.locked?
-     end
+    def self.unlocked?
+      instance.unlocked?
+    end
 
-     def self.unlocked?
-       instance.unlocked?
-     end
+    def lock
+      @locked = true
+    end
 
-     def lock
-       @locked = true
-     end
+    def unlock
+      @locked = false
+    end
 
-     def unlock
-       @locked = false
-     end
+    def locked?
+      @locked
+    end
 
-     def locked?
-       @locked
-     end
-
-     def unlocked?
-       !@locked
-     end
-   end
+    def unlocked?
+      !@locked
+    end
+  end
 
   class Blockchain
     TOKEN_DEFAULT = Core::DApps::BuildIn::UTXO::DEFAULT
@@ -95,7 +94,7 @@ module ::Sushi::Core
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup
-      BlockSynchronizer.setup
+      # BlockSynchronizer.setup
     end
 
     def setup(@node : Node)
@@ -114,15 +113,19 @@ module ::Sushi::Core
     #      - if only this node then this is the leader automatically
     def process_fast_transactions
       loop do
-        if @i_am_the_leader && BlockSynchronizer.unlocked?
+        if @i_am_the_leader
           # debug "I am the leader so attempt to process fast transactions"
+
           if pending_fast_transactions.size > 0
-            debug "There are #{pending_fast_transactions.size} pending fast transactions so mint a new fast block"
-            block = mint_fast_block
-            debug "record new fast block"
-            node.new_block(block)
-            debug "broadcast new fast block"
-            node.send_block(block)
+            valid_transactions = valid_transactions_for_fast_block
+            if valid_transactions[:transactions].size > 1
+              debug "There are #{valid_transactions.size} valid fast transactions so mint a new fast block"
+              block = mint_fast_block(valid_transactions)
+              debug "record new fast block"
+              node.new_block(block)
+              debug "broadcast new fast block"
+              node.send_block(block)
+            end
           end
         end
         sleep 0.5
@@ -134,7 +137,7 @@ module ::Sushi::Core
     end
 
     def push_genesis
-      push_block(genesis_block)
+      push_slow_block(genesis_block)
     end
 
     def restore_from_database(database : Database)
@@ -142,14 +145,17 @@ module ::Sushi::Core
       info "there are #{database.max_index} blocks recorded"
 
       current_index = 0_i64
-      loop do
+      (0..database.max_index).each do |i|
         _block = database.get_block(current_index)
-        break unless block = _block
-        break unless block.valid?(self, true)
-        @chain.push(block)
+        if _block
+          break unless _block.valid?(self, true)
+          @chain.push(_block)
+        end
+
         current_index += 1
         progress "block ##{current_index} was imported", current_index, database.max_index
       end
+
       if @chain.size == 0
         push_genesis
       else
@@ -189,7 +195,23 @@ module ::Sushi::Core
       block_difficulty_to_miner_difficulty(mining_block_difficulty)
     end
 
-    def push_block(block : SlowBlock | FastBlock)
+    def push_slow_block(block : SlowBlock)
+      _push_block(block)
+      clean_slow_transactions if block.is_slow_block?
+
+      debug "after clean_transactions, now calling refresh_mining_block in push_block"
+      refresh_mining_block(block_difficulty(self))
+      block
+    end
+
+    def push_fast_block(block : FastBlock)
+      _push_block(block)
+      clean_fast_transactions if block.is_fast_block?
+
+      block
+    end
+
+    private def _push_block(block : SlowBlock | FastBlock)
       @chain.push(block)
       if database = @database
         debug "sending #{block.kind} block to DB with timestamp of #{block.timestamp}"
@@ -199,15 +221,6 @@ module ::Sushi::Core
       debug "in node.push_block, before dapps_record"
       dapps_record
       debug "after dapps record, before clean transactions"
-
-      clean_fast_transactions if block.is_fast_block?
-
-      clean_slow_transactions if block.is_slow_block?
-
-      debug "after clean_transactions, now calling refresh_mining_block in push_block"
-      refresh_mining_block(block_difficulty(self))
-
-      block
     end
 
     def replace_chain(_subchain : Chain?) : Bool
@@ -279,17 +292,25 @@ module ::Sushi::Core
       @chain.select(&.is_slow_block?)[-1].as(SlowBlock)
     end
 
-    # def latest_fast_block : FastBlock
-    #   @chain.select(&.is_fast_block?)[-1].as(FastBlock)
-    # end
+    def latest_fast_block : FastBlock?
+      fast_blocks = @chain.select(&.is_fast_block?)
+      fast_blocks.size > 0 ? fast_blocks.last.as(FastBlock) : nil
+    end
 
     def latest_index : Int64
       latest_block.index
     end
 
-    # def latest_slow_index : Int64
-    #   lastest_slow_block.index
-    # end
+    def get_latest_index_for_slow
+      index = latest_slow_block.index
+      index.even? ? index + 2 : index + 1
+    end
+
+    def get_latest_index_for_fast
+      latest = latest_fast_block.nil? ? latest_block : latest_fast_block.not_nil!
+      index = latest.index
+      index.odd? ? index + 2 : index + 1
+    end
 
     def subchain(from : Int64) : Chain?
       return nil if @chain.size < from
@@ -358,13 +379,11 @@ module ::Sushi::Core
     end
 
     def refresh_mining_block(difficulty)
-                  BlockSynchronizer.lock
       refresh_slow_pending_block(difficulty)
-            BlockSynchronizer.unlock
     end
 
     def refresh_slow_pending_block(difficulty)
-      the_latest_index = latest_index + 1
+      the_latest_index = get_latest_index_for_slow
       coinbase_amount = coinbase_slow_amount(the_latest_index, embedded_slow_transactions)
       coinbase_transaction = create_coinbase_slow_transaction(coinbase_amount, node.miners)
       transactions = align_slow_transactions(coinbase_transaction, coinbase_amount)
@@ -372,11 +391,16 @@ module ::Sushi::Core
 
       debug "We are in refresh_mining_block, the next block will have a difficulty of #{difficulty}"
 
+      # TODO - always even index for slow
+
+      debug "AAAAAAAAAAAAAAA"
+      debug "slow - latest_index: #{the_latest_index}"
+
       @mining_block = SlowBlock.new(
         the_latest_index,
         transactions,
         0_u64,
-        latest_block.to_hash,
+        latest_slow_block.to_hash,
         timestamp,
         difficulty,
       )
@@ -384,18 +408,22 @@ module ::Sushi::Core
       node.miners_broadcast
     end
 
-    def mint_fast_block
-      coinbase_amount = coinbase_fast_amount(latest_index + 1, embedded_fast_transactions)
+    def valid_transactions_for_fast_block
+      latest_index = get_latest_index_for_fast
+      coinbase_amount = coinbase_fast_amount(latest_index, embedded_fast_transactions)
       coinbase_transaction = create_coinbase_fast_transaction(coinbase_amount)
-      transactions = align_fast_transactions(coinbase_transaction, coinbase_amount)
+      {latest_index: latest_index, transactions: align_fast_transactions(coinbase_transaction, coinbase_amount)}
+    end
+
+    def mint_fast_block(valid_transactions)
+      transactions = valid_transactions[:transactions]
+      latest_index = valid_transactions[:latest_index]
+      _latest_block = latest_fast_block || latest_slow_block
       timestamp = __timestamp
-
-      debug "We are minting a new fast block"
-
       FastBlock.new(
-        latest_index + 1,
+        latest_index,
         transactions,
-        latest_block.to_hash,
+        _latest_block.to_hash,
         timestamp,
       )
     end

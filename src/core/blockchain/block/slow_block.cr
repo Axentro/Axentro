@@ -32,6 +32,7 @@ extend Hashes
       @timestamp : Int64,
       @difficulty : Int32
     )
+      raise "index must be even number" if index.odd?
       @merkle_tree_root = calculate_merkle_tree_root
     end
 
@@ -124,6 +125,10 @@ extend Hashes
     end
 
     def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool) : Bool
+
+      #TODO - fix this
+      return true
+
       prev_block = blockchain.latest_block
 
       raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
