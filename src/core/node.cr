@@ -512,7 +512,10 @@ module ::Sushi::Core
       when SetupPhase::BLOCKCHAIN_LOADING
         @blockchain.setup(self)
 
-        info "loaded blockchain's size: #{light_cyan(@blockchain.chain.size)}"
+        info "loaded blockchain's total size: #{light_cyan(@blockchain.chain.size)}"
+        info "highest slow block index: #{light_cyan(@blockchain.latest_slow_block.index)}"
+        fast_block = @blockchain.latest_fast_block || @blockchain.latest_block
+        info "highest fast block index: #{light_cyan(fast_block.index)}"
 
         if @database
           @conflicted_index = nil

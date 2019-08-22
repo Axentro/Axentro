@@ -125,14 +125,8 @@ extend Hashes
     end
 
     def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool) : Bool
-
-      #TODO - fix this
-      return true
-
-      prev_block = blockchain.latest_block
-
-      raise "invalid index, #{@index} have to be #{blockchain.chain.size}" if @index != blockchain.chain.size
-      debug "in valid_as_latest?.. using difficulty: #{@difficulty}"
+      prev_block = blockchain.latest_slow_block
+      latest_slow_index = blockchain.get_latest_index_for_slow
 
       unless skip_transactions
         transactions.each_with_index do |t, idx|
@@ -140,14 +134,14 @@ extend Hashes
         end
       end
 
-      raise "mismatch index for the most recent block(#{prev_block.index}): #{@index}" if prev_block.index + 1 != @index
-      raise "prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
+      raise "Index Mismatch: the current block index: #{@index} should match the lastest slow block index: #{latest_slow_index}" if @index != latest_slow_index
+      raise "Invalid Previous Hash: prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
 
       next_timestamp = __timestamp
       prev_timestamp = prev_block.timestamp
 
       if prev_timestamp > @timestamp || next_timestamp < @timestamp
-        raise "timestamp is invalid: #{@timestamp} " +
+        raise "Invalid Timestamp: #{@timestamp} " +
               "(timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
       end
 
@@ -157,25 +151,25 @@ extend Hashes
 
       if @difficulty > 0
         if @difficulty != difficulty_for_block
-          raise "difficulty is invalid " + "(expected #{difficulty_for_block} but got #{@difficulty})"
+          raise "Invalid difficulty: " + "(expected #{difficulty_for_block} but got #{@difficulty})"
         end
-        raise "the nonce is invalid: #{@nonce} for difficulty #{@difficulty}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
+        raise "Invalid Nonce: #{@nonce} for difficulty #{@difficulty}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
       end
 
       merkle_tree_root = calculate_merkle_tree_root
 
       if merkle_tree_root != @merkle_tree_root
-        raise "invalid merkle tree root (expected #{@merkle_tree_root} but got #{merkle_tree_root})"
+        raise "Invalid Merkle Tree Root: (expected #{@merkle_tree_root} but got #{merkle_tree_root})"
       end
 
       true
     end
 
     def valid_as_genesis? : Bool
-      raise "index has to be '0' for genesis block: #{@index}" if @index != 0
-      raise "nonce has to be '0' for genesis block: #{@nonce}" if @nonce != 0
-      raise "prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
-      raise "difficulty has to be '#{Consensus::DEFAULT_DIFFICULTY_TARGET}' for genesis block: #{@difficulty}" if @difficulty != Consensus::DEFAULT_DIFFICULTY_TARGET
+      raise "Invalid Genesis Index: index has to be '0' for genesis block: #{@index}" if @index != 0
+      raise "Invalid Genesis Nonce: nonce has to be '0' for genesis block: #{@nonce}" if @nonce != 0
+      raise "Invalid Genesis Previous Hash: prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
+      raise "Invalid Genesis Difficulty: difficulty has to be '#{Consensus::DEFAULT_DIFFICULTY_TARGET}' for genesis block: #{@difficulty}" if @difficulty != Consensus::DEFAULT_DIFFICULTY_TARGET
 
       true
     end

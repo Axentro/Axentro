@@ -67,7 +67,11 @@ module ::Sushi::Core
       end
     end
 
-    def max_index : Int64
+    def total_blocks : Int32
+      @db.query_one("select count(*) from blocks", as: Int32)
+    end
+
+    def highest_index : Int64
       idx : Int64? = nil
 
       @db.query "select max(idx) from blocks" do |rows|

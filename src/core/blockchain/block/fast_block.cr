@@ -101,15 +101,8 @@ extend Hashes
     end
 
     def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool) : Bool
-      # TODO - fix this
-      return true
-
-      prev_block = blockchain.latest_block
-
-      expected_chain_size = blockchain.chain.select(&.is_fast_block?).size
-      p "FAST VALID: #{expected_chain_size}"
-      raise "invalid index, #{@index} have to be #{expected_chain_size}" if @index != expected_chain_size
-      # debug "in valid_as_latest?.. using difficulty: #{@difficulty}"
+      prev_block = blockchain.latest_fast_block || blockchain.latest_block
+      latest_fast_index = blockchain.get_latest_index_for_fast
 
       unless skip_transactions
         transactions.each_with_index do |t, idx|
@@ -117,32 +110,21 @@ extend Hashes
         end
       end
 
-      raise "mismatch index for the most recent block(#{prev_block.index}): #{@index}" if prev_block.index + 1 != @index
-      raise "prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
+      raise "Index Mismatch: the current block index: #{@index} should match the lastest fast block index: #{latest_fast_index}" if @index != latest_fast_index
+      raise "Invalid Previous Hash: prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
 
       next_timestamp = __timestamp
       prev_timestamp = prev_block.timestamp
 
       if prev_timestamp > @timestamp || next_timestamp < @timestamp
-        raise "timestamp is invalid: #{@timestamp} " +
+        raise "Invalid Timestamp: #{@timestamp} " +
               "(timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
       end
-
-      # difficulty_for_block = block_difficulty(blockchain)
-      # debug "Calculated a difficulty of #{difficulty_for_block} in validity check"
-      # difficulty_for_block = prev_block.index == 0 ? @difficulty : difficulty_for_block
-      #
-      # if @difficulty > 0
-      #   if @difficulty != difficulty_for_block
-      #     raise "difficulty is invalid " + "(expected #{difficulty_for_block} but got #{@difficulty})"
-      #   end
-      #   raise "the nonce is invalid: #{@nonce} for difficulty #{@difficulty}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
-      # end
 
       merkle_tree_root = calculate_merkle_tree_root
 
       if merkle_tree_root != @merkle_tree_root
-        raise "invalid merkle tree root (expected #{@merkle_tree_root} but got #{merkle_tree_root})"
+        raise "Invalid Merkle Tree Root: (expected #{@merkle_tree_root} but got #{merkle_tree_root})"
       end
 
       true

@@ -141,11 +141,13 @@ module ::Sushi::Core
     end
 
     def restore_from_database(database : Database)
+      total_blocks = database.total_blocks
+      highest_index = database.highest_index
       info "start loading blockchain from #{database.path}"
-      info "there are #{database.max_index} blocks recorded"
+      info "there are #{total_blocks} blocks recorded"
 
       current_index = 0_i64
-      (0..database.max_index).each do |i|
+      (0..highest_index).each do |_|
         _block = database.get_block(current_index)
         if _block
           break unless _block.valid?(self, true)
@@ -153,7 +155,7 @@ module ::Sushi::Core
         end
 
         current_index += 1
-        progress "block ##{current_index} was imported", current_index, database.max_index
+        progress "block ##{current_index} was imported", current_index, highest_index
       end
 
       if @chain.size == 0
