@@ -46,12 +46,12 @@ module ::Sushi::Core
       @connect_port : Int32?,
       @wallet : Wallet,
       @database : Database?,
-      @premine : Premine?,
+      @developer_fund : DeveloperFund?,
       @use_ssl : Bool = false
     )
       welcome
 
-      @blockchain = Blockchain.new(@wallet, @database, @premine)
+      @blockchain = Blockchain.new(@wallet, @database, @developer_fund)
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl)
       @miners_manager = MinersManager.new(@blockchain)
@@ -501,8 +501,8 @@ module ::Sushi::Core
 
           proceed_setup
         end
-        unless @premine.nil?
-          info "Premine has been invoked based on this configuration: #{@premine.not_nil!.get_path}"
+        unless @developer_fund.nil?
+          info "Developer fund has been invoked based on this configuration: #{@developer_fund.not_nil!.get_path}"
         end
       when SetupPhase::BLOCKCHAIN_LOADING
         @blockchain.setup(self)

@@ -138,7 +138,7 @@ describe Transaction do
           Transaction.create_id,
           "head", # action
           [] of Transaction::Sender,
-          [a_recipient(transaction_factory.recipient_wallet, 50462650_i64)],
+          [a_recipient(transaction_factory.recipient_wallet, 1199999373_i64)],
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -160,7 +160,7 @@ describe Transaction do
           Transaction.create_id,
           "head", # action
           [] of Transaction::Sender,
-          [a_recipient(transaction_factory.recipient_wallet, 50462650_i64)],
+          [a_recipient(transaction_factory.recipient_wallet, 1199999373_i64)],
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -183,7 +183,7 @@ describe Transaction do
           Transaction.create_id,
           "invalid", # action
           [] of Transaction::Sender,
-          [a_recipient(transaction_factory.recipient_wallet, 50462650_i64)],
+          [a_recipient(transaction_factory.recipient_wallet, 1199999373_i64)],
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -207,7 +207,7 @@ describe Transaction do
           Transaction.create_id,
           "head", # action
           [] of Transaction::Sender,
-          [a_recipient(transaction_factory.recipient_wallet, 50462650_i64)],
+          [a_recipient(transaction_factory.recipient_wallet, 1199999373_i64)],
           "invalid",     # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -231,7 +231,7 @@ describe Transaction do
           Transaction.create_id,
           "head", # action
           [] of Transaction::Sender,
-          [a_recipient(transaction_factory.recipient_wallet, 50462650_i64)],
+          [a_recipient(transaction_factory.recipient_wallet, 1199999373_i64)],
           "0",       # message
           "INVALID", # token
           "0",       # prev_hash
@@ -255,7 +255,7 @@ describe Transaction do
           Transaction.create_id,
           "head", # action
           [] of Transaction::Sender,
-          [a_recipient(transaction_factory.recipient_wallet, 50462650_i64)],
+          [a_recipient(transaction_factory.recipient_wallet, 1199999373_i64)],
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -280,7 +280,7 @@ describe Transaction do
           Transaction.create_id,
           "head", # action
           [] of Transaction::Sender,
-          [a_recipient(transaction_factory.recipient_wallet, 50462650_i64)],
+          [a_recipient(transaction_factory.recipient_wallet, 1199999373_i64)],
           "0",           # message
           TOKEN_DEFAULT, # token
           "1",           # prev_hash
@@ -313,7 +313,7 @@ describe Transaction do
         )
 
         transaction.valid_common?.should be_true
-        expect_raises(Exception, "invalid served amount for coinbase transaction: expected 50462650 but got 1000") do
+        expect_raises(Exception, "invalid served amount for coinbase transaction: expected 1199999373 but got 1000") do
           transaction.valid_as_coinbase?(block_factory.blockchain, 1, transactions).should be_true
         end
       end

@@ -10,10 +10,10 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-require "spec"
-require "./ext/spec/*"
-require "yaml"
-require "../src/common"
-require "../src/core"
+require "../common/modules/*"
+require "./developer_fund/developer_fund.cr"
 
-TOKEN_DEFAULT = Sushi::Core::DApps::BuildIn::UTXO::DEFAULT
+include ::Sushi::Common::Timestamp
+include ::Sushi::Common::Validator
+include ::Sushi::Common::Denomination
+include ::Sushi::Core::Keys

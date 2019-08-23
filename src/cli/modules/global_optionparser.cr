@@ -58,7 +58,7 @@ module ::Sushi::Interface
 
     @node_id : String?
 
-    @premine_path : String?
+    @developer_fund_path : String?
 
     enum Options
       # common options
@@ -98,7 +98,7 @@ module ::Sushi::Interface
       CONFIG_NAME
       # for node
       NODE_ID
-      PREMINE
+      DEVELOPER_FUND
     end
 
     def create_option_parser(actives : Array(Options)) : OptionParser
@@ -131,7 +131,7 @@ module ::Sushi::Interface
         parse_token(parser, actives)
         parse_config_name(parser, actives)
         parse_node_id(parser, actives)
-        parse_premine(parser, actives)
+        parse_developer_fund(parser, actives)
       end
     end
 
@@ -320,10 +320,10 @@ module ::Sushi::Interface
       } if is_active?(actives, Options::NODE_ID)
     end
 
-    private def parse_premine(parser : OptionParser, actives : Array(Options))
-      parser.on("--premine=PREMINE", I18n.translate("cli.options.premine")) { |premine|
-        @premine_path = premine
-      } if is_active?(actives, Options::PREMINE)
+    private def parse_developer_fund(parser : OptionParser, actives : Array(Options))
+      parser.on("--developer-fund=DEVELOPER_FUND", I18n.translate("cli.options.developer_fund")) { |developer_fund|
+        @developer_fund_path = developer_fund
+      } if is_active?(actives, Options::DEVELOPER_FUND)
     end
 
     def is_active?(actives : Array(Options), option : Options) : Bool
@@ -446,8 +446,8 @@ module ::Sushi::Interface
       @node_id
     end
 
-    def __premine : Core::Premine?
-      Core::Premine.validate(@premine_path)
+    def __developer_fund : Core::DeveloperFund?
+      Core::DeveloperFund.validate(@developer_fund_path)
     end
 
     def cm

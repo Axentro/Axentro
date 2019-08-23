@@ -41,14 +41,14 @@ describe Block do
     it "should calculate merkle tree root when coinbase transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
       block = Block.new(1_i64, [coinbase_transaction], 1_u64, "prev_hash", 0_i64, 3_i32)
-      block.calculate_merkle_tree_root.should eq("d91329bca593bbae22fb70b7f450b4748002ac65")
+      block.calculate_merkle_tree_root.should eq("9ce1e44574e6b8fc802f90c210ae7ba411cf8563")
     end
 
     it "should calculate merkle tree root when 2 transactions (first is coinbase)" do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = Block.new(1_i64, [coinbase_transaction, transaction1], 1_u64, "prev_hash", 0_i64, 3_i32)
-      block.calculate_merkle_tree_root.should eq("9d052008919dae3810b3c7facc14dc7d9b3a9b28")
+      block.calculate_merkle_tree_root.should eq("f77658ae5febe989371944e5754bb9c798a871b9")
     end
   end
 
@@ -98,6 +98,7 @@ describe Block do
       with_factory do |block_factory|
         chain = block_factory.add_blocks(1).chain
         block = chain.last
+        block.transactions = [a_fixed_coinbase_transaction]
         block.index = 2
         expect_raises(Exception, "mismatch index for the most recent block(2): 2") do
           block.valid_as_latest?(block_factory.blockchain, false)
@@ -151,7 +152,7 @@ describe Block do
         timestamp = chain[1].timestamp
         block = Block.new(2_i64, [a_fixed_coinbase_transaction], a_nonce, prev_hash, timestamp, 0_i32)
         block.merkle_tree_root = "invalid"
-        expect_raises(Exception, "invalid merkle tree root (expected invalid but got d91329bca593bbae22fb70b7f450b4748002ac65)") do
+        expect_raises(Exception, "invalid merkle tree root (expected invalid but got 9ce1e44574e6b8fc802f90c210ae7ba411cf8563)") do
           block.valid_as_latest?(block_factory.blockchain, false)
         end
       end
@@ -235,9 +236,9 @@ def a_nonce
 end
 
 def a_fixed_coinbase_transaction
-  recipient1 = a_recipient_with_address("VDAyYTVjMDYwZjYyZThkOWM5ODhkZGFkMmM3NzM2MjczZWZhZjIxNDAyNWRmNWQ0", 50452650_i64)
-  recipient2 = a_recipient_with_address("VDBhYTYxYzk5MTQ4M2QyZmU1YTA4NzUxZjYzYWUzYzA4ZTExYTgzMjdkNWViODU2", 7500_i64)
-  recipient3 = a_recipient_with_address("VDAyNTk0YjdlMTc4N2FkODRmYTU0YWZmODM1YzQzOTA2YTEzY2NjYmMyNjdkYjVm", 2500_i64)
+  recipient1 = a_recipient_with_address("VDAyYTVjMDYwZjYyZThkOWM5ODhkZGFkMmM3NzM2MjczZWZhZjIxNDAyNWRmNWQ0", 599999373_i64)
+  recipient2 = a_recipient_with_address("VDBhYTYxYzk5MTQ4M2QyZmU1YTA4NzUxZjYzYWUzYzA4ZTExYTgzMjdkNWViODU2", 299999686_i64)
+  recipient3 = a_recipient_with_address("VDAyNTk0YjdlMTc4N2FkODRmYTU0YWZmODM1YzQzOTA2YTEzY2NjYmMyNjdkYjVm", 299999688_i64)
 
   Transaction.new(
     "4db42cdfcffc85c86734dc1bc00adcc21aae274a3137d6a16a31162a8d6ea7b2",

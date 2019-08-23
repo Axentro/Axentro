@@ -32,6 +32,6 @@ module ::Sushi::Interface
     HELP_TOKEN_AMOUNT                     = I18n.translate("help.token.amount")
     HELP_CONFIG_NAME                      = I18n.translate("help.config")
     HELP_NODE_ID                          = I18n.translate("help.node.id")
-    HELP_PREMINE                          = I18n.translate("help.premine")
+    HELP_DEVELOPER_FUND                   = I18n.translate("help.developer_fund")
   end
 end

@@ -20,23 +20,24 @@ include ::Sushi::Common::Denomination
 include ::Sushi::Core::NodeComponents
 include Hashes
 
-TOTAL_BLOCK_REWARD = 50462650_i64
-TOTAL_BLOCK_LIMIT = 50462651_i64
+TOTAL_BLOCK_REWARD = 1200000000_i64
+TOTAL_BLOCK_LIMIT  =  4_000_000_i64
+
 
 describe Blockchain do
   it "should calculate the block rewards for a single miner" do
     with_factory do |block_factory, _|
       miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
-      coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction, 0)
+      coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction)
       transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1])
 
       node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
       miner1_reward = get_recipient_for(transaction.recipients, "Miner 1")[:amount]
 
-      node_reward.should eq(12615663_i64)
+      node_reward.should eq(300000000_i64)
       as_percentage(node_reward).should eq(25)
 
-      miner1_reward.should eq(37846987_i64)
+      miner1_reward.should eq(900000000_i64)
       as_percentage(miner1_reward).should eq(75)
 
       (node_reward + miner1_reward).should eq(TOTAL_BLOCK_REWARD)
@@ -48,7 +49,7 @@ describe Blockchain do
       miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
       miner2 = {context: {address: "Miner 2", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner2"}
       miner3 = {context: {address: "Miner 3", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner3"}
-      coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction, 0_i64)
+      coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction)
       transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1, miner2, miner3])
 
       node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
@@ -56,16 +57,16 @@ describe Blockchain do
       miner2_reward = get_recipient_for(transaction.recipients, "Miner 2")[:amount]
       miner3_reward = get_recipient_for(transaction.recipients, "Miner 3")[:amount]
 
-      node_reward.should eq(12615664_i64)
+      node_reward.should eq(300000000_i64)
       as_percentage(node_reward).should eq(25)
 
-      miner1_reward.should eq(12615662_i64)
+      miner1_reward.should eq(300000000_i64)
       as_percentage(miner1_reward).should eq(25)
 
-      miner2_reward.should eq(12615662_i64)
+      miner2_reward.should eq(300000000_i64)
       as_percentage(miner2_reward).should eq(25)
 
-      miner3_reward.should eq(12615662_i64)
+      miner3_reward.should eq(300000000_i64)
       as_percentage(miner3_reward).should eq(25)
 
       (node_reward + miner1_reward + miner2_reward + miner3_reward).should eq(TOTAL_BLOCK_REWARD)
@@ -76,7 +77,7 @@ describe Blockchain do
     assert_reward_distribution(1, 2, 25, 50)
     assert_reward_distribution(1, 3, 19, 56)
     assert_reward_distribution(1, 4, 15, 60)
-    assert_reward_distribution(1, 5, 12, 62)
+    assert_reward_distribution(1, 5, 13, 63)
     assert_reward_distribution(1, 6, 11, 64)
     assert_reward_distribution(1, 7, 9, 66)
     assert_reward_distribution(1, 70, 1, 74)
@@ -86,37 +87,7 @@ describe Blockchain do
   it "should not allocate rewards if the total supply has been reached and there are no senders in the transactions" do
     with_factory do |block_factory, _|
       miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
-      coinbase_amount = block_factory.blockchain.coinbase_amount(TOTAL_BLOCK_LIMIT, [] of Transaction, 0_i64)
-      transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1])
-      transaction.recipients.should be_empty
-    end
-  end
-
-  it "should take into account premine when allocating rewards" do
-    with_factory do |block_factory, _|
-      miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
-      coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction, scale_i64("19000000"))
-      transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1])
-
-      node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
-      miner1_reward = get_recipient_for(transaction.recipients, "Miner 1")[:amount]
-
-      total_reward = 24123038_i64
-
-      node_reward.should eq(6030760_i64)
-      as_percentage(node_reward, total_reward).should eq(25)
-
-      miner1_reward.should eq(18092278_i64)
-      as_percentage(miner1_reward, total_reward).should eq(75)
-
-      (node_reward + miner1_reward).should eq(total_reward)
-    end
-  end
-
-  it "should not allocate rewards if the total supply has been reached due to premine" do
-    with_factory do |block_factory, _|
-      miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
-      coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction, scale_i64("20000000.00004113"))
+      coinbase_amount = block_factory.blockchain.coinbase_amount(TOTAL_BLOCK_LIMIT, [] of Transaction)
       transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1])
       transaction.recipients.should be_empty
     end
@@ -126,9 +97,9 @@ describe Blockchain do
     with_factory do |block_factory, transaction_factory|
       miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
       transactions = [transaction_factory.make_send(2000_i64), transaction_factory.make_send(9000_i64)]
-      total_reward = transactions.flat_map(&.senders).map(&.["fee"]).reduce(0){|total, fee| total + fee}
+      total_reward = transactions.flat_map(&.senders).map(&.["fee"]).reduce(0) { |total, fee| total + fee }
 
-      coinbase_amount = block_factory.blockchain.coinbase_amount(TOTAL_BLOCK_LIMIT, transactions, 0_i64)
+      coinbase_amount = block_factory.blockchain.coinbase_amount(TOTAL_BLOCK_LIMIT + 1, transactions)
       transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1])
 
       node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
@@ -144,6 +115,29 @@ describe Blockchain do
     end
   end
 
+# TODO - currently we burn fees but we should pay them to the node
+#   it "should include fees in the rewards when there are fees in the transactions" do
+#     with_factory do |block_factory, transaction_factory|
+#       miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
+#       transactions = [transaction_factory.make_send(2000_i64), transaction_factory.make_send(9000_i64)]
+#       total_reward = 1200019373_i64
+#
+#       coinbase_amount = block_factory.blockchain.coinbase_amount(1_i64, transactions)
+#       transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1])
+#
+#       node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
+#       miner1_reward = get_recipient_for(transaction.recipients, "Miner 1")[:amount]
+#
+#       node_reward.should eq(300004844_i64)
+#       as_percentage(node_reward, total_reward).should eq(25)
+#
+#       miner1_reward.should eq(900014529_i64)
+#       as_percentage(miner1_reward, total_reward).should eq(75)
+#
+#       (node_reward + miner1_reward).should eq(total_reward)
+#     end
+#   end
+
   STDERR.puts "< Block Rewards"
 end
 
@@ -151,7 +145,7 @@ def assert_reward_distribution(nonces1, nonces2, expected_percent_1, expected_pe
   with_factory do |block_factory, _|
     miner1 = {context: {address: "Miner 1", nonces: (1..nonces1).map { |n| n.to_u64 }}, socket: MockWebSocket.new, mid: "miner1"}
     miner2 = {context: {address: "Miner 2", nonces: (1..nonces2).map { |n| n.to_u64 }}, socket: MockWebSocket.new, mid: "miner2"}
-    coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction, 0_i64)
+    coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction)
     transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1, miner2])
 
     node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]

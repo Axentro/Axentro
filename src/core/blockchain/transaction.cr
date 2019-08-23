@@ -52,15 +52,6 @@ module ::Sushi::Core
       tmp_id
     end
 
-    # def self.secp256k1 : ECDSA::Secp256k1
-    #   @@secp256k1 ||= ECDSA::Secp256k1.new
-    #   @@secp256k1.not_nil!
-    # end
-    #
-    # def secp256k1
-    #   Transaction.secp256k1
-    # end
-
     def to_hash : String
       string = self.to_json
       sha256(string)
@@ -107,7 +98,7 @@ module ::Sushi::Core
       raise "prev_hash of coinbase transaction has to be '0'" if @prev_hash != "0"
 
       served_sum = @recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
-      served_sum_expected = blockchain.coinbase_amount(block_index, embedded_transactions, blockchain.get_premine_total_amount)
+      served_sum_expected = blockchain.coinbase_amount(block_index, embedded_transactions)
 
       if served_sum != served_sum_expected
         raise "invalid served amount for coinbase transaction: " +

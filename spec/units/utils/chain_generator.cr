@@ -39,7 +39,10 @@ module ::Units::Utils::ChainGenerator
       @miner_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, nil, nil, false)
       @blockchain = @node.blockchain
-      @blockchain.setup(@node)
+      # the node setup is run in a spawn so we have to wait until it's finished before running any tests
+      while @node.@phase != Sushi::Core::Node::SetupPhase::DONE
+        sleep 0.1
+      end
       @miner = {context: {address: miner_wallet.address, nonces: [] of UInt64}, socket: MockWebSocket.new, mid: "535061bddb0549f691c8b9c012a55ee2"}
       @transaction_factory = TransactionFactory.new(@node_wallet)
       @rpc = RPCController.new(@blockchain)
@@ -53,7 +56,7 @@ module ::Units::Utils::ChainGenerator
     end
 
     def add_blocks(number : Int)
-      (1..number).each { |_| add_block }
+        (1..number).each { |_| add_block }
       self
     end
 
