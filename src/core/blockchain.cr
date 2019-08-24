@@ -225,6 +225,9 @@ module ::Sushi::Core
       debug "after dapps record, before clean transactions"
     end
 
+
+    # TODO - why is block coming as fast instead of slow here on sync?
+    # - sync the fast chain and the slow chain and then add to the chain and re-order by index
     def replace_chain(_subchain : Chain?) : Bool
       return false unless subchain = _subchain
       return false if subchain.size == 0
@@ -241,6 +244,10 @@ module ::Sushi::Core
       dapps_clear_record
 
       subchain.each_with_index do |block, i|
+        puts "--------- replacing chain ---------"
+        puts "block type: #{typeof(block)} index: #{block.index} is slow?: #{block.is_slow_block?} : kind: #{block.kind}"
+
+
         block.valid?(self)
         @chain << block
 
@@ -314,11 +321,25 @@ module ::Sushi::Core
       index.odd? ? index + 2 : index + 1
     end
 
-    def subchain(from : Int64) : Chain?
-      return nil if @chain.size < from
+    # def subchain_slow(from : Int64) : Chain?
+    #   slow_chain = @chain.select(&.is_slow_block?)
+    #   return nil if slow_chain.size < from
+    #
+    #   slow_chain[from..-1]
+    # end
+    #
+    # def subchain_fast(from : Int64) : Chain?
+    #   fast_chain = @chain.select(&.is_fast_block?)
+    #   return nil if fast_chain.size < from
+    #
+    #   fast_chain[from..-1]
+    # end
 
-      @chain[from..-1]
-    end
+    def subchain(from : Int64) : Chain?
+       return nil if @chain.size < from
+
+       @chain[from..-1]
+     end
 
     def genesis_block : SlowBlock
       genesis_index = 0_i64
@@ -335,6 +356,7 @@ module ::Sushi::Core
         genesis_prev_hash,
         genesis_timestamp,
         genesis_difficulty,
+        BlockKind::SLOW
       )
     end
 
@@ -405,6 +427,7 @@ module ::Sushi::Core
         latest_slow_block.to_hash,
         timestamp,
         difficulty,
+        BlockKind::SLOW
       )
 
       node.miners_broadcast
@@ -427,6 +450,7 @@ module ::Sushi::Core
         transactions,
         _latest_block.to_hash,
         timestamp,
+        BlockKind::FAST
       )
     end
 
@@ -605,6 +629,7 @@ module ::Sushi::Core
       end
     end
 
+    include Block
     include DApps
     include Hashes
     include Logger

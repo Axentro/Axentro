@@ -21,7 +21,7 @@ module ::Sushi::Core::Protocol
     JSON.mapping({
       version: Int32,
       address: String,
-      mid: String
+      mid:     String,
     })
   end
 
@@ -47,8 +47,8 @@ module ::Sushi::Core::Protocol
 
   struct MContentMinerFoundNonce
     JSON.mapping({
-      nonce: UInt64,
-      timestamp: Int64
+      nonce:     UInt64,
+      timestamp: Int64,
     })
   end
 
@@ -57,7 +57,7 @@ module ::Sushi::Core::Protocol
   struct MContentMinerBlockUpdate
     JSON.mapping({
       block:      SlowBlock,
-      difficulty: Int32
+      difficulty: Int32,
     })
   end
 
@@ -234,6 +234,13 @@ module ::Sushi::Core::Protocol
 
   M_TYPE_NODE_REQUEST_CHAIN = 0x0103
 
+  # struct MContentNodeRequestChain
+  #   JSON.mapping({
+  #     latest_slow_index: Int64,
+  #     latest_fast_index: Int64,
+  #   })
+  # end
+
   struct MContentNodeRequestChain
     JSON.mapping({
       latest_index: Int64,
@@ -249,6 +256,13 @@ module ::Sushi::Core::Protocol
   end
 
   M_TYPE_NODE_ASK_REQUEST_CHAIN = 0x0105
+
+  # struct MContentNodeAskRequestChain
+  #   JSON.mapping({
+  #     latest_slow_index: Int64,
+  #     latest_fast_index: Int64,
+  #   })
+  # end
 
   struct MContentNodeAskRequestChain
     JSON.mapping({

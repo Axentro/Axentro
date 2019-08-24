@@ -21,7 +21,8 @@ extend Hashes
       prev_hash:        String,
       merkle_tree_root: String,
       timestamp:        Int64,
-      difficulty:  Int32,
+      difficulty:       Int32,
+      kind:             BlockKind
     })
 
     def initialize(
@@ -30,7 +31,8 @@ extend Hashes
       @nonce : UInt64,
       @prev_hash : String,
       @timestamp : Int64,
-      @difficulty : Int32
+      @difficulty : Int32,
+      @kind : BlockKind
     )
       raise "index must be even number" if index.odd?
       @merkle_tree_root = calculate_merkle_tree_root
@@ -178,6 +180,7 @@ extend Hashes
       @transactions.find { |t| t.id == transaction_id }
     end
 
+    include Block
     include Hashes
     include Logger
     include Protocol

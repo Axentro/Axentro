@@ -59,11 +59,15 @@ module ::Sushi::Core
       block
     end
 
+    # TODO - why is geneis block coming as fast block
     def determine_block_kind(json) : SlowBlock | FastBlock
-      if json.includes?("nonce")
-        SlowBlock.from_json(json)
+      p json_string = JSON.parse(json)["kind"].to_s
+      p kind = BlockKind.parse(json_string)
+      case kind
+      when BlockKind::SLOW then SlowBlock.from_json(json)
+      when BlockKind::FAST then FastBlock.from_json(json)
       else
-        FastBlock.from_json(json)
+        raise "BlockKind Error: Unrecognised block kind for block value: #{json_string}"
       end
     end
 
@@ -83,6 +87,7 @@ module ::Sushi::Core
       idx || -1_i64
     end
 
+    include Block
     include Logger
   end
 end

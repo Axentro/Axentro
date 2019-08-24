@@ -100,15 +100,36 @@ module ::Sushi::Core
       raise "prev_hash of coinbase transaction has to be '0'" if @prev_hash != "0"
 
       served_sum = @recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
-      served_sum_expected = blockchain.coinbase_slow_amount(block_index, embedded_transactions)
 
-      if served_sum != served_sum_expected
-        raise "invalid served amount for coinbase transaction: " +
-              "expected #{served_sum_expected} but got #{served_sum} "
-      end
+      served_sum_expected = self.is_slow_transaction? ?
+      blockchain.coinbase_slow_amount(block_index, embedded_transactions)
+      : blockchain.coinbase_fast_amount(block_index, embedded_transactions)
+
+        if served_sum != served_sum_expected
+          raise "invalid served amount for coinbase transaction at index: #{block_index} " +
+                "expected #{served_sum_expected} but got #{served_sum} "
+        end
 
       true
     end
+
+    # private def validate_slow_coinbase(served_sum : Int64, blockchain : Blockchain, block_index : Int64, embedded_transactions : Array(Transaction))
+    #   served_sum_expected = blockchain.coinbase_slow_amount(block_index, embedded_transactions)
+    #
+    #   if served_sum != served_sum_expected
+    #     raise "invalid served amount for coinbase transaction at index: #{block_index} " +
+    #           "expected #{served_sum_expected} but got #{served_sum} "
+    #   end
+    # end
+    #
+    # private def validate_fast_coinbase(blockchain : Blockchain, block_index : Int64, embedded_transactions : Array(Transaction))
+    #   served_sum_expected = blockchain.coinbase_fast_amount(block_index, embedded_transactions)
+    #
+    #   if served_sum != served_sum_expected
+    #     raise "invalid served amount for coinbase transaction at index: #{block_index} " +
+    #           "expected #{served_sum_expected} but got #{served_sum} "
+    #   end
+    # end
 
     def valid_common? : Bool
       return true if @common_checked

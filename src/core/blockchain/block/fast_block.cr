@@ -19,7 +19,8 @@ extend Hashes
       transactions:     Array(Transaction),
       prev_hash:        String,
       merkle_tree_root: String,
-      timestamp:        Int64
+      timestamp:        Int64,
+      kind:             BlockKind
     })
 
     def initialize(
@@ -27,6 +28,7 @@ extend Hashes
       @transactions : Array(Transaction),
       @prev_hash : String,
       @timestamp : Int64,
+      @kind : BlockKind
     )
       raise "index must be odd number" if index.even?
       @merkle_tree_root = calculate_merkle_tree_root
@@ -111,7 +113,12 @@ extend Hashes
       end
 
       raise "Index Mismatch: the current block index: #{@index} should match the lastest fast block index: #{latest_fast_index}" if @index != latest_fast_index
-      raise "Invalid Previous Hash: prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
+
+      puts "\n\n\n\n\n------------------"
+      pp prev_block
+      p prev_block.is_fast_block?
+
+      raise "Invalid Previous Hash: for current index: #{@index} the prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
 
       next_timestamp = __timestamp
       prev_timestamp = prev_block.timestamp
@@ -138,6 +145,7 @@ extend Hashes
       @transactions.find { |t| t.id == transaction_id }
     end
 
+    include Block
     include Hashes
     include Logger
     include Protocol
