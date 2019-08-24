@@ -151,6 +151,7 @@ module ::Sushi::Core
         _block = database.get_block(current_index)
         if _block
           break unless _block.valid?(self, true)
+          debug "restoring from database: #{_block.index} of kind #{_block.kind}"
           @chain.push(_block)
         end
 
@@ -179,7 +180,7 @@ module ::Sushi::Core
       nil
     end
 
-    def valid_block?(block : SlowBlock) : SlowBlock?
+    def valid_block?(block : SlowBlock | FastBlock) : SlowBlock? | FastBlock?
       return block if block.valid?(self)
       nil
     end
@@ -228,7 +229,7 @@ module ::Sushi::Core
 
     # TODO - why is block coming as fast instead of slow here on sync?
     # - sync the fast chain and the slow chain and then add to the chain and re-order by index
-    def replace_chain(_subchain : Chain?) : Bool
+    def replace_chain(_subchain : Chain?, kind : BlockKind) : Bool
       return false unless subchain = _subchain
       return false if subchain.size == 0
       return false if @chain.size == 0
@@ -238,15 +239,26 @@ module ::Sushi::Core
       if first_index == 0
         @chain = [] of (SlowBlock | FastBlock)
       else
-        @chain = @chain[0..first_index - 1]
+
+        slow_chain = @chain.select(&.is_slow_block?)
+        fast_chain = @chain.select(&.is_fast_block?)
+
+        case kind
+        when BlockKind::FAST
+            @chain = (slow_chain + fast_chain[0..first_index - 1]).sort_by{|block| block.index }
+        when BlockKind::SLOW
+          @chain = (slow_chain[0..first_index - 1] + fast_chain).sort_by{|block| block.index }
+        end
       end
 
       dapps_clear_record
 
+      puts "--------- replacing chain (subchain size: #{subchain.size}) ---------"
       subchain.each_with_index do |block, i|
-        puts "--------- replacing chain ---------"
-        puts "block type: #{typeof(block)} index: #{block.index} is slow?: #{block.is_slow_block?} : kind: #{block.kind}"
 
+        puts "S****** #{block.index} #{block.kind} *******"
+        pp block
+        puts "E****** #{block.index} #{block.kind} *******"
 
         block.valid?(self)
         @chain << block
@@ -298,7 +310,9 @@ module ::Sushi::Core
     end
 
     def latest_slow_block : SlowBlock
-      @chain.select(&.is_slow_block?)[-1].as(SlowBlock)
+      slow_blocks = @chain.select(&.is_slow_block?)
+      return slow_blocks[0].as(SlowBlock) if slow_blocks.size < 1
+      slow_blocks[-1].as(SlowBlock)
     end
 
     def latest_fast_block : FastBlock?
@@ -409,11 +423,6 @@ module ::Sushi::Core
 
       debug "We are in refresh_mining_block, the next block will have a difficulty of #{difficulty}"
 
-      # TODO - always even index for slow
-
-      debug "AAAAAAAAAAAAAAA"
-      debug "slow - latest_index: #{the_latest_index}"
-
       @mining_block = SlowBlock.new(
         the_latest_index,
         transactions,
@@ -444,7 +453,11 @@ module ::Sushi::Core
         transactions,
         _latest_block.to_hash,
         timestamp,
-        BlockKind::FAST
+        BlockKind::FAST,
+        "public_key_goes_here",
+        "sign_r_goes_here",
+        "sign_s_goes_here",
+        "hash_goes_here"
       )
     end
 

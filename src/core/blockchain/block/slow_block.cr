@@ -91,11 +91,11 @@ extend Hashes
     end
 
     def is_slow_block?
-      typeof(self) == SlowBlock
+      @kind == BlockKind::SLOW
     end
 
     def is_fast_block?
-      typeof(self) == FastBlock
+      @kind == BlockKind::FAST
     end
 
     def kind : String

@@ -9,6 +9,7 @@
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
+require "../blockchain/block.cr"
 
 module ::Sushi::Core::Protocol
   ######################################
@@ -293,4 +294,6 @@ module ::Sushi::Core::Protocol
     PRE_DONE
     DONE
   end
+
+  include Block
 end

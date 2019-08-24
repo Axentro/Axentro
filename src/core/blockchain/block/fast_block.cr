@@ -12,7 +12,7 @@
 
 module ::Sushi::Core
   class FastBlock
-extend Hashes
+    extend Hashes
 
     JSON.mapping({
       index:            Int64,
@@ -20,7 +20,11 @@ extend Hashes
       prev_hash:        String,
       merkle_tree_root: String,
       timestamp:        Int64,
-      kind:             BlockKind
+      kind:             BlockKind,
+      public_key:       String,
+      sign_r:           String,
+      sign_s:           String,
+      hash:             String,
     })
 
     def initialize(
@@ -28,7 +32,11 @@ extend Hashes
       @transactions : Array(Transaction),
       @prev_hash : String,
       @timestamp : Int64,
-      @kind : BlockKind
+      @kind : BlockKind,
+      @public_key : String,
+      @sign_r : String,
+      @sign_s : String,
+      @hash : String,
     )
       raise "index must be odd number" if index.even?
       @merkle_tree_root = calculate_merkle_tree_root
@@ -75,11 +83,11 @@ extend Hashes
     end
 
     def is_slow_block?
-      typeof(self) == SlowBlock
+      @kind == BlockKind::SLOW
     end
 
     def is_fast_block?
-      typeof(self) == FastBlock
+      @kind == BlockKind::FAST
     end
 
     def kind : String
@@ -113,11 +121,6 @@ extend Hashes
       end
 
       raise "Index Mismatch: the current block index: #{@index} should match the lastest fast block index: #{latest_fast_index}" if @index != latest_fast_index
-
-      puts "\n\n\n\n\n------------------"
-      pp prev_block
-      p prev_block.is_fast_block?
-
       raise "Invalid Previous Hash: for current index: #{@index} the prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
 
       next_timestamp = __timestamp

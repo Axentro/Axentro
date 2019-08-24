@@ -103,14 +103,17 @@ module ::Sushi::Core
           end
 
       if _s = s
-        debug "asking to sync chain (slow) at index #{@conflicted_slow_index.nil? ? @blockchain.latest_slow_index : @conflicted_slow_index.not_nil!}"
-        debug "asking to sync chain (fast) at index #{@conflicted_fast_index.nil? ? @blockchain.latest_fast_index : @conflicted_fast_index.not_nil!}"
+        latest_slow_index = @blockchain.latest_slow_block.index
+        latest_fast_index = (@blockchain.latest_fast_block || @blockchain.latest_block).index
+
+        debug "asking to sync chain (slow) at index #{@conflicted_slow_index.nil? ? latest_slow_index : @conflicted_slow_index.not_nil!}"
+        debug "asking to sync chain (fast) at index #{@conflicted_fast_index.nil? ? latest_fast_index : @conflicted_fast_index.not_nil!}"
         send(
           _s,
           M_TYPE_NODE_REQUEST_CHAIN,
           {
-            latest_slow_index: @conflicted_slow_index.nil? ? @blockchain.latest_slow_index : @conflicted_slow_index.not_nil!,
-            latest_fast_index: @conflicted_fast_index.nil? ? @blockchain.latest_fast_index : @conflicted_fast_index.not_nil!,
+            latest_slow_index: @conflicted_slow_index.nil? ? latest_slow_index : @conflicted_slow_index.not_nil!,
+            latest_fast_index: @conflicted_fast_index.nil? ? latest_fast_index : @conflicted_fast_index.not_nil!,
           }
         )
       else
@@ -336,7 +339,7 @@ module ::Sushi::Core
             M_TYPE_NODE_ASK_REQUEST_CHAIN,
             {
               latest_slow_index: @blockchain.latest_slow_block.index,
-              latest_fast_index: @blockchain.latest_fast_block.index,
+              latest_fast_index: (@blockchain.latest_fast_block || @blockchain.latest_block).index,
             }
           )
         end
@@ -373,7 +376,7 @@ module ::Sushi::Core
             M_TYPE_NODE_ASK_REQUEST_CHAIN,
             {
               latest_slow_index: @blockchain.latest_slow_block.index,
-              latest_fast_index: @blockchain.latest_fast_block.index,
+              latest_fast_index: (@blockchain.latest_fast_block || @blockchain.latest_block).index,
             }
           )
         end
@@ -444,11 +447,12 @@ module ::Sushi::Core
 
       info "requested new chain latest slow index: #{latest_slow_index} , latest fast index: #{latest_fast_index}"
 
-      send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {chain: @blockchain.subchain_slow(latest_slow_index)})
-      send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {chain: @blockchain.subchain_fast(latest_fast_index)})
+      send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {chain: @blockchain.subchain_slow(latest_slow_index), kind: BlockKind::FAST})
+      send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {chain: @blockchain.subchain_fast(latest_fast_index), kind: BlockKind::SLOW})
       debug "chain sent to peer for sync"
 
-      if latest_slow_index > @blockchain.latest_slow_block.index || latest_fast_index > @blockchain.latest_fast_block.index
+      latest_fast_block = @blockchain.latest_fast_block || @blockchain.latest_block
+      if latest_slow_index > @blockchain.latest_slow_block.index || latest_fast_index > latest_fast_block.index
         sync_chain(socket)
       end
     end
@@ -491,20 +495,36 @@ module ::Sushi::Core
         info "received empty chain"
       end
 
-
-      # TODO - if fast or slow kind here - replace_fast_chain or slow
-      current_latest_index = @blockchain.latest_index
-
-      if @blockchain.replace_chain(chain)
-        info "chain updated: #{light_green(current_latest_index)} -> #{light_green(@blockchain.latest_index)}"
-        @miners_manager.broadcast
-
-        @conflicted_index = nil
-      end
+      _replace_slow_chain(chain, kind)
+      _replace_fast_chain(chain, kind)
 
       if @phase == SetupPhase::BLOCKCHAIN_SYNCING
         @phase = SetupPhase::TRANSACTION_SYNCING
         proceed_setup
+      end
+    end
+
+    private def _replace_slow_chain(chain, kind)
+      current_slow_latest_index = @blockchain.latest_slow_block.index
+
+      if @blockchain.replace_chain(chain, kind)
+        info "slow: chain updated: #{light_green(current_slow_latest_index)} -> #{light_green(@blockchain.latest_slow_block.index)}"
+        @miners_manager.broadcast
+
+        @conflicted_slow_index = nil
+      end
+    end
+
+    private def _replace_fast_chain(chain, kind)
+      current_fast_latest = @blockchain.latest_fast_block || @blockchain.latest_block
+      current_fast_latest_index = current_fast_latest.index
+
+      if @blockchain.replace_chain(chain, kind)
+        latest = @blockchain.latest_fast_block || @blockchain.latest_block
+        info "fast: chain updated: #{light_green(current_fast_latest_index)} -> #{light_green(latest.index)}"
+        @miners_manager.broadcast
+
+        @conflicted_fast_index = nil
       end
     end
 
@@ -516,9 +536,9 @@ module ::Sushi::Core
 
       verbose "be asked to request new chain"
       verbose "slow requested: #{_latest_slow_index}, yours #{@blockchain.latest_slow_block.index}"
-      verbose "fast requested: #{_latest_fast_index}, yours #{@blockchain.latest_fast_block.index}"
+      verbose "fast requested: #{_latest_fast_index}, yours #{(@blockchain.latest_fast_block||@blockchain.latest_block).index}"
 
-      if _latest_slow_index > @blockchain.latest_slow_block.index || _latest_fast_index > @blockchain.latest_fast_block.index
+      if _latest_slow_index > @blockchain.latest_slow_block.index || _latest_fast_index > (@blockchain.latest_fast_block||@blockchain.latest_block).index
         sync_chain(socket)
       end
     end
@@ -603,7 +623,8 @@ module ::Sushi::Core
         info "highest fast block index: #{light_cyan(fast_block.index)}"
 
         if @database
-          @conflicted_index = nil
+          @conflicted_slow_index = nil
+          @conflicted_fast_index = nil
         else
           warning "no database has been specified"
         end
