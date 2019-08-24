@@ -227,23 +227,17 @@ module ::Sushi::Core::Protocol
 
   struct MContentNodeBroadcastBlock
     JSON.mapping({
-      block: SlowBlock,
+      block: SlowBlock | FastBlock,
       from:  Core::NodeComponents::Chord::NodeContext,
     })
   end
 
   M_TYPE_NODE_REQUEST_CHAIN = 0x0103
 
-  # struct MContentNodeRequestChain
-  #   JSON.mapping({
-  #     latest_slow_index: Int64,
-  #     latest_fast_index: Int64,
-  #   })
-  # end
-
   struct MContentNodeRequestChain
     JSON.mapping({
-      latest_index: Int64,
+      latest_slow_index: Int64,
+      latest_fast_index: Int64,
     })
   end
 
@@ -252,21 +246,16 @@ module ::Sushi::Core::Protocol
   struct MContentNodeReceiveChain
     JSON.mapping({
       chain: Blockchain::Chain?,
+      kind: BlockKind
     })
   end
 
   M_TYPE_NODE_ASK_REQUEST_CHAIN = 0x0105
 
-  # struct MContentNodeAskRequestChain
-  #   JSON.mapping({
-  #     latest_slow_index: Int64,
-  #     latest_fast_index: Int64,
-  #   })
-  # end
-
   struct MContentNodeAskRequestChain
     JSON.mapping({
-      latest_index: Int64,
+      latest_slow_index: Int64,
+      latest_fast_index: Int64,
     })
   end
 

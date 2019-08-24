@@ -321,25 +321,19 @@ module ::Sushi::Core
       index.odd? ? index + 2 : index + 1
     end
 
-    # def subchain_slow(from : Int64) : Chain?
-    #   slow_chain = @chain.select(&.is_slow_block?)
-    #   return nil if slow_chain.size < from
-    #
-    #   slow_chain[from..-1]
-    # end
-    #
-    # def subchain_fast(from : Int64) : Chain?
-    #   fast_chain = @chain.select(&.is_fast_block?)
-    #   return nil if fast_chain.size < from
-    #
-    #   fast_chain[from..-1]
-    # end
+    def subchain_slow(from : Int64) : Chain?
+      slow_chain = @chain.select(&.is_slow_block?)
+      return nil if slow_chain.size < from
 
-    def subchain(from : Int64) : Chain?
-       return nil if @chain.size < from
+      slow_chain[from..-1]
+    end
 
-       @chain[from..-1]
-     end
+    def subchain_fast(from : Int64) : Chain?
+      fast_chain = @chain.select(&.is_fast_block?)
+      return nil if fast_chain.size < from
+
+      fast_chain[from..-1]
+    end
 
     def genesis_block : SlowBlock
       genesis_index = 0_i64
