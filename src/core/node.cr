@@ -301,12 +301,6 @@ module ::Sushi::Core
       when SlowBlock then broadcast_slow_block(socket, block, from)
       when FastBlock then broadcast_fast_block(socket, block, from)
       end
-
-      # if block.is_fast_block?
-      #   broadcast_fast_block(socket, block, from)
-      # else
-      #   broadcast_slow_block(socket, block, from)
-      # end
     end
 
     private def broadcast_slow_block(socket : HTTP::WebSocket, block : SlowBlock | FastBlock, from : Chord::NodeContext? = nil)
@@ -447,8 +441,10 @@ module ::Sushi::Core
 
       info "requested new chain latest slow index: #{latest_slow_index} , latest fast index: #{latest_fast_index}"
 
-      send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {chain: @blockchain.subchain_slow(latest_slow_index), kind: BlockKind::FAST})
-      send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {chain: @blockchain.subchain_fast(latest_fast_index), kind: BlockKind::SLOW})
+      slow_chain = @blockchain.subchain_slow(latest_slow_index)
+      fast_chain = @blockchain.subchain_fast(latest_fast_index)
+
+      send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {slowchain: slow_chain, fastchain: fast_chain})
       debug "chain sent to peer for sync"
 
       latest_fast_block = @blockchain.latest_fast_block || @blockchain.latest_block
@@ -457,74 +453,42 @@ module ::Sushi::Core
       end
     end
 
-    # private def _receive_chain(socket, _content)
-    #   _m_content = MContentNodeReceiveChain.from_json(_content)
-    #
-    #   chain = _m_content.chain
-    #
-    #   if _chain = chain
-    #     info "received #{_chain.size} blocks"
-    #   else
-    #     info "received empty chain"
-    #   end
-    #
-    #   current_latest_index = @blockchain.latest_index
-    #
-    #   if @blockchain.replace_chain(chain)
-    #     info "chain updated: #{light_green(current_latest_index)} -> #{light_green(@blockchain.latest_index)}"
-    #     @miners_manager.broadcast
-    #
-    #     @conflicted_index = nil
-    #   end
-    #
-    #   if @phase == SetupPhase::BLOCKCHAIN_SYNCING
-    #     @phase = SetupPhase::TRANSACTION_SYNCING
-    #     proceed_setup
-    #   end
-    # end
-
     private def _receive_chain(socket, _content)
       _m_content = MContentNodeReceiveChain.from_json(_content)
 
-      chain = _m_content.chain
-      kind = _m_content.kind
+      fastchain = _m_content.fastchain
+      slowchain = _m_content.slowchain
 
-      if _chain = chain
-        info "received #{_chain.size} blocks"
+      if _slowchain = slowchain
+        info "received #{_slowchain.size} SLOW blocks"
       else
-        info "received empty chain"
+        info "received empty SLOW chain"
       end
 
-      _replace_slow_chain(chain, kind)
-      _replace_fast_chain(chain, kind)
+      if _fastchain = fastchain
+        info "received #{_fastchain.size} FAST blocks"
+      else
+        info "received empty FAST chain"
+      end
+
+      current_slow_latest_index = @blockchain.latest_slow_block.index
+      current_fast_latest = @blockchain.latest_fast_block || @blockchain.latest_block
+      current_fast_latest_index = current_fast_latest.index
+
+      if @blockchain.replace_chain(slowchain, fastchain)
+        info "slow: chain updated: #{light_green(current_slow_latest_index)} -> #{light_green(@blockchain.latest_slow_block.index)}"
+        latest = @blockchain.latest_fast_block || @blockchain.latest_block
+        info "fast: chain updated: #{light_green(current_fast_latest_index)} -> #{light_green(latest.index)}"
+
+        @miners_manager.broadcast
+
+        @conflicted_slow_index = nil
+        @conflicted_fast_index = nil
+      end
 
       if @phase == SetupPhase::BLOCKCHAIN_SYNCING
         @phase = SetupPhase::TRANSACTION_SYNCING
         proceed_setup
-      end
-    end
-
-    private def _replace_slow_chain(chain, kind)
-      current_slow_latest_index = @blockchain.latest_slow_block.index
-
-      if @blockchain.replace_chain(chain, kind)
-        info "slow: chain updated: #{light_green(current_slow_latest_index)} -> #{light_green(@blockchain.latest_slow_block.index)}"
-        @miners_manager.broadcast
-
-        @conflicted_slow_index = nil
-      end
-    end
-
-    private def _replace_fast_chain(chain, kind)
-      current_fast_latest = @blockchain.latest_fast_block || @blockchain.latest_block
-      current_fast_latest_index = current_fast_latest.index
-
-      if @blockchain.replace_chain(chain, kind)
-        latest = @blockchain.latest_fast_block || @blockchain.latest_block
-        info "fast: chain updated: #{light_green(current_fast_latest_index)} -> #{light_green(latest.index)}"
-        @miners_manager.broadcast
-
-        @conflicted_fast_index = nil
       end
     end
 
@@ -536,9 +500,9 @@ module ::Sushi::Core
 
       verbose "be asked to request new chain"
       verbose "slow requested: #{_latest_slow_index}, yours #{@blockchain.latest_slow_block.index}"
-      verbose "fast requested: #{_latest_fast_index}, yours #{(@blockchain.latest_fast_block||@blockchain.latest_block).index}"
+      verbose "fast requested: #{_latest_fast_index}, yours #{(@blockchain.latest_fast_block || @blockchain.latest_block).index}"
 
-      if _latest_slow_index > @blockchain.latest_slow_block.index || _latest_fast_index > (@blockchain.latest_fast_block||@blockchain.latest_block).index
+      if _latest_slow_index > @blockchain.latest_slow_block.index || _latest_fast_index > (@blockchain.latest_fast_block || @blockchain.latest_block).index
         sync_chain(socket)
       end
     end

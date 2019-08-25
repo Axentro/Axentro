@@ -246,8 +246,8 @@ module ::Sushi::Core::Protocol
 
   struct MContentNodeReceiveChain
     JSON.mapping({
-      chain: Blockchain::Chain?,
-      kind: BlockKind
+      slowchain: Blockchain::Chain?,
+      fastchain: Blockchain::Chain?,
     })
   end
 

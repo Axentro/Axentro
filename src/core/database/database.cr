@@ -59,10 +59,9 @@ module ::Sushi::Core
       block
     end
 
-    # TODO - why is geneis block coming as fast block
     def determine_block_kind(json) : SlowBlock | FastBlock
-      p json_string = JSON.parse(json)["kind"].to_s
-      p kind = BlockKind.parse(json_string)
+      json_string = JSON.parse(json)["kind"].to_s
+      kind = BlockKind.parse(json_string)
       case kind
       when BlockKind::SLOW then SlowBlock.from_json(json)
       when BlockKind::FAST then FastBlock.from_json(json)

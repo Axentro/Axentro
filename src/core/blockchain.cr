@@ -16,51 +16,6 @@ require "./blockchain/block/*"
 require "./dapps"
 
 module ::Sushi::Core
-  class BlockSynchronizer
-    @@instance : BlockSynchronizer? = nil
-
-    @locked : Bool = false
-
-    def self.instance : BlockSynchronizer
-      @@instance.not_nil!
-    end
-
-    def self.setup
-      @@instance ||= BlockSynchronizer.new
-    end
-
-    def self.lock
-      instance.lock
-    end
-
-    def self.unlock
-      instance.unlock
-    end
-
-    def self.locked?
-      instance.locked?
-    end
-
-    def self.unlocked?
-      instance.unlocked?
-    end
-
-    def lock
-      @locked = true
-    end
-
-    def unlock
-      @locked = false
-    end
-
-    def locked?
-      @locked
-    end
-
-    def unlocked?
-      !@locked
-    end
-  end
 
   class Blockchain
     TOKEN_DEFAULT = Core::DApps::BuildIn::UTXO::DEFAULT
@@ -94,7 +49,6 @@ module ::Sushi::Core
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup
-      # BlockSynchronizer.setup
     end
 
     def setup(@node : Node)
@@ -226,44 +180,24 @@ module ::Sushi::Core
       debug "after dapps record, before clean transactions"
     end
 
-
-    # TODO - why is block coming as fast instead of slow here on sync?
-    # - sync the fast chain and the slow chain and then add to the chain and re-order by index
-    def replace_chain(_subchain : Chain?, kind : BlockKind) : Bool
-      return false unless subchain = _subchain
-      return false if subchain.size == 0
+    def replace_chain(_slow_subchain : Chain?, _fast_subchain : Chain?) : Bool
+      return false if _slow_subchain.nil? || _fast_subchain.nil?
+      slow_subchain = _slow_subchain.not_nil!
+      fast_subchain = _fast_subchain.not_nil!
+      return false if slow_subchain.size == 0 && fast_subchain.size == 0
       return false if @chain.size == 0
-
-      first_index = subchain[0].index
-
-      if first_index == 0
-        @chain = [] of (SlowBlock | FastBlock)
-      else
-
-        slow_chain = @chain.select(&.is_slow_block?)
-        fast_chain = @chain.select(&.is_fast_block?)
-
-        case kind
-        when BlockKind::FAST
-            @chain = (slow_chain + fast_chain[0..first_index - 1]).sort_by{|block| block.index }
-        when BlockKind::SLOW
-          @chain = (slow_chain[0..first_index - 1] + fast_chain).sort_by{|block| block.index }
-        end
-      end
 
       dapps_clear_record
 
-      puts "--------- replacing chain (subchain size: #{subchain.size}) ---------"
-      subchain.each_with_index do |block, i|
+      subchains = (slow_subchain + fast_subchain).sort_by { |block| block.index }
 
-        puts "S****** #{block.index} #{block.kind} *******"
-        pp block
-        puts "E****** #{block.index} #{block.kind} *******"
-
+      subchains.each_with_index do |block, i|
         block.valid?(self)
-        @chain << block
 
-        progress "block ##{block.index} was imported", i + 1, subchain.size
+        index = block.index
+        @chain[index]? ? (@chain[index] = block) : @chain << block
+
+        progress "block ##{block.index} was imported", i + 1, subchains.size
 
         dapps_record
       rescue e : Exception
@@ -292,7 +226,6 @@ module ::Sushi::Core
       with_spawn ? spawn { _add_transaction(transaction) } : _add_transaction(transaction)
     end
 
-    # TODO - fix this don't add transaction if not the leader? or maybe do in case of leadership takeover?
     private def _add_transaction(transaction : Transaction)
       if transaction.valid_common?
         if transaction.kind == TransactionKind::FAST
