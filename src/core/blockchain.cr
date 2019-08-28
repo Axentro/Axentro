@@ -16,7 +16,6 @@ require "./blockchain/block/*"
 require "./dapps"
 
 module ::Sushi::Core
-
   class Blockchain
     TOKEN_DEFAULT = Core::DApps::BuildIn::UTXO::DEFAULT
 
@@ -180,32 +179,55 @@ module ::Sushi::Core
       debug "after dapps record, before clean transactions"
     end
 
+    # def replace_chain(_slow_subchain : Chain?, _fast_subchain : Chain?) : Bool
+    #  dapps_clear_record
+    #  replace_slow_chain(_slow_subchain)
+    #  dapps_record
+    # end
+    #
+    # def replace_slow_chain(_slow_subchain : Chain?) : Bool
+    #   return false if _slow_subchain.nil?
+    #   return false if _slow_subchain.size == 0
+    #   return false if @chain.size == 0
+    #   slow_subchain = _slow_subchain.not_nil!
+    #
+    #
+    #
+    #
+    # end
+
     def replace_chain(_slow_subchain : Chain?, _fast_subchain : Chain?) : Bool
-      return false if _slow_subchain.nil? || _fast_subchain.nil?
-      slow_subchain = _slow_subchain.not_nil!
-      fast_subchain = _fast_subchain.not_nil!
-      return false if slow_subchain.size == 0 && fast_subchain.size == 0
       return false if @chain.size == 0
+      replacement = [] of SlowBlock | FastBlock
+      replacement += _slow_subchain unless _slow_subchain.nil?
+      replacement += _fast_subchain unless _fast_subchain.nil?
+
+      return false if replacement.size == 0
 
       dapps_clear_record
 
-      subchains = (slow_subchain + fast_subchain).sort_by { |block| block.index }
+      replacement.sort_by! { |block| block.index }
 
-      subchains.each_with_index do |block, i|
-        block.valid?(self)
-
-        index = block.index
-        @chain[index]? ? (@chain[index] = block) : @chain << block
-
-        progress "block ##{block.index} was imported", i + 1, subchains.size
-
+      if @chain.size == 1
+        @chain = replacement
         dapps_record
-      rescue e : Exception
-        error "found invalid block while syncing blocks"
-        error "the reason:"
-        error e.message.not_nil!
+      else
+        replacement.each do |block|
+          block.valid?(self)
 
-        break
+          index = block.index
+          @chain[index]? ? (@chain[index] = block) : @chain << block
+
+          progress "block ##{index} was imported", index, replacement.size
+
+          dapps_record
+        rescue e : Exception
+          error "found invalid block while syncing blocks"
+          error "the reason:"
+          error e.message.not_nil!
+
+          break
+        end
       end
 
       push_genesis if @chain.size == 0
@@ -221,6 +243,48 @@ module ::Sushi::Core
 
       true
     end
+
+    # def replace_chain(_slow_subchain : Chain?, _fast_subchain : Chain?) : Bool
+    #   return false if _slow_subchain.nil? || _fast_subchain.nil?
+    #   slow_subchain = _slow_subchain.not_nil!
+    #   fast_subchain = _fast_subchain.not_nil!
+    #   return false if slow_subchain.size == 0 && fast_subchain.size == 0
+    #   return false if @chain.size == 0
+    #
+    #   dapps_clear_record
+    #
+    #   subchains = (slow_subchain + fast_subchain).sort_by { |block| block.index }
+    #
+    #   subchains.each_with_index do |block, i|
+    #     block.valid?(self)
+    #
+    #     index = block.index
+    #     @chain[index]? ? (@chain[index] = block) : @chain << block
+    #
+    #     progress "block ##{block.index} was imported", i + 1, subchains.size
+    #
+    #     dapps_record
+    #   rescue e : Exception
+    #     error "found invalid block while syncing blocks"
+    #     error "the reason:"
+    #     error e.message.not_nil!
+    #
+    #     break
+    #   end
+    #
+    #   push_genesis if @chain.size == 0
+    #   if database = @database
+    #     database.replace_chain(@chain)
+    #   end
+    #
+    #   clean_slow_transactions
+    #   clean_fast_transactions
+    #
+    #   debug "calling refresh_mining_block in replace_chain"
+    #   refresh_mining_block(block_difficulty(self))
+    #
+    #   true
+    # end
 
     def add_transaction(transaction : Transaction, with_spawn : Bool = true)
       with_spawn ? spawn { _add_transaction(transaction) } : _add_transaction(transaction)
