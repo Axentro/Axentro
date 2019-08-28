@@ -37,7 +37,7 @@ describe RESTController do
         block_factory.add_blocks(2)
         exec_rest_api(block_factory.rest.__v1_blockchain_header(context("/api/v1/blockchain/header"), no_params)) do |result|
           result["status"].to_s.should eq("success")
-          Array(Blockchain::Header).from_json(result["result"].to_json).size.should eq(3)
+          Array(Blockchain::SlowHeader).from_json(result["result"].to_json).size.should eq(3)
         end
       end
     end
@@ -82,7 +82,7 @@ describe RESTController do
         block_factory.add_blocks(2)
         exec_rest_api(block_factory.rest.__v1_block_index_header(context("/api/v1/block/0/header"), {index: 0})) do |result|
           result["status"].to_s.should eq("success")
-          Blockchain::Header.from_json(result["result"].to_json)
+          Blockchain::SlowHeader.from_json(result["result"].to_json)
         end
       end
     end
@@ -170,7 +170,7 @@ describe RESTController do
         block_factory.add_block([transaction]).add_blocks(2)
         exec_rest_api(block_factory.rest.__v1_transaction_id_block_header(context("/api/v1/transaction/#{transaction.id}/block/header"), {id: transaction.id})) do |result|
           result["status"].to_s.should eq("success")
-          Blockchain::Header.from_json(result["result"].to_json)
+          Blockchain::SlowHeader.from_json(result["result"].to_json)
         end
       end
     end

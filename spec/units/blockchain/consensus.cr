@@ -55,6 +55,7 @@ describe Consensus do
           with_factory do |block_factory|
             chain = block_factory.add_blocks(number_of_blocks).chain
             chain.each do |block|
+              block = block.as(SlowBlock)
               block.timestamp = timestamp
               block.difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
               timestamp += Consensus::POW_TARGET_SPACING.to_i64 + 5
@@ -69,6 +70,7 @@ describe Consensus do
           with_factory do |block_factory|
             chain = block_factory.add_blocks(number_of_blocks).chain
             chain.each do |block|
+              block = block.as(SlowBlock)
               block.timestamp = timestamp
               block.difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
               timestamp += Consensus::POW_TARGET_SPACING.to_i64 - 5

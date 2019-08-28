@@ -28,8 +28,8 @@ describe Blockchain do
   it "should calculate the block rewards for a single miner" do
     with_factory do |block_factory, _|
       miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
-      coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction)
-      transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1])
+      coinbase_amount = block_factory.blockchain.coinbase_slow_amount(0, [] of Transaction)
+      transaction = block_factory.blockchain.create_coinbase_slow_transaction(coinbase_amount, [miner1])
 
       node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
       miner1_reward = get_recipient_for(transaction.recipients, "Miner 1")[:amount]
@@ -49,8 +49,8 @@ describe Blockchain do
       miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
       miner2 = {context: {address: "Miner 2", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner2"}
       miner3 = {context: {address: "Miner 3", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner3"}
-      coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction)
-      transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1, miner2, miner3])
+      coinbase_amount = block_factory.blockchain.coinbase_slow_amount(0, [] of Transaction)
+      transaction = block_factory.blockchain.create_coinbase_slow_transaction(coinbase_amount, [miner1, miner2, miner3])
 
       node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
       miner1_reward = get_recipient_for(transaction.recipients, "Miner 1")[:amount]
@@ -87,8 +87,8 @@ describe Blockchain do
   it "should not allocate rewards if the total supply has been reached and there are no senders in the transactions" do
     with_factory do |block_factory, _|
       miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
-      coinbase_amount = block_factory.blockchain.coinbase_amount(TOTAL_BLOCK_LIMIT, [] of Transaction)
-      transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1])
+      coinbase_amount = block_factory.blockchain.coinbase_slow_amount(TOTAL_BLOCK_LIMIT, [] of Transaction)
+      transaction = block_factory.blockchain.create_coinbase_slow_transaction(coinbase_amount, [miner1])
       transaction.recipients.should be_empty
     end
   end
@@ -99,8 +99,8 @@ describe Blockchain do
       transactions = [transaction_factory.make_send(2000_i64), transaction_factory.make_send(9000_i64)]
       total_reward = transactions.flat_map(&.senders).map(&.["fee"]).reduce(0) { |total, fee| total + fee }
 
-      coinbase_amount = block_factory.blockchain.coinbase_amount(TOTAL_BLOCK_LIMIT + 1, transactions)
-      transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1])
+      coinbase_amount = block_factory.blockchain.coinbase_slow_amount(TOTAL_BLOCK_LIMIT + 1, transactions)
+      transaction = block_factory.blockchain.create_coinbase_slow_transaction(coinbase_amount, [miner1])
 
       node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
       miner1_reward = get_recipient_for(transaction.recipients, "Miner 1")[:amount]
@@ -145,8 +145,8 @@ def assert_reward_distribution(nonces1, nonces2, expected_percent_1, expected_pe
   with_factory do |block_factory, _|
     miner1 = {context: {address: "Miner 1", nonces: (1..nonces1).map { |n| n.to_u64 }}, socket: MockWebSocket.new, mid: "miner1"}
     miner2 = {context: {address: "Miner 2", nonces: (1..nonces2).map { |n| n.to_u64 }}, socket: MockWebSocket.new, mid: "miner2"}
-    coinbase_amount = block_factory.blockchain.coinbase_amount(0, [] of Transaction)
-    transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1, miner2])
+    coinbase_amount = block_factory.blockchain.coinbase_slow_amount(0, [] of Transaction)
+    transaction = block_factory.blockchain.create_coinbase_slow_transaction(coinbase_amount, [miner1, miner2])
 
     node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
     miner1_reward = get_recipient_for(transaction.recipients, "Miner 1")[:amount]

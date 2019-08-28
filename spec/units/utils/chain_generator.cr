@@ -99,7 +99,7 @@ module ::Units::Utils::ChainGenerator
       valid_block = @blockchain.valid_block?(block)
       case valid_block
       when SlowBlock
-        @blockchain.push_block(valid_block)
+        @blockchain.push_slow_block(valid_block)
       else
         raise "error could not push block onto blockchain - block was not valid"
       end
