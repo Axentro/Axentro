@@ -30,11 +30,11 @@ describe Address do
   end
 
   it "should return the network when calling #network" do
-    Keys.generate.address.network.should eq(MAINNET)
+    KeyRing.generate.address.network.should eq(MAINNET)
   end
 
   it "should return true for #is_valid?" do
-    Keys.generate.address.is_valid?.should be_true
+    KeyRing.generate.address.is_valid?.should be_true
   end
 
   describe "Address.from(hex)" do

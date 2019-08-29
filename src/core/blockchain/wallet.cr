@@ -61,7 +61,7 @@ module ::Sushi::Core
 
     def self.create(testnet = false)
       network = testnet ? TESTNET : MAINNET
-      keys = Keys.generate(network)
+      keys = KeyRing.generate(network)
 
       {
         public_key: keys.public_key.as_hex,
@@ -71,7 +71,7 @@ module ::Sushi::Core
     end
 
     def self.verify!(public_key : String, wif : String, address : String) : Bool
-      Keys.is_valid?(public_key, wif, address)
+      KeyRing.is_valid?(public_key, wif, address)
     end
 
     def self.address_network_type(address : String) : Core::Node::Network

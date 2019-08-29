@@ -50,19 +50,19 @@ module ::Units::Utils::ChainGenerator
       enable_difficulty
     end
 
-    def add_block
-      add_valid_block
+    def add_slow_block
+      add_valid_slow_block
       self
     end
 
-    def add_blocks(number : Int)
-        (1..number).each { |_| add_block }
+    def add_slow_blocks(number : Int)
+      (1..(number * 2)).select(&.even?).each { |_| add_slow_block }
       self
     end
 
-    def add_block(transactions : Array(Transaction))
+    def add_slow_block(transactions : Array(Transaction))
       transactions.each { |txn| @blockchain.add_transaction(txn, false) }
-      add_valid_block
+      add_valid_slow_block
       self
     end
 
@@ -91,7 +91,7 @@ module ::Units::Utils::ChainGenerator
       @rest
     end
 
-    private def add_valid_block
+    private def add_valid_slow_block
       enable_difficulty("0")
       block = @blockchain.mining_block
       block.nonce = 11719215035155661212_u64

@@ -17,9 +17,9 @@ include Sushi::Core
 include Sushi::Core::Keys
 
 describe Keys do
-  describe "#Keys.generate" do
+  describe "#KeyRing.generate" do
     it "should generate a private and public key pair as Key objects" do
-      keys = Keys.generate
+      keys = KeyRing.generate
 
       keys.private_key.should be_a(PrivateKey)
       keys.private_key.as_hex.size.should eq(64)
@@ -29,58 +29,58 @@ describe Keys do
     end
 
     it "should generate a key pair for the mainnet when no network supplied" do
-      keys = Keys.generate
+      keys = KeyRing.generate
       keys.public_key.network.should eq(MAINNET)
     end
 
     it "should generate a key pair for the specified network" do
-      keys = Keys.generate(TESTNET)
+      keys = KeyRing.generate(TESTNET)
       keys.public_key.network.should eq(TESTNET)
     end
 
     it "should make a wif for mainnet when no network supplied" do
-      keys = Keys.generate
+      keys = KeyRing.generate
       keys.wif.network.should eq(MAINNET)
     end
 
     it "should make a wif for the specified network" do
-      keys = Keys.generate(TESTNET)
+      keys = KeyRing.generate(TESTNET)
       keys.wif.network.should eq(TESTNET)
     end
 
     it "should make an address for mainnet when no network supplied" do
-      keys = Keys.generate
+      keys = KeyRing.generate
       keys.address.network.should eq(MAINNET)
     end
 
     it "should make an address for the specified network" do
-      keys = Keys.generate(TESTNET)
+      keys = KeyRing.generate(TESTNET)
       keys.address.network.should eq(TESTNET)
     end
   end
 
-  describe "#Keys.is_valid?" do
+  describe "#KeyRing.is_valid?" do
     it "should return true when valid" do
-      keys = Keys.generate(TESTNET)
-      Keys.is_valid?(keys.public_key.as_hex, keys.wif.as_hex, keys.address.as_hex).should be_true
+      keys = KeyRing.generate(TESTNET)
+      KeyRing.is_valid?(keys.public_key.as_hex, keys.wif.as_hex, keys.address.as_hex).should be_true
     end
 
     it "should raise an error when network is different between address and wif " do
-      keys = Keys.generate(TESTNET)
+      keys = KeyRing.generate(TESTNET)
       public_key = "fbc573b1fbb55088560ee58499ef1be2c6e9c532dd03aaaf46a0207f47310f91926545b8a73d60b29f626a71d1c8691fe8135fc9c63321b70fcfa8461e4a18fe"
       address = "TTBkYzFlNzgxMDRkMzBiNDJmZWI1MDlmMjg2OWY2ZmFlMDU0NTg4ZjAwYmI0MTBi"
 
       expect_raises(Exception, "network mismatch between address and wif") do
-        Keys.is_valid?(public_key, keys.wif.as_hex, address)
+        KeyRing.is_valid?(public_key, keys.wif.as_hex, address)
       end
     end
 
     it "should raise an error when the wif's public key is different to the public key" do
-      keys = Keys.generate(MAINNET)
+      keys = KeyRing.generate(MAINNET)
       wif = "TTAzMjRkYjJmMjhjYWM0YzhhNjI2MzI3MzhmYjcwNjA2OGI3OWYxZWVhMDI5YWEzOGM5MzExNjUzMzhhYzk2OTNjMDA3ODI2"
 
       expect_raises(Exception, "public key mismatch between public key and wif") do
-        Keys.is_valid?(keys.public_key.as_hex, wif, keys.address.as_hex)
+        KeyRing.is_valid?(keys.public_key.as_hex, wif, keys.address.as_hex)
       end
     end
   end

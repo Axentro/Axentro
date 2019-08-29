@@ -22,39 +22,39 @@ describe TransactionCreator do
   describe "default non implemented methods" do
     it "should perform #setup" do
       with_factory do |block_factory, _|
-        transaction_creator = TransactionCreator.new(block_factory.add_block.blockchain)
+        transaction_creator = TransactionCreator.new(block_factory.add_slow_block.blockchain)
         transaction_creator.setup.should be_nil
       end
     end
     it "should perform #transaction_actions" do
       with_factory do |block_factory, _|
-        transaction_creator = TransactionCreator.new(block_factory.add_block.blockchain)
+        transaction_creator = TransactionCreator.new(block_factory.add_slow_block.blockchain)
         transaction_creator.transaction_actions.size.should eq(0)
       end
     end
     it "should perform #transaction_related?" do
       with_factory do |block_factory, _|
-        transaction_creator = TransactionCreator.new(block_factory.add_block.blockchain)
+        transaction_creator = TransactionCreator.new(block_factory.add_slow_block.blockchain)
         transaction_creator.transaction_related?("action").should be_false
       end
     end
     it "should perform #valid_transaction?" do
       with_factory do |block_factory, _|
-        chain = block_factory.add_blocks(2).chain
+        chain = block_factory.add_slow_blocks(2).chain
         transaction_creator = TransactionCreator.new(block_factory.blockchain)
         transaction_creator.valid_transaction?(chain.last.transactions.first, chain.last.transactions).should be_true
       end
     end
     it "should perform #record" do
       with_factory do |block_factory, _|
-        chain = block_factory.add_blocks(2).chain
+        chain = block_factory.add_slow_blocks(2).chain
         transaction_creator = TransactionCreator.new(block_factory.blockchain)
         transaction_creator.record(chain).should be_nil
       end
     end
     it "should perform #clear" do
       with_factory do |block_factory, _|
-        transaction_creator = TransactionCreator.new(block_factory.add_blocks(2).blockchain)
+        transaction_creator = TransactionCreator.new(block_factory.add_slow_blocks(2).blockchain)
         transaction_creator.clear.should be_nil
       end
     end
