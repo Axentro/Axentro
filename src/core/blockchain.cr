@@ -164,7 +164,7 @@ module ::Sushi::Core
           index = block.index
           @chain[index]? ? (@chain[index] = block) : @chain << block
 
-          progress "block ##{index} was imported", index, replacement.size
+          progress "block ##{index} was imported/synced (replace_chain)", index, replacement.size
 
           dapps_record
         rescue e : Exception
