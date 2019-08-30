@@ -21,10 +21,6 @@ module ::E2E::Utils::Node
     "#{bin} #{_args}"
   end
 
-  def setup_env
-    " SC_LOG=debug && SC_E2E= && SC_UNIT= && SC_INTEGRATION= "
-  end
-
   def node(port : Int32, is_private : Bool, connect_port : Int32?, num : Int32, _db_name : String? = nil)
     args = ["-p", port, "-w", wallet(num), "--testnet"]
     args << "-n http://127.0.0.1:#{connect_port}" if connect_port
@@ -43,7 +39,8 @@ module ::E2E::Utils::Node
     bin = sushid(args)
 
     spawn do
-      system("rm -rf #{log_path(num, "node")} && #{setup_env} && #{bin} &> #{log_path(num, "node")}")
+      system("rm -rf #{log_path(num, "node")} && #{Envs.setup_env} && #{bin} &> #{log_path(num, "node")}")
     end
   end
+
 end
