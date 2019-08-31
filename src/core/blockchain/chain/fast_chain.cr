@@ -52,9 +52,14 @@ module ::Sushi::Core::FastChain
   end
 
   # TODO - maybe rename this to 'pending' so not to confuse with latest
+  # def get_latest_index_for_fast
+  #   latest = latest_fast_block.nil? ? latest_block : latest_fast_block.not_nil!
+  #   index = latest.index
+  #   index.odd? ? index + 2 : index + 1
+  # end
+
   def get_latest_index_for_fast
-    latest = latest_fast_block.nil? ? latest_block : latest_fast_block.not_nil!
-    index = latest.index
+    index = latest_fast_block_index_or_zero
     index.odd? ? index + 2 : index + 1
   end
 
@@ -66,7 +71,7 @@ module ::Sushi::Core::FastChain
   #   fast_chain.select{|block| block.index > from}
   # end
 
-  # TODO - check this is good 
+  # TODO - check this is good
   def subchain_fast(from : Int64) : Chain?
     fast_chain = @chain.select(&.is_fast_block?)
     return nil if fast_chain.size < from
@@ -81,10 +86,14 @@ module ::Sushi::Core::FastChain
     {latest_index: latest_index, transactions: align_fast_transactions(coinbase_transaction, coinbase_amount)}
   end
 
+  def get_genesis_block
+    @chain.first
+  end
+
   def mint_fast_block(valid_transactions)
     transactions = valid_transactions[:transactions]
     latest_index = valid_transactions[:latest_index]
-    _latest_block = latest_fast_block || latest_slow_block
+    _latest_block = latest_fast_block || get_genesis_block
     timestamp = __timestamp
     FastBlock.new(
       latest_index,
