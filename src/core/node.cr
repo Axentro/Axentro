@@ -296,14 +296,14 @@ module ::Sushi::Core
     end
 
     def broadcast_block(socket : HTTP::WebSocket, block : SlowBlock | FastBlock, from : Chord::NodeContext? = nil)
-      info "New #{block.kind} block coming with index from peer: #{block.index}"
+      info "New #{block.kind} block coming from peer with index: #{block.index}"
       case block
       when SlowBlock then broadcast_slow_block(socket, block, from)
       when FastBlock then broadcast_fast_block(socket, block, from)
       end
     end
 
-    private def broadcast_slow_block(socket : HTTP::WebSocket, block : SlowBlock | FastBlock, from : Chord::NodeContext? = nil)
+    private def broadcast_slow_block(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
       if @blockchain.get_latest_index_for_slow == block.index
         debug "slow: currently pending slow index is the same as the arriving block from a peer"
         debug "slow: sending new block on to peer"
@@ -338,9 +338,11 @@ module ::Sushi::Core
           )
         end
       end
+    rescue e : Exception
+      error e.message.not_nil!
     end
 
-    private def broadcast_fast_block(socket : HTTP::WebSocket, block : SlowBlock | FastBlock, from : Chord::NodeContext? = nil)
+    private def broadcast_fast_block(socket : HTTP::WebSocket, block : FastBlock, from : Chord::NodeContext? = nil)
       latest_fast_block = @blockchain.latest_fast_block || @blockchain.latest_block
       if @blockchain.get_latest_index_for_fast == block.index
         debug "fast: currently pending slow index is the same as the arriving block from a peer"
@@ -436,19 +438,18 @@ module ::Sushi::Core
     private def _request_chain(socket, _content)
       _m_content = MContentNodeRequestChain.from_json(_content)
 
-      latest_slow_index = _m_content.latest_slow_index
-      latest_fast_index = _m_content.latest_fast_index
+      remote_slow_index = _m_content.latest_slow_index
+      remote_fast_index = _m_content.latest_fast_index
 
-      info "requested new chain latest slow index: #{latest_slow_index} , latest fast index: #{latest_fast_index}"
+      info "requested new chain latest slow index: #{remote_slow_index} , latest fast index: #{remote_fast_index}"
 
-      slow_chain = @blockchain.subchain_slow(latest_slow_index)
-      fast_chain = @blockchain.subchain_fast(latest_fast_index)
+      local_slow_chain = @blockchain.subchain_slow(remote_slow_index)
+      local_fast_chain = @blockchain.subchain_fast(remote_fast_index)
 
-      send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {slowchain: slow_chain, fastchain: fast_chain})
+      send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {slowchain: local_slow_chain, fastchain: local_fast_chain})
       debug "chain sent to peer for sync"
 
-      latest_fast_block = @blockchain.latest_fast_block || @blockchain.latest_block
-      if latest_slow_index > @blockchain.latest_slow_block.index || latest_fast_index > latest_fast_block.index
+      if ((remote_slow_index > @blockchain.latest_slow_block.index) || (remote_fast_index > @blockchain.latest_fast_block_index_or_zero))
         sync_chain(socket)
       end
     end
@@ -456,29 +457,27 @@ module ::Sushi::Core
     private def _receive_chain(socket, _content)
       _m_content = MContentNodeReceiveChain.from_json(_content)
 
-      fastchain = _m_content.fastchain
-      slowchain = _m_content.slowchain
+      _remote_fast_chain = _m_content.fastchain
+      _remote_slow_chain = _m_content.slowchain
 
-      if _slowchain = slowchain
-        info "received #{_slowchain.size} SLOW blocks"
+      if remote_slow_chain = _remote_slow_chain
+        info "received #{remote_slow_chain.size} SLOW blocks"
       else
         info "received empty SLOW chain"
       end
 
-      if _fastchain = fastchain
-        info "received #{_fastchain.size} FAST blocks"
+      if remote_fast_chain = _remote_fast_chain
+        info "received #{remote_fast_chain.size} FAST blocks"
       else
         info "received empty FAST chain"
       end
 
-      current_slow_latest_index = @blockchain.latest_slow_block.index
-      current_fast_latest = @blockchain.latest_fast_block || @blockchain.latest_block
-      current_fast_latest_index = current_fast_latest.index
+      previous_local_slow_index = @blockchain.latest_slow_block.index
+      previous_local_fast_index = @blockchain.latest_fast_block_index_or_zero
 
-      if @blockchain.replace_chain(slowchain, fastchain)
-        info "slow: chain updated: #{light_green(current_slow_latest_index)} -> #{light_green(@blockchain.latest_slow_block.index)}"
-        latest = @blockchain.latest_fast_block || @blockchain.latest_block
-        info "fast: chain updated: #{light_green(current_fast_latest_index)} -> #{light_green(latest.index)}"
+      if @blockchain.replace_chain(remote_slow_chain, remote_fast_chain)
+        info "slow: chain updated: #{light_green(previous_local_slow_index)} -> #{light_green(@blockchain.latest_slow_block.index)}"
+        info "fast: chain updated: #{light_green(previous_local_fast_index)} -> #{light_green(@blockchain.latest_fast_block_index_or_zero)}"
 
         @miners_manager.broadcast
 
@@ -495,14 +494,17 @@ module ::Sushi::Core
     private def _ask_request_chain(socket, _content)
       _m_content = MContentNodeAskRequestChain.from_json(_content)
 
-      _latest_slow_index = _m_content.latest_slow_index
-      _latest_fast_index = _m_content.latest_fast_index
+      remote_slow_index = _m_content.latest_slow_index
+      remote_fast_index = _m_content.latest_fast_index
 
-      verbose "be asked to request new chain"
-      verbose "slow requested: #{_latest_slow_index}, yours #{@blockchain.latest_slow_block.index}"
-      verbose "fast requested: #{_latest_fast_index}, yours #{(@blockchain.latest_fast_block || @blockchain.latest_block).index}"
+      local_slow_index = @blockchain.latest_slow_block.index
+      local_fast_index = @blockchain.latest_fast_block_index_or_zero
 
-      if _latest_slow_index > @blockchain.latest_slow_block.index || _latest_fast_index > (@blockchain.latest_fast_block || @blockchain.latest_block).index
+      verbose "requested new chain"
+      verbose "slow requested: #{remote_slow_index}, yours #{local_slow_index}"
+      verbose "fast requested: #{remote_fast_index}, yours #{local_fast_index}"
+
+      if ((remote_slow_index > local_slow_index) || (remote_fast_index > local_fast_index))
         sync_chain(socket)
       end
     end
@@ -583,8 +585,7 @@ module ::Sushi::Core
 
         info "loaded blockchain's total size: #{light_cyan(@blockchain.chain.size)}"
         info "highest slow block index: #{light_cyan(@blockchain.latest_slow_block.index)}"
-        fast_block = @blockchain.latest_fast_block || @blockchain.latest_block
-        info "highest fast block index: #{light_cyan(fast_block.index)}"
+        info "highest fast block index: #{light_cyan(@blockchain.latest_fast_block_index_or_zero)}"
 
         if @database
           @conflicted_slow_index = nil

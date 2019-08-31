@@ -46,18 +46,32 @@ module ::Sushi::Core::FastChain
     (fast_blocks.size > 0) ? fast_blocks.last.as(FastBlock) : nil
   end
 
+  def latest_fast_block_index_or_zero : Int64
+    fast_blocks = @chain.select(&.is_fast_block?)
+    (fast_blocks.size > 0) ? fast_blocks.last.as(FastBlock).index : 0_i64
+  end
+
+  # TODO - maybe rename this to 'pending' so not to confuse with latest
   def get_latest_index_for_fast
     latest = latest_fast_block.nil? ? latest_block : latest_fast_block.not_nil!
     index = latest.index
     index.odd? ? index + 2 : index + 1
   end
 
+  # def subchain_fast(from : Int64) : Chain?
+  #   fast_chain = @chain.select(&.is_fast_block?)
+  #   latest_fast_index = (latest_fast_block || latest_block).index
+  #   return nil if latest_fast_index <= from
+  #
+  #   fast_chain.select{|block| block.index > from}
+  # end
+
+  # TODO - check this is good 
   def subchain_fast(from : Int64) : Chain?
     fast_chain = @chain.select(&.is_fast_block?)
-    latest_fast_index = (latest_fast_block || latest_block).index
-    return nil if latest_fast_index <= from
+    return nil if fast_chain.size < from
 
-    fast_chain.select{|block| block.index > from}
+    fast_chain[from..-1]
   end
 
   def valid_transactions_for_fast_block

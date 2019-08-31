@@ -33,10 +33,10 @@ module ::E2E
 
     getter exit_code : Int32 = 0
 
-    def initialize(@mode : Int32, @num_nodes : Int32, @num_miners : Int32, @time : Int32, @keep_logs : Bool)
+    def initialize(@mode : Int32, @num_nodes : Int32, @num_miners : Int32, @time : Int32, @keep_logs : Bool, @no_transactions : Bool)
       @node_ports = (4001..4001 + (@num_nodes - 1)).to_a
 
-      Client.initialize(@node_ports, @num_miners)
+      Client.initialize(@node_ports, @num_miners, @no_transactions)
 
       @db_name = Random.new.hex
     end
@@ -294,6 +294,7 @@ module ::E2E
       STDERR.puts "start E2E tests with #{light_green(mode_str)} mode"
 
       puts "keep logs: #{@keep_logs}"
+      puts "no transactions: #{@no_transactions}"
       step kill_nodes, 0, "kill existing nodes"
       step kill_miners, 0, "kill existing miners"
       step Runner.clean_logs, 0, "clean logs"

@@ -23,6 +23,7 @@ class SushiChainE2E
   @num_miners : Int32 = 3
   @time : Int32 = 300
   @keep_logs : Bool = false
+  @no_transactions : Bool = false
 
   def initialize
     ENV["SC_E2E"] = "true"
@@ -70,6 +71,10 @@ class SushiChainE2E
         ENV.delete("SC_E2E")
       end
 
+      parser.on("--no-transactions", "don't send any transactions during run") do
+        @no_transactions = true
+      end
+
       parser.on("--help", "show this help") do
         puts parser.to_s
         exit 0
@@ -92,7 +97,7 @@ class SushiChainE2E
     raise "invalid value of arg --num_nodes" if @num_nodes < 0
     raise "invalid value of arg --num_miners" if @num_miners < 0
 
-    runner = ::E2E::Runner.new(runner_mode, @num_nodes, @num_miners, @time, @keep_logs)
+    runner = ::E2E::Runner.new(runner_mode, @num_nodes, @num_miners, @time, @keep_logs, @no_transactions)
     runner.run!
 
     exit runner.exit_code

@@ -147,6 +147,7 @@ module ::Sushi::Core
       replacement = [] of SlowBlock | FastBlock
       replacement += _slow_subchain unless _slow_subchain.nil?
       replacement += _fast_subchain unless _fast_subchain.nil?
+      replacement = replacement.flatten
 
       return false if replacement.size == 0
 
@@ -227,10 +228,9 @@ module ::Sushi::Core
 
     def subchain_slow(from : Int64) : Chain?
       slow_chain = @chain.select(&.is_slow_block?)
-      latest_slow_index = latest_slow_block.index
-      return nil if latest_slow_index <= from
+      return nil if slow_chain.size < from
 
-      slow_chain.select{|block| block.index > from}
+      slow_chain[from..-1]
     end
 
     def genesis_block : SlowBlock

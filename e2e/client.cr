@@ -16,6 +16,7 @@ require "./utils"
 module ::E2E
   class Client < Tokoroten::Worker
     @@client : Tokoroten::Worker? = nil
+    @@no_transactions : Bool = false
 
     alias ClientWork = NamedTuple(call: Int32, content: String)
 
@@ -31,8 +32,9 @@ module ::E2E
       @@client.not_nil!
     end
 
-    def self.initialize(node_ports : Array(Int32), num_miners : Int32)
+    def self.initialize(node_ports : Array(Int32), num_miners : Int32, no_transactions : Bool)
       @@client = Client.create(1)[0]
+      @@no_transactions = no_transactions
 
       request = {call: 0, content: {node_ports: node_ports, num_miners: num_miners}.to_json}.to_json
       client.exec(request)
@@ -88,12 +90,17 @@ module ::E2E
     end
 
     def launch
-      spawn do
-        while @alive
-          begin
-            create_transaction
-          rescue e : Exception
-            STDERR.puts red(e.message.not_nil!)
+      if @@no_transactions
+        @launch_time ||= Time.now
+        return nil
+      else
+        spawn do
+          while @alive
+            begin
+              create_transaction
+            rescue e : Exception
+              STDERR.puts red(e.message.not_nil!)
+            end
           end
         end
       end
