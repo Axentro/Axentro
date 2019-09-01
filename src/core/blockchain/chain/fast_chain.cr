@@ -39,7 +39,7 @@ module ::Sushi::Core::FastChain
             existing_transactions = @chain.flat_map(&.transactions.map(&.id))
 
             # if txns already exist in chain - don't mint new block
-            if(existing_transactions.includes?())
+            # if(existing_transactions.includes?())
             block = mint_fast_block(valid_transactions)
             debug "record new fast block"
             node.new_block(block)
