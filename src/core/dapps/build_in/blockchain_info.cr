@@ -33,6 +33,7 @@ module ::Sushi::Core::DApps::BuildIn
     def clear
     end
 
+    # TODO - handle fast and slow chain sizes here
     def define_rpc?(call, json, context, params)
       case call
       when "blockchain_size"

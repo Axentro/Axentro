@@ -77,6 +77,7 @@ RULE
       Token.valid_token_name?(token)
     end
 
+    # TODO - fix this in line with how indices was fixed
     def record(chain : Blockchain::Chain)
       return if chain.size < @latest_recorded_index
 

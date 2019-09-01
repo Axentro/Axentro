@@ -23,34 +23,32 @@ module ::Sushi::Core::FastChain
   def process_fast_transactions
     loop do
       if @i_am_the_leader
-        # debug "I am the leader so attempt to process fast transactions"
-        info "********** process fast transactions ***********"
-        if pending_fast_transactions.size > 0
-          debug "There are #{pending_fast_transactions.size} pending fast transactions"
-          valid_transactions = valid_transactions_for_fast_block
+        begin
+          # debug "I am the leader so attempt to process fast transactions"
+          debug "********** process fast transactions ***********"
+          if pending_fast_transactions.size > 0
+            debug "There are #{pending_fast_transactions.size} pending fast transactions"
+            valid_transactions = valid_transactions_for_fast_block
 
-          debug "before: pending_fast_transactions: #{pending_fast_transactions.size}"
-          debug "cleaning fast transactions"
-          clean_fast_transactions
-          debug "after: pending_fast_transactions: #{pending_fast_transactions.size}"
+            if valid_transactions[:transactions].size > 1
+              debug "There are #{valid_transactions.size} valid fast transactions so mint a new fast block"
 
-          if valid_transactions[:transactions].size > 1
-            debug "There are #{valid_transactions.size} valid fast transactions so mint a new fast block"
-            existing_transactions = @chain.flat_map(&.transactions.map(&.id))
-
-            # if txns already exist in chain - don't mint new block
-            # if(existing_transactions.includes?())
-            block = mint_fast_block(valid_transactions)
-            debug "record new fast block"
-            node.new_block(block)
-            debug "broadcast new fast block"
-            node.send_block(block)
-
-
+              block = mint_fast_block(valid_transactions)
+              if block.valid?(self)
+                debug "record new fast block"
+                node.new_block(block)
+                # dapps_record
+                # clean_fast_transactions
+                debug "broadcast new fast block"
+                node.send_block(block)
+              end
+            end
           end
+        rescue e : Exception
+          error e.message.not_nil!
         end
       end
-      sleep 10
+      sleep 2
     end
   end
 
@@ -63,13 +61,6 @@ module ::Sushi::Core::FastChain
     fast_blocks = @chain.select(&.is_fast_block?)
     (fast_blocks.size > 0) ? fast_blocks.last.as(FastBlock).index : 0_i64
   end
-
-  # TODO - maybe rename this to 'pending' so not to confuse with latest
-  # def get_latest_index_for_fast
-  #   latest = latest_fast_block.nil? ? latest_block : latest_fast_block.not_nil!
-  #   index = latest.index
-  #   index.odd? ? index + 2 : index + 1
-  # end
 
   def get_latest_index_for_fast
     index = latest_fast_block_index_or_zero
@@ -190,6 +181,8 @@ module ::Sushi::Core::FastChain
     debug "locked FastTransactionPool"
     transactions = pending_fast_transactions.reject { |t| indices.get(t.id) }.select(&.is_fast_transaction?)
     debug "filter out transactions in indices: #{transactions.size}"
+    debug "look inside indices:"
+    pp indices.@indices
     FastTransactionPool.replace(transactions)
     debug "replace transactions in pool: #{FastTransactionPool.all.size}"
   end

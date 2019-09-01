@@ -32,10 +32,6 @@ shards:
     github: tbrand/router.cr
     version: 0.2.7
 
-  scrypt:
-    github: ysbaddaden/scrypt-crystal
-    version: 0.3.0
-
   sqlite3:
     github: crystal-lang/crystal-sqlite3
     version: 0.13.0

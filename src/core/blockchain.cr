@@ -53,6 +53,7 @@ module ::Sushi::Core
       end
 
       spawn process_fast_transactions
+
     end
 
     def node
@@ -202,7 +203,7 @@ module ::Sushi::Core
         database.push_block(block)
       end
 
-      debug "in node.push_block, before dapps_record"
+      debug "in blockchain._push_block, before dapps_record"
       dapps_record
       debug "after dapps record, before clean transactions"
     end

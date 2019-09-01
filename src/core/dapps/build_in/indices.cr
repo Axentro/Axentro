@@ -45,10 +45,17 @@ module ::Sushi::Core::DApps::BuildIn
       true
     end
 
+    # TODO - is this ok in relation to slow and fast blocks
     def record(chain : Blockchain::Chain)
-      return if @indices.size >= chain.size
+      # return if @indices.size >= chain.size
 
-      chain[@indices.size..-1].each do |block|
+      # TODO - when a slow block e.g. 2 is already in the chain and a new fast block with index 1 arrives this
+      # chain[@indices.size..-1] will have an size of 2 and miss out index 1 when selecting from the chain.
+
+
+
+      # chain[@indices.size..-1].each do |block|
+      chain.select{|block| !@indices.flat_map(&.values).uniq.includes?(block.index) }.each do |block|
         @indices.push(Hash(String, Int64).new)
 
         block.transactions.each do |transaction|

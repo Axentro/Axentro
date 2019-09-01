@@ -189,6 +189,7 @@ module ::Sushi::Core::DApps::BuildIn
       @utxo_internal << TokenQuantity.new(token, [AddressQuantity.new(address, amount)])
     end
 
+    # TODO - fix this in line with how indices was fixed
     def record(chain : Blockchain::Chain)
       return if @utxo_internal.size >= chain.size
 

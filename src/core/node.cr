@@ -345,7 +345,7 @@ module ::Sushi::Core
     private def broadcast_fast_block(socket : HTTP::WebSocket, block : FastBlock, from : Chord::NodeContext? = nil)
       latest_fast_block = @blockchain.latest_fast_block || @blockchain.latest_block
       if @blockchain.get_latest_index_for_fast == block.index
-        debug "fast: currently pending slow index is the same as the arriving block from a peer"
+        debug "fast: currently pending fast index is the same as the arriving block from a peer"
         debug "fast: sending new block on to peer"
         send_block(block, from)
         debug "fast: finished sending new block on to peer"
@@ -354,12 +354,12 @@ module ::Sushi::Core
           new_block(_block)
         end
       elsif latest_fast_block.index == block.index
-        debug "fast: latest slow block index is the same as the arriving block from a peer"
+        debug "fast: latest fast block index is the same as the arriving block from a peer"
         warning "fast: blockchain conflicted at #{block.index} (#{light_cyan(latest_fast_block)})"
         @conflicted_fast_index ||= block.index
         send_block(block, from)
       elsif @blockchain.get_latest_index_for_fast < block.index
-        debug "fast: currently pending slow index is the less than the index of arriving block from a peer"
+        debug "fast: currently pending fast index is the less than the index of arriving block from a peer"
         warning "fast: require new chain: #{latest_fast_block} for #{block.index}"
         sync_chain(socket)
         send_block(block, from)
@@ -372,7 +372,7 @@ module ::Sushi::Core
             M_TYPE_NODE_ASK_REQUEST_CHAIN,
             {
               latest_slow_index: @blockchain.latest_slow_block.index,
-              latest_fast_index: (@blockchain.latest_fast_block || @blockchain.latest_block).index,
+              latest_fast_index: (@blockchain.latest_fast_block || @blockchain.get_genesis_block).index,
             }
           )
         end
