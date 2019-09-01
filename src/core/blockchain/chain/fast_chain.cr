@@ -24,20 +24,33 @@ module ::Sushi::Core::FastChain
     loop do
       if @i_am_the_leader
         # debug "I am the leader so attempt to process fast transactions"
-
+        info "********** process fast transactions ***********"
         if pending_fast_transactions.size > 0
+          debug "There are #{pending_fast_transactions.size} pending fast transactions"
           valid_transactions = valid_transactions_for_fast_block
+
+          debug "before: pending_fast_transactions: #{pending_fast_transactions.size}"
+          debug "cleaning fast transactions"
+          clean_fast_transactions
+          debug "after: pending_fast_transactions: #{pending_fast_transactions.size}"
+
           if valid_transactions[:transactions].size > 1
             debug "There are #{valid_transactions.size} valid fast transactions so mint a new fast block"
+            existing_transactions = @chain.flat_map(&.transactions.map(&.id))
+
+            # if txns already exist in chain - don't mint new block
+            if(existing_transactions.includes?())
             block = mint_fast_block(valid_transactions)
             debug "record new fast block"
             node.new_block(block)
             debug "broadcast new fast block"
             node.send_block(block)
+
+
           end
         end
       end
-      sleep 0.5
+      sleep 10
     end
   end
 
@@ -84,10 +97,6 @@ module ::Sushi::Core::FastChain
     coinbase_amount = coinbase_fast_amount(latest_index, embedded_fast_transactions)
     coinbase_transaction = create_coinbase_fast_transaction(coinbase_amount)
     {latest_index: latest_index, transactions: align_fast_transactions(coinbase_transaction, coinbase_amount)}
-  end
-
-  def get_genesis_block
-    @chain.first
   end
 
   def mint_fast_block(valid_transactions)
@@ -176,14 +185,18 @@ module ::Sushi::Core::FastChain
   end
 
   def clean_fast_transactions
+    debug "inside clean fast transactions"
     FastTransactionPool.lock
+    debug "locked FastTransactionPool"
     transactions = pending_fast_transactions.reject { |t| indices.get(t.id) }.select(&.is_fast_transaction?)
+    debug "filter out transactions in indices: #{transactions.size}"
     FastTransactionPool.replace(transactions)
+    debug "replace transactions in pool: #{FastTransactionPool.all.size}"
   end
 
   def push_fast_block(block : FastBlock)
     _push_block(block)
-    clean_fast_transactions if block.is_fast_block?
+    clean_fast_transactions
 
     block
   end

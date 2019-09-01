@@ -111,7 +111,7 @@ module ::Sushi::Core
     end
 
     def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool) : Bool
-      prev_block = blockchain.latest_fast_block || blockchain.latest_block
+      prev_block = blockchain.latest_fast_block || blockchain.get_genesis_block
       latest_fast_index = blockchain.get_latest_index_for_fast
 
       unless skip_transactions
@@ -119,6 +119,18 @@ module ::Sushi::Core
           process_transaction(blockchain, t, idx)
         end
       end
+
+
+      puts "---------------c---------------"
+      pp self
+      puts "---------------c---------------"
+
+      puts "---------------p---------------"
+      pp prev_block
+      puts "---------------p---------------"
+
+      puts "prev_block hash: #{prev_block.to_hash}"
+
 
       raise "Index Mismatch: the current block index: #{@index} should match the lastest fast block index: #{latest_fast_index}" if @index != latest_fast_index
       raise "Invalid Previous Hash: for current index: #{@index} the prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash

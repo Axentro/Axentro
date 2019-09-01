@@ -63,6 +63,10 @@ module ::Sushi::Core
       push_slow_block(genesis_block)
     end
 
+    def get_genesis_block
+      @chain.first
+    end
+
     def restore_from_database(database : Database)
       total_blocks = database.total_blocks
       highest_index = database.highest_index
@@ -71,7 +75,7 @@ module ::Sushi::Core
 
       current_index = 0_i64
       (0..highest_index).each do |_|
-        _block = database.get_block(current_index)
+        pp _block = database.get_block(current_index)
         if _block
           break unless _block.valid?(self, true)
           debug "restoring from database: #{_block.index} of kind #{_block.kind}"
@@ -98,6 +102,66 @@ module ::Sushi::Core
       push_genesis if @chain.size == 0
     end
 
+    # def restore_slow_blocks(database : Database, highest_index)
+    #   current_index = 0_i64
+    #   (0_i64..highest_index).select { |i| i.even? }.each do |index|
+    #     current_index = index
+    #     _block = database.get_block(current_index)
+    #     if _block
+    #       break unless _block.valid?(self, true)
+    #       debug "restoring from database: #{_block.index} of kind #{_block.kind}"
+    #       @chain.push(_block)
+    #     end
+    #     progress "block ##{current_index} was imported", current_index, highest_index
+    #   end
+    # rescue e : Exception
+    #   error "Error could not restore slow blocks from database"
+    #   error e.message.not_nil! if e.message
+    #   warning "removing invalid slow blocks from database"
+    #   database.delete_blocks(current_index.not_nil!)
+    # end
+
+    # def restore_fast_blocks(database : Database, highest_index)
+    #   current_index = 0_i64
+    #   (0_i64..highest_index).select { |i| i.odd? }.each do |index|
+    #     current_index = index
+    #     _block = database.get_block(current_index)
+    #     if _block
+    #       break unless _block.valid?(self, true)
+    #       debug "restoring from database: #{_block.index} of kind #{_block.kind}"
+    #       @chain.push(_block)
+    #     end
+    #     progress "block ##{current_index} was imported", current_index, highest_index
+    #   end
+    # rescue e : Exception
+    #   error "Error could not restore fast blocks from database"
+    #   error e.message.not_nil! if e.message
+    #   warning "removing invalid fast blocks from database"
+    #   database.delete_blocks(current_index.not_nil!)
+    # end
+    #
+    # def restore_from_database(database : Database)
+    #   total_blocks = database.total_blocks
+    #   highest_index = database.highest_index
+    #   info "start loading blockchain from #{database.path}"
+    #   info "there are #{total_blocks} blocks recorded"
+    #
+    #   restore_slow_blocks(database, highest_index)
+    #   restore_fast_blocks(database, highest_index)
+    #
+    #   @chain.sort_by! { |block| block.index }
+    #
+    #   if @chain.size == 0
+    #     push_genesis
+    #   else
+    #     refresh_mining_block(block_difficulty(self))
+    #   end
+    #
+    #   dapps_record
+    # ensure
+    #   push_genesis if @chain.size == 0
+    # end
+
     def valid_nonce?(nonce : UInt64) : SlowBlock?
       return mining_block.with_nonce(nonce) if mining_block.with_nonce(nonce).valid_nonce?(mining_block_difficulty)
       nil
@@ -123,7 +187,7 @@ module ::Sushi::Core
 
     def push_slow_block(block : SlowBlock)
       _push_block(block)
-      clean_slow_transactions if block.is_slow_block?
+      clean_slow_transactions
 
       debug "after clean_transactions, now calling refresh_mining_block in push_block"
       refresh_mining_block(block_difficulty(self))
@@ -132,6 +196,7 @@ module ::Sushi::Core
 
     private def _push_block(block : SlowBlock | FastBlock)
       @chain.push(block)
+      @chain.sort_by! { |block| block.index }
       if database = @database
         debug "sending #{block.kind} block to DB with timestamp of #{block.timestamp}"
         database.push_block(block)
@@ -198,6 +263,7 @@ module ::Sushi::Core
     private def _add_transaction(transaction : Transaction)
       if transaction.valid_common?
         if transaction.kind == TransactionKind::FAST
+          debug "adding fast transaction to pool: #{transaction.id}"
           FastTransactionPool.add(transaction)
         else
           SlowTransactionPool.add(transaction)
