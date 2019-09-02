@@ -45,17 +45,8 @@ module ::Sushi::Core::DApps::BuildIn
       true
     end
 
-    # TODO - is this ok in relation to slow and fast blocks
     def record(chain : Blockchain::Chain)
-      # return if @indices.size >= chain.size
-
-      # TODO - when a slow block e.g. 2 is already in the chain and a new fast block with index 1 arrives this
-      # chain[@indices.size..-1] will have an size of 2 and miss out index 1 when selecting from the chain.
-
-
-
-      # chain[@indices.size..-1].each do |block|
-      chain.select{|block| !@indices.flat_map(&.values).uniq.includes?(block.index) }.each do |block|
+      chain.select { |block| !@indices.flat_map(&.values).uniq.includes?(block.index) }.each do |block|
         @indices.push(Hash(String, Int64).new)
 
         block.transactions.each do |transaction|
@@ -88,11 +79,13 @@ module ::Sushi::Core::DApps::BuildIn
 
     def transaction_impl(transaction_id : String)
       if block_index = get(transaction_id)
-        if transaction = blockchain.chain[block_index].find_transaction(transaction_id)
-          return {
-            status:      "accepted",
-            transaction: transaction,
-          }
+        if block = blockchain.chain.find { |block| block.index == block_index }
+          if transaction = block.find_transaction(transaction_id)
+            return {
+              status:      "accepted",
+              transaction: transaction,
+            }
+          end
         end
       end
 
@@ -129,10 +122,10 @@ module ::Sushi::Core::DApps::BuildIn
         raise "failed to find a block for the transaction #{transaction_id}"
       end
 
-      latest_index = @indices.size
+      index = @indices.flat_map(&.values).select { |i| i >= block_index }.size
 
       {
-        confirmations: latest_index - block_index,
+        confirmations: index,
       }
     end
 

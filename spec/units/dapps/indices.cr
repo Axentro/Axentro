@@ -32,7 +32,7 @@ describe Indices do
         chain = block_factory.add_slow_blocks(2).chain
         indices = Indices.new(block_factory.blockchain)
         indices.record(chain)
-        indices.get(chain.last.transactions.last.id).should eq(2)
+        indices.get(chain.last.transactions.last.id).should eq(4)
       end
     end
     it "should return nil if the transaction is not found in the chain" do
@@ -88,7 +88,7 @@ describe Indices do
       it "should return a transaction for the supplied transaction id" do
         with_factory do |block_factory, _|
           block_factory.add_slow_blocks(10)
-          transaction = block_factory.chain[2].transactions.first
+          transaction = block_factory.chain[1].transactions.first
           payload = {call: "transaction", transaction_id: transaction.id}.to_json
           json = JSON.parse(payload)
 

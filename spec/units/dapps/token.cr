@@ -189,7 +189,7 @@ describe Token do
     with_factory do |block_factory, _|
       chain = block_factory.add_slow_blocks(10).chain
       token = Token.new(block_factory.blockchain)
-      token.record(chain).should eq(11)
+      token.record(chain).size.should eq(11)
     end
   end
 
@@ -197,8 +197,9 @@ describe Token do
     with_factory do |block_factory, _|
       chain = block_factory.add_slow_blocks(10).chain
       token = Token.new(block_factory.blockchain)
-      token.record(chain).should eq(11)
+      token.record(chain).size.should eq(11)
       token.clear
+      token.@recorded_indices.size.should eq(0)
       token.@tokens.should eq(["SUSHI"])
     end
   end
