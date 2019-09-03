@@ -79,7 +79,7 @@ describe UTXO do
            AddressQuantity.new(recipient_wallet_1.address, 1_i64),
            AddressQuantity.new(recipient_wallet_2.address, 1_i64)]))
 
-        pp _utxo[3]   
+        fail "finish the rest of these" 
 
         # _utxo[2].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 2399998120_i64)]))
         # utxo[3].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 3599996241_i64)]))
