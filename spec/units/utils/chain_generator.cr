@@ -93,6 +93,7 @@ module ::Units::Utils::ChainGenerator
 
     private def add_valid_slow_block
       enable_difficulty("0")
+      @blockchain.refresh_slow_pending_block(0)
       block = @blockchain.mining_block
       block.nonce = 11719215035155661212_u64
       block.difficulty = 0  # difficulty will be set to 0 for most unit tests

@@ -31,7 +31,7 @@ module ::Sushi::Core::DApps::BuildIn
     def self.find_last_amount(utxo : Array(TokenQuantity), token : String, address : String)
       utxo.each do |tq|
         if tq.name == token && !tq.quantities.empty?
-          result = tq.quantities.find{|aq| aq.address == address}
+          result = tq.quantities.find { |aq| aq.address == address }
           if !result.nil?
             return result.quantity
           end
@@ -106,6 +106,7 @@ module ::Sushi::Core::DApps::BuildIn
     DEFAULT = "SUSHI"
 
     @utxo_internal : Array(TokenQuantity) = [] of TokenQuantity
+    @recorded_indices : Array(Int64) = [] of Int64
 
     def setup
     end
@@ -189,11 +190,8 @@ module ::Sushi::Core::DApps::BuildIn
       @utxo_internal << TokenQuantity.new(token, [AddressQuantity.new(address, amount)])
     end
 
-    # TODO - fix this in line with how indices was fixed
     def record(chain : Blockchain::Chain)
-      return if @utxo_internal.size >= chain.size
-
-      chain[@utxo_internal.size..-1].each do |block|
+      chain.select { |block| !@recorded_indices.includes?(block.index) }.each do |block|
         @utxo_internal << TokenQuantity.new(DEFAULT, [] of AddressQuantity) if block.transactions.empty?
 
         calculate_for_transactions(block.transactions).each do |tq|
@@ -203,11 +201,14 @@ module ::Sushi::Core::DApps::BuildIn
           end
           @utxo_internal << TokenQuantity.new(tq.name, updated_quantities)
         end
+        @recorded_indices << block.index
       end
+      @recorded_indices
     end
 
     def clear
       @utxo_internal.clear
+      @recorded_indices = [] of Int64
     end
 
     def define_rpc?(call, json, context, params)

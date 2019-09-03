@@ -70,7 +70,7 @@ describe Indices do
       chain = block_factory.add_slow_blocks(2).chain
       indices = Indices.new(block_factory.blockchain)
       indices.record(chain)
-      indices.@indices.count{ |i| !i.empty? }.should eq(2)
+      indices.@indices.count { |i| !i.empty? }.should eq(2)
     end
   end
   it "should perform #clear" do
