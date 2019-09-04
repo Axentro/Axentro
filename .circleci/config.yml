@@ -69,6 +69,15 @@ jobs:
           docker build -t sushichain/sushid .
           docker push sushichain/sushid
 
+  publish:
+    docker:
+      - image: crystallang/crystal:0.30.1
+    steps:
+      - checkout
+      - run: |
+        tar cvzf Sushi-0.0.${CIRCLE_BUILD_NUMBER}.tar.gz bin/sushi bin/sushid bin/sushim
+
+
 workflows:
   version: 2
 
@@ -90,3 +99,9 @@ workflows:
           filters:
             branches:
               only: master
+      - publish:
+          requires:
+            - tests
+          filters:
+              branches:
+                only: master
