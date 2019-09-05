@@ -181,8 +181,6 @@ module ::Sushi::Core::FastChain
     debug "locked FastTransactionPool"
     transactions = pending_fast_transactions.reject { |t| indices.get(t.id) }.select(&.is_fast_transaction?)
     debug "filter out transactions in indices: #{transactions.size}"
-    debug "look inside indices:"
-    pp indices.@indices
     FastTransactionPool.replace(transactions)
     debug "replace transactions in pool: #{FastTransactionPool.all.size}"
   end

@@ -76,7 +76,7 @@ module ::Sushi::Core
 
       current_index = 0_i64
       (0..highest_index).each do |_|
-        pp _block = database.get_block(current_index)
+        _block = database.get_block(current_index)
         if _block
           break unless _block.valid?(self, true)
           debug "restoring from database: #{_block.index} of kind #{_block.kind}"
