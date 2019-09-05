@@ -21,7 +21,7 @@ include ::Sushi::Core::NodeComponents
 include Hashes
 
 TOTAL_BLOCK_REWARD = 1200000000_i64
-TOTAL_BLOCK_LIMIT  =  4_000_000_i64
+TOTAL_BLOCK_LIMIT  =  8_000_000_i64
 
 
 describe Blockchain do

@@ -314,7 +314,7 @@ describe UTXO do
         utxo = UTXO.new(block_factory.blockchain)
 
         utxo.record(chain)
-        expect_raises(Exception, "Unable to send 20 to recipient because you do not have enough. Current tokens: 10.99989373 + 0") do
+        expect_raises(Exception, "Unable to send 20 to recipient because you do not have enough. Current tokens: 11.99999373 + 0") do
           utxo.valid_transaction?(transaction2, [transaction1])
         end
       end
@@ -328,7 +328,7 @@ describe UTXO do
         utxo = UTXO.new(block_factory.blockchain)
 
         utxo.record(chain)
-        expect_raises(Exception, "Unable to send 0.02 to recipient because you do not have enough. Current tokens: -0.01 + 0") do
+        expect_raises(Exception, "Unable to send 0.02 to recipient because you do not have enough. Current tokens: 0 + 0") do
           utxo.valid_transaction?(transaction2, [transaction1])
         end
       end
@@ -347,13 +347,13 @@ describe UTXO do
         expected1 =
           TokenQuantity.new(
             "KINGS",
-            [AddressQuantity.new(transaction_factory.sender_wallet.address, -100_i64),
+            [AddressQuantity.new(transaction_factory.sender_wallet.address, 0_i64),
              AddressQuantity.new(transaction_factory.recipient_wallet.address, 100_i64)]
           )
 
         expected2 = TokenQuantity.new(
           TOKEN_DEFAULT,
-          [AddressQuantity.new(transaction_factory.sender_wallet.address, -20200_i64),
+          [AddressQuantity.new(transaction_factory.sender_wallet.address, 0_i64),
            AddressQuantity.new(transaction_factory.recipient_wallet.address, 200_i64)]
         )
 

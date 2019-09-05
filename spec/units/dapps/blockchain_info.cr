@@ -149,7 +149,10 @@ describe BlockchainInfo do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq(block_factory.chain[2].to_json)
+            unless expected_block = block_factory.chain.find{|block| block.index == 2}
+              fail "could not find block: #{2} in chain"
+            end
+            result.should eq(expected_block.to_json)
           end
         end
       end
@@ -161,7 +164,10 @@ describe BlockchainInfo do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq(block_factory.blockchain.headers[2].to_json)
+            unless expected_header = block_factory.blockchain.headers.find{|header| header[:index] == 2}
+              fail "could not find header for block: #{2} in chain"
+            end
+            result.should eq(expected_header.to_json)
           end
         end
       end
@@ -189,8 +195,10 @@ describe BlockchainInfo do
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
             block_index = block_factory.chain.select { |blk| blk.transactions.map { |txn| txn.id }.includes?(transaction_id) }.first.index # ameba:disable Performance/FirstLastAfterFilter
-            expected_block_header = block_factory.blockchain.headers[block_index].to_json
-            result.should eq(expected_block_header)
+            unless expected_block_header = block_factory.blockchain.headers.find{|header| header[:index] == block_index}
+              fail "could not find header for block: #{block_index} in chain"
+            end
+            result.should eq(expected_block_header.to_json)
           end
         end
       end

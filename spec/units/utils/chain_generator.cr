@@ -50,19 +50,19 @@ module ::Units::Utils::ChainGenerator
       enable_difficulty
     end
 
-    def add_slow_block
-      add_valid_slow_block
+    def add_slow_block(with_refresh : Bool = true)
+      add_valid_slow_block(with_refresh)
       self
     end
 
-    def add_slow_blocks(number : Int)
-      (1..(number * 2)).select(&.even?).each { |_| add_slow_block }
+    def add_slow_blocks(number : Int, with_refresh : Bool = true)
+      (1..(number * 2)).select(&.even?).each { |_| add_slow_block(with_refresh) }
       self
     end
 
-    def add_slow_block(transactions : Array(Transaction))
+    def add_slow_block(transactions : Array(Transaction), with_refresh : Bool = true)
       transactions.each { |txn| @blockchain.add_transaction(txn, false) }
-      add_valid_slow_block
+      add_valid_slow_block(with_refresh)
       self
     end
 
@@ -91,9 +91,9 @@ module ::Units::Utils::ChainGenerator
       @rest
     end
 
-    private def add_valid_slow_block
+    private def add_valid_slow_block(with_refresh : Bool)
       enable_difficulty("0")
-      @blockchain.refresh_slow_pending_block(0)
+      @blockchain.refresh_slow_pending_block(0) if with_refresh
       block = @blockchain.mining_block
       block.nonce = 11719215035155661212_u64
       block.difficulty = 0  # difficulty will be set to 0 for most unit tests

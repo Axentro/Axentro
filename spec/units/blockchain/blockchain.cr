@@ -26,7 +26,7 @@ describe Blockchain do
       transaction_total = 10
       transactions = (1..transaction_total).to_a.map{|n| transaction_factory.make_send(n.to_i64) }
 
-      block_factory.add_slow_block(transactions)
+      block_factory.add_slow_block(transactions, false)
       block_factory.blockchain.embedded_slow_transactions.size.should eq(transaction_total)
       coinbase_transaction = block_factory.blockchain.chain.last.transactions.first
 
@@ -41,7 +41,7 @@ describe Blockchain do
       transaction_total = 10
       transactions = (1..transaction_total).to_a.map{|n| transaction_factory.make_send(n.to_i64) }
 
-      block_factory.add_slow_block(transactions)
+      block_factory.add_slow_block(transactions, false)
       block_factory.blockchain.pending_slow_transactions.size.should eq(transaction_total)
 
       puts Benchmark.measure {

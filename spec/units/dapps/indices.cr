@@ -121,7 +121,7 @@ describe Indices do
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
             json_result = JSON.parse(result)
-            json_result["confirmations"].as_i.should eq(8)
+            json_result["confirmations"].as_i.should eq(7)
           end
         end
       end

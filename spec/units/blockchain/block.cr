@@ -77,7 +77,7 @@ describe SlowBlock do
         chain = block_factory.add_slow_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
-        block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199997495_i64)], a_nonce, prev_hash, timestamp, 0_i32, BlockKind::SLOW)
+        block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, BlockKind::SLOW)
         block.valid_as_latest?(block_factory.blockchain, false).should be_true
       end
     end
@@ -87,7 +87,7 @@ describe SlowBlock do
         chain = block_factory.add_slow_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
-        block = SlowBlock.new(98_i64, [a_coinbase_transaction(1199938645_i64)], a_nonce, prev_hash, timestamp, 1_i32, BlockKind::SLOW)
+        block = SlowBlock.new(98_i64, [a_coinbase_transaction(1199969322_i64)], a_nonce, prev_hash, timestamp, 1_i32, BlockKind::SLOW)
 
         expect_raises(Exception, "Index Mismatch: the current block index: 98 should match the lastest slow block index: 4") do
           block.valid_as_latest?(block_factory.blockchain, false)
@@ -100,7 +100,7 @@ describe SlowBlock do
         chain = block_factory.add_slow_blocks(1).chain
         prev_hash = "invalid"
         timestamp = chain[1].timestamp
-        block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199997495_i64)], a_nonce, prev_hash, timestamp, 0_i32, BlockKind::SLOW)
+        block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, BlockKind::SLOW)
 
         expect_raises(Exception, /prev_hash is invalid:/) do
           block.valid_as_latest?(block_factory.blockchain, false)
@@ -113,9 +113,9 @@ describe SlowBlock do
         chain = block_factory.add_slow_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp - 10000000
-        block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199997495_i64)], a_nonce, prev_hash, timestamp, 0_i32, BlockKind::SLOW)
+        block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, BlockKind::SLOW)
 
-        expect_raises(Exception, /timestamp is invalid:/) do
+        expect_raises(Exception, /Invalid Timestamp:/) do
           block.valid_as_latest?(block_factory.blockchain, false)
         end
       end
@@ -126,9 +126,9 @@ describe SlowBlock do
         chain = block_factory.add_slow_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp + 10000000
-        block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199997495_i64)], a_nonce, prev_hash, timestamp, 0_i32, BlockKind::SLOW)
+        block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, BlockKind::SLOW)
 
-        expect_raises(Exception, /timestamp is invalid:/) do
+        expect_raises(Exception, /Invalid Timestamp:/) do
           block.valid_as_latest?(block_factory.blockchain, false)
         end
       end
@@ -139,9 +139,9 @@ describe SlowBlock do
         chain = block_factory.add_slow_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
-        block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199997495_i64)], a_nonce, prev_hash, timestamp, 0_i32, BlockKind::SLOW)
+        block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, BlockKind::SLOW)
         block.merkle_tree_root = "invalid"
-        expect_raises(Exception, "invalid merkle tree root (expected invalid but got f1a5402b71f528bc6d34dfc2e1973eea822db0e4)") do
+        expect_raises(Exception, "Invalid Merkle Tree Root: (expected invalid but got 616efa391561ec059a6558eca2215398ac051fb8)") do
           block.valid_as_latest?(block_factory.blockchain, false)
         end
       end
@@ -154,17 +154,6 @@ describe SlowBlock do
         chain = block_factory.blockchain.chain
         block = chain.first
         block.valid?(block_factory.blockchain, false).should be_true
-      end
-    end
-
-    it "should raise error if transactions are not empty" do
-      with_factory do |block_factory|
-        chain = block_factory.blockchain.chain
-        block = chain.first
-        block.transactions = [a_fixed_coinbase_transaction]
-        expect_raises(Exception, /transactions have to be empty for genesis block/) do
-          block.valid?(block_factory.blockchain, false)
-        end
       end
     end
 
@@ -200,7 +189,6 @@ describe SlowBlock do
         end
       end
     end
-
   end
 
   describe "#find_transaction" do
@@ -287,7 +275,7 @@ def a_fixed_signed_transaction
     TOKEN_DEFAULT, # token
     "0",           # prev_hash
     0_i64,         # timestamp
-    1,              # scaled
+    1,             # scaled
     TransactionKind::SLOW
   )
 end

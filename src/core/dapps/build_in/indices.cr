@@ -122,7 +122,7 @@ module ::Sushi::Core::DApps::BuildIn
         raise "failed to find a block for the transaction #{transaction_id}"
       end
 
-      index = @indices.flat_map(&.values).select { |i| i >= block_index }.size
+      index = @indices.flat_map(&.values).uniq.select { |i| i > block_index }.size
 
       {
         confirmations: index,

@@ -93,8 +93,7 @@ module ::Sushi::Core::DApps::BuildIn
         raise "invalid index #{index} (blockchain size is #{blockchain.chain.size})"
       end
 
-      block = blockchain.chain[index]
-
+      block = find_block(index)
       header ? block.to_header : block
     end
 
@@ -103,7 +102,15 @@ module ::Sushi::Core::DApps::BuildIn
         raise "failed to find a block for the transaction #{transaction_id}"
       end
 
-      header ? blockchain.chain[block_index].to_header : blockchain.chain[block_index]
+      block = find_block(block_index)
+      header ? block.to_header : block
+    end
+
+    private def find_block(block_index)
+      unless block = blockchain.chain.find{|block| block.index == block_index}
+        raise "failed to find a block in the chain with block index: #{block_index}"
+      end
+      block
     end
 
     def transactions(json, context, params)
