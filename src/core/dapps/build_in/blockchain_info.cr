@@ -107,7 +107,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     private def find_block(block_index)
-      unless block = blockchain.chain.find{|block| block.index == block_index}
+      unless block = blockchain.chain.find{|blk| blk.index == block_index}
         raise "failed to find a block in the chain with block index: #{block_index}"
       end
       block

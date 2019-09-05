@@ -79,7 +79,7 @@ module ::Sushi::Core::DApps::BuildIn
 
     def transaction_impl(transaction_id : String)
       if block_index = get(transaction_id)
-        if block = blockchain.chain.find { |block| block.index == block_index }
+        if block = blockchain.chain.find { |blk| blk.index == block_index }
           if transaction = block.find_transaction(transaction_id)
             return {
               status:      "accepted",
@@ -122,7 +122,7 @@ module ::Sushi::Core::DApps::BuildIn
         raise "failed to find a block for the transaction #{transaction_id}"
       end
 
-      index = @indices.flat_map(&.values).uniq.select { |i| i > block_index }.size
+      index = @indices.flat_map(&.values).uniq.count { |i| i > block_index }
 
       {
         confirmations: index,

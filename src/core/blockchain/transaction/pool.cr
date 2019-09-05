@@ -11,7 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core
-
   abstract class TransactionPool
     LIMIT = 2000
 
@@ -126,5 +125,4 @@ module ::Sushi::Core
       @@instance ||= FastTransactionPool.new
     end
   end
-  
 end

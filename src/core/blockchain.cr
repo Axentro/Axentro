@@ -137,7 +137,7 @@ module ::Sushi::Core
 
     private def _push_block(block : SlowBlock | FastBlock)
       @chain.push(block)
-      @chain.sort_by! { |block| block.index }
+      @chain.sort_by! { |blk| blk.index }
       if database = @database
         debug "sending #{block.kind} block to DB with timestamp of #{block.timestamp}"
         database.push_block(block)

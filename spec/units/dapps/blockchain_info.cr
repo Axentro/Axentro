@@ -149,8 +149,9 @@ describe BlockchainInfo do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            unless expected_block = block_factory.chain.find{|block| block.index == 2}
-              fail "could not find block: #{2} in chain"
+            target_index = 2
+            unless expected_block = block_factory.chain.find{|block| block.index == target_index}
+              fail "could not find block: #{target_index} in chain"
             end
             result.should eq(expected_block.to_json)
           end
@@ -164,8 +165,9 @@ describe BlockchainInfo do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            unless expected_header = block_factory.blockchain.headers.find{|header| header[:index] == 2}
-              fail "could not find header for block: #{2} in chain"
+            target_index = 2
+            unless expected_header = block_factory.blockchain.headers.find{|header| header[:index] == target_index}
+              fail "could not find header for block: #{target_index} in chain"
             end
             result.should eq(expected_header.to_json)
           end

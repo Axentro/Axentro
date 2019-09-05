@@ -91,6 +91,7 @@ module ::Sushi::Core
       node.listen
     end
 
+    # ameba:disable Metrics/CyclomaticComplexity
     private def sync_chain(socket : HTTP::WebSocket? = nil)
       info "start synching chain"
 

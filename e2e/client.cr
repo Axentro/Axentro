@@ -92,7 +92,7 @@ module ::E2E
     def launch
       if @@no_transactions
         @launch_time ||= Time.now
-        return nil
+        nil
       else
         spawn do
           while @alive

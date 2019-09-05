@@ -11,9 +11,8 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::Block
-
   alias Chain = Array(SlowBlock | FastBlock)
-  
+
   enum BlockKind
     SLOW
     FAST
