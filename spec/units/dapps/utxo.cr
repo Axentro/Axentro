@@ -44,7 +44,7 @@ describe UTXO do
           transaction_factory.make_send(1, "SUSHI", sender_wallet, recipient_wallet_1),
           transaction_factory.make_send(1, "SUSHI", sender_wallet, recipient_wallet_2),
           transaction_factory.make_create_token("KINGS", 80_000_i64, sender_wallet, recipient_wallet_1),
-          transaction_factory.make_create_token("FOO", 70_000_i64, sender_wallet, recipient_wallet_1)
+          transaction_factory.make_create_token("FOO", 70_000_i64, sender_wallet, recipient_wallet_1),
         ]
 
         transactions2 = [
@@ -72,19 +72,54 @@ describe UTXO do
 
         _utxo = utxo.@utxo_internal
         _utxo.size.should eq(9)
+
         _utxo[0].should eq(TokenQuantity.new("SUSHI", [] of AddressQuantity))
         _utxo[1].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 1199999373_i64)]))
+
         _utxo[2].should eq(TokenQuantity.new("SUSHI", [
-           AddressQuantity.new(block_factory.node_wallet.address, 2359978118_i64),
-           AddressQuantity.new(recipient_wallet_1.address, 1_i64),
-           AddressQuantity.new(recipient_wallet_2.address, 1_i64)]))
+          AddressQuantity.new(block_factory.node_wallet.address, 2359978118_i64),
+          AddressQuantity.new(recipient_wallet_1.address, 1_i64),
+          AddressQuantity.new(recipient_wallet_2.address, 1_i64),
+        ]))
 
-        fail "finish the rest of these" 
+        _utxo[3].should eq(TokenQuantity.new("KINGS", [
+          AddressQuantity.new(block_factory.node_wallet.address, 80000_i64),
+          AddressQuantity.new(recipient_wallet_1.address, 0_i64),
+          AddressQuantity.new(recipient_wallet_2.address, 0_i64),
+        ]))
 
-        # _utxo[2].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 2399998120_i64)]))
-        # utxo[3].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 3599996241_i64)]))
-        # utxo[4].should eq(TokenQuantity.new("KINGS", [AddressQuantity.new(sender_wallet_1.address, 100000_i64)]))
-        # utxo[5].should eq(TokenQuantity.new("FOO", [AddressQuantity.new(sender_wallet_3.address, 100000_i64)]))
+        _utxo[4].should eq(TokenQuantity.new("FOO", [
+          AddressQuantity.new(block_factory.node_wallet.address, 70000_i64),
+          AddressQuantity.new(recipient_wallet_1.address, 0_i64),
+          AddressQuantity.new(recipient_wallet_2.address, 0_i64),
+        ]))
+
+        _utxo[5].should eq(TokenQuantity.new("SUSHI", [
+          AddressQuantity.new(block_factory.node_wallet.address, 3559956237_i64),
+          AddressQuantity.new(recipient_wallet_1.address, 2_i64),
+          AddressQuantity.new(recipient_wallet_2.address, 2_i64),
+        ]))
+
+        _utxo[6].should eq(TokenQuantity.new("SUSHI", [
+          AddressQuantity.new(block_factory.node_wallet.address, 4759923732_i64),
+          AddressQuantity.new(recipient_wallet_1.address, 2_i64),
+          AddressQuantity.new(recipient_wallet_2.address, 2_i64),
+          AddressQuantity.new(recipient_wallet_3.address, 0_i64),
+        ]))
+
+        _utxo[7].should eq(TokenQuantity.new("KINGS", [
+          AddressQuantity.new(block_factory.node_wallet.address, 80000_i64),
+          AddressQuantity.new(recipient_wallet_1.address, 1_i64),
+          AddressQuantity.new(recipient_wallet_2.address, 1_i64),
+          AddressQuantity.new(recipient_wallet_3.address, 0_i64),
+        ]))
+
+        _utxo[8].should eq(TokenQuantity.new("FOO", [
+          AddressQuantity.new(block_factory.node_wallet.address, 70000_i64),
+          AddressQuantity.new(recipient_wallet_1.address, 0_i64),
+          AddressQuantity.new(recipient_wallet_2.address, 0_i64),
+          AddressQuantity.new(recipient_wallet_3.address, 1_i64),
+        ]))
       end
     end
   end
@@ -335,9 +370,9 @@ describe UTXO do
         chain = block_factory.add_slow_block.chain
         utxo = UTXO.new(block_factory.blockchain)
         utxo.record(chain)
-        utxo.@utxo_internal.map{|tq| tq.name }.uniq.should eq([TOKEN_DEFAULT])
+        utxo.@utxo_internal.map { |tq| tq.name }.uniq.should eq([TOKEN_DEFAULT])
         utxo.create_token(transaction_factory.sender_wallet.address, 1200_i64, "KINGS")
-        utxo.@utxo_internal.map{|tq| tq.name }.uniq.should eq([TOKEN_DEFAULT, "KINGS"])
+        utxo.@utxo_internal.map { |tq| tq.name }.uniq.should eq([TOKEN_DEFAULT, "KINGS"])
       end
     end
   end

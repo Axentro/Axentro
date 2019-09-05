@@ -86,6 +86,7 @@ module ::Sushi::Core::DApps::BuildIn
         if taq.token == TOKEN_DEFAULT && taq.address == address
           taq.amount -= fee
         end
+        taq.amount = Math.max(0_i64, taq.amount)
         taq
       end
     end
