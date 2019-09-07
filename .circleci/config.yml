@@ -75,6 +75,9 @@ jobs:
     steps:
       - checkout
       - run: |
+          apt-get update
+          apt-get install curl libsqlite3-dev -y
+      - run: |
           shards build --release
           tar cvzf Sushi-0.0.${CIRCLE_BUILD_NUMBER}.tar.gz bin/sushi bin/sushid bin/sushim
 
