@@ -79,8 +79,8 @@ jobs:
           apt-get install curl libsqlite3-dev -y
       - run: |
           shards build --release
-          tar cvzf Sushi-0.0.${CIRCLE_BUILD_NUMBER}.tar.gz bin/sushi bin/sushid bin/sushim
-          cp Sushi-0.0.${CIRCLE_BUILD_NUMBER}.tar.gz $CIRCLE_ARTIFACTS
+          tar cvzf Sushi-0.0.${CIRCLE_BUILD_NUM}.tar.gz bin/sushi bin/sushid bin/sushim
+          cp Sushi-0.0.${CIRCLE_BUILD_NUM}.tar.gz $CIRCLE_ARTIFACTS
 
 workflows:
   version: 2
