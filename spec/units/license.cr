@@ -17,7 +17,7 @@ describe "License" do
     Dir["**/*.cr"].reject { |f| f.starts_with?("lib") }.each do |file_path|
       # if this fails uncomment the line below to see the failed file
       # to fix: cd tools then crystal run add_license.cr
-      puts "file: #{file_path}"
+      # puts "file: #{file_path}"
       File.read_lines(file_path).first.should eq("# Copyright © 2017-2018 The SushiChain Core developers")
     end
   end
