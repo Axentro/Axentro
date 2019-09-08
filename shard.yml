@@ -33,6 +33,8 @@ dependencies:
     github: sushichain/crystal-ecdsa
   i18n:
     github: TechMagister/i18n.cr
+  spinach:
+    github: sushichain/spinach
 
 development_dependencies:
   ameba:

@@ -24,6 +24,10 @@ shards:
     github: TechMagister/i18n.cr
     version: 0.3.1
 
+  myhtml:
+    github: kostya/myhtml
+    version: 1.4.2
+
   radix:
     github: luislavena/radix
     version: 0.3.9
@@ -31,6 +35,10 @@ shards:
   router:
     github: tbrand/router.cr
     version: 0.2.7
+
+  spinach:
+    github: sushichain/spinach
+    version: 0.1.5
 
   sqlite3:
     github: crystal-lang/crystal-sqlite3
