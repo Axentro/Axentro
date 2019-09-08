@@ -34,6 +34,11 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     # TODO - handle fast and slow chain sizes here
+    # - slow chain size
+    # - fast chain size
+    # - slow chain latest block
+    # - fast chain latest block 
+    # - find block / transaction should just return the specified block by index or transaction still
     def define_rpc?(call, json, context, params)
       case call
       when "blockchain_size"
@@ -89,8 +94,8 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def block_impl(header : Bool, index : Int64)
-      if index > blockchain.chain.size - 1
-        raise "invalid index #{index} (blockchain size is #{blockchain.chain.size})"
+      if index > blockchain.latest_index
+        raise "invalid index #{index} (blockchain latest index is #{blockchain.latest_index})"
       end
 
       block = find_block(index)
@@ -129,8 +134,8 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def transactions_impl(index : Int64)
-      if index > blockchain.chain.size - 1
-        raise "invalid index #{index} (blockchain size is #{blockchain.chain.size})"
+      if index > blockchain.latest_index
+        raise "invalid index #{index} (blockchain latest index is #{blockchain.latest_index})"
       end
 
       blockchain.chain[index].transactions
