@@ -334,7 +334,7 @@ module ::Sushi::Core
             M_TYPE_NODE_ASK_REQUEST_CHAIN,
             {
               latest_slow_index: @blockchain.latest_slow_block.index,
-              latest_fast_index: (@blockchain.latest_fast_block || @blockchain.latest_block).index,
+              latest_fast_index: (@blockchain.latest_fast_block || @blockchain.get_genesis_block).index,
             }
           )
         end
@@ -344,7 +344,7 @@ module ::Sushi::Core
     end
 
     private def broadcast_fast_block(socket : HTTP::WebSocket, block : FastBlock, from : Chord::NodeContext? = nil)
-      latest_fast_block = @blockchain.latest_fast_block || @blockchain.latest_block
+      latest_fast_block = @blockchain.latest_fast_block || @blockchain.get_genesis_block
       if @blockchain.get_latest_index_for_fast == block.index
         debug "fast: currently pending fast index is the same as the arriving block from a peer"
         debug "fast: sending new block on to peer"
