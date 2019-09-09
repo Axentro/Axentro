@@ -70,7 +70,7 @@ describe RESTController do
         block_factory.add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_block_index(context("/api/v1/block/99"), {index: 99})) do |result|
           result["status"].to_s.should eq("error")
-          result["reason"].should eq("invalid index 99 (blockchain size is 3)")
+          result["reason"].should eq("invalid index 99 (blockchain latest index is 4)")
         end
       end
     end
@@ -91,7 +91,7 @@ describe RESTController do
         block_factory.add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_block_index_header(context("/api/v1/block/99/header"), {index: 99})) do |result|
           result["status"].to_s.should eq("error")
-          result["reason"].should eq("invalid index 99 (blockchain size is 3)")
+          result["reason"].should eq("invalid index 99 (blockchain latest index is 4)")
         end
       end
     end
@@ -112,7 +112,7 @@ describe RESTController do
         block_factory.add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_block_index_transactions(context("/api/v1/block/99/header"), {index: 99})) do |result|
           result["status"].to_s.should eq("error")
-          result["reason"].should eq("invalid index 99 (blockchain size is 3)")
+          result["reason"].should eq("invalid index 99 (blockchain latest index is 4)")
         end
       end
     end
