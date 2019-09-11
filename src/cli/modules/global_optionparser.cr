@@ -263,7 +263,7 @@ module ::Sushi::Interface
     end
 
     private def parse_fee(parser : OptionParser, actives : Array(Options))
-      parser.on("-f FEE", "--fee=FEE", I18n.translate("cli.options.transaction")) { |fee|
+      parser.on("-f FEE", "--fee=FEE", I18n.translate("cli.options.fee")) { |fee|
         decimal_option(fee) do
           @fee = fee
         end
