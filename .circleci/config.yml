@@ -76,7 +76,7 @@ jobs:
       - checkout
       - run: |
           apt-get update
-          apt-get install curl -y
+          apt-get install curl libsqlite3-dev -y
       - run: |
           shards build --release
           ./publish-bintray.sh
