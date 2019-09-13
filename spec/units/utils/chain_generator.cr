@@ -66,6 +66,21 @@ module ::Units::Utils::ChainGenerator
       self
     end
 
+    def add_fast_block
+      add_valid_fast_block
+    end
+
+    def add_fast_blocks(number)
+      (1..(number * 2)).select(&.odd?).each { |_| add_fast_block }
+      self
+    end
+
+    def add_fast_block(transactions : Array(Transaction))
+      transactions.each { |txn| @blockchain.add_transaction(txn, false) }
+      add_valid_fast_block
+      self
+    end
+
     def chain
       remove_difficulty
       @blockchain.chain
@@ -91,18 +106,34 @@ module ::Units::Utils::ChainGenerator
       @rest
     end
 
+    def miner
+      @miner
+    end
+
     private def add_valid_slow_block(with_refresh : Bool)
       enable_difficulty("0")
-      @blockchain.refresh_slow_pending_block(0) if with_refresh
+      @blockchain.refresh_mining_block(0) if with_refresh
       block = @blockchain.mining_block
       block.nonce = 11719215035155661212_u64
-      block.difficulty = 0  # difficulty will be set to 0 for most unit tests
+      block.difficulty = 0 # difficulty will be set to 0 for most unit tests
       valid_block = @blockchain.valid_block?(block)
       case valid_block
       when SlowBlock
         @blockchain.push_slow_block(valid_block)
       else
-        raise "error could not push block onto blockchain - block was not valid"
+        raise "error could not push slow block onto blockchain - block was not valid"
+      end
+    end
+
+    private def add_valid_fast_block
+      valid_transactions = @blockchain.valid_transactions_for_fast_block
+      block = @blockchain.mint_fast_block(valid_transactions)
+      valid_block = @blockchain.valid_block?(block)
+      case valid_block
+      when FastBlock
+        @blockchain.push_fast_block(valid_block)
+      else
+        raise "error could not push fast block onto blockchain - block was not valid"
       end
     end
   end
@@ -201,7 +232,7 @@ module ::Units::Utils::ChainGenerator
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
         0_i64,         # timestamp
-        1,              # scaled
+        1,             # scaled
         TransactionKind::SLOW
       )
       unsigned_transaction.as_signed([sender_wallet])

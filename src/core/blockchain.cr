@@ -60,7 +60,7 @@ module ::Sushi::Core
       @node.not_nil!
     end
 
-    def push_genesis
+    private def push_genesis
       push_slow_block(genesis_block)
     end
 
@@ -68,7 +68,7 @@ module ::Sushi::Core
       @chain.first
     end
 
-    def restore_from_database(database : Database)
+    private def restore_from_database(database : Database)
       total_blocks = database.total_blocks
       highest_index = database.highest_index
       info "start loading blockchain from #{database.path}"
@@ -305,7 +305,7 @@ module ::Sushi::Core
       refresh_slow_pending_block(difficulty)
     end
 
-    def refresh_slow_pending_block(difficulty)
+    private def refresh_slow_pending_block(difficulty)
       the_latest_index = get_latest_index_for_slow
       coinbase_amount = coinbase_slow_amount(the_latest_index, embedded_slow_transactions)
       coinbase_transaction = create_coinbase_slow_transaction(coinbase_amount, node.miners)

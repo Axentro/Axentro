@@ -11,6 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "spec"
+require "mocks"
 require "./ext/spec/*"
 require "yaml"
 require "../src/common"
