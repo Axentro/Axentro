@@ -271,8 +271,8 @@ describe Blockchain do
         blockchain = block_factory.blockchain
         amount = 200000000_i64
         block_factory.add_slow_blocks(2)
-                     .add_fast_blocks(4)
-                     .add_slow_block([transaction_factory.make_send(amount), transaction_factory.make_send(amount)])
+          .add_fast_blocks(4)
+          .add_slow_block([transaction_factory.make_send(amount), transaction_factory.make_send(amount)])
         transactions = blockchain.embedded_slow_transactions
         blockchain.coinbase_slow_amount(0, transactions).should eq(1200000000)
       end
@@ -283,8 +283,8 @@ describe Blockchain do
         blockchain = block_factory.blockchain
         amount = 200000000_i64
         block_factory.add_slow_blocks(2, false)
-                     .add_fast_blocks(4)
-                     .add_slow_block([transaction_factory.make_send(amount), transaction_factory.make_send(amount)], false)
+          .add_fast_blocks(4)
+          .add_slow_block([transaction_factory.make_send(amount), transaction_factory.make_send(amount)], false)
         transactions = blockchain.embedded_slow_transactions
         blockchain.coinbase_slow_amount(blockchain.@block_reward_calculator.max_blocks + 1, transactions).should eq(20000)
       end
@@ -297,8 +297,8 @@ describe Blockchain do
         blockchain = block_factory.blockchain
         amount = 200000000_i64
         block_factory.add_slow_blocks(2, false)
-                     .add_fast_blocks(4)
-                     .add_slow_block([transaction_factory.make_send(amount), transaction_factory.make_send(amount)], false)
+          .add_fast_blocks(4)
+          .add_slow_block([transaction_factory.make_send(amount), transaction_factory.make_send(amount)], false)
         transactions = blockchain.embedded_slow_transactions
         blockchain.total_fees(transactions).should eq(20000)
       end
@@ -306,37 +306,56 @@ describe Blockchain do
   end
 
   describe "replace_slow_transactions" do
+    it "should validate and add new transactions that have arrived" do
+      with_factory do |block_factory, transaction_factory|
+        transaction1 = transaction_factory.make_send(200000000_i64)
+        transaction2 = transaction_factory.make_send(300000000_i64)
+        blockchain = block_factory.blockchain
+        blockchain.pending_slow_transactions.size.should eq(0)
+        blockchain.replace_slow_transactions([transaction1, transaction2])
+        blockchain.pending_slow_transactions.size.should eq(2)
+      end
+    end
+
+    it "should reject any invalid transactions" do
+      with_factory do |block_factory, transaction_factory|
+        transaction1 = transaction_factory.make_send(200000000_i64)
+        transaction2 = transaction_factory.make_send(-300000000_i64)
+        blockchain = block_factory.blockchain
+        blockchain.pending_slow_transactions.size.should eq(0)
+        blockchain.replace_slow_transactions([transaction1, transaction2])
+        blockchain.pending_slow_transactions.size.should eq(1)
+        blockchain.rejects.find(transaction2.id).should eq("the amount is out of range")
+      end
+    end
+  end
+  
+  it "align transactions" do
+    with_factory do |block_factory, transaction_factory|
+      transaction_total = 10
+      transactions = (1..transaction_total).to_a.map{|n| transaction_factory.make_send(n.to_i64) }
+
+      block_factory.add_slow_block(transactions, false)
+      block_factory.blockchain.embedded_slow_transactions.size.should eq(transaction_total)
+      coinbase_transaction = block_factory.blockchain.chain.last.transactions.first
+
+      puts Benchmark.measure {
+        block_factory.blockchain.align_slow_transactions(coinbase_transaction, 1)
+      }
+    end
   end
 
-  describe "clean_slow_transactions" do
-  end
+  it "clean transactions" do
+    with_factory do |block_factory, transaction_factory|
+      transaction_total = 10
+      transactions = (1..transaction_total).to_a.map{|n| transaction_factory.make_send(n.to_i64) }
 
-  # it "align transactions" do
-  #   with_factory do |block_factory, transaction_factory|
-  #     transaction_total = 10
-  #     transactions = (1..transaction_total).to_a.map{|n| transaction_factory.make_send(n.to_i64) }
-  #
-  #     block_factory.add_slow_block(transactions, false)
-  #     block_factory.blockchain.embedded_slow_transactions.size.should eq(transaction_total)
-  #     coinbase_transaction = block_factory.blockchain.chain.last.transactions.first
-  #
-  #     puts Benchmark.measure {
-  #       block_factory.blockchain.align_slow_transactions(coinbase_transaction, 1)
-  #     }
-  #   end
-  # end
-  #
-  # it "clean transactions" do
-  #   with_factory do |block_factory, transaction_factory|
-  #     transaction_total = 10
-  #     transactions = (1..transaction_total).to_a.map{|n| transaction_factory.make_send(n.to_i64) }
-  #
-  #     block_factory.add_slow_block(transactions, false)
-  #     block_factory.blockchain.pending_slow_transactions.size.should eq(transaction_total)
-  #
-  #     puts Benchmark.measure {
-  #       block_factory.blockchain.clean_slow_transactions
-  #     }
-  #   end
-  # end
+      block_factory.add_slow_block(transactions, false)
+      block_factory.blockchain.pending_slow_transactions.size.should eq(transaction_total)
+
+      puts Benchmark.measure {
+        block_factory.blockchain.clean_slow_transactions
+      }
+    end
+  end
 end
