@@ -13,6 +13,8 @@ jobs:
           shards build --release
           crystal spec
           bin/ameba
+      - store_artifacts:
+          path: spec/functional/reports
 
   e2e-tests-all-public:
     docker:
