@@ -2,7 +2,7 @@ version: 1.0
 shards:
   ameba:
     github: veelenga/ameba
-    version: 0.10.0
+    version: 0.10.1
 
   crystal-argon2:
     github: sushichain/crystal-argon2
@@ -38,7 +38,7 @@ shards:
 
   spinach:
     github: sushichain/spinach
-    version: 0.1.5
+    version: 0.1.6
 
   sqlite3:
     github: crystal-lang/crystal-sqlite3

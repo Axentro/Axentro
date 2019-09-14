@@ -12,7 +12,6 @@
 
 require "./../../spec_helper"
 require "./../../../src/cli/modules/logger"
-require "./../utils"
 
 include Sushi::Core
 include Sushi::Core::Consensus

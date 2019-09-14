@@ -15,5 +15,14 @@ require "./ext/spec/*"
 require "yaml"
 require "../src/common"
 require "../src/core"
+require "./utils/*"
+
+module ::Units::Utils
+  include TransactionHelper
+  include WalletHelper
+  include NodeHelper
+  include ChainGenerator
+  include FunctionalHelper
+end
 
 TOKEN_DEFAULT = Sushi::Core::DApps::BuildIn::UTXO::DEFAULT

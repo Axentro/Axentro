@@ -26,6 +26,10 @@ module ::Sushi::Core
       @config
     end
 
+    def set_config(config)
+      @config = config
+    end
+
     def get_path
       @path.nil? ? "unknown" : @path
     end

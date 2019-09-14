@@ -11,7 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "./../../spec_helper"
-require "./../utils"
 require "benchmark"
 
 include Sushi::Core
@@ -35,7 +34,7 @@ describe Blockchain do
   describe "mining_block_difficulty_miner" do
     it "should return the miner difficulty" do
       with_factory do |block_factory|
-        block_factory.blockchain.mining_block_difficulty_miner.should eq(11)
+        block_factory.blockchain.mining_block_difficulty_miner.should eq(0)
       end
     end
   end

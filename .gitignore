@@ -3,6 +3,8 @@
 /bin/
 /.shards/
 
+spec/functional/reports
+
 *.log
 *.db
 

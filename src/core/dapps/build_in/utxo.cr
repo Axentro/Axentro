@@ -86,7 +86,6 @@ module ::Sushi::Core::DApps::BuildIn
         if taq.token == TOKEN_DEFAULT && taq.address == address
           taq.amount -= fee
         end
-        taq.amount = Math.max(taq.amount, 0_i64)
         taq
       end
     end
@@ -95,10 +94,8 @@ module ::Sushi::Core::DApps::BuildIn
       items.map do |taq|
         if taq.token == token && taq.address == address
           taq.amount += amount
-          taq
-        else
-          taq
         end
+        taq
       end
     end
   end
@@ -156,11 +153,11 @@ module ::Sushi::Core::DApps::BuildIn
 
       # TODO: Fix the error wording here. Needs discussion.
       if amount_token + amount_token_as_recipients - pay_token < 0
-        raise "Unable to send #{scale_decimal(pay_token)} to recipient because you do not have enough. Current tokens: #{scale_decimal(amount_token)} + #{scale_decimal(amount_token_as_recipients)}"
+        raise "Unable to send #{scale_decimal(pay_token)} #{transaction.token} to recipient because you do not have enough. Current tokens: #{scale_decimal(amount_token)} + #{scale_decimal(amount_token_as_recipients)}"
       end
 
       if amount_default + amount_default_as_recipients - pay_default < 0
-        raise "Unable to send #{scale_decimal(pay_default)} to recipient because you do not have enough. Current tokens: #{scale_decimal(amount_default)} + #{scale_decimal(amount_default_as_recipients)}"
+        raise "Unable to send #{scale_decimal(pay_default)} #{transaction.token} to recipient because you do not have enough. Current tokens: #{scale_decimal(amount_default)} + #{scale_decimal(amount_default_as_recipients)}"
       end
 
       true

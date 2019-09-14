@@ -9,14 +9,15 @@
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
+require "./transaction"
 
 module ::Units::Utils::ChainGenerator
   include Sushi::Core
   include Sushi::Core::Keys
   include Sushi::Core::Controllers
 
-  def with_factory(&block)
-    block_factory = BlockFactory.new
+  def with_factory(developer_fund = nil, &block)
+    block_factory = BlockFactory.new(developer_fund)
     yield block_factory, block_factory.transaction_factory
   end
 
@@ -34,10 +35,10 @@ module ::Units::Utils::ChainGenerator
     property blockchain : Blockchain
     property node : Sushi::Core::Node
 
-    def initialize
+    def initialize(developer_fund)
       @node_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @miner_wallet = Wallet.from_json(Wallet.create(true).to_json)
-      @node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, nil, nil, false)
+      @node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, nil, developer_fund, false)
       @blockchain = @node.blockchain
       # the node setup is run in a spawn so we have to wait until it's finished before running any tests
       while @node.@phase != Sushi::Core::Node::SetupPhase::DONE
@@ -141,6 +142,8 @@ module ::Units::Utils::ChainGenerator
   end
 
   class TransactionFactory
+    include Units::Utils::TransactionHelper
+
     property recipient_wallet : Wallet
     property sender_wallet : Wallet
 
@@ -181,6 +184,23 @@ module ::Units::Utils::ChainGenerator
         TransactionKind::FAST
       )
       unsigned_transaction.as_signed([sender_wallet])
+    end
+
+    def make_send(sender_amount : Int64, token : String, senders : Array(Transaction::Sender), recipients : Array(Transaction::Recipient), signer_wallets : Array(Wallet)) : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        "send", # action
+        senders,
+        recipients,
+        "0",   # message
+        token, # token
+        "0",   # prev_hash
+        0_i64, # timestamp
+        1,     # scaled
+        TransactionKind::SLOW
+      )
+      unsigned_transaction.as_signed(signer_wallets)
     end
 
     def align_transaction(transaction : Transaction, prev_hash : String) : Transaction

@@ -114,6 +114,7 @@ module ::Sushi::Core
     end
 
     def mining_block_difficulty : Int32
+      return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
       the_mining_block = @mining_block
       if the_mining_block
         the_mining_block.difficulty
@@ -123,6 +124,7 @@ module ::Sushi::Core
     end
 
     def mining_block_difficulty_miner : Int32
+      return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
       block_difficulty_to_miner_difficulty(mining_block_difficulty)
     end
 

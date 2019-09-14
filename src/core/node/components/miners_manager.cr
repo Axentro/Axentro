@@ -98,6 +98,11 @@ module ::Sushi::Core::NodeComponents
       if miner = find?(socket)
         block = @blockchain.mining_block.with_nonce(nonce)
 
+        if ENV.has_key?("SC_SET_DIFFICULTY")
+          mint_block(block)
+          return
+        end
+
         debug "Received a freshly mined block..."
         block.to_s
 
