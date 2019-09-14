@@ -24,7 +24,7 @@ include Sushi::Core::Block
 describe Blockchain do
   describe "setup" do
     it "should create a genesis block" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory|
         block = block_factory.chain.first
         block.kind.should eq("SLOW")
         block.prev_hash.should eq("genesis")
@@ -34,7 +34,7 @@ describe Blockchain do
 
   describe "mining_block_difficulty_miner" do
     it "should return the miner difficulty" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory|
         block_factory.blockchain.mining_block_difficulty_miner.should eq(11)
       end
     end
@@ -42,7 +42,7 @@ describe Blockchain do
 
   describe "mining_block_difficulty" do
     it "should return the chian difficulty" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory|
         block_factory.blockchain.mining_block_difficulty.should eq(0)
       end
     end
@@ -50,7 +50,7 @@ describe Blockchain do
 
   describe "replace_chain" do
     it "should return false if no subchains and do nothing" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory|
         before = block_factory.chain
         block_factory.blockchain.replace_chain(nil, nil).should eq(false)
         before.should eq(block_factory.chain)
@@ -58,8 +58,7 @@ describe Blockchain do
     end
 
     it "should return true and replace slow chain" do
-      with_factory do |block_factory, transaction_factory|
-        before = block_factory.chain
+      with_factory do |block_factory|
         sub_chain = block_factory.add_slow_blocks(10).chain
 
         blockchain = Blockchain.new(block_factory.node_wallet, nil, nil)
@@ -110,7 +109,7 @@ describe Blockchain do
 
   describe "latest_block" do
     it "should return the latest block when slow" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory|
         block_factory.add_slow_blocks(3)
         blockchain = block_factory.blockchain
         blockchain.latest_block.index.should eq(6)
@@ -118,7 +117,7 @@ describe Blockchain do
     end
 
     it "should return the latest block when fast" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory|
         block_factory.add_slow_blocks(3).add_fast_blocks(4)
         blockchain = block_factory.blockchain
         blockchain.latest_block.index.should eq(7)
@@ -128,7 +127,7 @@ describe Blockchain do
 
   describe "latest_slow_block" do
     it "should return the latest slow block" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory|
         block_factory.add_slow_blocks(3).add_fast_blocks(2)
         blockchain = block_factory.blockchain
         blockchain.latest_block.index.should eq(6)
@@ -138,7 +137,7 @@ describe Blockchain do
 
   describe "latest_index" do
     it "should return the latest index when slow" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory|
         block_factory.add_slow_blocks(3)
         blockchain = block_factory.blockchain
         blockchain.latest_index.should eq(6)
@@ -146,7 +145,7 @@ describe Blockchain do
     end
 
     it "should return the latest index when fast" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory|
         block_factory.add_slow_blocks(3).add_fast_blocks(4)
         blockchain = block_factory.blockchain
         blockchain.latest_index.should eq(7)
@@ -156,7 +155,7 @@ describe Blockchain do
 
   describe "get_latest_index_for_slow" do
     it "should return the latest index when slow" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory|
         block_factory.add_slow_blocks(3).add_fast_blocks(4)
         blockchain = block_factory.blockchain
         blockchain.get_latest_index_for_slow.should eq(8)
@@ -166,7 +165,7 @@ describe Blockchain do
 
   describe "subchain_slow" do
     it "should return the slow subchain" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory|
         block_factory.add_slow_blocks(3).add_fast_blocks(4)
         blockchain = block_factory.blockchain
         indexes = blockchain.subchain_slow(0).not_nil!.map(&.index)
@@ -177,7 +176,7 @@ describe Blockchain do
 
   describe "headers" do
     it "should return the headers" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory|
         block_factory.add_slow_blocks(3).add_fast_blocks(4)
         blockchain = block_factory.blockchain
         header_indexes = blockchain.headers.map(&.["index"])
@@ -254,7 +253,6 @@ describe Blockchain do
       with_factory do |block_factory, transaction_factory|
         blockchain = block_factory.blockchain
         block_factory.add_slow_blocks(2).add_fast_blocks(4).add_slow_block([transaction_factory.make_send(200000000_i64)])
-        coinbase_transaction = block_factory.chain.last.transactions.first
         amount = 200000000_i64
         transaction = blockchain.create_coinbase_slow_transaction(amount, [block_factory.miner])
         transaction.action.should eq("head")
