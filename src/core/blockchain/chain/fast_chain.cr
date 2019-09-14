@@ -67,15 +67,6 @@ module ::Sushi::Core::FastChain
     index.odd? ? index + 2 : index + 1
   end
 
-  # def subchain_fast(from : Int64) : Chain?
-  #   fast_chain = @chain.select(&.is_fast_block?)
-  #   latest_fast_index = (latest_fast_block || latest_block).index
-  #   return nil if latest_fast_index <= from
-  #
-  #   fast_chain.select{|block| block.index > from}
-  # end
-
-  # TODO - check this is good
   def subchain_fast(from : Int64) : Chain?
     fast_chain = @chain.select(&.is_fast_block?)
     return nil if fast_chain.size < from

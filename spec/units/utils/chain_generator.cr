@@ -147,6 +147,13 @@ module ::Units::Utils::ChainGenerator
       @recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
     end
 
+    def wait_for_fast_transactions(blockchain, number_transactions)
+      (0..10).to_a.each do
+        break if blockchain.valid_transactions_for_fast_block.size > number_transactions
+        sleep 0.2
+      end
+    end
+
     def make_send(sender_amount : Int64, token : String = TOKEN_DEFAULT, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
@@ -160,6 +167,23 @@ module ::Units::Utils::ChainGenerator
         0_i64, # timestamp
         1,     # scaled
         TransactionKind::SLOW
+      )
+      unsigned_transaction.as_signed([sender_wallet])
+    end
+
+    def make_fast_send(sender_amount : Int64, token : String = TOKEN_DEFAULT, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        "send", # action
+        [a_sender(sender_wallet, sender_amount)],
+        [a_recipient(recipient_wallet, sender_amount)],
+        "0",   # message
+        token, # token
+        "0",   # prev_hash
+        0_i64, # timestamp
+        1,     # scaled
+        TransactionKind::FAST
       )
       unsigned_transaction.as_signed([sender_wallet])
     end

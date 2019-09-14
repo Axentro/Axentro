@@ -329,7 +329,7 @@ describe Blockchain do
       end
     end
   end
-  
+
   it "align transactions" do
     with_factory do |block_factory, transaction_factory|
       transaction_total = 10
