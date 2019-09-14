@@ -16,12 +16,7 @@ require "./../spec_helper"
 class Transactions < SpinachTestCase
   include Units::Utils
 
-  def mapping
-    {
-      "send_amount": ->(args : Array(String)) { send_amount(args) },
-    }
-  end
-
+  @[Spinach]
   def send_amount(args)
     amount = args.first.to_s
     fee = args.last
