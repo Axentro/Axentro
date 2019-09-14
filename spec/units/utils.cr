@@ -10,7 +10,7 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-require "./utils/*"
+require "./../utils/*"
 
 module ::Units::Utils
   include TransactionHelper

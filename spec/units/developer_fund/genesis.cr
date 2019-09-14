@@ -29,7 +29,7 @@ describe Blockchain do
 
   it "should create a genesis block with the specified transactions when developer fund is provided" do
     node_wallet = Wallet.from_json(Wallet.create(true).to_json)
-    developer_fund = DeveloperFund.validate("#{__DIR__}/../utils/data/developer_fund.yml")
+    developer_fund = DeveloperFund.validate("#{__DIR__}/../../utils/data/developer_fund.yml")
     node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, node_wallet, nil, developer_fund, false)
     blockchain = node.blockchain
     blockchain.setup(node)
