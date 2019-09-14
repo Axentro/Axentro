@@ -47,6 +47,15 @@ module ::Sushi::Core
       @pool.insert(index || @pool.size, transaction)
     end
 
+    def self.clear_all
+      instance.clear_all
+    end
+
+    def clear_all
+      @pool.clear
+      @pool_locked.clear
+    end
+
     def self.delete(transaction : Transaction)
       instance.delete(transaction)
     end

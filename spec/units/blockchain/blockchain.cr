@@ -333,7 +333,7 @@ describe Blockchain do
   it "align transactions" do
     with_factory do |block_factory, transaction_factory|
       transaction_total = 10
-      transactions = (1..transaction_total).to_a.map{|n| transaction_factory.make_send(n.to_i64) }
+      transactions = (1..transaction_total).to_a.map { |n| transaction_factory.make_send(n.to_i64) }
 
       block_factory.add_slow_block(transactions, false)
       block_factory.blockchain.embedded_slow_transactions.size.should eq(transaction_total)
@@ -348,7 +348,7 @@ describe Blockchain do
   it "clean transactions" do
     with_factory do |block_factory, transaction_factory|
       transaction_total = 10
-      transactions = (1..transaction_total).to_a.map{|n| transaction_factory.make_send(n.to_i64) }
+      transactions = (1..transaction_total).to_a.map { |n| transaction_factory.make_send(n.to_i64) }
 
       block_factory.add_slow_block(transactions, false)
       block_factory.blockchain.pending_slow_transactions.size.should eq(transaction_total)
@@ -358,4 +358,6 @@ describe Blockchain do
       }
     end
   end
+
+  STDERR.puts "< Blockchain::Slow"
 end

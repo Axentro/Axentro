@@ -47,6 +47,8 @@ module ::Units::Utils::ChainGenerator
       @transaction_factory = TransactionFactory.new(@node_wallet)
       @rpc = RPCController.new(@blockchain)
       @rest = RESTController.new(@blockchain)
+      FastTransactionPool.clear_all
+      SlowTransactionPool.clear_all
       enable_difficulty
     end
 
