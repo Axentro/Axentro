@@ -45,7 +45,7 @@ class Transactions < SpinachTestCase
       wallet_b_final_balance = Wallets.balance_for(wallet_b, block_factory)
 
       rejected = block_factory.blockchain.rejects.@rejects.keys.size.to_s
-
+    
       {"wallet_balance_a" => wallet_a_final_balance, "wallet_balance_b" => wallet_b_final_balance, "rejections" => rejected}
     end
   end
