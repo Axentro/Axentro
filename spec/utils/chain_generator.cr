@@ -362,7 +362,7 @@ module ::Units::Utils::ChainGenerator
       unsigned_transaction.as_signed([sender_wallet])
     end
 
-    def make_create_token(token : String, senders : Array(Transaction::Sender), recipients : Array(Transaction::Recipient)) : Transaction
+    def make_create_token(token : String, senders : Array(Transaction::Sender), recipients : Array(Transaction::Recipient), sender_wallet : Wallet) : Transaction
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
         transaction_id,

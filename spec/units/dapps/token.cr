@@ -58,7 +58,7 @@ describe Token do
       with_factory do |block_factory, transaction_factory|
         senders = [a_sender(transaction_factory.sender_wallet, 10_i64, 1000_i64)]
         recipients = [] of Transaction::Recipient
-        transaction = transaction_factory.make_create_token("KINGS", senders, recipients)
+        transaction = transaction_factory.make_create_token("KINGS", senders, recipients, transaction_factory.sender_wallet)
         chain = block_factory.add_slow_blocks(10).chain
         token = Token.new(block_factory.blockchain)
         expect_raises(Exception, "number of specified recipients must be 1 for 'create_token'") do
@@ -71,7 +71,7 @@ describe Token do
       with_factory do |block_factory, transaction_factory|
         senders = [a_sender(transaction_factory.sender_wallet, 10_i64, 1000_i64)]
         recipients = [a_recipient(transaction_factory.recipient_wallet, 10_i64)]
-        transaction = transaction_factory.make_create_token("KINGS", senders, recipients)
+        transaction = transaction_factory.make_create_token("KINGS", senders, recipients, transaction_factory.sender_wallet)
         chain = block_factory.add_slow_blocks(10).chain
         token = Token.new(block_factory.blockchain)
         expect_raises(Exception, "address mismatch for 'create_token'. sender: #{transaction_factory.sender_wallet.address}, recipient: #{transaction_factory.recipient_wallet.address}") do
@@ -84,7 +84,7 @@ describe Token do
       with_factory do |block_factory, transaction_factory|
         senders = [a_sender(transaction_factory.sender_wallet, 10_i64, 1000_i64)]
         recipients = [a_recipient(transaction_factory.sender_wallet, 20_i64)]
-        transaction = transaction_factory.make_create_token("KINGS", senders, recipients)
+        transaction = transaction_factory.make_create_token("KINGS", senders, recipients, transaction_factory.sender_wallet)
         chain = block_factory.add_slow_blocks(10).chain
         token = Token.new(block_factory.blockchain)
         expect_raises(Exception, "amount mismatch for 'create_token'. sender: 10, recipient: 20") do
