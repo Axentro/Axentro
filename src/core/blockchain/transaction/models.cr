@@ -11,6 +11,16 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::TransactionModels
+
+  enum TransactionKind
+    SLOW
+    FAST
+
+    def to_json(builder : JSON::Builder)
+      builder.string(to_s)
+    end
+  end
+
   alias Sender = NamedTuple(
     address: String,
     public_key: String,

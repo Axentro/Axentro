@@ -10,29 +10,10 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Core
-  CORE_VERSION = 1
+module ::E2E::Utils
+  class Envs
+    def self.setup_env
+      " SC_LOG=debug "
+    end
+  end
 end
-
-require "big"
-require "json"
-require "yaml"
-require "base64"
-require "router"
-require "random"
-require "openssl"
-require "colorize"
-require "tokoroten"
-require "http/server"
-require "openssl/pkcs5"
-require "openssl/digest"
-require "humanhash"
-require "crystal-argon2"
-require "crystal-ecdsa"
-require "i18n"
-
-require "./common"
-require "./core/modules"
-require "./core/protocol"
-require "./core/key_ring"
-require "./core/*"

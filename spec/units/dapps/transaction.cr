@@ -11,7 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "./../../spec_helper"
-require "./../utils"
 
 include Sushi::Core
 include Units::Utils
@@ -22,39 +21,39 @@ describe TransactionCreator do
   describe "default non implemented methods" do
     it "should perform #setup" do
       with_factory do |block_factory, _|
-        transaction_creator = TransactionCreator.new(block_factory.add_block.blockchain)
+        transaction_creator = TransactionCreator.new(block_factory.add_slow_block.blockchain)
         transaction_creator.setup.should be_nil
       end
     end
     it "should perform #transaction_actions" do
       with_factory do |block_factory, _|
-        transaction_creator = TransactionCreator.new(block_factory.add_block.blockchain)
+        transaction_creator = TransactionCreator.new(block_factory.add_slow_block.blockchain)
         transaction_creator.transaction_actions.size.should eq(0)
       end
     end
     it "should perform #transaction_related?" do
       with_factory do |block_factory, _|
-        transaction_creator = TransactionCreator.new(block_factory.add_block.blockchain)
+        transaction_creator = TransactionCreator.new(block_factory.add_slow_block.blockchain)
         transaction_creator.transaction_related?("action").should be_false
       end
     end
     it "should perform #valid_transaction?" do
       with_factory do |block_factory, _|
-        chain = block_factory.add_blocks(2).chain
+        chain = block_factory.add_slow_blocks(2).chain
         transaction_creator = TransactionCreator.new(block_factory.blockchain)
         transaction_creator.valid_transaction?(chain.last.transactions.first, chain.last.transactions).should be_true
       end
     end
     it "should perform #record" do
       with_factory do |block_factory, _|
-        chain = block_factory.add_blocks(2).chain
+        chain = block_factory.add_slow_blocks(2).chain
         transaction_creator = TransactionCreator.new(block_factory.blockchain)
         transaction_creator.record(chain).should be_nil
       end
     end
     it "should perform #clear" do
       with_factory do |block_factory, _|
-        transaction_creator = TransactionCreator.new(block_factory.add_blocks(2).blockchain)
+        transaction_creator = TransactionCreator.new(block_factory.add_slow_blocks(2).blockchain)
         transaction_creator.clear.should be_nil
       end
     end
@@ -74,6 +73,7 @@ describe TransactionCreator do
             recipients: recipients,
             message:    "",
             token:      TOKEN_DEFAULT,
+            kind:       "SLOW"
           }.to_json
 
           json = JSON.parse(payload)
@@ -88,6 +88,7 @@ describe TransactionCreator do
             transaction.message.should eq("")
             transaction.senders.should eq(expected_senders)
             transaction.recipients.should eq(expected_recipients)
+            transaction.kind.should eq(TransactionKind::SLOW)
           end
         end
       end
@@ -107,7 +108,8 @@ describe TransactionCreator do
               TOKEN_DEFAULT, # token
               "0",           # prev_hash
               0_i64,         # timestamp
-              1              # scaled
+              1,             # scaled
+              TransactionKind::SLOW
             )
 
             signed_transaction = unsigned_transaction.as_signed([transaction_factory.sender_wallet])

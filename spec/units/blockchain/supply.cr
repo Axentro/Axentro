@@ -11,7 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "./../../spec_helper"
-require "./../utils"
 
 include Units::Utils
 include Sushi::Core
@@ -22,8 +21,8 @@ include Hashes
 describe Blockchain do
   ignored "should calculate the total supply" do
     with_factory do |block_factory, _|
-      total_supply = (0_i64..4000000_i64).to_a.reduce(0_i64) { |acc, i| block_factory.blockchain.coinbase_amount(i, [] of Transaction) + acc }
-      scale_decimal(total_supply).should eq("20146526.12090981")
+      total_supply = (0_i64..8000000_i64).select(&.even?).reduce(0_i64) { |acc, i| block_factory.blockchain.coinbase_slow_amount(i, [] of Transaction) + acc }
+      scale_decimal(total_supply).should eq("20146527.97498925")
     end
   end
   STDERR.puts "< Total Supply"

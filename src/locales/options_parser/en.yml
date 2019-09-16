@@ -34,5 +34,7 @@ cli:
       domain:     "specify a domain for SCARS"
     config:       "specify a config name"
     developer_fund:      "invoke developer fund with supplied configuration"
+    fast_transaction: "set transaction kind as fast transaction (default is slow transaction)"
+    slow_transaction: "set transaction kind as slow transaction (default is slow transaction)"
   errors:
     decimal: "please supply valid decimal number: %{value}"

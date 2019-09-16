@@ -16,6 +16,8 @@ require "./../../../src/cli/modules/logger"
 include Sushi::Core
 include Sushi::Core::Consensus
 include Sushi::Interface::Logger
+include Units::Utils
+
 
 describe Consensus do
   describe "#valid?, #valid_pow?" do
@@ -44,7 +46,7 @@ describe Consensus do
       describe "(before block Dark Gravity Wave running average can be built)" do
         it "should use default difficulty when less than 3 blocks in the chain" do
           with_factory do |block_factory|
-            block_factory.add_block.chain
+            block_factory.add_slow_block.chain
             block_difficulty(block_factory.blockchain).should eq(Consensus::DEFAULT_DIFFICULTY_TARGET)
           end
         end
@@ -53,8 +55,9 @@ describe Consensus do
           number_of_blocks = 30
           timestamp = __timestamp - (number_of_blocks * Consensus::POW_TARGET_SPACING.to_i64)
           with_factory do |block_factory|
-            chain = block_factory.add_blocks(number_of_blocks).chain
+            chain = block_factory.add_slow_blocks(number_of_blocks).chain
             chain.each do |block|
+              block = block.as(SlowBlock)
               block.timestamp = timestamp
               block.difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
               timestamp += Consensus::POW_TARGET_SPACING.to_i64 + 5
@@ -67,8 +70,9 @@ describe Consensus do
           number_of_blocks = 30
           timestamp = __timestamp - (number_of_blocks * Consensus::POW_TARGET_SPACING.to_i64)
           with_factory do |block_factory|
-            chain = block_factory.add_blocks(number_of_blocks).chain
+            chain = block_factory.add_slow_blocks(number_of_blocks).chain
             chain.each do |block|
+              block = block.as(SlowBlock)
               block.timestamp = timestamp
               block.difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
               timestamp += Consensus::POW_TARGET_SPACING.to_i64 - 5
