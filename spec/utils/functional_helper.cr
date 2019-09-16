@@ -52,6 +52,10 @@ module FunctionalHelper
     def self.balance_for(wallet, block_factory, token : String = "SUSHI")
       Quantity.as_human_amount(block_factory.blockchain.utxo.get(wallet.address, token, 1))
     end
+
+    def self.create
+      Wallet.from_json(Wallet.create(true).to_json)
+    end
   end
 
   class DeveloperFunds

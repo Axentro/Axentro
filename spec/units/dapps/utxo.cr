@@ -57,20 +57,18 @@ describe UTXO do
           transaction_factory.make_send(1, "FOO", sender_wallet, recipient_wallet_3),
         ]
 
-        blockchain = block_factory.add_slow_block.blockchain
-        utxo = UTXO.new(blockchain)
+        blockchain = block_factory.add_slow_block(false).blockchain
 
-        chain1 = block_factory.add_slow_block(transactions1).chain
-        utxo.record(chain1)
+        # utxo = UTXO.new(blockchain)
+        #
+        block_factory.add_slow_block(transactions1)
+          .add_slow_block(transactions2)
+          .add_slow_block(transactions3)
 
-        chain2 = block_factory.add_slow_block(transactions2).chain
-        utxo.record(chain2)
-
-        chain3 = block_factory.add_slow_block(transactions3).chain
-        utxo.record(chain3)
-
-        _utxo = utxo.@utxo_internal
-        _utxo.size.should eq(9)
+        # utxo.record(chain)
+        #
+        _utxo = blockchain.utxo.@utxo_internal
+        _utxo.size.should eq(11)
 
         _utxo[0].should eq(TokenQuantity.new("SUSHI", [] of AddressQuantity))
         _utxo[1].should eq(TokenQuantity.new("SUSHI", [AddressQuantity.new(block_factory.node_wallet.address, 1199999373_i64)]))
@@ -82,39 +80,47 @@ describe UTXO do
         ]))
 
         _utxo[3].should eq(TokenQuantity.new("KINGS", [
-          AddressQuantity.new(block_factory.node_wallet.address, 80000_i64),
+          AddressQuantity.new(block_factory.node_wallet.address, 0_i64),
           AddressQuantity.new(recipient_wallet_1.address, 0_i64),
           AddressQuantity.new(recipient_wallet_2.address, 0_i64),
         ]))
 
         _utxo[4].should eq(TokenQuantity.new("FOO", [
-          AddressQuantity.new(block_factory.node_wallet.address, 70000_i64),
+          AddressQuantity.new(block_factory.node_wallet.address, 0_i64),
           AddressQuantity.new(recipient_wallet_1.address, 0_i64),
           AddressQuantity.new(recipient_wallet_2.address, 0_i64),
         ]))
 
-        _utxo[5].should eq(TokenQuantity.new("SUSHI", [
+        _utxo[5].should eq(TokenQuantity.new("KINGS", [
+          AddressQuantity.new(block_factory.node_wallet.address, 80000_i64),
+        ]))
+
+        _utxo[6].should eq(TokenQuantity.new("FOO", [
+          AddressQuantity.new(block_factory.node_wallet.address, 70000_i64),
+        ]))
+
+        _utxo[7].should eq(TokenQuantity.new("SUSHI", [
           AddressQuantity.new(block_factory.node_wallet.address, 3559956237_i64),
           AddressQuantity.new(recipient_wallet_1.address, 2_i64),
           AddressQuantity.new(recipient_wallet_2.address, 2_i64),
         ]))
 
-        _utxo[6].should eq(TokenQuantity.new("SUSHI", [
+        _utxo[8].should eq(TokenQuantity.new("SUSHI", [
           AddressQuantity.new(block_factory.node_wallet.address, 4759923732_i64),
           AddressQuantity.new(recipient_wallet_1.address, 2_i64),
           AddressQuantity.new(recipient_wallet_2.address, 2_i64),
           AddressQuantity.new(recipient_wallet_3.address, 0_i64),
         ]))
 
-        _utxo[7].should eq(TokenQuantity.new("KINGS", [
-          AddressQuantity.new(block_factory.node_wallet.address, 80000_i64),
+        _utxo[9].should eq(TokenQuantity.new("KINGS", [
+          AddressQuantity.new(block_factory.node_wallet.address, 79998_i64),
           AddressQuantity.new(recipient_wallet_1.address, 1_i64),
           AddressQuantity.new(recipient_wallet_2.address, 1_i64),
           AddressQuantity.new(recipient_wallet_3.address, 0_i64),
         ]))
 
-        _utxo[8].should eq(TokenQuantity.new("FOO", [
-          AddressQuantity.new(block_factory.node_wallet.address, 70000_i64),
+        _utxo[10].should eq(TokenQuantity.new("FOO", [
+          AddressQuantity.new(block_factory.node_wallet.address, 69999_i64),
           AddressQuantity.new(recipient_wallet_1.address, 0_i64),
           AddressQuantity.new(recipient_wallet_2.address, 0_i64),
           AddressQuantity.new(recipient_wallet_3.address, 1_i64),
@@ -313,22 +319,21 @@ describe UTXO do
         utxo = UTXO.new(block_factory.blockchain)
 
         utxo.record(chain)
-        expect_raises(Exception, "Unable to send 20 SUSHI to recipient because you do not have enough. You currently have: 10.99989373 SUSHI and you are receiving: 0 SUSHI from senders,  giving a total of: 10.99989373 SUSHI") do
+        expect_raises(Exception, "Unable to send 20 SUSHI to recipient because you do not have enough SUSHI. You currently have: 10.99989373 SUSHI and you are receiving: 0 SUSHI from senders,  giving a total of: 10.99989373 SUSHI") do
           utxo.valid_transaction?(transaction2, [transaction1])
         end
       end
     end
 
-    it "should raise an error if sender does not have enough default tokens to afford the transaction" do
+    it "should raise an error if sender does not have enough custom tokens to afford the transaction" do
       with_factory do |block_factory, transaction_factory|
         transaction1 = transaction_factory.make_send(100000000_i64, "KINGS")
         transaction2 = transaction_factory.make_send(200000000_i64, "KINGS")
         chain = block_factory.add_slow_block.chain
         utxo = UTXO.new(block_factory.blockchain)
-
         utxo.record(chain)
-        pp utxo.@utxo_internal
-        expect_raises(Exception, "Unable to send 2 KINGS to recipient because you do not have enough. You currently have: -1 KINGS and you are receiving: 0 KINGS from senders,  giving a total of: -1 KINGS") do
+
+        expect_raises(Exception, "Unable to send 2 KINGS to recipient because you do not have enough KINGS. You currently have: -1 KINGS and you are receiving: 0 KINGS from senders,  giving a total of: -1 KINGS") do
           utxo.valid_transaction?(transaction2, [transaction1])
         end
       end

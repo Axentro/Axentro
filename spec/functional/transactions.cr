@@ -21,8 +21,8 @@ class Transactions < SpinachTestCase
     amount = args.first
     fee_amount = args.last
 
-    wallet_a = Wallet.from_json(Wallet.create(true).to_json)
-    wallet_b = Wallet.from_json(Wallet.create(true).to_json)
+    wallet_a = Wallets.create
+    wallet_b = Wallets.create
 
     wallet_a_amount = Quantity.as_fund_amount("wallet_balance_a", @variables)
     wallet_b_amount = Quantity.as_fund_amount("wallet_balance_b", @variables)
@@ -50,7 +50,7 @@ class Transactions < SpinachTestCase
     token_amount = args[1]
     fee_amount = args.last
 
-    wallet_a = Wallet.from_json(Wallet.create(true).to_json)
+    wallet_a = Wallets.create
     wallet_a_amount = Quantity.as_fund_amount("wallet_balance_a", @variables)
     developer_fund = DeveloperFunds.with_funds([
       {"address" => wallet_a.address, "amount" => wallet_a_amount}
@@ -65,7 +65,6 @@ class Transactions < SpinachTestCase
       wallet_a_final_custom_balance = Wallets.balance_for(wallet_a, block_factory, token_name)
 
       rejected = block_factory.blockchain.rejects.@rejects.keys.size.to_s
-      pp block_factory.blockchain.rejects.@rejects.values
 
       {"wallet_balance_a" => wallet_a_final_balance, "wallet_balance_a_custom" => wallet_a_final_custom_balance, "rejections" => rejected}
     end
@@ -77,8 +76,8 @@ class Transactions < SpinachTestCase
     amount = args[1]
     fee_amount = args.last
 
-    wallet_a = Wallet.from_json(Wallet.create(true).to_json)
-    wallet_b = Wallet.from_json(Wallet.create(true).to_json)
+    wallet_a = Wallets.create
+    wallet_b = Wallets.create
 
     wallet_a_amount = Quantity.as_fund_amount("wallet_balance_a_sushi", @variables)
     wallet_b_amount = Quantity.as_fund_amount("wallet_balance_b_sushi", @variables)
@@ -101,8 +100,6 @@ class Transactions < SpinachTestCase
       wallet_balance_b_kings = Wallets.balance_for(wallet_b, block_factory, token_name)
 
       rejected = block_factory.blockchain.rejects.@rejects.keys.size.to_s
-
-      pp block_factory.blockchain.rejects.@rejects.values
 
       {"wallet_balance_a" => wallet_a_final_balance, "wallet_balance_b" => wallet_b_final_balance, "wallet_balance_a_kings" => wallet_balance_a_kings, "wallet_balance_b_kings" => wallet_balance_b_kings, "rejections" => rejected}
     end
