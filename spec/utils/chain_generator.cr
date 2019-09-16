@@ -186,7 +186,7 @@ module ::Units::Utils::ChainGenerator
       unsigned_transaction.as_signed([sender_wallet])
     end
 
-    def make_send(sender_amount : Int64, token : String, senders : Array(Transaction::Sender), recipients : Array(Transaction::Recipient), signer_wallets : Array(Wallet)) : Transaction
+    def make_send(sender_amount : Int64, token : String, senders : Array(Transaction::Sender), recipients : Array(Transaction::Recipient), signer_wallets : Array(Wallet), transaction_kind : TransactionKind = TransactionKind::SLOW) : Transaction
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
         transaction_id,
@@ -198,7 +198,7 @@ module ::Units::Utils::ChainGenerator
         "0",   # prev_hash
         0_i64, # timestamp
         1,     # scaled
-        TransactionKind::SLOW
+        transaction_kind
       )
       unsigned_transaction.as_signed(signer_wallets)
     end
@@ -362,7 +362,7 @@ module ::Units::Utils::ChainGenerator
       unsigned_transaction.as_signed([sender_wallet])
     end
 
-    def make_create_token(token : String, senders : Array(Transaction::Sender), recipients : Array(Transaction::Recipient), sender_wallet : Wallet) : Transaction
+    def make_create_token(token : String, senders : Array(Transaction::Sender), recipients : Array(Transaction::Recipient), sender_wallet : Wallet, transaction_kind : TransactionKind = TransactionKind::SLOW) : Transaction
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
         transaction_id,
@@ -374,7 +374,7 @@ module ::Units::Utils::ChainGenerator
         "0",   # prev_hash
         0_i64, # timestamp
         1,     # scaled
-        TransactionKind::SLOW
+        transaction_kind
       )
       unsigned_transaction.as_signed([sender_wallet])
     end

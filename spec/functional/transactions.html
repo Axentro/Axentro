@@ -7,33 +7,34 @@
 <body>
   <div class="container">
 	  <br/>
-    <h2>Slow Transactions</h2>
+    <h2>Transactions</h2>
     <br/>
-    <p>You can send tokens from your wallet to another wallet in slow mode which goes through proof of work concensus.</p>
+    <p>You can send tokens from your wallet to another wallet in slow mode which goes through proof of work concensus or fast mode which uses proof of history.</p>
     <br/>
     <hr/>
-      <h3>SUSHI Transactions</h3>
+      <h3>SUSHI Slow Transactions</h3>
       <br/>
 
-      <div spinach:scenario="scenario 1: sending SUSHI">
+      <div spinach:scenario="scenario 1: sending SUSHI via slow transaction">
 	      Given I have <b spinach:set="wallet_balance_a">10</b> SUSHI in my wallet<br/>
 	      And my friend has <b spinach:set="wallet_balance_b">0</b> SUSHI in their wallet<br/>
-	      When I <b spinach:execute="result = send_amount(amount_to_send, fee_amount)">send</b> them <b spinach:set="amount_to_send">5</b> SUSHI at the fee of <b spinach:set="fee_amount">0.0001</b><br/>
+	      When I <b spinach:execute="result = send_amount(amount_to_send, fee_amount)">send</b> them <b spinach:set="amount_to_send">5</b> SUSHI at the fee of <b spinach:set="fee_amount">0.0001</b> via <b spinach:set="block_kind">slow</b> transaction<br/>
 	      Then my wallet should be debited the sending amount plus fee leaving me <b spinach:assert_equals="result.wallet_balance_a">4.9999</b> SUSHI<br/>
 	      And my friends wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_b">5</b> SUSHI<br/>
         And there should be <b spinach:assert_equals="result.rejections">0</b> rejected transactions
       </div>
 
       <br/>
-      <h5>Some further examples</h5>
+      <h5>Some further slow transaction examples</h5>
     <br/>
-    <table spinach:table_scenario="scenario 2: further examples" class="table table-striped">
+    <table spinach:table_scenario="scenario 2: further slow transaction examples" class="table table-striped">
       <thead class="thead-dark">
         <tr>
           <th spinach:set="wallet_balance_a">My starting balance</th>
           <th spinach:set="wallet_balance_b">My friends starting balance</th>
           <th spinach:set="amount_to_send">Amount to send</th>
           <th spinach:set="fee_amount">Fee</th>
+          <th spinach:set="block_type">Speed</th>
           <th spinach:assert_equals="result.wallet_balance_a">My completed balance</th>
           <th spinach:assert_equals="result.wallet_balance_b">My friends completed balance</th>
           <th spinach:assert_equals="result.rejections">Rejected transactions</th>
@@ -46,6 +47,7 @@
             <td>0</td>
             <td>0.00000001</td>
             <td>0.0001</td>
+            <td>slow</td>
             <td>9.99989999</td>
             <td>0.00000001</td>
             <td>0</td>
@@ -56,6 +58,7 @@
             <td>10</td>
             <td>5</td>
             <td>0.0001</td>
+            <td>slow</td>
             <td>4.9999</td>
             <td>15</td>
             <td>0</td>
@@ -66,6 +69,7 @@
             <td>0</td>
             <td>5</td>
             <td>1</td>
+            <td>slow</td>
             <td>4</td>
             <td>5</td>
             <td>0</td>
@@ -76,6 +80,7 @@
             <td>0</td>
             <td>20</td>
             <td>1</td>
+            <td>slow</td>
             <td>10</td>
             <td>0</td>
             <td>1</td>
@@ -86,12 +91,12 @@
 
     <br/>
     <hr/>
-    <h3>Custom Tokens</h3>
+    <h3>Slow Custom Tokens</h3>
     <br/>
 
-    <div spinach:scenario="scenario 3: creating custom tokens">
+    <div spinach:scenario="scenario 3: creating slow custom tokens">
       Given I have <b spinach:set="wallet_balance_a">10</b> SUSHI in my wallet<br/>
-      When I <b spinach:execute="result = create_token(token_name, token_amount, fee_amount)">create</b> the custom token <b spinach:set="token_name">KINGS</b><br/>
+      When I <b spinach:execute="result = create_token(token_name, token_amount, fee_amount, block_kind)">create</b> the custom token <b spinach:set="token_name">KINGS</b> via <b spinach:set="block_kind">slow</b> transaction<br/>
       with the amount <b spinach:set="token_amount">100000</b> and the fee <b spinach:set="fee_amount">1</b> <br/>
       Then my wallet should be debited the fee leaving me <b spinach:assert_equals="result.wallet_balance_a">9</b> SUSHI<br/>
       And my wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_a_custom">100000</b> KINGS<br/>
@@ -99,14 +104,14 @@
     </div>
 
     <br/>
-      <h4>Custom Token Transactions</h4>
+      <h4>Slow Custom Token Transactions</h4>
       <br/>
 
-      <div spinach:scenario="scenario 4: sending custom tokens">
+      <div spinach:scenario="scenario 4: sending slow custom tokens">
         Given I have <b spinach:set="wallet_balance_a_sushi">10</b> SUSHI in my wallet<br/>
         And I create <b spinach:set="wallet_balance_a_kings">10</b> KINGS in my wallet (at fee <i>0.1</i>)<br/>
         And my friend has <b spinach:set="wallet_balance_b_sushi">0</b> SUSHI in their wallet<br/>
-        When I <b spinach:execute="result = send_custom_token(token_name, amount_to_send, fee_amount)">send</b> them <b spinach:set="amount_to_send">5</b> <b spinach:set="token_name">KINGS</b> at the fee of <b spinach:set="fee_amount">0.0001</b><br/>
+        When I <b spinach:execute="result = send_custom_token(token_name, amount_to_send, fee_amount, block_kind)">send</b> them <b spinach:set="amount_to_send">5</b> <b spinach:set="token_name">KINGS</b> at the fee of <b spinach:set="fee_amount">0.0001</b> via <b spinach:set="block_kind">slow</b> transaction<br/>
         Then my wallet should be debited the sent amount + sending fee + token creation fee, leaving me <b spinach:assert_equals="result.wallet_balance_a">9.8999</b> SUSHI<br/>
         And my wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_a_kings">5</b> KINGS<br/>
         And my friends wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_b">0</b> SUSHI<br/>
@@ -115,10 +120,10 @@
       </div>
 
       <br/>
-      <h5>Some further examples</h5>
+      <h5>Some further examples of slow custom token transactions</h5>
       <p>These examples use a fixed token creation fee of <i>0.1</i></p>
     <br/>
-    <table spinach:table_scenario="scenario 5: further examples" class="table table-striped">
+    <table spinach:table_scenario="scenario 5: further examples of slow custom token transactions" class="table table-striped">
       <thead class="thead-dark">
         <tr>
           <th spinach:set="wallet_balance_a_sushi">My SUSHI</th>
@@ -127,12 +132,13 @@
           <th spinach:set="amount_to_send">Sending</th>
           <th spinach:set="token_name">Token</th>
           <th spinach:set="fee_amount">Fee</th>
+          <th spinach:set="block_kind">Speed</th>
           <th spinach:assert_equals="result.wallet_balance_a">My final SUSHI</th>
           <th spinach:assert_equals="result.wallet_balance_a_kings">My final KINGS</th>
           <th spinach:assert_equals="result.wallet_balance_b">Friends final SUSHI</th>
           <th spinach:assert_equals="result.wallet_balance_b_kings">Friends final KINGS</th>
           <th spinach:assert_equals="result.rejections">Rejected transactions</th>
-          <th spinach:execute="result = send_custom_token(token_name, amount_to_send, fee_amount)"></th>
+          <th spinach:execute="result = send_custom_token(token_name, amount_to_send, fee_amount, block_kind)"></th>
         </tr>
         </thead/>
         <tbody>
@@ -143,6 +149,7 @@
             <td>5</td>
             <td>KINGS</td>
             <td>1</td>
+            <td>slow</td>
             <td>8.9</td>
             <td>5</td>
             <td>12</td>
@@ -157,6 +164,7 @@
             <td>20</td>
             <td>KINGS</td>
             <td>0.0001</td>
+            <td>slow</td>
             <td>9.9</td>
             <td>10</td>
             <td>0</td>
@@ -171,6 +179,7 @@
             <td>5</td>
             <td>KINGS</td>
             <td>0.0001</td>
+            <td>slow</td>
             <td>0</td>
             <td>0</td>
             <td>0</td>
@@ -185,6 +194,7 @@
             <td>0.00000001</td>
             <td>KINGS</td>
             <td>0.0001</td>
+            <td>slow</td>
             <td>9.8999</td>
             <td>9.99999999</td>
             <td>0</td>
@@ -195,6 +205,204 @@
         </tbody>
     </table>
 
+    <br/>
+    <hr/>
+    <h2>Fast Transactions</h2>
+    <br/>
+      <h3>SUSHI Fast Transactions</h3>
+      <br/>
+
+      <div spinach:scenario="scenario 6: sending SUSHI via fast transactions">
+        Given I have <b spinach:set="wallet_balance_a">10</b> SUSHI in my wallet<br/>
+        And my friend has <b spinach:set="wallet_balance_b">0</b> SUSHI in their wallet<br/>
+        When I <b spinach:execute="result = send_amount(amount_to_send, fee_amount, block_kind)">send</b> them <b spinach:set="amount_to_send">5</b> SUSHI at the fee of <b spinach:set="fee_amount">0.0001</b> via <b spinach:set="block_kind">fast</b> transaction<br/>
+        Then my wallet should be debited the sending amount plus fee leaving me <b spinach:assert_equals="result.wallet_balance_a">4.9999</b> SUSHI<br/>
+        And my friends wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_b">5</b> SUSHI<br/>
+        And there should be <b spinach:assert_equals="result.rejections">0</b> rejected transactions
+      </div>
+
+      <br/>
+      <h5>Some further fast transaction examples</h5>
+    <br/>
+    <table spinach:table_scenario="scenario 7: further fast transaction examples" class="table table-striped">
+      <thead class="thead-dark">
+        <tr>
+          <th spinach:set="wallet_balance_a">My starting balance</th>
+          <th spinach:set="wallet_balance_b">My friends starting balance</th>
+          <th spinach:set="amount_to_send">Amount to send</th>
+          <th spinach:set="fee_amount">Fee</th>
+          <th spinach:set="block_kind">Speed</th>
+          <th spinach:assert_equals="result.wallet_balance_a">My completed balance</th>
+          <th spinach:assert_equals="result.wallet_balance_b">My friends completed balance</th>
+          <th spinach:assert_equals="result.rejections">Rejected transactions</th>
+          <th spinach:execute="result = send_amount(amount_to_send, fee_amount, block_kind)"></th>
+        </tr>
+        </thead/>
+        <tbody>
+          <tr>
+            <td>10</td>
+            <td>0</td>
+            <td>0.00000001</td>
+            <td>0.0001</td>
+            <td>fast</td>
+            <td>9.99989999</td>
+            <td>0.00000001</td>
+            <td>0</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>10</td>
+            <td>10</td>
+            <td>5</td>
+            <td>0.0001</td>
+            <td>fast</td>
+            <td>4.9999</td>
+            <td>15</td>
+            <td>0</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>10</td>
+            <td>0</td>
+            <td>5</td>
+            <td>1</td>
+            <td>fast</td>
+            <td>4</td>
+            <td>5</td>
+            <td>0</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>10</td>
+            <td>0</td>
+            <td>20</td>
+            <td>1</td>
+            <td>fast</td>
+            <td>10</td>
+            <td>0</td>
+            <td>1</td>
+            <td></td>
+          </tr>
+        </tbody>
+    </table>
+
+    <br/>
+    <hr/>
+    <h3>Fast Custom Tokens</h3>
+    <br/>
+
+    <div spinach:scenario="scenario 3: creating fast custom tokens">
+      Given I have <b spinach:set="wallet_balance_a">10</b> SUSHI in my wallet<br/>
+      When I <b spinach:execute="result = create_token(token_name, token_amount, fee_amount, block_kind)">create</b> the custom token <b spinach:set="token_name">KINGS</b> via <b spinach:set="block_kind">fast</b> transaction<br/>
+      with the amount <b spinach:set="token_amount">100000</b> and the fee <b spinach:set="fee_amount">1</b> <br/>
+      Then my wallet should be debited the fee leaving me <b spinach:assert_equals="result.wallet_balance_a">9</b> SUSHI<br/>
+      And my wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_a_custom">100000</b> KINGS<br/>
+      And there should be <b spinach:assert_equals="result.rejections">0</b> rejected transactions
+    </div>
+
+    <br/>
+      <h4>Fast Custom Token Transactions</h4>
+      <br/>
+
+      <div spinach:scenario="scenario 4: sending fast custom tokens">
+        Given I have <b spinach:set="wallet_balance_a_sushi">10</b> SUSHI in my wallet<br/>
+        And I create <b spinach:set="wallet_balance_a_kings">10</b> KINGS in my wallet (at fee <i>0.1</i>)<br/>
+        And my friend has <b spinach:set="wallet_balance_b_sushi">0</b> SUSHI in their wallet<br/>
+        When I <b spinach:execute="result = send_custom_token(token_name, amount_to_send, fee_amount, block_kind)">send</b> them <b spinach:set="amount_to_send">5</b> <b spinach:set="token_name">KINGS</b> at the fee of <b spinach:set="fee_amount">0.0001</b> via <b spinach:set="block_kind">fast</b> transaction<br/>
+        Then my wallet should be debited the sent amount + sending fee + token creation fee, leaving me <b spinach:assert_equals="result.wallet_balance_a">9.8999</b> SUSHI<br/>
+        And my wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_a_kings">5</b> KINGS<br/>
+        And my friends wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_b">0</b> SUSHI<br/>
+        And my friends wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_b_kings">5</b> KINGS<br/>
+        And there should be <b spinach:assert_equals="result.rejections">0</b> rejected transactions
+      </div>
+
+      <br/>
+      <h5>Some further examples of fast custom token transactions</h5>
+      <p>These examples use a fixed token creation fee of <i>0.1</i></p>
+    <br/>
+    <table spinach:table_scenario="scenario 5: further examples of fast custom token transactions" class="table table-striped">
+      <thead class="thead-dark">
+        <tr>
+          <th spinach:set="wallet_balance_a_sushi">My SUSHI</th>
+          <th spinach:set="wallet_balance_a_kings">My KINGS</th>
+          <th spinach:set="wallet_balance_b_sushi">Friends SUSHI</th>
+          <th spinach:set="amount_to_send">Sending</th>
+          <th spinach:set="token_name">Token</th>
+          <th spinach:set="fee_amount">Fee</th>
+          <th spinach:set="block_kind">Speed</th>
+          <th spinach:assert_equals="result.wallet_balance_a">My final SUSHI</th>
+          <th spinach:assert_equals="result.wallet_balance_a_kings">My final KINGS</th>
+          <th spinach:assert_equals="result.wallet_balance_b">Friends final SUSHI</th>
+          <th spinach:assert_equals="result.wallet_balance_b_kings">Friends final KINGS</th>
+          <th spinach:assert_equals="result.rejections">Rejected transactions</th>
+          <th spinach:execute="result = send_custom_token(token_name, amount_to_send, fee_amount, block_kind)"></th>
+        </tr>
+        </thead/>
+        <tbody>
+          <tr>
+            <td>10</td>
+            <td>10</td>
+            <td>12</td>
+            <td>5</td>
+            <td>KINGS</td>
+            <td>1</td>
+            <td>fast</td>
+            <td>8.9</td>
+            <td>5</td>
+            <td>12</td>
+            <td>5</td>
+            <td>0</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>10</td>
+            <td>10</td>
+            <td>0</td>
+            <td>20</td>
+            <td>KINGS</td>
+            <td>0.0001</td>
+            <td>fast</td>
+            <td>9.9</td>
+            <td>10</td>
+            <td>0</td>
+            <td>0</td>
+            <td>1</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>0</td>
+            <td>10</td>
+            <td>0</td>
+            <td>5</td>
+            <td>KINGS</td>
+            <td>0.0001</td>
+            <td>fast</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+            <td>2</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>10</td>
+            <td>10</td>
+            <td>0</td>
+            <td>0.00000001</td>
+            <td>KINGS</td>
+            <td>0.0001</td>
+            <td>fast</td>
+            <td>9.8999</td>
+            <td>9.99999999</td>
+            <td>0</td>
+            <td>0.00000001</td>
+            <td>0</td>
+            <td></td>
+          </tr>
+        </tbody>
+    </table>
+
+    <br/>
   </div>
   <br/>
   <br/>
