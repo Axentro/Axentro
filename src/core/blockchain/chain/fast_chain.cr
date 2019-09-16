@@ -37,8 +37,6 @@ module ::Sushi::Core::FastChain
               if block.valid?(self)
                 debug "record new fast block"
                 node.new_block(block)
-                # dapps_record
-                # clean_fast_transactions
                 debug "broadcast new fast block"
                 node.send_block(block)
               end
