@@ -19,12 +19,55 @@ module ::Sushi::Core::FastChain
   )
 
   # TODO - can't be the leader if a private node
-  #      - if only this node then this is the leader automatically
+  #      - if only this node then this is the leader automatically until children join then re-asses
+
+  private def i_can_lead?
+    return true if node.has_no_connections?
+
+    ranking = chain.flat_map { |block| block.transactions.flat_map { |t| t.recipients.map { |r| r["address"] } } }.tally
+    v = ranking[node.get_wallet.address]?
+    v.nil? ? false : v > 0
+  end
+
+  private def leadership_contest
+    loop do
+      if node.has_no_connections?
+        debug "setting this node as leader as has no connections"
+        node.set_current_leader(node.get_wallet.address)
+      else
+        if (Time.now - node.get_last_heartbeat) > 2.seconds && node.get_wallet.address != node.get_current_leader
+          info "Heartbeat not received within 2 second timeout - trying to assume leadership"
+          if i_can_lead?
+            info "Assuming leadership role"
+            node.set_current_leader(node.get_wallet.address)
+            debug "current_leader_in_contest: #{node.get_current_leader}"
+          end
+        end
+      end
+      sleep 2
+    end
+  end
+
+  private def broadcast_heartbeat
+    wallet = node.get_wallet
+    address = wallet.address
+    public_key = wallet.public_key
+    hash_salt = sha256(node.get_heartbeat_salt + public_key)
+    private_key = Wif.new(wallet.wif).private_key.as_hex
+
+    sig = ECCrypto.sign(private_key, hash_salt)
+    node.broadcast_heartbeat(address, public_key, hash_salt, sig["r"], sig["s"])
+  end
+
   def process_fast_transactions
     loop do
-      if @i_am_the_leader
+      # if chain_mature_enough_for_fast_blocks?
+      # if @i_am_the_leader
+      debug "current_leader_process_fast_transactions: #{node.get_current_leader}"
+      if node.get_wallet.address == node.get_current_leader
         begin
-          # debug "I am the leader so attempt to process fast transactions"
+          broadcast_heartbeat unless node.has_no_connections?
+
           debug "********** process fast transactions ***********"
           if pending_fast_transactions.size > 0
             debug "There are #{pending_fast_transactions.size} pending fast transactions"
@@ -46,8 +89,14 @@ module ::Sushi::Core::FastChain
           error e.message.not_nil!
         end
       end
+      # end
       sleep 2
     end
+  end
+
+  def chain_mature_enough_for_fast_blocks?
+    get_latest_index_for_slow > 0_i64
+    # get_latest_index_for_slow > 1440_i64
   end
 
   def latest_fast_block : FastBlock?

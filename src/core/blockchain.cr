@@ -35,7 +35,6 @@ module ::Sushi::Core
     @node : Node?
     @mining_block : SlowBlock?
     @block_reward_calculator = BlockRewardCalculator.init
-    @i_am_the_leader : Bool = true
 
     def initialize(@wallet : Wallet, @database : Database?, @developer_fund : DeveloperFund?)
       initialize_dapps
@@ -52,7 +51,8 @@ module ::Sushi::Core
         push_genesis
       end
 
-      # spawn process_fast_transactions
+      spawn process_fast_transactions
+      spawn leadership_contest
 
     end
 

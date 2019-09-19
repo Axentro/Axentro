@@ -35,6 +35,11 @@ module ::Sushi::Core
     @conflicted_slow_index : Int64? = nil
     @conflicted_fast_index : Int64? = nil
 
+    @last_heartbeat = Time.now
+    @current_leader : String?
+    @heartbeat_salt : String
+    @leader_channel = Channel(String).new
+
     def initialize(
       @is_private : Bool,
       @is_testnet : Bool,
@@ -52,6 +57,7 @@ module ::Sushi::Core
     )
       welcome
 
+      @heartbeat_salt = Random::Secure.hex(32)
       @blockchain = Blockchain.new(@wallet, @database, @developer_fund)
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl)
@@ -81,6 +87,36 @@ module ::Sushi::Core
       end
 
       spawn proceed_setup
+
+      # @current_leader = get_leader_channel.receive
+    end
+
+    def get_wallet
+      @wallet
+    end
+
+    def get_last_heartbeat
+      @last_heartbeat
+    end
+
+    def get_current_leader
+      @current_leader
+    end
+
+    def set_current_leader(address)
+      @current_leader = address
+    end
+
+    # def get_leader_channel
+    #   @leader_channel
+    # end
+
+    def get_heartbeat_salt
+      @heartbeat_salt
+    end
+
+    def has_no_connections?
+      chord.connected_nodes[:successor_list].empty?
     end
 
     def run!
@@ -216,6 +252,8 @@ module ::Sushi::Core
           _receive_transactions(socket, message_content)
         when M_TYPE_NODE_SEND_CLIENT_CONTENT
           _receive_client_content(socket, message_content)
+        when M_TYPE_NODE_BROADCAST_HEARTBEAT
+          _broadcast_heartbeat(socket, message_content)
         end
       rescue e : Exception
         handle_exception(socket, e)
@@ -284,6 +322,32 @@ module ::Sushi::Core
       debug "before send_on_chord"
       send_on_chord(M_TYPE_NODE_BROADCAST_BLOCK, content, from)
       debug "after send_on_chord.. exiting send_block"
+    end
+
+    def broadcast_heartbeat(node_address, public_key, hash_salt, sign_r, sign_s, from : Chord::NodeContext? = nil)
+      content = if from.nil? || (!from.nil? && from[:is_private])
+                  {
+                    address:    node_address,
+                    public_key: public_key,
+                    hash_salt:  hash_salt,
+                    sign_r:     sign_r,
+                    sign_s:     sign_s,
+                    from:       @chord.context,
+                  }
+                else
+                  {
+                    address:    node_address,
+                    public_key: public_key,
+                    hash_salt:  hash_salt,
+                    sign_r:     sign_r,
+                    sign_s:     sign_s,
+                    from:       from,
+                  }
+                end
+
+      debug "sending heartbeat: #{node_address}"
+
+      send_on_chord(M_TYPE_NODE_BROADCAST_HEARTBEAT, content, from)
     end
 
     def send_client_content(content : String, from : Chord::NodeContext? = nil)
@@ -423,6 +487,38 @@ module ::Sushi::Core
       from = _m_content.from
 
       broadcast_block(socket, block, from)
+    end
+
+    private def _broadcast_heartbeat(socket, _content)
+      return unless @phase == SetupPhase::DONE
+
+      _m_content = MContentNodeBroadcastHeartbeat.from_json(_content)
+
+      address = _m_content.address
+      public_key = _m_content.public_key
+      hash_salt = _m_content.hash_salt
+      sign_r = _m_content.sign_r
+      sign_s = _m_content.sign_s
+      from = _m_content.from
+
+      if valid_heartbeat?(public_key, hash_salt, sign_r, sign_s)
+        @last_heartbeat = Time.now
+        set_current_leader(address)
+        info "receiving valid heartbeat: #{address}"
+        info "setting leader to: #{get_current_leader}"
+        broadcast_heartbeat(address, public_key, hash_salt, sign_r, sign_s, from)
+      end
+    end
+
+    # TODO - kings - check that the address received is actually allowed to be a leader
+    # how should we punish a misbehaving leader?
+    private def valid_heartbeat?(public_key, hash_salt, sign_r, sign_s)
+      ECCrypto.verify(
+           public_key,
+           hash_salt,
+           sign_r,
+           sign_s
+         )
     end
 
     private def _receive_client_content(socket, _content)
