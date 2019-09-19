@@ -10,7 +10,7 @@ function create_package {
 
 function main {
   credentials=raymanoz:${BINTRAY_API_KEY}
-  package=https://api.bintray.com/content/raymanoz/SushiChain/SushiChain
+  package=https://api.bintray.com/content/SushiChain/SushiChain/SushiChain
 
   echo "Uploading ${version}..."
   curl -T ${file} -u${credentials} ${package}/${version}/${file}
