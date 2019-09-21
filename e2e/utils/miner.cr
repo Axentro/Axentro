@@ -27,7 +27,7 @@ module ::E2E::Utils::Miner
     bin = sushim(args)
 
     spawn do
-      system("rm -rf #{log_path(num, "miner")} && #{bin} &> #{log_path(num, "miner")}")
+      system("rm -rf #{log_path(num, "miner")} && #{Envs.setup_env} && #{bin} &> #{log_path(num, "miner")}")
     end
   end
 end

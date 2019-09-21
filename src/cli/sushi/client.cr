@@ -195,7 +195,9 @@ module ::Sushi::Interface::Sushi
       puts "send #{amount} of #{token} to #{address}"
       puts ""
 
-      add_transaction(@node.not_nil!, "send", wallets, senders, recipients, message, token)
+      kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW
+
+      add_transaction(@node.not_nil!, "send", wallets, senders, recipients, message, token, kind)
 
       puts ""
 

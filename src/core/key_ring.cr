@@ -16,7 +16,7 @@ module ::Sushi::Core::Keys
   MAINNET = {prefix: "M0", name: "mainnet"}
   TESTNET = {prefix: "T0", name: "testnet"}
 
-  class Keys
+  class KeyRing
     getter private_key : PrivateKey
     getter public_key : PublicKey
     getter wif : Wif
@@ -29,7 +29,7 @@ module ::Sushi::Core::Keys
       key_pair = ECCrypto.create_key_pair
       private_key = PrivateKey.new(key_pair[:hex_private_key], network)
       public_key = PublicKey.new(key_pair[:hex_public_key], network)
-      Keys.new(private_key, public_key, private_key.wif, public_key.address)
+      KeyRing.new(private_key, public_key, private_key.wif, public_key.address)
     end
 
     def self.is_valid?(public_key : String, wif : String, address : String)

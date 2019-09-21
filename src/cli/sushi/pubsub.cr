@@ -59,7 +59,7 @@ module ::Sushi::Interface::Sushi
         if G.op.__json
           puts message
         else
-          block = Core::Block.from_json(message)
+          block = Core::SlowBlock.from_json(message)
 
           puts_line
           puts_line("index", block.index)

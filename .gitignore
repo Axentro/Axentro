@@ -3,8 +3,13 @@
 /bin/
 /.shards/
 
+spec/functional/reports
+
 *.log
 *.db
+
+*.DS_Store
+*.sqlite3
 
 e2e/wallets/*.json
 e2e/db/*.db

@@ -28,3 +28,7 @@ puts light_cyan("> integration tests")
 require "./integration/integration"
 
 ENV.delete("SC_INTEGRATION")
+
+puts ""
+puts light_cyan("> spinach functional tests")
+require "./functional/runner"

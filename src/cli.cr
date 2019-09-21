@@ -30,6 +30,7 @@ module ::Sushi::Interface
       @sushi_action : SushiAction,
       @parents : Array(SushiAction)
     )
+    STDOUT.sync = true
     end
 
     def puts_help(message = "showing help message.", exit_code = -1)
@@ -159,11 +160,12 @@ module ::Sushi::Interface
                         senders : SendersDecimal,
                         recipients : RecipientsDecimal,
                         message : String,
-                        token : String)
+                        token : String,
+                        kind : TransactionKind)
       raise "mimatch for wallet size and sender's size" if wallets.size != senders.size
 
       unsigned_transaction =
-        create_unsigned_transaction(node, action, senders, recipients, message, token)
+        create_unsigned_transaction(node, action, senders, recipients, message, token, kind)
 
       signed_transaction = sign(wallets, unsigned_transaction)
 
@@ -187,7 +189,9 @@ module ::Sushi::Interface
                                     senders : SendersDecimal,
                                     recipients : RecipientsDecimal,
                                     message : String,
-                                    token : String) : Core::Transaction
+                                    token : String,
+                                    kind : TransactionKind) : Core::Transaction
+
       payload = {
         call:       "create_unsigned_transaction",
         action:     action,
@@ -195,6 +199,7 @@ module ::Sushi::Interface
         recipients: recipients,
         message:    message,
         token:      token,
+        kind:       kind
       }.to_json
 
       body = rpc(node, payload)

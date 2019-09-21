@@ -11,7 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "./../../spec_helper"
-require "./../utils"
 
 include Sushi::Core
 include Sushi::Core::Keys
@@ -79,7 +78,7 @@ describe Wallet do
   describe "encryption" do
     describe "#encrypt" do
       it "should encrypt a wallet" do
-        wallet = "#{__DIR__}/../utils/data/wallet1.json"
+        wallet = "#{__DIR__}/../../utils/data/wallet1.json"
         encrypted_wallet = EncryptedWallet.from_json(Wallet.encrypt("password", wallet).to_json)
         encrypted_wallet.source.should eq("sushi")
         encrypted_wallet.ciphertext.nil?.should be_false
@@ -96,9 +95,9 @@ describe Wallet do
 
     describe "#decrypt" do
       it "should decrypt a wallet" do
-        wallet = "#{__DIR__}/../utils/data/encrypted-wallet1.json"
+        wallet = "#{__DIR__}/../../utils/data/encrypted-wallet1.json"
         decrypted_wallet = Wallet.from_json(Wallet.decrypt("password", wallet))
-        expected_wallet = Wallet.from_json(File.read("#{__DIR__}/../utils/data/wallet1.json"))
+        expected_wallet = Wallet.from_json(File.read("#{__DIR__}/../../utils/data/wallet1.json"))
         decrypted_wallet.public_key.should eq(expected_wallet.public_key)
         decrypted_wallet.wif.should eq(expected_wallet.wif)
         decrypted_wallet.address.should eq(expected_wallet.address)
@@ -112,13 +111,13 @@ describe Wallet do
 
       it "should raise an error if the encrypted wallet source is not 'sushi'" do
         expect_raises(Exception, "this wallet was not encrypted with the sushi binary") do
-          Wallet.from_json(Wallet.decrypt("password", "#{__DIR__}/../utils/data/encrypted-wallet2.json"))
+          Wallet.from_json(Wallet.decrypt("password", "#{__DIR__}/../../utils/data/encrypted-wallet2.json"))
         end
       end
 
       it "should raise an error if it cannot decrypt" do
         expect_raises(Exception, "failed to decrypt the wallet with the supplied password") do
-          Wallet.from_json(Wallet.decrypt("oops", "#{__DIR__}/../utils/data/encrypted-wallet1.json"))
+          Wallet.from_json(Wallet.decrypt("oops", "#{__DIR__}/../../utils/data/encrypted-wallet1.json"))
         end
       end
     end

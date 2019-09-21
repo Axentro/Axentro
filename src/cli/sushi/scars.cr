@@ -112,7 +112,9 @@ module ::Sushi::Interface::Sushi
         })
       end
 
-      add_transaction(node, "scars_buy", [wallet], senders, recipients, domain, TOKEN_DEFAULT)
+      kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW
+
+      add_transaction(node, "scars_buy", [wallet], senders, recipients, domain, TOKEN_DEFAULT, kind)
     end
 
     def sell
@@ -148,7 +150,9 @@ module ::Sushi::Interface::Sushi
         amount:  price,
       })
 
-      add_transaction(node, "scars_sell", [wallet], senders, recipients, domain, TOKEN_DEFAULT)
+      kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW
+
+      add_transaction(node, "scars_sell", [wallet], senders, recipients, domain, TOKEN_DEFAULT, kind)
     end
 
     def cancel
@@ -183,7 +187,9 @@ module ::Sushi::Interface::Sushi
         amount:  "0",
       })
 
-      add_transaction(node, "scars_cancel", [wallet], senders, recipients, domain, TOKEN_DEFAULT)
+      kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW
+
+      add_transaction(node, "scars_cancel", [wallet], senders, recipients, domain, TOKEN_DEFAULT, kind)
     end
 
     def sales

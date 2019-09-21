@@ -79,7 +79,9 @@ module ::Sushi::Interface::Sushi
         amount:  amount,
       })
 
-      add_transaction(node, "create_token", [wallet], senders, recipients, "", token)
+      kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW
+
+      add_transaction(node, "create_token", [wallet], senders, recipients, "", token, kind)
     end
 
     def list

@@ -10,11 +10,10 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-require "./utils/*"
+require "./../spec_helper"
 
-module ::Units::Utils
-  include TransactionHelper
-  include WalletHelper
-  include NodeHelper
-  include ChainGenerator
-end
+ENV["SPINACH_LOCATION"] = "/spec/functional"
+
+require "./transactions"
+
+describe "runner" do ; end

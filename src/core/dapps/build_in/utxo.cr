@@ -31,7 +31,7 @@ module ::Sushi::Core::DApps::BuildIn
     def self.find_last_amount(utxo : Array(TokenQuantity), token : String, address : String)
       utxo.each do |tq|
         if tq.name == token && !tq.quantities.empty?
-          result = tq.quantities.find{|aq| aq.address == address}
+          result = tq.quantities.find { |aq| aq.address == address }
           if !result.nil?
             return result.quantity
           end
@@ -86,6 +86,7 @@ module ::Sushi::Core::DApps::BuildIn
         if taq.token == TOKEN_DEFAULT && taq.address == address
           taq.amount -= fee
         end
+
         taq
       end
     end
@@ -94,10 +95,8 @@ module ::Sushi::Core::DApps::BuildIn
       items.map do |taq|
         if taq.token == token && taq.address == address
           taq.amount += amount
-          taq
-        else
-          taq
         end
+        taq
       end
     end
   end
@@ -106,6 +105,7 @@ module ::Sushi::Core::DApps::BuildIn
     DEFAULT = "SUSHI"
 
     @utxo_internal : Array(TokenQuantity) = [] of TokenQuantity
+    @recorded_indices : Array(Int64) = [] of Int64
 
     def setup
     end
@@ -152,13 +152,14 @@ module ::Sushi::Core::DApps::BuildIn
       pay_token = sender[:amount]
       pay_default = (transaction.token == DEFAULT ? sender[:amount] : 0_i64) + sender[:fee]
 
-      # TODO: Fix the error wording here. Needs discussion.
-      if amount_token + amount_token_as_recipients - pay_token < 0
-        raise "Unable to send #{scale_decimal(pay_token)} to recipient because you do not have enough. Current tokens: #{scale_decimal(amount_token)} + #{scale_decimal(amount_token_as_recipients)}"
+      total_available = amount_token + amount_token_as_recipients
+      if (total_available - pay_token) < 0
+        raise "Unable to send #{scale_decimal(pay_token)} #{transaction.token} to recipient because you do not have enough #{transaction.token}. You currently have: #{scale_decimal(amount_token)} #{transaction.token} and you are receiving: #{scale_decimal(amount_token_as_recipients)} #{transaction.token} from senders,  giving a total of: #{scale_decimal(total_available)} #{transaction.token}"
       end
 
-      if amount_default + amount_default_as_recipients - pay_default < 0
-        raise "Unable to send #{scale_decimal(pay_default)} to recipient because you do not have enough. Current tokens: #{scale_decimal(amount_default)} + #{scale_decimal(amount_default_as_recipients)}"
+      total_default_available = amount_default + amount_default_as_recipients
+      if (total_default_available - pay_default) < 0
+        raise "Unable to send #{scale_decimal(pay_default)} #{DEFAULT} to recipient because you do not have enough #{DEFAULT}. You currently have: #{scale_decimal(amount_default)} #{DEFAULT} and you are receiving: #{scale_decimal(amount_default_as_recipients)} #{DEFAULT} from senders,  giving a total of: #{scale_decimal(total_default_available)} #{DEFAULT}"
       end
 
       true
@@ -190,9 +191,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def record(chain : Blockchain::Chain)
-      return if @utxo_internal.size >= chain.size
-
-      chain[@utxo_internal.size..-1].each do |block|
+      chain.select { |block| !@recorded_indices.includes?(block.index) }.each do |block|
         @utxo_internal << TokenQuantity.new(DEFAULT, [] of AddressQuantity) if block.transactions.empty?
 
         calculate_for_transactions(block.transactions).each do |tq|
@@ -202,11 +201,14 @@ module ::Sushi::Core::DApps::BuildIn
           end
           @utxo_internal << TokenQuantity.new(tq.name, updated_quantities)
         end
+        @recorded_indices << block.index
       end
+      @recorded_indices
     end
 
     def clear
       @utxo_internal.clear
+      @recorded_indices = [] of Int64
     end
 
     def define_rpc?(call, json, context, params)

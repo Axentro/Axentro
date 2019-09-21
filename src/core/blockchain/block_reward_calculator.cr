@@ -24,8 +24,10 @@ module ::Sushi::Core
       scale_i64((@first_block_reward * (BigDecimal.new(@exponential.to_f64 ** block_index))))
     end
 
+    # Block rewards are only applicable to even index numbers for Slow Blocks
+    # so double the total_reward and the max_blocks to achieve this.
     def self.init
-      BlockRewardCalculator.new(BigDecimal.new(12), BigDecimal.new(23_000_000), 4_000_000_i64)
+      BlockRewardCalculator.new(BigDecimal.new(12), BigDecimal.new(46_000_000), 8_000_000_i64)
     end
     include Logger
   end

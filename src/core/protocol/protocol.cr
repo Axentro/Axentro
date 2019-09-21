@@ -9,6 +9,7 @@
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
+require "../blockchain/block.cr"
 
 module ::Sushi::Core::Protocol
   ######################################
@@ -21,7 +22,7 @@ module ::Sushi::Core::Protocol
     JSON.mapping({
       version: Int32,
       address: String,
-      mid: String
+      mid:     String,
     })
   end
 
@@ -30,7 +31,7 @@ module ::Sushi::Core::Protocol
   struct MContentMinerHandshakeAccepted
     JSON.mapping({
       version:    Int32,
-      block:      Block,
+      block:      SlowBlock,
       difficulty: Int32,
     })
   end
@@ -47,8 +48,8 @@ module ::Sushi::Core::Protocol
 
   struct MContentMinerFoundNonce
     JSON.mapping({
-      nonce: UInt64,
-      timestamp: Int64
+      nonce:     UInt64,
+      timestamp: Int64,
     })
   end
 
@@ -56,8 +57,8 @@ module ::Sushi::Core::Protocol
 
   struct MContentMinerBlockUpdate
     JSON.mapping({
-      block:      Block,
-      difficulty: Int32
+      block:      SlowBlock,
+      difficulty: Int32,
     })
   end
 
@@ -227,7 +228,7 @@ module ::Sushi::Core::Protocol
 
   struct MContentNodeBroadcastBlock
     JSON.mapping({
-      block: Block,
+      block: SlowBlock | FastBlock,
       from:  Core::NodeComponents::Chord::NodeContext,
     })
   end
@@ -236,7 +237,8 @@ module ::Sushi::Core::Protocol
 
   struct MContentNodeRequestChain
     JSON.mapping({
-      latest_index: Int64,
+      latest_slow_index: Int64,
+      latest_fast_index: Int64,
     })
   end
 
@@ -244,7 +246,8 @@ module ::Sushi::Core::Protocol
 
   struct MContentNodeReceiveChain
     JSON.mapping({
-      chain: Blockchain::Chain?,
+      slowchain: Blockchain::Chain?,
+      fastchain: Blockchain::Chain?,
     })
   end
 
@@ -252,7 +255,8 @@ module ::Sushi::Core::Protocol
 
   struct MContentNodeAskRequestChain
     JSON.mapping({
-      latest_index: Int64,
+      latest_slow_index: Int64,
+      latest_fast_index: Int64,
     })
   end
 
@@ -290,4 +294,6 @@ module ::Sushi::Core::Protocol
     PRE_DONE
     DONE
   end
+
+  include Block
 end

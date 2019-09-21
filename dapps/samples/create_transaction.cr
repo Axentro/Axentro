@@ -77,6 +77,7 @@ module ::Sushi::Core::DApps::User
             recipient,                                                          # recipient
             "Thanks for sending me 0.0001 SUSHI! I'll back you 0.00005 SUSHI!", # message
             TOKEN_DEFAULT,                                                      # token
+            TransactionKind::SLOW                                               # kind
           )
 
           info "created a transaction from CreateTranscation(UserDApp): #{id}" if created

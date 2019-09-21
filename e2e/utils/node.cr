@@ -39,7 +39,8 @@ module ::E2E::Utils::Node
     bin = sushid(args)
 
     spawn do
-      system("rm -rf #{log_path(num, "node")} && #{bin} &> #{log_path(num, "node")}")
+      system("rm -rf #{log_path(num, "node")} && #{Envs.setup_env} && #{bin} &> #{log_path(num, "node")}")
     end
   end
+
 end

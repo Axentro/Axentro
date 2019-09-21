@@ -11,27 +11,26 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "./../../spec_helper"
-require "./../utils"
 
 include Units::Utils
 include Sushi::Core
 include Sushi::Core::TransactionModels
 include Hashes
 
-describe TransactionPool do
+describe SlowTransactionPool do
   it "should create an instance of the pool" do
-    TransactionPool.setup
-    TransactionPool.instance.should_not be_nil
+    SlowTransactionPool.setup
+    SlowTransactionPool.instance.should_not be_nil
   end
 
   it "should add a transaction to the pool using static methods" do
     with_factory do |_, transaction_factory|
       transaction = transaction_factory.make_send(2000_i64)
 
-      TransactionPool.setup
-      TransactionPool.all.size.should eq(0)
-      TransactionPool.add(transaction)
-      TransactionPool.all.size.should eq(1)
+      SlowTransactionPool.setup
+      SlowTransactionPool.all.size.should eq(0)
+      SlowTransactionPool.add(transaction)
+      SlowTransactionPool.all.size.should eq(1)
     end
   end
 
@@ -39,7 +38,7 @@ describe TransactionPool do
     with_factory do |_, transaction_factory|
       transaction = transaction_factory.make_send(2000_i64)
 
-      pool = TransactionPool.setup
+      pool = SlowTransactionPool.setup
       pool.all.size.should eq(0)
       pool.add(transaction)
       pool.all.size.should eq(1)
@@ -50,7 +49,7 @@ describe TransactionPool do
     with_factory do |_, transaction_factory|
       transaction = transaction_factory.make_send(2000_i64)
 
-      pool = TransactionPool.setup
+      pool = SlowTransactionPool.setup
       pool.all.size.should eq(0)
       pool.insert(transaction)
       pool.all.size.should eq(1)
@@ -61,13 +60,13 @@ describe TransactionPool do
     with_factory do |_, transaction_factory|
       transaction = transaction_factory.make_send(2000_i64)
 
-      TransactionPool.setup
-      TransactionPool.all.size.should eq(0)
-      TransactionPool.add(transaction)
-      TransactionPool.all.size.should eq(1)
+      SlowTransactionPool.setup
+      SlowTransactionPool.all.size.should eq(0)
+      SlowTransactionPool.add(transaction)
+      SlowTransactionPool.all.size.should eq(1)
 
-      TransactionPool.delete(transaction)
-      TransactionPool.all.size.should eq(0)
+      SlowTransactionPool.delete(transaction)
+      SlowTransactionPool.all.size.should eq(0)
     end
   end
 
@@ -75,7 +74,7 @@ describe TransactionPool do
     with_factory do |_, transaction_factory|
       transaction = transaction_factory.make_send(2000_i64)
 
-      pool = TransactionPool.setup
+      pool = SlowTransactionPool.setup
       pool.all.size.should eq(0)
       pool.add(transaction)
       pool.all.size.should eq(1)
@@ -91,16 +90,16 @@ describe TransactionPool do
       transaction2 = transaction_factory.make_send(2000_i64)
       transaction3 = transaction_factory.make_send(3000_i64)
 
-      TransactionPool.setup
-      TransactionPool.all.size.should eq(0)
-      TransactionPool.add(transaction1)
-      TransactionPool.all.size.should eq(1)
+      SlowTransactionPool.setup
+      SlowTransactionPool.all.size.should eq(0)
+      SlowTransactionPool.add(transaction1)
+      SlowTransactionPool.all.size.should eq(1)
 
-      TransactionPool.replace([transaction2, transaction3])
-      TransactionPool.all.size.should eq(2)
-      TransactionPool.find(transaction1).should be_nil
-      TransactionPool.find(transaction2).should_not be_nil
-      TransactionPool.find(transaction3).should_not be_nil
+      SlowTransactionPool.replace([transaction2, transaction3])
+      SlowTransactionPool.all.size.should eq(2)
+      SlowTransactionPool.find(transaction1).should be_nil
+      SlowTransactionPool.find(transaction2).should_not be_nil
+      SlowTransactionPool.find(transaction3).should_not be_nil
     end
   end
 
@@ -110,7 +109,7 @@ describe TransactionPool do
       transaction2 = transaction_factory.make_send(2000_i64)
       transaction3 = transaction_factory.make_send(3000_i64)
 
-      pool = TransactionPool.setup
+      pool = SlowTransactionPool.setup
       pool.all.size.should eq(0)
       pool.add(transaction1)
       pool.all.size.should eq(1)
@@ -125,7 +124,7 @@ describe TransactionPool do
 
   it "should embed using static methods" do
     with_factory do |_, transaction_factory|
-      TransactionPool.setup
+      SlowTransactionPool.setup
 
       transactions = (0..2001).map do
         Transaction.new(
@@ -137,19 +136,20 @@ describe TransactionPool do
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
       end
 
-      TransactionPool.replace(transactions)
-      TransactionPool.all.size.should eq(2002)
-      TransactionPool.embedded.size.should eq(2000)
+      SlowTransactionPool.replace(transactions)
+      SlowTransactionPool.all.size.should eq(2002)
+      SlowTransactionPool.embedded.size.should eq(2000)
     end
   end
 
   it "should embed using instance methods" do
     with_factory do |_, transaction_factory|
-      pool = TransactionPool.setup
+      pool = SlowTransactionPool.setup
       transactions = (0..2001).map do
         Transaction.new(
           Transaction.create_id,
@@ -160,7 +160,8 @@ describe TransactionPool do
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
       end
 
@@ -174,13 +175,13 @@ describe TransactionPool do
     with_factory do |_, transaction_factory|
       transaction1 = transaction_factory.make_send(2000_i64)
       transaction2 = transaction_factory.make_send(2000_i64)
-      TransactionPool.setup
-      TransactionPool.replace([transaction1]) # clear the pools
-      TransactionPool.lock
-      TransactionPool.add(transaction1)
-      TransactionPool.all.size.should eq(1)
-      TransactionPool.replace([transaction2])
-      TransactionPool.all.size.should eq(2)
+      SlowTransactionPool.setup
+      SlowTransactionPool.replace([transaction1]) # clear the pools
+      SlowTransactionPool.lock
+      SlowTransactionPool.add(transaction1)
+      SlowTransactionPool.all.size.should eq(1)
+      SlowTransactionPool.replace([transaction2])
+      SlowTransactionPool.all.size.should eq(2)
     end
   end
 
@@ -188,7 +189,7 @@ describe TransactionPool do
     with_factory do |_, transaction_factory|
       transaction1 = transaction_factory.make_send(2000_i64)
       transaction2 = transaction_factory.make_send(2000_i64)
-      pool = TransactionPool.setup
+      pool = SlowTransactionPool.setup
       pool.replace([transaction1]) # clear the pools
       pool.lock
       pool.add(transaction1)
@@ -198,5 +199,5 @@ describe TransactionPool do
     end
   end
 
-  STDERR.puts "< TransactionPool"
+  STDERR.puts "< SlowTransactionPool"
 end

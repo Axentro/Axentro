@@ -11,7 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "./../../spec_helper"
-require "./../utils"
 
 include Sushi::Core
 include Units::Utils
@@ -22,7 +21,7 @@ describe Scars do
   describe "#resolve" do
     it "should return nil if the domain is not found" do
       with_factory do |block_factory, _|
-        chain = block_factory.add_block.chain
+        chain = block_factory.add_slow_block.chain
         scars = Scars.new(block_factory.blockchain)
         scars.record(chain)
         scars.resolve("domain1.sc", 1).should be_nil
@@ -31,7 +30,7 @@ describe Scars do
 
     it "should return nil if the number internal domains is less than confirmations" do
       with_factory do |block_factory, _|
-        chain = block_factory.add_blocks(10).chain
+        chain = block_factory.add_slow_blocks(10).chain
         scars = Scars.new(block_factory.blockchain)
         scars.record(chain)
         scars.resolve("domain1.sc", 1).should be_nil
@@ -41,7 +40,7 @@ describe Scars do
     it "should return domain info if the domain is found" do
       with_factory do |block_factory, transaction_factory|
         domain = "domain1.sc"
-        chain = block_factory.add_blocks(10).add_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_blocks(10).chain
+        chain = block_factory.add_slow_blocks(10).add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(10).chain
         scars = Scars.new(block_factory.blockchain)
         scars.record(chain)
 
@@ -57,7 +56,7 @@ describe Scars do
     describe "#resolve_pending" do
       it "should return nil if the domain is not found" do
         with_factory do |block_factory, _|
-          chain = block_factory.add_block.chain
+          chain = block_factory.add_slow_block.chain
           scars = Scars.new(block_factory.blockchain)
           scars.record(chain)
           scars.resolve_pending("domain1.sc", chain.last.transactions).should be_nil
@@ -68,7 +67,7 @@ describe Scars do
         with_factory do |block_factory, transaction_factory|
           domain = "domain1.sc"
           transactions = [transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]
-          chain = block_factory.add_block(transactions).add_blocks(2).chain
+          chain = block_factory.add_slow_block(transactions).add_slow_blocks(2).chain
           scars = Scars.new(block_factory.blockchain)
           scars.record(chain)
 
@@ -397,7 +396,7 @@ describe Scars do
         it "should return the resolved address for the domain when 1 confirmation" do
           with_factory do |block_factory, transaction_factory|
             domain = "awesome.sc"
-            block_factory.add_blocks(10).add_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_blocks(10)
+            block_factory.add_slow_blocks(10).add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(10)
 
             payload = {call: "scars_resolve", domain_name: domain, confirmation: 1}.to_json
             json = JSON.parse(payload)
@@ -411,7 +410,7 @@ describe Scars do
         it "should not resolve the address if the domain does not exist" do
           with_factory do |block_factory, _|
             domain = "awesome.sc"
-            block_factory.add_block
+            block_factory.add_slow_block
 
             payload = {call: "scars_resolve", domain_name: domain, confirmation: 1}.to_json
             json = JSON.parse(payload)
@@ -427,10 +426,10 @@ describe Scars do
         it "should list domains for sale" do
           with_factory do |block_factory, transaction_factory|
             domain = "awesome.sc"
-            block_factory.add_blocks(10).add_block([
+            block_factory.add_slow_blocks(10).add_slow_block([
               transaction_factory.make_buy_domain_from_platform(domain, 0_i64),
               transaction_factory.make_sell_domain(domain, 20000000_i64),
-            ]).add_block
+            ]).add_slow_block
 
             payload = {call: "scars_for_sale"}.to_json
             json = JSON.parse(payload)
@@ -538,7 +537,7 @@ describe Scars do
     describe "#record" do
       it "should record internal domains" do
         with_factory do |block_factory, transaction_factory|
-          chain = block_factory.add_block([transaction_factory.make_buy_domain_from_platform("domain.sc", 0_i64)]).add_blocks(10).chain
+          chain = block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform("domain.sc", 0_i64)]).add_slow_blocks(10).chain
           scars = Scars.new(block_factory.blockchain)
           scars.record(chain)
           expected = [{"domain.sc" => {domain_name: "domain.sc", address: transaction_factory.sender_wallet.address, status: 0, price: 0_i64}}]
@@ -550,7 +549,7 @@ describe Scars do
     describe "#clear" do
       it "should clear internal domains" do
         with_factory do |block_factory, transaction_factory|
-          chain = block_factory.add_block([transaction_factory.make_buy_domain_from_platform("domain.sc", 0_i64)]).add_blocks(10).chain
+          chain = block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform("domain.sc", 0_i64)]).add_slow_blocks(10).chain
           scars = Scars.new(block_factory.blockchain)
           scars.record(chain)
           expected = [{"domain.sc" => {domain_name: "domain.sc", address: transaction_factory.sender_wallet.address, status: 0, price: 0_i64}}]
@@ -583,7 +582,7 @@ describe Scars do
             transaction_factory.make_buy_domain_from_platform(domain, 0_i64),
             transaction_factory.make_sell_domain(domain, 500_i64),
           ]
-          chain = block_factory.add_block(txns).add_blocks(10).chain
+          chain = block_factory.add_slow_block(txns).add_slow_blocks(10).chain
           scars = Scars.new(block_factory.blockchain)
           scars.record(chain)
 

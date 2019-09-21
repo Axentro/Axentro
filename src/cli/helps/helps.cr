@@ -33,5 +33,6 @@ module ::Sushi::Interface
     HELP_CONFIG_NAME                      = I18n.translate("help.config")
     HELP_NODE_ID                          = I18n.translate("help.node.id")
     HELP_DEVELOPER_FUND                   = I18n.translate("help.developer_fund")
+    HELP_IS_FAST_TRANSACTION              = I18n.translate("help.is_fast_transaction")
   end
 end
