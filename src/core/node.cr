@@ -105,7 +105,7 @@ module ::Sushi::Core
 
       if _s = s
         latest_slow_index = @blockchain.latest_slow_block.index
-        latest_fast_index = (@blockchain.latest_fast_block || @blockchain.latest_block).index
+        latest_fast_index = (@blockchain.latest_fast_block || @blockchain.get_genesis_block).index
 
         debug "asking to sync chain (slow) at index #{@conflicted_slow_index.nil? ? latest_slow_index : @conflicted_slow_index.not_nil!}"
         debug "asking to sync chain (fast) at index #{@conflicted_fast_index.nil? ? latest_fast_index : @conflicted_fast_index.not_nil!}"
