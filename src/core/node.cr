@@ -38,7 +38,6 @@ module ::Sushi::Core
     @last_heartbeat = Time.now
     @current_leader : String?
     @heartbeat_salt : String
-    @leader_channel = Channel(String).new
 
     def initialize(
       @is_private : Bool,
@@ -87,8 +86,6 @@ module ::Sushi::Core
       end
 
       spawn proceed_setup
-
-      # @current_leader = get_leader_channel.receive
     end
 
     def get_wallet
@@ -107,16 +104,16 @@ module ::Sushi::Core
       @current_leader = address
     end
 
-    # def get_leader_channel
-    #   @leader_channel
-    # end
-
     def get_heartbeat_salt
       @heartbeat_salt
     end
 
     def has_no_connections?
       chord.connected_nodes[:successor_list].empty?
+    end
+
+    def is_private_node?
+      @is_private
     end
 
     def run!
@@ -378,6 +375,7 @@ module ::Sushi::Core
           @miners_manager.forget_most_difficult if block.is_slow_block?
           debug "slow: about to create the new block locally"
           new_block(_block)
+          info "#{magenta("NEW SLOW BLOCK broadcasted")}: #{light_green(_block.index)} at difficulty: #{light_cyan(_block.difficulty)}"
         end
       elsif @blockchain.latest_slow_block.index == block.index
         debug "slow: latest slow block index is the same as the arriving block from a peer"
@@ -417,6 +415,7 @@ module ::Sushi::Core
         if _block = @blockchain.valid_block?(block)
           debug "fast: about to create the new block locally"
           new_block(_block)
+          info "#{magenta("NEW FAST BLOCK broadcasted")}: #{light_green(_block.index)}"
         end
       elsif latest_fast_block.index == block.index
         debug "fast: latest fast block index is the same as the arriving block from a peer"
@@ -442,6 +441,8 @@ module ::Sushi::Core
           )
         end
       end
+    rescue e : Exception
+      error e.message.not_nil!
     end
 
     def new_block(block : SlowBlock | FastBlock)
@@ -501,24 +502,24 @@ module ::Sushi::Core
       sign_s = _m_content.sign_s
       from = _m_content.from
 
-      if valid_heartbeat?(public_key, hash_salt, sign_r, sign_s)
+      if valid_heartbeat?(address, public_key, hash_salt, sign_r, sign_s)
         @last_heartbeat = Time.now
         set_current_leader(address)
-        info "receiving valid heartbeat: #{address}"
-        info "setting leader to: #{get_current_leader}"
+        debug "receiving valid heartbeat: #{address}"
+        debug "setting leader to: #{get_current_leader}"
         broadcast_heartbeat(address, public_key, hash_salt, sign_r, sign_s, from)
       end
     end
 
-    # TODO - kings - check that the address received is actually allowed to be a leader
-    # how should we punish a misbehaving leader?
-    private def valid_heartbeat?(public_key, hash_salt, sign_r, sign_s)
-      ECCrypto.verify(
-           public_key,
-           hash_salt,
-           sign_r,
-           sign_s
-         )
+    private def valid_heartbeat?(address, public_key, hash_salt, sign_r, sign_s)
+      valid_signature = ECCrypto.verify(
+        public_key,
+        hash_salt,
+        sign_r,
+        sign_s
+      )
+      valid_leader = Ranking.rank(address, Ranking.chain(self.blockchain.chain)) > 0
+      valid_signature && valid_leader
     end
 
     private def _receive_client_content(socket, _content)

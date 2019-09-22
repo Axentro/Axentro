@@ -248,6 +248,7 @@ module ::Sushi::Core
       genesis_prev_hash = "genesis"
       genesis_timestamp = Time.now.to_unix
       genesis_difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
+      address = "genesis"
 
       SlowBlock.new(
         genesis_index,
@@ -256,7 +257,8 @@ module ::Sushi::Core
         genesis_prev_hash,
         genesis_timestamp,
         genesis_difficulty,
-        BlockKind::SLOW
+        BlockKind::SLOW,
+        address
       )
     end
 
@@ -313,6 +315,9 @@ module ::Sushi::Core
       transactions = align_slow_transactions(coinbase_transaction, coinbase_amount)
       timestamp = __timestamp
 
+      wallet = node.get_wallet
+      address = wallet.address
+
       debug "We are in refresh_mining_block, the next block will have a difficulty of #{difficulty}"
 
       @mining_block = SlowBlock.new(
@@ -322,7 +327,8 @@ module ::Sushi::Core
         latest_slow_block.to_hash,
         timestamp,
         difficulty,
-        BlockKind::SLOW
+        BlockKind::SLOW,
+        address
       )
 
       node.miners_broadcast

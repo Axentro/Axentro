@@ -97,7 +97,7 @@ module ::Sushi::Core
       block = _m_content.block
       difficulty = _m_content.difficulty
 
-      info "#{magenta("UPDATED BLOCK")}: #{light_green(block.index)} at approximate difficulty: #{light_cyan(block.difficulty)}"
+      info "#{magenta("PREPARING NEXT SLOW BLOCK")}: #{light_green(block.index)} at approximate difficulty: #{light_cyan(block.difficulty)}"
 
       debug "set difficulty: #{light_cyan(difficulty)}"
       debug "set block: #{light_green(block.index)}"

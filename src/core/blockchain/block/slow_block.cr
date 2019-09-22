@@ -22,7 +22,8 @@ extend Hashes
       merkle_tree_root: String,
       timestamp:        Int64,
       difficulty:       Int32,
-      kind:             BlockKind
+      kind:             BlockKind,
+      address:          String
     })
 
     def initialize(
@@ -32,7 +33,8 @@ extend Hashes
       @prev_hash : String,
       @timestamp : Int64,
       @difficulty : Int32,
-      @kind : BlockKind
+      @kind : BlockKind,
+      @address : String
     )
       raise "index must be even number" if index.odd?
       @merkle_tree_root = calculate_merkle_tree_root
@@ -172,7 +174,7 @@ extend Hashes
       raise "Invalid Genesis Nonce: nonce has to be '0' for genesis block: #{@nonce}" if @nonce != 0
       raise "Invalid Genesis Previous Hash: prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
       raise "Invalid Genesis Difficulty: difficulty has to be '#{Consensus::DEFAULT_DIFFICULTY_TARGET}' for genesis block: #{@difficulty}" if @difficulty != Consensus::DEFAULT_DIFFICULTY_TARGET
-
+      raise "Invalid Genesis Address: address has to be 'genesis' for genesis block" if @address != "genesis"
       true
     end
 
