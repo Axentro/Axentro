@@ -63,8 +63,10 @@ describe Blockchain do
         blockchain = Blockchain.new(block_factory.node_wallet, nil, nil)
         blockchain.setup(block_factory.node)
 
+        expected = blockchain.chain + sub_chain[1..-1]
+
         blockchain.replace_chain(sub_chain[1..-1], nil).should eq(true)
-        blockchain.chain.should eq(sub_chain[1..-1])
+        blockchain.chain.should eq(expected)
       end
     end
   end

@@ -163,10 +163,6 @@ module ::Sushi::Core
 
       replacement.sort_by! { |block| block.index }
 
-      if replacement.first.index == 0
-        @chain = [] of FastBlock | SlowBlock
-      end
-
       replacement.each do |block|
         block.valid?(self)
 
