@@ -122,7 +122,7 @@ module ::Sushi::Core
       raise "Invalid Block Signature: the current block index: #{@index} has an invalid signature" unless valid_signature
 
       valid_leader = Ranking.rank(@address, Ranking.chain(blockchain.chain)) > 0
-      raise "Invalid leader: the block was signed by a leader who is not ranked in the top 25%" unless valid_leader
+      raise "Invalid leader: the block was signed by a leader who is not ranked" unless valid_leader
 
       prev_block = blockchain.latest_fast_block || blockchain.get_genesis_block
       latest_fast_index = blockchain.get_latest_index_for_fast

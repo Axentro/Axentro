@@ -18,23 +18,37 @@ module ::Sushi::Core::FastChain
     timestamp: Int64,
   )
 
-  private def i_can_lead?
+  private def get_ranking(address)
+    Ranking.rank(address, Ranking.chain(chain))
+  end
+
+  private def i_can_lead?(my_ranking)
     return false if node.is_private_node?
-    Ranking.rank(node.get_wallet.address, Ranking.chain(chain)) > 0
+    my_ranking > 0
+  end
+
+  private def assume_leadership
+    info "Assuming leadership role because I'm ranked high enough"
+    node.set_current_leader(node.get_wallet.address)
+    debug "current_leader_in_contest: #{node.get_current_leader}"
   end
 
   private def leadership_contest
     loop do
-      if node.has_no_connections? && i_can_lead?
+      my_ranking = get_ranking(node.get_wallet.address)
+      current_leader_ranking = get_ranking(node.get_current_leader)
+
+      if node.has_no_connections? && i_can_lead?(my_ranking)
         debug "setting this node as leader as has no connections and is a high enough rank for this chain"
         node.set_current_leader(node.get_wallet.address)
+      elsif my_ranking > current_leader_ranking
+        debug "My rank of #{my_ranking} is higher than the current leader rank of: #{current_leader_ranking} so I will usurp the leadership"
+        assume_leadership if i_can_lead?(my_ranking)
       else
         if (Time.now - node.get_last_heartbeat) > 2.seconds && node.get_wallet.address != node.get_current_leader
           info "Heartbeat not received within 2 second timeout - trying to assume leadership"
-          if i_can_lead?
-            info "Assuming leadership role because I'm ranked in the top 25%"
-            node.set_current_leader(node.get_wallet.address)
-            debug "current_leader_in_contest: #{node.get_current_leader}"
+          if i_can_lead?(my_ranking)
+            assume_leadership
           else
             info "I'm not ranked high enough on this chain to become a leader"
           end
