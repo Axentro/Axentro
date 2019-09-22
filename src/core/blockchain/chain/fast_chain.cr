@@ -38,10 +38,14 @@ module ::Sushi::Core::FastChain
       my_ranking = get_ranking(node.get_wallet.address)
       current_leader_ranking = get_ranking(node.get_current_leader)
 
-      if node.has_no_connections? && i_can_lead?(my_ranking)
-        debug "setting this node as leader as has no connections and is a high enough rank for this chain"
-        node.set_current_leader(node.get_wallet.address)
+      if node.has_no_connections?
+        if i_can_lead?(my_ranking)
+          debug "setting this node as leader as has no connections and is a high enough rank for this chain"
+          node.set_current_leader(node.get_wallet.address)
+        end
       elsif my_ranking > current_leader_ranking
+        # TODO - kings - this ursurping doesn't work as the other nodes still have a record of the old leader so
+        # this actually just gets ignored by the other nodes I think. Anyway not working so need to investigate.
         debug "My rank of #{my_ranking} is higher than the current leader rank of: #{current_leader_ranking} so I will usurp the leadership"
         assume_leadership if i_can_lead?(my_ranking)
       else
