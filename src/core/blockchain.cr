@@ -53,7 +53,6 @@ module ::Sushi::Core
 
       spawn process_fast_transactions
       spawn leadership_contest
-
     end
 
     def node
@@ -152,6 +151,7 @@ module ::Sushi::Core
 
     def replace_chain(_slow_subchain : Chain?, _fast_subchain : Chain?) : Bool
       return false if @chain.size == 0
+
       replacement = [] of SlowBlock | FastBlock
       replacement += _slow_subchain unless _slow_subchain.nil?
       replacement += _fast_subchain unless _fast_subchain.nil?
@@ -163,26 +163,25 @@ module ::Sushi::Core
 
       replacement.sort_by! { |block| block.index }
 
-      if @chain.size == 1
-        @chain = replacement
+      if replacement.first.index == 0
+        @chain = [] of FastBlock | SlowBlock
+      end
+
+      replacement.each do |block|
+        block.valid?(self)
+
+        index = block.index
+        @chain[index]? ? (@chain[index] = block) : @chain << block
+
+        progress "block ##{index} was imported/synced (replace_chain)", index, replacement.size
+
         dapps_record
-      else
-        replacement.each do |block|
-          block.valid?(self)
+      rescue e : Exception
+        error "found invalid block while syncing blocks"
+        error "the reason:"
+        error e.message.not_nil!
 
-          index = block.index
-          @chain[index]? ? (@chain[index] = block) : @chain << block
-
-          progress "block ##{index} was imported/synced (replace_chain)", index, replacement.size
-
-          dapps_record
-        rescue e : Exception
-          error "found invalid block while syncing blocks"
-          error "the reason:"
-          error e.message.not_nil!
-
-          break
-        end
+        break
       end
 
       push_genesis if @chain.size == 0
