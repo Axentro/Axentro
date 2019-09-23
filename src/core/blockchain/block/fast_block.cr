@@ -32,7 +32,6 @@ module ::Sushi::Core
       @transactions : Array(Transaction),
       @prev_hash : String,
       @timestamp : Int64,
-      @kind : BlockKind,
       @public_key : String,
       @sign_r : String,
       @sign_s : String,
@@ -40,6 +39,7 @@ module ::Sushi::Core
     )
       raise "index must be odd number" if index.even?
       @merkle_tree_root = calculate_merkle_tree_root
+      @kind = BlockKind::FAST
     end
 
     def to_header : Blockchain::FastHeader
@@ -146,6 +146,12 @@ module ::Sushi::Core
 
     def find_transaction(transaction_id : String) : Transaction?
       @transactions.find { |t| t.id == transaction_id }
+    end
+
+    def set_transactions(txns : Transactions)
+      @transactions = txns
+      debug "Number of transactions in block: #{txns.size}"
+      @merkle_tree_root = calculate_merkle_tree_root
     end
 
     include Block

@@ -15,12 +15,16 @@ require "./logger"
 module ::Sushi::Core
   abstract class HandleSocket
     def send(socket, t, content)
-      socket.send({type: t, content: content.to_json}.to_json)
+      #socket.send({type: t, content: content.to_json}.to_json)
+      m = {type: t, content: content.to_json}.to_json
+      debug "sending message of type #{t} and size #{m.size}" if (t != 257) && (t != 22) && (t != 23)
+      socket.send(m)
     rescue e : Exception
       handle_exception(socket, e)
     end
 
     def handle_exception(socket : HTTP::WebSocket, e : Exception)
+      debug "Exception triggered when sending message: #{e}"
       case e
       when IO::Error
         clean_connection(socket)

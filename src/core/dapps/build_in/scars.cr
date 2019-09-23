@@ -177,7 +177,13 @@ RULE
     end
 
     def record(chain)
-      chain[@domains_internal.size..-1].each do |block|
+      _database = @blockchain.database
+      if _database
+        the_chain = _database.get_blocks(@domains_internal.size.to_i64)
+      else
+        the_chain = chain[@domains_internal.size..-1]
+      end
+      the_chain.each do |block|
         domain_map = create_domain_map_for_transactions(block.transactions)
         @domains_internal.push(domain_map)
       end

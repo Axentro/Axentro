@@ -46,7 +46,13 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def record(chain : Blockchain::Chain)
-      chain.select { |block| !@indices.flat_map(&.values).uniq.includes?(block.index) }.each do |block|
+      _database = @blockchain.database
+      if _database
+        the_chain = _database.get_blocks_not_in_list(@indices.flat_map(&.values).uniq)
+      else
+        the_chain = chain.select { |block| !@indices.flat_map(&.values).uniq.includes?(block.index) }
+      end
+      the_chain.each do |block|
         @indices.push(Hash(String, Int64).new)
 
         block.transactions.each do |transaction|

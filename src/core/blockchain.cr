@@ -56,6 +56,11 @@ module ::Sushi::Core
 
     end
 
+    def database
+      @database
+    end
+
+
     def node
       @node.not_nil!
     end
@@ -256,8 +261,7 @@ module ::Sushi::Core
         genesis_nonce,
         genesis_prev_hash,
         genesis_timestamp,
-        genesis_difficulty,
-        BlockKind::SLOW
+        genesis_difficulty
       )
     end
 
@@ -322,8 +326,7 @@ module ::Sushi::Core
         0_u64,
         latest_slow_block.to_hash,
         timestamp,
-        difficulty,
-        BlockKind::SLOW
+        difficulty
       )
 
       node.miners_broadcast

@@ -250,6 +250,13 @@ module ::Sushi::Core
       senders.reduce(0_i64) { |sum, sender| sum + sender[:fee] }
     end
 
+    def set_senders(@senders)
+    end
+
+    def set_recipients(@recipients)
+    end
+
+
     #
     # ignore prev_hash for comparison
     #

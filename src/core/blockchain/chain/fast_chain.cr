@@ -91,7 +91,6 @@ module ::Sushi::Core::FastChain
       transactions,
       _latest_block.to_hash,
       timestamp,
-      BlockKind::FAST,
       "public_key_goes_here",
       "sign_r_goes_here",
       "sign_s_goes_here",

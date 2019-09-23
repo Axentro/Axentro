@@ -32,10 +32,10 @@ extend Hashes
       @prev_hash : String,
       @timestamp : Int64,
       @difficulty : Int32,
-      @kind : BlockKind
     )
       raise "index must be even number" if index.odd?
       @merkle_tree_root = calculate_merkle_tree_root
+      @kind = BlockKind::SLOW
     end
 
     def to_s
@@ -178,6 +178,12 @@ extend Hashes
 
     def find_transaction(transaction_id : String) : Transaction?
       @transactions.find { |t| t.id == transaction_id }
+    end
+
+    def set_transactions(txns : Transactions)
+      @transactions = txns
+      debug "Number of transactions in block: #{txns.size}"
+      @merkle_tree_root = calculate_merkle_tree_root
     end
 
     include Block
