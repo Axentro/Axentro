@@ -178,8 +178,8 @@ module ::Sushi::Core
       return false if @chain.size == 0
 
       dapps_clear_record
-      replace_slow_blocks(_slow_subchain)
-      replace_fast_blocks(_fast_subchain)
+      slow_result = replace_slow_blocks(_slow_subchain)
+      fast_result = replace_fast_blocks(_fast_subchain)
 
       push_genesis if @chain.size == 0
       if database = @database
@@ -192,11 +192,12 @@ module ::Sushi::Core
       debug "calling refresh_mining_block in replace_chain"
       refresh_mining_block(block_difficulty(self))
 
-      true
+      slow_result == true || fast_result == true
     end
 
     private def replace_slow_blocks(slow_subchain)
-      return if slow_subchain.nil?
+      return false if slow_subchain.nil?
+      result = true
       slow_subchain.not_nil!.each do |block|
         block.valid?(self)
         index = block.index
@@ -209,13 +210,15 @@ module ::Sushi::Core
         error "found invalid slow block while syncing blocks"
         error "the reason:"
         error e.message.not_nil!
-
+        result = false
         break
       end
+      result
     end
 
     private def replace_fast_blocks(fast_subchain)
-      return if fast_subchain.nil?
+      return false if fast_subchain.nil?
+      result = true
       fast_subchain.not_nil!.each do |block|
         block.valid?(self)
         index = block.index
@@ -228,9 +231,10 @@ module ::Sushi::Core
         error "found invalid fast block while syncing blocks"
         error "the reason:"
         error e.message.not_nil!
-
+        result = false
         break
       end
+      result
     end
 
     def add_transaction(transaction : Transaction, with_spawn : Bool = true)

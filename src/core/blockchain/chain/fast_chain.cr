@@ -36,20 +36,14 @@ module ::Sushi::Core::FastChain
   private def leadership_contest
     loop do
       my_ranking = get_ranking(node.get_wallet.address)
-      current_leader_ranking = get_ranking(node.get_current_leader)
 
       if node.has_no_connections?
         if i_can_lead?(my_ranking)
           debug "setting this node as leader as has no connections and is a high enough rank for this chain"
           node.set_current_leader(node.get_wallet.address)
         end
-      elsif my_ranking > current_leader_ranking
-        # TODO - kings - this ursurping doesn't work as the other nodes still have a record of the old leader so
-        # this actually just gets ignored by the other nodes I think. Anyway not working so need to investigate.
-        debug "My rank of #{my_ranking} is higher than the current leader rank of: #{current_leader_ranking} so I will usurp the leadership"
-        assume_leadership if i_can_lead?(my_ranking)
       else
-        if (Time.now - node.get_last_heartbeat) > 2.seconds && node.get_wallet.address != node.get_current_leader
+        if (Time.now - node.get_last_heartbeat) > 2.seconds && i_am_not_the_current_leader
           info "Heartbeat not received within 2 second timeout - trying to assume leadership"
           if i_can_lead?(my_ranking)
             assume_leadership
@@ -60,6 +54,10 @@ module ::Sushi::Core::FastChain
       end
       sleep 2
     end
+  end
+
+  private def i_am_not_the_current_leader
+    node.get_wallet.address != node.get_current_leader
   end
 
   private def broadcast_heartbeat
