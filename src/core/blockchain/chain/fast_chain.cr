@@ -107,7 +107,7 @@ module ::Sushi::Core::FastChain
 
   def chain_mature_enough_for_fast_blocks?
     # return true if node.has_no_connections?
-    return true # while testing - put override here for e2e as well
+    true # while testing - put override here for e2e as well
     # get_latest_index_for_slow > 1440_i64
   end
 
