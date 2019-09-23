@@ -33,6 +33,11 @@ module ::Sushi::Core::FastChain
     debug "current_leader_in_contest: #{node.get_current_leader}"
   end
 
+  private def abdicate_leadership
+    info "Abdicating the leadership"
+    node.set_current_leader(nil)
+  end
+
   private def leadership_contest
     loop do
       my_ranking = get_ranking(node.get_wallet.address)
@@ -57,7 +62,11 @@ module ::Sushi::Core::FastChain
   end
 
   private def i_am_not_the_current_leader
-    node.get_wallet.address != node.get_current_leader
+    !i_am_the_current_leader
+  end
+
+  private def i_am_the_current_leader
+    node.get_wallet.address == node.get_current_leader
   end
 
   private def broadcast_heartbeat
@@ -73,32 +82,29 @@ module ::Sushi::Core::FastChain
 
   def process_fast_transactions
     loop do
-      if chain_mature_enough_for_fast_blocks?
-        debug "current_leader_process_fast_transactions: #{node.get_current_leader}"
-        if node.get_wallet.address == node.get_current_leader
-          begin
-            broadcast_heartbeat unless node.has_no_connections?
+      if chain_mature_enough_for_fast_blocks? && i_am_the_current_leader
+        begin
+          broadcast_heartbeat unless node.has_no_connections?
 
-            debug "********** process fast transactions ***********"
-            if pending_fast_transactions.size > 0
-              debug "There are #{pending_fast_transactions.size} pending fast transactions"
-              valid_transactions = valid_transactions_for_fast_block
+          debug "********** process fast transactions ***********"
+          if pending_fast_transactions.size > 0
+            debug "There are #{pending_fast_transactions.size} pending fast transactions"
+            valid_transactions = valid_transactions_for_fast_block
 
-              if valid_transactions[:transactions].size > 1
-                debug "There are #{valid_transactions.size} valid fast transactions so mint a new fast block"
+            if valid_transactions[:transactions].size > 1
+              debug "There are #{valid_transactions.size} valid fast transactions so mint a new fast block"
 
-                block = mint_fast_block(valid_transactions)
-                if block.valid?(self)
-                  debug "record new fast block"
-                  node.new_block(block)
-                  debug "broadcast new fast block"
-                  node.send_block(block)
-                end
+              block = mint_fast_block(valid_transactions)
+              if block.valid?(self)
+                debug "record new fast block"
+                node.new_block(block)
+                debug "broadcast new fast block"
+                node.send_block(block)
               end
             end
-          rescue e : Exception
-            error e.message.not_nil!
           end
+        rescue e : Exception
+          error e.message.not_nil!
         end
       end
       sleep 2
@@ -106,7 +112,7 @@ module ::Sushi::Core::FastChain
   end
 
   def chain_mature_enough_for_fast_blocks?
-    # return true if node.has_no_connections?
+    # return true if node.has_no_connections? && !node.is_private_node?
     true # while testing - put override here for e2e as well
     # get_latest_index_for_slow > 1440_i64
   end

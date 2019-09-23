@@ -28,11 +28,11 @@ module ::Sushi::Core
       json = block.to_json
 
       debug "inserting block into database with size: #{json.size}"
-      @db.exec "insert into blocks values (?, ?)", [index.to_i64, json]
+      @db.exec "insert into blocks values (?, ?)", index.to_i64, json
     end
 
     def delete_blocks(from : Int64)
-      @db.exec "delete from blocks where idx >= ?", [from]
+      @db.exec "delete from blocks where idx >= ?", from
     end
 
     def replace_chain(chain : Blockchain::Chain)
@@ -42,14 +42,14 @@ module ::Sushi::Core
         index = block.index
         json = block.to_json
 
-        @db.exec "insert into blocks values (?, ?)", [index.to_i64, json]
+        @db.exec "insert into blocks values (?, ?)", index.to_i64, json
       end
     end
 
     def get_block(index : Int64) : (SlowBlock? | FastBlock?)
       block : (SlowBlock? | FastBlock?) = nil
 
-      @db.query "select json from blocks where idx = ?", [index] do |rows|
+      @db.query "select json from blocks where idx = ?", index do |rows|
         rows.each do
           json = rows.read(String)
           block = determine_block_kind(json)
