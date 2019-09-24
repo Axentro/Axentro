@@ -37,42 +37,14 @@ module ::Sushi::Core
     end
 
     def block_insert_values_array(block : SlowBlock | FastBlock) : Array(DB::Any)
-      args = [] of DB::Any
+      ary = [] of DB::Any
       case block
         when SlowBlock
-          index = block.index
-          nonce_field = block.nonce.to_s
-          prev_hash = block.prev_hash
-          timestamp = block.timestamp
-          difficulty = block.difficulty
-          kind = block.kind.to_s
-          public_key = ""
-          sign_r = ""
-          sign_s = ""
-          hash = ""
+          ary << block.index << block.nonce.to_s << block.prev_hash << block.timestamp << block.difficulty << block.kind.to_s << "" << "" << "" << ""
         when FastBlock
-          index = block.index
-          nonce_field = ""
-          prev_hash = block.prev_hash
-          timestamp = block.timestamp
-          difficulty = 0
-          kind = block.kind.to_s
-          public_key = block.public_key
-          sign_r = block.sign_r
-          sign_s = block.sign_s
-          hash = block.hash
+          ary << block.index << "" << block.prev_hash << block.timestamp << 0 << block.kind.to_s << block.public_key << block.sign_r << block.sign_s << block.hash
       end
-      args << index
-      args << nonce_field
-      args << prev_hash
-      args << timestamp
-      args << difficulty
-      args << kind
-      args << public_key
-      args << sign_r
-      args << sign_s
-      args << hash
-      args
+      ary
     end
 
     def transaction_table_create_string
@@ -88,18 +60,8 @@ module ::Sushi::Core
     end
 
     def transaction_insert_values_array(t : Transaction, transaction_idx : Int32, block_index : Int64) : Array(DB::Any)
-      args = [] of DB::Any
-      args << t.id
-      args << transaction_idx
-      args << block_index
-      args << t.action
-      args << t.message
-      args << t.token
-      args << t.prev_hash
-      args << t.timestamp
-      args << t.scaled
-      args << t.kind.to_s
-      args
+      ary = [] of DB::Any
+      ary << t.id << transaction_idx << block_index << t.action << t.message << t.token << t.prev_hash << t.timestamp << t.scaled << t.kind.to_s
     end
 
     def sender_table_create_string
@@ -115,18 +77,9 @@ module ::Sushi::Core
     end
 
     def sender_insert_values_array(b : Block, t : Transaction, sender_index : Int32) : Array(DB::Any)
+      ary = [] of DB::Any
       s = t.senders[sender_index]
-      args = [] of DB::Any
-      args << t.id
-      args << b.index
-      args << sender_index
-      args << s[:address]
-      args << s[:public_key]
-      args << s[:amount]
-      args << s[:fee]
-      args << s[:sign_r]
-      args << s[:sign_s]
-      args
+      ary << t.id << b.index << sender_index << s[:address] << s[:public_key] << s[:amount] << s[:fee] << s[:sign_r] << s[:sign_s]
     end
 
     def recipient_table_create_string
@@ -142,14 +95,9 @@ module ::Sushi::Core
     end
 
     def recipient_insert_values_array(b : Block, t : Transaction, recipient_index : Int32) : Array(DB::Any)
+      ary = [] of DB::Any
       r = t.recipients[recipient_index]
-      args = [] of DB::Any
-      args << t.id
-      args << b.index
-      args << recipient_index
-      args << r[:address]
-      args << r[:amount]
-      args
+      ary << t.id << b.index << recipient_index << r[:address] << r[:amount]
     end
 
     def push_block(block : SlowBlock | FastBlock)
