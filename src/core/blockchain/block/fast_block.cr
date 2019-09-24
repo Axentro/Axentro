@@ -38,7 +38,7 @@ module ::Sushi::Core
       @public_key : String,
       @sign_r : String,
       @sign_s : String,
-      @hash : String,
+      @hash : String
     )
       raise "index must be odd number" if index.even?
       @merkle_tree_root = calculate_merkle_tree_root
@@ -54,7 +54,7 @@ module ::Sushi::Core
     end
 
     def to_hash : String
-      string = self.to_json
+      string = FastBlockNoTimestamp.from_fast_block(self).to_json
       sha256(string)
     end
 
@@ -134,7 +134,7 @@ module ::Sushi::Core
       end
 
       raise "Index Mismatch: the current block index: #{@index} should match the lastest fast block index: #{latest_fast_index}" if @index != latest_fast_index
-      raise "Invalid Previous Hash: for current index: #{@index} the prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
+      raise "Invalid Previous Hash: for current index: #{@index} the prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
 
       next_timestamp = __timestamp
       prev_timestamp = prev_block.timestamp
@@ -167,5 +167,36 @@ module ::Sushi::Core
     include Protocol
     include Consensus
     include Common::Timestamp
+  end
+
+  class FastBlockNoTimestamp
+    JSON.mapping({
+      index:            Int64,
+      transactions:     Array(Transaction),
+      prev_hash:        String,
+      merkle_tree_root: String,
+      address:          String,
+      public_key:       String,
+      sign_r:           String,
+      sign_s:           String,
+      hash:             String,
+    })
+
+    def self.from_fast_block(b : FastBlock)
+      self.new(b.index, b.transactions, b.prev_hash, b.merkle_tree_root, b.address, b.public_key, b.sign_r, b.sign_s, b.hash)
+    end
+
+    def initialize(
+      @index : Int64,
+      @transactions : Array(Transaction),
+      @prev_hash : String,
+      @merkle_tree_root : String,
+      @address : String,
+      @public_key : String,
+      @sign_r : String,
+      @sign_s : String,
+      @hash : String
+    )
+    end
   end
 end

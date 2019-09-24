@@ -10,7 +10,6 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-require "./blockchain/consensus"
 require "./blockchain/*"
 require "./blockchain/block/*"
 require "./blockchain/chain/*"
@@ -181,6 +180,8 @@ module ::Sushi::Core
       slow_result = replace_slow_blocks(_slow_subchain)
       fast_result = replace_fast_blocks(_fast_subchain)
 
+      @chain.sort_by!(&.index)
+
       push_genesis if @chain.size == 0
       if database = @database
         database.replace_chain(@chain)
@@ -192,17 +193,16 @@ module ::Sushi::Core
       debug "calling refresh_mining_block in replace_chain"
       refresh_mining_block(block_difficulty(self))
 
-      slow_result == true || fast_result == true
+      [slow_result,fast_result].includes?(true)
     end
 
     private def replace_slow_blocks(slow_subchain)
       return false if slow_subchain.nil?
       result = true
-      slow_subchain.not_nil!.each do |block|
+      slow_subchain.not_nil!.sort_by(&.index).each do |block|
         block.valid?(self)
         index = block.index
-        @chain[index]? ? (@chain[index] = block) : @chain << block
-
+        @chain.find{|b| b.index == index} ? (@chain.insert(index, block)) : @chain << block
         progress "slow block ##{index} was synced", index, slow_subchain.not_nil!.size
 
         dapps_record
@@ -219,16 +219,16 @@ module ::Sushi::Core
     private def replace_fast_blocks(fast_subchain)
       return false if fast_subchain.nil?
       result = true
-      fast_subchain.not_nil!.each do |block|
+      fast_subchain.not_nil!.sort_by(&.index).each do |block|
         block.valid?(self)
         index = block.index
-        @chain[index]? ? (@chain[index] = block) : @chain << block
+        @chain.find{|b| b.index == index} ? (@chain.insert(index, block)) : @chain << block
 
         progress "fast block ##{index} was synced", index, fast_subchain.not_nil!.size
 
         dapps_record
       rescue e : Exception
-        error "found invalid fast block while syncing blocks"
+         error "found invalid fast block while syncing blocks"
         error "the reason:"
         error e.message.not_nil!
         result = false
