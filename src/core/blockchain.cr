@@ -202,7 +202,10 @@ module ::Sushi::Core
       slow_subchain.not_nil!.sort_by(&.index).each do |block|
         block.valid?(self)
         index = block.index
-        @chain.find{|b| b.index == index} ? (@chain.insert(index, block)) : @chain << block
+
+        target_index = @chain.index {|b| b.index == index }
+        target_index ? (@chain[target_index] = block) : @chain << block
+
         progress "slow block ##{index} was synced", index, slow_subchain.not_nil!.size
 
         dapps_record
@@ -222,7 +225,9 @@ module ::Sushi::Core
       fast_subchain.not_nil!.sort_by(&.index).each do |block|
         block.valid?(self)
         index = block.index
-        @chain.find{|b| b.index == index} ? (@chain.insert(index, block)) : @chain << block
+
+        target_index = @chain.index {|b| b.index == index }
+        target_index ? (@chain[target_index] = block) : @chain << block
 
         progress "fast block ##{index} was synced", index, fast_subchain.not_nil!.size
 
