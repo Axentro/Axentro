@@ -36,24 +36,43 @@ module ::Sushi::Core
      "?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
     end
 
-    def block_insert_values_array(block : SlowBlock | FastBlock) : Array
+    def block_insert_values_array(block : SlowBlock | FastBlock) : Array(DB::Any)
+      args = [] of DB::Any
       case block
         when SlowBlock
+          index = block.index
           nonce_field = block.nonce.to_s
+          prev_hash = block.prev_hash
+          timestamp = block.timestamp
           difficulty = block.difficulty
+          kind = block.kind.to_s
           public_key = ""
           sign_r = ""
           sign_s = ""
           hash = ""
         when FastBlock
+          index = block.index
           nonce_field = ""
+          prev_hash = block.prev_hash
+          timestamp = block.timestamp
           difficulty = 0
+          kind = block.kind.to_s
           public_key = block.public_key
           sign_r = block.sign_r
           sign_s = block.sign_s
           hash = block.hash
       end
-      [block.index, nonce_field, block.prev_hash, block.timestamp, difficulty, block.kind.to_s, public_key, sign_r, sign_s, hash]
+      args << index
+      args << nonce_field
+      args << prev_hash
+      args << timestamp
+      args << difficulty
+      args << kind
+      args << public_key
+      args << sign_r
+      args << sign_s
+      args << hash
+      args
     end
 
     def transaction_table_create_string
@@ -68,8 +87,19 @@ module ::Sushi::Core
       "?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
     end
 
-    def transaction_insert_values_array(t : Transaction, transaction_idx : Int32, block_index : Int64) : Array
-      [t.id, transaction_idx, block_index, t.action, t.message, t.token, t.prev_hash, t.timestamp, t.scaled, t.kind.to_s]
+    def transaction_insert_values_array(t : Transaction, transaction_idx : Int32, block_index : Int64) : Array(DB::Any)
+      args = [] of DB::Any
+      args << t.id
+      args << transaction_idx
+      args << block_index
+      args << t.action
+      args << t.message
+      args << t.token
+      args << t.prev_hash
+      args << t.timestamp
+      args << t.scaled
+      args << t.kind.to_s
+      args
     end
 
     def sender_table_create_string
@@ -84,9 +114,19 @@ module ::Sushi::Core
       "?, ?, ?, ?, ?, ?, ?, ?, ?"
     end
 
-    def sender_insert_values_array(b : Block, t : Transaction, sender_index : Int32) : Array
+    def sender_insert_values_array(b : Block, t : Transaction, sender_index : Int32) : Array(DB::Any)
       s = t.senders[sender_index]
-      [t.id, b.index, sender_index, s[:address], s[:public_key], s[:amount], s[:fee], s[:sign_r], s[:sign_s] ]
+      args = [] of DB::Any
+      args << t.id
+      args << b.index
+      args << sender_index
+      args << s[:address]
+      args << s[:public_key]
+      args << s[:amount]
+      args << s[:fee]
+      args << s[:sign_r]
+      args << s[:sign_s]
+      args
     end
 
     def recipient_table_create_string
@@ -101,9 +141,15 @@ module ::Sushi::Core
       "?, ?, ?, ?, ?"
     end
 
-    def recipient_insert_values_array(b : Block, t : Transaction, recipient_index : Int32) : Array
+    def recipient_insert_values_array(b : Block, t : Transaction, recipient_index : Int32) : Array(DB::Any)
       r = t.recipients[recipient_index]
-      [t.id, b.index, recipient_index, r[:address], r[:amount] ]
+      args = [] of DB::Any
+      args << t.id
+      args << b.index
+      args << recipient_index
+      args << r[:address]
+      args << r[:amount]
+      args
     end
 
     def push_block(block : SlowBlock | FastBlock)
@@ -113,23 +159,23 @@ module ::Sushi::Core
         t = block.transactions[ti]
         debug "writing transaction #{ti} to database with short ID of #{t.short_id}" if ti < 4
         t.senders.each_index do |i|
-         @db.exec "insert into senders values (#{sender_insert_fields_string})", sender_insert_values_array(block, t, i)
+         @db.exec "insert into senders values (#{sender_insert_fields_string})", args: sender_insert_values_array(block, t, i)
         end
         t.recipients.each_index do |i|
-         @db.exec "insert into recipients values (#{recipient_insert_fields_string})", recipient_insert_values_array(block, t, i)
+         @db.exec "insert into recipients values (#{recipient_insert_fields_string})", args: recipient_insert_values_array(block, t, i)
         end
-       @db.exec "insert into transactions values (#{transaction_insert_fields_string})", transaction_insert_values_array(t, ti, block.index)
+       @db.exec "insert into transactions values (#{transaction_insert_fields_string})", args: transaction_insert_values_array(t, ti, block.index)
       end
       debug "inserting block with #{block.transactions.size} transactions into database with index: #{block.index}"
-      @db.exec "insert into blocks values (#{block_insert_fields_string})", block_insert_values_array(block)
+      @db.exec "insert into blocks values (#{block_insert_fields_string})", args: block_insert_values_array(block)
       @db.exec "END TRANSACTION"
     end
 
     def delete_blocks(from : Int64)
-      @db.exec "delete from blocks where idx >= ?", [from]
-      @db.exec "delete from transactions where block_id >= ?", [from]
-      @db.exec "delete from senders where block_id >= ?", [from]
-      @db.exec "delete from recipients where block_id >= ?", [from]
+      @db.exec "delete from blocks where idx >= ?", from
+      @db.exec "delete from transactions where block_id >= ?", from
+      @db.exec "delete from senders where block_id >= ?", from
+      @db.exec "delete from recipients where block_id >= ?", from
     end
 
     def replace_chain(chain : Blockchain::Chain)
@@ -142,7 +188,7 @@ module ::Sushi::Core
 
     def get_senders(t : Transaction) : Transaction::Senders
       senders = [] of Transaction::Sender
-      @db.query "select * from senders where transaction_id = ? order by idx", [t.id] do |rows|
+      @db.query "select * from senders where transaction_id = ? order by idx", t.id do |rows|
         rows.each do
           rows.read(String?)
           rows.read(Int64)
@@ -156,7 +202,7 @@ module ::Sushi::Core
 
     def get_recipients(t : Transaction) : Transaction::Recipients
       recipients = [] of Transaction::Recipient
-      @db.query "select * from recipients where transaction_id = ? order by idx", [t.id] do |rows|
+      @db.query "select * from recipients where transaction_id = ? order by idx", t.id do |rows|
         rows.each do
           rows.read(String)
           rows.read(Int64)
@@ -171,7 +217,7 @@ module ::Sushi::Core
       transactions = [] of Transaction
       debug "Reading transactions from the database for block #{index}"
       ti = 0
-      @db.query "select * from transactions where block_id = ? order by idx asc", [index] do |rows|
+      @db.query "select * from transactions where block_id = ? order by idx asc", index do |rows|
         rows.each do
           t_id = rows.read(String)
           rows.read(Int32)
