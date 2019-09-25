@@ -198,7 +198,7 @@ module ::Sushi::Core
         rows.each do
           idx = rows.read(Int64)
           nonce_string = rows.read(String)
-          nonce = nonce_string.to_u64
+          nonce = nonce_string.size > 0 ? nonce_string.to_u64 : 0_u64
           prev_hash = rows.read(String)
           timestamp = rows.read(Int64)
           diffculty = rows.read(Int32)
