@@ -35,6 +35,10 @@ module ::Sushi::Core
     @conflicted_slow_index : Int64? = nil
     @conflicted_fast_index : Int64? = nil
 
+    @last_heartbeat = Time.now
+    @current_leader : CurrentLeader?
+    @heartbeat_salt : String
+
     def initialize(
       @is_private : Bool,
       @is_testnet : Bool,
@@ -52,6 +56,7 @@ module ::Sushi::Core
     )
       welcome
 
+      @heartbeat_salt = Random::Secure.hex(32)
       @blockchain = Blockchain.new(@wallet, @database, @developer_fund)
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl)
@@ -83,6 +88,38 @@ module ::Sushi::Core
       spawn proceed_setup
     end
 
+    def get_wallet
+      @wallet
+    end
+
+    def get_node_id
+      @chord.context[:id]
+    end
+
+    def get_last_heartbeat
+      @last_heartbeat
+    end
+
+    def get_current_leader : CurrentLeader?
+      @current_leader
+    end
+
+    def set_current_leader(current_leader : CurrentLeader)
+      @current_leader = current_leader
+    end
+
+    def get_heartbeat_salt
+      @heartbeat_salt
+    end
+
+    def has_no_connections?
+      chord.connected_nodes[:successor_list].empty?
+    end
+
+    def is_private_node?
+      @is_private
+    end
+
     def run!
       info "start running Sushi's node on #{light_green(@bind_host)}:#{light_green(@bind_port)}"
 
@@ -105,7 +142,7 @@ module ::Sushi::Core
 
       if _s = s
         latest_slow_index = @blockchain.latest_slow_block.index
-        latest_fast_index = (@blockchain.latest_fast_block || @blockchain.latest_block).index
+        latest_fast_index = (@blockchain.latest_fast_block || @blockchain.get_genesis_block).index
 
         debug "asking to sync chain (slow) at index #{@conflicted_slow_index.nil? ? latest_slow_index : @conflicted_slow_index.not_nil!}"
         debug "asking to sync chain (fast) at index #{@conflicted_fast_index.nil? ? latest_fast_index : @conflicted_fast_index.not_nil!}"
@@ -216,6 +253,8 @@ module ::Sushi::Core
           _receive_transactions(socket, message_content)
         when M_TYPE_NODE_SEND_CLIENT_CONTENT
           _receive_client_content(socket, message_content)
+        when M_TYPE_NODE_BROADCAST_HEARTBEAT
+          _broadcast_heartbeat(socket, message_content)
         end
       rescue e : Exception
         handle_exception(socket, e)
@@ -314,6 +353,7 @@ module ::Sushi::Core
           @miners_manager.forget_most_difficult if block.is_slow_block?
           debug "slow: about to create the new block locally"
           new_block(_block)
+          info "#{magenta("NEW SLOW BLOCK broadcasted")}: #{light_green(_block.index)} at difficulty: #{light_cyan(_block.difficulty)}"
         end
       elsif @blockchain.latest_slow_block.index == block.index
         debug "slow: latest slow block index is the same as the arriving block from a peer"
@@ -353,6 +393,7 @@ module ::Sushi::Core
         if _block = @blockchain.valid_block?(block)
           debug "fast: about to create the new block locally"
           new_block(_block)
+          info "#{magenta("NEW FAST BLOCK broadcasted")}: #{light_green(_block.index)}"
         end
       elsif latest_fast_block.index == block.index
         debug "fast: latest fast block index is the same as the arriving block from a peer"
@@ -378,6 +419,8 @@ module ::Sushi::Core
           )
         end
       end
+    rescue e : Exception
+      error e.message.not_nil!
     end
 
     def new_block(block : SlowBlock | FastBlock)
@@ -423,6 +466,92 @@ module ::Sushi::Core
       from = _m_content.from
 
       broadcast_block(socket, block, from)
+    end
+
+    def broadcast_heartbeat(node_address, node_id, public_key, hash_salt, sign_r, sign_s, from : Chord::NodeContext? = nil)
+      content =
+        {
+          address:    node_address,
+          node_id:    node_id,
+          public_key: public_key,
+          hash_salt:  hash_salt,
+          sign_r:     sign_r,
+          sign_s:     sign_s,
+          from:       @chord.context,
+        }
+      debug "sending heartbeat: #{node_id}_#{node_address}"
+      send_heartbeat_on_chord(content)
+    end
+
+    def send_heartbeat_on_chord(content)
+      _nodes = @chord.find_nodes
+
+      if successor = _nodes[:successor]
+        puts "successor is: #{successor[:context][:host]}:#{successor[:context][:port]}"
+        if successor[:context][:id] != @chord.context[:id] && successor[:context][:id] != content[:from][:id]
+          send(successor[:socket], M_TYPE_NODE_BROADCAST_HEARTBEAT, content)
+        end
+      end
+    end
+
+    private def _broadcast_heartbeat(socket, _content)
+      return unless @phase == SetupPhase::DONE
+
+      @last_heartbeat = Time.now
+
+      _m_content = MContentNodeBroadcastHeartbeat.from_json(_content)
+
+      address = _m_content.address
+      node_id = _m_content.node_id
+      public_key = _m_content.public_key
+      hash_salt = _m_content.hash_salt
+      sign_r = _m_content.sign_r
+      sign_s = _m_content.sign_s
+      from = _m_content.from
+
+      if valid_heartbeat?(address, public_key, hash_salt, sign_r, sign_s)
+        debug "receiving valid heartbeat: #{address} #{node_id}"
+        if get_wallet.address == address
+          debug "heartbeat leader has same address as me so setting current leader to nil"
+          @current_leader = nil
+        else
+          my_rank = Ranking.rank(get_wallet.address, Ranking.chain(self.blockchain.chain))
+          received_rank = Ranking.rank(address, Ranking.chain(self.blockchain.chain))
+          if my_rank > received_rank
+            debug "I outrank the heartbeat from remote leader so assuming leadership"
+            set_current_leader(CurrentLeader.new(get_node_id, get_wallet.address))
+          else
+            debug "setting leader to: #{get_current_leader}"
+            set_current_leader(CurrentLeader.new(node_id, address))
+          end
+        end
+      else
+        info "setting current leader to nil as received an invalid leader heartbeat"
+        @current_leader = nil
+      end
+      c =
+        {
+          address:    address,
+          node_id:    node_id,
+          public_key: public_key,
+          hash_salt:  hash_salt,
+          sign_r:     sign_r,
+          sign_s:     sign_s,
+          from:       from,
+        }
+
+      send_heartbeat_on_chord(c)
+    end
+
+    private def valid_heartbeat?(address, public_key, hash_salt, sign_r, sign_s)
+      valid_signature = ECCrypto.verify(
+        public_key,
+        hash_salt,
+        sign_r,
+        sign_s
+      )
+      valid_leader = Ranking.rank(address, Ranking.chain(self.blockchain.chain)) > 0
+      valid_signature && valid_leader
     end
 
     private def _receive_client_content(socket, _content)

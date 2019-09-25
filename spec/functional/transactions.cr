@@ -36,7 +36,7 @@ class Transactions < SpinachTestCase
       transaction = send_token_transaction(transaction_factory, "SUSHI", amount, fee_amount, wallet_a, wallet_b, block_kind)
 
       if block_kind == "fast"
-        block_factory.add_fast_block([transaction])
+        block_factory.add_slow_block.add_fast_block([transaction])
       else
         block_factory.add_slow_block([transaction])
       end
@@ -68,7 +68,7 @@ class Transactions < SpinachTestCase
       transaction = create_custom_token_transaction(transaction_factory, token_name, token_amount, fee_amount, wallet_a, block_kind)
 
       if block_kind == "fast"
-        block_factory.add_fast_block([transaction])
+        block_factory.add_slow_block.add_fast_block([transaction])
       else
         block_factory.add_slow_block([transaction])
       end
@@ -106,7 +106,7 @@ class Transactions < SpinachTestCase
       kings_send_transaction = send_token_transaction(transaction_factory, token_name, amount, fee_amount, wallet_a, wallet_b, block_kind)
 
       if block_kind == "fast"
-        block_factory.add_fast_block([kings_create_transaction]).add_fast_block([kings_send_transaction])
+        block_factory.add_slow_block.add_fast_block([kings_create_transaction]).add_fast_block([kings_send_transaction])
       else
         block_factory.add_slow_block([kings_create_transaction]).add_slow_block([kings_send_transaction])
       end

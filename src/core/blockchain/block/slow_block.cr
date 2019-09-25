@@ -12,7 +12,7 @@
 
 module ::Sushi::Core
   class SlowBlock
-extend Hashes
+    extend Hashes
 
     JSON.mapping({
       index:            Int64,
@@ -22,7 +22,8 @@ extend Hashes
       merkle_tree_root: String,
       timestamp:        Int64,
       difficulty:       Int32,
-      kind:             BlockKind
+      kind:             BlockKind,
+      address:          String,
     })
 
     def initialize(
@@ -32,7 +33,8 @@ extend Hashes
       @prev_hash : String,
       @timestamp : Int64,
       @difficulty : Int32,
-      @kind : BlockKind
+      @kind : BlockKind,
+      @address : String
     )
       raise "index must be even number" if index.odd?
       @merkle_tree_root = calculate_merkle_tree_root
@@ -60,7 +62,7 @@ extend Hashes
     end
 
     def to_hash : String
-      string = self.to_json
+      string = SlowBlockNoTimestamp.from_slow_block(self).to_json
       sha256(string)
     end
 
@@ -137,7 +139,7 @@ extend Hashes
       end
 
       raise "Index Mismatch: the current block index: #{@index} should match the lastest slow block index: #{latest_slow_index}" if @index != latest_slow_index
-      raise "Invalid Previous Hash: prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
+      raise "Invalid Previous Hash: for current index: #{@index} the prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
 
       next_timestamp = __timestamp
       prev_timestamp = prev_block.timestamp
@@ -172,7 +174,7 @@ extend Hashes
       raise "Invalid Genesis Nonce: nonce has to be '0' for genesis block: #{@nonce}" if @nonce != 0
       raise "Invalid Genesis Previous Hash: prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
       raise "Invalid Genesis Difficulty: difficulty has to be '#{Consensus::DEFAULT_DIFFICULTY_TARGET}' for genesis block: #{@difficulty}" if @difficulty != Consensus::DEFAULT_DIFFICULTY_TARGET
-
+      raise "Invalid Genesis Address: address has to be 'genesis' for genesis block" if @address != "genesis"
       true
     end
 
@@ -186,5 +188,32 @@ extend Hashes
     include Protocol
     include Consensus
     include Common::Timestamp
+  end
+
+  class SlowBlockNoTimestamp
+    JSON.mapping({
+      index:            Int64,
+      transactions:     Array(Transaction),
+      nonce:            UInt64,
+      prev_hash:        String,
+      merkle_tree_root: String,
+      difficulty:       Int32,
+      address:          String,
+    })
+
+    def self.from_slow_block(b : SlowBlock)
+      SlowBlockNoTimestamp.new(b.index, b.transactions, b.nonce, b.prev_hash, b.merkle_tree_root, b.difficulty, b.address)
+    end
+
+    def initialize(
+      @index : Int64,
+      @transactions : Array(Transaction),
+      @nonce : UInt64,
+      @prev_hash : String,
+      @merkle_tree_root : String,
+      @difficulty : Int32,
+      @address : String
+    )
+    end
   end
 end

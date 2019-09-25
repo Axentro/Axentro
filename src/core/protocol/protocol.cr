@@ -281,6 +281,20 @@ module ::Sushi::Core::Protocol
     })
   end
 
+  M_TYPE_NODE_BROADCAST_HEARTBEAT = 0x0109
+
+  struct MContentNodeBroadcastHeartbeat
+    JSON.mapping({
+      address: String,
+      node_id: String,
+      public_key: String,
+      hash_salt: String,
+      sign_r: String,
+      sign_s: String,
+      from:  Core::NodeComponents::Chord::NodeContext,
+    })
+  end
+
   ######################################
   # Blockchain's setup phase
   ######################################
