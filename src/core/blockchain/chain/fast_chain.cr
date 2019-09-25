@@ -18,13 +18,75 @@ module ::Sushi::Core::FastChain
     timestamp: Int64,
   )
 
-  # TODO - can't be the leader if a private node
-  #      - if only this node then this is the leader automatically
+  private def get_ranking(address)
+    Ranking.rank(address, Ranking.chain(chain))
+  end
+
+  private def i_can_lead?(my_ranking)
+    return false if node.is_private_node?
+    my_ranking > 0
+  end
+
+  private def assume_leadership
+    info "Assuming leadership role because I'm ranked high enough"
+    node.set_current_leader(CurrentLeader.new(node.get_node_id, node.get_wallet.address))
+    debug "current_leader_in_contest: #{node.get_current_leader}"
+  end
+
+  # TODO - include node_id so that we don't have mulitple leaders if using the same wallet address
+  # when a node comes online have it broadcast it's ranking and take over leadership if able
+  # restrict the ranking check to the last couple days worth of chain blocks
+  private def leadership_contest
+    loop do
+      if chain_mature_enough_for_fast_blocks?
+        my_ranking = get_ranking(node.get_wallet.address)
+
+        if node.has_no_connections?
+          if i_can_lead?(my_ranking)
+            debug "setting this node as leader as has no connections and is a high enough rank for this chain"
+            node.set_current_leader(CurrentLeader.new(node.get_node_id, node.get_wallet.address))
+          end
+        else
+          if (Time.now - node.get_last_heartbeat) > 2.seconds # && i_am_not_the_current_leader
+            info "Heartbeat not received within 2 second timeout - trying to assume leadership"
+            if i_can_lead?(my_ranking)
+              assume_leadership
+            else
+              info "I'm not ranked high enough on this chain to become a leader"
+            end
+          end
+        end
+      end
+      sleep 2
+    end
+  end
+
+  private def i_am_not_the_current_leader
+    !i_am_the_current_leader
+  end
+
+  private def i_am_the_current_leader
+    CurrentLeader.new(node.get_node_id, node.get_wallet.address) == node.get_current_leader
+  end
+
+  private def broadcast_heartbeat
+    wallet = node.get_wallet
+    address = wallet.address
+    node_id = node.get_node_id
+    public_key = wallet.public_key
+    hash_salt = sha256(node.get_heartbeat_salt + public_key)
+    private_key = Wif.new(wallet.wif).private_key.as_hex
+
+    sig = ECCrypto.sign(private_key, hash_salt)
+    node.broadcast_heartbeat(address, node_id, public_key, hash_salt, sig["r"], sig["s"])
+  end
+
   def process_fast_transactions
     loop do
-      if @i_am_the_leader
+      if chain_mature_enough_for_fast_blocks? && i_am_the_current_leader
         begin
-          # debug "I am the leader so attempt to process fast transactions"
+          broadcast_heartbeat unless node.has_no_connections?
+
           debug "********** process fast transactions ***********"
           if pending_fast_transactions.size > 0
             debug "There are #{pending_fast_transactions.size} pending fast transactions"
@@ -37,8 +99,6 @@ module ::Sushi::Core::FastChain
               if block.valid?(self)
                 debug "record new fast block"
                 node.new_block(block)
-                # dapps_record
-                # clean_fast_transactions
                 debug "broadcast new fast block"
                 node.send_block(block)
               end
@@ -50,6 +110,12 @@ module ::Sushi::Core::FastChain
       end
       sleep 2
     end
+  end
+
+  def chain_mature_enough_for_fast_blocks?
+    return true if node.has_no_connections? && !node.is_private_node?
+    return true if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E") || ENV.has_key?("SC_FAST")
+    get_latest_index_for_slow > 1440_i64
   end
 
   def latest_fast_block : FastBlock?
@@ -86,16 +152,26 @@ module ::Sushi::Core::FastChain
     latest_index = valid_transactions[:latest_index]
     _latest_block = latest_fast_block || get_genesis_block
     timestamp = __timestamp
+
+    wallet = node.get_wallet
+    address = wallet.address
+    public_key = wallet.public_key
+    hash_salt = sha256(node.get_heartbeat_salt + public_key)
+    private_key = Wif.new(wallet.wif).private_key.as_hex
+
+    sig = ECCrypto.sign(private_key, hash_salt)
+
     FastBlock.new(
       latest_index,
       transactions,
       _latest_block.to_hash,
       timestamp,
       BlockKind::FAST,
-      "public_key_goes_here",
-      "sign_r_goes_here",
-      "sign_s_goes_here",
-      "hash_goes_here"
+      address,
+      public_key,
+      sig["r"],
+      sig["s"],
+      hash_salt
     )
   end
 

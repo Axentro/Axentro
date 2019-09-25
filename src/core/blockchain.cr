@@ -10,7 +10,6 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-require "./blockchain/consensus"
 require "./blockchain/*"
 require "./blockchain/block/*"
 require "./blockchain/chain/*"
@@ -35,7 +34,6 @@ module ::Sushi::Core
     @node : Node?
     @mining_block : SlowBlock?
     @block_reward_calculator = BlockRewardCalculator.init
-    @i_am_the_leader : Bool = true
 
     def initialize(@wallet : Wallet, @database : Database?, @developer_fund : DeveloperFund?)
       initialize_dapps
@@ -52,8 +50,8 @@ module ::Sushi::Core
         push_genesis
       end
 
-      # spawn process_fast_transactions
-
+      spawn process_fast_transactions
+      spawn leadership_contest
     end
 
     def node
@@ -74,18 +72,8 @@ module ::Sushi::Core
       info "start loading blockchain from #{database.path}"
       info "there are #{total_blocks} blocks recorded"
 
-      current_index = 0_i64
-      (0..highest_index).each do |_|
-        _block = database.get_block(current_index)
-        if _block
-          break unless _block.valid?(self, true)
-          debug "restoring from database: #{_block.index} of kind #{_block.kind}"
-          @chain.push(_block)
-        end
-
-        current_index += 1
-        progress "block ##{current_index} was imported", current_index, highest_index
-      end
+      import_slow_blocks(database, highest_index)
+      import_fast_blocks(database, highest_index)
 
       if @chain.size == 0
         push_genesis
@@ -94,13 +82,48 @@ module ::Sushi::Core
       end
 
       dapps_record
+    end
+
+    def import_slow_blocks(database, highest_index)
+      current_index = 0_i64
+      slow_indexes = (0_i64..highest_index).select(&.even?)
+      slow_indexes.each do |ci|
+        current_index = ci
+        _block = database.get_block(current_index)
+        if _block
+          break unless _block.valid?(self, true)
+          debug "restoring from database: index #{_block.index} of kind #{_block.kind}"
+          @chain.push(_block)
+        end
+        progress "block ##{current_index} was imported", current_index, slow_indexes.max
+      end
     rescue e : Exception
-      error "Error could not restore blockchain from database"
+      error "Error could not restore slow blocks from database"
       error e.message.not_nil! if e.message
-      warning "removing invalid blocks from database"
+      warning "removing invalid slow blocks from database"
       database.delete_blocks(current_index.not_nil!)
     ensure
       push_genesis if @chain.size == 0
+    end
+
+    def import_fast_blocks(database, highest_index)
+      current_index = 0_i64
+      fast_indexes = (0_i64..highest_index).select(&.odd?)
+      fast_indexes.each do |ci|
+        current_index = ci
+        _block = database.get_block(current_index)
+        if _block
+          break unless _block.valid?(self, true)
+          debug "restoring from database: index #{_block.index} of kind #{_block.kind}"
+          @chain.push(_block)
+        end
+        progress "block ##{current_index} was imported", current_index, fast_indexes.max
+      end
+    rescue e : Exception
+      error "Error could not restore fast blocks from database"
+      error e.message.not_nil! if e.message
+      warning "removing invalid fast blocks from database"
+      database.delete_blocks(current_index.not_nil!)
     end
 
     def valid_nonce?(nonce : UInt64) : SlowBlock?
@@ -152,38 +175,12 @@ module ::Sushi::Core
 
     def replace_chain(_slow_subchain : Chain?, _fast_subchain : Chain?) : Bool
       return false if @chain.size == 0
-      replacement = [] of SlowBlock | FastBlock
-      replacement += _slow_subchain unless _slow_subchain.nil?
-      replacement += _fast_subchain unless _fast_subchain.nil?
-      replacement = replacement.flatten
-
-      return false if replacement.size == 0
 
       dapps_clear_record
+      slow_result = replace_slow_blocks(_slow_subchain)
+      fast_result = replace_fast_blocks(_fast_subchain)
 
-      replacement.sort_by! { |block| block.index }
-
-      if @chain.size == 1
-        @chain = replacement
-        dapps_record
-      else
-        replacement.each do |block|
-          block.valid?(self)
-
-          index = block.index
-          @chain[index]? ? (@chain[index] = block) : @chain << block
-
-          progress "block ##{index} was imported/synced (replace_chain)", index, replacement.size
-
-          dapps_record
-        rescue e : Exception
-          error "found invalid block while syncing blocks"
-          error "the reason:"
-          error e.message.not_nil!
-
-          break
-        end
-      end
+      @chain.sort_by!(&.index)
 
       push_genesis if @chain.size == 0
       if database = @database
@@ -196,7 +193,53 @@ module ::Sushi::Core
       debug "calling refresh_mining_block in replace_chain"
       refresh_mining_block(block_difficulty(self))
 
-      true
+      [slow_result,fast_result].includes?(true)
+    end
+
+    private def replace_slow_blocks(slow_subchain)
+      return false if slow_subchain.nil?
+      result = true
+      slow_subchain.not_nil!.sort_by(&.index).each do |block|
+        block.valid?(self)
+        index = block.index
+
+        target_index = @chain.index {|b| b.index == index }
+        target_index ? (@chain[target_index] = block) : @chain << block
+
+        progress "slow block ##{index} was synced", index, slow_subchain.not_nil!.size
+
+        dapps_record
+      rescue e : Exception
+        error "found invalid slow block while syncing blocks"
+        error "the reason:"
+        error e.message.not_nil!
+        result = false
+        break
+      end
+      result
+    end
+
+    private def replace_fast_blocks(fast_subchain)
+      return false if fast_subchain.nil?
+      result = true
+      fast_subchain.not_nil!.sort_by(&.index).each do |block|
+        block.valid?(self)
+        index = block.index
+
+        target_index = @chain.index {|b| b.index == index }
+        target_index ? (@chain[target_index] = block) : @chain << block
+
+        progress "fast block ##{index} was synced", index, fast_subchain.not_nil!.size
+
+        dapps_record
+      rescue e : Exception
+         error "found invalid fast block while syncing blocks"
+        error "the reason:"
+        error e.message.not_nil!
+        result = false
+        break
+      end
+      result
     end
 
     def add_transaction(transaction : Transaction, with_spawn : Bool = true)
@@ -249,6 +292,7 @@ module ::Sushi::Core
       genesis_prev_hash = "genesis"
       genesis_timestamp = Time.now.to_unix
       genesis_difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
+      address = "genesis"
 
       SlowBlock.new(
         genesis_index,
@@ -257,7 +301,8 @@ module ::Sushi::Core
         genesis_prev_hash,
         genesis_timestamp,
         genesis_difficulty,
-        BlockKind::SLOW
+        BlockKind::SLOW,
+        address
       )
     end
 
@@ -314,6 +359,9 @@ module ::Sushi::Core
       transactions = align_slow_transactions(coinbase_transaction, coinbase_amount)
       timestamp = __timestamp
 
+      wallet = node.get_wallet
+      address = wallet.address
+
       debug "We are in refresh_mining_block, the next block will have a difficulty of #{difficulty}"
 
       @mining_block = SlowBlock.new(
@@ -323,7 +371,8 @@ module ::Sushi::Core
         latest_slow_block.to_hash,
         timestamp,
         difficulty,
-        BlockKind::SLOW
+        BlockKind::SLOW,
+        address
       )
 
       node.miners_broadcast

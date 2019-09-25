@@ -58,13 +58,49 @@ describe Blockchain do
 
     it "should return true and replace slow chain" do
       with_factory do |block_factory|
-        sub_chain = block_factory.add_slow_blocks(10).chain
+        slow_sub_chain = block_factory.add_slow_blocks(10).chain
 
         blockchain = Blockchain.new(block_factory.node_wallet, nil, nil)
         blockchain.setup(block_factory.node)
 
-        blockchain.replace_chain(sub_chain[1..-1], nil).should eq(true)
-        blockchain.chain.should eq(sub_chain[1..-1])
+        expected = (blockchain.chain + slow_sub_chain[1..-1]).map(&.index).sort
+
+        blockchain.replace_chain(slow_sub_chain[1..-1], nil).should eq(true)
+        blockchain.chain.map(&.index).sort.should eq(expected)
+      end
+    end
+
+    it "should return true and replace fast chain" do
+      with_factory do |block_factory|
+        chain = block_factory.add_slow_blocks(2).add_fast_blocks(10).chain
+        fast_sub_chain = chain.select(&.is_fast_block?)
+        slow_block_1 = chain[2].as(SlowBlock)
+        slow_block_2 = chain[4].as(SlowBlock)
+
+        blockchain = Blockchain.new(block_factory.node_wallet, nil, nil)
+        blockchain.setup(block_factory.node)
+        blockchain.push_slow_block(slow_block_1)
+        blockchain.push_slow_block(slow_block_2)
+
+        expected = ([blockchain.chain.first, slow_block_1, slow_block_2] + fast_sub_chain[0..-1]).map(&.index).sort
+        blockchain.replace_chain(nil, fast_sub_chain[0..-1]).should eq(true)
+        blockchain.chain.map(&.index).sort.should eq(expected)
+      end
+    end
+
+    it "should return true and replace fast and slow chain" do
+      with_factory do |block_factory|
+        chain = block_factory.add_slow_blocks(6).add_fast_blocks(10).chain
+        fast_sub_chain = chain.select(&.is_fast_block?)
+        slow_block_1 = chain[2].as(SlowBlock)
+        slow_sub_chain = chain.select(&.is_slow_block?)
+
+        blockchain = Blockchain.new(block_factory.node_wallet, nil, nil)
+        blockchain.setup(block_factory.node)
+        blockchain.push_slow_block(slow_block_1)
+        expected = (blockchain.chain + slow_sub_chain[2..-1] + fast_sub_chain[0..-1]).map(&.index).sort
+        blockchain.replace_chain(slow_sub_chain[2..-1], fast_sub_chain[0..-1]).should eq(true)
+        blockchain.chain.map(&.index).sort.should eq(expected)
       end
     end
   end
