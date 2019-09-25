@@ -46,7 +46,7 @@ module ::Sushi::Core
       @connect_host : String?,
       @connect_port : Int32?,
       @wallet : Wallet,
-      @database : Database?,
+      @database : Database,
       @developer_fund : DeveloperFund?,
       @use_ssl : Bool = false
     )

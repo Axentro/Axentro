@@ -59,8 +59,10 @@ describe Blockchain do
     it "should return true and replace slow chain" do
       with_factory do |block_factory|
         sub_chain = block_factory.add_slow_blocks(10).chain
-
-        blockchain = Blockchain.new(block_factory.node_wallet, nil, nil)
+        test_database = "./test_spec2.db"
+        FileUtils.rm_rf test_database
+        database = Sushi::Core::Database.new(test_database)
+        blockchain = Blockchain.new(block_factory.node_wallet, database, nil)
         blockchain.setup(block_factory.node)
 
         blockchain.replace_chain(sub_chain[1..-1], nil).should eq(true)

@@ -37,7 +37,7 @@ module ::Sushi::Core
     @block_reward_calculator = BlockRewardCalculator.init
     @i_am_the_leader : Bool = true
 
-    def initialize(@wallet : Wallet, @database : Database?, @developer_fund : DeveloperFund?)
+    def initialize(@wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?)
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup
@@ -46,11 +46,7 @@ module ::Sushi::Core
     def setup(@node : Node)
       setup_dapps
 
-      if database = @database
-        restore_from_database(database)
-      else
-        push_genesis
-      end
+      restore_from_database(@database)
 
       # spawn process_fast_transactions
 
@@ -145,10 +141,8 @@ module ::Sushi::Core
     private def _push_block(block : SlowBlock | FastBlock)
       @chain.push(block)
       @chain.sort_by! { |blk| blk.index }
-      if database = @database
-        debug "sending #{block.kind} block to DB with timestamp of #{block.timestamp}"
-        database.push_block(block)
-      end
+      debug "sending #{block.kind} block to DB with timestamp of #{block.timestamp}"
+      @database.push_block(block)
 
       debug "in blockchain._push_block, before dapps_record"
       dapps_record
@@ -191,9 +185,7 @@ module ::Sushi::Core
       end
 
       push_genesis if @chain.size == 0
-      if database = @database
-        database.replace_chain(@chain)
-      end
+      @database.replace_chain(@chain)
 
       clean_slow_transactions
       clean_fast_transactions
