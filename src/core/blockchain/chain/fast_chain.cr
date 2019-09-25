@@ -29,35 +29,31 @@ module ::Sushi::Core::FastChain
 
   private def assume_leadership
     info "Assuming leadership role because I'm ranked high enough"
-    node.set_current_leader(node.get_wallet.address)
+    node.set_current_leader(CurrentLeader.new(node.get_node_id, node.get_wallet.address))
     debug "current_leader_in_contest: #{node.get_current_leader}"
   end
-
-  private def abdicate_leadership
-    info "Abdicating the leadership"
-    node.set_current_leader(nil)
-  end
-
 
   # TODO - include node_id so that we don't have mulitple leaders if using the same wallet address
   # when a node comes online have it broadcast it's ranking and take over leadership if able
   # restrict the ranking check to the last couple days worth of chain blocks
   private def leadership_contest
     loop do
-      my_ranking = get_ranking(node.get_wallet.address)
+      if chain_mature_enough_for_fast_blocks?
+        my_ranking = get_ranking(node.get_wallet.address)
 
-      if node.has_no_connections?
-        if i_can_lead?(my_ranking)
-          debug "setting this node as leader as has no connections and is a high enough rank for this chain"
-          node.set_current_leader(node.get_wallet.address)
-        end
-      else
-        if (Time.now - node.get_last_heartbeat) > 2.seconds && i_am_not_the_current_leader
-          info "Heartbeat not received within 2 second timeout - trying to assume leadership"
+        if node.has_no_connections?
           if i_can_lead?(my_ranking)
-            assume_leadership
-          else
-            info "I'm not ranked high enough on this chain to become a leader"
+            debug "setting this node as leader as has no connections and is a high enough rank for this chain"
+            node.set_current_leader(CurrentLeader.new(node.get_node_id, node.get_wallet.address))
+          end
+        else
+          if (Time.now - node.get_last_heartbeat) > 2.seconds # && i_am_not_the_current_leader
+            info "Heartbeat not received within 2 second timeout - trying to assume leadership"
+            if i_can_lead?(my_ranking)
+              assume_leadership
+            else
+              info "I'm not ranked high enough on this chain to become a leader"
+            end
           end
         end
       end
@@ -70,18 +66,19 @@ module ::Sushi::Core::FastChain
   end
 
   private def i_am_the_current_leader
-    node.get_wallet.address == node.get_current_leader
+    CurrentLeader.new(node.get_node_id, node.get_wallet.address) == node.get_current_leader
   end
 
   private def broadcast_heartbeat
     wallet = node.get_wallet
     address = wallet.address
+    node_id = node.get_node_id
     public_key = wallet.public_key
     hash_salt = sha256(node.get_heartbeat_salt + public_key)
     private_key = Wif.new(wallet.wif).private_key.as_hex
 
     sig = ECCrypto.sign(private_key, hash_salt)
-    node.broadcast_heartbeat(address, public_key, hash_salt, sig["r"], sig["s"])
+    node.broadcast_heartbeat(address, node_id, public_key, hash_salt, sig["r"], sig["s"])
   end
 
   def process_fast_transactions
@@ -116,9 +113,9 @@ module ::Sushi::Core::FastChain
   end
 
   def chain_mature_enough_for_fast_blocks?
-    # return true if node.has_no_connections? && !node.is_private_node?
-    true # while testing - put override here for e2e as well
-    # get_latest_index_for_slow > 1440_i64
+    return true if node.has_no_connections? && !node.is_private_node?
+    return true if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E") || ENV.has_key?("SC_FAST")
+    get_latest_index_for_slow > 1440_i64
   end
 
   def latest_fast_block : FastBlock?

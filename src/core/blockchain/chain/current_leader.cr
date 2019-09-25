@@ -11,13 +11,26 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core
-  struct Ranking
-    def self.chain(chain)
-      chain.select(&.is_slow_block?).map { |block| block.address }.first(1440)
+  struct CurrentLeader
+    property address : String
+    property node_id : String
+
+    def initialize(@address : String, @node_id : String); end
+
+    def get_address : String
+      @address
     end
 
-    def self.rank(address, chain) : Int32
-      chain.tally[address]? || 0
+    def get_node_id : String
+      @node_id
+    end
+
+    def ==(other : CurrentLeader)
+      other.address == @address && other.node_id == @node_id
+    end
+
+    def to_s
+      "node_id: #{@node_id}, address: #{@address}"
     end
   end
 end

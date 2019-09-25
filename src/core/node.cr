@@ -36,7 +36,7 @@ module ::Sushi::Core
     @conflicted_fast_index : Int64? = nil
 
     @last_heartbeat = Time.now
-    @current_leader : String?
+    @current_leader : CurrentLeader?
     @heartbeat_salt : String
 
     def initialize(
@@ -92,16 +92,20 @@ module ::Sushi::Core
       @wallet
     end
 
+    def get_node_id
+      @chord.context[:id]
+    end
+
     def get_last_heartbeat
       @last_heartbeat
     end
 
-    def get_current_leader
+    def get_current_leader : CurrentLeader?
       @current_leader
     end
 
-    def set_current_leader(address)
-      @current_leader = address
+    def set_current_leader(current_leader : CurrentLeader)
+      @current_leader = current_leader
     end
 
     def get_heartbeat_salt
@@ -321,32 +325,6 @@ module ::Sushi::Core
       debug "after send_on_chord.. exiting send_block"
     end
 
-    def broadcast_heartbeat(node_address, public_key, hash_salt, sign_r, sign_s, from : Chord::NodeContext? = nil)
-      content = if from.nil? || (!from.nil? && from[:is_private])
-                  {
-                    address:    node_address,
-                    public_key: public_key,
-                    hash_salt:  hash_salt,
-                    sign_r:     sign_r,
-                    sign_s:     sign_s,
-                    from:       @chord.context,
-                  }
-                else
-                  {
-                    address:    node_address,
-                    public_key: public_key,
-                    hash_salt:  hash_salt,
-                    sign_r:     sign_r,
-                    sign_s:     sign_s,
-                    from:       from,
-                  }
-                end
-
-      debug "sending heartbeat: #{node_address}"
-
-      send_on_chord(M_TYPE_NODE_BROADCAST_HEARTBEAT, content, from)
-    end
-
     def send_client_content(content : String, from : Chord::NodeContext? = nil)
       _content = if from.nil? || (!from.nil? && from[:is_private])
                    {content: content, from: @chord.context}
@@ -490,12 +468,41 @@ module ::Sushi::Core
       broadcast_block(socket, block, from)
     end
 
+    def broadcast_heartbeat(node_address, node_id, public_key, hash_salt, sign_r, sign_s, from : Chord::NodeContext? = nil)
+      content =
+        {
+          address:    node_address,
+          node_id:    node_id,
+          public_key: public_key,
+          hash_salt:  hash_salt,
+          sign_r:     sign_r,
+          sign_s:     sign_s,
+          from:       @chord.context,
+        }
+      debug "sending heartbeat: #{node_id}_#{node_address}"
+      send_heartbeat_on_chord(content)
+    end
+
+    def send_heartbeat_on_chord(content)
+      _nodes = @chord.find_nodes
+
+      if successor = _nodes[:successor]
+        puts "successor is: #{successor[:context][:host]}:#{successor[:context][:port]}"
+        if successor[:context][:id] != @chord.context[:id] && successor[:context][:id] != content[:from][:id]
+          send(successor[:socket], M_TYPE_NODE_BROADCAST_HEARTBEAT, content)
+        end
+      end
+    end
+
     private def _broadcast_heartbeat(socket, _content)
       return unless @phase == SetupPhase::DONE
+
+      @last_heartbeat = Time.now
 
       _m_content = MContentNodeBroadcastHeartbeat.from_json(_content)
 
       address = _m_content.address
+      node_id = _m_content.node_id
       public_key = _m_content.public_key
       hash_salt = _m_content.hash_salt
       sign_r = _m_content.sign_r
@@ -503,12 +510,37 @@ module ::Sushi::Core
       from = _m_content.from
 
       if valid_heartbeat?(address, public_key, hash_salt, sign_r, sign_s)
-        @last_heartbeat = Time.now
-        set_current_leader(address)
-        debug "receiving valid heartbeat: #{address}"
-        debug "setting leader to: #{get_current_leader}"
-        broadcast_heartbeat(address, public_key, hash_salt, sign_r, sign_s, from)
+        debug "receiving valid heartbeat: #{address} #{node_id}"
+        if get_wallet.address == address
+          debug "heartbeat leader has same address as me so setting current leader to nil"
+          @current_leader = nil
+        else
+          my_rank = Ranking.rank(get_wallet.address, Ranking.chain(self.blockchain.chain))
+          received_rank = Ranking.rank(address, Ranking.chain(self.blockchain.chain))
+          if my_rank > received_rank
+            debug "I outrank the heartbeat from remote leader so assuming leadership"
+            set_current_leader(CurrentLeader.new(get_node_id, get_wallet.address))
+          else
+            debug "setting leader to: #{get_current_leader}"
+            set_current_leader(CurrentLeader.new(node_id, address))
+          end
+        end
+      else
+        info "setting current leader to nil as received an invalid leader heartbeat"
+        @current_leader = nil
       end
+      c =
+        {
+          address:    address,
+          node_id:    node_id,
+          public_key: public_key,
+          hash_salt:  hash_salt,
+          sign_r:     sign_r,
+          sign_s:     sign_s,
+          from:       from,
+        }
+
+      send_heartbeat_on_chord(c)
     end
 
     private def valid_heartbeat?(address, public_key, hash_salt, sign_r, sign_s)
