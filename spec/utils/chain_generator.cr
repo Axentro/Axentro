@@ -9,14 +9,15 @@
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
+require "./transaction"
 
 module ::Units::Utils::ChainGenerator
   include Sushi::Core
   include Sushi::Core::Keys
   include Sushi::Core::Controllers
 
-  def with_factory(&block)
-    block_factory = BlockFactory.new
+  def with_factory(developer_fund = nil, &block)
+    block_factory = BlockFactory.new(developer_fund)
     yield block_factory, block_factory.transaction_factory
   end
 
@@ -34,10 +35,10 @@ module ::Units::Utils::ChainGenerator
     property blockchain : Blockchain
     property node : Sushi::Core::Node
 
-    def initialize
+    def initialize(developer_fund)
       @node_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @miner_wallet = Wallet.from_json(Wallet.create(true).to_json)
-      @node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, nil, nil, false)
+      @node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, nil, developer_fund, false)
       @blockchain = @node.blockchain
       # the node setup is run in a spawn so we have to wait until it's finished before running any tests
       while @node.@phase != Sushi::Core::Node::SetupPhase::DONE
@@ -47,22 +48,39 @@ module ::Units::Utils::ChainGenerator
       @transaction_factory = TransactionFactory.new(@node_wallet)
       @rpc = RPCController.new(@blockchain)
       @rest = RESTController.new(@blockchain)
+      FastTransactionPool.clear_all
+      SlowTransactionPool.clear_all
       enable_difficulty
     end
 
-    def add_block
-      add_valid_block
+    def add_slow_block(with_refresh : Bool = true)
+      add_valid_slow_block(with_refresh)
       self
     end
 
-    def add_blocks(number : Int)
-        (1..number).each { |_| add_block }
+    def add_slow_blocks(number : Int, with_refresh : Bool = true)
+      (1..(number * 2)).select(&.even?).each { |_| add_slow_block(with_refresh) }
       self
     end
 
-    def add_block(transactions : Array(Transaction))
+    def add_slow_block(transactions : Array(Transaction), with_refresh : Bool = true)
       transactions.each { |txn| @blockchain.add_transaction(txn, false) }
-      add_valid_block
+      add_valid_slow_block(with_refresh)
+      self
+    end
+
+    def add_fast_block
+      add_valid_fast_block
+    end
+
+    def add_fast_blocks(number)
+      (1..(number * 2)).select(&.odd?).each { |_| add_fast_block }
+      self
+    end
+
+    def add_fast_block(transactions : Array(Transaction))
+      transactions.each { |txn| @blockchain.add_transaction(txn, false) }
+      add_valid_fast_block
       self
     end
 
@@ -91,22 +109,41 @@ module ::Units::Utils::ChainGenerator
       @rest
     end
 
-    private def add_valid_block
+    def miner
+      @miner
+    end
+
+    private def add_valid_slow_block(with_refresh : Bool)
       enable_difficulty("0")
+      @blockchain.refresh_mining_block(0) if with_refresh
       block = @blockchain.mining_block
       block.nonce = 11719215035155661212_u64
-      block.difficulty = 0  # difficulty will be set to 0 for most unit tests
+      block.difficulty = 0 # difficulty will be set to 0 for most unit tests
       valid_block = @blockchain.valid_block?(block)
       case valid_block
-      when Block
-        @blockchain.push_block(valid_block)
+      when SlowBlock
+        @blockchain.push_slow_block(valid_block)
       else
-        raise "error could not push block onto blockchain - block was not valid"
+        raise "error could not push slow block onto blockchain - block was not valid"
+      end
+    end
+
+    private def add_valid_fast_block
+      valid_transactions = @blockchain.valid_transactions_for_fast_block
+      block = @blockchain.mint_fast_block(valid_transactions)
+      valid_block = @blockchain.valid_block?(block)
+      case valid_block
+      when FastBlock
+        @blockchain.push_fast_block(valid_block)
+      else
+        raise "error could not push fast block onto blockchain - block was not valid"
       end
     end
   end
 
   class TransactionFactory
+    include Units::Utils::TransactionHelper
+
     property recipient_wallet : Wallet
     property sender_wallet : Wallet
 
@@ -126,9 +163,44 @@ module ::Units::Utils::ChainGenerator
         token, # token
         "0",   # prev_hash
         0_i64, # timestamp
-        1      # scaled
+        1,     # scaled
+        TransactionKind::SLOW
       )
       unsigned_transaction.as_signed([sender_wallet])
+    end
+
+    def make_fast_send(sender_amount : Int64, token : String = TOKEN_DEFAULT, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        "send", # action
+        [a_sender(sender_wallet, sender_amount)],
+        [a_recipient(recipient_wallet, sender_amount)],
+        "0",   # message
+        token, # token
+        "0",   # prev_hash
+        0_i64, # timestamp
+        1,     # scaled
+        TransactionKind::FAST
+      )
+      unsigned_transaction.as_signed([sender_wallet])
+    end
+
+    def make_send(sender_amount : Int64, token : String, senders : Array(Transaction::Sender), recipients : Array(Transaction::Recipient), signer_wallets : Array(Wallet), transaction_kind : TransactionKind = TransactionKind::SLOW) : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        "send", # action
+        senders,
+        recipients,
+        "0",   # message
+        token, # token
+        "0",   # prev_hash
+        0_i64, # timestamp
+        1,     # scaled
+        transaction_kind
+      )
+      unsigned_transaction.as_signed(signer_wallets)
     end
 
     def align_transaction(transaction : Transaction, prev_hash : String) : Transaction
@@ -148,7 +220,8 @@ module ::Units::Utils::ChainGenerator
         TOKEN_DEFAULT, # token
         prev_hash,     # prev_hash
         0_i64,         # timestamp
-        1              # scaled
+        1,             # scaled
+        TransactionKind::SLOW
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -164,7 +237,8 @@ module ::Units::Utils::ChainGenerator
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
         0_i64,         # timestamp
-        1              # scaled
+        1,             # scaled
+        TransactionKind::SLOW
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -180,7 +254,8 @@ module ::Units::Utils::ChainGenerator
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
         0_i64,         # timestamp
-        1              # scaled
+        1,             # scaled
+        TransactionKind::SLOW
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -196,7 +271,8 @@ module ::Units::Utils::ChainGenerator
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
         0_i64,         # timestamp
-        1              # scaled
+        1,             # scaled
+        TransactionKind::SLOW
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -212,7 +288,8 @@ module ::Units::Utils::ChainGenerator
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
         0_i64,         # timestamp
-        1              # scaled
+        1,             # scaled
+        TransactionKind::SLOW
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -228,7 +305,8 @@ module ::Units::Utils::ChainGenerator
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
         0_i64,         # timestamp
-        1              # scaled
+        1,             # scaled
+        TransactionKind::SLOW
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -244,7 +322,8 @@ module ::Units::Utils::ChainGenerator
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
         0_i64,         # timestamp
-        1              # scaled
+        1,             # scaled
+        TransactionKind::SLOW
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -260,7 +339,8 @@ module ::Units::Utils::ChainGenerator
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
         0_i64,         # timestamp
-        1              # scaled
+        1,             # scaled
+        TransactionKind::SLOW
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -276,12 +356,13 @@ module ::Units::Utils::ChainGenerator
         token, # token
         "0",   # prev_hash
         0_i64, # timestamp
-        1      # scaled
+        1,     # scaled
+        TransactionKind::SLOW
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
 
-    def make_create_token(token : String, senders : Array(Transaction::Sender), recipients : Array(Transaction::Recipient)) : Transaction
+    def make_create_token(token : String, senders : Array(Transaction::Sender), recipients : Array(Transaction::Recipient), sender_wallet : Wallet, transaction_kind : TransactionKind = TransactionKind::SLOW) : Transaction
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
         transaction_id,
@@ -292,7 +373,8 @@ module ::Units::Utils::ChainGenerator
         token, # token
         "0",   # prev_hash
         0_i64, # timestamp
-        1      # scaled
+        1,     # scaled
+        transaction_kind
       )
       unsigned_transaction.as_signed([sender_wallet])
     end

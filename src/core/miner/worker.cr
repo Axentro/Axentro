@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core
-  alias MinerWork = NamedTuple(start_nonce: UInt64, difficulty: Int32, block: Block)
+  alias MinerWork = NamedTuple(start_nonce: UInt64, difficulty: Int32, block: SlowBlock)
 
   class MinerWorker < Tokoroten::Worker
     def task(message : String)

@@ -27,7 +27,7 @@ module ::Sushi::Core::NodeComponents
 
     alias Miners = Array(Miner)
 
-    @most_difficult_block_so_far : Block
+    @most_difficult_block_so_far : SlowBlock
     @block_start_time : Int64
 
     getter miners : Miners = Miners.new
@@ -98,6 +98,11 @@ module ::Sushi::Core::NodeComponents
       if miner = find?(socket)
         block = @blockchain.mining_block.with_nonce(nonce)
 
+        if ENV.has_key?("SC_SET_DIFFICULTY")
+          mint_block(block)
+          return
+        end
+
         debug "Received a freshly mined block..."
         block.to_s
 
@@ -148,7 +153,7 @@ module ::Sushi::Core::NodeComponents
       end
     end
 
-    def mint_block(block : Block)
+    def mint_block(block : SlowBlock)
       @highest_difficulty_mined_so_far = 0
       @block_start_time = __timestamp
       node.new_block(block)
@@ -169,7 +174,7 @@ module ::Sushi::Core::NodeComponents
     end
 
     def broadcast
-      info "#{magenta("UPDATED BLOCK")}: #{light_green(@blockchain.mining_block.index)} at difficulty: #{light_cyan(@blockchain.mining_block_difficulty)}"
+      info "#{magenta("PREPARING NEXT SLOW BLOCK")}: #{light_green(@blockchain.mining_block.index)} at difficulty: #{light_cyan(@blockchain.mining_block_difficulty)}"
       debug "new block difficulty: #{@blockchain.mining_block_difficulty}, " +
             "mining difficulty: #{@blockchain.mining_block_difficulty_miner}"
 

@@ -11,7 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "./../../spec_helper"
-require "./../utils"
 
 include Units::Utils
 include Sushi::Core
@@ -37,7 +36,8 @@ describe Transaction do
       TOKEN_DEFAULT, # token
       "0",           # prev_hash
       0_i64,         # timestamp
-      1              # scaled
+      1,             # scaled
+      TransactionKind::SLOW
     )
 
     transaction.action.should eq("send")
@@ -60,7 +60,7 @@ describe Transaction do
   describe "#valid_as_embedded?" do
     it "should return true when valid" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.add_block([transaction_factory.make_send(2000_i64)]).chain
+        chain = block_factory.add_slow_block([transaction_factory.make_send(2000_i64)]).chain
         transactions = chain.last.transactions
 
         transaction = transaction_factory.make_send(1000_i64)
@@ -72,7 +72,7 @@ describe Transaction do
 
     it "should raise not checked signing if not common checked" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.add_block([transaction_factory.make_send(2000_i64)]).chain
+        chain = block_factory.add_slow_block([transaction_factory.make_send(2000_i64)]).chain
         transactions = chain.last.transactions
 
         transaction = transaction_factory.make_send(1000_i64)
@@ -84,7 +84,7 @@ describe Transaction do
 
     it "should raise amount mismatch for senders and recipients if they are not equal" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.add_block([transaction_factory.make_send(2000_i64)]).chain
+        chain = block_factory.add_slow_block([transaction_factory.make_send(2000_i64)]).chain
         transactions = chain.last.transactions
 
         sender_wallet = transaction_factory.sender_wallet
@@ -100,7 +100,8 @@ describe Transaction do
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
         transaction = unsigned_transaction.as_signed([sender_wallet])
         transaction.valid_common?.should be_true
@@ -114,7 +115,7 @@ describe Transaction do
 
     it "should raise invalid prev hash if prev hash is invalid" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.add_block([transaction_factory.make_send(2000_i64)]).chain
+        chain = block_factory.add_slow_block([transaction_factory.make_send(2000_i64)]).chain
         transactions = chain.last.transactions
 
         transaction = transaction_factory.make_send(2000_i64)
@@ -131,19 +132,20 @@ describe Transaction do
   describe "#valid_as_coinbase?" do
     it "should return true when valid" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.add_block([transaction_factory.make_send(2000_i64)]).chain
+        chain = block_factory.add_slow_block([transaction_factory.make_send(2000_i64)]).chain
         transactions = chain.last.transactions
 
         transaction = Transaction.new(
           Transaction.create_id,
           "head", # action
           [] of Transaction::Sender,
-          [a_recipient(transaction_factory.recipient_wallet, 1199999373_i64)],
+          [a_recipient(transaction_factory.recipient_wallet, 1199999686_i64)],
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
 
         transaction.valid_common?.should be_true
@@ -153,7 +155,7 @@ describe Transaction do
 
     it "should raise not checked signing if not common checked" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.add_block([transaction_factory.make_send(2000_i64)]).chain
+        chain = block_factory.add_slow_block([transaction_factory.make_send(2000_i64)]).chain
         transactions = chain.last.transactions
 
         transaction = Transaction.new(
@@ -165,7 +167,8 @@ describe Transaction do
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
 
         expect_raises(Exception, "be not checked signing") do
@@ -176,7 +179,7 @@ describe Transaction do
 
     it "should raise action error if not set to 'head'" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.add_block([transaction_factory.make_send(2000_i64)]).chain
+        chain = block_factory.add_slow_block([transaction_factory.make_send(2000_i64)]).chain
         transactions = chain.last.transactions
 
         transaction = Transaction.new(
@@ -188,7 +191,8 @@ describe Transaction do
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
 
         transaction.valid_common?.should be_true
@@ -200,7 +204,7 @@ describe Transaction do
 
     it "should raise message error if not set to '0'" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.add_block([transaction_factory.make_send(2000_i64)]).chain
+        chain = block_factory.add_slow_block([transaction_factory.make_send(2000_i64)]).chain
         transactions = chain.last.transactions
 
         transaction = Transaction.new(
@@ -212,7 +216,8 @@ describe Transaction do
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
 
         transaction.valid_common?.should be_true
@@ -224,7 +229,7 @@ describe Transaction do
 
     it "should raise token error if not set to SUSHI" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.add_block([transaction_factory.make_send(2000_i64)]).chain
+        chain = block_factory.add_slow_block([transaction_factory.make_send(2000_i64)]).chain
         transactions = chain.last.transactions
 
         transaction = Transaction.new(
@@ -236,7 +241,8 @@ describe Transaction do
           "INVALID", # token
           "0",       # prev_hash
           0_i64,     # timestamp
-          1          # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
 
         transaction.valid_common?.should be_true
@@ -248,7 +254,7 @@ describe Transaction do
 
     it "should raise sender error if a sender is provided" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.add_block([transaction_factory.make_send(2000_i64)]).chain
+        chain = block_factory.add_slow_block([transaction_factory.make_send(2000_i64)]).chain
         transactions = chain.last.transactions
 
         transaction = Transaction.new(
@@ -260,7 +266,8 @@ describe Transaction do
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
 
         transaction.valid_common?.should be_true
@@ -273,7 +280,7 @@ describe Transaction do
 
     it "should raise prev hash error if not set to '0'" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.add_block([transaction_factory.make_send(2000_i64)]).chain
+        chain = block_factory.add_slow_block([transaction_factory.make_send(2000_i64)]).chain
         transactions = chain.last.transactions
 
         transaction = Transaction.new(
@@ -285,7 +292,8 @@ describe Transaction do
           TOKEN_DEFAULT, # token
           "1",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
 
         transaction.valid_common?.should be_true
@@ -297,7 +305,7 @@ describe Transaction do
 
     it "should raise invalid served amount if the served amount does not equal the served sum" do
       with_factory do |block_factory, transaction_factory|
-        chain = block_factory.add_block([transaction_factory.make_send(2000_i64)]).chain
+        chain = block_factory.add_slow_block([transaction_factory.make_send(2000_i64)]).chain
         transactions = chain.last.transactions
 
         transaction = Transaction.new(
@@ -309,11 +317,12 @@ describe Transaction do
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
 
         transaction.valid_common?.should be_true
-        expect_raises(Exception, "invalid served amount for coinbase transaction: expected 1199999373 but got 1000") do
+        expect_raises(Exception, "invalid served amount for coinbase transaction at index: 1 expected 1199999686 but got 1000") do
           transaction.valid_as_coinbase?(block_factory.blockchain, 1, transactions).should be_true
         end
       end
@@ -323,7 +332,7 @@ describe Transaction do
   describe "#valid_common?" do
     it "should return true when valid" do
       with_factory do |block_factory, transaction_factory|
-        block_factory.add_block([transaction_factory.make_send(2000_i64)])
+        block_factory.add_slow_block([transaction_factory.make_send(2000_i64)])
 
         transaction = transaction_factory.make_send(2000_i64)
         transaction.valid_common?.should be_true
@@ -332,7 +341,7 @@ describe Transaction do
 
     it "should raise transaction id length error if not 64" do
       with_factory do |block_factory, transaction_factory|
-        block_factory.add_block([transaction_factory.make_send(2000_i64)])
+        block_factory.add_slow_block([transaction_factory.make_send(2000_i64)])
 
         transaction = transaction_factory.make_send(2000_i64)
         transaction.id = "123"
@@ -344,7 +353,7 @@ describe Transaction do
 
     it "should raise message size error if size > max" do
       with_factory do |block_factory, transaction_factory|
-        block_factory.add_block([transaction_factory.make_send(2000_i64)])
+        block_factory.add_slow_block([transaction_factory.make_send(2000_i64)])
 
         transaction = transaction_factory.make_send(2000_i64)
         transaction.message = ("exceeds"*100)
@@ -356,7 +365,7 @@ describe Transaction do
 
     it "should raise token size error if size > max" do
       with_factory do |block_factory, transaction_factory|
-        block_factory.add_block([transaction_factory.make_send(2000_i64)])
+        block_factory.add_slow_block([transaction_factory.make_send(2000_i64)])
 
         transaction = transaction_factory.make_send(2000_i64)
         transaction.token = ("exceeds"*100)
@@ -368,7 +377,7 @@ describe Transaction do
 
     it "should raise unscaled error if transaction is unscaled" do
       with_factory do |block_factory, transaction_factory|
-        block_factory.add_block([transaction_factory.make_send(2000_i64)])
+        block_factory.add_slow_block([transaction_factory.make_send(2000_i64)])
 
         transaction = transaction_factory.make_send(2000_i64)
         transaction.scaled = 0
@@ -380,7 +389,7 @@ describe Transaction do
 
     it "should raise invalid signing for sender if sender not signed" do
       with_factory do |block_factory, transaction_factory|
-        block_factory.add_block([transaction_factory.make_send(2000_i64)])
+        block_factory.add_slow_block([transaction_factory.make_send(2000_i64)])
 
         transaction = transaction_factory.make_send(2000_i64)
         transaction = transaction.as_unsigned
@@ -392,7 +401,7 @@ describe Transaction do
 
     it "should raise checksum error if sender address checksum is invalid" do
       with_factory do |block_factory, transaction_factory|
-        block_factory.add_block([transaction_factory.make_send(2000_i64)])
+        block_factory.add_slow_block([transaction_factory.make_send(2000_i64)])
 
         invalid_sender = {
           address:    Base64.strict_encode("T0invalid-wallet-address"),
@@ -412,7 +421,8 @@ describe Transaction do
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
         expect_raises(Exception, "invalid sender address checksum for: VDBpbnZhbGlkLXdhbGxldC1hZGRyZXNz") do
           transaction.valid_common?
@@ -422,7 +432,7 @@ describe Transaction do
 
     it "should raise checksum error if recipient address checksum is invalid" do
       with_factory do |block_factory, transaction_factory|
-        block_factory.add_block([transaction_factory.make_send(2000_i64)])
+        block_factory.add_slow_block([transaction_factory.make_send(2000_i64)])
 
         invalid_recipient = {
           address: Base64.strict_encode("T0invalid-wallet-address"),
@@ -438,7 +448,8 @@ describe Transaction do
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
           0_i64,         # timestamp
-          1              # scaled
+          1,             # scaled
+          TransactionKind::SLOW
         )
         transaction = unsigned_transaction.as_signed([transaction_factory.sender_wallet])
         expect_raises(Exception, "invalid recipient address checksum for: VDBpbnZhbGlkLXdhbGxldC1hZGRyZXNz") do
@@ -461,7 +472,8 @@ describe Transaction do
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
         0_i64,         # timestamp
-        1              # scaled
+        1,             # scaled
+        TransactionKind::SLOW
       )
 
       signed_transaction = unsigned_transaction.as_signed([sender_wallet])
@@ -484,7 +496,8 @@ describe Transaction do
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
         0_i64,         # timestamp
-        1              # scaled
+        1,             # scaled
+        TransactionKind::SLOW
       )
 
       signed_transaction = unsigned_transaction.as_signed([sender_wallet])
@@ -512,7 +525,8 @@ describe Transaction do
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
         0_i64,         # timestamp
-        1              # scaled
+        1,             # scaled
+        TransactionKind::SLOW
       )
 
       transaction.sender_total_amount.should eq(10_i64)
@@ -533,7 +547,8 @@ describe Transaction do
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
         0_i64,         # timestamp
-        1              # scaled
+        1,             # scaled
+        TransactionKind::SLOW
       )
 
       transaction.recipient_total_amount.should eq(10_i64)
@@ -554,7 +569,8 @@ describe Transaction do
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
         0_i64,         # timestamp
-        1              # scaled
+        1,             # scaled
+        TransactionKind::SLOW
       )
 
       transaction.total_fees.should eq(10000_i64)

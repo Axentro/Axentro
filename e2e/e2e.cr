@@ -22,6 +22,8 @@ class SushiChainE2E
   @num_nodes : Int32 = 3
   @num_miners : Int32 = 3
   @time : Int32 = 300
+  @keep_logs : Bool = false
+  @no_transactions : Bool = false
 
   def initialize
     ENV["SC_E2E"] = "true"
@@ -30,6 +32,7 @@ class SushiChainE2E
   def parse_option!
     OptionParser.parse! do |parser|
       parser.banner = "Usage: e2e [options]"
+
       parser.on("--mode=MODE", "E2E test mode (on of [all_public, all_private, one_private])") do |mode|
         if mode != "all_public" && mode != "all_private" && mode != "one_private"
           puts "the mode is one of [all_public, all_private, one_private]"
@@ -37,6 +40,14 @@ class SushiChainE2E
         end
 
         @mode = mode
+      end
+
+      parser.on("--clean-all", "standalone clean-up") do
+        puts "cleaning logs, wallets and db"
+        ::E2E::Runner.clean_logs
+        ::E2E::Runner.clean_db
+        ::E2E::Runner.clean_wallets
+        exit 0
       end
 
       parser.on("--num_nodes=NUM", "# of nodes (default is 4)") do |num|
@@ -49,6 +60,19 @@ class SushiChainE2E
 
       parser.on("--time=TIME", "execution time in sec (default is 300 )") do |time|
         @time = time.to_i
+      end
+
+      parser.on("--keep-logs", "keep generated logs, wallets and db") do
+        @keep_logs = true
+        ENV["SC_LOG"] = "debug"
+        ENV.delete("SC_SET_DIFFICULTY")
+        ENV.delete("SC_UNIT")
+        ENV.delete("SC_INTEGRATION")
+        ENV.delete("SC_E2E")
+      end
+
+      parser.on("--no-transactions", "don't send any transactions during run") do
+        @no_transactions = true
       end
 
       parser.on("--help", "show this help") do
@@ -73,7 +97,7 @@ class SushiChainE2E
     raise "invalid value of arg --num_nodes" if @num_nodes < 0
     raise "invalid value of arg --num_miners" if @num_miners < 0
 
-    runner = ::E2E::Runner.new(runner_mode, @num_nodes, @num_miners, @time)
+    runner = ::E2E::Runner.new(runner_mode, @num_nodes, @num_miners, @time, @keep_logs, @no_transactions)
     runner.run!
 
     exit runner.exit_code

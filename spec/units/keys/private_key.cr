@@ -11,7 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "./../../spec_helper"
-require "./../utils"
 
 include Sushi::Core
 include Sushi::Core::Keys
@@ -75,10 +74,10 @@ describe PrivateKey do
 
   describe "#network" do
     it "should return the mainnet by default" do
-      Keys.generate.private_key.network.should eq(MAINNET)
+      KeyRing.generate.private_key.network.should eq(MAINNET)
     end
     it "should return the supplied network" do
-      Keys.generate(TESTNET).private_key.network.should eq(TESTNET)
+      KeyRing.generate(TESTNET).private_key.network.should eq(TESTNET)
     end
   end
 
@@ -91,13 +90,13 @@ describe PrivateKey do
     end
 
     it "should return a mainnet address" do
-      keys = Keys.generate
+      keys = KeyRing.generate
       decoded_address = Base64.decode_string(keys.private_key.address.as_hex)
       decoded_address[0..1].should eq("M0")
     end
 
     it "should return a testnet address" do
-      keys = Keys.generate(TESTNET)
+      keys = KeyRing.generate(TESTNET)
       decoded_address = Base64.decode_string(keys.private_key.address.as_hex)
       decoded_address[0..1].should eq("T0")
     end
@@ -105,7 +104,7 @@ describe PrivateKey do
 
   describe "#is_valid?" do
     it "should return true if the public key is valid" do
-      Keys.generate.private_key.is_valid?.should be_true
+      KeyRing.generate.private_key.is_valid?.should be_true
     end
   end
   STDERR.puts "< Keys::PrivateKey"

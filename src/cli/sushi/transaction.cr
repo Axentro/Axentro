@@ -54,6 +54,7 @@ module ::Sushi::Interface::Sushi
         Options::DOMAIN,
         Options::TOKEN,
         Options::CONFIG_NAME,
+        Options::IS_FAST_TRANSACTION
       ])
     end
 
@@ -118,7 +119,9 @@ module ::Sushi::Interface::Sushi
         }
       )
 
-      add_transaction(node, action, wallets, senders, recipients, G.op.__message, G.op.__token || TOKEN_DEFAULT)
+      kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW
+
+      add_transaction(node, action, wallets, senders, recipients, G.op.__message, G.op.__token || TOKEN_DEFAULT, kind)
     end
 
     def transactions

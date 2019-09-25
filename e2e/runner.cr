@@ -33,10 +33,10 @@ module ::E2E
 
     getter exit_code : Int32 = 0
 
-    def initialize(@mode : Int32, @num_nodes : Int32, @num_miners : Int32, @time : Int32)
+    def initialize(@mode : Int32, @num_nodes : Int32, @num_miners : Int32, @time : Int32, @keep_logs : Bool, @no_transactions : Bool)
       @node_ports = (4001..4001 + (@num_nodes - 1)).to_a
 
-      Client.initialize(@node_ports, @num_miners)
+      Client.initialize(@node_ports, @num_miners, @no_transactions)
 
       @db_name = Random.new.hex
     end
@@ -233,12 +233,11 @@ module ::E2E
         size = blockchain_size(port)
         STDERR.puts "> blocks on port #{port} (size: #{size})"
 
-        size.times do |i|
+        (0..((size-2)*2)).select(&.even?).each do |i|
           unless block = block(port, i)
             STDERR.puts "%2d --- %s" % [i, "failed to get block at #{i} on #{port}"]
             next
           end
-
           STDERR.puts "%2d --- %s" % [i, block["prev_hash"].as_s]
         end
       end
@@ -252,19 +251,19 @@ module ::E2E
       verify_blockchain_can_be_restored_from_database
     end
 
-    def clean_db
+    def self.clean_db
       Dir.glob(File.expand_path("../db/*.db", __FILE__)) do |db|
         FileUtils.rm_rf db
       end
     end
 
-    def clean_wallets
+    def self.clean_wallets
       Dir.glob(File.expand_path("../wallets/*.json", __FILE__)) do |wallet|
         FileUtils.rm_rf wallet
       end
     end
 
-    def clean_logs
+    def self.clean_logs
       Dir.glob(File.expand_path("../logs/*.log", __FILE__)) do |log|
         FileUtils.rm_rf log
       end
@@ -293,9 +292,13 @@ module ::E2E
 
       STDERR.puts "start E2E tests with #{light_green(mode_str)} mode"
 
+      puts "keep logs: #{@keep_logs}"
+      puts "no transactions: #{@no_transactions}"
       step kill_nodes, 0, "kill existing nodes"
       step kill_miners, 0, "kill existing miners"
-      step clean_logs, 0, "clean logs"
+      step Runner.clean_logs, 0, "clean logs"
+      step Runner.clean_db, 0, "clean database"
+      step Runner.clean_wallets, 0, "clean wallets"
       step create_wallets, 0, "create wallets"
       step launch_nodes, 1, "launch nodes"
       step launch_miners, 1, "launch miners"
@@ -322,8 +325,8 @@ module ::E2E
     ensure
       step benchmark_result, 0, "show benchmark result"
       step kill_nodes, 0, "kill nodes"
-      step clean_db, 2, "clean database"
-      step clean_wallets, 2, "clean wallets"
+      (step Runner.clean_db, 2, "clean database") unless @keep_logs
+      (step Runner.clean_wallets, 2, "clean wallets") unless @keep_logs
     end
 
     include Utils

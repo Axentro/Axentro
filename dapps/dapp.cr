@@ -126,7 +126,7 @@ module ::Sushi::Core::DApps::User
     #
     # (You can see the details of `create_sender`, `create_recipient` and `create_transaction` below.)
     #
-    abstract def new_block(block : Block)
+    abstract def new_block(block : SlowBlock | FastBlock)
 
     #
     # You can define a RPC (Remote Procedure Call) to your node
@@ -207,7 +207,8 @@ module ::Sushi::Core::DApps::User
       senders : SendersDecimal,
       recipients : RecipientsDecimal,
       message : String,
-      token : String
+      token : String,
+      kind : TransactionKind
     ) : Bool
       if blockchain.indices.get(id)
         info "skip creating transaction #{id}"
@@ -220,6 +221,7 @@ module ::Sushi::Core::DApps::User
         recipients,
         message,
         token,
+        kind,
         id,
       )
 
@@ -236,7 +238,7 @@ module ::Sushi::Core::DApps::User
     # are used to create it.
     # So if you will change it, the id also be changed.
     #
-    def create_transaction_id(block : Block, transaction : Transaction) : String
+    def create_transaction_id(block : SlowBlock | FastBlock, transaction : Transaction) : String
       sha256(
         valid_addresses.join("") +
         valid_networks.join("") +

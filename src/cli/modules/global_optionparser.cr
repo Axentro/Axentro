@@ -60,6 +60,8 @@ module ::Sushi::Interface
 
     @developer_fund_path : String?
 
+    @is_fast_transaction : Bool = false
+
     enum Options
       # common options
       CONNECT_NODE
@@ -83,6 +85,7 @@ module ::Sushi::Interface
       BLOCK_INDEX
       TRANSACTION_ID
       FEE
+      IS_FAST_TRANSACTION
       # for blockchain
       HEADER
       # for miners
@@ -132,6 +135,8 @@ module ::Sushi::Interface
         parse_config_name(parser, actives)
         parse_node_id(parser, actives)
         parse_developer_fund(parser, actives)
+        parse_slow_transaction(parser, actives)
+        parse_fast_transaction(parser, actives)
       end
     end
 
@@ -263,7 +268,7 @@ module ::Sushi::Interface
     end
 
     private def parse_fee(parser : OptionParser, actives : Array(Options))
-      parser.on("-f FEE", "--fee=FEE", I18n.translate("cli.options.transaction")) { |fee|
+      parser.on("-f FEE", "--fee=FEE", I18n.translate("cli.options.fee")) { |fee|
         decimal_option(fee) do
           @fee = fee
         end
@@ -324,6 +329,20 @@ module ::Sushi::Interface
       parser.on("--developer-fund=DEVELOPER_FUND", I18n.translate("cli.options.developer_fund")) { |developer_fund|
         @developer_fund_path = developer_fund
       } if is_active?(actives, Options::DEVELOPER_FUND)
+    end
+
+    private def parse_slow_transaction(parser : OptionParser, actives : Array(Options))
+      parser.on("--slow-transaction", I18n.translate("cli.options.slow_transaction")) {
+        @is_fast_transaction = false
+        @is_fast_transaction_changed = true
+      } if is_active?(actives, Options::IS_FAST_TRANSACTION)
+    end
+
+    private def parse_fast_transaction(parser : OptionParser, actives : Array(Options))
+      parser.on("--fast-transaction", I18n.translate("cli.options.fast_transaction")) {
+        @is_fast_transaction = true
+        @is_fast_transaction_changed = true
+      } if is_active?(actives, Options::IS_FAST_TRANSACTION)
     end
 
     def is_active?(actives : Array(Options), option : Options) : Bool
@@ -448,6 +467,12 @@ module ::Sushi::Interface
 
     def __developer_fund : Core::DeveloperFund?
       Core::DeveloperFund.validate(@developer_fund_path)
+    end
+
+    def __is_fast_transaction : Bool
+      return @is_fast_transaction if @is_fast_transaction_changed
+      return cm.get_bool("is_fast_transaction", @config_name).not_nil! if cm.get_bool("is_fast_transaction", @config_name)
+      @is_fast_transaction
     end
 
     def cm

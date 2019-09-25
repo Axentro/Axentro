@@ -22,16 +22,17 @@ module ::Sushi::Core
       @db.exec "create table if not exists blocks (idx integer primary key, json text)"
     end
 
-    def push_block(block : Block)
+    def push_block(block : SlowBlock | FastBlock)
+      debug "database.push_block with block of kind: #{block.kind}"
       index = block.index
       json = block.to_json
 
       debug "inserting block into database with size: #{json.size}"
-      @db.exec "insert into blocks values (?, ?)", [index.to_i64, json]
+      @db.exec "insert into blocks values (?, ?)", index.to_i64, json
     end
 
     def delete_blocks(from : Int64)
-      @db.exec "delete from blocks where idx >= ?", [from]
+      @db.exec "delete from blocks where idx >= ?", from
     end
 
     def replace_chain(chain : Blockchain::Chain)
@@ -41,24 +42,39 @@ module ::Sushi::Core
         index = block.index
         json = block.to_json
 
-        @db.exec "insert into blocks values (?, ?)", [index.to_i64, json]
+        @db.exec "insert into blocks values (?, ?)", index.to_i64, json
       end
     end
 
-    def get_block(index : Int64) : Block?
-      block : Block? = nil
+    def get_block(index : Int64) : (SlowBlock? | FastBlock?)
+      block : (SlowBlock? | FastBlock?) = nil
 
-      @db.query "select json from blocks where idx = ?", [index] do |rows|
+      @db.query "select json from blocks where idx = ?", index do |rows|
         rows.each do
           json = rows.read(String)
-          block = Block.from_json(json)
+          block = determine_block_kind(json)
         end
       end
 
       block
     end
 
-    def max_index : Int64
+    def determine_block_kind(json) : SlowBlock | FastBlock
+      json_string = JSON.parse(json)["kind"].to_s
+      kind = BlockKind.parse(json_string)
+      case kind
+      when BlockKind::SLOW then SlowBlock.from_json(json)
+      when BlockKind::FAST then FastBlock.from_json(json)
+      else
+        raise "BlockKind Error: Unrecognised block kind for block value: #{json_string}"
+      end
+    end
+
+    def total_blocks : Int32
+      @db.query_one("select count(*) from blocks", as: Int32)
+    end
+
+    def highest_index : Int64
       idx : Int64? = nil
 
       @db.query "select max(idx) from blocks" do |rows|
@@ -70,6 +86,7 @@ module ::Sushi::Core
       idx || -1_i64
     end
 
+    include Block
     include Logger
   end
 end

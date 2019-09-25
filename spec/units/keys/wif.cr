@@ -11,7 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "./../../spec_helper"
-require "./../utils"
 
 include Sushi::Core
 include Sushi::Core::Keys
@@ -40,21 +39,21 @@ describe Wif do
   end
 
   it "should return the public key when calling #public_key" do
-    keys = Keys.generate
+    keys = KeyRing.generate
     keys.wif.public_key.as_hex.should eq(keys.public_key.as_hex)
   end
 
   it "should return the private key when calling #private_key" do
-    keys = Keys.generate
+    keys = KeyRing.generate
     keys.wif.private_key.as_hex.should eq(keys.private_key.as_hex)
   end
 
   describe "#network" do
     it "should return the mainnet by default" do
-      Keys.generate.wif.network.should eq(MAINNET)
+      KeyRing.generate.wif.network.should eq(MAINNET)
     end
     it "should return the supplied network" do
-      Keys.generate(TESTNET).wif.network.should eq(TESTNET)
+      KeyRing.generate(TESTNET).wif.network.should eq(TESTNET)
     end
   end
 
@@ -70,7 +69,7 @@ describe Wif do
 
   describe "#is_valid?" do
     it "should return true if the wif is valid" do
-      Keys.generate.wif.is_valid?.should be_true
+      KeyRing.generate.wif.is_valid?.should be_true
     end
   end
   STDERR.puts "< Keys::Wif"

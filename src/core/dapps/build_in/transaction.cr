@@ -50,8 +50,9 @@ module ::Sushi::Core::DApps::BuildIn
       recipients = RecipientsDecimal.from_json(json["recipients"].to_json)
       message = json["message"].as_s
       token = json["token"].as_s
+      kind = TransactionKind.parse(json["kind"].as_s)
 
-      transaction = create_unsigned_transaction_impl(action, senders, recipients, message, token)
+      transaction = create_unsigned_transaction_impl(action, senders, recipients, message, token, kind)
 
       context.response.print api_success(transaction)
       context
@@ -63,6 +64,7 @@ module ::Sushi::Core::DApps::BuildIn
       recipients : RecipientsDecimal,
       message : String,
       token : String,
+      kind : TransactionKind,
       id : String = Transaction.create_id
     )
       transaction = TransactionDecimal.new(
@@ -75,6 +77,7 @@ module ::Sushi::Core::DApps::BuildIn
         "0",         # prev_hash
         __timestamp, # timestamp
         0,           # scaled
+        kind
       ).to_transaction
 
       fee = transaction.total_fees
