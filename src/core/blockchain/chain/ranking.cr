@@ -10,8 +10,14 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Common::Timestamp
-  def __timestamp : Int64
-    Time.utc_now.to_unix_ms
+module ::Sushi::Core
+  struct Ranking
+    def self.chain(chain)
+      chain.select(&.is_slow_block?).map { |block| block.address }.first(1440)
+    end
+
+    def self.rank(address, chain) : Int32
+      chain.tally[address]? || 0
+    end
   end
 end

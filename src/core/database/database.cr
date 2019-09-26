@@ -29,20 +29,20 @@ module ::Sushi::Core
     end
 
     def block_table_create_string : String
-      "idx integer primary key, nonce text, prev_hash text, timestamp integer, difficulty integer, kind text, public_key text, sign_r text, sign_s text, hash text"
+      "idx integer primary key, nonce text, prev_hash text, timestamp integer, difficulty integer, address text, kind text, public_key text, sign_r text, sign_s text, hash text"
     end
 
     def block_insert_fields_string : String
-     "?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
+     "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
     end
 
     def block_insert_values_array(block : SlowBlock | FastBlock) : Array(DB::Any)
       ary = [] of DB::Any
       case block
         when SlowBlock
-          ary << block.index << block.nonce.to_s << block.prev_hash << block.timestamp << block.difficulty << block.kind.to_s << "" << "" << "" << ""
+          ary << block.index << block.nonce.to_s << block.prev_hash << block.timestamp << block.difficulty << block.address << block.kind.to_s << "" << "" << "" << ""
         when FastBlock
-          ary << block.index << "" << block.prev_hash << block.timestamp << 0 << block.kind.to_s << block.public_key << block.sign_r << block.sign_s << block.hash
+          ary << block.index << "" << block.prev_hash << block.timestamp << 0 << block.address << block.kind.to_s << block.public_key << block.sign_r << block.sign_s << block.hash
       end
       ary
     end
@@ -202,6 +202,7 @@ module ::Sushi::Core
           prev_hash = rows.read(String)
           timestamp = rows.read(Int64)
           diffculty = rows.read(Int32)
+          address = rows.read(String)
           kind_string = rows.read(String)
           public_key = rows.read(String)
           sign_r = rows.read(String)
@@ -212,16 +213,17 @@ module ::Sushi::Core
           debug "read nonce: #{nonce}"
           debug "read prev_hash: #{prev_hash}"
           debug "read timestamp: #{timestamp}"
+          debug "read address: #{address}"
           debug "read block kind: #{kind_string}"
           if kind_string == "SLOW"
             debug "read diffculty: #{diffculty}"
-            blocks << SlowBlock.new(idx, [] of Transaction, nonce, prev_hash, timestamp, diffculty)
+            blocks << SlowBlock.new(idx, [] of Transaction, nonce, prev_hash, timestamp, diffculty, address)
           else
             debug "read public_key: #{public_key}"
             debug "read sign_r: #{sign_r}"
             debug "read sign_s: #{sign_s}"
             debug "read hash: #{hash}"
-            blocks << FastBlock.new(idx, [] of Transaction, prev_hash, timestamp, public_key, sign_r, sign_s, hash)
+            blocks << FastBlock.new(idx, [] of Transaction, prev_hash, timestamp, address, public_key, sign_r, sign_s, hash)
           end
         end
       end

@@ -113,15 +113,6 @@ module ::Sushi::Core::NodeComponents
       @clients.find { |c| c[:context][:address] == address }
     end
 
-    # def self.secp256k1 : ECDSA::Secp256k1
-    #   @@secp256k1 ||= ECDSA::Secp256k1.new
-    #   @@secp256k1.not_nil!
-    # end
-    #
-    # private def secp256k1
-    #   ClientsManager.secp256k1
-    # end
-
     private def node
       @blockchain.node
     end

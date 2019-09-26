@@ -21,6 +21,7 @@ module ::Sushi::Core
       merkle_tree_root: String,
       timestamp:        Int64,
       kind:             BlockKind,
+      address:          String,
       public_key:       String,
       sign_r:           String,
       sign_s:           String,
@@ -32,10 +33,11 @@ module ::Sushi::Core
       @transactions : Array(Transaction),
       @prev_hash : String,
       @timestamp : Int64,
+      @address : String,
       @public_key : String,
       @sign_r : String,
       @sign_s : String,
-      @hash : String,
+      @hash : String
     )
       raise "index must be odd number" if index.even?
       @merkle_tree_root = calculate_merkle_tree_root
@@ -52,7 +54,7 @@ module ::Sushi::Core
     end
 
     def to_hash : String
-      string = self.to_json
+      string = FastBlockNoTimestamp.from_fast_block(self).to_json
       sha256(string)
     end
 
@@ -111,6 +113,17 @@ module ::Sushi::Core
     end
 
     def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool) : Bool
+      valid_signature = ECCrypto.verify(
+        @public_key,
+        @hash,
+        @sign_r,
+        @sign_s
+      )
+      raise "Invalid Block Signature: the current block index: #{@index} has an invalid signature" unless valid_signature
+
+      valid_leader = Ranking.rank(@address, Ranking.chain(blockchain.chain)) > 0
+      raise "Invalid leader: the block was signed by a leader who is not ranked" unless valid_leader
+
       prev_block = blockchain.latest_fast_block || blockchain.get_genesis_block
       latest_fast_index = blockchain.get_latest_index_for_fast
 
@@ -121,7 +134,7 @@ module ::Sushi::Core
       end
 
       raise "Index Mismatch: the current block index: #{@index} should match the lastest fast block index: #{latest_fast_index}" if @index != latest_fast_index
-      raise "Invalid Previous Hash: for current index: #{@index} the prev_hash is invalid: #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
+      raise "Invalid Previous Hash: for current index: #{@index} the prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
 
       next_timestamp = __timestamp
       prev_timestamp = prev_block.timestamp
@@ -160,5 +173,36 @@ module ::Sushi::Core
     include Protocol
     include Consensus
     include Common::Timestamp
+  end
+
+  class FastBlockNoTimestamp
+    JSON.mapping({
+      index:            Int64,
+      transactions:     Array(Transaction),
+      prev_hash:        String,
+      merkle_tree_root: String,
+      address:          String,
+      public_key:       String,
+      sign_r:           String,
+      sign_s:           String,
+      hash:             String,
+    })
+
+    def self.from_fast_block(b : FastBlock)
+      self.new(b.index, b.transactions, b.prev_hash, b.merkle_tree_root, b.address, b.public_key, b.sign_r, b.sign_s, b.hash)
+    end
+
+    def initialize(
+      @index : Int64,
+      @transactions : Array(Transaction),
+      @prev_hash : String,
+      @merkle_tree_root : String,
+      @address : String,
+      @public_key : String,
+      @sign_r : String,
+      @sign_s : String,
+      @hash : String
+    )
+    end
   end
 end

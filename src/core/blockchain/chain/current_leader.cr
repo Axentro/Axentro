@@ -10,8 +10,27 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Common::Timestamp
-  def __timestamp : Int64
-    Time.utc_now.to_unix_ms
+module ::Sushi::Core
+  struct CurrentLeader
+    property address : String
+    property node_id : String
+
+    def initialize(@address : String, @node_id : String); end
+
+    def get_address : String
+      @address
+    end
+
+    def get_node_id : String
+      @node_id
+    end
+
+    def ==(other : CurrentLeader)
+      other.address == @address && other.node_id == @node_id
+    end
+
+    def to_s
+      "node_id: #{@node_id}, address: #{@address}"
+    end
   end
 end
