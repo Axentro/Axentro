@@ -9,6 +9,7 @@
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
+require "file_utils"
 require "./transaction"
 
 module ::Units::Utils::ChainGenerator

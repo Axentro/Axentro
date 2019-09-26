@@ -287,7 +287,8 @@ module ::Sushi::Core
       genesis_transactions = @developer_fund ? DeveloperFund.transactions(@developer_fund.not_nil!.get_config) : [] of Transaction
       genesis_nonce = 0_u64
       genesis_prev_hash = "genesis"
-      genesis_timestamp = Time.now.to_unix
+      #genesis_timestamp = __timestamp
+      genesis_timestamp = 0_i64
       genesis_difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
       address = "genesis"
 

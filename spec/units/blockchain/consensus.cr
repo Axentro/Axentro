@@ -60,7 +60,7 @@ describe Consensus do
               block = block.as(SlowBlock)
               block.timestamp = timestamp
               block.difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
-              timestamp += Consensus::POW_TARGET_SPACING.to_i64 + 5
+              timestamp += Consensus::POW_TARGET_SPACING.to_i64 + 5000
             end
             block_difficulty(block_factory.blockchain).should be < Consensus::DEFAULT_DIFFICULTY_TARGET
           end
@@ -75,7 +75,7 @@ describe Consensus do
               block = block.as(SlowBlock)
               block.timestamp = timestamp
               block.difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
-              timestamp += Consensus::POW_TARGET_SPACING.to_i64 - 5
+              timestamp += Consensus::POW_TARGET_SPACING.to_i64 - 5000
             end
             block_difficulty(block_factory.blockchain).should be > Consensus::DEFAULT_DIFFICULTY_TARGET
           end

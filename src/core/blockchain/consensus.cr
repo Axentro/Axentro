@@ -42,8 +42,8 @@ module ::Sushi::Core::Consensus
   # Dark Gravity Wave history lookback for averaging (in blocks)
   HISTORY_LOOKBACK       =      24
 
-  # SushiChain desired block spacing (in seconds)
-  POW_TARGET_SPACING     = 120_f64
+  # SushiChain desired block spacing (2 minutes .. 120 seconds expressed in milliseconds)
+  POW_TARGET_SPACING     = 120000_f64
 
   # Difficulty value to be used when there is absolutely no history reference
   DEFAULT_DIFFICULTY_TARGET      = 17_i32
@@ -69,7 +69,7 @@ module ::Sushi::Core::Consensus
     count_blocks = 0
     oldest_history_spot = Math.max(chain.size - HISTORY_LOOKBACK, 1)
     i = oldest_history_spot
-    last_block_time = chain[i].timestamp
+    last_block_time = chain[i].as(SlowBlock).timestamp
     #debug "Oldest history spot: #{oldest_history_spot}"
     while i < chain.size
       block_reading = chain[i].as(SlowBlock)

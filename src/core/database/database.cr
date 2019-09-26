@@ -105,7 +105,7 @@ module ::Sushi::Core
       @db.exec "BEGIN TRANSACTION"
       block.transactions.each_index do |ti|
         t = block.transactions[ti]
-        debug "writing transaction #{ti} to database with short ID of #{t.short_id}" if ti < 4
+        #debug "writing transaction #{ti} to database with short ID of #{t.short_id}" if ti < 4
         t.senders.each_index do |i|
          @db.exec "insert into senders values (#{sender_insert_fields_string})", args: sender_insert_values_array(block, t, i)
         end
@@ -114,7 +114,7 @@ module ::Sushi::Core
         end
        @db.exec "insert into transactions values (#{transaction_insert_fields_string})", args: transaction_insert_values_array(t, ti, block.index)
       end
-      debug "inserting block with #{block.transactions.size} transactions into database with index: #{block.index}"
+      #debug "inserting block with #{block.transactions.size} transactions into database with index: #{block.index}"
       @db.exec "insert into blocks values (#{block_insert_fields_string})", args: block_insert_values_array(block)
       @db.exec "END TRANSACTION"
     end
@@ -163,7 +163,7 @@ module ::Sushi::Core
 
     def get_transactions(index : Int64)
       transactions = [] of Transaction
-      debug "Reading transactions from the database for block #{index}"
+      #debug "Reading transactions from the database for block #{index}"
       ti = 0
       @db.query "select * from transactions where block_id = ? order by idx asc", index do |rows|
         rows.each do
@@ -181,7 +181,7 @@ module ::Sushi::Core
 
           t = Transaction.new(t_id, action, [] of Transaction::Sender, [] of Transaction::Recipient, message, token, prev_hash, timestamp, scaled, kind)
           transactions << t
-          debug "reading transaction #{ti} from database with short ID of #{t.short_id}" if ti < 4
+          #debug "reading transaction #{ti} from database with short ID of #{t.short_id}" if ti < 4
           ti += 1
         end
       end
@@ -208,21 +208,21 @@ module ::Sushi::Core
           sign_r = rows.read(String)
           sign_s = rows.read(String)
           hash = rows.read(String)
-          debug "read block idx: #{idx}"
-          debug "read nonce string: #{nonce_string}"
-          debug "read nonce: #{nonce}"
-          debug "read prev_hash: #{prev_hash}"
-          debug "read timestamp: #{timestamp}"
-          debug "read address: #{address}"
-          debug "read block kind: #{kind_string}"
+          #debug "read block idx: #{idx}"
+          #debug "read nonce string: #{nonce_string}"
+          #debug "read nonce: #{nonce}"
+          #debug "read prev_hash: #{prev_hash}"
+          #debug "read timestamp: #{timestamp}"
+          #debug "read address: #{address}"
+          #debug "read block kind: #{kind_string}"
           if kind_string == "SLOW"
-            debug "read diffculty: #{diffculty}"
+            #debug "read diffculty: #{diffculty}"
             blocks << SlowBlock.new(idx, [] of Transaction, nonce, prev_hash, timestamp, diffculty, address)
           else
-            debug "read public_key: #{public_key}"
-            debug "read sign_r: #{sign_r}"
-            debug "read sign_s: #{sign_s}"
-            debug "read hash: #{hash}"
+            #debug "read public_key: #{public_key}"
+            #debug "read sign_r: #{sign_r}"
+            #debug "read sign_s: #{sign_s}"
+            #debug "read hash: #{hash}"
             blocks << FastBlock.new(idx, [] of Transaction, prev_hash, timestamp, address, public_key, sign_r, sign_s, hash)
           end
         end

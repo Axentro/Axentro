@@ -63,7 +63,7 @@ module ::Sushi::Interface::SushiD
       database = if database_path = G.op.__database_path
                    Core::Database.new(database_path)
                  else
-                   raise "Database is required for node startup"
+                   raise "A database is required for node startup (use -d option)"
                  end
 
       developer_fund = G.op.__developer_fund

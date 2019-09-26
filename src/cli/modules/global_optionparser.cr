@@ -33,7 +33,7 @@ module ::Sushi::Interface
     @bind_host : String = "0.0.0.0"
     @bind_port : Int32 = 3000
     @public_url : String?
-    @database_path : String = Random.new.hex
+    @database_path : String?
 
     @address : String?
     @amount : String?
