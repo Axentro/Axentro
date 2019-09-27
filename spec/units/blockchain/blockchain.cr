@@ -59,8 +59,10 @@ describe Blockchain do
     it "should return true and replace slow chain" do
       with_factory do |block_factory|
         slow_sub_chain = block_factory.add_slow_blocks(10).chain
-
-        blockchain = Blockchain.new(block_factory.node_wallet, nil, nil)
+        test_database = "./test_spec2.db"
+        FileUtils.rm_rf test_database
+        database = Sushi::Core::Database.new(test_database)
+        blockchain = Blockchain.new(block_factory.node_wallet, database, nil)
         blockchain.setup(block_factory.node)
 
         expected = (blockchain.chain + slow_sub_chain[1..-1]).map(&.index).sort
@@ -77,7 +79,10 @@ describe Blockchain do
         slow_block_1 = chain[2].as(SlowBlock)
         slow_block_2 = chain[4].as(SlowBlock)
 
-        blockchain = Blockchain.new(block_factory.node_wallet, nil, nil)
+        test_database = "./test_spec2.db"
+        FileUtils.rm_rf test_database
+        database = Sushi::Core::Database.new(test_database)
+        blockchain = Blockchain.new(block_factory.node_wallet, database, nil)
         blockchain.setup(block_factory.node)
         blockchain.push_slow_block(slow_block_1)
         blockchain.push_slow_block(slow_block_2)
@@ -95,7 +100,10 @@ describe Blockchain do
         slow_block_1 = chain[2].as(SlowBlock)
         slow_sub_chain = chain.select(&.is_slow_block?)
 
-        blockchain = Blockchain.new(block_factory.node_wallet, nil, nil)
+        test_database = "./test_spec2.db"
+        FileUtils.rm_rf test_database
+        database = Sushi::Core::Database.new(test_database)
+        blockchain = Blockchain.new(block_factory.node_wallet, database, nil)
         blockchain.setup(block_factory.node)
         blockchain.push_slow_block(slow_block_1)
         expected = (blockchain.chain + slow_sub_chain[2..-1] + fast_sub_chain[0..-1]).map(&.index).sort

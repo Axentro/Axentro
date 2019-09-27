@@ -35,7 +35,7 @@ module ::Sushi::Core
     @mining_block : SlowBlock?
     @block_reward_calculator = BlockRewardCalculator.init
 
-    def initialize(@wallet : Wallet, @database : Database?, @developer_fund : DeveloperFund?)
+    def initialize(@wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?)
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup
@@ -44,15 +44,16 @@ module ::Sushi::Core
     def setup(@node : Node)
       setup_dapps
 
-      if database = @database
-        restore_from_database(database)
-      else
-        push_genesis
-      end
+      restore_from_database(@database)
 
       spawn process_fast_transactions
       spawn leadership_contest
     end
+
+    def database
+      @database
+    end
+
 
     def node
       @node.not_nil!
@@ -163,10 +164,8 @@ module ::Sushi::Core
     private def _push_block(block : SlowBlock | FastBlock)
       @chain.push(block)
       @chain.sort_by! { |blk| blk.index }
-      if database = @database
-        debug "sending #{block.kind} block to DB with timestamp of #{block.timestamp}"
-        database.push_block(block)
-      end
+      debug "sending #{block.kind} block to DB with timestamp of #{block.timestamp}"
+      @database.push_block(block)
 
       debug "in blockchain._push_block, before dapps_record"
       dapps_record
@@ -183,9 +182,7 @@ module ::Sushi::Core
       @chain.sort_by!(&.index)
 
       push_genesis if @chain.size == 0
-      if database = @database
-        database.replace_chain(@chain)
-      end
+      @database.replace_chain(@chain)
 
       clean_slow_transactions
       clean_fast_transactions
@@ -290,7 +287,7 @@ module ::Sushi::Core
       genesis_transactions = @developer_fund ? DeveloperFund.transactions(@developer_fund.not_nil!.get_config) : [] of Transaction
       genesis_nonce = 0_u64
       genesis_prev_hash = "genesis"
-      genesis_timestamp = Time.now.to_unix
+      genesis_timestamp = 0_i64
       genesis_difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
       address = "genesis"
 
@@ -301,7 +298,6 @@ module ::Sushi::Core
         genesis_prev_hash,
         genesis_timestamp,
         genesis_difficulty,
-        BlockKind::SLOW,
         address
       )
     end
@@ -371,7 +367,6 @@ module ::Sushi::Core
         latest_slow_block.to_hash,
         timestamp,
         difficulty,
-        BlockKind::SLOW,
         address
       )
 

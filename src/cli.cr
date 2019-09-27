@@ -31,6 +31,7 @@ module ::Sushi::Interface
       @parents : Array(SushiAction)
     )
     STDOUT.sync = true
+    STDERR.sync = true
     end
 
     def puts_help(message = "showing help message.", exit_code = -1)

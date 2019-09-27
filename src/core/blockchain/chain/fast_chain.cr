@@ -166,7 +166,6 @@ module ::Sushi::Core::FastChain
       transactions,
       _latest_block.to_hash,
       timestamp,
-      BlockKind::FAST,
       address,
       public_key,
       sig["r"],
