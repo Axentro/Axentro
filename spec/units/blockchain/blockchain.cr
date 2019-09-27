@@ -212,7 +212,16 @@ describe Blockchain do
         block_factory.add_slow_blocks(3).add_fast_blocks(4)
         blockchain = block_factory.blockchain
         indexes = blockchain.subchain_slow(0).not_nil!.map(&.index)
-        indexes.should eq([0, 2, 4, 6])
+        indexes.should eq([2, 4, 6])
+      end
+    end
+
+    it "should return the slow subchain with index at the middle of the chain" do
+      with_factory do |block_factory|
+        block_factory.add_slow_blocks(6).add_fast_blocks(4)
+        blockchain = block_factory.blockchain
+        indexes = blockchain.subchain_slow(4).not_nil!.map(&.index)
+        indexes.should eq([6, 8, 10, 12])
       end
     end
   end

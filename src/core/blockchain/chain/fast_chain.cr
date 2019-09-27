@@ -137,7 +137,7 @@ module ::Sushi::Core::FastChain
     fast_chain = @chain.select(&.is_fast_block?)
     return nil if fast_chain.size < from
 
-    fast_chain[from..-1]
+    fast_chain.select{|block| block.index > from}
   end
 
   def valid_transactions_for_fast_block

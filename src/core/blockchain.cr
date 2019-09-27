@@ -279,7 +279,7 @@ module ::Sushi::Core
       slow_chain = @chain.select(&.is_slow_block?)
       return nil if slow_chain.size < from
 
-      slow_chain[from..-1]
+      slow_chain.select{|block| block.index > from}
     end
 
     def genesis_block : SlowBlock
