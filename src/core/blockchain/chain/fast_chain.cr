@@ -133,11 +133,8 @@ module ::Sushi::Core::FastChain
     index.odd? ? index + 2 : index + 1
   end
 
-  def subchain_fast(from : Int64) : Chain?
-    fast_chain = @chain.select(&.is_fast_block?)
-    return nil if fast_chain.size < from
-
-    fast_chain.select{|block| block.index > from}
+  def subchain_fast(from : Int64) : Chain
+    @chain.select(&.is_fast_block?).select{|block| block.index > from}
   end
 
   def valid_transactions_for_fast_block

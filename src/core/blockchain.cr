@@ -275,11 +275,8 @@ module ::Sushi::Core
       index.even? ? index + 2 : index + 1
     end
 
-    def subchain_slow(from : Int64) : Chain?
-      slow_chain = @chain.select(&.is_slow_block?)
-      return nil if slow_chain.size < from
-
-      slow_chain.select{|block| block.index > from}
+    def subchain_slow(from : Int64) : Chain
+      @chain.select(&.is_slow_block?).select{|block| block.index > from}
     end
 
     def genesis_block : SlowBlock
