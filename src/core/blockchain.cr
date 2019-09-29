@@ -203,7 +203,7 @@ module ::Sushi::Core
         target_index = @chain.index {|b| b.index == index }
         target_index ? (@chain[target_index] = block) : @chain << block
 
-        progress "slow block ##{index} was synced", index, slow_subchain.not_nil!.size
+        progress "slow block ##{index} was synced", index, slow_subchain.not_nil!.map(&.index).max
 
         dapps_record
       rescue e : Exception
@@ -226,7 +226,7 @@ module ::Sushi::Core
         target_index = @chain.index {|b| b.index == index }
         target_index ? (@chain[target_index] = block) : @chain << block
 
-        progress "fast block ##{index} was synced", index, fast_subchain.not_nil!.size
+        progress "fast block ##{index} was synced", index, fast_subchain.not_nil!.map(&.index).max
 
         dapps_record
       rescue e : Exception
