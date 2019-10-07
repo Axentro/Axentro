@@ -128,7 +128,6 @@ module ::Sushi::Core
       node.listen
     end
 
-    # ameba:disable Metrics/CyclomaticComplexity
     private def sync_chain(socket : HTTP::WebSocket? = nil)
       info "start synching chain"
 
@@ -145,7 +144,7 @@ module ::Sushi::Core
         latest_fast_index = (@blockchain.latest_fast_block || @blockchain.get_genesis_block).index
 
         slow_sync_index = @conflicted_slow_index.nil? ? latest_slow_index : @conflicted_slow_index.not_nil!
-        fast_sync_index = @conflicted_fast_index.nil? ? latest_fast_index : @conflicted_fast_index.not_nil! 
+        fast_sync_index = @conflicted_fast_index.nil? ? latest_fast_index : @conflicted_fast_index.not_nil!
         debug "asking to sync chain (slow) at index #{slow_sync_index}"
         debug "asking to sync chain (fast) at index #{fast_sync_index}"
         send( _s, M_TYPE_NODE_REQUEST_CHAIN, { latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index })
@@ -173,7 +172,7 @@ module ::Sushi::Core
             latest_fast_index: latest_fast_index
           }
         )
-      else 
+      else
         warning "wanted to tell peer to sync chain but no peer found"
       end
     end
