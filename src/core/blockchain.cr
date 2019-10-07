@@ -182,7 +182,6 @@ module ::Sushi::Core
       @chain.sort_by!(&.index)
 
       push_genesis if @chain.size == 0
-      @database.replace_chain(@chain)
 
       clean_slow_transactions
       clean_fast_transactions
@@ -202,15 +201,20 @@ module ::Sushi::Core
 
         target_index = @chain.index {|b| b.index == index }
         target_index ? (@chain[target_index] = block) : @chain << block
+        @database.replace_block(block)
 
         progress "slow block ##{index} was synced", index, slow_subchain.not_nil!.map(&.index).max
 
         dapps_record
       rescue e : Exception
-        error "found invalid slow block while syncing blocks"
+        error "found invalid slow block while syncing slow blocks at index #{index}.. deleting all blocks from invalid and up"
         error "the reason:"
         error e.message.not_nil!
         result = false
+        if index
+          @database.delete_blocks(index)
+          @chain.reverse.each_index { |i| @chain.delete_at(i) if @chain[i].index >= index }
+        end
         break
       end
       result
@@ -219,21 +223,27 @@ module ::Sushi::Core
     private def replace_fast_blocks(fast_subchain)
       return false if fast_subchain.nil?
       result = true
+      info "started syncing fast blocks"
       fast_subchain.not_nil!.sort_by(&.index).each do |block|
         block.valid?(self)
         index = block.index
 
         target_index = @chain.index {|b| b.index == index }
         target_index ? (@chain[target_index] = block) : @chain << block
+        @database.replace_block(block)
 
         progress "fast block ##{index} was synced", index, fast_subchain.not_nil!.map(&.index).max
 
         dapps_record
       rescue e : Exception
-         error "found invalid fast block while syncing blocks"
+        error "found invalid slow block while syncing fast blocks at index #{index}.. deleting all blocks from invalid and up"
         error "the reason:"
         error e.message.not_nil!
         result = false
+        if index
+          @database.delete_blocks(index)
+          @chain.reverse.each_index { |i| @chain.delete_at(i) if @chain[i].index >= index }
+        end
         break
       end
       result

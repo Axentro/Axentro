@@ -101,7 +101,7 @@ module ::Sushi::Core
     end
 
     def push_block(block : SlowBlock | FastBlock)
-      debug "database.push_block with block index #{block.index} of kind: #{block.kind}"
+      #debug "database.push_block with block index #{block.index} of kind: #{block.kind}"
       @db.exec "BEGIN TRANSACTION"
       block.transactions.each_index do |ti|
         t = block.transactions[ti]
@@ -119,11 +119,23 @@ module ::Sushi::Core
       @db.exec "END TRANSACTION"
     end
 
+    def delete_block(from : Int64)
+      @db.exec "delete from blocks where idx = ?", from
+      @db.exec "delete from transactions where block_id = ?", from
+      @db.exec "delete from senders where block_id = ?", from
+      @db.exec "delete from recipients where block_id = ?", from
+    end
+
     def delete_blocks(from : Int64)
       @db.exec "delete from blocks where idx >= ?", from
       @db.exec "delete from transactions where block_id >= ?", from
       @db.exec "delete from senders where block_id >= ?", from
       @db.exec "delete from recipients where block_id >= ?", from
+    end
+
+    def replace_block(block : SlowBlock | FastBlock)
+      delete_block(block.index)
+      push_block(block)
     end
 
     def replace_chain(chain : Blockchain::Chain)
@@ -241,7 +253,7 @@ module ::Sushi::Core
     end
 
     def get_block(index : Int64) : Block?
-      debug "Reading block from the database for block #{index}"
+      #debug "Reading block from the database for block #{index}"
       block : Block? = nil
       blocks = get_blocks_via_query("select * from blocks where idx = #{index}")
       block = blocks[0] if blocks.size > 0
@@ -249,13 +261,13 @@ module ::Sushi::Core
     end
 
     def get_blocks(index : Int64) : Blockchain::Chain
-      debug "Reading blocks from the database starting at block #{index}"
+      #debug "Reading blocks from the database starting at block #{index}"
       blocks = get_blocks_via_query("select * from blocks where idx >= #{index}")
       blocks
     end
 
     def get_blocks_not_in_list(the_list : Array(Int64))
-      debug "get_blocks_not_in_list called, list length: #{the_list.size}"
+      #debug "get_blocks_not_in_list called, list length: #{the_list.size}"
       the_index_list = ""
       the_list.each_index do |i|
         the_index_list += the_list[i].to_s

@@ -128,7 +128,6 @@ module ::Sushi::Core
       node.listen
     end
 
-    # ameba:disable Metrics/CyclomaticComplexity
     private def sync_chain(socket : HTTP::WebSocket? = nil)
       info "start synching chain"
 
@@ -144,16 +143,11 @@ module ::Sushi::Core
         latest_slow_index = @blockchain.latest_slow_block.index
         latest_fast_index = (@blockchain.latest_fast_block || @blockchain.get_genesis_block).index
 
-        debug "asking to sync chain (slow) at index #{@conflicted_slow_index.nil? ? latest_slow_index : @conflicted_slow_index.not_nil!}"
-        debug "asking to sync chain (fast) at index #{@conflicted_fast_index.nil? ? latest_fast_index : @conflicted_fast_index.not_nil!}"
-        send(
-          _s,
-          M_TYPE_NODE_REQUEST_CHAIN,
-          {
-            latest_slow_index: @conflicted_slow_index.nil? ? latest_slow_index : @conflicted_slow_index.not_nil!,
-            latest_fast_index: @conflicted_fast_index.nil? ? latest_fast_index : @conflicted_fast_index.not_nil!,
-          }
-        )
+        slow_sync_index = @conflicted_slow_index.nil? ? latest_slow_index : @conflicted_slow_index.not_nil!
+        fast_sync_index = @conflicted_fast_index.nil? ? latest_fast_index : @conflicted_fast_index.not_nil!
+        debug "asking to sync chain (slow) at index #{slow_sync_index}"
+        debug "asking to sync chain (fast) at index #{fast_sync_index}"
+        send( _s, M_TYPE_NODE_REQUEST_CHAIN, { latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index })
       else
         warning "successor not found. skip synching blockchain"
 
@@ -163,6 +157,26 @@ module ::Sushi::Core
         end
       end
     end
+
+    private def tell_peer_to_sync_chain(socket : HTTP::WebSocket? = nil)
+      if predecessor = @chord.find_predecessor?
+        latest_slow_index = @blockchain.latest_slow_block.index
+        latest_fast_index = (@blockchain.latest_fast_block || @blockchain.get_genesis_block).index
+        warning "telling peer to sync chain (slow) at index #{latest_slow_index}"
+        warning "telling peer to sync chain (fast) at index #{latest_fast_index}"
+        send(
+          predecessor[:socket],
+          M_TYPE_NODE_ASK_REQUEST_CHAIN,
+          {
+            latest_slow_index: latest_slow_index,
+            latest_fast_index: latest_fast_index
+          }
+        )
+      else
+        warning "wanted to tell peer to sync chain but no peer found"
+      end
+    end
+
 
     private def sync_transactions(socket : HTTP::WebSocket? = nil)
       info "start synching transactions"
@@ -359,6 +373,13 @@ module ::Sushi::Core
         debug "slow: latest slow block index is the same as the arriving block from a peer"
         warning "slow: blockchain conflicted at #{block.index} (#{light_cyan(@blockchain.latest_slow_block.index)})"
         @conflicted_slow_index ||= block.index
+        if @blockchain.latest_slow_block.timestamp < block.timestamp
+          warning "slow: local block's timestamp indicates it was minted earlier than arriving block .. tell sender to ask for our chain"
+          tell_peer_to_sync_chain(socket)
+        elsif block.timestamp < @blockchain.latest_slow_block.timestamp
+          warning "slow: arriving block's timestamp indicates it was minted earlier than latest local block .. ask for senders chain"
+          sync_chain(socket)
+        end
         send_block(block, from)
       elsif @blockchain.get_latest_index_for_slow < block.index
         debug "slow: currently pending slow index is the less than the index of arriving block from a peer"
@@ -368,16 +389,7 @@ module ::Sushi::Core
       else
         warning "slow: received old block, will be ignored"
         send_block(block, from)
-        if predecessor = @chord.find_predecessor?
-          send(
-            predecessor[:socket],
-            M_TYPE_NODE_ASK_REQUEST_CHAIN,
-            {
-              latest_slow_index: @blockchain.latest_slow_block.index,
-              latest_fast_index: (@blockchain.latest_fast_block || @blockchain.get_genesis_block).index,
-            }
-          )
-        end
+        tell_peer_to_sync_chain(socket)
       end
     rescue e : Exception
       error e.message.not_nil!
@@ -399,6 +411,13 @@ module ::Sushi::Core
         debug "fast: latest fast block index is the same as the arriving block from a peer"
         warning "fast: blockchain conflicted at #{block.index} (#{light_cyan(latest_fast_block)})"
         @conflicted_fast_index ||= block.index
+        if latest_fast_block.timestamp < block.timestamp
+          warning "fast: local block's timestamp indicates it was minted earlier than arriving block .. tell sender to ask for our chain"
+          tell_peer_to_sync_chain(socket)
+        elsif block.timestamp < @blockchain.latest_slow_block.timestamp
+          warning "fast: arriving block's timestamp indicates it was minted earlier than latest local block .. ask for senders chain"
+          sync_chain(socket)
+        end
         send_block(block, from)
       elsif @blockchain.get_latest_index_for_fast < block.index
         debug "fast: currently pending fast index is the less than the index of arriving block from a peer"
@@ -408,16 +427,7 @@ module ::Sushi::Core
       else
         warning "fast: received old block, will be ignored"
         send_block(block, from)
-        if predecessor = @chord.find_predecessor?
-          send(
-            predecessor[:socket],
-            M_TYPE_NODE_ASK_REQUEST_CHAIN,
-            {
-              latest_slow_index: @blockchain.latest_slow_block.index,
-              latest_fast_index: (@blockchain.latest_fast_block || @blockchain.get_genesis_block).index,
-            }
-          )
-        end
+        tell_peer_to_sync_chain(socket)
       end
     rescue e : Exception
       error e.message.not_nil!
