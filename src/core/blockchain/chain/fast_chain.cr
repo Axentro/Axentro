@@ -48,11 +48,11 @@ module ::Sushi::Core::FastChain
           end
         else
           if (Time.now - node.get_last_heartbeat) > 2.seconds # && i_am_not_the_current_leader
-            info "Heartbeat not received within 2 second timeout - trying to assume leadership"
+            debug "Heartbeat not received within 2 second timeout - trying to assume leadership"
             if i_can_lead?(my_ranking)
               assume_leadership
             else
-              info "I'm not ranked high enough on this chain to become a leader"
+              debug "I'm not ranked high enough on this chain to become a leader"
             end
           end
         end

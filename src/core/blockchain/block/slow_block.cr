@@ -150,7 +150,7 @@ module ::Sushi::Core
       end
 
       difficulty_for_block = block_difficulty(blockchain)
-      debug "Calculated a difficulty of #{difficulty_for_block} in validity check"
+      debug "Calculated a difficulty of #{difficulty_for_block} for block #{@index} in validity check"
       difficulty_for_block = prev_block.index == 0 ? @difficulty : difficulty_for_block
 
       if @difficulty > 0
