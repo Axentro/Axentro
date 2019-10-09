@@ -59,8 +59,10 @@ describe Blockchain do
     it "should return true and replace slow chain" do
       with_factory do |block_factory|
         slow_sub_chain = block_factory.add_slow_blocks(10).chain
-
-        blockchain = Blockchain.new(block_factory.node_wallet, nil, nil)
+        test_database = "./test_spec2.db"
+        FileUtils.rm_rf test_database
+        database = Sushi::Core::Database.new(test_database)
+        blockchain = Blockchain.new(block_factory.node_wallet, database, nil)
         blockchain.setup(block_factory.node)
 
         expected = (blockchain.chain + slow_sub_chain[1..-1]).map(&.index).sort
@@ -77,7 +79,10 @@ describe Blockchain do
         slow_block_1 = chain[2].as(SlowBlock)
         slow_block_2 = chain[4].as(SlowBlock)
 
-        blockchain = Blockchain.new(block_factory.node_wallet, nil, nil)
+        test_database = "./test_spec2.db"
+        FileUtils.rm_rf test_database
+        database = Sushi::Core::Database.new(test_database)
+        blockchain = Blockchain.new(block_factory.node_wallet, database, nil)
         blockchain.setup(block_factory.node)
         blockchain.push_slow_block(slow_block_1)
         blockchain.push_slow_block(slow_block_2)
@@ -95,7 +100,10 @@ describe Blockchain do
         slow_block_1 = chain[2].as(SlowBlock)
         slow_sub_chain = chain.select(&.is_slow_block?)
 
-        blockchain = Blockchain.new(block_factory.node_wallet, nil, nil)
+        test_database = "./test_spec2.db"
+        FileUtils.rm_rf test_database
+        database = Sushi::Core::Database.new(test_database)
+        blockchain = Blockchain.new(block_factory.node_wallet, database, nil)
         blockchain.setup(block_factory.node)
         blockchain.push_slow_block(slow_block_1)
         expected = (blockchain.chain + slow_sub_chain[2..-1] + fast_sub_chain[0..-1]).map(&.index).sort
@@ -204,7 +212,16 @@ describe Blockchain do
         block_factory.add_slow_blocks(3).add_fast_blocks(4)
         blockchain = block_factory.blockchain
         indexes = blockchain.subchain_slow(0).not_nil!.map(&.index)
-        indexes.should eq([0, 2, 4, 6])
+        indexes.should eq([2, 4, 6])
+      end
+    end
+
+    it "should return the slow subchain with index at the middle of the chain" do
+      with_factory do |block_factory|
+        block_factory.add_slow_blocks(6).add_fast_blocks(4)
+        blockchain = block_factory.blockchain
+        indexes = blockchain.subchain_slow(4).not_nil!.map(&.index)
+        indexes.should eq([6, 8, 10, 12])
       end
     end
   end

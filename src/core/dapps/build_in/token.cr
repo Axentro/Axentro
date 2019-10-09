@@ -78,7 +78,8 @@ RULE
     end
 
     def record(chain : Blockchain::Chain)
-      chain.select{|block| !@recorded_indices.includes?(block.index) }.each do |block|
+      the_chain = @blockchain.database.get_blocks_not_in_list(@recorded_indices)
+      the_chain.each do |block|
         block.transactions.each do |transaction|
           next unless transaction.action == "create_token"
 

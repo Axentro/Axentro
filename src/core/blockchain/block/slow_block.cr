@@ -33,11 +33,11 @@ module ::Sushi::Core
       @prev_hash : String,
       @timestamp : Int64,
       @difficulty : Int32,
-      @kind : BlockKind,
       @address : String
     )
       raise "index must be even number" if index.odd?
       @merkle_tree_root = calculate_merkle_tree_root
+      @kind = BlockKind::SLOW
     end
 
     def to_s
@@ -150,7 +150,7 @@ module ::Sushi::Core
       end
 
       difficulty_for_block = block_difficulty(blockchain)
-      debug "Calculated a difficulty of #{difficulty_for_block} in validity check"
+      debug "Calculated a difficulty of #{difficulty_for_block} for block #{@index} in validity check"
       difficulty_for_block = prev_block.index == 0 ? @difficulty : difficulty_for_block
 
       if @difficulty > 0
@@ -180,6 +180,12 @@ module ::Sushi::Core
 
     def find_transaction(transaction_id : String) : Transaction?
       @transactions.find { |t| t.id == transaction_id }
+    end
+
+    def set_transactions(txns : Transactions)
+      @transactions = txns
+      debug "Number of transactions in block: #{txns.size}"
+      @merkle_tree_root = calculate_merkle_tree_root
     end
 
     include Block

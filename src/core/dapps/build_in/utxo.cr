@@ -191,7 +191,8 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def record(chain : Blockchain::Chain)
-      chain.select { |block| !@recorded_indices.includes?(block.index) }.each do |block|
+      the_chain = @blockchain.database.get_blocks_not_in_list(@recorded_indices)
+      the_chain.each do |block|
         @utxo_internal << TokenQuantity.new(DEFAULT, [] of AddressQuantity) if block.transactions.empty?
 
         calculate_for_transactions(block.transactions).each do |tq|

@@ -35,7 +35,7 @@ module ::Sushi::Core
     @mining_block : SlowBlock?
     @block_reward_calculator = BlockRewardCalculator.init
 
-    def initialize(@wallet : Wallet, @database : Database?, @developer_fund : DeveloperFund?)
+    def initialize(@wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?)
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup
@@ -44,15 +44,16 @@ module ::Sushi::Core
     def setup(@node : Node)
       setup_dapps
 
-      if database = @database
-        restore_from_database(database)
-      else
-        push_genesis
-      end
+      restore_from_database(@database)
 
       spawn process_fast_transactions
       spawn leadership_contest
     end
+
+    def database
+      @database
+    end
+
 
     def node
       @node.not_nil!
@@ -163,10 +164,8 @@ module ::Sushi::Core
     private def _push_block(block : SlowBlock | FastBlock)
       @chain.push(block)
       @chain.sort_by! { |blk| blk.index }
-      if database = @database
-        debug "sending #{block.kind} block to DB with timestamp of #{block.timestamp}"
-        database.push_block(block)
-      end
+      debug "sending #{block.kind} block to DB with timestamp of #{block.timestamp}"
+      @database.push_block(block)
 
       debug "in blockchain._push_block, before dapps_record"
       dapps_record
@@ -183,9 +182,6 @@ module ::Sushi::Core
       @chain.sort_by!(&.index)
 
       push_genesis if @chain.size == 0
-      if database = @database
-        database.replace_chain(@chain)
-      end
 
       clean_slow_transactions
       clean_fast_transactions
@@ -205,15 +201,20 @@ module ::Sushi::Core
 
         target_index = @chain.index {|b| b.index == index }
         target_index ? (@chain[target_index] = block) : @chain << block
+        @database.replace_block(block)
 
-        progress "slow block ##{index} was synced", index, slow_subchain.not_nil!.size
+        progress "slow block ##{index} was synced", index, slow_subchain.not_nil!.map(&.index).max
 
         dapps_record
       rescue e : Exception
-        error "found invalid slow block while syncing blocks"
+        error "found invalid slow block while syncing slow blocks at index #{index}.. deleting all blocks from invalid and up"
         error "the reason:"
         error e.message.not_nil!
         result = false
+        if index
+          @database.delete_blocks(index)
+          @chain.reverse.each_index { |i| @chain.delete_at(i) if @chain[i].index >= index }
+        end
         break
       end
       result
@@ -222,21 +223,27 @@ module ::Sushi::Core
     private def replace_fast_blocks(fast_subchain)
       return false if fast_subchain.nil?
       result = true
+      info "started syncing fast blocks"
       fast_subchain.not_nil!.sort_by(&.index).each do |block|
         block.valid?(self)
         index = block.index
 
         target_index = @chain.index {|b| b.index == index }
         target_index ? (@chain[target_index] = block) : @chain << block
+        @database.replace_block(block)
 
-        progress "fast block ##{index} was synced", index, fast_subchain.not_nil!.size
+        progress "fast block ##{index} was synced", index, fast_subchain.not_nil!.map(&.index).max
 
         dapps_record
       rescue e : Exception
-         error "found invalid fast block while syncing blocks"
+        error "found invalid slow block while syncing fast blocks at index #{index}.. deleting all blocks from invalid and up"
         error "the reason:"
         error e.message.not_nil!
         result = false
+        if index
+          @database.delete_blocks(index)
+          @chain.reverse.each_index { |i| @chain.delete_at(i) if @chain[i].index >= index }
+        end
         break
       end
       result
@@ -278,11 +285,8 @@ module ::Sushi::Core
       index.even? ? index + 2 : index + 1
     end
 
-    def subchain_slow(from : Int64) : Chain?
-      slow_chain = @chain.select(&.is_slow_block?)
-      return nil if slow_chain.size < from
-
-      slow_chain[from..-1]
+    def subchain_slow(from : Int64) : Chain
+      @chain.select(&.is_slow_block?).select{|block| block.index > from}
     end
 
     def genesis_block : SlowBlock
@@ -290,7 +294,7 @@ module ::Sushi::Core
       genesis_transactions = @developer_fund ? DeveloperFund.transactions(@developer_fund.not_nil!.get_config) : [] of Transaction
       genesis_nonce = 0_u64
       genesis_prev_hash = "genesis"
-      genesis_timestamp = Time.now.to_unix
+      genesis_timestamp = 0_i64
       genesis_difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
       address = "genesis"
 
@@ -301,7 +305,6 @@ module ::Sushi::Core
         genesis_prev_hash,
         genesis_timestamp,
         genesis_difficulty,
-        BlockKind::SLOW,
         address
       )
     end
@@ -371,7 +374,6 @@ module ::Sushi::Core
         latest_slow_block.to_hash,
         timestamp,
         difficulty,
-        BlockKind::SLOW,
         address
       )
 

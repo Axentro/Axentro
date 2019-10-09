@@ -48,11 +48,11 @@ module ::Sushi::Core::FastChain
           end
         else
           if (Time.now - node.get_last_heartbeat) > 2.seconds # && i_am_not_the_current_leader
-            info "Heartbeat not received within 2 second timeout - trying to assume leadership"
+            debug "Heartbeat not received within 2 second timeout - trying to assume leadership"
             if i_can_lead?(my_ranking)
               assume_leadership
             else
-              info "I'm not ranked high enough on this chain to become a leader"
+              debug "I'm not ranked high enough on this chain to become a leader"
             end
           end
         end
@@ -133,11 +133,8 @@ module ::Sushi::Core::FastChain
     index.odd? ? index + 2 : index + 1
   end
 
-  def subchain_fast(from : Int64) : Chain?
-    fast_chain = @chain.select(&.is_fast_block?)
-    return nil if fast_chain.size < from
-
-    fast_chain[from..-1]
+  def subchain_fast(from : Int64) : Chain
+    @chain.select(&.is_fast_block?).select{|block| block.index > from}
   end
 
   def valid_transactions_for_fast_block
@@ -166,7 +163,6 @@ module ::Sushi::Core::FastChain
       transactions,
       _latest_block.to_hash,
       timestamp,
-      BlockKind::FAST,
       address,
       public_key,
       sig["r"],

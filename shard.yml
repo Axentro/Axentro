@@ -21,6 +21,7 @@ targets:
 dependencies:
   router:
     github: tbrand/router.cr
+    version: ~> 0.2.7
   tokoroten:
     github: tbrand/tokoroten
   sqlite3:

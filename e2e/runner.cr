@@ -47,13 +47,13 @@ module ::E2E
       end
     end
 
-    def launch_node(node_port, is_private, connecting_port, idx, db = nil)
+    def launch_node(node_port, is_private, connecting_port, idx, db)
       node(node_port, is_private, connecting_port, idx, db)
       @node_ports_public.push(node_port) unless is_private
     end
 
     def launch_first_node
-      launch_node(@node_ports[0], false, nil, 0, @db_name)
+      launch_node(@node_ports[0], false, nil, 0, "0_node_" + @db_name)
     end
 
     def launch_nodes
@@ -73,7 +73,7 @@ module ::E2E
 
         connecting_port = @node_ports_public.sample
 
-        step launch_node(node_port, is_private, connecting_port, idx + 1), 5,
+        step launch_node(node_port, is_private, connecting_port, idx + 1, (idx + 1).to_s + "_node_" + @db_name), 5,
           "launch node on port #{node_port} connect to #{connecting_port} #{is_private ? "(private)" : "(public)"}"
       end
     end
@@ -208,7 +208,7 @@ module ::E2E
       size0 = blockchain_size(4001)
 
       step create_wallet(100), 0, ""
-      step launch_node(5000, true, nil, 100, @db_name), 10, ""
+      step launch_node(5000, true, nil, 100, "0_node_" + @db_name), 10, ""
 
       size1 = blockchain_size(5000)
 
