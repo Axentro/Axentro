@@ -253,7 +253,7 @@ module ::Sushi::Core
     end
 
     def get_block(index : Int64) : Block?
-      #debug "Reading block from the database for block #{index}"
+      debug "Reading block from the database for block #{index}"
       block : Block? = nil
       blocks = get_blocks_via_query("select * from blocks where idx = #{index}")
       block = blocks[0] if blocks.size > 0
@@ -281,16 +281,30 @@ module ::Sushi::Core
       @db.query_one("select count(*) from blocks", as: Int32)
     end
 
-    def highest_index : Int64
+    def highest_index_of_kind(kind : Block::BlockKind) : Int64
       idx : Int64? = nil
 
-      @db.query "select max(idx) from blocks" do |rows|
+      @db.query "select max(idx) from blocks where kind = '#{kind.to_s}'" do |rows|
         rows.each do
           idx = rows.read(Int64 | Nil)
         end
       end
 
       idx || -1_i64
+    end
+
+    def lowest_index_after_time(given_time : Int64, kind : Block::BlockKind)
+      idx : Int64? = nil
+
+      the_query = "select min(idx) from blocks where timestamp >= #{given_time} and kind = '#{kind.to_s}'"
+      debug "query in lowest_index_after_time: #{the_query}"
+      @db.query the_query do |rows|
+        rows.each do
+          idx = rows.read(Int64 | Nil)
+        end
+      end
+
+      idx || 0_i64
     end
 
     include Logger

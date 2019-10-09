@@ -42,8 +42,9 @@ module ::Sushi::Core::Consensus
   # Dark Gravity Wave history lookback for averaging (in blocks)
   HISTORY_LOOKBACK       =      24
 
-  # SushiChain desired block spacing (2 minutes .. 120 seconds expressed in milliseconds)
-  POW_TARGET_SPACING     = 120000_f64
+  # SushiChain desired block spacing (2 minutes .. 120 seconds expressed in milliseconds and seconds)
+  POW_TARGET_SPACING      = 120000_f64
+  POW_TARGET_SPACING_SECS = 120_i64
 
   # Difficulty value to be used when there is absolutely no history reference
   DEFAULT_DIFFICULTY_TARGET      = 17_i32
