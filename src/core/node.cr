@@ -497,7 +497,6 @@ module ::Sushi::Core
       _nodes = @chord.find_nodes
 
       if successor = _nodes[:successor]
-        puts "successor is: #{successor[:context][:host]}:#{successor[:context][:port]}"
         if successor[:context][:id] != @chord.context[:id] && successor[:context][:id] != content[:from][:id]
           send(successor[:socket], M_TYPE_NODE_BROADCAST_HEARTBEAT, content)
         end
