@@ -112,7 +112,7 @@ module ::Sushi::Core
       block_counter = 0
       current_index = starting_index
       slow_indexes = (current_index..highest_index).select(&.even?)
-      slow_indexes.unshift(0_i64)
+      slow_indexes.unshift(0_i64) if (slow_indexes.size == 0) || (slow_indexes[0] != 0_i64)
       slow_indexes.each do |ci|
         current_index = ci
         _block = database.get_block(current_index)
