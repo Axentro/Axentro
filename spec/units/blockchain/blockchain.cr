@@ -223,6 +223,61 @@ describe Blockchain do
         indexes = blockchain.subchain_slow(4).not_nil!.map(&.index)
         indexes.should eq([6, 8, 10, 12])
       end
+    end 
+  end
+
+  describe "restore from database" do
+    it "todo" do
+      fail "write some specs here"
+    end
+    # TODO write specs here that cover restoring from the db covering in memory capacity
+  end
+
+  describe "in memory syncing" do
+    describe "slow chain" do
+      # TODO - remove this test when the syncing is all fixed as it's covered indirectly by another spec here
+      it "should return the whole slow chain as a subchain when the chain size is less than the in memory allocation" do
+        with_factory do |block_factory|
+          block_factory.add_slow_blocks(10)
+          blockchain = block_factory.blockchain
+          indexes = blockchain.subchain_slow(0).not_nil!.map(&.index)
+          indexes.first.should eq(2)
+          indexes.last.should eq(20)
+        end
+      end
+      # TODO - Fix this spec
+      # TODO - remove this test when the syncing is all fixed as it's super slow
+      it "should return the whole slow chain as a subchain when the chain size exceeds the in memory allocation" do
+        with_factory do |block_factory|
+          block_factory.add_slow_blocks(1448)
+          blockchain = block_factory.blockchain
+          indexes = blockchain.subchain_slow(0).not_nil!.map(&.index)
+          indexes.first.should eq(2)
+          indexes.last.should eq(2896)
+        end
+      end
+    end
+    describe "fast chain" do
+      # TODO - remove this test when the syncing is all fixed as it's covered indirectly by another spec here
+      it "should return the whole fast chain as a subchain when the fast chain size is less than the in memory allocation" do
+        with_factory do |block_factory|
+          block_factory.add_slow_blocks(1).add_fast_blocks(4)
+          blockchain = block_factory.blockchain
+          indexes = blockchain.subchain_fast(0).not_nil!.map(&.index)
+          indexes.first.should eq(1)
+          indexes.last.should eq(7)
+        end
+      end
+      # TODO - remove this test when the syncing is all fixed as it's super slow 
+      it "should return the whole fast chain as a subchain when the fast chain size exceeds the in memory allocation" do
+        with_factory do |block_factory|
+          block_factory.add_slow_blocks(1).add_fast_blocks(1448)
+          blockchain = block_factory.blockchain
+          indexes = blockchain.subchain_fast(0).not_nil!.map(&.index)
+          indexes.first.should eq(1)
+          indexes.last.should eq(2895)
+        end
+      end
     end
   end
 
