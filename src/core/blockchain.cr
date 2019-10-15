@@ -74,8 +74,9 @@ module ::Sushi::Core
 
     private def get_starting_slow_block_index(database : Database, highest_index : Int64)
       # starting index is backed off from last slow block index by N days worth of even-numbered blocks
-      starting_index = highest_index - BLOCKS_TO_HOLD * 2
+      starting_index = (highest_index - BLOCKS_TO_HOLD * 2) + 2
       starting_index = starting_index > 0 ? starting_index : 0_i64
+      debug "number of blocks to hold in memory: #{BLOCKS_TO_HOLD}"
       debug "starting index for SLOW database fetch: #{starting_index}"
       starting_index
     end
@@ -120,7 +121,7 @@ module ::Sushi::Core
           if block_counter > Consensus::HISTORY_LOOKBACK
             break unless _block.valid?(self, true)
           end
-          debug "restoring from database: index #{_block.index} of kind #{_block.kind}"
+          #debug "restoring from database: index #{_block.index} of kind #{_block.kind}"
           @chain.push(_block)
         end
         progress "block ##{current_index} was imported", current_index, slow_indexes.max
@@ -166,8 +167,13 @@ module ::Sushi::Core
       nil
     end
 
-    def valid_block?(block : SlowBlock | FastBlock) : SlowBlock? | FastBlock?
-      return block if block.valid?(self)
+    def valid_block?(block : SlowBlock | FastBlock, skip_transactions : Bool = false, doing_replace : Bool = false) : SlowBlock? | FastBlock?
+      case block
+        when SlowBlock
+          return block if block.valid?(self, skip_transactions, doing_replace)
+        when FastBlock
+          return block if block.valid?(self)
+      end
       nil
     end
 
@@ -184,6 +190,16 @@ module ::Sushi::Core
     def mining_block_difficulty_miner : Int32
       return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
       block_difficulty_to_miner_difficulty(mining_block_difficulty)
+    end
+
+    def replace_block(block : SlowBlock | FastBlock)
+      target_index = @chain.index {|b| b.index == block.index }
+      if target_index
+        @chain[target_index] = block
+        @database.replace_block(block)
+      else
+        warning "replacement block location not found in local chain"
+      end
     end
 
     def push_slow_block(block : SlowBlock)
@@ -330,6 +346,12 @@ module ::Sushi::Core
       slow_blocks[-1].as(SlowBlock)
     end
 
+    def latest_slow_block_when_replacing : SlowBlock
+      slow_blocks = @chain.select(&.is_slow_block?)
+      return slow_blocks[0].as(SlowBlock) if slow_blocks.size < 1
+      slow_blocks[-2].as(SlowBlock)
+    end
+
     def latest_index : Int64
       latest_block.index
     end
@@ -340,7 +362,7 @@ module ::Sushi::Core
     end
 
     def subchain_slow(from : Int64) : Chain
-      @chain.select(&.is_slow_block?).select{|block| block.index > from}
+      @database.get_slow_blocks(from)
     end
 
     def genesis_block : SlowBlock
