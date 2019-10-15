@@ -357,7 +357,9 @@ module ::Sushi::Core
       end
     end
 
+    # ameba:disable Metrics/CyclomaticComplexity
     private def broadcast_slow_block(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
+      most_recent_minted_block = @blockchain.latest_slow_block
       if @blockchain.get_latest_index_for_slow == block.index
         debug "slow: currently pending slow index is the same as the arriving block from a peer"
         debug "slow: sending new block on to peer"
@@ -369,18 +371,28 @@ module ::Sushi::Core
           new_block(_block)
           info "#{magenta("NEW SLOW BLOCK broadcasted")}: #{light_green(_block.index)} at difficulty: #{light_cyan(_block.difficulty)}"
         end
-      elsif @blockchain.latest_slow_block.index == block.index
+      elsif most_recent_minted_block.index == block.index
         debug "slow: latest slow block index is the same as the arriving block from a peer"
-        warning "slow: blockchain conflicted at #{block.index} (#{light_cyan(@blockchain.latest_slow_block.index)})"
-        @conflicted_slow_index ||= block.index
-        if @blockchain.latest_slow_block.timestamp < block.timestamp
-          warning "slow: local block's timestamp indicates it was minted earlier than arriving block .. tell sender to ask for our chain"
-          tell_peer_to_sync_chain(socket)
-        elsif block.timestamp < @blockchain.latest_slow_block.timestamp
-          warning "slow: arriving block's timestamp indicates it was minted earlier than latest local block .. ask for senders chain"
-          sync_chain(socket)
+        warning "slow: blockchain conflicted at #{block.index} (#{light_cyan(most_recent_minted_block.index)})"
+        warning "slow: current local block timestamp: #{most_recent_minted_block.timestamp}"
+        warning "slow: arriving block timestamp: #{block.timestamp}"
+        if most_recent_minted_block.timestamp == block.timestamp
+          warning "conflicting blocks were minted in the exact same millisecond.. we'll need to figure out a resolution for this"
+          warning " .. right now we'll not be forwarding the arriving block and hold the local block as valid"
+        elsif most_recent_minted_block.timestamp < block.timestamp
+          warning "slow: local block's timestamp indicates it was minted earlier than arriving block .. not forwarding arriving block to other nodes"
+        elsif block.timestamp < most_recent_minted_block.timestamp
+          warning "slow: arriving block's timestamp indicates it was minted earlier than latest local block"
+          warning "current local block prev_hash #{most_recent_minted_block.prev_hash}"
+          warning "arriving block prev_hash #{block.prev_hash}"
+          send_block(block, from)
+          if _block = @blockchain.valid_block?(block, true, true)
+            warning "arriving block passes validity checks, making the arriving block our local latest"
+            @blockchain.replace_block(_block)
+          else
+            warning "arriving block failed validity check, we can't make it our local latest"
+          end
         end
-        send_block(block, from)
       elsif @blockchain.get_latest_index_for_slow < block.index
         debug "slow: currently pending slow index is the less than the index of arriving block from a peer"
         warning "slow: require new chain: #{@blockchain.latest_slow_block.index} for #{block.index}"

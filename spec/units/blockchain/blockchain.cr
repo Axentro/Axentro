@@ -223,14 +223,32 @@ describe Blockchain do
         indexes = blockchain.subchain_slow(4).not_nil!.map(&.index)
         indexes.should eq([6, 8, 10, 12])
       end
-    end 
+    end
   end
 
   describe "restore from database" do
-    it "todo" do
-      fail "write some specs here"
+    it "should load the whole chain from the database when the chain size is less than the memory allocation" do
+      with_factory do |block_factory|
+        block_factory.add_slow_blocks(10)
+        test_database = "./test_spec.db"
+        database = Sushi::Core::Database.new(test_database)
+        blockchain = Blockchain.new(block_factory.node_wallet, database, nil)
+        blockchain.setup(block_factory.node)
+        # including genesis block total chain size should be 11
+        blockchain.chain.size.should eq(11)
+      end
     end
-    # TODO write specs here that cover restoring from the db covering in memory capacity
+    it "should load a subset of the whole chain from the database when the chain size is more than the memory allocation" do
+      with_factory do |block_factory|
+        block_factory.add_slow_blocks(1448)
+        test_database = "./test_spec.db"
+        database = Sushi::Core::Database.new(test_database)
+        blockchain = Blockchain.new(block_factory.node_wallet, database, nil)
+        blockchain.setup(block_factory.node)
+        # including genesis block total chain size should be 1441
+        blockchain.chain.size.should eq(1441)
+      end
+    end
   end
 
   describe "in memory syncing" do
@@ -268,7 +286,7 @@ describe Blockchain do
           indexes.last.should eq(7)
         end
       end
-      # TODO - remove this test when the syncing is all fixed as it's super slow 
+      # TODO - remove this test when the syncing is all fixed as it's super slow
       it "should return the whole fast chain as a subchain when the fast chain size exceeds the in memory allocation" do
         with_factory do |block_factory|
           block_factory.add_slow_blocks(1).add_fast_blocks(1448)

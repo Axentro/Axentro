@@ -253,7 +253,7 @@ module ::Sushi::Core
     end
 
     def get_block(index : Int64) : Block?
-      debug "Reading block from the database for block #{index}"
+      #debug "Reading block from the database for block #{index}"
       block : Block? = nil
       blocks = get_blocks_via_query("select * from blocks where idx = #{index}")
       block = blocks[0] if blocks.size > 0
@@ -263,6 +263,19 @@ module ::Sushi::Core
     def get_blocks(index : Int64) : Blockchain::Chain
       #debug "Reading blocks from the database starting at block #{index}"
       blocks = get_blocks_via_query("select * from blocks where idx >= #{index}")
+      blocks
+    end
+
+    def get_slow_blocks(index : Int64) : Blockchain::Chain
+      #debug "Reading blocks from the database starting at block #{index}"
+      blocks = get_blocks_via_query("select * from blocks where idx > #{index} and kind = 'SLOW'")
+      blocks
+    end
+
+    def get_fast_blocks(index : Int64) : Blockchain::Chain
+      #debug "Reading blocks from the database starting at block #{index}"
+      #blocks = get_blocks_via_query("select * from blocks where idx > #{index} and kind = '#{BlockKind::SLOW.to_s}'")
+      blocks = get_blocks_via_query("select * from blocks where idx > #{index} and kind = 'FAST'")
       blocks
     end
 

@@ -29,6 +29,10 @@ require "./integration/integration"
 
 ENV.delete("SC_INTEGRATION")
 
+ENV["SC_FUNCTIONAL"] = "true"
+
 puts ""
 puts light_cyan("> spinach functional tests")
 require "./functional/runner"
+
+ENV.delete("SC_FUNCTIONAL")
