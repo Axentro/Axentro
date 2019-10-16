@@ -133,8 +133,10 @@ module ::Sushi::Core
         end
       end
 
-      raise "Index Mismatch: the current block index: #{@index} should match the lastest fast block index: #{latest_fast_index}" if @index != latest_fast_index
-      raise "Invalid Previous Hash: for current index: #{@index} the prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
+      if latest_fast_index > 1
+        raise "Index Mismatch: the current block index: #{@index} should match the lastest fast block index: #{latest_fast_index}" if @index != latest_fast_index
+        raise "Invalid Previous Hash: for current index: #{@index} the prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
+      end
 
       next_timestamp = __timestamp
       prev_timestamp = prev_block.timestamp
@@ -163,7 +165,7 @@ module ::Sushi::Core
 
     def set_transactions(txns : Transactions)
       @transactions = txns
-      debug "Number of transactions in block: #{txns.size}"
+      #debug "Number of transactions in block: #{txns.size}"
       @merkle_tree_root = calculate_merkle_tree_root
     end
 

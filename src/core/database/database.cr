@@ -266,6 +266,19 @@ module ::Sushi::Core
       blocks
     end
 
+    def get_slow_blocks(index : Int64) : Blockchain::Chain
+      #debug "Reading blocks from the database starting at block #{index}"
+      blocks = get_blocks_via_query("select * from blocks where idx > #{index} and kind = 'SLOW'")
+      blocks
+    end
+
+    def get_fast_blocks(index : Int64) : Blockchain::Chain
+      #debug "Reading blocks from the database starting at block #{index}"
+      #blocks = get_blocks_via_query("select * from blocks where idx > #{index} and kind = '#{BlockKind::SLOW.to_s}'")
+      blocks = get_blocks_via_query("select * from blocks where idx > #{index} and kind = 'FAST'")
+      blocks
+    end
+
     def get_blocks_not_in_list(the_list : Array(Int64))
       #debug "get_blocks_not_in_list called, list length: #{the_list.size}"
       the_index_list = ""
@@ -281,16 +294,30 @@ module ::Sushi::Core
       @db.query_one("select count(*) from blocks", as: Int32)
     end
 
-    def highest_index : Int64
+    def highest_index_of_kind(kind : Block::BlockKind) : Int64
       idx : Int64? = nil
 
-      @db.query "select max(idx) from blocks" do |rows|
+      @db.query "select max(idx) from blocks where kind = '#{kind.to_s}'" do |rows|
         rows.each do
           idx = rows.read(Int64 | Nil)
         end
       end
 
       idx || -1_i64
+    end
+
+    def lowest_index_after_time(given_time : Int64, kind : Block::BlockKind)
+      idx : Int64? = nil
+
+      the_query = "select min(idx) from blocks where timestamp >= #{given_time} and kind = '#{kind.to_s}'"
+      debug "query in lowest_index_after_time: #{the_query}"
+      @db.query the_query do |rows|
+        rows.each do
+          idx = rows.read(Int64 | Nil)
+        end
+      end
+
+      idx || 0_i64
     end
 
     include Logger

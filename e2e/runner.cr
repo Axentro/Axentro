@@ -233,7 +233,7 @@ module ::E2E
         size = blockchain_size(port)
         STDERR.puts "> blocks on port #{port} (size: #{size})"
 
-        (0..((size-2)*2)).select(&.even?).each do |i|
+        (0..((size-2)*2)+2).select(&.even?).each do |i|
           unless block = block(port, i)
             STDERR.puts "%2d --- %s" % [i, "failed to get block at #{i} on #{port}"]
             next

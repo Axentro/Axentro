@@ -134,7 +134,7 @@ module ::Sushi::Core::FastChain
   end
 
   def subchain_fast(from : Int64) : Chain
-    @chain.select(&.is_fast_block?).select{|block| block.index > from}
+    @database.get_fast_blocks(from)
   end
 
   def valid_transactions_for_fast_block
