@@ -19,6 +19,8 @@ module ::Sushi::Core
   class Blockchain
     TOKEN_DEFAULT = Core::DApps::BuildIn::UTXO::DEFAULT
 
+    SLOW_BLOCKS_PER_HOUR = 3600_i64 / Consensus::POW_TARGET_SPACING_SECS
+
     alias SlowHeader = NamedTuple(
       index: Int64,
       nonce: UInt64,
@@ -31,6 +33,7 @@ module ::Sushi::Core
     getter chain : Chain = [] of (SlowBlock | FastBlock)
     getter wallet : Wallet
 
+    @blocks_to_hold: Int64
     @node : Node?
     @mining_block : SlowBlock?
     @block_reward_calculator = BlockRewardCalculator.init
@@ -39,7 +42,10 @@ module ::Sushi::Core
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup
-    end
+
+      hours_to_hold = ENV.has_key?("SC_UNIT") ? 2 : 48
+      @blocks_to_hold = SLOW_BLOCKS_PER_HOUR * hours_to_hold
+      end
 
     def setup(@node : Node)
       setup_dapps
@@ -54,6 +60,9 @@ module ::Sushi::Core
       @database
     end
 
+    def blocks_to_hold
+      @blocks_to_hold
+    end
 
     def node
       @node.not_nil!
@@ -67,16 +76,11 @@ module ::Sushi::Core
       @chain.first
     end
 
-    SLOW_BLOCKS_PER_HOUR = 3600_i64 / Consensus::POW_TARGET_SPACING_SECS
-    SLOW_BLOCKS_PER_DAY = SLOW_BLOCKS_PER_HOUR * 24_i64
-    DAYS_TO_HOLD = 2
-    BLOCKS_TO_HOLD = SLOW_BLOCKS_PER_DAY * DAYS_TO_HOLD
-
     private def get_starting_slow_block_index(database : Database, highest_index : Int64)
       # starting index is backed off from last slow block index by N days worth of even-numbered blocks
-      starting_index = (highest_index - BLOCKS_TO_HOLD * 2) + 2
+      starting_index = (highest_index - @blocks_to_hold * 2) + 2
       starting_index = starting_index > 0 ? starting_index : 0_i64
-      debug "number of blocks to hold in memory: #{BLOCKS_TO_HOLD}"
+      debug "number of blocks to hold in memory: #{@blocks_to_hold}"
       debug "starting index for SLOW database fetch: #{starting_index}"
       starting_index
     end
@@ -121,7 +125,7 @@ module ::Sushi::Core
           if block_counter > Consensus::HISTORY_LOOKBACK
             break unless _block.valid?(self, true)
           end
-          #debug "restoring from database: index #{_block.index} of kind #{_block.kind}"
+          verbose "restoring from database: index #{_block.index} of kind #{_block.kind}"
           @chain.push(_block)
         end
         progress "block ##{current_index} was imported", current_index, slow_indexes.max
@@ -212,7 +216,7 @@ module ::Sushi::Core
     end
 
     def trim_chain_in_memory
-      slow_blocks = @chain.select(&.is_slow_block?).last(BLOCKS_TO_HOLD)
+      slow_blocks = @chain.select(&.is_slow_block?).last(@blocks_to_hold)
       debug "trim chain, slow block count: #{slow_blocks.size}"
       cutoff_timestamp = slow_blocks[0].timestamp
       debug "trim chain, 1st block index to hold: #{slow_blocks[0].index} cutoff timestamp is: #{cutoff_timestamp}"
@@ -386,11 +390,14 @@ module ::Sushi::Core
     end
 
     def headers
-      @chain.map { |block| block.to_header }
+      chain = @database.get_blocks(0_i64)
+      chain.map { |block| block.to_header }
     end
 
     def transactions_for_address(address : String, page : Int32 = 0, page_size : Int32 = 20, actions : Array(String) = [] of String) : Array(Transaction)
-      @chain
+      # TODO: Change this database request to something more sophisticated that filters out blocks that don't have txns with the address
+      chain = @database.get_blocks(0_i64)
+      chain
         .reverse
         .map { |block| block.transactions }
         .flatten

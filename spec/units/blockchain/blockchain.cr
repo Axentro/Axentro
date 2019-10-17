@@ -240,13 +240,14 @@ describe Blockchain do
     end
     it "should load a subset of the whole chain from the database when the chain size is more than the memory allocation" do
       with_factory do |block_factory|
-        block_factory.add_slow_blocks(1448)
+        blocks_to_add = block_factory.blocks_to_hold + 8
+        block_factory.add_slow_blocks(blocks_to_add)
         test_database = "./test_spec.db"
         database = Sushi::Core::Database.new(test_database)
         blockchain = Blockchain.new(block_factory.node_wallet, database, nil)
         blockchain.setup(block_factory.node)
-        # including genesis block total chain size should be 1441
-        blockchain.chain.size.should eq(1441)
+        # including genesis block total chain size should be the number of blocks to hold + 1
+        blockchain.chain.size.should eq(blockchain.blocks_to_hold + 1)
       end
     end
   end
@@ -267,11 +268,12 @@ describe Blockchain do
       # TODO - remove this test when the syncing is all fixed as it's super slow
       it "should return the whole slow chain as a subchain when the chain size exceeds the in memory allocation" do
         with_factory do |block_factory|
-          block_factory.add_slow_blocks(1448)
+          blocks_to_add = block_factory.blocks_to_hold + 8
+          block_factory.add_slow_blocks(blocks_to_add)
           blockchain = block_factory.blockchain
           indexes = blockchain.subchain_slow(0).not_nil!.map(&.index)
           indexes.first.should eq(2)
-          indexes.last.should eq(2896)
+          indexes.last.should eq((blockchain.blocks_to_hold * 2) + (8 * 2))
         end
       end
     end
@@ -289,11 +291,12 @@ describe Blockchain do
       # TODO - remove this test when the syncing is all fixed as it's super slow
       it "should return the whole fast chain as a subchain when the fast chain size exceeds the in memory allocation" do
         with_factory do |block_factory|
-          block_factory.add_slow_blocks(1).add_fast_blocks(1448)
+          blocks_to_add = block_factory.blocks_to_hold + 8
+          block_factory.add_slow_blocks(1).add_fast_blocks(blocks_to_add)
           blockchain = block_factory.blockchain
           indexes = blockchain.subchain_fast(0).not_nil!.map(&.index)
           indexes.first.should eq(1)
-          indexes.last.should eq(2895)
+          indexes.last.should eq((blockchain.blocks_to_hold * 2) + (8 * 2) - 1)
         end
       end
     end

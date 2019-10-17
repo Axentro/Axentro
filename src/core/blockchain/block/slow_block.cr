@@ -160,7 +160,7 @@ module ::Sushi::Core
       else
         difficulty_for_block = block_difficulty(blockchain)
       end
-      #debug "Calculated a difficulty of #{difficulty_for_block} for block #{@index} in validity check"
+      verbose "Calculated a difficulty of #{difficulty_for_block} for block #{@index} in validity check"
       difficulty_for_block = prev_block.index == 0 ? @difficulty : difficulty_for_block
 
       if @difficulty > 0
@@ -194,7 +194,7 @@ module ::Sushi::Core
 
     def set_transactions(txns : Transactions)
       @transactions = txns
-      #debug "Number of transactions in block: #{txns.size}"
+      verbose "Number of transactions in block: #{txns.size}"
       @merkle_tree_root = calculate_merkle_tree_root
     end
 
