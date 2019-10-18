@@ -165,7 +165,7 @@ module ::Sushi::Core
 
     def set_transactions(txns : Transactions)
       @transactions = txns
-      #debug "Number of transactions in block: #{txns.size}"
+      verbose "Number of transactions in block: #{txns.size}"
       @merkle_tree_root = calculate_merkle_tree_root
     end
 
