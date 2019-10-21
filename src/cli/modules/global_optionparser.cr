@@ -145,7 +145,7 @@ module ::Sushi::Interface
       parser.on("-v", "--version", "version") {
         puts {{ read_file("#{__DIR__}/../../../version.txt") }}
         exit 0
-      } 
+      }
     end
 
     private def parse_node(parser : OptionParser, actives : Array(Options))
