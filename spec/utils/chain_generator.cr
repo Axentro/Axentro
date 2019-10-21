@@ -58,6 +58,10 @@ module ::Units::Utils::ChainGenerator
       enable_difficulty
     end
 
+    def blocks_to_hold
+      @blockchain.blocks_to_hold
+    end
+
     def add_slow_block(with_refresh : Bool = true)
       add_valid_slow_block(with_refresh)
       self
