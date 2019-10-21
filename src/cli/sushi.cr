@@ -53,10 +53,15 @@ module ::Sushi::Interface::Sushi
           name: I18n.translate("sushi.cli.client.title"),
           desc: I18n.translate("sushi.cli.client.desc"),
         },
+        {
+          name: I18n.translate("sushi.cli.version.title"),
+          desc: I18n.translate("sushi.cli.version.desc"),
+        },
       ]
     end
 
     def option_parser
+      G.op.create_option_parser([] of Options)
     end
 
     def run_impl(action_name)
@@ -93,12 +98,12 @@ module ::Sushi::Interface::Sushi
         ).run
       when I18n.translate("sushi.cli.config.title"), "cg"
         return Config.new(
-          {name: I18n.translate("sushi.cli.config.title"), desc: I18n.translate("sushi.cli.config.title")},
+          {name: I18n.translate("sushi.cli.config.title"), desc: I18n.translate("sushi.cli.config.desc")},
           next_parents,
         ).run
       when I18n.translate("sushi.cli.pubsub.title"), "ps"
         return Pubsub.new(
-          {name: I18n.translate("sushi.cli.pubsub.title"), desc: I18n.translate("sushi.cli.punsub.title")},
+          {name: I18n.translate("sushi.cli.pubsub.title"), desc: I18n.translate("sushi.cli.pubsub.desc")},
           next_parents,
         ).run
       when I18n.translate("sushi.cli.client.title"), "cl"

@@ -106,6 +106,7 @@ module ::Sushi::Interface
 
     def create_option_parser(actives : Array(Options)) : OptionParser
       OptionParser.new do |parser|
+        parse_version(parser)
         parse_node(parser, actives)
         parse_wallet_path(parser, actives)
         parse_password(parser, actives)
@@ -138,6 +139,13 @@ module ::Sushi::Interface
         parse_slow_transaction(parser, actives)
         parse_fast_transaction(parser, actives)
       end
+    end
+
+    private def parse_version(parser : OptionParser)
+      parser.on("-v", "--version", "version") {
+        puts {{ read_file("#{__DIR__}/../../../version.txt") }}
+        exit 0
+      } 
     end
 
     private def parse_node(parser : OptionParser, actives : Array(Options))
