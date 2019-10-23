@@ -270,7 +270,7 @@ module ::Sushi::Core::Controllers
     def __v1_scars_lookup(context, params)
       address = params["address"]
 
-      with_response(context) do |query_params|
+      with_response(context) do |_|
         @blockchain.scars.scars_lookup_impl(address)
       end
     end

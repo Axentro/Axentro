@@ -248,8 +248,7 @@ module ::Sushi::Interface::Sushi
 
       json = lookup_internal(node, address)
 
-      domain_table =
-        puts_success "\n SCARS domains mapped to address #{address}\n"
+      puts_success "\n SCARS domains mapped to address #{address}\n"
 
       puts "   %s" % ["Domain"]
 

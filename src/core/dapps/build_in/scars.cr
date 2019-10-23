@@ -204,7 +204,7 @@ RULE
       matched_domains = Array(Domain).new
 
       @domains_internal.reverse.each do |domain_map|
-        domain_map.each do |domain_name, domain|
+        domain_map.each do |_, domain|
           matched_domains << domain if domain[:address] == address
         end
       end
