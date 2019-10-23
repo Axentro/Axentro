@@ -33,11 +33,11 @@ module ::Sushi::Core
       @prev_hash : String,
       @timestamp : Int64,
       @difficulty : Int32,
-      @kind : BlockKind,
       @address : String
     )
       raise "index must be even number" if index.odd?
       @merkle_tree_root = calculate_merkle_tree_root
+      @kind = BlockKind::SLOW
     end
 
     def to_s
@@ -112,8 +112,8 @@ module ::Sushi::Core
       valid_nonce?(self.to_hash, @nonce, difficulty)
     end
 
-    def valid?(blockchain : Blockchain, skip_transactions : Bool = false) : Bool
-      return valid_as_latest?(blockchain, skip_transactions) unless @index == 0
+    def valid?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool
+      return valid_as_latest?(blockchain, skip_transactions, doing_replace) unless @index == 0
       valid_as_genesis?
     end
 
@@ -128,9 +128,15 @@ module ::Sushi::Core
       end
     end
 
-    def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool) : Bool
-      prev_block = blockchain.latest_slow_block
-      latest_slow_index = blockchain.get_latest_index_for_slow
+    # ameba:disable Metrics/CyclomaticComplexity
+    def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool
+      if doing_replace
+        prev_block = blockchain.latest_slow_block_when_replacing
+        latest_slow_index = blockchain.get_latest_index_for_slow - 2
+      else
+        prev_block = blockchain.latest_slow_block
+        latest_slow_index = blockchain.get_latest_index_for_slow
+      end
 
       unless skip_transactions
         transactions.each_with_index do |t, idx|
@@ -149,8 +155,12 @@ module ::Sushi::Core
               "(timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
       end
 
-      difficulty_for_block = block_difficulty(blockchain)
-      debug "Calculated a difficulty of #{difficulty_for_block} in validity check"
+      if doing_replace
+        difficulty_for_block = blockchain.latest_slow_block.difficulty
+      else
+        difficulty_for_block = block_difficulty(blockchain)
+      end
+      verbose "Calculated a difficulty of #{difficulty_for_block} for block #{@index} in validity check"
       difficulty_for_block = prev_block.index == 0 ? @difficulty : difficulty_for_block
 
       if @difficulty > 0
@@ -180,6 +190,12 @@ module ::Sushi::Core
 
     def find_transaction(transaction_id : String) : Transaction?
       @transactions.find { |t| t.id == transaction_id }
+    end
+
+    def set_transactions(txns : Transactions)
+      @transactions = txns
+      verbose "Number of transactions in block: #{txns.size}"
+      @merkle_tree_root = calculate_merkle_tree_root
     end
 
     include Block

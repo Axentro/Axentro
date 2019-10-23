@@ -33,7 +33,6 @@ module ::Sushi::Core
       @transactions : Array(Transaction),
       @prev_hash : String,
       @timestamp : Int64,
-      @kind : BlockKind,
       @address : String,
       @public_key : String,
       @sign_r : String,
@@ -42,6 +41,7 @@ module ::Sushi::Core
     )
       raise "index must be odd number" if index.even?
       @merkle_tree_root = calculate_merkle_tree_root
+      @kind = BlockKind::FAST
     end
 
     def to_header : Blockchain::FastHeader
@@ -133,8 +133,10 @@ module ::Sushi::Core
         end
       end
 
-      raise "Index Mismatch: the current block index: #{@index} should match the lastest fast block index: #{latest_fast_index}" if @index != latest_fast_index
-      raise "Invalid Previous Hash: for current index: #{@index} the prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
+      if latest_fast_index > 1
+        raise "Index Mismatch: the current block index: #{@index} should match the lastest fast block index: #{latest_fast_index}" if @index != latest_fast_index
+        raise "Invalid Previous Hash: for current index: #{@index} the prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
+      end
 
       next_timestamp = __timestamp
       prev_timestamp = prev_block.timestamp
@@ -159,6 +161,12 @@ module ::Sushi::Core
 
     def find_transaction(transaction_id : String) : Transaction?
       @transactions.find { |t| t.id == transaction_id }
+    end
+
+    def set_transactions(txns : Transactions)
+      @transactions = txns
+      verbose "Number of transactions in block: #{txns.size}"
+      @merkle_tree_root = calculate_merkle_tree_root
     end
 
     include Block
