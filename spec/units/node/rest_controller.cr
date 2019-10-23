@@ -483,6 +483,21 @@ describe RESTController do
         end
       end
     end
+    it "should return a list of domains" do
+      with_factory do |block_factory, transaction_factory|
+        domains = ["domain1.sc", "domain2.sc"]
+        chain = block_factory.add_slow_blocks(2).add_slow_block(
+          [transaction_factory.make_buy_domain_from_platform(domains[0], 0_i64),
+           transaction_factory.make_buy_domain_from_platform(domains[1], 0_i64)]).add_slow_blocks(2).chain
+        address = transaction_factory.sender_wallet.address
+        exec_rest_api(block_factory.rest.__v1_scars_lookup(context("/api/v1/scars/lookup/#{address}"), {address: address})) do |result|
+          result["status"].to_s.should eq("success")
+          result_domains = Array(DomainResult).from_json(result["result"]["domains"].to_s)
+          result_domains.first.domain_name.should eq(domains[0])
+          result_domains[1].domain_name.should eq(domains[1])
+        end
+      end
+    end
   end
 
   describe "__v1_tokens" do
