@@ -25,6 +25,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     alias Domain = NamedTuple(domain_name: String, address: String, status: Int32, price: Int64)
+    alias DomainResult = NamedTuple(domain_name: String, address: String, status: Int32, price: String)
     alias DomainMap = Hash(String, Domain)
 
     @domains_internal : Array(DomainMap) = Array(DomainMap).new
@@ -315,8 +316,16 @@ RULE
 
     def scars_lookup_impl(address : String)
       domains = lookup(address)
+      domain_results = Array(DomainResult).new
 
-      {address: address, domains: domains.to_json}
+      domains.each do |domain|
+        domain_results << DomainResult.new(
+          domain_name: domain[:domain_name],
+          address:     domain[:address],
+          status:      domain[:status],
+          price:       scale_decimal(domain[:price]))
+      end
+      {address: address, domains: domain_results.to_json}
     end
 
     def scale_decimal(domain : Domain)
