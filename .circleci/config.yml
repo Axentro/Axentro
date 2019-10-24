@@ -80,8 +80,9 @@ jobs:
           apt-get update
           apt-get install curl libsqlite3-dev -y
       - run: |
+          publish/build_version.sh > version.txt
           shards build --release
-          ./publish-bintray.sh
+          publish/bintray.sh
 
 workflows:
   version: 2
