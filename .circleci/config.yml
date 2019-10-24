@@ -72,6 +72,7 @@ jobs:
           docker push sushichain/sushid
 
   publish-bintray:
+    machine: true
     steps:
       - checkout
       - run: |
