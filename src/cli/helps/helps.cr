@@ -27,6 +27,7 @@ module ::Sushi::Interface
     HELP_FEE                              = I18n.translate("help.fee")
     HELP_PRICE                            = I18n.translate("help.price")
     HELP_DOMAIN                           = I18n.translate("help.domain")
+    HELP_LOOKUP_ADDRESS                   = I18n.translate("help.lookup_address")
     HELP_TOKEN                            = I18n.translate("help.token.name")
     HELP_TOKEN_AMOUNT                     = I18n.translate("help.token.amount")
     HELP_CONFIG_NAME                      = I18n.translate("help.config")

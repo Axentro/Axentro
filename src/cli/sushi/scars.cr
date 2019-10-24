@@ -34,6 +34,10 @@ module ::Sushi::Interface::Sushi
           name: I18n.translate("sushi.cli.scars.sales.title"),
           desc: I18n.translate("sushi.cli.scars.sales.desc"),
         },
+        {
+          name: I18n.translate("sushi.cli.scars.lookup.title"),
+          desc: I18n.translate("sushi.cli.scars.lookup.desc"),
+        },
       ]
     end
 
@@ -48,6 +52,7 @@ module ::Sushi::Interface::Sushi
         Options::PRICE,
         Options::DOMAIN,
         Options::CONFIG_NAME,
+        Options::ADDRESS,
       ])
     end
 
@@ -63,6 +68,8 @@ module ::Sushi::Interface::Sushi
         return resolve
       when I18n.translate("sushi.cli.scars.sales.title")
         return sales
+      when I18n.translate("sushi.cli.scars.lookup.title")
+        return lookup
       end
 
       specify_sub_action!
@@ -233,6 +240,24 @@ module ::Sushi::Interface::Sushi
         puts_success "status   : #{status}"
         puts_success "price    : #{resolved["domain"]["price"].as_s}"
       end
+    end
+
+    def lookup
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
+      puts_help(HELP_LOOKUP_ADDRESS) unless address = G.op.__address
+
+      json = lookup_internal(node, address)
+
+      puts_success "\n SCARS domains mapped to address #{address}\n"
+
+      puts "   %s" % ["Domain"]
+
+      domains = JSON.parse(json["domains"].as_s)
+      domains.as_a.each do |domain|
+        puts " - %s" % [domain["domain_name"].as_s]
+      end
+
+      puts
     end
   end
 end

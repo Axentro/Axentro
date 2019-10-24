@@ -111,6 +111,9 @@ sushi:
       sales:
         title: "sales"
         desc: "show a list of domains for sale"
+      lookup:
+        title: "lookup"
+        desc: "show the domain(s) for an address if any"
     token:
       title:        "token"
       desc:         "create tokens."

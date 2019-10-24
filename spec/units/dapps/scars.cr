@@ -18,6 +18,34 @@ include Sushi::Core::DApps::BuildIn
 include Sushi::Core::Controllers
 
 describe Scars do
+  describe "#lookup" do
+    it "should return an empty array if the address is not mapped to any domains" do
+      with_factory do |block_factory, _|
+        chain = block_factory.add_slow_block.chain
+        scars = Scars.new(block_factory.blockchain)
+        scars.record(chain)
+        wallet = Wallet.from_json(Wallet.create(true).to_json)
+        scars.lookup(wallet.address).should eq [] of Array(Sushi::Core::DApps::BuildIn::Scars::Domain)
+      end
+    end
+
+    it "should return domain info(s) if the address is found" do
+      with_factory do |block_factory, transaction_factory|
+        domains = ["domain1.sc", "domain2.sc"]
+        chain = block_factory.add_slow_blocks(10).add_slow_block(
+          [transaction_factory.make_buy_domain_from_platform(domains[0], 0_i64),
+          transaction_factory.make_buy_domain_from_platform(domains[1], 0_i64)]).add_slow_blocks(10).chain
+        scars = Scars.new(block_factory.blockchain)
+        scars.record(chain)
+
+        on_success(scars.lookup(transaction_factory.sender_wallet.address)) do |result|
+          result.first["domain_name"].should eq(domains[0])
+          result[1]["domain_name"].should eq(domains[1])
+        end
+      end
+    end
+  end
+
   describe "#resolve" do
     it "should return nil if the domain is not found" do
       with_factory do |block_factory, _|

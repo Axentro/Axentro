@@ -52,6 +52,7 @@ module ::Sushi::Core::Controllers
   #
   # [GET] api/v1/scars/sales                              | get all scars's domains for sales
   # [GET] api/v1/scars/{:domain}                          | get the status of the domain
+  # [GET] api/v1/scars/lookup/{:address}                  | get the domains for an address
   #
   class RESTController
     def initialize(@blockchain : Blockchain)
@@ -81,6 +82,7 @@ module ::Sushi::Core::Controllers
       get "/api/v1/domain/:domain/transactions" { |context, params| __v1_domain_transactions(context, params) }
       get "/api/v1/scars/sales" { |context, params| __v1_scars_sales(context, params) }
       get "/api/v1/scars/:domain" { |context, params| __v1_scars(context, params) }
+      get "/api/v1/scars/lookup/:address" { |context, params| __v1_scars_lookup(context, params) }
       get "/api/v1/tokens" { |context, params| __v1_tokens(context, params) }
       get "/api/v1/nodes" { |context, params| __v1_nodes(context, params) }
       get "/api/v1/node" { |context, params| __v1_node(context, params) }
@@ -262,6 +264,14 @@ module ::Sushi::Core::Controllers
       with_response(context) do |query_params|
         confirmation = query_params["confirmation"]?.try &.to_i || 1
         @blockchain.scars.scars_resolve_impl(domain, confirmation)
+      end
+    end
+
+    def __v1_scars_lookup(context, params)
+      address = params["address"]
+
+      with_response(context) do |_|
+        @blockchain.scars.scars_lookup_impl(address)
       end
     end
 
