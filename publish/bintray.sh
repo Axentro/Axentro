@@ -5,7 +5,7 @@ version=$(publish/build_version.sh)
 file=Sushi-${version}.tar.gz
 
 function create_package {
-  tar cvzf "${file}" src dapps e2e shard.yml version.txt
+  tar cvzf "${file}" src dapps shard.yml version.txt
 }
 
 function main {
