@@ -163,7 +163,7 @@ module ::Sushi::Interface
                         message : String,
                         token : String,
                         kind : TransactionKind)
-      raise "mimatch for wallet size and sender's size" if wallets.size != senders.size
+      raise "mismatch for wallet size and sender's size" if wallets.size != senders.size
 
       unsigned_transaction =
         create_unsigned_transaction(node, action, senders, recipients, message, token, kind)
