@@ -105,7 +105,7 @@ RULE
       @recorded_indices = [] of Int64
     end
 
-    def define_rpc?(call, json, context, params)
+    def define_rpc?(call, json, context, params) : HTTP::Server::Context?
       case call
       when "token_list"
         return list(json, context, params)

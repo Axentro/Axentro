@@ -60,7 +60,7 @@ module ::Sushi::Core::DApps::BuildIn
       @indices.clear
     end
 
-    def define_rpc?(call, json, context, params)
+    def define_rpc?(call, json, context, params) : HTTP::Server::Context?
       case call
       when "transaction"
         return transaction(json, context, params)

@@ -212,7 +212,7 @@ module ::Sushi::Core::DApps::BuildIn
       @recorded_indices = [] of Int64
     end
 
-    def define_rpc?(call, json, context, params)
+    def define_rpc?(call, json, context, params) : HTTP::Server::Context?
       case call
       when "amount"
         return amount(json, context, params)

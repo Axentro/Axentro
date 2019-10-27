@@ -35,7 +35,7 @@ module ::Sushi::Core
     @conflicted_slow_index : Int64? = nil
     @conflicted_fast_index : Int64? = nil
 
-    @last_heartbeat = Time.now
+    @last_heartbeat = Time.utc
     @current_leader : CurrentLeader?
     @heartbeat_salt : String
 
@@ -518,7 +518,7 @@ module ::Sushi::Core
     private def _broadcast_heartbeat(socket, _content)
       return unless @phase == SetupPhase::DONE
 
-      @last_heartbeat = Time.now
+      @last_heartbeat = Time.utc
 
       _m_content = MContentNodeBroadcastHeartbeat.from_json(_content)
 

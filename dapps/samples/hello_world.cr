@@ -22,34 +22,34 @@
 #
 module ::Sushi::Core::DApps::User
   class HelloWorld < UserDApp
-    def valid_addresses
+    def valid_addresses : Array(String)
       [] of String
     end
 
-    def valid_networks
+    def valid_networks : Array(String)
       ["testnet"]
     end
 
-    def related_transaction_actions
+    def related_transaction_actions : Array(String)
       [] of String
     end
 
-    def valid_transaction?(transaction, prev_transactions)
+    def valid_transaction?(transaction, prev_transactions) : Bool
       true
     end
 
-    def activate
+    def activate : Int64?
       nil
     end
 
-    def deactivate
+    def deactivate : Int64?
       nil
     end
 
     def new_block(block)
     end
 
-    def define_rpc?(call, json, context)
+    def define_rpc?(call, json, context) : HTTP::Server::Context?
       if call == "hello"
         context.response.print "Hello World from SushiChain! :)"
         return context

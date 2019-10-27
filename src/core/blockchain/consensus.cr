@@ -16,7 +16,7 @@ module ::Sushi::Core::Consensus
     nonce_salt = nonce.to_s(16)
     nonce_salt = "0" + nonce_salt if nonce_salt.bytesize % 2 != 0
 
-    nonce_slice = Slice(UInt8).new(nonce_salt.bytesize / 2)
+    nonce_slice = Slice(UInt8).new((nonce_salt.bytesize / 2).to_i64)
     nonce_slice.size.times do |i|
       nonce_slice[i] = nonce_salt[i*2..i*2 + 1].to_u8(16)
     end

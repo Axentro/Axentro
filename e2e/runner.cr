@@ -305,7 +305,7 @@ module ::E2E
       step launch_client, 1, "launch client"
 
       running_steps = @time/300
-      running_steps.times do |_|
+      running_steps.to_i.times do |_|
         step running, 300, "running..."
       end
 

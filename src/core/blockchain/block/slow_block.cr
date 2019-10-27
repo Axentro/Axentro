@@ -74,7 +74,7 @@ module ::Sushi::Core
       loop do
         tmp_hashes = [] of String
 
-        (current_hashes.size / 2).times do |i|
+        (current_hashes.size / 2).to_i.times do |i|
           tmp_hashes.push(sha256(current_hashes[i*2] + current_hashes[i*2 + 1]))
         end
 

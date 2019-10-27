@@ -33,7 +33,7 @@ module ::Sushi::Core::DApps::BuildIn
     def clear
     end
 
-    def define_rpc?(call, json, context, params)
+    def define_rpc?(call, json, context, params) : HTTP::Server::Context?
       case call
       when "create_unsigned_transaction"
         return create_unsigned_transaction(json, context, params)

@@ -66,7 +66,7 @@ module ::Sushi::Interface::Logger
   end
 
   private def ftime : String
-    Time.now.to_s("%Y-%m-%d %H:%M:%S")
+    Time.utc.to_s("%Y-%m-%d %H:%M:%S")
   end
 
   include Common::Color

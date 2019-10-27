@@ -47,7 +47,7 @@ module ::Sushi::Core::FastChain
             node.set_current_leader(CurrentLeader.new(node.get_node_id, node.get_wallet.address))
           end
         else
-          if (Time.now - node.get_last_heartbeat) > 2.seconds # && i_am_not_the_current_leader
+          if (Time.utc - node.get_last_heartbeat) > 2.seconds # && i_am_not_the_current_leader
             debug "Heartbeat not received within 2 second timeout - trying to assume leadership"
             if i_can_lead?(my_ranking)
               assume_leadership

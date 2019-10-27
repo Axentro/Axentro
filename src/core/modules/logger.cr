@@ -80,10 +80,10 @@ module ::Sushi::Core::Logger
 
     ratio = (current * PROGRESS_BAR_WIDTH) / max
 
-    bar_left = light_cyan(PROGRESS_CHAR * ratio)
+    bar_left = light_cyan(PROGRESS_CHAR * ratio.to_i)
     bar_right = ""
 
-    (PROGRESS_BAR_WIDTH - ratio).times do |_|
+    (PROGRESS_BAR_WIDTH - ratio).to_i.times do |_|
       value = current % PROGRESS_CHARS.size
       value = 1 if value == 0
       bar_right += dark_gray(PROGRESS_CHARS[Random.rand(value)])
@@ -103,7 +103,7 @@ module ::Sushi::Core::Logger
   end
 
   private def ftime : String
-    Time.now.to_s("%Y-%m-%d %H:%M:%S")
+    Time.utc.to_s("%Y-%m-%d %H:%M:%S")
   end
 
   include Common::Color

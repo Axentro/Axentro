@@ -19,7 +19,7 @@ include ::Sushi::Common::Denomination
 include Hashes
 
 describe Blockchain do
-  ignored "should calculate the total supply" do
+  pending "should calculate the total supply" do
     with_factory do |block_factory, _|
       total_supply = (0_i64..8000000_i64).select(&.even?).reduce(0_i64) { |acc, i| block_factory.blockchain.coinbase_slow_amount(i, [] of Transaction) + acc }
       scale_decimal(total_supply).should eq("20146527.97498925")

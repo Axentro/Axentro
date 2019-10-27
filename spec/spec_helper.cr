@@ -10,8 +10,9 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
+ENV["SC_UNIT"] = "true"
+
 require "spec"
-require "./ext/spec/*"
 require "yaml"
 require "../src/common"
 require "../src/core"
