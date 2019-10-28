@@ -16,4 +16,3 @@ include ::Sushi::Common::Color
 
 require "./units/units"
 require "./functional/runner"
-
