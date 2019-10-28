@@ -47,7 +47,7 @@ module ::Sushi::Core::Logger
   end
 
   def debug(msg : String)
-    return if ENV.has_key?("SC_TESTING")
+    # return if ENV.has_key?("SC_TESTING")
     return if log_level > LL_DEBUG
     log_out("Debg", msg, :dark_gray)
   end

@@ -15,6 +15,5 @@ require "./spec_helper"
 include ::Sushi::Common::Color
 
 require "./units/units"
-require "./integration/integration"
 require "./functional/runner"
 

@@ -24,7 +24,7 @@ module ::Sushi::Core::DApps::BuildIn
 
     def self.find_amount(tokens : Array(TokenQuantity), token : String, address : String)
       tokens.select { |tq| tq.name == token }.flat_map do |tq|
-        tq.quantities.select { |aq| aq.address == address }.reduce(0) { |acc, aq| acc + aq.quantity }
+        tq.quantities.select { |aq| aq.address == address }.reduce(0_i64) { |acc, aq| acc + aq.quantity }
       end.sum.to_i64
     end
 
