@@ -89,8 +89,7 @@ module ::Sushi::Interface
       end
     end
 
-    def save(name : String?, update_name_only : Bool = false)
-      config_name = name ? name : "config"
+    def save(name : String = "config", update_name_only : Bool = false)
       config = Config.from_yaml(File.read(config_path))
       config.current_config = config_name
       config.configs[config_name] = @config_map unless update_name_only
