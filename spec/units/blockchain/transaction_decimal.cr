@@ -95,5 +95,4 @@ describe TransactionDecimal do
     typeof(non_decimal).should eq(Sushi::Core::Transaction)
   end
 
-  STDERR.puts "< TransactionDecimal"
 end

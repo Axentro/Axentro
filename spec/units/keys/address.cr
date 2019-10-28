@@ -59,5 +59,4 @@ describe Address do
     end
   end
 
-  STDERR.puts "< Keys::Address"
 end

@@ -47,5 +47,4 @@ describe DeveloperFund do
     DeveloperFund.transactions(developer_fund.not_nil!.get_config).flat_map(&.recipients).sort_by(&.["amount"]).should eq(expected_recipients)
   end
 
-  STDERR.puts "< DeveloperFund"
 end

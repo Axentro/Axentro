@@ -199,5 +199,4 @@ describe SlowTransactionPool do
     end
   end
 
-  STDERR.puts "< SlowTransactionPool"
 end

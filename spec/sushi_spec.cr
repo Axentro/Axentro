@@ -14,25 +14,7 @@ require "./spec_helper"
 
 include ::Sushi::Common::Color
 
-ENV["SC_UNIT"] = "true"
-
-puts light_cyan("> unit tests")
 require "./units/units"
-
-ENV.delete("SC_UNIT")
-
-ENV["SC_INTEGRATION"] = "true"
-
-puts ""
-puts light_cyan("> integration tests")
 require "./integration/integration"
-
-ENV.delete("SC_INTEGRATION")
-
-ENV["SC_FUNCTIONAL"] = "true"
-
-puts ""
-puts light_cyan("> spinach functional tests")
 require "./functional/runner"
 
-ENV.delete("SC_FUNCTIONAL")

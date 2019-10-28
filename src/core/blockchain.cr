@@ -43,7 +43,7 @@ module ::Sushi::Core
       SlowTransactionPool.setup
       FastTransactionPool.setup
 
-      hours_to_hold = ENV.has_key?("SC_UNIT") ? 2 : 48
+      hours_to_hold = ENV.has_key?("SC_TESTING") ? 2 : 48
       @blocks_to_hold = (SLOW_BLOCKS_PER_HOUR * hours_to_hold).to_i64
       end
 

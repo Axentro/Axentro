@@ -109,5 +109,5 @@ describe PublicKey do
       KeyRing.generate.public_key.is_valid?.should be_true
     end
   end
-  STDERR.puts "< Keys::PublicKey"
+
 end

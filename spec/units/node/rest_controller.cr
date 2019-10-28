@@ -584,7 +584,6 @@ describe RESTController do
     end
   end
 
-  STDERR.puts "< Node::RESTController"
 end
 
 struct DomainResult

@@ -482,6 +482,4 @@ describe Blockchain do
       }
     end
   end
-
-  STDERR.puts "< Blockchain::Slow"
 end

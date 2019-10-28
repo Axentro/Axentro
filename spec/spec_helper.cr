@@ -10,7 +10,7 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-ENV["SC_UNIT"] = "true"
+ENV["SC_TESTING"] = "true"
 
 require "spec"
 require "yaml"

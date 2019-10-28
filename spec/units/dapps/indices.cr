@@ -136,5 +136,4 @@ describe Indices do
       end
     end
   end
-  STDERR.puts "< dApps::Indices"
 end

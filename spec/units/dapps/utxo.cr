@@ -430,5 +430,4 @@ describe UTXO do
     UTXO.fee("send").should eq(10000_i64)
   end
 
-  STDERR.puts "< dApps::UTXO"
 end
