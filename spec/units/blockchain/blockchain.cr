@@ -254,7 +254,6 @@ describe Blockchain do
 
   describe "in memory syncing" do
     describe "slow chain" do
-      # TODO - remove this test when the syncing is all fixed as it's covered indirectly by another spec here
       it "should return the whole slow chain as a subchain when the chain size is less than the in memory allocation" do
         with_factory do |block_factory|
           block_factory.add_slow_blocks(10)
@@ -264,8 +263,7 @@ describe Blockchain do
           indexes.last.should eq(20)
         end
       end
-      # TODO - Fix this spec
-      # TODO - remove this test when the syncing is all fixed as it's super slow
+
       it "should return the whole slow chain as a subchain when the chain size exceeds the in memory allocation" do
         with_factory do |block_factory|
           blocks_to_add = block_factory.blocks_to_hold + 8
@@ -278,7 +276,7 @@ describe Blockchain do
       end
     end
     describe "fast chain" do
-      # TODO - remove this test when the syncing is all fixed as it's covered indirectly by another spec here
+
       it "should return the whole fast chain as a subchain when the fast chain size is less than the in memory allocation" do
         with_factory do |block_factory|
           block_factory.add_slow_blocks(1).add_fast_blocks(4)
@@ -288,7 +286,7 @@ describe Blockchain do
           indexes.last.should eq(7)
         end
       end
-      # TODO - remove this test when the syncing is all fixed as it's super slow
+
       it "should return the whole fast chain as a subchain when the fast chain size exceeds the in memory allocation" do
         with_factory do |block_factory|
           blocks_to_add = block_factory.blocks_to_hold + 8
@@ -484,6 +482,4 @@ describe Blockchain do
       }
     end
   end
-
-  STDERR.puts "< Blockchain::Slow"
 end

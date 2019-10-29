@@ -84,14 +84,14 @@ module ::E2E
       recipient = Random.rand(@num_miners)
 
       if transaction_id = create(@node_ports.sample, sender, recipient)
-        @launch_time ||= Time.now
+        @launch_time ||= Time.utc
         @transaction_ids << transaction_id
       end
     end
 
     def launch
       if @@no_transactions
-        @launch_time ||= Time.now
+        @launch_time ||= Time.utc
         nil
       else
         spawn do
@@ -107,7 +107,7 @@ module ::E2E
     end
 
     def kill
-      @kill_time = Time.now
+      @kill_time = Time.utc
       @alive = false
     end
 

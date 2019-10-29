@@ -22,19 +22,19 @@ module ::Sushi::Core::DApps::User
     #
     VALID_ADDRESS = "VDAxMjJmMTcyNWE1NmE0MjExZTk0ZThkMGRiYmM2ZjE1YTQ5OWRmODM1MzliYmUy"
 
-    def valid_addresses
+    def valid_addresses : Array(String)
       [VALID_ADDRESS]
     end
 
-    def valid_networks
+    def valid_networks : Array(String)
       ["testnet"]
     end
 
-    def related_transaction_actions
+    def related_transaction_actions : Array(String)
       [TARGET_ACTION]
     end
 
-    def valid_transaction?(transaction, prev_transactions)
+    def valid_transaction?(transaction, prev_transactions) : Bool
       raise "the token must be #{TOKEN_DEFAULT}" unless transaction.token == TOKEN_DEFAULT
       raise "the number of senders must be 1" unless transaction.senders.size == 1
       raise "the number of recipients must be 1" unless transaction.recipients.size == 1
@@ -44,11 +44,11 @@ module ::Sushi::Core::DApps::User
       true
     end
 
-    def activate
+    def activate : Int64?
       nil
     end
 
-    def deactivate
+    def deactivate : Int64?
       nil
     end
 
@@ -85,7 +85,7 @@ module ::Sushi::Core::DApps::User
       end
     end
 
-    def define_rpc?(call, json, context)
+    def define_rpc?(call, json, context) : HTTP::Server::Context?
       nil
     end
   end

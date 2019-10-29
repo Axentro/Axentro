@@ -39,7 +39,7 @@ module ::Sushi::Core::DApps::BuildIn
     # - slow chain latest block
     # - fast chain latest block
     # - find block / transaction should just return the specified block by index or transaction still
-    def define_rpc?(call, json, context, params)
+    def define_rpc?(call, json, context, params) : HTTP::Server::Context?
       case call
       when "blockchain_size"
         return blockchain_size(json, context, params)

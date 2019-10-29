@@ -88,5 +88,4 @@ describe RPCController do
     end
   end
 
-  STDERR.puts "< Node::RPCController"
 end

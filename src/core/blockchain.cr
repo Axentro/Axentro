@@ -43,8 +43,8 @@ module ::Sushi::Core
       SlowTransactionPool.setup
       FastTransactionPool.setup
 
-      hours_to_hold = ENV.has_key?("SC_UNIT") ? 2 : 48
-      @blocks_to_hold = SLOW_BLOCKS_PER_HOUR * hours_to_hold
+      hours_to_hold = ENV.has_key?("SC_TESTING") ? 2 : 48
+      @blocks_to_hold = (SLOW_BLOCKS_PER_HOUR * hours_to_hold).to_i64
       end
 
     def setup(@node : Node)
@@ -488,7 +488,7 @@ module ::Sushi::Core
       miners_recipients = if miners_nonces_size > 0
                             miners.map { |m|
                               amount = (miners_rewards_total * m[:context][:nonces].size) / miners_nonces_size
-                              {address: m[:context][:address], amount: amount}
+                              {address: m[:context][:address], amount: amount.to_i64}
                             }.reject { |m| m[:amount] == 0 }
                           else
                             [] of NamedTuple(address: String, amount: Int64)

@@ -577,5 +577,4 @@ describe Transaction do
     end
   end
 
-  STDERR.puts "< Transaction"
 end

@@ -217,5 +217,4 @@ describe Token do
       end
     end
   end
-  STDERR.puts "< dApps::Token"
 end

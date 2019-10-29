@@ -198,5 +198,4 @@ describe Blockchain do
       end
     end
   end
-  STDERR.puts "< Blockchain::Fast"
 end

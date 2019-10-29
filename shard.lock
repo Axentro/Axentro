@@ -6,11 +6,11 @@ shards:
 
   crystal-argon2:
     github: sushichain/crystal-argon2
-    version: 0.1.0
+    version: 0.1.1
 
   crystal-ecdsa:
     github: sushichain/crystal-ecdsa
-    version: 0.1.5
+    version: 0.1.6
 
   db:
     github: crystal-lang/crystal-db
@@ -18,7 +18,7 @@ shards:
 
   humanhash:
     github: kingsleyh/humanhash
-    version: 0.1.1
+    version: 0.1.2
 
   i18n:
     github: TechMagister/i18n.cr

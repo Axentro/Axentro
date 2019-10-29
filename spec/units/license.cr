@@ -24,5 +24,5 @@ describe "License" do
       end
     end
   end
-  STDERR.puts "< License"
+
 end

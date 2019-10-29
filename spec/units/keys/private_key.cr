@@ -107,5 +107,5 @@ describe PrivateKey do
       KeyRing.generate.private_key.is_valid?.should be_true
     end
   end
-  STDERR.puts "< Keys::PrivateKey"
+
 end

@@ -205,8 +205,6 @@ describe SlowBlock do
       block.find_transaction("transaction-not-found").should be_nil
     end
   end
-
-  STDERR.puts "< SlowBlock"
 end
 
 def a_nonce

@@ -85,6 +85,4 @@ describe Consensus do
       ENV["SC_SET_DIFFICULTY"] = current_env
     end
   end
-
-  STDERR.puts "< Consensus"
 end

@@ -633,7 +633,6 @@ describe Scars do
       end
     end
   end
-  STDERR.puts "< dApps::Scars"
 end
 
 def on_success(result, &block)

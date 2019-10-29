@@ -123,7 +123,6 @@ describe Wallet do
     end
   end
 
-  STDERR.puts "< Wallet"
 end
 
 def create_unknown_network_address

@@ -136,8 +136,6 @@ describe Blockchain do
 #       (node_reward + miner1_reward).should eq(total_reward)
 #     end
 #   end
-
-  STDERR.puts "< SlowBlock Rewards"
 end
 
 def assert_reward_distribution(nonces1, nonces2, expected_percent_1, expected_percent_2)

@@ -73,5 +73,5 @@ describe Fees do
       end
     end
   end
-  STDERR.puts "< dApps::Fees"
+
 end

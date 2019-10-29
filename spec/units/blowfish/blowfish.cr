@@ -21,5 +21,4 @@ describe BlowFish do
     decrypted = BlowFish.decrypt("password", encrypted[:data], encrypted[:salt])
     decrypted.should eq("some-data")
   end
-  STDERR.puts "< BlowFish"
 end

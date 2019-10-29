@@ -81,5 +81,4 @@ describe Rejects do
     end
   end
 
-  STDERR.puts "< dApps::Rejects"
 end

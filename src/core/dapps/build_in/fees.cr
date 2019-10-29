@@ -33,7 +33,7 @@ module ::Sushi::Core::DApps::BuildIn
     def clear
     end
 
-    def define_rpc?(call, json, context, params)
+    def define_rpc?(call, json, context, params) : HTTP::Server::Context?
       case call
       when "fees"
         return fees(json, context, params)

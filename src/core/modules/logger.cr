@@ -36,30 +36,30 @@ module ::Sushi::Core::Logger
   end
 
   def welcome
-    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E") || ENV.has_key?("SC_FUNCTIONAL")
+    return if ENV.has_key?("SC_TESTING")
     puts welcome_message
   end
 
   def verbose(msg : String)
-    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E") || ENV.has_key?("SC_FUNCTIONAL")
+    return if ENV.has_key?("SC_TESTING")
     return if log_level > LL_VERBOSE
     log_out("Verb", msg, :dark_gray)
   end
 
   def debug(msg : String)
-    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E") || ENV.has_key?("SC_FUNCTIONAL")
+    # return if ENV.has_key?("SC_TESTING")
     return if log_level > LL_DEBUG
     log_out("Debg", msg, :dark_gray)
   end
 
   def info(msg : String)
-    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E") || ENV.has_key?("SC_FUNCTIONAL")
+    return if ENV.has_key?("SC_TESTING")
     return if log_level > LL_INFO
     log_out("Info", msg, :light_green)
   end
 
   def warning(msg : String)
-    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_INTEGRATION") || ENV.has_key?("SC_E2E") || ENV.has_key?("SC_FUNCTIONAL")
+    return if ENV.has_key?("SC_TESTING")
     log_out("Warn", msg, :yellow)
   end
 
@@ -75,15 +75,15 @@ module ::Sushi::Core::Logger
                     "\u{259C}", "\u{259D}", "\u{259E}", "\u{259F}"]
 
   def progress(msg : String, current : Int, max : Int)
-    return if ENV.has_key?("SC_UNIT") || ENV.has_key?("SC_E2E")
+    return if ENV.has_key?("SC_TESTING")
     return if max == 0
 
     ratio = (current * PROGRESS_BAR_WIDTH) / max
 
-    bar_left = light_cyan(PROGRESS_CHAR * ratio)
+    bar_left = light_cyan(PROGRESS_CHAR * ratio.to_i)
     bar_right = ""
 
-    (PROGRESS_BAR_WIDTH - ratio).times do |_|
+    (PROGRESS_BAR_WIDTH - ratio).to_i.times do |_|
       value = current % PROGRESS_CHARS.size
       value = 1 if value == 0
       bar_right += dark_gray(PROGRESS_CHARS[Random.rand(value)])
@@ -103,7 +103,7 @@ module ::Sushi::Core::Logger
   end
 
   private def ftime : String
-    Time.now.to_s("%Y-%m-%d %H:%M:%S")
+    Time.utc.to_s("%Y-%m-%d %H:%M:%S")
   end
 
   include Common::Color

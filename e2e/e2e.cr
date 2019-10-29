@@ -26,7 +26,7 @@ class SushiChainE2E
   @no_transactions : Bool = false
 
   def initialize
-    ENV["SC_E2E"] = "true"
+    ENV["SC_TESTING"] = "true"
   end
 
   def parse_option!
@@ -66,9 +66,7 @@ class SushiChainE2E
         @keep_logs = true
         ENV["SC_LOG"] = "debug"
         ENV.delete("SC_SET_DIFFICULTY")
-        ENV.delete("SC_UNIT")
-        ENV.delete("SC_INTEGRATION")
-        ENV.delete("SC_E2E")
+        ENV.delete("SC_TESTING")
       end
 
       parser.on("--no-transactions", "don't send any transactions during run") do

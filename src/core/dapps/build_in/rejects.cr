@@ -45,7 +45,7 @@ module ::Sushi::Core::DApps::BuildIn
       @rejects.clear
     end
 
-    def define_rpc?(call, json, context, params)
+    def define_rpc?(call, json, context, params) : HTTP::Server::Context?
     end
 
     def find(transaction_id : String) : String?

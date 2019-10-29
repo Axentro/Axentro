@@ -83,5 +83,5 @@ describe Keys do
       end
     end
   end
-  STDERR.puts "< Keys"
+
 end

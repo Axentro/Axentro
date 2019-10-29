@@ -12,6 +12,6 @@
 
 module ::Sushi::Common::Timestamp
   def __timestamp : Int64
-    Time.utc_now.to_unix_ms
+    Time.utc.to_unix_ms
   end
 end
