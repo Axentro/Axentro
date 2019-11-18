@@ -41,10 +41,21 @@ module ::E2E
       @db_name = Random.new.hex
     end
 
-    def create_wallets
+    def create_wallets_and_funds
+      wallet_addresses = [] of String
       [@num_nodes, @num_miners].max.times do |idx|
         create_wallet(idx)
+        wallet_json = File.read(wallet(idx))
+        the_parsed_wallet = JSON.parse(wallet_json)
+        address = the_parsed_wallet["address"]
+        wallet_addresses << address.as_s
+        puts "the wallet address for wallet #{idx} is: #{address}"
       end
+      developer_fund_string = "addresses:\n"
+      wallet_addresses.each do |addr|
+        developer_fund_string += "  - address: #{addr}\n    amount: \"10000\"\n"
+      end
+      File.write(developer_fund_file, developer_fund_string, "w")
     end
 
     def launch_node(node_port, is_private, connecting_port, idx, db)
@@ -235,7 +246,6 @@ module ::E2E
 
         (0..((size-2)*2)+2).select(&.even?).each do |i|
           unless block = block(port, i)
-            STDERR.puts "%2d --- %s" % [i, "failed to get block at #{i} on #{port}"]
             next
           end
           STDERR.puts "%2d --- %s" % [i, block["prev_hash"].as_s]
@@ -299,7 +309,7 @@ module ::E2E
       step Runner.clean_logs, 0, "clean logs"
       step Runner.clean_db, 0, "clean database"
       step Runner.clean_wallets, 0, "clean wallets"
-      step create_wallets, 0, "create wallets"
+      step create_wallets_and_funds, 0, "create wallets and funds"
       step launch_nodes, 1, "launch nodes"
       step launch_miners, 1, "launch miners"
       step launch_client, 1, "launch client"

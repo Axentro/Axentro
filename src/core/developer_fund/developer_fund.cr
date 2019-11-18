@@ -44,14 +44,14 @@ module ::Sushi::Core
       end
 
       [TransactionDecimal.new(
-        Transaction.create_id,
+        "developer_fund",
         "head",
         [] of Transaction::SenderDecimal,
         recipients,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
-        __timestamp,   # timestamp
+        0,             # timestamp
         0,             # scaled
         TransactionKind::SLOW
       ).to_transaction]

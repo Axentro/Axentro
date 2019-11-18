@@ -38,7 +38,12 @@ module ::E2E::Utils::API
 
     res = `#{sushi(args)}`
 
-    parse_json(res)
+    if parsed_res = parse_json(res)
+      x = parsed_res["index"]
+      parsed_res
+    end
+  rescue e : Exception
+    nil
   end
 
   def amount(port : Int32, num : Int32, confirmation : Int32 = 1) : BigDecimal
@@ -53,7 +58,7 @@ module ::E2E::Utils::API
     BigDecimal.new(0)
   end
 
-  def create(port : Int32, n_sender : Int32, n_recipient : Int32) : String?
+  def create(port : Int32, n_sender : Int32, n_recipient : Int32, transaction_counter : Int64) : String?
     a = amount(port, n_sender)
 
     return nil if a < BigDecimal.new("0.00010001")
@@ -61,6 +66,7 @@ module ::E2E::Utils::API
     recipient_address = ::Sushi::Core::Wallet.from_path(wallet(n_recipient)).address
 
     args = ["transaction", "create", "-w", wallet(n_sender), "-a", recipient_address, "-m", "0.00000001", "-n", "http://127.0.0.1:#{port}", "--message='E2E Test'", "-f", "0.0001", "--json"]
+    args << "--fast-transaction" if (transaction_counter % 1000) == 0
 
     res = `#{sushi(args)}`
 

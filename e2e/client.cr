@@ -79,11 +79,11 @@ module ::E2E
     @node_ports : Array(Int32) = [] of Int32
     @num_miners : Int32 = 0
 
-    def create_transaction
+    def create_transaction(transaction_counter : Int64)
       sender = Random.rand(@num_miners)
       recipient = Random.rand(@num_miners)
 
-      if transaction_id = create(@node_ports.sample, sender, recipient)
+      if transaction_id = create(@node_ports.sample, sender, recipient, transaction_counter)
         @launch_time ||= Time.utc
         @transaction_ids << transaction_id
       end
@@ -95,9 +95,11 @@ module ::E2E
         nil
       else
         spawn do
+          transaction_counter = 0_i64
           while @alive
             begin
-              create_transaction
+              create_transaction(transaction_counter)
+              transaction_counter += 1_i64
             rescue e : Exception
               STDERR.puts red(e.message.not_nil!)
             end

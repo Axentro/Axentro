@@ -66,7 +66,7 @@ class SushiChainE2E
         @keep_logs = true
         ENV["SC_LOG"] = "debug"
         ENV.delete("SC_SET_DIFFICULTY")
-        ENV.delete("SC_TESTING")
+        #ENV.delete("SC_TESTING")
       end
 
       parser.on("--no-transactions", "don't send any transactions during run") do

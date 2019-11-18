@@ -113,8 +113,8 @@ module ::Sushi::Core::FastChain
   end
 
   def chain_mature_enough_for_fast_blocks?
-    return true if node.has_no_connections? && !node.is_private_node?
     return true if ENV.has_key?("SC_TESTING")
+    return true if node.has_no_connections? && !node.is_private_node?
     get_latest_index_for_slow > 1440_i64
   end
 
