@@ -278,9 +278,9 @@ module ::Sushi::Core
       if (incoming_chain.size > STARTING_BLOCKS_TO_CHECK + FINAL_BLOCKS_TO_CHECK) && (incoming_chain.size > (@chain.size / 4))
         (0_i64..STARTING_BLOCKS_TO_CHECK).step(2) { |b | the_indexes << b }
         number_of_elements = (incoming_chain.size - (STARTING_BLOCKS_TO_CHECK + FINAL_BLOCKS_TO_CHECK)) / (100_i64 / SYNC_SECURITY_LEVEL_PERCENTAGE)
-        index_of_last_incoming_block = incoming_chain[-1].index 
+        index_of_last_incoming_block = incoming_chain[-1].index
         starting_random_block = STARTING_BLOCKS_TO_CHECK * 2
-        final_random_block = index_of_last_incoming_block - (FINAL_BLOCKS_TO_CHECK * 2) 
+        final_random_block = index_of_last_incoming_block - (FINAL_BLOCKS_TO_CHECK * 2)
         debug "starting random block is: #{starting_random_block}"
         debug "final random block is: #{final_random_block}"
         debug "number of elements is: #{number_of_elements}"
@@ -300,9 +300,9 @@ module ::Sushi::Core
       if (incoming_chain.size > STARTING_BLOCKS_TO_CHECK + FINAL_BLOCKS_TO_CHECK) && (incoming_chain.size > (@chain.size / 4))
         (1_i64..STARTING_BLOCKS_TO_CHECK).step(2) { |b | the_indexes << b }
         number_of_elements = (incoming_chain.size - (STARTING_BLOCKS_TO_CHECK + FINAL_BLOCKS_TO_CHECK)) / (100_i64 / SYNC_SECURITY_LEVEL_PERCENTAGE)
-        index_of_last_incoming_block = incoming_chain[-1].index 
+        index_of_last_incoming_block = incoming_chain[-1].index
         starting_random_block = (STARTING_BLOCKS_TO_CHECK * 2) + 1_i64
-        final_random_block = index_of_last_incoming_block - (FINAL_BLOCKS_TO_CHECK * 2) 
+        final_random_block = index_of_last_incoming_block - (FINAL_BLOCKS_TO_CHECK * 2)
         debug "starting random block is: #{starting_random_block}"
         debug "final random block is: #{final_random_block}"
         debug "number of elements is: #{number_of_elements}"
@@ -320,7 +320,7 @@ module ::Sushi::Core
       return false if slow_subchain.nil?
       result = true
       indexes_for_validity_checking = create_slow_indexes_to_check(slow_subchain)
-      
+
       slow_subchain.not_nil!.sort_by(&.index).each do |block|
         # running the valid block test only on a subset of blocks for speed on sync
         index = block.index

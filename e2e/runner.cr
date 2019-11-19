@@ -49,7 +49,6 @@ module ::E2E
         the_parsed_wallet = JSON.parse(wallet_json)
         address = the_parsed_wallet["address"]
         wallet_addresses << address.as_s
-        puts "the wallet address for wallet #{idx} is: #{address}"
       end
       developer_fund_string = "addresses:\n"
       wallet_addresses.each do |addr|
@@ -244,7 +243,8 @@ module ::E2E
         size = blockchain_size(port)
         STDERR.puts "> blocks on port #{port} (size: #{size})"
 
-        (0..((size-2)*2)+2).select(&.even?).each do |i|
+#jjf    (0..((size-2)*2)+2).select(&.even?).each do |i|
+        (0..size-1).each do |i|
           unless block = block(port, i)
             next
           end

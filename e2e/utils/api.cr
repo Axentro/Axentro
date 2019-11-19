@@ -39,7 +39,7 @@ module ::E2E::Utils::API
     res = `#{sushi(args)}`
 
     if parsed_res = parse_json(res)
-      x = parsed_res["index"]
+      parsed_res["index"]
       parsed_res
     end
   rescue e : Exception
