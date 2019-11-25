@@ -296,13 +296,62 @@ module ::Sushi::Core::Protocol
   end
 
   ######################################
+  # DATABASE VALIDATION
+  ######################################
+
+  M_TYPE_VALIDATION_REQUEST= 0x010a
+
+  struct MContentValidationRequest
+    JSON.mapping({
+      version: Int32,
+      source_host: String,
+      source_port: Int32,
+      max_slow_block_id: Int64,
+      max_fast_block_id: Int64,
+    })
+  end
+
+  M_TYPE_VALIDATION_CHALLENGE = 0x010b
+
+  struct MContentValidationChallenge
+    JSON.mapping({blocks_to_hash: Array(Int64)})
+  end
+
+  M_TYPE_VALIDATION_CHALLENGE_RESPONSE = 0x010c
+
+  struct MContentValidationChallengeResponse
+    JSON.mapping({
+      source_host: String,
+      source_port: Int32,
+      solution_hash: Int64,
+    })
+  end
+
+  M_TYPE_VALIDATION_FAILED = 0x010d
+
+  struct MContentValidationFailed
+    JSON.mapping({
+      reason: String,
+    })
+  end
+
+  M_TYPE_VALIDATION_SUCCEEDED = 0x010e
+
+  struct MContentValidationSucceeded
+    JSON.mapping({
+      reason: String,
+    })
+  end
+
+  ######################################
   # Blockchain's setup phase
   ######################################
 
   enum SetupPhase
     NONE
-    CONNECTING_NODES
     BLOCKCHAIN_LOADING
+    DATABASE_VALIDATING
+    CONNECTING_NODES
     BLOCKCHAIN_SYNCING
     TRANSACTION_SYNCING
     PRE_DONE

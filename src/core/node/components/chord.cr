@@ -72,7 +72,7 @@ module ::Sushi::Core::NodeComponents
       error "failed to connect #{connect_host}:#{connect_port}"
       error "please specify another public host if you need a successor"
 
-      node.phase = SetupPhase::BLOCKCHAIN_LOADING
+      node.phase = SetupPhase::PRE_DONE
       node.proceed_setup
     end
 
@@ -101,7 +101,7 @@ module ::Sushi::Core::NodeComponents
       error "failed to connect #{connect_host}:#{connect_port}"
       error "please specify another public host if you need a successor"
 
-      node.phase = SetupPhase::BLOCKCHAIN_LOADING
+      node.phase = SetupPhase::PRE_DONE
       node.proceed_setup
     end
 
@@ -172,7 +172,7 @@ module ::Sushi::Core::NodeComponents
 
       @predecessor = {socket: socket, context: _context}
 
-      node.phase = SetupPhase::BLOCKCHAIN_LOADING
+      node.phase = SetupPhase::BLOCKCHAIN_SYNCING
       node.proceed_setup
     end
 
@@ -194,7 +194,7 @@ module ::Sushi::Core::NodeComponents
 
       connect_to_successor(node, _context)
 
-      node.phase = SetupPhase::BLOCKCHAIN_LOADING
+      node.phase = SetupPhase::BLOCKCHAIN_SYNCING
       node.proceed_setup
     end
 

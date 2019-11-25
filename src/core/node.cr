@@ -14,10 +14,21 @@ require "./node/*"
 
 module ::Sushi::Core
   class Node < HandleSocket
+
     alias Network = NamedTuple(
       prefix: String,
       name: String,
     )
+
+    alias ValidatingNode = NamedTuple(
+      host: String,
+      port: Int32,
+      validating_hash: String,
+    )
+
+    alias ValidatingNodes = Array(ValidatingNode)
+
+    @nodes_awaiting_validation = ValidatingNodes.new
 
     property phase : SetupPhase
 
@@ -128,6 +139,68 @@ module ::Sushi::Core
       node.listen
     end
 
+    def send_validation_request(node, connect_host : String, connect_port : Int32, max_slow_block_id : Int64, max_fast_block_id : Int64)
+      debug "requesting validation from: #{@bind_host}:#{@bind_port}"
+
+      socket = HTTP::WebSocket.new(connect_host, "/peer", connect_port, @use_ssl)
+
+      node.peer(socket)
+
+      spawn do
+        socket.run
+      rescue e : Exception
+        handle_exception(socket, e)
+      end
+
+      debug "Sending validation request with most recent slow (#{max_slow_block_id}) and fast (#{max_fast_block_id}) block IDs to connect node"
+      send(
+        socket,
+        M_TYPE_VALIDATION_REQUEST,
+        {
+          version: Core::CORE_VERSION,
+          source_host: @bind_host,
+          source_port: @bind_port,
+          max_slow_block_id: max_slow_block_id,
+          max_fast_block_id: max_fast_block_id,
+        }
+      )
+    rescue e : Exception
+      error "failed to connect #{connect_host}:#{connect_port}"
+      error "please specify another host for connection"
+
+      node.phase = SetupPhase::PRE_DONE
+      node.proceed_setup
+    end
+
+    def validation_requested(socket, _content)
+      _m_content = MContentValidationRequest.from_json(_content)
+
+      max_slow_block_id = _m_content.max_slow_block_id
+      max_fast_block_id = _m_content.max_fast_block_id
+      source_host = _m_content.source_host
+      source_port = _m_content.source_port
+
+      debug "Node (#{source_host}:#{source_port}) wants database validation with slow/fast block IDs of #{max_slow_block_id}/#{max_fast_block_id}"
+
+      #random_block_list = @blockchain.get_random_block_ids(max_slow_block_id, max_fast_block_id)
+      #validating_hash = @blockchain.get_hash_of_block_hashes(random_block_list)
+      random_block_list = [] of Int64
+      validating_hash = "xyz"
+
+      @nodes_awaiting_validation.push({host: source_host, port: source_port, validating_hash: validating_hash})
+
+      send(
+        socket,
+        M_TYPE_VALIDATION_CHALLENGE,
+        {
+          blocks_to_hash: random_block_list,
+        }
+      )
+    rescue e : Exception
+      error "failed to send validation challenge to connecting node #{source_host}:#{source_port}"
+    end
+
+
     private def sync_chain(socket : HTTP::WebSocket? = nil)
       info "start synching chain"
 
@@ -235,6 +308,8 @@ module ::Sushi::Core
           @clients_manager.upgrade(socket, message_content)
         when M_TYPE_CLIENT_CONTENT
           @clients_manager.receive_content(message_content)
+        when M_TYPE_VALIDATION_REQUEST
+          validation_requested(socket, message_content)
         when M_TYPE_CHORD_JOIN
           @chord.join(self, socket, message_content)
         when M_TYPE_CHORD_JOIN_PRIVATE
@@ -707,10 +782,56 @@ module ::Sushi::Core
       @phase = SetupPhase::CONNECTING_NODES
 
       if @is_private
+        debug "doing join to private"
         @chord.join_to_private(self, @connect_host.not_nil!, @connect_port.not_nil!)
       else
+        debug "doing join to public"
         @chord.join_to(self, @connect_host.not_nil!, @connect_port.not_nil!)
       end
+    end
+
+    def setup_connectivity
+      if @connect_host && @connect_port
+        phase_connecting_nodes
+      else
+        warning "no connecting node has been specified"
+        warning "so this node is standalone from other network"
+        @phase = SetupPhase::PRE_DONE
+        proceed_setup
+      end
+    end
+
+    def validate_database
+      debug "Validating database ... "
+      if @connect_host && @connect_port
+        send_validation_request(self, @connect_host.not_nil!, @connect_port.not_nil!, @blockchain.latest_slow_block.index, @blockchain.latest_fast_block_index_or_zero)
+      else
+        warning "no connecting node has been specified"
+        warning "so this node is standalone from other network"
+        @phase = SetupPhase::PRE_DONE
+        proceed_setup
+      end
+    end
+
+    def load_blockchain_from_database
+      @blockchain.setup(self)
+
+      info "loaded blockchain's total size: #{light_cyan(@blockchain.chain.size)}"
+      info "highest slow block index: #{light_cyan(@blockchain.latest_slow_block.index)}"
+      info "highest fast block index: #{light_cyan(@blockchain.latest_fast_block_index_or_zero)}"
+
+      if @database
+        @conflicted_slow_index = nil
+        @conflicted_fast_index = nil
+      else
+        warning "no database has been specified"
+      end
+
+      unless @developer_fund.nil?
+        info "Developer fund has been invoked based on this configuration: #{@developer_fund.not_nil!.get_path}"
+      end
+      @phase = SetupPhase::DATABASE_VALIDATING
+      proceed_setup
     end
 
     def proceed_setup
@@ -718,43 +839,20 @@ module ::Sushi::Core
 
       case @phase
       when SetupPhase::NONE
-        if @connect_host && @connect_port
-          phase_connecting_nodes
-        else
-          warning "no connecting node has been specified"
-          warning "so this node is standalone from other network"
-
-          @phase = SetupPhase::BLOCKCHAIN_LOADING
-
-          proceed_setup
-        end
-        unless @developer_fund.nil?
-          info "Developer fund has been invoked based on this configuration: #{@developer_fund.not_nil!.get_path}"
-        end
-      when SetupPhase::BLOCKCHAIN_LOADING
-        @blockchain.setup(self)
-
-        info "loaded blockchain's total size: #{light_cyan(@blockchain.chain.size)}"
-        info "highest slow block index: #{light_cyan(@blockchain.latest_slow_block.index)}"
-        info "highest fast block index: #{light_cyan(@blockchain.latest_fast_block_index_or_zero)}"
-
-        if @database
-          @conflicted_slow_index = nil
-          @conflicted_fast_index = nil
-        else
-          warning "no database has been specified"
-        end
-
-        @phase = SetupPhase::BLOCKCHAIN_SYNCING
-
+        @phase = SetupPhase::BLOCKCHAIN_LOADING
         proceed_setup
+      when SetupPhase::BLOCKCHAIN_LOADING
+        load_blockchain_from_database
+      when SetupPhase::DATABASE_VALIDATING
+        validate_database
+      when SetupPhase::CONNECTING_NODES
+        setup_connectivity
       when SetupPhase::BLOCKCHAIN_SYNCING
         sync_chain
       when SetupPhase::TRANSACTION_SYNCING
         sync_transactions
       when SetupPhase::PRE_DONE
         info "successfully setup the node"
-
         @phase = SetupPhase::DONE
       end
     end
