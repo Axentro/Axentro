@@ -268,19 +268,49 @@ module ::Sushi::Core
       [slow_result,fast_result].includes?(true)
     end
 
-    SYNC_SECURITY_LEVEL_PERCENTAGE = 10_i64
-    STARTING_BLOCKS_TO_CHECK = 50_i64
-    FINAL_BLOCKS_TO_CHECK = 50_i64
+    SECURITY_LEVEL_PERCENTAGE = 20_i64
+    STARTING_BLOCKS_TO_CHECK_ON_SYNC = 50_i64
+    FINAL_BLOCKS_TO_CHECK_ON_SYNC = 50_i64
+
+    def get_random_block_ids(max_slow_block_id : Int64, max_fast_block_id : Int64)
+      the_indexes = [] of Int64
+      number_of_slow_block_ids = (max_slow_block_id / 2) /  (100_i64 / SECURITY_LEVEL_PERCENTAGE)
+      number_of_fast_block_ids = (max_fast_block_id / 2) /  (100_i64 / SECURITY_LEVEL_PERCENTAGE)
+      (0_i64 .. number_of_slow_block_ids.to_i64).step do
+        randy = Random.new.rand(0_i64 .. max_slow_block_id)
+        randy += 1 if (randy % 2) != 0
+        the_indexes << randy
+      end
+      (0_i64 .. number_of_fast_block_ids.to_i64).step do
+        randy = Random.new.rand(0_i64 .. max_fast_block_id)
+        randy += 1 if (randy % 2) == 0
+        the_indexes << randy
+      end
+      the_indexes
+    end
+
+    def get_hash_of_block_hashes(block_ids : Array(Int64))
+      concatenated_hashes = ""
+      block_ids.each do |id|
+        _block = database.get_block(id)
+        if _block
+          concatenated_hashes += _block.prev_hash
+        else
+          warning "expected block id #{id} not found in database"
+        end
+      end
+      sha256(concatenated_hashes)
+    end
 
     def create_slow_indexes_to_check(incoming_chain)
       the_indexes = [] of Int64
-      return the_indexes  if SYNC_SECURITY_LEVEL_PERCENTAGE == 100_i64
-      if (incoming_chain.size > STARTING_BLOCKS_TO_CHECK + FINAL_BLOCKS_TO_CHECK) && (incoming_chain.size > (@chain.size / 4))
-        (0_i64..STARTING_BLOCKS_TO_CHECK).step(2) { |b | the_indexes << b }
-        number_of_elements = (incoming_chain.size - (STARTING_BLOCKS_TO_CHECK + FINAL_BLOCKS_TO_CHECK)) / (100_i64 / SYNC_SECURITY_LEVEL_PERCENTAGE)
+      return the_indexes  if SECURITY_LEVEL_PERCENTAGE == 100_i64
+      if (incoming_chain.size > STARTING_BLOCKS_TO_CHECK_ON_SYNC + FINAL_BLOCKS_TO_CHECK_ON_SYNC) && (incoming_chain.size > (@chain.size / 4))
+        (0_i64..STARTING_BLOCKS_TO_CHECK_ON_SYNC).step(2) { |b | the_indexes << b }
+        number_of_elements = (incoming_chain.size - (STARTING_BLOCKS_TO_CHECK_ON_SYNC + FINAL_BLOCKS_TO_CHECK_ON_SYNC)) / (100_i64 / SECURITY_LEVEL_PERCENTAGE)
         index_of_last_incoming_block = incoming_chain[-1].index
-        starting_random_block = STARTING_BLOCKS_TO_CHECK * 2
-        final_random_block = index_of_last_incoming_block - (FINAL_BLOCKS_TO_CHECK * 2)
+        starting_random_block = STARTING_BLOCKS_TO_CHECK_ON_SYNC * 2
+        final_random_block = index_of_last_incoming_block - (FINAL_BLOCKS_TO_CHECK_ON_SYNC * 2)
         debug "starting random block is: #{starting_random_block}"
         debug "final random block is: #{final_random_block}"
         debug "number of elements is: #{number_of_elements}"
@@ -296,13 +326,13 @@ module ::Sushi::Core
 
     def create_fast_indexes_to_check(incoming_chain)
       the_indexes = [] of Int64
-      return the_indexes  if SYNC_SECURITY_LEVEL_PERCENTAGE == 100_i64
-      if (incoming_chain.size > STARTING_BLOCKS_TO_CHECK + FINAL_BLOCKS_TO_CHECK) && (incoming_chain.size > (@chain.size / 4))
-        (1_i64..STARTING_BLOCKS_TO_CHECK).step(2) { |b | the_indexes << b }
-        number_of_elements = (incoming_chain.size - (STARTING_BLOCKS_TO_CHECK + FINAL_BLOCKS_TO_CHECK)) / (100_i64 / SYNC_SECURITY_LEVEL_PERCENTAGE)
+      return the_indexes  if SECURITY_LEVEL_PERCENTAGE == 100_i64
+      if (incoming_chain.size > STARTING_BLOCKS_TO_CHECK_ON_SYNC + FINAL_BLOCKS_TO_CHECK_ON_SYNC) && (incoming_chain.size > (@chain.size / 4))
+        (1_i64..STARTING_BLOCKS_TO_CHECK_ON_SYNC).step(2) { |b | the_indexes << b }
+        number_of_elements = (incoming_chain.size - (STARTING_BLOCKS_TO_CHECK_ON_SYNC + FINAL_BLOCKS_TO_CHECK_ON_SYNC)) / (100_i64 / SECURITY_LEVEL_PERCENTAGE)
         index_of_last_incoming_block = incoming_chain[-1].index
-        starting_random_block = (STARTING_BLOCKS_TO_CHECK * 2) + 1_i64
-        final_random_block = index_of_last_incoming_block - (FINAL_BLOCKS_TO_CHECK * 2)
+        starting_random_block = (STARTING_BLOCKS_TO_CHECK_ON_SYNC * 2) + 1_i64
+        final_random_block = index_of_last_incoming_block - (FINAL_BLOCKS_TO_CHECK_ON_SYNC * 2)
         debug "starting random block is: #{starting_random_block}"
         debug "final random block is: #{final_random_block}"
         debug "number of elements is: #{number_of_elements}"

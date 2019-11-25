@@ -323,21 +323,14 @@ module ::Sushi::Core::Protocol
     JSON.mapping({
       source_host: String,
       source_port: Int32,
-      solution_hash: Int64,
+      solution_hash: String,
     })
   end
 
   M_TYPE_VALIDATION_FAILED = 0x010d
-
-  struct MContentValidationFailed
-    JSON.mapping({
-      reason: String,
-    })
-  end
-
   M_TYPE_VALIDATION_SUCCEEDED = 0x010e
 
-  struct MContentValidationSucceeded
+  struct MContentValidationResult
     JSON.mapping({
       reason: String,
     })

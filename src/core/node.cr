@@ -20,16 +20,6 @@ module ::Sushi::Core
       name: String,
     )
 
-    alias ValidatingNode = NamedTuple(
-      host: String,
-      port: Int32,
-      validating_hash: String,
-    )
-
-    alias ValidatingNodes = Array(ValidatingNode)
-
-    @nodes_awaiting_validation = ValidatingNodes.new
-
     property phase : SetupPhase
 
     getter blockchain : Blockchain
@@ -73,6 +63,7 @@ module ::Sushi::Core
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl)
       @miners_manager = MinersManager.new(@blockchain)
       @clients_manager = ClientsManager.new(@blockchain)
+      @validation_manager = ValidationManager.new(@blockchain, @bind_host, @bind_port, @use_ssl)
 
       @phase = SetupPhase::NONE
 
@@ -137,67 +128,6 @@ module ::Sushi::Core
       node = HTTP::Server.new(handlers)
       node.bind_tcp(@bind_host, @bind_port)
       node.listen
-    end
-
-    def send_validation_request(node, connect_host : String, connect_port : Int32, max_slow_block_id : Int64, max_fast_block_id : Int64)
-      debug "requesting validation from: #{@bind_host}:#{@bind_port}"
-
-      socket = HTTP::WebSocket.new(connect_host, "/peer", connect_port, @use_ssl)
-
-      node.peer(socket)
-
-      spawn do
-        socket.run
-      rescue e : Exception
-        handle_exception(socket, e)
-      end
-
-      debug "Sending validation request with most recent slow (#{max_slow_block_id}) and fast (#{max_fast_block_id}) block IDs to connect node"
-      send(
-        socket,
-        M_TYPE_VALIDATION_REQUEST,
-        {
-          version: Core::CORE_VERSION,
-          source_host: @bind_host,
-          source_port: @bind_port,
-          max_slow_block_id: max_slow_block_id,
-          max_fast_block_id: max_fast_block_id,
-        }
-      )
-    rescue e : Exception
-      error "failed to connect #{connect_host}:#{connect_port}"
-      error "please specify another host for connection"
-
-      node.phase = SetupPhase::PRE_DONE
-      node.proceed_setup
-    end
-
-    def validation_requested(socket, _content)
-      _m_content = MContentValidationRequest.from_json(_content)
-
-      max_slow_block_id = _m_content.max_slow_block_id
-      max_fast_block_id = _m_content.max_fast_block_id
-      source_host = _m_content.source_host
-      source_port = _m_content.source_port
-
-      debug "Node (#{source_host}:#{source_port}) wants database validation with slow/fast block IDs of #{max_slow_block_id}/#{max_fast_block_id}"
-
-      #random_block_list = @blockchain.get_random_block_ids(max_slow_block_id, max_fast_block_id)
-      #validating_hash = @blockchain.get_hash_of_block_hashes(random_block_list)
-      random_block_list = [] of Int64
-      validating_hash = "xyz"
-
-      @nodes_awaiting_validation.push({host: source_host, port: source_port, validating_hash: validating_hash})
-
-      send(
-        socket,
-        M_TYPE_VALIDATION_CHALLENGE,
-        {
-          blocks_to_hash: random_block_list,
-        }
-      )
-    rescue e : Exception
-      error "failed to send validation challenge to connecting node #{source_host}:#{source_port}"
     end
 
 
@@ -309,7 +239,15 @@ module ::Sushi::Core
         when M_TYPE_CLIENT_CONTENT
           @clients_manager.receive_content(message_content)
         when M_TYPE_VALIDATION_REQUEST
-          validation_requested(socket, message_content)
+          @validation_manager.validation_requested(socket, message_content)
+        when M_TYPE_VALIDATION_CHALLENGE
+          @validation_manager.validation_challenge_received(socket, message_content)
+        when M_TYPE_VALIDATION_CHALLENGE_RESPONSE
+          @validation_manager.validation_challenge_response_received(socket, message_content)
+        when M_TYPE_VALIDATION_SUCCEEDED
+          @validation_manager.validation_challenge_result_received(self, socket, message_content, message_type)
+        when M_TYPE_VALIDATION_FAILED
+          @validation_manager.validation_challenge_result_received(self, socket, message_content, message_type)
         when M_TYPE_CHORD_JOIN
           @chord.join(self, socket, message_content)
         when M_TYPE_CHORD_JOIN_PRIVATE
@@ -804,7 +742,7 @@ module ::Sushi::Core
     def validate_database
       debug "Validating database ... "
       if @connect_host && @connect_port
-        send_validation_request(self, @connect_host.not_nil!, @connect_port.not_nil!, @blockchain.latest_slow_block.index, @blockchain.latest_fast_block_index_or_zero)
+        @validation_manager.send_validation_request(self, @connect_host.not_nil!, @connect_port.not_nil!, @blockchain.latest_slow_block.index, @blockchain.latest_fast_block_index_or_zero)
       else
         warning "no connecting node has been specified"
         warning "so this node is standalone from other network"
