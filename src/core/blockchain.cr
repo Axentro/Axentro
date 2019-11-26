@@ -299,6 +299,7 @@ module ::Sushi::Core
           warning "expected block id #{id} not found in database"
         end
       end
+      debug "Size of concatednated of block prev_hashes to be hashed: #{concatenated_hashes.size}"
       sha256(concatenated_hashes)
     end
 
