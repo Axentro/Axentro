@@ -47,6 +47,17 @@ describe Blockchain do
     end
   end
 
+  describe "random block IDs for validation" do
+    it "should return 20 random blocks from a 100 block chain by default" do
+      with_factory do |block_factory|
+        chain = block_factory.add_slow_blocks(50).add_fast_blocks(50).chain
+        blockchain = block_factory.blockchain
+        random_blocks = blockchain.get_random_block_ids(blockchain.latest_slow_block.index, blockchain.latest_fast_block_index_or_zero)
+        random_blocks.size.should eq(20)
+      end
+    end
+  end
+
   describe "replace_chain" do
     it "should return false if no subchains and do nothing" do
       with_factory do |block_factory|

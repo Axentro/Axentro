@@ -281,14 +281,14 @@ module ::Sushi::Core
 
     def get_random_block_ids(max_slow_block_id : Int64, max_fast_block_id : Int64)
       the_indexes = [] of Int64
-      number_of_slow_block_ids = (max_slow_block_id / 2) /  (100_i64 / @security_level_percentage)
-      number_of_fast_block_ids = (max_fast_block_id / 2) /  (100_i64 / @security_level_percentage)
-      (0_i64 .. number_of_slow_block_ids.to_i64).step do
+      number_of_slow_block_ids = ((max_slow_block_id / 2) /  (100_i64 / @security_level_percentage)).to_i64
+      number_of_fast_block_ids = (((max_fast_block_id+1) / 2) /  (100_i64 / @security_level_percentage)).to_i64
+      (1_i64 .. number_of_slow_block_ids).step do
         randy = Random.new.rand(0_i64 .. max_slow_block_id)
         randy += 1 if (randy % 2) != 0
         the_indexes << randy
       end
-      (0_i64 .. number_of_fast_block_ids.to_i64).step do
+      (1_i64 .. number_of_fast_block_ids).step do
         randy = Random.new.rand(0_i64 .. max_fast_block_id)
         randy += 1 if (randy % 2) == 0
         the_indexes << randy
