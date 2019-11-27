@@ -21,6 +21,10 @@ module ::Sushi::Core
 
     SLOW_BLOCKS_PER_HOUR = 3600_i64 / Consensus::POW_TARGET_SPACING_SECS
 
+    SECURITY_LEVEL_PERCENTAGE = 20_i64
+    STARTING_BLOCKS_TO_CHECK_ON_SYNC = 50_i64
+    FINAL_BLOCKS_TO_CHECK_ON_SYNC = 50_i64
+
     alias SlowHeader = NamedTuple(
       index: Int64,
       nonce: UInt64,
@@ -34,14 +38,21 @@ module ::Sushi::Core
     getter wallet : Wallet
 
     @blocks_to_hold: Int64
+    @security_level_percentage : Int64
     @node : Node?
     @mining_block : SlowBlock?
     @block_reward_calculator = BlockRewardCalculator.init
 
-    def initialize(@wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?)
+    def initialize(@wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, security_level_percentage : Int64?)
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup
+
+      @security_level_percentage = SECURITY_LEVEL_PERCENTAGE
+      if security_level_percentage
+        @security_level_percentage = security_level_percentage
+      end
+      info "Security Level Percentage used for blockchain validation is #{@security_level_percentage}"
 
       hours_to_hold = ENV.has_key?("SC_TESTING") ? 2 : 48
       @blocks_to_hold = (SLOW_BLOCKS_PER_HOUR * hours_to_hold).to_i64
@@ -268,14 +279,10 @@ module ::Sushi::Core
       [slow_result,fast_result].includes?(true)
     end
 
-    SECURITY_LEVEL_PERCENTAGE = 20_i64
-    STARTING_BLOCKS_TO_CHECK_ON_SYNC = 50_i64
-    FINAL_BLOCKS_TO_CHECK_ON_SYNC = 50_i64
-
     def get_random_block_ids(max_slow_block_id : Int64, max_fast_block_id : Int64)
       the_indexes = [] of Int64
-      number_of_slow_block_ids = (max_slow_block_id / 2) /  (100_i64 / SECURITY_LEVEL_PERCENTAGE)
-      number_of_fast_block_ids = (max_fast_block_id / 2) /  (100_i64 / SECURITY_LEVEL_PERCENTAGE)
+      number_of_slow_block_ids = (max_slow_block_id / 2) /  (100_i64 / @security_level_percentage)
+      number_of_fast_block_ids = (max_fast_block_id / 2) /  (100_i64 / @security_level_percentage)
       (0_i64 .. number_of_slow_block_ids.to_i64).step do
         randy = Random.new.rand(0_i64 .. max_slow_block_id)
         randy += 1 if (randy % 2) != 0
@@ -305,10 +312,10 @@ module ::Sushi::Core
 
     def create_slow_indexes_to_check(incoming_chain)
       the_indexes = [] of Int64
-      return the_indexes  if SECURITY_LEVEL_PERCENTAGE == 100_i64
+      return the_indexes  if @security_level_percentage == 100_i64
       if (incoming_chain.size > STARTING_BLOCKS_TO_CHECK_ON_SYNC + FINAL_BLOCKS_TO_CHECK_ON_SYNC) && (incoming_chain.size > (@chain.size / 4))
         (0_i64..STARTING_BLOCKS_TO_CHECK_ON_SYNC).step(2) { |b | the_indexes << b }
-        number_of_elements = (incoming_chain.size - (STARTING_BLOCKS_TO_CHECK_ON_SYNC + FINAL_BLOCKS_TO_CHECK_ON_SYNC)) / (100_i64 / SECURITY_LEVEL_PERCENTAGE)
+        number_of_elements = (incoming_chain.size - (STARTING_BLOCKS_TO_CHECK_ON_SYNC + FINAL_BLOCKS_TO_CHECK_ON_SYNC)) / (100_i64 / @security_level_percentage)
         index_of_last_incoming_block = incoming_chain[-1].index
         starting_random_block = STARTING_BLOCKS_TO_CHECK_ON_SYNC * 2
         final_random_block = index_of_last_incoming_block - (FINAL_BLOCKS_TO_CHECK_ON_SYNC * 2)
@@ -327,10 +334,10 @@ module ::Sushi::Core
 
     def create_fast_indexes_to_check(incoming_chain)
       the_indexes = [] of Int64
-      return the_indexes  if SECURITY_LEVEL_PERCENTAGE == 100_i64
+      return the_indexes  if @security_level_percentage == 100_i64
       if (incoming_chain.size > STARTING_BLOCKS_TO_CHECK_ON_SYNC + FINAL_BLOCKS_TO_CHECK_ON_SYNC) && (incoming_chain.size > (@chain.size / 4))
         (1_i64..STARTING_BLOCKS_TO_CHECK_ON_SYNC).step(2) { |b | the_indexes << b }
-        number_of_elements = (incoming_chain.size - (STARTING_BLOCKS_TO_CHECK_ON_SYNC + FINAL_BLOCKS_TO_CHECK_ON_SYNC)) / (100_i64 / SECURITY_LEVEL_PERCENTAGE)
+        number_of_elements = (incoming_chain.size - (STARTING_BLOCKS_TO_CHECK_ON_SYNC + FINAL_BLOCKS_TO_CHECK_ON_SYNC)) / (100_i64 / @security_level_percentage)
         index_of_last_incoming_block = incoming_chain[-1].index
         starting_random_block = (STARTING_BLOCKS_TO_CHECK_ON_SYNC * 2) + 1_i64
         final_random_block = index_of_last_incoming_block - (FINAL_BLOCKS_TO_CHECK_ON_SYNC * 2)

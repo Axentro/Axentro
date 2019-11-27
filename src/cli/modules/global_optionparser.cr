@@ -60,6 +60,8 @@ module ::Sushi::Interface
 
     @developer_fund_path : String?
 
+    @security_level_percentage : Int64?
+
     @is_fast_transaction : Bool = false
 
     enum Options
@@ -102,6 +104,7 @@ module ::Sushi::Interface
       # for node
       NODE_ID
       DEVELOPER_FUND
+      SECURITY_LEVEL_PERCENTAGE
     end
 
     def create_option_parser(actives : Array(Options)) : OptionParser
@@ -136,6 +139,7 @@ module ::Sushi::Interface
         parse_config_name(parser, actives)
         parse_node_id(parser, actives)
         parse_developer_fund(parser, actives)
+        parse_security_level_percentage(parser, actives)
         parse_slow_transaction(parser, actives)
         parse_fast_transaction(parser, actives)
       end
@@ -339,6 +343,12 @@ module ::Sushi::Interface
       } if is_active?(actives, Options::DEVELOPER_FUND)
     end
 
+    private def parse_security_level_percentage(parser : OptionParser, actives : Array(Options))
+        parser.on("--security_level_percentage=PERCENT_VALUE", I18n.translate("cli.options.security_level_percentage")) { |slp|
+          @security_level_percentage = slp.to_i64
+        } if is_active?(actives, Options::SECURITY_LEVEL_PERCENTAGE)
+    end
+
     private def parse_slow_transaction(parser : OptionParser, actives : Array(Options))
       parser.on("--slow-transaction", I18n.translate("cli.options.slow_transaction")) {
         @is_fast_transaction = false
@@ -475,6 +485,10 @@ module ::Sushi::Interface
 
     def __developer_fund : Core::DeveloperFund?
       Core::DeveloperFund.validate(@developer_fund_path)
+    end
+
+    def __security_level_percentage : Int64?
+      @security_level_percentage
     end
 
     def __is_fast_transaction : Bool

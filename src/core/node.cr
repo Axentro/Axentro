@@ -53,12 +53,13 @@ module ::Sushi::Core
       @wallet : Wallet,
       @database : Database,
       @developer_fund : DeveloperFund?,
+      @security_level_percentage : Int64?,
       @use_ssl : Bool = false
     )
       welcome
 
       @heartbeat_salt = Random::Secure.hex(32)
-      @blockchain = Blockchain.new(@wallet, @database, @developer_fund)
+      @blockchain = Blockchain.new(@wallet, @database, @developer_fund, @security_level_percentage)
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl)
       @miners_manager = MinersManager.new(@blockchain)
