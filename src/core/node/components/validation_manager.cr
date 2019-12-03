@@ -23,29 +23,48 @@ module ::Sushi::Core::NodeComponents
 
     alias ValidatingNodes = Array(ValidatingNode)
 
-    @nodes_awaiting_validation = ValidatingNodes.new
-
     def initialize(
       @blockchain : Blockchain,
       @bind_host : String?,
       @bind_port : Int32?,
       @use_ssl : Bool
     )
+      @validating_nodes = ValidatingNodes.new
+      @our_calculated_validation_hash = ""
+    end
+
+    def calculated_validation_hash
+      return "emptyDB" if (@blockchain.latest_slow_block.index == 0) && (@blockchain.latest_fast_block_index_or_zero == 0)
+      @our_calculated_validation_hash
     end
 
     def add_validating_node(source_host, source_port, validating_hash)
-      @nodes_awaiting_validation.push({host: source_host, port: source_port, validating_hash: validating_hash})
+      @validating_nodes.push({host: source_host, port: source_port, validating_hash: validating_hash})
     end
 
-    def find_validating_node(source_host, source_port) : ValidatingNode | Nil
-      @nodes_awaiting_validation.each do |node|
-        return node if (node[:host] == source_host) && (node[:port] == source_port)
+    def find_validating_node_index_by_hash(the_hash : String) : Int
+      @validating_nodes.each_with_index do |node, i|
+        return i if node[:validating_hash] == the_hash
       end
-      nil
+      -1
     end
 
-    def delete_validating_node(node : ValidatingNode)
-      @nodes_awaiting_validation.delete(node)
+    def delete_validating_node(index : Int)
+      @validating_nodes.delete_at(index)
+    end
+
+    def node_passed_validation?(the_hash) : Bool
+      debug "Node attempting to join chord network with validation hash of: #{the_hash}"
+      return true if the_hash == "emptyDB"
+      vindex = find_validating_node_index_by_hash(the_hash)
+      if vindex >= 0
+        vnode = @validating_nodes[vindex]
+        debug "found validated node #{vnode[:host]}:#{vnode[:port]}"
+        delete_validating_node(vindex)
+        return true
+      end
+      debug "did not find a corresponding validated node"
+      false
     end
 
     def clean_connection(socket : HTTP::WebSocket)
@@ -119,6 +138,7 @@ module ::Sushi::Core::NodeComponents
       random_block_list = _m_content.blocks_to_hash
       debug "size of random block list #{random_block_list.size}"
       solution_hash = @blockchain.get_hash_of_block_hashes(random_block_list)
+      @our_calculated_validation_hash = solution_hash
       debug "calculated hash from challenge:"
       debug "#{solution_hash}"
       send(socket, M_TYPE_VALIDATION_CHALLENGE_RESPONSE, { source_host: @bind_host, source_port: @bind_port, solution_hash: solution_hash })
@@ -135,22 +155,15 @@ module ::Sushi::Core::NodeComponents
       source_port = _m_content.source_port
       solution_hash = _m_content.solution_hash
       debug "solution hash received #{solution_hash}"
-      node = find_validating_node(source_host, source_port)
-      if node
-        if node[:validating_hash] == solution_hash
-          response = M_TYPE_VALIDATION_SUCCEEDED
-          reason = "Submitted solution hash match was found"
-          info "A Node at #{source_host}:#{source_port} attempted connection and passed validation"
-        else
-          response = M_TYPE_VALIDATION_FAILED
-          reason = "Submitted solution hash was incorrect"
-          error "A matching node at #{source_host}:#{source_port} was found in the validation list, but the valdation hash was incorrect"
-        end
-        delete_validating_node(node)
+      vindex = find_validating_node_index_by_hash(solution_hash)
+      if vindex >= 0
+        response = M_TYPE_VALIDATION_SUCCEEDED
+        reason = "Submitted solution hash match was found"
+        info "A Node at #{source_host}:#{source_port} attempted connection and passed validation"
       else
         response = M_TYPE_VALIDATION_FAILED
         reason = "Node not found in validation list"
-        error "A Node at #{source_host}:#{source_port} was not found in the validation list"
+        error "A Node at #{source_host}:#{source_port} was not found in the validation list with the correct validation hash"
       end
       debug "response: #{response}"
       send( socket, response, { reason: reason })
@@ -166,11 +179,12 @@ module ::Sushi::Core::NodeComponents
       if message_type == M_TYPE_VALIDATION_SUCCEEDED
         info "Validation succeeded - will attempt connection to SushiChain network"
         node.phase = SetupPhase::CONNECTING_NODES
+        node.proceed_setup
       else
         error "Validation failed - cannot connect to SushiChain network"
-        node.phase = SetupPhase::PRE_DONE
+        error "exit with -1"
+        exit -1
       end
-      node.proceed_setup
     end
 
     include Protocol

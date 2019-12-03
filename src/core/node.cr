@@ -61,10 +61,10 @@ module ::Sushi::Core
       @heartbeat_salt = Random::Secure.hex(32)
       @blockchain = Blockchain.new(@wallet, @database, @developer_fund, @security_level_percentage)
       @network_type = @is_testnet ? "testnet" : "mainnet"
-      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl)
+      @validation_manager = ValidationManager.new(@blockchain, @bind_host, @bind_port, @use_ssl)
+      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @validation_manager)
       @miners_manager = MinersManager.new(@blockchain)
       @clients_manager = ClientsManager.new(@blockchain)
-      @validation_manager = ValidationManager.new(@blockchain, @bind_host, @bind_port, @use_ssl)
 
       @phase = SetupPhase::NONE
 

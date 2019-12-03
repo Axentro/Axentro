@@ -151,6 +151,7 @@ module ::Sushi::Core::Protocol
     JSON.mapping({
       version: Int32,
       context: Core::NodeComponents::Chord::NodeContext,
+      validation_hash: String,
     })
   end
 
@@ -160,6 +161,7 @@ module ::Sushi::Core::Protocol
     JSON.mapping({
       version: Int32,
       context: Core::NodeComponents::Chord::NodeContext,
+      validation_hash: String,
     })
   end
 
