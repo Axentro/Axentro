@@ -33,10 +33,10 @@ module ::E2E
 
     getter exit_code : Int32 = 0
 
-    def initialize(@mode : Int32, @num_nodes : Int32, @num_miners : Int32, @time : Int32, @keep_logs : Bool, @no_transactions : Bool)
+    def initialize(@mode : Int32, @num_nodes : Int32, @num_miners : Int32, @time : Int32, @keep_logs : Bool, @no_transactions : Bool, @num_tps : Int32)
       @node_ports = (4001..4001 + (@num_nodes - 1)).to_a
 
-      Client.initialize(@node_ports, @num_miners, @no_transactions)
+      Client.initialize(@node_ports, @num_miners, @no_transactions, @num_tps)
 
       @db_name = Random.new.hex
     end

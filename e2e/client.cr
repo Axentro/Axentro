@@ -21,7 +21,7 @@ module ::E2E
     alias ClientWork = NamedTuple(call: Int32, content: String)
 
     struct Initialize
-      JSON.mapping({node_ports: Array(Int32), num_miners: Int32})
+      JSON.mapping({node_ports: Array(Int32), num_miners: Int32, num_tps: Int32})
     end
 
     struct Result
@@ -32,11 +32,14 @@ module ::E2E
       @@client.not_nil!
     end
 
-    def self.initialize(node_ports : Array(Int32), num_miners : Int32, no_transactions : Bool)
+    def self.initialize(node_ports : Array(Int32), num_miners : Int32, no_transactions : Bool, num_tps : Int32)
       @@client = Client.create(1)[0]
       @@no_transactions = no_transactions
 
-      request = {call: 0, content: {node_ports: node_ports, num_miners: num_miners}.to_json}.to_json
+      puts "Transactions Per Second goal: #{num_tps}"
+      puts "(as many as possible)" if num_tps == 0
+
+      request = {call: 0, content: {node_ports: node_ports, num_miners: num_miners, num_tps: num_tps}.to_json}.to_json
       client.exec(request)
     end
 
@@ -59,6 +62,7 @@ module ::E2E
 
         @node_ports = initialize.node_ports
         @num_miners = initialize.num_miners
+        @num_tps = initialize.num_tps
       when 1 # launch
         launch
       when 2 # finish
@@ -78,6 +82,7 @@ module ::E2E
 
     @node_ports : Array(Int32) = [] of Int32
     @num_miners : Int32 = 0
+    @num_tps : Int32 = 0
 
     def create_transaction(transaction_counter : Int64)
       sender = Random.rand(@num_miners)
@@ -99,6 +104,10 @@ module ::E2E
           while @alive
             begin
               create_transaction(transaction_counter)
+              if @num_tps > 0
+                sleepy_time = 1000 / @num_tps
+                sleep sleepy_time.milliseconds
+              end
               transaction_counter += 1_i64
             rescue e : Exception
               STDERR.puts red(e.message.not_nil!)
