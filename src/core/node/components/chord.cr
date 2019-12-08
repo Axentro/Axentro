@@ -48,7 +48,8 @@ module ::Sushi::Core::NodeComponents
       @ssl : Bool?,
       @network_type : String,
       @is_private : Bool,
-      @use_ssl : Bool
+      @use_ssl : Bool,
+      @validation_manager : ValidationManager,
     )
       @node_id = NodeID.new
 
@@ -67,12 +68,13 @@ module ::Sushi::Core::NodeComponents
         {
           version: Core::CORE_VERSION,
           context: context,
+          validation_hash: @validation_manager.calculated_validation_hash,
         })
     rescue e : Exception
       error "failed to connect #{connect_host}:#{connect_port}"
       error "please specify another public host if you need a successor"
 
-      node.phase = SetupPhase::BLOCKCHAIN_LOADING
+      node.phase = SetupPhase::PRE_DONE
       node.proceed_setup
     end
 
@@ -95,13 +97,14 @@ module ::Sushi::Core::NodeComponents
         {
           version: Core::CORE_VERSION,
           context: context,
+          validation_hash: @validation_manager.calculated_validation_hash,
         }
       )
     rescue e : Exception
       error "failed to connect #{connect_host}:#{connect_port}"
       error "please specify another public host if you need a successor"
 
-      node.phase = SetupPhase::BLOCKCHAIN_LOADING
+      node.phase = SetupPhase::PRE_DONE
       node.proceed_setup
     end
 
@@ -109,53 +112,47 @@ module ::Sushi::Core::NodeComponents
       _m_content = MContentChordJoin.from_json(_content)
 
       _context = _m_content.context
+      validation_hash = _m_content.validation_hash
 
       debug "#{_context[:host]}:#{_context[:port]} try to join SushiChain"
 
-      unless _context[:type] == @network_type
-        return send_once(
-          socket,
-          M_TYPE_CHORD_JOIN_REJECTED,
-          {
-            reason: "network type mismatch. " +
-                    "your network: #{_context[:type]}, our network: #{@network_type}",
-          }
-        )
+      if _context[:type] != @network_type
+        send_once( socket, M_TYPE_CHORD_JOIN_REJECTED, { reason: "network type mismatch. " +
+                    "your network: #{_context[:type]}, our network: #{@network_type}", })
+        return
       end
 
-      search_successor(node, _context)
+      if @validation_manager.node_passed_validation?(validation_hash)
+        search_successor(node, _context)
+      else
+        send_once( socket, M_TYPE_CHORD_JOIN_REJECTED, { reason: "Node has not passed database validation." })
+      end
     end
 
     def join_private(node, socket, _content)
       _m_content = MContentChordJoinProvate.from_json(_content)
 
       _context = _m_content.context
+      validation_hash = _m_content.validation_hash
 
       debug "private node trying to join SushiChain"
 
-      unless _context[:type] == @network_type
-        return send(
-          socket,
-          M_TYPE_CHORD_JOIN_REJECTED,
-          {
-            reason: "network type mismatch. " +
-                    "your network: #{_context[:type]}, our network: #{@network_type}",
-          }
-        )
+      if _context[:type] != @network_type
+        send( socket, M_TYPE_CHORD_JOIN_REJECTED, { reason: "network type mismatch. " +
+                    "your network: #{_context[:type]}, our network: #{@network_type}", })
+        return
       end
 
-      @private_nodes << {
-        socket:  socket,
-        context: _context,
-      }
-
-      send(
-        socket,
-        M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED,
-        {
-          context: context,
+      debug "connecting node submitted a validation hash of #{validation_hash}"
+      if @validation_manager.node_passed_validation?(validation_hash)
+        @private_nodes << {
+          socket:  socket,
+          context: _context,
         }
-      )
+        send( socket, M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED, { context: context, })
+      else
+        send( socket, M_TYPE_CHORD_JOIN_REJECTED, { reason: "Node has not passed database validation." })
+      end
     end
 
     def join_private_accepted(node, socket, _content)
@@ -172,7 +169,7 @@ module ::Sushi::Core::NodeComponents
 
       @predecessor = {socket: socket, context: _context}
 
-      node.phase = SetupPhase::BLOCKCHAIN_LOADING
+      node.phase = SetupPhase::BLOCKCHAIN_SYNCING
       node.proceed_setup
     end
 
@@ -194,7 +191,7 @@ module ::Sushi::Core::NodeComponents
 
       connect_to_successor(node, _context)
 
-      node.phase = SetupPhase::BLOCKCHAIN_LOADING
+      node.phase = SetupPhase::BLOCKCHAIN_SYNCING
       node.proceed_setup
     end
 

@@ -14,6 +14,7 @@ require "./node/*"
 
 module ::Sushi::Core
   class Node < HandleSocket
+
     alias Network = NamedTuple(
       prefix: String,
       name: String,
@@ -52,14 +53,16 @@ module ::Sushi::Core
       @wallet : Wallet,
       @database : Database,
       @developer_fund : DeveloperFund?,
+      @security_level_percentage : Int64?,
       @use_ssl : Bool = false
     )
       welcome
 
       @heartbeat_salt = Random::Secure.hex(32)
-      @blockchain = Blockchain.new(@wallet, @database, @developer_fund)
+      @blockchain = Blockchain.new(@wallet, @database, @developer_fund, @security_level_percentage)
       @network_type = @is_testnet ? "testnet" : "mainnet"
-      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl)
+      @validation_manager = ValidationManager.new(@blockchain, @bind_host, @bind_port, @use_ssl)
+      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @validation_manager)
       @miners_manager = MinersManager.new(@blockchain)
       @clients_manager = ClientsManager.new(@blockchain)
 
@@ -127,6 +130,7 @@ module ::Sushi::Core
       node.bind_tcp(@bind_host, @bind_port)
       node.listen
     end
+
 
     private def sync_chain(socket : HTTP::WebSocket? = nil)
       info "start synching chain"
@@ -235,6 +239,16 @@ module ::Sushi::Core
           @clients_manager.upgrade(socket, message_content)
         when M_TYPE_CLIENT_CONTENT
           @clients_manager.receive_content(message_content)
+        when M_TYPE_VALIDATION_REQUEST
+          @validation_manager.validation_requested(socket, message_content)
+        when M_TYPE_VALIDATION_CHALLENGE
+          @validation_manager.validation_challenge_received(socket, message_content)
+        when M_TYPE_VALIDATION_CHALLENGE_RESPONSE
+          @validation_manager.validation_challenge_response_received(socket, message_content)
+        when M_TYPE_VALIDATION_SUCCEEDED
+          @validation_manager.validation_challenge_result_received(self, socket, message_content, message_type)
+        when M_TYPE_VALIDATION_FAILED
+          @validation_manager.validation_challenge_result_received(self, socket, message_content, message_type)
         when M_TYPE_CHORD_JOIN
           @chord.join(self, socket, message_content)
         when M_TYPE_CHORD_JOIN_PRIVATE
@@ -707,10 +721,56 @@ module ::Sushi::Core
       @phase = SetupPhase::CONNECTING_NODES
 
       if @is_private
+        debug "doing join to private"
         @chord.join_to_private(self, @connect_host.not_nil!, @connect_port.not_nil!)
       else
+        debug "doing join to public"
         @chord.join_to(self, @connect_host.not_nil!, @connect_port.not_nil!)
       end
+    end
+
+    def setup_connectivity
+      if @connect_host && @connect_port
+        phase_connecting_nodes
+      else
+        warning "no connecting node has been specified"
+        warning "so this node is standalone from other network"
+        @phase = SetupPhase::PRE_DONE
+        proceed_setup
+      end
+    end
+
+    def validate_database
+      debug "Validating database ... "
+      if @connect_host && @connect_port
+        @validation_manager.send_validation_request(self, @connect_host.not_nil!, @connect_port.not_nil!, @blockchain.latest_slow_block.index, @blockchain.latest_fast_block_index_or_zero)
+      else
+        warning "no connecting node has been specified"
+        warning "so this node is standalone from other network"
+        @phase = SetupPhase::PRE_DONE
+        proceed_setup
+      end
+    end
+
+    def load_blockchain_from_database
+      @blockchain.setup(self)
+
+      info "loaded blockchain's total size: #{light_cyan(@blockchain.chain.size)}"
+      info "highest slow block index: #{light_cyan(@blockchain.latest_slow_block.index)}"
+      info "highest fast block index: #{light_cyan(@blockchain.latest_fast_block_index_or_zero)}"
+
+      if @database
+        @conflicted_slow_index = nil
+        @conflicted_fast_index = nil
+      else
+        warning "no database has been specified"
+      end
+
+      unless @developer_fund.nil?
+        info "Developer fund has been invoked based on this configuration: #{@developer_fund.not_nil!.get_path}"
+      end
+      @phase = SetupPhase::DATABASE_VALIDATING
+      proceed_setup
     end
 
     def proceed_setup
@@ -718,43 +778,20 @@ module ::Sushi::Core
 
       case @phase
       when SetupPhase::NONE
-        if @connect_host && @connect_port
-          phase_connecting_nodes
-        else
-          warning "no connecting node has been specified"
-          warning "so this node is standalone from other network"
-
-          @phase = SetupPhase::BLOCKCHAIN_LOADING
-
-          proceed_setup
-        end
-        unless @developer_fund.nil?
-          info "Developer fund has been invoked based on this configuration: #{@developer_fund.not_nil!.get_path}"
-        end
-      when SetupPhase::BLOCKCHAIN_LOADING
-        @blockchain.setup(self)
-
-        info "loaded blockchain's total size: #{light_cyan(@blockchain.chain.size)}"
-        info "highest slow block index: #{light_cyan(@blockchain.latest_slow_block.index)}"
-        info "highest fast block index: #{light_cyan(@blockchain.latest_fast_block_index_or_zero)}"
-
-        if @database
-          @conflicted_slow_index = nil
-          @conflicted_fast_index = nil
-        else
-          warning "no database has been specified"
-        end
-
-        @phase = SetupPhase::BLOCKCHAIN_SYNCING
-
+        @phase = SetupPhase::BLOCKCHAIN_LOADING
         proceed_setup
+      when SetupPhase::BLOCKCHAIN_LOADING
+        load_blockchain_from_database
+      when SetupPhase::DATABASE_VALIDATING
+        validate_database
+      when SetupPhase::CONNECTING_NODES
+        setup_connectivity
       when SetupPhase::BLOCKCHAIN_SYNCING
         sync_chain
       when SetupPhase::TRANSACTION_SYNCING
         sync_transactions
       when SetupPhase::PRE_DONE
         info "successfully setup the node"
-
         @phase = SetupPhase::DONE
       end
     end

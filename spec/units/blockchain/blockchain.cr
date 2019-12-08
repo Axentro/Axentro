@@ -47,6 +47,17 @@ describe Blockchain do
     end
   end
 
+  describe "random block IDs for validation" do
+    it "should return 20 random blocks from a 100 block chain by default" do
+      with_factory do |block_factory|
+        block_factory.add_slow_blocks(50).add_fast_blocks(50).chain
+        blockchain = block_factory.blockchain
+        random_blocks = blockchain.get_random_block_ids(blockchain.latest_slow_block.index, blockchain.latest_fast_block_index_or_zero)
+        random_blocks.size.should eq(20)
+      end
+    end
+  end
+
   describe "replace_chain" do
     it "should return false if no subchains and do nothing" do
       with_factory do |block_factory|
@@ -62,7 +73,7 @@ describe Blockchain do
         test_database = "./test_spec2.db"
         FileUtils.rm_rf test_database
         database = Sushi::Core::Database.new(test_database)
-        blockchain = Blockchain.new(block_factory.node_wallet, database, nil)
+        blockchain = Blockchain.new(block_factory.node_wallet, database, nil, nil)
         blockchain.setup(block_factory.node)
 
         expected = (blockchain.chain + slow_sub_chain[1..-1]).map(&.index).sort
@@ -82,7 +93,7 @@ describe Blockchain do
         test_database = "./test_spec2.db"
         FileUtils.rm_rf test_database
         database = Sushi::Core::Database.new(test_database)
-        blockchain = Blockchain.new(block_factory.node_wallet, database, nil)
+        blockchain = Blockchain.new(block_factory.node_wallet, database, nil, nil)
         blockchain.setup(block_factory.node)
         blockchain.push_slow_block(slow_block_1)
         blockchain.push_slow_block(slow_block_2)
@@ -103,7 +114,7 @@ describe Blockchain do
         test_database = "./test_spec2.db"
         FileUtils.rm_rf test_database
         database = Sushi::Core::Database.new(test_database)
-        blockchain = Blockchain.new(block_factory.node_wallet, database, nil)
+        blockchain = Blockchain.new(block_factory.node_wallet, database, nil, nil)
         blockchain.setup(block_factory.node)
         blockchain.push_slow_block(slow_block_1)
         expected = (blockchain.chain + slow_sub_chain[2..-1] + fast_sub_chain[0..-1]).map(&.index).sort
@@ -232,7 +243,7 @@ describe Blockchain do
         block_factory.add_slow_blocks(10)
         test_database = "./test_spec.db"
         database = Sushi::Core::Database.new(test_database)
-        blockchain = Blockchain.new(block_factory.node_wallet, database, nil)
+        blockchain = Blockchain.new(block_factory.node_wallet, database, nil, nil)
         blockchain.setup(block_factory.node)
         # including genesis block total chain size should be 11
         blockchain.chain.size.should eq(11)
@@ -244,7 +255,7 @@ describe Blockchain do
         block_factory.add_slow_blocks(blocks_to_add)
         test_database = "./test_spec.db"
         database = Sushi::Core::Database.new(test_database)
-        blockchain = Blockchain.new(block_factory.node_wallet, database, nil)
+        blockchain = Blockchain.new(block_factory.node_wallet, database, nil, nil)
         blockchain.setup(block_factory.node)
         # including genesis block total chain size should be the number of blocks to hold + 1
         blockchain.chain.size.should eq(blockchain.blocks_to_hold + 1)

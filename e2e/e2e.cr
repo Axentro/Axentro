@@ -22,6 +22,7 @@ class SushiChainE2E
   @num_nodes : Int32 = 3
   @num_miners : Int32 = 3
   @time : Int32 = 300
+  @num_tps : Int32 = 0
   @keep_logs : Bool = false
   @no_transactions : Bool = false
 
@@ -54,6 +55,10 @@ class SushiChainE2E
         @num_nodes = num.to_i
       end
 
+      parser.on("--num_tps=NUM", "# of Transactions Per Second (default is 'as fast as possible')") do |num|
+        @num_tps = num.to_i
+      end
+
       parser.on("--num_miners=NUM", "# of miners (default is 4)") do |num|
         @num_miners = num.to_i
       end
@@ -66,7 +71,7 @@ class SushiChainE2E
         @keep_logs = true
         ENV["SC_LOG"] = "debug"
         ENV.delete("SC_SET_DIFFICULTY")
-        ENV.delete("SC_TESTING")
+        #ENV.delete("SC_TESTING")
       end
 
       parser.on("--no-transactions", "don't send any transactions during run") do
@@ -94,8 +99,9 @@ class SushiChainE2E
 
     raise "invalid value of arg --num_nodes" if @num_nodes < 0
     raise "invalid value of arg --num_miners" if @num_miners < 0
+    raise "invalid value for arg --num_tps" if (@num_tps < 0) || (@num_tps > 1000)
 
-    runner = ::E2E::Runner.new(runner_mode, @num_nodes, @num_miners, @time, @keep_logs, @no_transactions)
+    runner = ::E2E::Runner.new(runner_mode, @num_nodes, @num_miners, @time, @keep_logs, @no_transactions, @num_tps)
     runner.run!
 
     exit runner.exit_code
