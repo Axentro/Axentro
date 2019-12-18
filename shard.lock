@@ -2,7 +2,7 @@ version: 1.0
 shards:
   ameba:
     github: veelenga/ameba
-    version: 0.10.1
+    version: 0.11.0
 
   crystal-argon2:
     github: sushichain/crystal-argon2
@@ -14,7 +14,7 @@ shards:
 
   db:
     github: crystal-lang/crystal-db
-    version: 0.7.0
+    version: 0.8.0
 
   humanhash:
     github: kingsleyh/humanhash
@@ -42,7 +42,7 @@ shards:
 
   sqlite3:
     github: crystal-lang/crystal-sqlite3
-    version: 0.14.0
+    version: 0.15.0
 
   tokoroten:
     github: tbrand/tokoroten
