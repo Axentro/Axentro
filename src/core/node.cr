@@ -373,6 +373,8 @@ module ::Sushi::Core
 
     # ameba:disable Metrics/CyclomaticComplexity
     private def broadcast_slow_block(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
+      debug "Block was received from a peer node"
+      block.to_s
       most_recent_minted_block = @blockchain.latest_slow_block
       if @blockchain.get_latest_index_for_slow == block.index
         debug "slow: currently pending slow index is the same as the arriving block from a peer"
@@ -402,7 +404,7 @@ module ::Sushi::Core
           send_block(block, from)
           if _block = @blockchain.valid_block?(block, true, true)
             warning "arriving block passes validity checks, making the arriving block our local latest"
-            @blockchain.replace_block(_block)
+            @blockchain.replace_with_block_from_peer(_block)
           else
             warning "arriving block failed validity check, we can't make it our local latest"
           end

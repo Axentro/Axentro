@@ -527,6 +527,17 @@ module ::Sushi::Core
       FastTransactionPool.embedded
     end
 
+    def replace_with_block_from_peer(block : SlowBlock)
+      replace_block(block);
+      # TODO: need to remove from 'indices' the transactions that are in the most recent blockchain block: JJF.. unrecord?
+      debug "clearing the old indices since we have a whole new block"
+      dapps_clear_record
+      debug "cleaning the slow transactions because of the replacement"
+      clean_slow_transactions_used_in_block(block)
+      debug "refreshing mining block after accepting new block from peer"
+      refresh_mining_block(block_difficulty(self))
+    end
+
     def mining_block : SlowBlock
       debug "calling refresh_mining_block in mining_block" unless @mining_block
       refresh_mining_block(Consensus::DEFAULT_DIFFICULTY_TARGET) unless @mining_block
@@ -643,6 +654,12 @@ module ::Sushi::Core
 
       SlowTransactionPool.lock
       SlowTransactionPool.replace(replace_transactions)
+    end
+
+    def clean_slow_transactions_used_in_block(block : SlowBlock)
+      SlowTransactionPool.lock
+      transactions = pending_slow_transactions.reject { |t| block.find_transaction(t.id) == true }.select(&.is_slow_transaction?)
+      SlowTransactionPool.replace(transactions)
     end
 
     def clean_slow_transactions

@@ -243,11 +243,16 @@ module ::E2E
         size = blockchain_size(port)
         STDERR.puts "> blocks on port #{port} (size: #{size})"
 
-        (0..size-1).each do |i|
+        (0..size * 2).each do |i|
           unless block = block(port, i)
             next
           end
-          STDERR.puts "%2d --- %s" % [i, block["prev_hash"].as_s]
+          block_kind = block["kind"].as_s
+          if block_kind == "SLOW"
+            STDERR.puts "%2d (SLOW) --- nonce: %d" % [block["index"].as_i64, block["nonce"].as_i64]
+          else
+            STDERR.puts "%2d (FAST)---  hash:%s" % [block["index"].as_i64, block["hash"].as_s]
+          end
         end
       end
     end

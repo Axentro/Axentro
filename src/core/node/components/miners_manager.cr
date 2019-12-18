@@ -142,11 +142,11 @@ module ::Sushi::Core::NodeComponents
           end
           if mined_timestamp > @block_start_time + (Consensus::POW_TARGET_SPACING * 0.90).to_i32
             if @highest_difficulty_mined_so_far > 0
-              debug "Time has expired ... the block with the most difficult nonce recorded so far will be minted: #{@highest_difficulty_mined_so_far}"
+              debug "Time has expired for block #{block.index} ... the block with the most difficult nonce recorded so far will be minted: #{@highest_difficulty_mined_so_far}"
               @most_difficult_block_so_far.to_s
               mint_block(@most_difficult_block_so_far)
             else
-              debug "Time has expired ... but no nonce with a difficulty larger than miner difficulty (#{current_miner_difficulty}) has been received.. keep waiting"
+              debug "Time has expired for block #{block.index} ... but no nonce with a difficulty larger than miner difficulty (#{current_miner_difficulty}) has been received.. keep waiting"
             end
           end
         end

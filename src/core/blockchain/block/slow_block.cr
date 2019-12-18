@@ -42,12 +42,12 @@ module ::Sushi::Core
 
     def to_s
       debug "SlowBlock index: #{@index}"
-      debug "SlowBlock transactions: #{@transactions.size}"
-      debug "SlowBlock nonce: #{@nonce}"
-      debug "SlowBlock prev_hash: #{@prev_hash}"
-      debug "SlowBlock timestamp: #{@timestamp}"
-      debug "SlowBlock difficulty: #{@difficulty}"
-      debug "SlowBlock hash: #{self.to_hash}"
+      debug "SlowBlock transactions for block #{@index}: #{@transactions.size}"
+      debug "SlowBlock nonce for block #{@index}: #{@nonce}"
+      debug "SlowBlock prev_hash for block #{@index}: #{@prev_hash}"
+      debug "SlowBlock timestamp for block #{@index}: #{@timestamp}"
+      debug "SlowBlock difficulty for block #{@index}: #{@difficulty}"
+      debug "SlowBlock hash for block #{@index}: #{self.to_hash}"
     end
 
     def to_header : Blockchain::SlowHeader
