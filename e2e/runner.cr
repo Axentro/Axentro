@@ -247,12 +247,7 @@ module ::E2E
           unless block = block(port, i)
             next
           end
-          block_kind = block["kind"].as_s
-          if block_kind == "SLOW"
-            STDERR.puts "%2d (SLOW) --- nonce: %d" % [block["index"].as_i64, block["nonce"].as_i64]
-          else
-            STDERR.puts "%2d (FAST)---  hash:%s" % [block["index"].as_i64, block["hash"].as_s]
-          end
+          STDERR.puts "%2d (%s) --- merkle tree root: %s" % [block["index"].as_i64, block["kind"].as_s, block["merkle_tree_root"].as_s]
         end
       end
     end

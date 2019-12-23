@@ -67,7 +67,7 @@ module ::E2E::Utils::API
 
     args = ["transaction", "create", "-w", wallet(n_sender), "-a", recipient_address, "-m", "0.00000001", "-n", "http://127.0.0.1:#{port}", "--message='E2E Test'", "-f", "0.0001", "--json"]
     #TODO: add back in fast transactions - jjf
-    #args << "--fast-transaction" if (transaction_counter % 1000) == 0
+    args << "--fast-transaction" if (transaction_counter % 300) == 0
 
     res = `#{sushi(args)}`
 

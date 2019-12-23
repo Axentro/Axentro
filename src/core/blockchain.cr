@@ -429,7 +429,7 @@ module ::Sushi::Core
     private def _add_transaction(transaction : Transaction)
       if transaction.valid_common?
         if transaction.kind == TransactionKind::FAST
-          debug "adding fast transaction to pool: #{transaction.id}"
+          #debug "adding fast transaction to pool: #{transaction.id}"
           FastTransactionPool.add(transaction)
         else
           SlowTransactionPool.add(transaction)
@@ -527,15 +527,19 @@ module ::Sushi::Core
       FastTransactionPool.embedded
     end
 
-    def replace_with_block_from_peer(block : SlowBlock)
+    def replace_with_block_from_peer(block : SlowBlock | FastBlock)
       replace_block(block);
-      # TODO: need to remove from 'indices' the transactions that are in the most recent blockchain block: JJF.. unrecord?
-      debug "clearing the old indices since we have a whole new block"
+      debug "replace transactions in indices array that were in the block being replaced with those from the replacement block"
       dapps_clear_record
-      debug "cleaning the slow transactions because of the replacement"
-      clean_slow_transactions_used_in_block(block)
+      debug "cleaning the transactions because of the replacement"
+      case block
+        when SlowBlock
+          clean_slow_transactions_used_in_block(block)
+        when FastBlock
+          clean_fast_transactions_used_in_block(block)
+      end
       debug "refreshing mining block after accepting new block from peer"
-      refresh_mining_block(block_difficulty(self))
+      refresh_mining_block(block_difficulty(self)) if block.kind == "SLOW"
     end
 
     def mining_block : SlowBlock

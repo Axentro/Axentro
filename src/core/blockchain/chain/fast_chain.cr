@@ -117,7 +117,7 @@ module ::Sushi::Core::FastChain
     latest = get_latest_index_for_slow
     #TODO: make maturity smaller for fast blocks - jjf
     if ENV.has_key?("SC_TESTING")
-      return true if latest > 1440_i64
+      return true if latest > 6_i64
     end
     latest > 1440_i64
   end
@@ -149,6 +149,7 @@ module ::Sushi::Core::FastChain
   end
 
   def mint_fast_block(valid_transactions)
+    debug "minting fast block #{latest_index}"
     transactions = valid_transactions[:transactions]
     latest_index = valid_transactions[:latest_index]
     _latest_block = latest_fast_block || get_genesis_block
@@ -252,7 +253,13 @@ module ::Sushi::Core::FastChain
     debug "replace transactions in pool: #{FastTransactionPool.all.size}"
   end
 
-  def push_fast_block(block : FastBlock)
+  def clean_fast_transactions_used_in_block(block : FastBlock)
+    FastTransactionPool.lock
+    transactions = pending_fast_transactions.reject { |t| block.find_transaction(t.id) == true }.select(&.is_fast_transaction?)
+    FastTransactionPool.replace(transactions)
+  end
+
+def push_fast_block(block : FastBlock)
     _push_block(block)
     clean_fast_transactions
 
