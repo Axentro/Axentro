@@ -149,9 +149,9 @@ module ::Sushi::Core::FastChain
   end
 
   def mint_fast_block(valid_transactions)
-    debug "minting fast block #{latest_index}"
     transactions = valid_transactions[:transactions]
     latest_index = valid_transactions[:latest_index]
+    debug "minting fast block #{latest_index}"
     _latest_block = latest_fast_block || get_genesis_block
     timestamp = __timestamp
 
