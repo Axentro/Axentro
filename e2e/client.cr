@@ -21,7 +21,7 @@ module ::E2E
     alias ClientWork = NamedTuple(call: Int32, content: String)
 
     struct Initialize
-      JSON.mapping({node_ports: Array(Int32), num_miners: Int32, num_tps: Int32})
+      JSON.mapping({node_ports: Array(Int32), num_miners: Int32, num_tps: Int32, pct_fast_txns: Int32})
     end
 
     struct Result
@@ -32,14 +32,16 @@ module ::E2E
       @@client.not_nil!
     end
 
-    def self.initialize(node_ports : Array(Int32), num_miners : Int32, no_transactions : Bool, num_tps : Int32)
+    def self.initialize(node_ports : Array(Int32), num_miners : Int32, no_transactions : Bool, num_tps : Int32, pct_fast_txns : Int32)
       @@client = Client.create(1)[0]
       @@no_transactions = no_transactions
 
       puts "Transactions Per Second goal: #{num_tps}"
       puts "(as many as possible)" if num_tps == 0
 
-      request = {call: 0, content: {node_ports: node_ports, num_miners: num_miners, num_tps: num_tps}.to_json}.to_json
+      puts "Fast transaction percentage: #{pct_fast_txns}"
+
+      request = {call: 0, content: {node_ports: node_ports, num_miners: num_miners, num_tps: num_tps, pct_fast_txns: pct_fast_txns}.to_json}.to_json
       client.exec(request)
     end
 
@@ -63,6 +65,7 @@ module ::E2E
         @node_ports = initialize.node_ports
         @num_miners = initialize.num_miners
         @num_tps = initialize.num_tps
+        @pct_fast_txns = initialize.pct_fast_txns
       when 1 # launch
         launch
       when 2 # finish
@@ -84,11 +87,13 @@ module ::E2E
     @num_miners : Int32 = 0
     @num_tps : Int32 = 0
 
-    def create_transaction(transaction_counter : Int64)
+    @pct_fast_txns : Int32 = 1
+
+    def create_transaction(doing_fast_transaction : Bool)
       sender = Random.rand(@num_miners)
       recipient = Random.rand(@num_miners)
 
-      if transaction_id = create(@node_ports.sample, sender, recipient, transaction_counter)
+      if transaction_id = create(@node_ports.sample, sender, recipient, doing_fast_transaction)
         @launch_time ||= Time.utc
         @transaction_ids << transaction_id
       end
@@ -103,7 +108,12 @@ module ::E2E
           transaction_counter = 0_i64
           while @alive
             begin
-              create_transaction(transaction_counter)
+              transaction_hundred_count = transaction_counter % 100_i64
+              doing_fast_transactions = false
+              if @pct_fast_txns > 0
+                doing_fast_transactions = transaction_hundred_count < @pct_fast_txns
+              end
+              create_transaction(doing_fast_transactions)
               if @num_tps > 0
                 sleepy_time = 1000 / @num_tps
                 sleep sleepy_time.milliseconds

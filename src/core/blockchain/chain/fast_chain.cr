@@ -28,7 +28,7 @@ module ::Sushi::Core::FastChain
   end
 
   private def assume_leadership
-    info "Assuming leadership role because I'm ranked high enough"
+    debug "Assuming leadership role because I'm ranked high enough"
     node.set_current_leader(CurrentLeader.new(node.get_node_id, node.get_wallet.address))
     debug "current_leader_in_contest: #{node.get_current_leader}"
   end
@@ -115,9 +115,8 @@ module ::Sushi::Core::FastChain
   def chain_mature_enough_for_fast_blocks?
     return true if node.has_no_connections? && !node.is_private_node?
     latest = get_latest_index_for_slow
-    #TODO: make maturity smaller for fast blocks - jjf
     if ENV.has_key?("SC_TESTING")
-      return true if latest > 6_i64
+      return true if latest > 8_i64
     end
     latest > 1440_i64
   end

@@ -189,7 +189,7 @@ module ::Sushi::Core
         when SlowBlock
           return block if block.valid?(self, skip_transactions, doing_replace)
         when FastBlock
-          return block if block.valid?(self)
+          return block if block.valid?(self, skip_transactions, doing_replace)
       end
       nil
     end
@@ -381,7 +381,11 @@ module ::Sushi::Core
         result = false
         if index
           @database.delete_blocks(index)
-          @chain.reverse.each_index { |i| @chain.delete_at(i) if @chain[i].index >= index }
+          @chain.each_index { |i|
+            debug "gonna delete at index #{i}"
+            @chain.delete_at(i) if @chain[i].index >= index
+          }
+          # jjf @chain.each_index { |i| @chain.delete_at(i) if @chain[i].index >= index }
         end
         break
       end
@@ -409,13 +413,17 @@ module ::Sushi::Core
 
         dapps_record
       rescue e : Exception
-        error "found invalid slow block while syncing fast blocks at index #{index}.. deleting all blocks from invalid and up"
+        error "found invalid fast block while syncing fast blocks at index #{index}.. deleting all blocks from invalid and up"
         error "the reason:"
         error e.message.not_nil!
         result = false
         if index
           @database.delete_blocks(index)
-          @chain.reverse.each_index { |i| @chain.delete_at(i) if @chain[i].index >= index }
+          @chain.each_index { |i|
+            debug "gonna delete at index #{i}"
+            @chain.delete_at(i) if @chain[i].index >= index
+          }
+          # jjf @chain.each_index { |i| @chain.delete_at(i) if @chain[i].index >= index }
         end
         break
       end
@@ -453,6 +461,13 @@ module ::Sushi::Core
       slow_blocks = @chain.select(&.is_slow_block?)
       return slow_blocks[0].as(SlowBlock) if slow_blocks.size < 1
       slow_blocks[-2].as(SlowBlock)
+    end
+
+    def latest_fast_block_when_replacing : FastBlock
+      fast_blocks = @chain.select(&.is_fast_block?)
+      debug "number of fast blocks when replace attempted: #{fast_blocks.size}"
+      return fast_blocks[0].as(FastBlock) if fast_blocks.size < 1
+      fast_blocks[-2].as(FastBlock)
     end
 
     def latest_index : Int64

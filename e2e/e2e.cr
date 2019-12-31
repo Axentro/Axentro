@@ -23,6 +23,7 @@ class SushiChainE2E
   @num_miners : Int32 = 3
   @time : Int32 = 300
   @num_tps : Int32 = 0
+  @pct_fast_txns : Int32 = 1
   @keep_logs : Bool = false
   @no_transactions : Bool = false
 
@@ -57,6 +58,10 @@ class SushiChainE2E
 
       parser.on("--num_tps=NUM", "# of Transactions Per Second (default is 'as fast as possible')") do |num|
         @num_tps = num.to_i
+      end
+
+      parser.on("--pct_fast_txns=NUM", "Percentage of Transactions (that are FAST transactions) default is 1)") do |num|
+        @pct_fast_txns = num.to_i
       end
 
       parser.on("--num_miners=NUM", "# of miners (default is 4)") do |num|
@@ -100,8 +105,9 @@ class SushiChainE2E
     raise "invalid value of arg --num_nodes" if @num_nodes < 0
     raise "invalid value of arg --num_miners" if @num_miners < 0
     raise "invalid value for arg --num_tps" if (@num_tps < 0) || (@num_tps > 1000)
+    raise "invalid value for arg --pct_fast_txns" if (@pct_fast_txns < 0) || (@pct_fast_txns > 100)
 
-    runner = ::E2E::Runner.new(runner_mode, @num_nodes, @num_miners, @time, @keep_logs, @no_transactions, @num_tps)
+    runner = ::E2E::Runner.new(runner_mode, @num_nodes, @num_miners, @time, @keep_logs, @no_transactions, @num_tps, @pct_fast_txns)
     runner.run!
 
     exit runner.exit_code

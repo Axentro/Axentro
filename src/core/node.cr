@@ -426,6 +426,7 @@ module ::Sushi::Core
 
     private def broadcast_fast_block(socket : HTTP::WebSocket, block : FastBlock, from : Chord::NodeContext? = nil)
       debug "fast: fast block arriving from peer with index #{block.index}"
+      debug "fast: merkle tree root of arriving block: #{block.merkle_tree_root}"
       latest_fast_block = @blockchain.latest_fast_block || @blockchain.get_genesis_block
       if latest_fast_block.index + 2 < block.index
         debug "fast: latest local fast chain index (#{latest_fast_block.index}) is more than one block behind index of arriving block from a peer(#{block.index})"
@@ -448,7 +449,7 @@ module ::Sushi::Core
         @conflicted_fast_index ||= block.index
         if latest_fast_block.timestamp < block.timestamp
           warning "fast: local block's timestamp indicates it was minted earlier than arriving block .. not forwarding arriving block to other nodes"
-        elsif block.timestamp < @blockchain.latest_slow_block.timestamp
+        elsif block.timestamp < latest_fast_block.timestamp
           warning "slow: arriving block's timestamp indicates it was minted earlier than latest local block"
           warning "current local block merkle_tree_root #{latest_fast_block.merkle_tree_root}"
           warning "arriving block merkle_tree_root #{block.merkle_tree_root}"
