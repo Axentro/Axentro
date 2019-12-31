@@ -466,7 +466,7 @@ module ::Sushi::Core
     def latest_fast_block_when_replacing : FastBlock
       fast_blocks = @chain.select(&.is_fast_block?)
       debug "number of fast blocks when replace attempted: #{fast_blocks.size}"
-      return fast_blocks[0].as(FastBlock) if fast_blocks.size < 1
+      return fast_blocks[0].as(FastBlock) if fast_blocks.size == 1
       fast_blocks[-2].as(FastBlock)
     end
 
