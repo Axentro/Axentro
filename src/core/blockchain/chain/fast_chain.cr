@@ -57,7 +57,7 @@ module ::Sushi::Core::FastChain
           end
         end
       end
-      sleep 2
+      sleep Random.new.rand(1.5 .. 2.0)
     end
   end
 
