@@ -33,10 +33,10 @@ module ::E2E
 
     getter exit_code : Int32 = 0
 
-    def initialize(@mode : Int32, @num_nodes : Int32, @num_miners : Int32, @time : Int32, @keep_logs : Bool, @no_transactions : Bool, @num_tps : Int32)
+    def initialize(@mode : Int32, @num_nodes : Int32, @num_miners : Int32, @time : Int32, @keep_logs : Bool, @no_transactions : Bool, @num_tps : Int32, @pct_fast_txns : Int32)
       @node_ports = (4001..4001 + (@num_nodes - 1)).to_a
 
-      Client.initialize(@node_ports, @num_miners, @no_transactions, @num_tps)
+      Client.initialize(@node_ports, @num_miners, @no_transactions, @num_tps, @pct_fast_txns)
 
       @db_name = Random.new.hex
     end
@@ -243,11 +243,11 @@ module ::E2E
         size = blockchain_size(port)
         STDERR.puts "> blocks on port #{port} (size: #{size})"
 
-        (0..size-1).each do |i|
+        (0..size * 2).each do |i|
           unless block = block(port, i)
             next
           end
-          STDERR.puts "%2d --- %s" % [i, block["prev_hash"].as_s]
+          STDERR.puts "%2d (%s) --- merkle tree root: %s" % [block["index"].as_i64, block["kind"].as_s, block["merkle_tree_root"].as_s]
         end
       end
     end

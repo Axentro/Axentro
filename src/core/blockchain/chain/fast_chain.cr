@@ -28,7 +28,7 @@ module ::Sushi::Core::FastChain
   end
 
   private def assume_leadership
-    info "Assuming leadership role because I'm ranked high enough"
+    debug "Assuming leadership role because I'm ranked high enough"
     node.set_current_leader(CurrentLeader.new(node.get_node_id, node.get_wallet.address))
     debug "current_leader_in_contest: #{node.get_current_leader}"
   end
@@ -57,7 +57,7 @@ module ::Sushi::Core::FastChain
           end
         end
       end
-      sleep 2
+      sleep Random.new.rand(1.5 .. 2.0)
     end
   end
 
@@ -113,9 +113,12 @@ module ::Sushi::Core::FastChain
   end
 
   def chain_mature_enough_for_fast_blocks?
-    return true if ENV.has_key?("SC_TESTING")
     return true if node.has_no_connections? && !node.is_private_node?
-    get_latest_index_for_slow > 1440_i64
+    latest = get_latest_index_for_slow
+    if ENV.has_key?("SC_TESTING")
+      return true if latest > 8_i64
+    end
+    latest > 1440_i64
   end
 
   def latest_fast_block : FastBlock?
@@ -147,6 +150,7 @@ module ::Sushi::Core::FastChain
   def mint_fast_block(valid_transactions)
     transactions = valid_transactions[:transactions]
     latest_index = valid_transactions[:latest_index]
+    debug "minting fast block #{latest_index}"
     _latest_block = latest_fast_block || get_genesis_block
     timestamp = __timestamp
 
@@ -248,7 +252,13 @@ module ::Sushi::Core::FastChain
     debug "replace transactions in pool: #{FastTransactionPool.all.size}"
   end
 
-  def push_fast_block(block : FastBlock)
+  def clean_fast_transactions_used_in_block(block : FastBlock)
+    FastTransactionPool.lock
+    transactions = pending_fast_transactions.reject { |t| block.find_transaction(t.id) == true }.select(&.is_fast_transaction?)
+    FastTransactionPool.replace(transactions)
+  end
+
+def push_fast_block(block : FastBlock)
     _push_block(block)
     clean_fast_transactions
 

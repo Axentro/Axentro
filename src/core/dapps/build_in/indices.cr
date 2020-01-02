@@ -56,6 +56,12 @@ module ::Sushi::Core::DApps::BuildIn
       end
     end
 
+    def unrecord(block_id : Int64)
+      @indices.reverse.each do |h|
+        @indices.delete(h) if h.has_value?(block_id)
+      end
+    end
+
     def clear
       @indices.clear
     end

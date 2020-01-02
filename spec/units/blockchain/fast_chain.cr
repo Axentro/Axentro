@@ -102,7 +102,7 @@ describe Blockchain do
         transaction2 = transaction_factory.make_fast_send(200000000_i64)
         blockchain = block_factory.blockchain
 
-        block_factory.add_slow_blocks(2)
+        block_factory.add_slow_blocks(4)
 
         blockchain.add_transaction(transaction1, false)
         blockchain.add_transaction(transaction2, false)
@@ -164,7 +164,7 @@ describe Blockchain do
       with_factory do |block_factory, transaction_factory|
         blockchain = block_factory.blockchain
         amount = 200000000_i64
-        block_factory.add_slow_blocks(2)
+        block_factory.add_slow_blocks(4)
           .add_fast_blocks(4)
           .add_slow_block([transaction_factory.make_fast_send(amount), transaction_factory.make_fast_send(amount)])
         transactions = blockchain.embedded_fast_transactions

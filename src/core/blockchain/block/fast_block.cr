@@ -42,6 +42,7 @@ module ::Sushi::Core
       raise "index must be odd number" if index.even?
       @merkle_tree_root = calculate_merkle_tree_root
       @kind = BlockKind::FAST
+      debug "fast: merkle tree root of minted block: #{@merkle_tree_root}"
     end
 
     def to_header : Blockchain::FastHeader
@@ -96,8 +97,8 @@ module ::Sushi::Core
       is_fast_block? ? "FAST" : "SLOW"
     end
 
-    def valid?(blockchain : Blockchain, skip_transactions : Bool = false) : Bool
-      return valid_as_latest?(blockchain, skip_transactions) unless @index == 0
+    def valid?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool
+      return valid_as_latest?(blockchain, skip_transactions, doing_replace) unless @index == 0
       valid_as_genesis?
     end
 
@@ -112,7 +113,7 @@ module ::Sushi::Core
       end
     end
 
-    def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool) : Bool
+    def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool, doing_replace : Bool) : Bool
       valid_signature = ECCrypto.verify(
         @public_key,
         @hash,
@@ -124,8 +125,16 @@ module ::Sushi::Core
       valid_leader = Ranking.rank(@address, Ranking.chain(blockchain.chain)) > 0
       raise "Invalid leader: the block was signed by a leader who is not ranked" unless valid_leader
 
-      prev_block = blockchain.latest_fast_block || blockchain.get_genesis_block
-      latest_fast_index = blockchain.get_latest_index_for_fast
+      debug "checking validity of fast block while doing replace" if doing_replace
+
+      if doing_replace
+        prev_block = blockchain.latest_fast_block_when_replacing
+        latest_fast_index = blockchain.get_latest_index_for_fast - 2
+        debug "doing fast replace.. latest fast index is: #{latest_fast_index}"
+      else
+        prev_block = blockchain.latest_fast_block || blockchain.get_genesis_block
+        latest_fast_index = blockchain.get_latest_index_for_fast
+      end
 
       unless skip_transactions
         transactions.each_with_index do |t, idx|

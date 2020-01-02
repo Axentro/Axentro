@@ -373,6 +373,8 @@ module ::Sushi::Core
 
     # ameba:disable Metrics/CyclomaticComplexity
     private def broadcast_slow_block(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
+      debug "Block was received from a peer node"
+      block.to_s
       most_recent_minted_block = @blockchain.latest_slow_block
       if @blockchain.get_latest_index_for_slow == block.index
         debug "slow: currently pending slow index is the same as the arriving block from a peer"
@@ -397,12 +399,13 @@ module ::Sushi::Core
           warning "slow: local block's timestamp indicates it was minted earlier than arriving block .. not forwarding arriving block to other nodes"
         elsif block.timestamp < most_recent_minted_block.timestamp
           warning "slow: arriving block's timestamp indicates it was minted earlier than latest local block"
-          warning "current local block prev_hash #{most_recent_minted_block.prev_hash}"
-          warning "arriving block prev_hash #{block.prev_hash}"
+          warning "current local block merkle_tree_root #{most_recent_minted_block.merkle_tree_root}"
+          warning "arriving block merkle_tree_root #{block.merkle_tree_root}"
           send_block(block, from)
           if _block = @blockchain.valid_block?(block, true, true)
             warning "arriving block passes validity checks, making the arriving block our local latest"
-            @blockchain.replace_block(_block)
+            @blockchain.replace_with_block_from_peer(_block)
+            @miners_manager.forget_most_difficult
           else
             warning "arriving block failed validity check, we can't make it our local latest"
           end
@@ -422,9 +425,16 @@ module ::Sushi::Core
     end
 
     private def broadcast_fast_block(socket : HTTP::WebSocket, block : FastBlock, from : Chord::NodeContext? = nil)
+      debug "fast: fast block arriving from peer with index #{block.index}"
+      debug "fast: merkle tree root of arriving block: #{block.merkle_tree_root}"
       latest_fast_block = @blockchain.latest_fast_block || @blockchain.get_genesis_block
-      if @blockchain.get_latest_index_for_fast == block.index
-        debug "fast: currently pending fast index is the same as the arriving block from a peer"
+      if latest_fast_block.index + 2 < block.index
+        debug "fast: latest local fast chain index (#{latest_fast_block.index}) is more than one block behind index of arriving block from a peer(#{block.index})"
+        warning "fast: require new chain: #{latest_fast_block} for #{block.index}"
+        sync_chain(socket)
+        send_block(block, from)
+      elsif latest_fast_block.index < block.index
+        debug "fast: fast block arriving from peer is a new block"
         debug "fast: sending new block on to peer"
         send_block(block, from)
         debug "fast: finished sending new block on to peer"
@@ -434,24 +444,25 @@ module ::Sushi::Core
           info "#{magenta("NEW FAST BLOCK broadcasted")}: #{light_green(_block.index)}"
         end
       elsif latest_fast_block.index == block.index
-        debug "fast: latest fast block index is the same as the arriving block from a peer"
+        debug "fast: fast block arriving from peer has the same index as the latest fast block"
         warning "fast: blockchain conflicted at #{block.index} (#{light_cyan(latest_fast_block)})"
         @conflicted_fast_index ||= block.index
         if latest_fast_block.timestamp < block.timestamp
-          warning "fast: local block's timestamp indicates it was minted earlier than arriving block .. tell sender to ask for our chain"
-          tell_peer_to_sync_chain(socket)
-        elsif block.timestamp < @blockchain.latest_slow_block.timestamp
-          warning "fast: arriving block's timestamp indicates it was minted earlier than latest local block .. ask for senders chain"
-          sync_chain(socket)
+          warning "fast: local block's timestamp indicates it was minted earlier than arriving block .. not forwarding arriving block to other nodes"
+        elsif block.timestamp < latest_fast_block.timestamp
+          warning "slow: arriving block's timestamp indicates it was minted earlier than latest local block"
+          warning "current local block merkle_tree_root #{latest_fast_block.merkle_tree_root}"
+          warning "arriving block merkle_tree_root #{block.merkle_tree_root}"
+          send_block(block, from)
+          if _block = @blockchain.valid_block?(block, true, true)
+            warning "arriving block passes validity checks, making the arriving block our local latest"
+            @blockchain.replace_with_block_from_peer(_block)
+          else
+            warning "arriving block failed validity check, we can't make it our local latest"
+          end
         end
-        send_block(block, from)
-      elsif @blockchain.get_latest_index_for_fast < block.index
-        debug "fast: currently pending fast index is the less than the index of arriving block from a peer"
-        warning "fast: require new chain: #{latest_fast_block} for #{block.index}"
-        sync_chain(socket)
-        send_block(block, from)
       else
-        warning "fast: received old block, will be ignored"
+        warning "fast: fast block arriving from peer is an old block, will will tell peer to sync"
         send_block(block, from)
         tell_peer_to_sync_chain(socket)
       end
