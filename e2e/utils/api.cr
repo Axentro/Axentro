@@ -52,6 +52,11 @@ module ::E2E::Utils::API
     res = `#{sushi(args)}`
 
     if json = parse_json(res)
+      if json["error"]? 
+        puts "Error: #{json["message"]}"
+        return BigDecimal.new(0)
+      end
+
       return BigDecimal.new(json["pairs"][0]["amount"].as_s)
     end
 
