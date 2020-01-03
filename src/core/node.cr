@@ -54,22 +54,26 @@ module ::Sushi::Core
       @database : Database,
       @developer_fund : DeveloperFund?,
       @security_level_percentage : Int64?,
+      @max_miners : Int32,
+      @max_private_nodes : Int32,
       @use_ssl : Bool = false
     )
       welcome
 
       @heartbeat_salt = Random::Secure.hex(32)
-      @blockchain = Blockchain.new(@wallet, @database, @developer_fund, @security_level_percentage)
+      @blockchain = Blockchain.new(@wallet, @database, @developer_fund, @security_level_percentage, @max_miners)
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @validation_manager = ValidationManager.new(@blockchain, @bind_host, @bind_port, @use_ssl)
-      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @validation_manager)
+      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @validation_manager, @max_private_nodes)
       @miners_manager = MinersManager.new(@blockchain)
       @clients_manager = ClientsManager.new(@blockchain)
 
       @phase = SetupPhase::NONE
 
+      info "max private nodes allowed to connect is #{light_green(@max_private_nodes)}" 
+      info "max miners allowed to connect is #{light_green(@max_miners)}" 
       info "your log level is #{light_green(log_level_text)}"
-
+    
       debug "is_private: #{light_green(@is_private)}"
       debug "public url: #{light_green(@public_host)}:#{light_green(@public_port)}" unless @is_private
       debug "connecting node is using ssl?: #{light_green(@use_ssl)}"

@@ -33,6 +33,8 @@ module ::Sushi::Interface::SushiD
         Options::CONFIG_NAME,
         Options::DEVELOPER_FUND,
         Options::SECURITY_LEVEL_PERCENTAGE,
+        Options::MAX_MINERS,
+        Options::MAX_PRIVATE_NODES
       ])
     end
 
@@ -71,10 +73,13 @@ module ::Sushi::Interface::SushiD
 
       security_level_percentage = G.op.__security_level_percentage
 
+      max_miners = G.op.__max_miners
+      max_nodes = G.op.__max_nodes
+
       node = if has_first_connection
-               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, developer_fund, security_level_percentage, use_ssl)
+               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, developer_fund, security_level_percentage, max_miners, max_nodes, use_ssl)
              else
-               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, nil, nil, wallet, database, developer_fund, security_level_percentage, use_ssl)
+               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, nil, nil, wallet, database, developer_fund, security_level_percentage, max_miners, max_nodes, use_ssl)
              end
       node.run!
     end

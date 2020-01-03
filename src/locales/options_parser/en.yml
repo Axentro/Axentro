@@ -36,5 +36,8 @@ cli:
     developer_fund:      "invoke developer fund with supplied configuration"
     fast_transaction: "set transaction kind as fast transaction (default is slow transaction)"
     slow_transaction: "set transaction kind as slow transaction (default is slow transaction)"
+    security_level_percentage: "set the percentage of blocks to validate on sync (default is 20%)"
+    max_miners: "set the max number of miners that can connect to the node (default is 512)"
+    max_private_nodes: "set the max number of private nodes that can connect to the node (default is 512)"
   errors:
     decimal: "please supply valid decimal number: %{value}"

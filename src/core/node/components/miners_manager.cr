@@ -58,6 +58,14 @@ module ::Sushi::Core::NodeComponents
           })
       end
 
+      if miners.size >= @blockchain.max_miners
+        return send(socket,
+          M_TYPE_MINER_HANDSHAKE_REJECTED,
+          {
+            reason: "The max number of miners allowed to connect to this node has been reached (#{@blockchain.max_miners})"
+          })
+      end
+
       miner_network = Wallet.address_network_type(address)[:name]
 
       if miner_network != node.network_type

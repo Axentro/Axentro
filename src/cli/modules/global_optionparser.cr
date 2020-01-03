@@ -34,6 +34,8 @@ module ::Sushi::Interface
     @bind_port : Int32 = 3000
     @public_url : String?
     @database_path : String?
+    @max_miners : Int32 = 512
+    @max_nodes : Int32 = 512
 
     @address : String?
     @amount : String?
@@ -105,6 +107,8 @@ module ::Sushi::Interface
       NODE_ID
       DEVELOPER_FUND
       SECURITY_LEVEL_PERCENTAGE
+      MAX_MINERS
+      MAX_PRIVATE_NODES
     end
 
     def create_option_parser(actives : Array(Options)) : OptionParser
@@ -142,6 +146,8 @@ module ::Sushi::Interface
         parse_security_level_percentage(parser, actives)
         parse_slow_transaction(parser, actives)
         parse_fast_transaction(parser, actives)
+        parse_max_miners(parser, actives)
+        parse_max_private_nodes(parser, actives)
       end
     end
 
@@ -264,9 +270,9 @@ module ::Sushi::Interface
     end
 
     private def parse_block_index(parser : OptionParser, actives : Array(Options))
-        parser.on("-i BLOCK_INDEX", "--index=BLOCK_INDEX", I18n.translate("cli.options.block")) { |block_index|
-          @block_index = block_index.to_i
-        } if is_active?(actives, Options::BLOCK_INDEX)
+      parser.on("-i BLOCK_INDEX", "--index=BLOCK_INDEX", I18n.translate("cli.options.block")) { |block_index|
+        @block_index = block_index.to_i
+      } if is_active?(actives, Options::BLOCK_INDEX)
     end
 
     private def parse_transaction_id(parser : OptionParser, actives : Array(Options))
@@ -344,9 +350,9 @@ module ::Sushi::Interface
     end
 
     private def parse_security_level_percentage(parser : OptionParser, actives : Array(Options))
-        parser.on("--security_level_percentage=PERCENT_VALUE", I18n.translate("cli.options.security_level_percentage")) { |slp|
-          @security_level_percentage = slp.to_i64
-        } if is_active?(actives, Options::SECURITY_LEVEL_PERCENTAGE)
+      parser.on("--security-level-percentage=PERCENT_VALUE", I18n.translate("cli.options.security_level_percentage")) { |slp|
+        @security_level_percentage = slp.to_i64
+      } if is_active?(actives, Options::SECURITY_LEVEL_PERCENTAGE)
     end
 
     private def parse_slow_transaction(parser : OptionParser, actives : Array(Options))
@@ -361,6 +367,18 @@ module ::Sushi::Interface
         @is_fast_transaction = true
         @is_fast_transaction_changed = true
       } if is_active?(actives, Options::IS_FAST_TRANSACTION)
+    end
+
+    private def parse_max_miners(parser : OptionParser, actives : Array(Options))
+      parser.on("--max-miners=VALUE", I18n.translate("cli.options.max_miners")) { |v|
+        @max_miners = v.to_i
+      } if is_active?(actives, Options::MAX_MINERS)
+    end
+
+    private def parse_max_private_nodes(parser : OptionParser, actives : Array(Options))
+      parser.on("--max-private-nodes=VALUE", I18n.translate("cli.options.max_private_nodes")) { |v|
+        @max_nodes = v.to_i
+      } if is_active?(actives, Options::MAX_PRIVATE_NODES)
     end
 
     def is_active?(actives : Array(Options), option : Options) : Bool
@@ -489,6 +507,14 @@ module ::Sushi::Interface
 
     def __security_level_percentage : Int64?
       @security_level_percentage
+    end
+
+    def __max_miners : Int32
+      @max_miners
+    end
+
+    def __max_nodes : Int32
+      @max_nodes
     end
 
     def __is_fast_transaction : Bool

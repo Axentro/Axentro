@@ -36,22 +36,21 @@ module ::Sushi::Core
 
     getter chain : Chain = [] of (SlowBlock | FastBlock)
     getter wallet : Wallet
+    getter max_miners : Int32
 
     @blocks_to_hold: Int64
     @security_level_percentage : Int64
     @node : Node?
     @mining_block : SlowBlock?
     @block_reward_calculator = BlockRewardCalculator.init
+    @max_miners : Int32
 
-    def initialize(@wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, security_level_percentage : Int64?)
+    def initialize(@wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, security_level_percentage : Int64?, @max_miners : Int32)
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup
 
-      @security_level_percentage = SECURITY_LEVEL_PERCENTAGE
-      if security_level_percentage
-        @security_level_percentage = security_level_percentage
-      end
+      @security_level_percentage = security_level_percentage || SECURITY_LEVEL_PERCENTAGE
       info "Security Level Percentage used for blockchain validation is #{@security_level_percentage}"
 
       hours_to_hold = ENV.has_key?("SC_TESTING") ? 2 : 48

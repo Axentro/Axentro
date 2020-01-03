@@ -50,6 +50,7 @@ module ::Sushi::Core::NodeComponents
       @is_private : Bool,
       @use_ssl : Bool,
       @validation_manager : ValidationManager,
+      @max_private_nodes : Int32
     )
       @node_id = NodeID.new
 
@@ -136,6 +137,12 @@ module ::Sushi::Core::NodeComponents
       validation_hash = _m_content.validation_hash
 
       debug "private node trying to join SushiChain"
+
+      if @private_nodes.size >= @max_private_nodes
+        send( socket, M_TYPE_CHORD_JOIN_REJECTED, { 
+          reason: "The max private node connections of #{@max_private_nodes} for this node has been reached" })
+        return
+      end
 
       if _context[:type] != @network_type
         send( socket, M_TYPE_CHORD_JOIN_REJECTED, { reason: "network type mismatch. " +

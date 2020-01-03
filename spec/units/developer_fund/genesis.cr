@@ -20,7 +20,7 @@ describe Blockchain do
     test_database = "./test_spec.db"
     FileUtils.rm_rf test_database
     database = Sushi::Core::Database.new(test_database)
-    node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, node_wallet, database, nil, nil, false)
+    node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, node_wallet, database, nil, nil, 512, 512, false)
     blockchain = node.blockchain
     blockchain.setup(node)
 
@@ -35,7 +35,7 @@ describe Blockchain do
     FileUtils.rm_rf test_database
     database = Sushi::Core::Database.new(test_database)
     developer_fund = DeveloperFund.validate("#{__DIR__}/../../utils/data/developer_fund.yml")
-    node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, node_wallet, database, developer_fund, nil, false)
+    node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, node_wallet, database, developer_fund, nil, 512, 512, false)
     blockchain = node.blockchain
     blockchain.setup(node)
 

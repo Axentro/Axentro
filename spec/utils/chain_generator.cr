@@ -43,7 +43,7 @@ module ::Units::Utils::ChainGenerator
       @miner_wallet = Wallet.from_json(Wallet.create(true).to_json)
       FileUtils.rm_rf test_database
       @database = Sushi::Core::Database.new(test_database)
-      @node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, @database, developer_fund, nil, false)
+      @node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, @database, developer_fund, nil, 512, 512, false)
       @blockchain = @node.blockchain
       # the node setup is run in a spawn so we have to wait until it's finished before running any tests
       while @node.@phase != Sushi::Core::Node::SetupPhase::DONE
