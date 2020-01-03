@@ -139,8 +139,7 @@ module ::Sushi::Core::NodeComponents
       debug "private node trying to join SushiChain"
 
       if @private_nodes.size >= @max_private_nodes
-        send( socket, M_TYPE_CHORD_JOIN_REJECTED, { 
-          reason: "The max private node connections of #{@max_private_nodes} for this node has been reached" })
+        send( socket, M_TYPE_CHORD_JOIN_REJECTED, { reason: "The max private node connections of #{@max_private_nodes} for this node has been reached" })
         return
       end
 

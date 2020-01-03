@@ -70,10 +70,10 @@ module ::Sushi::Core
 
       @phase = SetupPhase::NONE
 
-      info "max private nodes allowed to connect is #{light_green(@max_private_nodes)}" 
-      info "max miners allowed to connect is #{light_green(@max_miners)}" 
+      info "max private nodes allowed to connect is #{light_green(@max_private_nodes)}"
+      info "max miners allowed to connect is #{light_green(@max_miners)}"
       info "your log level is #{light_green(log_level_text)}"
-    
+
       debug "is_private: #{light_green(@is_private)}"
       debug "public url: #{light_green(@public_host)}:#{light_green(@public_port)}" unless @is_private
       debug "connecting node is using ssl?: #{light_green(@use_ssl)}"
