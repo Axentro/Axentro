@@ -12,7 +12,6 @@
 
 module ::Sushi::Core::NodeComponents
   class ValidationManager < HandleSocket
-
     # node component to manage both sides of the process of validating the database of a new node that attempts connection to the SushiChain network
 
     alias ValidatingNode = NamedTuple(
@@ -34,6 +33,7 @@ module ::Sushi::Core::NodeComponents
     end
 
     def calculated_validation_hash
+      return "emptyDB" if @blockchain.has_no_blocks?
       return "emptyDB" if (@blockchain.latest_slow_block.index == 0) && (@blockchain.latest_fast_block_index_or_zero == 0)
       @our_calculated_validation_hash
     end
@@ -89,9 +89,9 @@ module ::Sushi::Core::NodeComponents
         socket,
         M_TYPE_VALIDATION_REQUEST,
         {
-          version: Core::CORE_VERSION,
-          source_host: @bind_host,
-          source_port: @bind_port,
+          version:           Core::CORE_VERSION,
+          source_host:       @bind_host,
+          source_port:       @bind_port,
           max_slow_block_id: max_slow_block_id,
           max_fast_block_id: max_fast_block_id,
         }
@@ -117,7 +117,7 @@ module ::Sushi::Core::NodeComponents
       debug "Node (#{source_host}:#{source_port}) wants database validation with slow/fast block IDs of #{max_slow_block_id}/#{max_fast_block_id}"
 
       if (max_slow_block_id == 0) && (max_fast_block_id == 0)
-        send( socket, M_TYPE_VALIDATION_SUCCEEDED, { reason: "Empty database passes validation" })
+        send(socket, M_TYPE_VALIDATION_SUCCEEDED, {reason: "Empty database passes validation"})
         return
       end
 
@@ -126,7 +126,7 @@ module ::Sushi::Core::NodeComponents
       debug "calculated hash for challenge:"
       debug "#{validating_hash}"
       add_validating_node(source_host, source_port, validating_hash)
-      send( socket, M_TYPE_VALIDATION_CHALLENGE, { blocks_to_hash: random_block_list, })
+      send(socket, M_TYPE_VALIDATION_CHALLENGE, {blocks_to_hash: random_block_list})
     rescue e : Exception
       error "failed to send validation challenge to connecting node #{source_host}:#{source_port}"
     end
@@ -141,7 +141,7 @@ module ::Sushi::Core::NodeComponents
       @our_calculated_validation_hash = solution_hash
       debug "calculated hash from challenge:"
       debug "#{solution_hash}"
-      send(socket, M_TYPE_VALIDATION_CHALLENGE_RESPONSE, { source_host: @bind_host, source_port: @bind_port, solution_hash: solution_hash })
+      send(socket, M_TYPE_VALIDATION_CHALLENGE_RESPONSE, {source_host: @bind_host, source_port: @bind_port, solution_hash: solution_hash})
     rescue e : Exception
       error "failed to send validation challenge response back to connecting node"
     end
@@ -166,7 +166,7 @@ module ::Sushi::Core::NodeComponents
         error "A Node at #{source_host}:#{source_port} was not found in the validation list with the correct validation hash"
       end
       debug "response: #{response}"
-      send( socket, response, { reason: reason })
+      send(socket, response, {reason: reason})
     rescue e : Exception
       error "failed to send validation succeed/fail response back to connecting node"
     end
@@ -188,6 +188,5 @@ module ::Sushi::Core::NodeComponents
     end
 
     include Protocol
-
   end
 end

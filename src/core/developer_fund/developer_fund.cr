@@ -43,8 +43,9 @@ module ::Sushi::Core
         {address: item["address"], amount: item["amount"].to_s}
       end
 
+      transaction_id = Transaction.create_id
       [TransactionDecimal.new(
-        "developer_fund",
+        transaction_id,
         "head",
         [] of Transaction::SenderDecimal,
         recipients,

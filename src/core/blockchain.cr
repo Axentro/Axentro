@@ -44,8 +44,9 @@ module ::Sushi::Core
     @mining_block : SlowBlock?
     @block_reward_calculator = BlockRewardCalculator.init
     @max_miners : Int32
+    @is_standalone : Bool
 
-    def initialize(@wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, security_level_percentage : Int64?, @max_miners : Int32)
+    def initialize(@wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, security_level_percentage : Int64?, @max_miners : Int32, @is_standalone : Bool)
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup
@@ -115,7 +116,7 @@ module ::Sushi::Core
       import_fast_blocks(database, starting_index, highest_index)
 
       if @chain.size == 0
-        push_genesis
+        push_genesis if @is_standalone && @chain.size == 0
       else
         refresh_mining_block(block_difficulty(self))
       end
@@ -144,10 +145,9 @@ module ::Sushi::Core
     rescue e : Exception
       error "Error could not restore slow blocks from database"
       error e.message.not_nil! if e.message
-      warning "TESTING.. so NOT removing invalid slow blocks from database"
-      #database.delete_blocks(current_index.not_nil!)
+      database.delete_blocks(current_index.not_nil!)
     ensure
-      push_genesis if @chain.size == 0
+      push_genesis if @is_standalone && @chain.size == 0
     end
 
     def import_fast_blocks(database, starting_index, highest_index)
@@ -174,8 +174,7 @@ module ::Sushi::Core
     rescue e : Exception
       error "Error could not restore fast blocks from database"
       error e.message.not_nil! if e.message
-      warning "TESTING.. so NOT removing invalid fast blocks from database"
-      #database.delete_blocks(current_index.not_nil!)
+      database.delete_blocks(current_index.not_nil!)
     end
 
     def valid_nonce?(nonce : UInt64) : SlowBlock?
@@ -257,8 +256,6 @@ module ::Sushi::Core
     end
 
     def replace_chain(_slow_subchain : Chain?, _fast_subchain : Chain?) : Bool
-      return false if @chain.size == 0
-
       dapps_clear_record
       slow_result = replace_slow_blocks(_slow_subchain)
       fast_result = replace_fast_blocks(_fast_subchain)
@@ -266,8 +263,6 @@ module ::Sushi::Core
       @chain.sort_by!(&.index)
 
       trim_chain_in_memory
-
-      push_genesis if @chain.size == 0
 
       clean_slow_transactions
       clean_fast_transactions
@@ -384,7 +379,6 @@ module ::Sushi::Core
             debug "gonna delete at index #{i}"
             @chain.delete_at(i) if @chain[i].index >= index
           }
-          # jjf @chain.each_index { |i| @chain.delete_at(i) if @chain[i].index >= index }
         end
         break
       end
@@ -450,6 +444,10 @@ module ::Sushi::Core
       @chain[-1]
     end
 
+    def has_no_blocks? : Bool
+      @chain.size <= 0
+    end
+
     def latest_slow_block : SlowBlock
       slow_blocks = @chain.select(&.is_slow_block?)
       return slow_blocks[0].as(SlowBlock) if slow_blocks.size < 1
@@ -474,6 +472,7 @@ module ::Sushi::Core
     end
 
     def get_latest_index_for_slow
+      return 0_i64 if has_no_blocks?
       index = latest_slow_block.index
       index.even? ? index + 2 : index + 1
     end

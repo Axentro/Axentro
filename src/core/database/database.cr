@@ -268,13 +268,15 @@ module ::Sushi::Core
 
     def get_slow_blocks(index : Int64) : Blockchain::Chain
       verbose "Reading blocks from the database starting at block #{index}"
-      blocks = get_blocks_via_query("select * from blocks where idx > #{index} and kind = 'SLOW'")
-      blocks
+      if index == 0
+        get_blocks_via_query("select * from blocks where idx >= #{index} and kind = 'SLOW'")
+      else
+        get_blocks_via_query("select * from blocks where idx > #{index} and kind = 'SLOW'")
+      end
     end
 
     def get_fast_blocks(index : Int64) : Blockchain::Chain
       verbose "Reading blocks from the database starting at block #{index}"
-      #blocks = get_blocks_via_query("select * from blocks where idx > #{index} and kind = '#{BlockKind::SLOW.to_s}'")
       blocks = get_blocks_via_query("select * from blocks where idx > #{index} and kind = 'FAST'")
       blocks
     end

@@ -61,7 +61,7 @@ module ::Sushi::Core
       welcome
 
       @heartbeat_salt = Random::Secure.hex(32)
-      @blockchain = Blockchain.new(@wallet, @database, @developer_fund, @security_level_percentage, @max_miners)
+      @blockchain = Blockchain.new(@wallet, @database, @developer_fund, @security_level_percentage, @max_miners, is_standalone?)
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @validation_manager = ValidationManager.new(@blockchain, @bind_host, @bind_port, @use_ssl)
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @validation_manager, @max_private_nodes)
@@ -93,6 +93,10 @@ module ::Sushi::Core
       end
 
       spawn proceed_setup
+    end
+
+    private def is_standalone?
+      @connect_host.nil? 
     end
 
     def get_wallet
@@ -148,8 +152,8 @@ module ::Sushi::Core
           end
 
       if _s = s
-        latest_slow_index = @blockchain.latest_slow_block.index
-        latest_fast_index = (@blockchain.latest_fast_block || @blockchain.get_genesis_block).index
+        latest_slow_index = get_latest_slow_index
+        latest_fast_index = get_latest_fast_index
 
         slow_sync_index = @conflicted_slow_index.nil? ? latest_slow_index : @conflicted_slow_index.not_nil!
         fast_sync_index = @conflicted_fast_index.nil? ? latest_fast_index : @conflicted_fast_index.not_nil!
@@ -166,10 +170,18 @@ module ::Sushi::Core
       end
     end
 
+    private def get_latest_slow_index
+      @blockchain.has_no_blocks? ? 0 : @blockchain.latest_slow_block.index
+    end
+
+    private def get_latest_fast_index
+      @blockchain.has_no_blocks? ? 0 :(@blockchain.latest_fast_block || @blockchain.get_genesis_block).index
+    end
+
     private def tell_peer_to_sync_chain(socket : HTTP::WebSocket? = nil)
       if predecessor = @chord.find_predecessor?
-        latest_slow_index = @blockchain.latest_slow_block.index
-        latest_fast_index = (@blockchain.latest_fast_block || @blockchain.get_genesis_block).index
+        latest_slow_index = get_latest_slow_index
+        latest_fast_index = get_latest_fast_index
         warning "telling peer to sync chain (slow) at index #{latest_slow_index}"
         warning "telling peer to sync chain (fast) at index #{latest_fast_index}"
         send(
@@ -652,7 +664,7 @@ module ::Sushi::Core
         info "received empty FAST chain"
       end
 
-      previous_local_slow_index = @blockchain.latest_slow_block.index
+      previous_local_slow_index = get_latest_slow_index
       previous_local_fast_index = @blockchain.latest_fast_block_index_or_zero
 
       if @blockchain.replace_chain(remote_slow_chain, remote_fast_chain)
@@ -770,6 +782,12 @@ module ::Sushi::Core
     def load_blockchain_from_database
       @blockchain.setup(self)
 
+      if @blockchain.has_no_blocks?
+        info "There were no blocks in the database - "
+        @phase = SetupPhase::CONNECTING_NODES
+        proceed_setup
+      else
+
       info "loaded blockchain's total size: #{light_cyan(@blockchain.chain.size)}"
       info "highest slow block index: #{light_cyan(@blockchain.latest_slow_block.index)}"
       info "highest fast block index: #{light_cyan(@blockchain.latest_fast_block_index_or_zero)}"
@@ -786,6 +804,7 @@ module ::Sushi::Core
       end
       @phase = SetupPhase::DATABASE_VALIDATING
       proceed_setup
+    end
     end
 
     def proceed_setup
