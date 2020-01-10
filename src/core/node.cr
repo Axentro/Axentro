@@ -96,7 +96,7 @@ module ::Sushi::Core
     end
 
     private def is_standalone?
-      @connect_host.nil? 
+      @connect_host.nil?
     end
 
     def get_wallet
