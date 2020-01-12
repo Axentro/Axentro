@@ -114,7 +114,7 @@ module ::Sushi::Interface
     end
 
     def config_path : String
-      home = File.expand_path("~")
+      home = Path.home.to_s
       FileUtils.mkdir_p("#{home}/.sushi")
       "#{home}/.sushi/config"
     end
