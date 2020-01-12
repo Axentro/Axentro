@@ -1,0 +1,107 @@
+## Group Address
+
+# /address/{address}{?confirmation}
+
+## GET
+
+This retrieves amounts of tokens for an address as Json
+
++ Parameters
+    + address (string) - The address
+    + confirmation: 1 (number, optional) - Number of confirmations
+    
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "status": "success",
+              "result": 
+                {
+                  "confirmation": 1,
+                  "pairs": 
+                    [
+                      {
+                        "token": "SUSHI",
+                        "amount": "19.68043428"
+                      },
+                      {
+                        "token": "EAGLE",
+                        "amount": "0"
+                      }
+                    ]
+                }
+            }
+
+        
+## address/transactions [GET /address/{address}/transactions{?page}{?page_size}{?actions}]
+
+This retrieves the transactions for an address as Json
+
++ Parameters
+    + address (string) - The address
+    + page: 0 (number, optional) - page to retrieve
+    + page_size: 20 (number, optional) - number of items per page
+    + actions (string, optional) - actions to filter in a comma delimited list e.g `?send,head`
+    
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "status": "success",
+              "result": 
+                [
+                  {
+                    "id": "f3aa3b5e04a4890e873e56d7ac35b3b90fe549afd783f7b5826055e0872bde6f",
+                    "action": "head",
+                    "senders": [],
+                    "recipients": 
+                      [
+                        {
+                          "address": "VDBjMTlkMWM0NTZhYmE3ZjdmYmVkMDgwMWFhZTMyMDRhMTUzNjFhYWUwYzk3ODQ5",
+                          "amount": 12615663
+                        },
+                        {
+                          "address": "VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj",
+                          "amount": 37846987
+                        }
+                      ],
+                    "message": "0",
+                    "token": "SUSHI",
+                    "prev_hash": "0",
+                    "timestamp": 1527522043,
+                    "scaled": 1,
+                    "kind": "FAST"
+                  }
+                ]
+            }
+
+        
+## address/amount/token [GET /address/{address}/token/{token}{?confirmation}]
+
+This retrieves the amount for a specified token for an address as Json
+
++ Parameters
+    + address (string) - The address
+    + token (string) - The token
+    + confirmation: 1 (number, optional) - Number of confirmations
+    
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "status": "success",
+              "result": 
+                {
+                  "confirmation": 1,
+                  "pairs": 
+                    [
+                      {
+                        "token": "SUSHI",
+                        "amount": "19.68043428"
+                      }
+                    ]
+                }
+            }

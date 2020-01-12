@@ -4,6 +4,8 @@
 /.shards/
 
 spec/functional/reports
+e2e/wallets/developer_fund.yml
+developer_fund.yml
 
 *.log
 *.db
