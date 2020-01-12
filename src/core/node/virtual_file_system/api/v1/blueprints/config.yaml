@@ -1,0 +1,9 @@
+html:
+  sidebar:
+    groupOrder: "auto"
+  playground:
+    enabled: true
+    env: testnet
+    environments:
+      testnet:
+        url: http://testnet.sushichain.io:3000/api/v1/

@@ -234,7 +234,7 @@ module ::Sushi::Core
     end
 
     private def v1_api_documentation_handler : ApiDocumentationHandler
-      ApiDocumentationHandler.new("/", "api/v1/dist/index.html")
+      ApiDocumentationHandler.new("/", "/index.html")
     end
 
     # ameba:disable Metrics/CyclomaticComplexity

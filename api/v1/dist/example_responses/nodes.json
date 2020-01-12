@@ -1,8 +1,0 @@
-{
-  "status": "success",
-  "result": {
-    "successor_list": [],
-    "predecessor": null,
-    "private_nodes": []
-  }
-}

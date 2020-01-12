@@ -1,0 +1,77 @@
+## Group Blockchain Info
+
+# /blockchain
+
+## GET
+
+Retrieves the entire blockchain as Json
+
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "status": "success",
+              "result":
+                [
+                  {
+                     "index": 0,
+                     "transactions": [],
+                     "nonce": 0,
+                     "prev_hash": "genesis",
+                     "merkle_tree_root": "",
+                     "timestamp": 0,
+                     "difficulty": 17,
+                    "kind": "SLOW",
+                    "address": "genesis"
+                  }
+                ]
+            }
+
+## blockchain/header [GET /blockchain/header]
+
+This retrieves the headers of the entire blockchain as Json
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "status": "success",
+              "result": 
+                [
+                  {
+                     "index": 0,
+                     "nonce": 0,
+                     "prev_hash": "genesis",
+                     "merkle_tree_root": "",
+                     "timestamp": 0,
+                     "difficulty": 17
+                  },
+                  {
+                    "index": 1,
+                    "prev_hash": "33008604c0ff745f58985dffe533fcbbb218201f17e17a001d7423353416cb06",
+                    "merkle_tree_root": "eb2aff6aba92815a4daf368873c42d45cc6de2f7",
+                    "timestamp": 1569949002570
+                  }
+                ]
+            }    
+
+
+
+## blockchain/size [GET /blockchain/size]
+
+This retrieves the total length of the blockchain
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "status":"success",
+              "result":
+                {
+                  "size":1447
+                }
+            }

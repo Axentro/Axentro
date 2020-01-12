@@ -9,6 +9,7 @@
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
+require "../virtual_file_system/file_storage"
 
 module ::Sushi::Core
   class ApiDocumentationHandler
@@ -20,7 +21,7 @@ module ::Sushi::Core
     def call(context)
       if context.request.path.try &.starts_with?(@path)
         context.response.headers["Content-Type"] = "text/html"
-        context.response << File.read(@filename)
+        context.response << FileStorage.get(@filename).gets_to_end
       else
         call_next(context)
       end

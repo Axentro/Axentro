@@ -30,6 +30,7 @@ require "humanhash"
 require "crystal-argon2"
 require "crystal-ecdsa"
 require "i18n"
+require "baked_file_system"
 
 require "./common"
 require "./core/modules"

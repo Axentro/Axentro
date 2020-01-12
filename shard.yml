@@ -34,12 +34,16 @@ dependencies:
     github: sushichain/crystal-ecdsa
   i18n:
     github: TechMagister/i18n.cr
-  spinach:
-    github: sushichain/spinach
+  baked_file_system:
+    github: schovi/baked_file_system   
+
 
 development_dependencies:
+  spinach:
+    github: sushichain/spinach
   ameba:
     github: veelenga/ameba
+
 
 crystal: 0.32.1
 

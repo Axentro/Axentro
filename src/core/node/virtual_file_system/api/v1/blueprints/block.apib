@@ -1,0 +1,101 @@
+## Group Block
+
+# /block/{index}
+
+## GET
+
+This retrieves the block specified by the index as Json
+
++ Parameters
+
+    + index (number) - The block index
+    
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "status": "success",
+              "result": 
+                {
+                  "index": 0,
+                  "transactions": [],
+                  "nonce": 0,
+                  "prev_hash": "genesis",
+                  "merkle_tree_root": "",
+                  "timestamp": 0,
+                  "difficulty": 17,
+                  "kind": "SLOW",
+                  "address": "genesis"
+                }
+            }
+
+        
+## block/header [GET /block/{index}/header]
+
+This retrieves the block header at the specified index as Json
+
++ Parameters
+
+    + index (number) - The block index
+    
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "status": "success",
+              "result": 
+                {
+                  "index": 0,
+                  "nonce": 0,
+                  "prev_hash": "genesis",
+                  "merkle_tree_root": "",
+                  "timestamp": 0,
+                  "difficulty": 17
+                }
+            }
+
+
+## block/transactions [GET /block/{index}/transactions]
+
+This retrieves the transactions for the block specified at index as Json
+
++ Parameters
+
+    + index (number) - The block index
+    
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "status": "success",
+              "result": 
+                [
+                  {
+                    "id": "09b05cb672911ba03a1e3372a58348e61a0b267efdc8ee89df59978037d19523",
+                    "action": "head",
+                    "senders": [],
+                    "recipients": 
+                      [
+                        {
+                          "address": "VDBjMjI1ZmE0MmQzYTAwYWJlZGNjMTFkNzQ5YjMxZGFkNGVhYjU2N2YwNzFmYjFk",
+                          "amount": 299904068
+                        },
+                        {
+                          "address": "VDA2NjU5N2JlNDA3ZDk5Nzg4MGY2NjY5YjhhOTUwZTE2M2VmNjM5OWM2M2EyMWQz",
+                          "amount": 899712202
+                        }
+                      ],
+                    "message": "0",
+                    "token": "SUSHI",
+                    "prev_hash": "0",
+                    "timestamp": 1569910322451,
+                    "scaled": 1,
+                    "kind": "SLOW"
+                  }
+                ]
+            }
+
+            

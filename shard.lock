@@ -4,6 +4,10 @@ shards:
     github: veelenga/ameba
     version: 0.11.0
 
+  baked_file_system:
+    github: schovi/baked_file_system
+    version: 0.9.8
+
   crystal-argon2:
     github: sushichain/crystal-argon2
     version: 0.1.1
