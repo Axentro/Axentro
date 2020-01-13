@@ -325,7 +325,7 @@ RULE
           status:      domain[:status],
           price:       scale_decimal(domain[:price]))
       end
-      {address: address, domains: domain_results.to_json}
+      {address: address, domains: domain_results}
     end
 
     def scale_decimal(domain : Domain)
