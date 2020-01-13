@@ -5,8 +5,8 @@ about: Not sure how something works or how to implement some functionality? Ask 
 ---
 
 ## Checklist
-- [ ] You've read our document on github wiki
-- [ ] You've confirmed there is not a same question
+- [ ] You've read our documentation at https://guide.sushichain.io
+- [ ] You've confirmed that this is not a duplicate question
 
 ## Question
 <!-- Ask it! -->

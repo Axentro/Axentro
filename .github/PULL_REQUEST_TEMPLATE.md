@@ -8,5 +8,5 @@
 -->
 
 ## Checklist
-- [ ] Every CI jobs finished successfully
-<!-- You can add other check lists if you have -->
+- [ ] All CI jobs finished successfully
+<!-- You can add other check lists if required -->

@@ -5,8 +5,8 @@ about: If something isn't working as expected
 ---
 
 ## Checklist
-- [ ] You've tried latest version of SushiChain
-- [ ] You've confirmed there is not a same report
+- [ ] You've tried with the latest version of SushiChain
+- [ ] You've confirmed this issue is not a duplicate
 
 ## Description
 <!-- Description of the bug -->
@@ -15,7 +15,7 @@ about: If something isn't working as expected
 <!-- Running environment -->
 - Using docker: (yes or no)
 - Crystal version: x.x.x
-- Where do you connect to? (http://testnet.sushichain.io:3000, http://localhost:300 or so on)
+- Which environment? (http://testnet.sushichain.io:3000, http://localhost:300 or so on)
 
 ## Command Lines and results
 <!-- Paste specific command lines and their results here -->
