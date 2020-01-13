@@ -492,7 +492,7 @@ describe RESTController do
         address = transaction_factory.sender_wallet.address
         exec_rest_api(block_factory.rest.__v1_scars_lookup(context("/api/v1/scars/lookup/#{address}"), {address: address})) do |result|
           result["status"].to_s.should eq("success")
-          result_domains = Array(DomainResult).from_json(result["result"]["domains"].to_s)
+          result_domains = Array(DomainResult).from_json(result["result"]["domains"].to_json)
           result_domains.first.domain_name.should eq(domains[0])
           result_domains[1].domain_name.should eq(domains[1])
         end
