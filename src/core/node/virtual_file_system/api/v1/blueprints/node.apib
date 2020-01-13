@@ -1,0 +1,81 @@
+## Group Node
+
+# /node
+
+## GET
+
+Show information about the current node
+    
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "status": "success",
+              "result": 
+                {
+                  "id": "0bd4b62baa97bf1ac608ae311d41c0b6",
+                  "host": "testnet.sushichain.io",
+                  "port": 3000,
+                  "ssl": false,
+                  "type": "testnet",
+                  "is_private": false
+                }
+            }
+
+        
+## node/id [GET /node/{id}]
+
+Show information about the specified node id
+
++ Parameters
+
+    + id (number) - The node id
+    
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "status": "success",
+              "result": 
+                {
+                  "id": "0bd4b62baa97bf1ac608ae311d41c0b6",
+                  "host": "testnet.sushichain.io",
+                  "port": 3000,
+                  "ssl": false,
+                  "type": "testnet",
+                  "is_private": false
+                }
+            }
+
+
+## nodes [GET /nodes]
+
+Show information about the connecting nodes
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "status": "success",
+              "result": 
+                {
+                  "successor_list": [],
+                  "predecessor": null,
+                  "private_nodes": 
+                    [
+                      {
+                        "id": "faec239b8eebf72ff73783eaf72762bd",
+                        "host": "",
+                        "port": -1,
+                        "ssl": false,
+                        "type": "testnet",
+                        "is_private": true
+                      }
+                    ]
+                }
+            }
+
+            
