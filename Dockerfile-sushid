@@ -1,4 +1,4 @@
-FROM crystallang/crystal:0.31.1
+FROM crystallang/crystal:0.32.1
 
 RUN mkdir -p /usr/local/SushiChain
 RUN mkdir -p /usr/local/bin
@@ -17,8 +17,6 @@ RUN ln -s /usr/local/SushiChain/bin/sushim /usr/local/bin/sushim
 RUN ln -s /usr/local/SushiChain/bin/sushi  /usr/local/bin/sushi
 
 RUN mkdir -p /usr/local/sc
-
-RUN cp -a /usr/local/SushiChain/api /usr/local/sc
 
 WORKDIR /usr/local/sc
 
