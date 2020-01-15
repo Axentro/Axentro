@@ -252,8 +252,7 @@ module ::Sushi::Interface::Sushi
 
       puts "   %s" % ["Domain"]
 
-      domains = JSON.parse(json["domains"].as_s)
-      domains.as_a.each do |domain|
+      json["domains"].as_a.each do |domain|
         puts " - %s" % [domain["domain_name"].as_s]
       end
 
