@@ -17,9 +17,10 @@ include Units::Utils
 include Sushi::Core::Controllers
 include Sushi::Core::Keys
 
+
 describe RESTController do
   describe "__v1_blockchain" do
-    it "should return the full blockchain" do
+    it "should return the full blockchain when full chain fits into memory" do
       with_factory do |block_factory, _|
         block_factory.add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_blockchain(context("/api/v1/blockchain"), no_params)) do |result|
@@ -28,10 +29,20 @@ describe RESTController do
         end
       end
     end
+    it "should return the full blockchain when full chain is bigger than memory" do
+      with_factory do |block_factory, _|
+        blocks_to_add = block_factory.blocks_to_hold + 8
+        block_factory.add_slow_blocks(blocks_to_add)
+        exec_rest_api(block_factory.rest.__v1_blockchain(context("/api/v1/blockchain"), no_params)) do |result|
+          result["status"].to_s.should eq("success")
+          Array(SlowBlock).from_json(result["result"].to_json).size.should eq(blocks_to_add + 1)
+        end
+      end
+    end
   end
 
   describe "__v1_blockchain_header" do
-    it "should return the only blockchain headers" do
+    it "should return the only blockchain headers when full chain fits into memory" do
       with_factory do |block_factory, _|
         block_factory.add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_blockchain_header(context("/api/v1/blockchain/header"), no_params)) do |result|
@@ -40,15 +51,35 @@ describe RESTController do
         end
       end
     end
+    it "should return the only blockchain headers when full chain is bigger than memory"  do
+      with_factory do |block_factory, _|
+        blocks_to_add = block_factory.blocks_to_hold + 8
+        block_factory.add_slow_blocks(blocks_to_add)
+        exec_rest_api(block_factory.rest.__v1_blockchain_header(context("/api/v1/blockchain/header"), no_params)) do |result|
+          result["status"].to_s.should eq("success")
+          Array(Blockchain::SlowHeader).from_json(result["result"].to_json).size.should eq(blocks_to_add + 1)
+        end
+      end
+    end
   end
 
   describe "__v1_blockchain_size" do
-    it "should return the full blockchain size" do
+    it "should return the full blockchain size when chain fits into memory" do
       with_factory do |block_factory, _|
         block_factory.add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_blockchain_size(context("/api/v1/blockchain/size"), no_params)) do |result|
           result["status"].to_s.should eq("success")
           result["result"]["size"].should eq(3)
+        end
+      end
+    end
+    it "should return the full blockchain size when chain is bigger than memory", focus: true do
+      with_factory do |block_factory, _|
+        blocks_to_add = block_factory.blocks_to_hold + 8
+        block_factory.add_slow_blocks(blocks_to_add)
+        exec_rest_api(block_factory.rest.__v1_blockchain_size(context("/api/v1/blockchain/size"), no_params)) do |result|
+          result["status"].to_s.should eq("success")
+          result["result"]["size"].should eq(blocks_to_add + 1)
         end
       end
     end

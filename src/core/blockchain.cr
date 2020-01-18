@@ -21,9 +21,9 @@ module ::Sushi::Core
 
     SLOW_BLOCKS_PER_HOUR = 3600_i64 / Consensus::POW_TARGET_SPACING_SECS
 
-    SECURITY_LEVEL_PERCENTAGE = 20_i64
+    SECURITY_LEVEL_PERCENTAGE        = 20_i64
     STARTING_BLOCKS_TO_CHECK_ON_SYNC = 50_i64
-    FINAL_BLOCKS_TO_CHECK_ON_SYNC = 50_i64
+    FINAL_BLOCKS_TO_CHECK_ON_SYNC    = 50_i64
 
     alias SlowHeader = NamedTuple(
       index: Int64,
@@ -38,7 +38,7 @@ module ::Sushi::Core
     getter wallet : Wallet
     getter max_miners : Int32
 
-    @blocks_to_hold: Int64
+    @blocks_to_hold : Int64
     @security_level_percentage : Int64
     @node : Node?
     @mining_block : SlowBlock?
@@ -56,7 +56,11 @@ module ::Sushi::Core
 
       hours_to_hold = ENV.has_key?("SC_TESTING") ? 2 : 48
       @blocks_to_hold = (SLOW_BLOCKS_PER_HOUR * hours_to_hold).to_i64
-      end
+    end
+
+    def database
+      @database
+    end
 
     def setup(@node : Node)
       setup_dapps
@@ -184,10 +188,10 @@ module ::Sushi::Core
 
     def valid_block?(block : SlowBlock | FastBlock, skip_transactions : Bool = false, doing_replace : Bool = false) : SlowBlock? | FastBlock?
       case block
-        when SlowBlock
-          return block if block.valid?(self, skip_transactions, doing_replace)
-        when FastBlock
-          return block if block.valid?(self, skip_transactions, doing_replace)
+      when SlowBlock
+        return block if block.valid?(self, skip_transactions, doing_replace)
+      when FastBlock
+        return block if block.valid?(self, skip_transactions, doing_replace)
       end
       nil
     end
@@ -208,7 +212,7 @@ module ::Sushi::Core
     end
 
     def replace_block(block : SlowBlock | FastBlock)
-      target_index = @chain.index {|b| b.index == block.index }
+      target_index = @chain.index { |b| b.index == block.index }
       if target_index
         @chain[target_index] = block
         @database.replace_block(block)
@@ -270,20 +274,20 @@ module ::Sushi::Core
       debug "calling refresh_mining_block in replace_chain"
       refresh_mining_block(block_difficulty(self))
 
-      [slow_result,fast_result].includes?(true)
+      [slow_result, fast_result].includes?(true)
     end
 
     def get_random_block_ids(max_slow_block_id : Int64, max_fast_block_id : Int64)
       the_indexes = [] of Int64
-      number_of_slow_block_ids = ((max_slow_block_id / 2) /  (100_i64 / @security_level_percentage)).to_i64
-      number_of_fast_block_ids = (((max_fast_block_id+1) / 2) /  (100_i64 / @security_level_percentage)).to_i64
-      (1_i64 .. number_of_slow_block_ids).step do
-        randy = Random.new.rand(0_i64 .. max_slow_block_id)
+      number_of_slow_block_ids = ((max_slow_block_id / 2) / (100_i64 / @security_level_percentage)).to_i64
+      number_of_fast_block_ids = (((max_fast_block_id + 1) / 2) / (100_i64 / @security_level_percentage)).to_i64
+      (1_i64..number_of_slow_block_ids).step do
+        randy = Random.new.rand(0_i64..max_slow_block_id)
         randy += 1 if (randy % 2) != 0
         the_indexes << randy
       end
-      (1_i64 .. number_of_fast_block_ids).step do
-        randy = Random.new.rand(0_i64 .. max_fast_block_id)
+      (1_i64..number_of_fast_block_ids).step do
+        randy = Random.new.rand(0_i64..max_fast_block_id)
         randy += 1 if (randy % 2) == 0
         the_indexes << randy
       end
@@ -306,9 +310,9 @@ module ::Sushi::Core
 
     def create_slow_indexes_to_check(incoming_chain)
       the_indexes = [] of Int64
-      return the_indexes  if @security_level_percentage == 100_i64
+      return the_indexes if @security_level_percentage == 100_i64
       if (incoming_chain.size > STARTING_BLOCKS_TO_CHECK_ON_SYNC + FINAL_BLOCKS_TO_CHECK_ON_SYNC) && (incoming_chain.size > (@chain.size / 4))
-        (0_i64..STARTING_BLOCKS_TO_CHECK_ON_SYNC).step(2) { |b | the_indexes << b }
+        (0_i64..STARTING_BLOCKS_TO_CHECK_ON_SYNC).step(2) { |b| the_indexes << b }
         number_of_elements = (incoming_chain.size - (STARTING_BLOCKS_TO_CHECK_ON_SYNC + FINAL_BLOCKS_TO_CHECK_ON_SYNC)) / (100_i64 / @security_level_percentage)
         index_of_last_incoming_block = incoming_chain[-1].index
         starting_random_block = STARTING_BLOCKS_TO_CHECK_ON_SYNC * 2
@@ -316,21 +320,21 @@ module ::Sushi::Core
         debug "starting random block is: #{starting_random_block}"
         debug "final random block is: #{final_random_block}"
         debug "number of elements is: #{number_of_elements}"
-        (0_i64 .. number_of_elements.to_i64).step do
-          randy = Random.new.rand(starting_random_block .. final_random_block)
+        (0_i64..number_of_elements.to_i64).step do
+          randy = Random.new.rand(starting_random_block..final_random_block)
           randy += 1 if (randy % 2) != 0
           the_indexes << randy
         end
-        (final_random_block .. index_of_last_incoming_block).step(2) { |b| the_indexes << b }
+        (final_random_block..index_of_last_incoming_block).step(2) { |b| the_indexes << b }
       end
       the_indexes
     end
 
     def create_fast_indexes_to_check(incoming_chain)
       the_indexes = [] of Int64
-      return the_indexes  if @security_level_percentage == 100_i64
+      return the_indexes if @security_level_percentage == 100_i64
       if (incoming_chain.size > STARTING_BLOCKS_TO_CHECK_ON_SYNC + FINAL_BLOCKS_TO_CHECK_ON_SYNC) && (incoming_chain.size > (@chain.size / 4))
-        (1_i64..STARTING_BLOCKS_TO_CHECK_ON_SYNC).step(2) { |b | the_indexes << b }
+        (1_i64..STARTING_BLOCKS_TO_CHECK_ON_SYNC).step(2) { |b| the_indexes << b }
         number_of_elements = (incoming_chain.size - (STARTING_BLOCKS_TO_CHECK_ON_SYNC + FINAL_BLOCKS_TO_CHECK_ON_SYNC)) / (100_i64 / @security_level_percentage)
         index_of_last_incoming_block = incoming_chain[-1].index
         starting_random_block = (STARTING_BLOCKS_TO_CHECK_ON_SYNC * 2) + 1_i64
@@ -338,12 +342,12 @@ module ::Sushi::Core
         debug "starting random block is: #{starting_random_block}"
         debug "final random block is: #{final_random_block}"
         debug "number of elements is: #{number_of_elements}"
-        (0_i64 .. number_of_elements.to_i64).step do
-          randy = Random.new.rand(starting_random_block .. final_random_block)
+        (0_i64..number_of_elements.to_i64).step do
+          randy = Random.new.rand(starting_random_block..final_random_block)
           randy += 1 if (randy % 2) == 0
           the_indexes << randy
         end
-        (final_random_block .. index_of_last_incoming_block).step(2) { |b| the_indexes << b }
+        (final_random_block..index_of_last_incoming_block).step(2) { |b| the_indexes << b }
       end
       the_indexes
     end
@@ -361,7 +365,7 @@ module ::Sushi::Core
           block.valid?(self)
         end
 
-        target_index = @chain.index {|b| b.index == index }
+        target_index = @chain.index { |b| b.index == index }
         target_index ? (@chain[target_index] = block) : @chain << block
         @database.replace_block(block)
 
@@ -398,7 +402,7 @@ module ::Sushi::Core
           block.valid?(self)
         end
 
-        target_index = @chain.index {|b| b.index == index }
+        target_index = @chain.index { |b| b.index == index }
         target_index ? (@chain[target_index] = block) : @chain << block
         @database.replace_block(block)
 
@@ -502,11 +506,13 @@ module ::Sushi::Core
     end
 
     def headers
+      # TODO - we don't want to load the entire db here - instead use a combination of in memory chain + database query
       chain = @database.get_blocks(0_i64)
       chain.map { |block| block.to_header }
     end
 
     def transactions_for_address(address : String, page : Int32 = 0, page_size : Int32 = 20, actions : Array(String) = [] of String) : Array(Transaction)
+      # TODO - we don't want to load the entire db here - instead use a combination of in memory chain + database query
       # TODO: Change this database request to something more sophisticated that filters out blocks that don't have txns with the address
       chain = @database.get_blocks(0_i64)
       chain
@@ -541,15 +547,15 @@ module ::Sushi::Core
     end
 
     def replace_with_block_from_peer(block : SlowBlock | FastBlock)
-      replace_block(block);
+      replace_block(block)
       debug "replace transactions in indices array that were in the block being replaced with those from the replacement block"
       dapps_clear_record
       debug "cleaning the transactions because of the replacement"
       case block
-        when SlowBlock
-          clean_slow_transactions_used_in_block(block)
-        when FastBlock
-          clean_fast_transactions_used_in_block(block)
+      when SlowBlock
+        clean_slow_transactions_used_in_block(block)
+      when FastBlock
+        clean_fast_transactions_used_in_block(block)
       end
       debug "refreshing mining block after accepting new block from peer"
       refresh_mining_block(block_difficulty(self)) if block.kind == "SLOW"

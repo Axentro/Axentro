@@ -62,6 +62,10 @@ module ::Sushi::Core::DApps
       @blockchain.node
     end
 
+    private def database : Database
+      @blockchain.database
+    end
+
     include Logger
     include Protocol
     include Common::Denomination

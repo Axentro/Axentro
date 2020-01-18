@@ -60,7 +60,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def blockchain_size_impl
-      {size: blockchain.chain.size}
+      {size: database.total_blocks}
     end
 
     def blockchain(json, context, params)

@@ -24,7 +24,7 @@ module ::Sushi::Core
       @db.exec "create table if not exists transactions (#{transaction_table_create_string}, primary key (#{transaction_primary_key_string}))"
       @db.exec "create table if not exists recipients (#{recipient_table_create_string}, primary key (#{recipient_primary_key_string}))"
       @db.exec "create table if not exists senders (#{sender_table_create_string}, primary key (#{sender_primary_key_string}))"
-      @db.exec "PRAGMA synchonous = OFF"
+      @db.exec "PRAGMA synchronous=OFF"
       @db.exec "PRAGMA cache_size=10000"
     end
 
