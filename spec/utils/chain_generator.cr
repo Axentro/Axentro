@@ -17,7 +17,12 @@ module ::Units::Utils::ChainGenerator
   include Sushi::Core::Keys
   include Sushi::Core::Controllers
 
-  def with_factory(developer_fund = nil, &block)
+  enum MemoryKind
+    SINGLE
+    SHARED
+  end
+
+  def with_factory(developer_fund = nil, memory_kind = MemoryKind::SINGLE, &block)
     block_factory = BlockFactory.new(developer_fund)
     yield block_factory, block_factory.transaction_factory
   end
@@ -37,12 +42,10 @@ module ::Units::Utils::ChainGenerator
     property database : Database
     property node : Sushi::Core::Node
 
-    def initialize(developer_fund)
-      test_database = "./test_spec.db"
+    def initialize(developer_fund, memory_kind = MemoryKind::SINGLE)
       @node_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @miner_wallet = Wallet.from_json(Wallet.create(true).to_json)
-      FileUtils.rm_rf test_database
-      @database = Sushi::Core::Database.new(test_database)
+      @database = memory_kind == MemoryKind::SINGLE ? Sushi::Core::Database.in_memory : Sushi::Core::Database.in_shared_memory
       @node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, @database, developer_fund, nil, 512, 512, false)
       @blockchain = @node.blockchain
       # the node setup is run in a spawn so we have to wait until it's finished before running any tests
