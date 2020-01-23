@@ -15,17 +15,31 @@ require "../blockchain/block/*"
 module ::Sushi::Core
   class Database
     getter path : String
+    MEMORY = "%3Amemory%3A"
+    SHARED_MEMORY = "%3Amemory%3A%3Fcache%3Dshared"
 
     @db : DB::Database
 
     def initialize(@path : String)
-      @db = DB.open("sqlite3://#{File.expand_path(path)}")
+      @db = DB.open("sqlite3://#{memory_or_disk(path)}")
       @db.exec "create table if not exists blocks (#{block_table_create_string})"
       @db.exec "create table if not exists transactions (#{transaction_table_create_string}, primary key (#{transaction_primary_key_string}))"
       @db.exec "create table if not exists recipients (#{recipient_table_create_string}, primary key (#{recipient_primary_key_string}))"
       @db.exec "create table if not exists senders (#{sender_table_create_string}, primary key (#{sender_primary_key_string}))"
-      @db.exec "PRAGMA synchonous = OFF"
+      @db.exec "PRAGMA synchronous = OFF"
       @db.exec "PRAGMA cache_size=10000"
+    end
+
+    def self.in_memory
+      self.new(MEMORY)
+    end
+
+    def self.in_shared_memory
+      self.new(SHARED_MEMORY)
+    end
+
+    private def memory_or_disk(value : String) : String
+      value.starts_with?(MEMORY) ? value : File.expand_path(value)
     end
 
     def block_table_create_string : String
