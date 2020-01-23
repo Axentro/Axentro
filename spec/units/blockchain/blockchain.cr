@@ -233,9 +233,9 @@ describe Blockchain do
 
   describe "restore from database" do
     it "should load the whole chain from the database when the chain size is less than the memory allocation" do
-      with_factory(nil, MemoryKind::SHARED) do |block_factory|
+      with_factory do |block_factory|
         block_factory.add_slow_blocks(10)
-        database = Sushi::Core::Database.in_memory
+        database = block_factory.database
         blockchain = Blockchain.new(block_factory.node_wallet, database, nil, nil, 512, true)
         blockchain.setup(block_factory.node)
         # including genesis block total chain size should be 11
@@ -246,7 +246,7 @@ describe Blockchain do
       with_factory do |block_factory|
         blocks_to_add = block_factory.blocks_to_hold + 8
         block_factory.add_slow_blocks(blocks_to_add)
-        database = Sushi::Core::Database.in_memory
+        database = block_factory.database
         blockchain = Blockchain.new(block_factory.node_wallet, database, nil, nil, 512, true)
         blockchain.setup(block_factory.node)
         # including genesis block total chain size should be the number of blocks to hold + 1
