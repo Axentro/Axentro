@@ -274,6 +274,7 @@ module ::Sushi::Core::DApps::User
     @latest_loaded_block_index = 0
 
     def record(chain : Blockchain::Chain)
+      #TODO - replace this with fetch from db
       return if chain.size < @latest_loaded_block_index
 
       chain[@latest_loaded_block_index..-1].each do |block|

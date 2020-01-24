@@ -45,6 +45,9 @@ module ::Sushi::Core::DApps::BuildIn
       true
     end
 
+    # TODO - this could be a view that has all the transactions per block
+    # can keep x amount in mem and when calling the impl check in-mem then go to db if not in mem
+    # record just refreshes the in-mem from the view
     def record(chain : Blockchain::Chain)
       the_chain = @blockchain.database.get_blocks_not_in_list(@indices.flat_map(&.values).uniq)
       the_chain.each do |block|
@@ -56,11 +59,11 @@ module ::Sushi::Core::DApps::BuildIn
       end
     end
 
-    def unrecord(block_id : Int64)
-      @indices.reverse.each do |h|
-        @indices.delete(h) if h.has_value?(block_id)
-      end
-    end
+    # def unrecord(block_id : Int64)
+    #   @indices.reverse.each do |h|
+    #     @indices.delete(h) if h.has_value?(block_id)
+    #   end
+    # end
 
     def clear
       @indices.clear
