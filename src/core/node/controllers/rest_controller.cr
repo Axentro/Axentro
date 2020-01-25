@@ -95,14 +95,16 @@ module ::Sushi::Core::Controllers
     end
 
     def __v1_blockchain(context, params)
-      with_response(context) do
-        @blockchain.blockchain_info.blockchain_impl(false)
+      with_response(context) do |query_params|
+        page, per_page, direction = paginated(query_params)
+        @blockchain.blockchain_info.blockchain_impl(false, page, per_page, direction)
       end
     end
 
     def __v1_blockchain_header(context, params)
-      with_response(context) do
-        @blockchain.blockchain_info.blockchain_impl(true)
+      with_response(context) do |query_params|
+        page, per_page, direction = paginated(query_params)
+        @blockchain.blockchain_info.blockchain_impl(true, page, per_page, direction)
       end
     end
 
@@ -127,9 +129,10 @@ module ::Sushi::Core::Controllers
     end
 
     def __v1_block_index_transactions(context, params)
-      with_response(context) do
+      with_response(context) do |query_params|
         index = params["index"].to_i64
-        @blockchain.blockchain_info.transactions_impl(index)
+        page, per_page, direction = paginated(query_params)
+        @blockchain.blockchain_info.transactions_index_impl(index, page, per_page, direction)
       end
     end
 
@@ -199,7 +202,7 @@ module ::Sushi::Core::Controllers
         actions = query_params["actions"]?.try &.split(",") || [] of String
 
         address = params["address"]
-        @blockchain.blockchain_info.transactions_impl(address, page, page_size, actions)
+        @blockchain.blockchain_info.transactions_address_impl(address, page, page_size, actions)
       end
     end
 
@@ -229,7 +232,7 @@ module ::Sushi::Core::Controllers
 
         domain = params["domain"]
         address = convert_domain_to_address(domain, confirmation)
-        @blockchain.blockchain_info.transactions_impl(address, page, page_size, actions)
+        @blockchain.blockchain_info.transactions_address_impl(address, page, page_size, actions)
       end
     end
 
@@ -341,6 +344,7 @@ module ::Sushi::Core::Controllers
 
     include Router
     include NodeComponents::APIFormat
+    include NodeComponents::APIParams
     include TransactionModels
   end
 end
