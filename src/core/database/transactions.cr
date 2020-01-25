@@ -53,6 +53,22 @@ module ::Sushi::Core::Data::Transactions
       block_index, page, per_page)
   end
 
+  def get_paginated_transactions_for_address(address : String, page : Int32, per_page : Int32, direction : String, actions : Array(String))
+    page = page * per_page
+    actions = actions.map { |a| "'#{a}'" }.join(",")
+    transactions_by_query(
+      "select * from transactions " \
+      "where id in (select transaction_id from senders " \
+      "where address = '#{address}' " \
+      "union select transaction_id from recipients " \
+      "where address = '#{address}') " +
+      (actions.empty? ? "" : "and action in (#{actions}) ") +
+      "and oid not in " \
+      "(select oid from transactions order by block_id #{direction} limit ? ) " \
+      "order by block_id #{direction} limit ?",
+      page, per_page)
+  end
+
   # ------- Helpers -------
   def transactions_by_query(query, *args)
     transactions = [] of Transaction

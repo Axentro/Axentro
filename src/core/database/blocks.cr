@@ -109,6 +109,17 @@ module ::Sushi::Core::Data::Blocks
     block
   end
 
+  def get_block_for_transaction(transaction_id : String) : Block?
+    verbose "Reading block from the database for transaction #{transaction_id}"
+    block : Block? = nil
+    blocks = get_blocks_via_query(
+      "select * from blocks where idx in " \
+      "(select block_id from transactions where id = ?)",
+      transaction_id)
+    block = blocks[0] if blocks.size > 0
+    block
+  end
+
   def get_blocks(index : Int64) : Blockchain::Chain
     verbose "Reading blocks from the database starting at block #{index}"
     get_blocks_via_query("select * from blocks where idx >= ?", index)

@@ -505,12 +505,6 @@ module ::Sushi::Core
       )
     end
 
-    def headers
-      # TODO - we don't want to load the entire db here - instead use a combination of in memory chain + database query
-      chain = @database.get_blocks(0_i64)
-      chain.map { |block| block.to_header }
-    end
-
     def transactions_for_address(address : String, page : Int32 = 0, page_size : Int32 = 20, actions : Array(String) = [] of String) : Array(Transaction)
       # TODO - we don't want to load the entire db here - instead use a combination of in memory chain + database query
       # TODO: Change this database request to something more sophisticated that filters out blocks that don't have txns with the address

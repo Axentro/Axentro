@@ -117,14 +117,14 @@ module ::Sushi::Core::Controllers
     def __v1_block_index(context, params)
       with_response(context) do
         index = params["index"].to_i64
-        @blockchain.blockchain_info.block_impl(false, index)
+        @blockchain.blockchain_info.block_index_impl(false, index)
       end
     end
 
     def __v1_block_index_header(context, params)
       with_response(context) do
         index = params["index"].to_i64
-        @blockchain.blockchain_info.block_impl(true, index)
+        @blockchain.blockchain_info.block_index_impl(true, index)
       end
     end
 
@@ -146,14 +146,14 @@ module ::Sushi::Core::Controllers
     def __v1_transaction_id_block(context, params)
       with_response(context) do
         id = params["id"]
-        @blockchain.blockchain_info.block_impl(false, id)
+        @blockchain.blockchain_info.block_transaction_impl(false, id)
       end
     end
 
     def __v1_transaction_id_block_header(context, params)
       with_response(context) do
         id = params["id"]
-        @blockchain.blockchain_info.block_impl(true, id)
+        @blockchain.blockchain_info.block_transaction_impl(true, id)
       end
     end
 
@@ -197,12 +197,11 @@ module ::Sushi::Core::Controllers
 
     def __v1_address_transactions(context, params)
       with_response(context) do |query_params|
-        page = query_params["page"]?.try &.to_i || 0
-        page_size = query_params["page_size"]?.try &.to_i || 20
+        page, per_page, direction = paginated(query_params)
         actions = query_params["actions"]?.try &.split(",") || [] of String
-
         address = params["address"]
-        @blockchain.blockchain_info.transactions_address_impl(address, page, page_size, actions)
+
+        @blockchain.blockchain_info.transactions_address_impl(address, page, per_page, direction, actions)
       end
     end
 
@@ -225,14 +224,13 @@ module ::Sushi::Core::Controllers
 
     def __v1_domain_transactions(context, params)
       with_response(context) do |query_params|
-        page = query_params["page"]?.try &.to_i || 0
-        page_size = query_params["page_size"]?.try &.to_i || 20
+        page, per_page, direction = paginated(query_params)
         actions = query_params["actions"]?.try &.split(",") || [] of String
         confirmation = query_params["confirmation"]?.try &.to_i || 1
 
         domain = params["domain"]
         address = convert_domain_to_address(domain, confirmation)
-        @blockchain.blockchain_info.transactions_address_impl(address, page, page_size, actions)
+        @blockchain.blockchain_info.transactions_address_impl(address, page, per_page, direction, actions)
       end
     end
 
