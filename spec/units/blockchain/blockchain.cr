@@ -156,7 +156,7 @@ describe Blockchain do
         block_factory.add_slow_blocks(2)
         blockchain.pending_slow_transactions.size.should eq(0)
         blockchain.embedded_slow_transactions.size.should eq(0)
-        blockchain.rejects.find(transaction.id).should eq("the transaction #{transaction.id} is already included in 2")
+        blockchain.rejects.find(transaction.id).should eq("the transaction #{transaction.id} is already included in block: 2")
       end
     end
   end

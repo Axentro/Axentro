@@ -69,6 +69,16 @@ module ::Sushi::Core::Data::Transactions
       page, per_page)
   end
 
+  def get_block_index_for_transaction(transaction_id : String) : Int64?
+    idx : Int64? = nil
+    @db.query("select block_id from transactions where id = ?", transaction_id) do |rows|
+      rows.each do
+        idx = rows.read(Int64 | Nil)
+      end
+    end
+    idx
+  end
+
   # ------- Helpers -------
   def transactions_by_query(query, *args)
     transactions = [] of Transaction

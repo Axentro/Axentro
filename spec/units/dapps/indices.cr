@@ -42,43 +42,48 @@ describe Indices do
         indices.get("non-existing-transaction-id").should be_nil
       end
     end
-  end
+    it "should perform #transaction_actions" do
+      with_factory do |block_factory, _|
+        indices = Indices.new(block_factory.add_slow_block.blockchain)
+        indices.transaction_actions.size.should eq(0)
+      end
+    end
+    it "should perform #transaction_related?" do
+      with_factory do |block_factory, _|
+        indices = Indices.new(block_factory.add_slow_block.blockchain)
+        indices.transaction_related?("action").should be_true
+      end
+    end
 
-  it "should perform #transaction_actions" do
-    with_factory do |block_factory, _|
-      indices = Indices.new(block_factory.add_slow_block.blockchain)
-      indices.transaction_actions.size.should eq(0)
-    end
-  end
-  it "should perform #transaction_related?" do
-    with_factory do |block_factory, _|
-      indices = Indices.new(block_factory.add_slow_block.blockchain)
-      indices.transaction_related?("action").should be_true
-    end
-  end
-  it "should perform #valid_transaction?" do
-    with_factory do |block_factory, _|
-      chain = block_factory.add_slow_blocks(2).chain
-      indices = Indices.new(block_factory.blockchain)
+    describe("valid_transaction") do
+      it "should be valid if not in chain already or in current block" do
+        with_factory do |block_factory, transaction_factory|
+          indices = Indices.new(block_factory.blockchain)
+          transaction = transaction_factory.make_send(200000000_i64)
 
-      indices.valid_transaction?(chain.last.transactions.first, chain.last.transactions[1..-1]).should be_true
-    end
-  end
-  it "should perform #record" do
-    with_factory do |block_factory, _|
-      chain = block_factory.add_slow_blocks(2).chain
-      indices = Indices.new(block_factory.blockchain)
-      indices.record(chain)
-      indices.@indices.count { |i| !i.empty? }.should eq(2)
-    end
-  end
-  it "should perform #clear" do
-    with_factory do |block_factory, _|
-      chain = block_factory.add_slow_blocks(2).chain
-      indices = Indices.new(block_factory.blockchain)
-      indices.record(chain)
-      indices.clear
-      indices.@indices.size.should eq(0)
+          indices.valid_transaction?(transaction, [] of Transaction).should be_true
+        end
+      end
+      it "should not be valid if already in the chain" do
+        with_factory do |block_factory, _|
+          indices = Indices.new(block_factory.blockchain)
+          transaction = chain.last.transactions.first
+
+          expect_raises(Exception, "the transaction #{transaction.id} is already included in block: 4") do
+            indices.valid_transaction?(transaction, [] of Transaction)
+          end
+        end
+      end
+      it "should not be valid if in the current block" do
+        with_factory do |block_factory, transaction_factory|
+          indices = Indices.new(block_factory.blockchain)
+          transaction = transaction_factory.make_send(200000000_i64)
+
+          expect_raises(Exception, "the transaction #{transaction.id} already exists in the same block") do
+            indices.valid_transaction?(transaction, [transaction])
+          end
+        end
+      end
     end
   end
 
