@@ -94,7 +94,8 @@ describe BlockchainInfo do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq(block_factory.blockchain.headers.to_json)
+            expected_headers = block_factory.database.get_paginated_blocks(0, 50, "asc").map(&.to_header)
+            result.should eq(expected_headers.to_json)
           end
         end
       end
@@ -104,7 +105,7 @@ describe BlockchainInfo do
       it "should return transactions for the specified block index" do
         with_factory do |block_factory, _|
           block_factory.add_slow_blocks(10)
-          payload = {call: "transactions", index: 1}.to_json
+          payload = {call: "transactions", index: 2}.to_json
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
@@ -121,20 +122,8 @@ describe BlockchainInfo do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            transactions_for_the_address = block_factory.chain.reverse.flat_map { |blk| blk.transactions }.select { |txn| txn.recipients.map { |r| r["address"] }.includes?(address) }.first(20).to_json
+            transactions_for_the_address = block_factory.chain.flat_map { |blk| blk.transactions }.select { |txn| txn.recipients.map { |r| r["address"] }.includes?(address) }.to_json
             result.should eq(transactions_for_the_address)
-          end
-        end
-      end
-
-      it "should raise an error: invalid index" do
-        with_factory do |block_factory, _|
-          block_factory.add_slow_blocks(10)
-          payload = {call: "transactions", index: 99}.to_json
-          json = JSON.parse(payload)
-
-          expect_raises(Exception, "invalid index 99 (blockchain latest index is 20)") do
-            block_factory.rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), {} of String => String)
           end
         end
       end
@@ -164,11 +153,11 @@ describe BlockchainInfo do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            target_index = 2
-            unless expected_header = block_factory.blockchain.headers.find{|header| header[:index] == target_index}
-              fail "could not find header for block: #{target_index} in chain"
+            index = 2_i64
+            unless expected_header = block_factory.database.get_block(index)
+              fail "no block found for block index #{index}"
             end
-            result.should eq(expected_header.to_json)
+            result.should eq(expected_header.to_header.to_json)
           end
         end
       end
@@ -196,10 +185,10 @@ describe BlockchainInfo do
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
             block_index = block_factory.chain.select { |blk| blk.transactions.map { |txn| txn.id }.includes?(transaction_id) }.first.index # ameba:disable Performance/FirstLastAfterFilter
-            unless expected_block_header = block_factory.blockchain.headers.find{|header| header[:index] == block_index}
-              fail "could not find header for block: #{block_index} in chain"
+            unless expected_block_header = block_factory.database.get_block_for_transaction(transaction_id)
+              fail "no block found for transaction id #{transaction_id}"
             end
-            result.should eq(expected_block_header.to_json)
+            result.should eq(expected_block_header.to_header.to_json)
           end
         end
       end
@@ -210,7 +199,7 @@ describe BlockchainInfo do
           payload = {call: "block", index: 99, header: false}.to_json
           json = JSON.parse(payload)
 
-          expect_raises(Exception, "invalid index 99 (blockchain latest index is 20)") do
+          expect_raises(Exception, "failed to find a block for the index: 99") do
             block_factory.rpc.exec_internal_post(json, MockContext.new.unsafe_as(HTTP::Server::Context), {} of String => String)
           end
         end

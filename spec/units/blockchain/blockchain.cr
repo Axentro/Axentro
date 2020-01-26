@@ -311,17 +311,6 @@ describe Blockchain do
     end
   end
 
-  describe "headers" do
-    it "should return the headers" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3).add_fast_blocks(4)
-        blockchain = block_factory.blockchain
-        header_indexes = blockchain.headers.map(&.["index"])
-        header_indexes.should eq([0, 1, 2, 3, 4, 5, 6, 7])
-      end
-    end
-  end
-
   describe "transactions_for_address" do
     it "should return all transactions for address" do
       with_factory do |block_factory, transaction_factory|

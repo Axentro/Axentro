@@ -111,7 +111,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def transactions(json, context, params)
-      page, per_page, direction = 0, 10, 0
+      page, per_page, direction = 0, 50, 0
       context.response.print api_success(transactions_impl(json["index"]?, json["address"]?, page, per_page, direction))
       context
     end
@@ -131,7 +131,6 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def transactions_address_impl(address : String, page : Int32, per_page : Int32, direction : Int32, actions : Array(String) = [] of String)
-      # blockchain.transactions_for_address(address, page, page_size, actions)
       database.get_paginated_transactions_for_address(address, page, per_page, Direction.new(direction).to_s, actions)
     end
 
