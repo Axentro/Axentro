@@ -69,6 +69,29 @@ module ::Sushi::Core::Data::Transactions
       page, per_page)
   end
 
+  def get_paginated_tokens(page : Int32, per_page : Int32, direction : String)
+    res = [] of String
+    @db.query(
+      "select distinct(token) from transactions " \
+      "where oid not in " \
+      "(select oid from transactions order by token #{direction} limit ?) " \
+      "order by token #{direction} limit ?",
+      page, per_page) do |rows|
+        rows.each { res << rows.read(String) }
+      end
+      res
+  end
+
+  def token_exists?(token) : Bool
+    res = 0
+    @db.query("select count(distinct token) from transactions where token = ?", token) do |rows|
+      rows.each do
+        res = rows.read(Int32)
+      end
+    end
+    res != 0
+  end
+
   def get_block_index_for_transaction(transaction_id : String) : Int64?
     idx : Int64? = nil
     @db.query("select block_id from transactions where id = ?", transaction_id) do |rows|

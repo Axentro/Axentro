@@ -129,6 +129,7 @@ describe Token do
         chain = block_factory.add_slow_block([transaction1]).add_slow_blocks(10).chain
         token = Token.new(block_factory.blockchain)
         token.record(chain)
+
         expect_raises(Exception, "the token KINGS is already created") do
           token.valid_transaction?(transaction2, [] of Transaction)
         end
@@ -184,22 +185,14 @@ describe Token do
     end
   end
 
-  it "should #record a chain" do
-    with_factory do |block_factory, _|
-      chain = block_factory.add_slow_blocks(10).chain
+  it "#record create any new tokens" do
+    with_factory do |block_factory, transaction_factory|
+      token_name = "NEW"
+      transaction = transaction_factory.make_create_token(token_name, 10_i64)
+      chain = block_factory.add_slow_blocks(10).add_slow_block([transaction]).chain
       token = Token.new(block_factory.blockchain)
-      token.record(chain).size.should eq(11)
-    end
-  end
-
-  it "should #clear correctly" do
-    with_factory do |block_factory, _|
-      chain = block_factory.add_slow_blocks(10).chain
-      token = Token.new(block_factory.blockchain)
-      token.record(chain).size.should eq(11)
-      token.clear
-      token.@recorded_indices.size.should eq(0)
-      token.@tokens.should eq(["SUSHI"])
+      token.record(chain)
+      block_factory.database.token_exists?(token_name).should be_true
     end
   end
 

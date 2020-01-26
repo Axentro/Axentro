@@ -50,7 +50,7 @@ module ::Sushi::Core::DApps::BuildIn
 
       raise "invalid token name: #{token}" unless valid_token_name?(token)
 
-      raise "the token #{token} is already created" if @tokens.includes?(token)
+      raise "the token #{token} is already created" if database.token_exists?(token)
 
       prev_transactions.each do |prev_transaction|
         raise "the token #{token} is already created" if prev_transaction.token == token
@@ -77,8 +77,6 @@ RULE
       Token.valid_token_name?(token)
     end
 
-    # TODO - this could be a view that lists all the tokens
-    # always get it from the view and paginate
     def record(chain : Blockchain::Chain)
       the_chain = @blockchain.database.get_blocks_not_in_list(@recorded_indices)
       the_chain.each do |block|
@@ -103,8 +101,7 @@ RULE
     def clear
       @tokens.clear
       @tokens << "SUSHI"
-
-      @recorded_indices = [] of Int64
+      @recorded_indices.clear
     end
 
     def define_rpc?(call, json, context, params) : HTTP::Server::Context?
@@ -117,12 +114,13 @@ RULE
     end
 
     def list(json, context, params)
-      context.response.print api_success(tokens_list_impl)
+      page, per_page, direction = 0, 50, 0
+      context.response.print api_success(tokens_list_impl(page, per_page, direction))
       context
     end
 
-    def tokens_list_impl
-      @tokens
+    def tokens_list_impl(page, per_page, direction)
+      (["SUSHI"] + database.get_paginated_tokens(page, per_page, Direction.new(direction).to_s)).to_set
     end
 
     def self.fee(action : String) : Int64

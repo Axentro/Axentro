@@ -254,11 +254,8 @@ module ::Sushi::Core
       debug "sending #{block.kind} block to DB with timestamp of #{block.timestamp}"
       @database.push_block(block)
       @chain.sort_by! { |blk| blk.index }
-      trim_chain_in_memory
-
-      debug "in blockchain._push_block, before dapps_record"
       dapps_record
-      debug "after dapps record, before clean transactions"
+      trim_chain_in_memory
     end
 
     def replace_chain(_slow_subchain : Chain?, _fast_subchain : Chain?) : Bool
@@ -385,6 +382,7 @@ module ::Sushi::Core
             debug "gonna delete at index #{i}"
             @chain.delete_at(i) if @chain[i].index >= index
           }
+          dapps_clear_record
         end
         break
       end
@@ -422,7 +420,7 @@ module ::Sushi::Core
             debug "gonna delete at index #{i}"
             @chain.delete_at(i) if @chain[i].index >= index
           }
-          # jjf @chain.each_index { |i| @chain.delete_at(i) if @chain[i].index >= index }
+         dapps_clear_record
         end
         break
       end

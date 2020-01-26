@@ -277,8 +277,9 @@ module ::Sushi::Core::Controllers
     end
 
     def __v1_tokens(context, params)
-      with_response(context) do
-        @blockchain.token.tokens_list_impl
+      with_response(context) do |query_params|
+        page, per_page, direction = paginated(query_params)
+        @blockchain.token.tokens_list_impl(page, per_page, direction)
       end
     end
 
