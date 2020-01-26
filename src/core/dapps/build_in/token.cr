@@ -77,7 +77,7 @@ RULE
       Token.valid_token_name?(token)
     end
 
-    # TODO - this could be a view that lists all the tokens 
+    # TODO - this could be a view that lists all the tokens
     # always get it from the view and paginate
     def record(chain : Blockchain::Chain)
       the_chain = @blockchain.database.get_blocks_not_in_list(@recorded_indices)

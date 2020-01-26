@@ -184,7 +184,6 @@ describe BlockchainInfo do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            block_index = block_factory.chain.select { |blk| blk.transactions.map { |txn| txn.id }.includes?(transaction_id) }.first.index # ameba:disable Performance/FirstLastAfterFilter
             unless expected_block_header = block_factory.database.get_block_for_transaction(transaction_id)
               fail "no block found for transaction id #{transaction_id}"
             end

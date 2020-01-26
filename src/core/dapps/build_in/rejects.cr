@@ -41,7 +41,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     # TODO - Store rejects in the db and only keep latest 10,000
-    # record should load the 10k into mem and trim the db  
+    # record should load the 10k into mem and trim the db
     def record(chain : Blockchain::Chain)
     end
 

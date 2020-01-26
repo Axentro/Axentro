@@ -13,9 +13,7 @@ require "../blockchain/*"
 require "../blockchain/block/*"
 
 module ::Sushi::Core
-    
   class Views
-    def initialize(@db : DB::Database) ; end
+    def initialize(@db : DB::Database); end
   end
-    
 end

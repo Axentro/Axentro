@@ -332,8 +332,8 @@ describe RESTController do
         address = transaction_factory.sender_wallet.address
         transaction = transaction_factory.make_send(100_i64)
         block_factory.add_slow_block([transaction]).add_slow_blocks(2)
-        exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/#{address}/transactions?actions=send"), {address: address, actions: "send"})) do |result|  
-        result["status"].to_s.should eq("success")
+        exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/#{address}/transactions?actions=send"), {address: address, actions: "send"})) do |result|
+          result["status"].to_s.should eq("success")
           transactions = Array(Transaction).from_json(result["result"].to_json)
           transactions.map { |txn| txn.action }.uniq.should eq(["send"])
         end
