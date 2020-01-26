@@ -50,7 +50,7 @@ module ::Units::Utils::ChainGenerator
       @blockchain = @node.blockchain
       # the node setup is run in a spawn so we have to wait until it's finished before running any tests
       while @node.@phase != Sushi::Core::Node::SetupPhase::DONE
-        sleep 0.1
+        sleep 0.000001
       end
       @miner = {context: {address: miner_wallet.address, nonces: [] of UInt64}, socket: MockWebSocket.new, mid: "535061bddb0549f691c8b9c012a55ee2"}
       @transaction_factory = TransactionFactory.new(@node_wallet)
