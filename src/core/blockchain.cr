@@ -67,8 +67,10 @@ module ::Sushi::Core
 
       restore_from_database(@database)
 
-      spawn process_fast_transactions
-      spawn leadership_contest
+      unless node.is_private_node?
+        spawn process_fast_transactions
+        spawn leadership_contest
+      end
     end
 
     def database

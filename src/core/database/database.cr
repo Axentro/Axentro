@@ -22,7 +22,7 @@ module ::Sushi::Core
     @db : DB::Database
 
     def initialize(@path : String)
-      @db = DB.open("sqlite3://#{File.expand_path(path)}")
+      @db = DB.open("sqlite3://#{memory_or_disk(path)}")
       @db.exec "create table if not exists blocks (#{block_table_create_string})"
       @db.exec "create table if not exists transactions (#{transaction_table_create_string}, primary key (#{transaction_primary_key_string}))"
       @db.exec "create table if not exists recipients (#{recipient_table_create_string}, primary key (#{recipient_primary_key_string}))"

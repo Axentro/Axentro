@@ -70,9 +70,7 @@ describe Blockchain do
     it "should return true and replace slow chain" do
       with_factory do |block_factory|
         slow_sub_chain = block_factory.add_slow_blocks(10).chain
-        test_database = "./test_spec2.db"
-        FileUtils.rm_rf test_database
-        database = Sushi::Core::Database.new(test_database)
+        database = Sushi::Core::Database.in_memory
         blockchain = Blockchain.new(block_factory.node_wallet, database, nil, nil, 512, true)
         blockchain.setup(block_factory.node)
 
@@ -90,9 +88,7 @@ describe Blockchain do
         slow_block_1 = chain[2].as(SlowBlock)
         slow_block_2 = chain[4].as(SlowBlock)
 
-        test_database = "./test_spec2.db"
-        FileUtils.rm_rf test_database
-        database = Sushi::Core::Database.new(test_database)
+        database = Sushi::Core::Database.in_memory
         blockchain = Blockchain.new(block_factory.node_wallet, database, nil, nil, 512, true)
         blockchain.setup(block_factory.node)
         blockchain.push_slow_block(slow_block_1)
@@ -111,9 +107,7 @@ describe Blockchain do
         slow_block_1 = chain[2].as(SlowBlock)
         slow_sub_chain = chain.select(&.is_slow_block?)
 
-        test_database = "./test_spec2.db"
-        FileUtils.rm_rf test_database
-        database = Sushi::Core::Database.new(test_database)
+        database = Sushi::Core::Database.in_memory
         blockchain = Blockchain.new(block_factory.node_wallet, database, nil, nil, 512, true)
         blockchain.setup(block_factory.node)
         blockchain.push_slow_block(slow_block_1)
@@ -241,8 +235,7 @@ describe Blockchain do
     it "should load the whole chain from the database when the chain size is less than the memory allocation" do
       with_factory do |block_factory|
         block_factory.add_slow_blocks(10)
-        test_database = "./test_spec.db"
-        database = Sushi::Core::Database.new(test_database)
+        database = block_factory.database
         blockchain = Blockchain.new(block_factory.node_wallet, database, nil, nil, 512, true)
         blockchain.setup(block_factory.node)
         # including genesis block total chain size should be 11
@@ -253,8 +246,7 @@ describe Blockchain do
       with_factory do |block_factory|
         blocks_to_add = block_factory.blocks_to_hold + 8
         block_factory.add_slow_blocks(blocks_to_add)
-        test_database = "./test_spec.db"
-        database = Sushi::Core::Database.new(test_database)
+        database = block_factory.database
         blockchain = Blockchain.new(block_factory.node_wallet, database, nil, nil, 512, true)
         blockchain.setup(block_factory.node)
         # including genesis block total chain size should be the number of blocks to hold + 1
