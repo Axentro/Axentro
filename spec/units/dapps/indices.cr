@@ -67,6 +67,7 @@ describe Indices do
       it "should not be valid if already in the chain" do
         with_factory do |block_factory, _|
           indices = Indices.new(block_factory.blockchain)
+          chain = block_factory.add_slow_blocks(2).chain
           transaction = chain.last.transactions.first
 
           expect_raises(Exception, "the transaction #{transaction.id} is already included in block: 4") do
