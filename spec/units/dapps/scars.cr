@@ -568,8 +568,9 @@ describe Scars do
           chain = block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform("domain.sc", 0_i64)]).add_slow_blocks(10).chain
           scars = Scars.new(block_factory.blockchain)
           scars.record(chain)
-          expected = [{"domain.sc" => {domain_name: "domain.sc", address: transaction_factory.sender_wallet.address, status: 0, price: 0_i64}}]
-          scars.@domains_internal.reject!(&.empty?).should eq(expected)
+          expected = [{"domain.sc" => {domain_name: "domain.sc", address: transaction_factory.sender_wallet.address, status: Status::ACQUIRED, price: 0_i64}}]
+          # scars.@domains_internal.reject!(&.empty?).should eq(expected)
+          fail "fix me"
         end
       end
     end
@@ -580,10 +581,12 @@ describe Scars do
           chain = block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform("domain.sc", 0_i64)]).add_slow_blocks(10).chain
           scars = Scars.new(block_factory.blockchain)
           scars.record(chain)
-          expected = [{"domain.sc" => {domain_name: "domain.sc", address: transaction_factory.sender_wallet.address, status: 0, price: 0_i64}}]
-          scars.@domains_internal.reject!(&.empty?).should eq(expected)
+          expected = [{"domain.sc" => {domain_name: "domain.sc", address: transaction_factory.sender_wallet.address, status: Status::ACQUIRED, price: 0_i64}}]
+          # scars.@domains_internal.reject!(&.empty?).should eq(expected)
+          fail "fix me"
           scars.clear
-          scars.@domains_internal.size.should eq(0)
+          # scars.@domains_internal.size.should eq(0)
+          fail "fix me"
         end
       end
     end

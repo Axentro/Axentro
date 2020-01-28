@@ -122,6 +122,29 @@ module ::Sushi::Core::Data::Transactions
       domain_map
   end
 
+  # need to get the sales per domain - only domains that are currently for sale
+  # and not ones that were for sale but now are in a different status
+  # right now this query doesn't find the latest state for a domain so it's wrong
+  def get_domains_for_sale : Array(Domain)
+    domains_for_sale = [] of Domain
+    @db.query(
+      "select message, address, action, amount " \
+      "from transactions t " \
+      "join senders s on s.transaction_id = t.id " \
+      "where status = 0 " \
+      "and message = ?", domain_name) do |rows|
+        rows.each do 
+          domains_for_sale << {
+            domain_name: rows.read(String),
+            address:     rows.read(String),
+            status:      status(rows.read(String)),
+            price:       rows.read(Int64)
+          }
+        end
+      end
+      domains_for_sale
+  end
+
   private def status(action) : Status
     case action
     when "scars_buy"
