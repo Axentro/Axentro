@@ -17,17 +17,18 @@ module ::Sushi::Core::DApps::BuildIn
   # valid suffixes
   SUFFIX = %w(sc)
 
+  enum Status
+    ACQUIRED
+    FOR_SALE
+    NOT_FOUND = -1
+  end
+
+  alias Domain = NamedTuple(domain_name: String, address: String, status: Status, price: Int64)
+  alias DomainResult = NamedTuple(domain_name: String, address: String, status: Status, price: String)
+  alias DomainMap = Hash(String, Domain)
+
   class Scars < DApp
-    module Status
-      ACQUIRED  =  0
-      FOR_SALE  =  1
-      NOT_FOUND = -1
-    end
-
-    alias Domain = NamedTuple(domain_name: String, address: String, status: Int32, price: Int64)
-    alias DomainResult = NamedTuple(domain_name: String, address: String, status: Int32, price: String)
-    alias DomainMap = Hash(String, Domain)
-
+    
     @domains_internal : Array(DomainMap) = Array(DomainMap).new
 
     def setup
@@ -48,7 +49,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def resolve(domain_name : String, confirmation : Int32) : Domain?
-      return nil if @domains_internal.size < confirmation
+      # return nil if @domains_internal.size < confirmation
       resolve_for(domain_name, @domains_internal.reverse[(confirmation - 1)..-1])
     end
 
@@ -193,12 +194,16 @@ RULE
       @domains_internal.clear
     end
 
-    private def resolve_for(domain_name : String, domains : Array(DomainMap)) : Domain?
-      domains.each do |domains_internal|
-        return domains_internal[domain_name] if domains_internal[domain_name]?
-      end
+    # private def resolve_for(domain_name : String, domains : Array(DomainMap)) : Domain?
+    #   domains.each do |domains_internal|
+    #     return domains_internal[domain_name] if domains_internal[domain_name]?
+    #   end
 
-      nil
+    #   nil
+    # end
+
+    private def resolve_for(domain_name : String, domains : Array(DomainMap)) : Domain?
+      database.get_domain_map_for(domain_name)[domain_name]?
     end
 
     private def lookup_for(address : String) : Array(Domain)?

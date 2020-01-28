@@ -102,6 +102,37 @@ module ::Sushi::Core::Data::Transactions
     idx
   end
 
+  def get_domain_map_for(domain_name : String) : DomainMap
+    domain_map = DomainMap.new
+    @db.query(
+      "select message, address, action, amount " \
+      "from transactions t " \
+      "join senders s on s.transaction_id = t.id " \
+      "where action in ('scars_buy', 'scars_sell', 'scars_cancel') " \
+      "and message = ?", domain_name) do |rows|
+        rows.each do 
+          domain_map[domain_name] = {
+            domain_name: rows.read(String),
+            address:     rows.read(String),
+            status:      status(rows.read(String)),
+            price:       rows.read(Int64)
+          }
+        end
+      end
+      domain_map
+  end
+
+  private def status(action) : Status
+    case action
+    when "scars_buy"
+      Status::ACQUIRED
+    when "scars_sell"
+      Status::FOR_SALE
+    else
+      Status::ACQUIRED  
+    end
+  end
+
   # ------- Helpers -------
   def transactions_by_query(query, *args)
     transactions = [] of Transaction

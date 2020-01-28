@@ -25,7 +25,7 @@ describe Scars do
         scars = Scars.new(block_factory.blockchain)
         scars.record(chain)
         wallet = Wallet.from_json(Wallet.create(true).to_json)
-        scars.lookup(wallet.address).should eq [] of Array(Sushi::Core::DApps::BuildIn::Scars::Domain)
+        scars.lookup(wallet.address).should eq [] of Array(Domain)
       end
     end
 
@@ -75,7 +75,7 @@ describe Scars do
         on_success(scars.resolve(domain, 1)) do |result|
           result["domain_name"].should eq(domain)
           result["address"].should eq(transaction_factory.sender_wallet.address)
-          result["status"].should eq(0)
+          result["status"].should eq(Status::ACQUIRED)
           result["price"].should eq(0_i64)
         end
       end
@@ -102,7 +102,7 @@ describe Scars do
           on_success(scars.resolve_pending(domain, transactions)) do |result|
             result["domain_name"].should eq(domain)
             result["address"].should eq(transaction_factory.sender_wallet.address)
-            result["status"].should eq(0)
+            result["status"].should eq(Status::ACQUIRED)
             result["price"].should eq(0_i64)
           end
         end
@@ -620,7 +620,7 @@ describe Scars do
           result = sales.first
           result["domain_name"].should eq(domain)
           result["address"].should eq(transaction_factory.sender_wallet.address)
-          result["status"].should eq(1)
+          result["status"].should eq(Status::FOR_SALE)
           result["price"].should eq("0.000005")
         end
       end
