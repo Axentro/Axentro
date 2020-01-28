@@ -125,6 +125,11 @@ module ::Sushi::Core::Data::Transactions
   # need to get the sales per domain - only domains that are currently for sale
   # and not ones that were for sale but now are in a different status
   # right now this query doesn't find the latest state for a domain so it's wrong
+
+  # maybe
+  # select id, t.block_id, message, address, amount, max(t.timestamp), action from transactions t
+  # join senders s on s.transaction_id = t.id
+  # where message in (select distinct(message) from transactions where action = 'scars_sell')  
   def get_domains_for_sale : Array(Domain)
     domains_for_sale = [] of Domain
     @db.query(
