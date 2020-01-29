@@ -126,6 +126,8 @@ module ::Sushi::Core::Data::Transactions
   # and not ones that were for sale but now are in a different status
   # right now this query doesn't find the latest state for a domain so it's wrong
 
+  # NOTE - max timestamp doesn't work for tests as timestamp is always set to 0 - review this approach!
+
   # maybe
   # select id, t.block_id, message, address, amount, max(t.timestamp), action from transactions t
   # join senders s on s.transaction_id = t.id
@@ -133,18 +135,18 @@ module ::Sushi::Core::Data::Transactions
   def get_domains_for_sale : Array(Domain)
     domains_for_sale = [] of Domain
     @db.query(
-      "select message, address, action, amount " \
+      "select message, address, action, amount, max(t.timestamp) " \
       "from transactions t " \
       "join senders s on s.transaction_id = t.id " \
-      "where status = 0 " \
-      "and message = ?", domain_name) do |rows|
+      "where message in (select distinct(message) from transactions where action = 'scars_sell') ") do |rows|
         rows.each do 
-          domains_for_sale << {
+          pp domain = {
             domain_name: rows.read(String),
             address:     rows.read(String),
             status:      status(rows.read(String)),
             price:       rows.read(Int64)
           }
+          domains_for_sale << domain if domain[:status] == Status::FOR_SALE
         end
       end
       domains_for_sale

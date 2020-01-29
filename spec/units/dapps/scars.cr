@@ -605,7 +605,7 @@ describe Scars do
       end
     end
 
-    describe "#sales" do
+    describe "#scars_for_sale_impl" do
       it "should list all the domains that are for sale" do
         with_factory do |block_factory, transaction_factory|
           domain = "domain1.sc"
@@ -617,7 +617,7 @@ describe Scars do
           scars = Scars.new(block_factory.blockchain)
           scars.record(chain)
 
-          sales = scars.sales
+          sales = scars.scars_for_sale_impl
           sales.size.should eq(1)
 
           result = sales.first
@@ -631,7 +631,7 @@ describe Scars do
       it "should return empty list when no domains are for sale" do
         with_factory do |block_factory, _|
           scars = Scars.new(block_factory.blockchain)
-          scars.sales.size.should eq(0)
+          scars.scars_for_sale_impl.size.should eq(0)
         end
       end
     end
