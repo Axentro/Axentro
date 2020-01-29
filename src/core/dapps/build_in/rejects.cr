@@ -29,7 +29,6 @@ module ::Sushi::Core::DApps::BuildIn
       true
     end
 
-
     def record_reject(transaction_id : String, e : Exception)
       error_message = e.message ? e.message.not_nil! : "unknown"
       record_reject(transaction_id, error_message)

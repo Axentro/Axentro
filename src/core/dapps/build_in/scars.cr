@@ -32,13 +32,12 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def resolve(domain_name : String, confirmation_depth : Int32) : Domain?
-      # return nil if @domains_internal.size < confirmation
       resolve_for(domain_name, confirmation_depth)
     end
 
     def resolve_pending(domain_name : String, transactions : Array(Transaction)) : Domain?
       domain_map = create_domain_map_for_transactions(transactions)
-      domain_map[domain_name]?
+      domain_map[domain_name]? || resolve_for(domain_name, 1)
     end
 
     def lookup(address : String) : Array(Domain)?

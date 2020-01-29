@@ -496,8 +496,8 @@ describe RESTController do
       with_factory do |block_factory, transaction_factory|
         domain = "sushi.sc"
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2).add_slow_block([transaction_factory.make_sell_domain(domain, 1_i64)]).add_slow_blocks(3)
+        
         exec_rest_api(block_factory.rest.__v1_scars_sales(context("/api/v1/scars/sales"), no_params)) do |result|
-          pp result
           result["status"].to_s.should eq("success")
           result = Array(DomainResult).from_json(result["result"].to_json).first
           result.domain_name.should eq(domain)
