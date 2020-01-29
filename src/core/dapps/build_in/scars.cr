@@ -28,10 +28,8 @@ module ::Sushi::Core::DApps::BuildIn
   alias DomainMap = Hash(String, Domain)
 
   class Scars < DApp
-
     def setup
     end
-
 
     def resolve(domain_name : String, confirmation_depth : Int32) : Domain?
       # return nil if @domains_internal.size < confirmation
@@ -164,32 +162,17 @@ RULE
     end
 
     def record(chain)
-      # the_chain = @blockchain.database.get_blocks(@domains_internal.size.to_i64)
-      # the_chain.each do |block|
-      #   domain_map = create_domain_map_for_transactions(block.transactions)
-      #   @domains_internal.push(domain_map)
-      # end
     end
 
     def clear
-      # @domains_internal.clear
     end
- 
+
     private def resolve_for(domain_name : String, confirmation_depth : Int32) : Domain?
       database.get_domain_map_for(domain_name)[domain_name]?
     end
 
-    private def lookup_for(address : String) : Array(Domain)?
-      # matched_domains = Array(Domain).new
-
-      # @domains_internal.reverse.each do |domain_map|
-      #   domain_map.each do |_, domain|
-      #     matched_domains << domain if domain[:address] == address
-      #   end
-      # end
-
-      # matched_domains
-      [] of Domain
+    private def lookup_for(address : String) : Array(Domain)
+      database.get_domain_map_for_address(address).map { |name, domain| domain }
     end
 
     private def create_domain_map_for_transactions(transactions : Array(Transaction)) : DomainMap
@@ -283,7 +266,7 @@ RULE
     end
 
     def scars_for_sale_impl
-      database.get_domains_for_sale
+      database.get_domains_for_sale.map { |d| scale_decimal(d) }
     end
 
     def scars_lookup(json, context, params)

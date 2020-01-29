@@ -11,6 +11,9 @@
 # Removal or modification of this copyright notice is prohibited.
 require "../blockchain/*"
 require "../blockchain/block/*"
+require "../node/*"
+require "../dapps/dapp"
+require "../dapps/build_in/scars"
 
 module ::Sushi::Core::Data::Transactions
   # ------- Definition -------
@@ -122,34 +125,36 @@ module ::Sushi::Core::Data::Transactions
       domain_map
   end
 
-  # need to get the sales per domain - only domains that are currently for sale
-  # and not ones that were for sale but now are in a different status
-  # right now this query doesn't find the latest state for a domain so it's wrong
-
-  # NOTE - max timestamp doesn't work for tests as timestamp is always set to 0 - review this approach!
-
-  # maybe
-  # select id, t.block_id, message, address, amount, max(t.timestamp), action from transactions t
-  # join senders s on s.transaction_id = t.id
-  # where message in (select distinct(message) from transactions where action = 'scars_sell')  
-  def get_domains_for_sale : Array(Domain)
-    domains_for_sale = [] of Domain
+  def get_domain_map_for_address(address : String) : DomainMap
+    domain_map = DomainMap.new
     @db.query(
-      "select message, address, action, amount, max(t.timestamp) " \
+      "select message, address, action, amount " \
       "from transactions t " \
       "join senders s on s.transaction_id = t.id " \
-      "where message in (select distinct(message) from transactions where action = 'scars_sell') ") do |rows|
+      "where action in ('scars_buy', 'scars_sell', 'scars_cancel') " \
+      "and address = ?", address) do |rows|
         rows.each do 
-          pp domain = {
-            domain_name: rows.read(String),
+          domain_name = rows.read(String)
+          domain_map[domain_name] = {
+            domain_name: domain_name,
             address:     rows.read(String),
             status:      status(rows.read(String)),
             price:       rows.read(Int64)
           }
-          domains_for_sale << domain if domain[:status] == Status::FOR_SALE
         end
       end
-      domains_for_sale
+      domain_map
+  end
+ 
+  def get_domains_for_sale : Array(Domain)
+    domain_names = [] of String
+    @db.query(
+      "select distinct(message) from transactions where action = 'scars_sell'") do |rows|
+        rows.each do 
+           domain_names << rows.read(String)
+        end
+      end
+      domain_names.map{|n| get_domain_map_for(n)[n]? }.compact
   end
 
   private def status(action) : Status
@@ -194,4 +199,5 @@ module ::Sushi::Core::Data::Transactions
     end
     transactions
   end
+include Sushi::Core::DApps::BuildIn
 end
