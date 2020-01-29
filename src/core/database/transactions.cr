@@ -80,9 +80,9 @@ module ::Sushi::Core::Data::Transactions
       "(select oid from transactions order by token #{direction} limit ?) " \
       "order by token #{direction} limit ?",
       page, per_page) do |rows|
-        rows.each { res << rows.read(String) }
-      end
-      res
+      rows.each { res << rows.read(String) }
+    end
+    res
   end
 
   def token_exists?(token) : Bool
@@ -113,16 +113,16 @@ module ::Sushi::Core::Data::Transactions
       "join senders s on s.transaction_id = t.id " \
       "where action in ('scars_buy', 'scars_sell', 'scars_cancel') " \
       "and message = ?", domain_name) do |rows|
-        rows.each do 
-          domain_map[domain_name] = {
-            domain_name: rows.read(String),
-            address:     rows.read(String),
-            status:      status(rows.read(String)),
-            price:       rows.read(Int64)
-          }
-        end
+      rows.each do
+        domain_map[domain_name] = {
+          domain_name: rows.read(String),
+          address:     rows.read(String),
+          status:      status(rows.read(String)),
+          price:       rows.read(Int64),
+        }
       end
-      domain_map
+    end
+    domain_map
   end
 
   def get_domain_map_for_address(address : String) : DomainMap
@@ -133,28 +133,28 @@ module ::Sushi::Core::Data::Transactions
       "join senders s on s.transaction_id = t.id " \
       "where action in ('scars_buy', 'scars_sell', 'scars_cancel') " \
       "and address = ?", address) do |rows|
-        rows.each do 
-          domain_name = rows.read(String)
-          domain_map[domain_name] = {
-            domain_name: domain_name,
-            address:     rows.read(String),
-            status:      status(rows.read(String)),
-            price:       rows.read(Int64)
-          }
-        end
+      rows.each do
+        domain_name = rows.read(String)
+        domain_map[domain_name] = {
+          domain_name: domain_name,
+          address:     rows.read(String),
+          status:      status(rows.read(String)),
+          price:       rows.read(Int64),
+        }
       end
-      domain_map
+    end
+    domain_map
   end
- 
+
   def get_domains_for_sale : Array(Domain)
     domain_names = [] of String
     @db.query(
       "select distinct(message) from transactions where action = 'scars_sell'") do |rows|
-        rows.each do 
-           domain_names << rows.read(String)
-        end
+      rows.each do
+        domain_names << rows.read(String)
       end
-      domain_names.map{|n| get_domain_map_for(n)[n]? }.compact
+    end
+    domain_names.map { |n| get_domain_map_for(n)[n]? }.compact
   end
 
   private def status(action) : Status
@@ -164,7 +164,7 @@ module ::Sushi::Core::Data::Transactions
     when "scars_sell"
       Status::FOR_SALE
     else
-      Status::ACQUIRED  
+      Status::ACQUIRED
     end
   end
 
@@ -199,5 +199,6 @@ module ::Sushi::Core::Data::Transactions
     end
     transactions
   end
-include Sushi::Core::DApps::BuildIn
+
+  include Sushi::Core::DApps::BuildIn
 end

@@ -171,7 +171,7 @@ RULE
     end
 
     private def lookup_for(address : String) : Array(Domain)
-      database.get_domain_map_for_address(address).map { |name, domain| domain }
+      database.get_domain_map_for_address(address).map { |_, domain| domain }
     end
 
     private def create_domain_map_for_transactions(transactions : Array(Transaction)) : DomainMap
