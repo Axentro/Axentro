@@ -34,10 +34,13 @@ module ::Sushi::Core::DApps::BuildIn
       record_reject(transaction_id, error_message)
     end
 
+    # TODO - this should be recorded in the db
     def record_reject(transaction_id : String, error_message : String)
       @rejects[transaction_id] ||= error_message
     end
 
+    # TODO - Store rejects in the db and only keep latest 10,000
+    # record should load the 10k into mem and trim the db
     def record(chain : Blockchain::Chain)
     end
 

@@ -60,19 +60,20 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def blockchain_size_impl
-      {size: blockchain.chain.size}
+      {size: database.total_blocks}
     end
 
     def blockchain(json, context, params)
-      context.response.print api_success(blockchain_impl(json["header"].as_bool))
+      page, per_page, direction = 0, 50, 0
+      context.response.print api_success(blockchain_impl(json["header"].as_bool, page, per_page, direction))
       context
     end
 
-    def blockchain_impl(header : Bool)
+    def blockchain_impl(header : Bool, page, per_page, direction)
       if header
-        blockchain.headers
+        database.get_paginated_blocks(page, per_page, Direction.new(direction).to_s).map(&.to_header)
       else
-        blockchain.chain
+        database.get_paginated_blocks(page, per_page, Direction.new(direction).to_s)
       end
     end
 
@@ -85,68 +86,58 @@ module ::Sushi::Core::DApps::BuildIn
 
     def block_impl(header : Bool, _index, _transaction_id)
       if index = _index
-        block_impl(header, index.as_i64)
+        block_index_impl(header, index.as_i64)
       elsif transaction_id = _transaction_id
-        block_impl(header, transaction_id.as_s)
+        block_transaction_impl(header, transaction_id.as_s)
       else
         raise "please specify block index or transaction id"
       end
     end
 
-    def block_impl(header : Bool, index : Int64)
-      if index > blockchain.latest_index
-        raise "invalid index #{index} (blockchain latest index is #{blockchain.latest_index})"
+    def block_index_impl(header : Bool, block_index : Int64)
+      if block = database.get_block(block_index)
+        header ? block.to_header : block
+      else
+        raise "failed to find a block for the index: #{block_index}"
       end
-
-      block = find_block(index)
-      header ? block.to_header : block
     end
 
-    def block_impl(header : Bool, transaction_id : String)
-      unless block_index = blockchain.indices.get(transaction_id)
+    def block_transaction_impl(header : Bool, transaction_id : String)
+      if block = database.get_block_for_transaction(transaction_id)
+        header ? block.to_header : block
+      else
         raise "failed to find a block for the transaction #{transaction_id}"
       end
-
-      block = find_block(block_index)
-      header ? block.to_header : block
-    end
-
-    private def find_block(block_index)
-      unless block = blockchain.chain.find{|blk| blk.index == block_index}
-        raise "failed to find a block in the chain with block index: #{block_index}"
-      end
-      block
     end
 
     def transactions(json, context, params)
-      context.response.print api_success(transactions_impl(json["index"]?, json["address"]?))
+      page, per_page, direction = 0, 50, 0
+      context.response.print api_success(transactions_impl(json["index"]?, json["address"]?, page, per_page, direction))
       context
     end
 
-    def transactions_impl(_index, _address)
+    def transactions_impl(_index, _address, page, per_page, direction)
       if index = _index
-        transactions_impl(index.as_i64)
+        transactions_index_impl(index.as_i64, page, per_page, direction)
       elsif address = _address
-        transactions_impl(address.as_s)
+        transactions_address_impl(address.as_s, page, per_page, direction)
       else
         raise "please specify a block index or an address"
       end
     end
 
-    def transactions_impl(index : Int64)
-      if index > blockchain.latest_index
-        raise "invalid index #{index} (blockchain latest index is #{blockchain.latest_index})"
-      end
-
-      blockchain.chain[index].transactions
+    def transactions_index_impl(block_index : Int64, page : Int32, per_page : Int32, direction : Int32)
+      database.get_paginated_transactions(block_index, page, per_page, Direction.new(direction).to_s)
     end
 
-    def transactions_impl(address : String, page : Int32 = 0, page_size : Int32 = 20, actions : Array(String) = [] of String)
-      blockchain.transactions_for_address(address, page, page_size, actions)
+    def transactions_address_impl(address : String, page : Int32, per_page : Int32, direction : Int32, actions : Array(String) = [] of String)
+      database.get_paginated_transactions_for_address(address, page, per_page, Direction.new(direction).to_s, actions)
     end
 
     def on_message(action : String, from_address : String, content : String, from = nil)
       false
     end
   end
+
+  include NodeComponents::APIParams
 end

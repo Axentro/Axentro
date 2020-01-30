@@ -25,7 +25,7 @@ describe Scars do
         scars = Scars.new(block_factory.blockchain)
         scars.record(chain)
         wallet = Wallet.from_json(Wallet.create(true).to_json)
-        scars.lookup(wallet.address).should eq [] of Array(Sushi::Core::DApps::BuildIn::Scars::Domain)
+        scars.lookup(wallet.address).should eq [] of Array(Domain)
       end
     end
 
@@ -75,7 +75,7 @@ describe Scars do
         on_success(scars.resolve(domain, 1)) do |result|
           result["domain_name"].should eq(domain)
           result["address"].should eq(transaction_factory.sender_wallet.address)
-          result["status"].should eq(0)
+          result["status"].should eq(Status::ACQUIRED)
           result["price"].should eq(0_i64)
         end
       end
@@ -102,7 +102,7 @@ describe Scars do
           on_success(scars.resolve_pending(domain, transactions)) do |result|
             result["domain_name"].should eq(domain)
             result["address"].should eq(transaction_factory.sender_wallet.address)
-            result["status"].should eq(0)
+            result["status"].should eq(Status::ACQUIRED)
             result["price"].should eq(0_i64)
           end
         end
@@ -562,32 +562,6 @@ describe Scars do
       end
     end
 
-    describe "#record" do
-      it "should record internal domains" do
-        with_factory do |block_factory, transaction_factory|
-          chain = block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform("domain.sc", 0_i64)]).add_slow_blocks(10).chain
-          scars = Scars.new(block_factory.blockchain)
-          scars.record(chain)
-          expected = [{"domain.sc" => {domain_name: "domain.sc", address: transaction_factory.sender_wallet.address, status: 0, price: 0_i64}}]
-          scars.@domains_internal.reject!(&.empty?).should eq(expected)
-        end
-      end
-    end
-
-    describe "#clear" do
-      it "should clear internal domains" do
-        with_factory do |block_factory, transaction_factory|
-          chain = block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform("domain.sc", 0_i64)]).add_slow_blocks(10).chain
-          scars = Scars.new(block_factory.blockchain)
-          scars.record(chain)
-          expected = [{"domain.sc" => {domain_name: "domain.sc", address: transaction_factory.sender_wallet.address, status: 0, price: 0_i64}}]
-          scars.@domains_internal.reject!(&.empty?).should eq(expected)
-          scars.clear
-          scars.@domains_internal.size.should eq(0)
-        end
-      end
-    end
-
     describe "#Scars.fee" do
       it "should show the fee for an action" do
         Scars.fee("scars_buy").should eq(100000_i64)
@@ -602,7 +576,7 @@ describe Scars do
       end
     end
 
-    describe "#sales" do
+    describe "#scars_for_sale_impl" do
       it "should list all the domains that are for sale" do
         with_factory do |block_factory, transaction_factory|
           domain = "domain1.sc"
@@ -614,13 +588,13 @@ describe Scars do
           scars = Scars.new(block_factory.blockchain)
           scars.record(chain)
 
-          sales = scars.sales
+          sales = scars.scars_for_sale_impl
           sales.size.should eq(1)
 
           result = sales.first
           result["domain_name"].should eq(domain)
           result["address"].should eq(transaction_factory.sender_wallet.address)
-          result["status"].should eq(1)
+          result["status"].should eq(Status::FOR_SALE)
           result["price"].should eq("0.000005")
         end
       end
@@ -628,7 +602,7 @@ describe Scars do
       it "should return empty list when no domains are for sale" do
         with_factory do |block_factory, _|
           scars = Scars.new(block_factory.blockchain)
-          scars.sales.size.should eq(0)
+          scars.scars_for_sale_impl.size.should eq(0)
         end
       end
     end

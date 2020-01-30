@@ -17,48 +17,27 @@ module ::Sushi::Core::DApps::BuildIn
   # valid suffixes
   SUFFIX = %w(sc)
 
+  enum Status
+    ACQUIRED
+    FOR_SALE
+    NOT_FOUND = -1
+  end
+
+  alias Domain = NamedTuple(domain_name: String, address: String, status: Status, price: Int64)
+  alias DomainResult = NamedTuple(domain_name: String, address: String, status: Status, price: String)
+  alias DomainMap = Hash(String, Domain)
+
   class Scars < DApp
-    module Status
-      ACQUIRED  =  0
-      FOR_SALE  =  1
-      NOT_FOUND = -1
-    end
-
-    alias Domain = NamedTuple(domain_name: String, address: String, status: Int32, price: Int64)
-    alias DomainResult = NamedTuple(domain_name: String, address: String, status: Int32, price: String)
-    alias DomainMap = Hash(String, Domain)
-
-    @domains_internal : Array(DomainMap) = Array(DomainMap).new
-
     def setup
     end
 
-    def sales
-      domain_all = DomainMap.new
-
-      @domains_internal.reverse.each do |domain_map|
-        domain_map.each do |domain_name, domain|
-          domain_all[domain_name] ||= domain
-        end
-      end
-
-      domain_all
-        .select { |_, domain| domain[:status] == Status::FOR_SALE }
-        .map { |_, domain| scale_decimal(domain) }
-    end
-
-    def resolve(domain_name : String, confirmation : Int32) : Domain?
-      return nil if @domains_internal.size < confirmation
-      resolve_for(domain_name, @domains_internal.reverse[(confirmation - 1)..-1])
+    def resolve(domain_name : String, confirmation_depth : Int32) : Domain?
+      resolve_for(domain_name, confirmation_depth)
     end
 
     def resolve_pending(domain_name : String, transactions : Array(Transaction)) : Domain?
       domain_map = create_domain_map_for_transactions(transactions)
-
-      tmp_domains_internal = @domains_internal.dup
-      tmp_domains_internal.push(domain_map)
-
-      resolve_for(domain_name, tmp_domains_internal.reverse)
+      domain_map[domain_name]? || resolve_for(domain_name, 1)
     end
 
     def lookup(address : String) : Array(Domain)?
@@ -182,35 +161,17 @@ RULE
     end
 
     def record(chain)
-      the_chain = @blockchain.database.get_blocks(@domains_internal.size.to_i64)
-      the_chain.each do |block|
-        domain_map = create_domain_map_for_transactions(block.transactions)
-        @domains_internal.push(domain_map)
-      end
     end
 
     def clear
-      @domains_internal.clear
     end
 
-    private def resolve_for(domain_name : String, domains : Array(DomainMap)) : Domain?
-      domains.each do |domains_internal|
-        return domains_internal[domain_name] if domains_internal[domain_name]?
-      end
-
-      nil
+    private def resolve_for(domain_name : String, confirmation_depth : Int32) : Domain?
+      database.get_domain_map_for(domain_name)[domain_name]?
     end
 
-    private def lookup_for(address : String) : Array(Domain)?
-      matched_domains = Array(Domain).new
-
-      @domains_internal.reverse.each do |domain_map|
-        domain_map.each do |_, domain|
-          matched_domains << domain if domain[:address] == address
-        end
-      end
-
-      matched_domains
+    private def lookup_for(address : String) : Array(Domain)
+      database.get_domain_map_for_address(address).map { |_, domain| domain }
     end
 
     private def create_domain_map_for_transactions(transactions : Array(Transaction)) : DomainMap
@@ -304,7 +265,7 @@ RULE
     end
 
     def scars_for_sale_impl
-      sales
+      database.get_domains_for_sale.map { |d| scale_decimal(d) }
     end
 
     def scars_lookup(json, context, params)
@@ -321,9 +282,9 @@ RULE
       domains.each do |domain|
         domain_results << DomainResult.new(
           domain_name: domain[:domain_name],
-          address:     domain[:address],
-          status:      domain[:status],
-          price:       scale_decimal(domain[:price]))
+          address: domain[:address],
+          status: domain[:status],
+          price: scale_decimal(domain[:price]))
       end
       {address: address, domains: domain_results}
     end

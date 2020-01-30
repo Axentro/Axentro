@@ -12,17 +12,12 @@
 
 module ::Sushi::Core::DApps::BuildIn
   class Indices < DApp
-    @indices : Array(Hash(String, Int64)) = Array(Hash(String, Int64)).new
 
     def setup
     end
 
     def get(transaction_id : String) : Int64?
-      @indices.reverse.each do |indices|
-        return indices[transaction_id] if indices[transaction_id]?
-      end
-
-      nil
+      database.get_block_index_for_transaction(transaction_id)
     end
 
     def transaction_actions : Array(String)
@@ -35,7 +30,7 @@ module ::Sushi::Core::DApps::BuildIn
 
     def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
       if index = get(transaction.id)
-        raise "the transaction #{transaction.id} is already included in #{index}"
+        raise "the transaction #{transaction.id} is already included in block: #{index}"
       end
 
       if prev_transactions.count { |t| t.id == transaction.id } > 0
@@ -46,24 +41,9 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def record(chain : Blockchain::Chain)
-      the_chain = @blockchain.database.get_blocks_not_in_list(@indices.flat_map(&.values).uniq)
-      the_chain.each do |block|
-        @indices.push(Hash(String, Int64).new)
-
-        block.transactions.each do |transaction|
-          @indices[-1][transaction.id] = block.index
-        end
-      end
-    end
-
-    def unrecord(block_id : Int64)
-      @indices.reverse.each do |h|
-        @indices.delete(h) if h.has_value?(block_id)
-      end
     end
 
     def clear
-      @indices.clear
     end
 
     def define_rpc?(call, json, context, params) : HTTP::Server::Context?
@@ -86,7 +66,7 @@ module ::Sushi::Core::DApps::BuildIn
 
     def transaction_impl(transaction_id : String)
       if block_index = get(transaction_id)
-        if block = blockchain.chain.find { |blk| blk.index == block_index }
+        if block = database.get_block(block_index)
           if transaction = block.find_transaction(transaction_id)
             return {
               status:      "accepted",
@@ -129,10 +109,11 @@ module ::Sushi::Core::DApps::BuildIn
         raise "failed to find a block for the transaction #{transaction_id}"
       end
 
-      index = @indices.flat_map(&.values).uniq.count { |i| i > block_index }
+      highest_index = database.highest_index_of_kind(BlockKind::SLOW)
+      confirmations = (highest_index - block_index) / 2
 
       {
-        confirmations: index,
+        confirmations: confirmations.to_i,
       }
     end
 

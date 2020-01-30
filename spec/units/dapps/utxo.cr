@@ -59,14 +59,10 @@ describe UTXO do
 
         blockchain = block_factory.add_slow_block(false).blockchain
 
-        # utxo = UTXO.new(blockchain)
-        #
         block_factory.add_slow_block(transactions1)
           .add_slow_block(transactions2)
           .add_slow_block(transactions3)
 
-        # utxo.record(chain)
-        #
         _utxo = blockchain.utxo.@utxo_internal
         _utxo.size.should eq(11)
 

@@ -17,38 +17,92 @@ include Units::Utils
 include Sushi::Core::Controllers
 include Sushi::Core::Keys
 
+private def asset_blockchain(api_path)
+  with_factory do |block_factory, _|
+    block_factory.add_slow_blocks(50)
+    exec_rest_api(block_factory.rest.__v1_blockchain(context(api_path), no_params)) do |result|
+      result["status"].to_s.should eq("success")
+      yield result["result"]
+    end
+  end
+end
+
+private def asset_blockchain_header(api_path)
+  with_factory do |block_factory, _|
+    block_factory.add_slow_blocks(50)
+    exec_rest_api(block_factory.rest.__v1_blockchain_header(context(api_path), no_params)) do |result|
+      result["status"].to_s.should eq("success")
+      yield result["result"]
+    end
+  end
+end
+
 describe RESTController do
   describe "__v1_blockchain" do
-    it "should return the full blockchain" do
-      with_factory do |block_factory, _|
-        block_factory.add_slow_blocks(2)
-        exec_rest_api(block_factory.rest.__v1_blockchain(context("/api/v1/blockchain"), no_params)) do |result|
-          result["status"].to_s.should eq("success")
-          Array(SlowBlock).from_json(result["result"].to_json).size.should eq(3)
-        end
+    it "should return the full blockchain with pagination defaults (page:0,per_page:20,direction:asc)" do
+      asset_blockchain("/api/v1/blockchain") do |result|
+        blocks = Array(SlowBlock).from_json(result.to_json)
+        blocks.size.should eq(20)
+        blocks.first.index.should eq(0)
+      end
+    end
+    it "should return the full blockchain with pagination specified direction (page:0,per_page:20,direction:desc)" do
+      asset_blockchain("/api/v1/blockchain?direction=down") do |result|
+        blocks = Array(SlowBlock).from_json(result.to_json)
+        blocks.size.should eq(20)
+        blocks.first.index.should eq(100)
+      end
+    end
+    it "should return the full blockchain with pagination specified direction (page:2,per_page:1,direction:desc)" do
+      asset_blockchain("/api/v1/blockchain?page=2&per_page=1&direction=down") do |result|
+        blocks = Array(SlowBlock).from_json(result.to_json)
+        blocks.size.should eq(1)
+        blocks.first.index.should eq(96)
       end
     end
   end
 
   describe "__v1_blockchain_header" do
-    it "should return the only blockchain headers" do
-      with_factory do |block_factory, _|
-        block_factory.add_slow_blocks(2)
-        exec_rest_api(block_factory.rest.__v1_blockchain_header(context("/api/v1/blockchain/header"), no_params)) do |result|
-          result["status"].to_s.should eq("success")
-          Array(Blockchain::SlowHeader).from_json(result["result"].to_json).size.should eq(3)
-        end
+    it "should return the blockchain headers with pagination defaults (page:0,per_page:20,direction:asc)" do
+      asset_blockchain_header("/api/v1/blockchain/header") do |result|
+        blocks = Array(Blockchain::SlowHeader).from_json(result.to_json)
+        blocks.size.should eq(20)
+        blocks.first[:index].should eq(0)
+      end
+    end
+    it "should return the blockchain headers with pagination specified direction (page:0,per_page:20,direction:desc)" do
+      asset_blockchain_header("/api/v1/blockchain/header/?direction=down") do |result|
+        blocks = Array(Blockchain::SlowHeader).from_json(result.to_json)
+        blocks.size.should eq(20)
+        blocks.first[:index].should eq(100)
+      end
+    end
+    it "should return the blockchain headers with pagination specified direction (page:2,per_page:1,direction:desc)" do
+      asset_blockchain_header("/api/v1/blockchain/header?page=2&per_page=1&direction=down") do |result|
+        blocks = Array(Blockchain::SlowHeader).from_json(result.to_json)
+        blocks.size.should eq(1)
+        blocks.first[:index].should eq(96)
       end
     end
   end
 
   describe "__v1_blockchain_size" do
-    it "should return the full blockchain size" do
+    it "should return the full blockchain size when chain fits into memory" do
       with_factory do |block_factory, _|
         block_factory.add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_blockchain_size(context("/api/v1/blockchain/size"), no_params)) do |result|
           result["status"].to_s.should eq("success")
           result["result"]["size"].should eq(3)
+        end
+      end
+    end
+    it "should return the full blockchain size when chain is bigger than memory" do
+      with_factory do |block_factory, _|
+        blocks_to_add = block_factory.blocks_to_hold + 8
+        block_factory.add_slow_blocks(blocks_to_add)
+        exec_rest_api(block_factory.rest.__v1_blockchain_size(context("/api/v1/blockchain/size"), no_params)) do |result|
+          result["status"].to_s.should eq("success")
+          result["result"]["size"].should eq(blocks_to_add + 1)
         end
       end
     end
@@ -69,7 +123,7 @@ describe RESTController do
         block_factory.add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_block_index(context("/api/v1/block/99"), {index: 99})) do |result|
           result["status"].to_s.should eq("error")
-          result["reason"].should eq("invalid index 99 (blockchain latest index is 4)")
+          result["reason"].should eq("failed to find a block for the index: 99")
         end
       end
     end
@@ -90,7 +144,7 @@ describe RESTController do
         block_factory.add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_block_index_header(context("/api/v1/block/99/header"), {index: 99})) do |result|
           result["status"].to_s.should eq("error")
-          result["reason"].should eq("invalid index 99 (blockchain latest index is 4)")
+          result["reason"].should eq("failed to find a block for the index: 99")
         end
       end
     end
@@ -103,15 +157,6 @@ describe RESTController do
         exec_rest_api(block_factory.rest.__v1_block_index_transactions(context("/api/v1/block/0/header"), {index: 0})) do |result|
           result["status"].to_s.should eq("success")
           Array(Transaction).from_json(result["result"].to_json)
-        end
-      end
-    end
-    it "should return failure when block index is invalid" do
-      with_factory do |block_factory, _|
-        block_factory.add_slow_blocks(2)
-        exec_rest_api(block_factory.rest.__v1_block_index_transactions(context("/api/v1/block/99/header"), {index: 99})) do |result|
-          result["status"].to_s.should eq("error")
-          result["reason"].should eq("invalid index 99 (blockchain latest index is 4)")
         end
       end
     end
@@ -330,7 +375,7 @@ describe RESTController do
       with_factory do |block_factory, transaction_factory|
         address = transaction_factory.sender_wallet.address
         block_factory.add_slow_blocks(200)
-        exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/#{address}/transactions?page_size=50&page=2"), {address: address, page_size: 50, page: 1})) do |result|
+        exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/#{address}/transactions?per_page=50&page=2"), {address: address, page_size: 50, page: 1})) do |result|
           result["status"].to_s.should eq("success")
           transactions = Array(Transaction).from_json(result["result"].to_json)
           transactions.size.should eq(50)
@@ -437,7 +482,7 @@ describe RESTController do
       with_factory do |block_factory, transaction_factory|
         domain = "sushi.sc"
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(200)
-        exec_rest_api(block_factory.rest.__v1_domain_transactions(context("/api/v1/domain/#{domain}/transactions?page_size=50&page=2"), {domain: domain, page_size: 50, page: 1})) do |result|
+        exec_rest_api(block_factory.rest.__v1_domain_transactions(context("/api/v1/domain/#{domain}/transactions?per_page=50&page=2"), {domain: domain, page_size: 50, page: 1})) do |result|
           result["status"].to_s.should eq("success")
           transactions = Array(Transaction).from_json(result["result"].to_json)
           transactions.size.should eq(50)
@@ -451,6 +496,7 @@ describe RESTController do
       with_factory do |block_factory, transaction_factory|
         domain = "sushi.sc"
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2).add_slow_block([transaction_factory.make_sell_domain(domain, 1_i64)]).add_slow_blocks(3)
+
         exec_rest_api(block_factory.rest.__v1_scars_sales(context("/api/v1/scars/sales"), no_params)) do |result|
           result["status"].to_s.should eq("success")
           result = Array(DomainResult).from_json(result["result"].to_json).first
@@ -583,7 +629,6 @@ describe RESTController do
       end
     end
   end
-
 end
 
 struct DomainResult

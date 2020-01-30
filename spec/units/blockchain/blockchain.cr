@@ -150,7 +150,7 @@ describe Blockchain do
         block_factory.add_slow_blocks(2)
         blockchain.pending_slow_transactions.size.should eq(0)
         blockchain.embedded_slow_transactions.size.should eq(0)
-        blockchain.rejects.find(transaction.id).should eq("the transaction #{transaction.id} is already included in 2")
+        blockchain.rejects.find(transaction.id).should eq("the transaction #{transaction.id} is already included in block: 2")
       end
     end
   end
@@ -299,17 +299,6 @@ describe Blockchain do
           indexes.first.should eq(1)
           indexes.last.should eq((blockchain.blocks_to_hold * 2) + (8 * 2) - 1)
         end
-      end
-    end
-  end
-
-  describe "headers" do
-    it "should return the headers" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3).add_fast_blocks(4)
-        blockchain = block_factory.blockchain
-        header_indexes = blockchain.headers.map(&.["index"])
-        header_indexes.should eq([0, 1, 2, 3, 4, 5, 6, 7])
       end
     end
   end
