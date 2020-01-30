@@ -31,17 +31,9 @@ module ::Sushi::Core::DApps::BuildIn
     def setup
     end
 
-    def resolve(domain_name : String, confirmation_depth : Int32) : Domain?
-      resolve_for(domain_name, confirmation_depth)
-    end
-
     def resolve_pending(domain_name : String, transactions : Array(Transaction)) : Domain?
       domain_map = create_domain_map_for_transactions(transactions)
       domain_map[domain_name]? || resolve_for(domain_name, 1)
-    end
-
-    def lookup(address : String) : Array(Domain)?
-      lookup_for(address)
     end
 
     def transaction_actions : Array(String)
@@ -166,11 +158,11 @@ RULE
     def clear
     end
 
-    private def resolve_for(domain_name : String, confirmation_depth : Int32) : Domain?
+    def resolve_for(domain_name : String, confirmation_depth : Int32) : Domain?
       database.get_domain_map_for(domain_name)[domain_name]?
     end
 
-    private def lookup_for(address : String) : Array(Domain)
+    def lookup_for(address : String) : Array(Domain)
       database.get_domain_map_for_address(address).map { |_, domain| domain }
     end
 
@@ -249,7 +241,7 @@ RULE
     end
 
     def scars_resolve_impl(domain_name : String, confirmation : Int32)
-      domain = resolve(domain_name, confirmation)
+      domain = resolve_for(domain_name, confirmation)
 
       if domain
         {resolved: true, confirmation: confirmation, domain: scale_decimal(domain)}
@@ -276,7 +268,7 @@ RULE
     end
 
     def scars_lookup_impl(address : String)
-      domains = lookup(address)
+      domains = lookup_for(address)
       domain_results = Array(DomainResult).new
 
       domains.each do |domain|
