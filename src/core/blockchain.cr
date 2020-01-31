@@ -434,8 +434,12 @@ module ::Sushi::Core
     private def _add_transaction(transaction : Transaction)
       if transaction.valid_common?
         if transaction.kind == TransactionKind::FAST
-          debug "adding fast transaction to pool: #{transaction.id}"
-          FastTransactionPool.add(transaction) if chain_mature_enough_for_fast_blocks?
+          if !chain_mature_enough_for_fast_blocks?
+            raise "chain not mature enough for FAST transactions"
+          else
+            debug "adding fast transaction to pool: #{transaction.id}"
+            FastTransactionPool.add(transaction)
+          end
         else
           SlowTransactionPool.add(transaction)
         end
