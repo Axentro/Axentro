@@ -95,6 +95,19 @@ describe Blockchain do
     end
   end
 
+  describe "fast_transaction_maturity_check" do
+    it "should raise an exception if chain is not mature enough for fast transactions" do
+      with_factory do |block_factory, transaction_factory|
+        transaction1 = transaction_factory.make_fast_send(200000000_i64)
+        blockchain = block_factory.blockchain
+
+        block_factory.add_slow_blocks(2)
+        blockchain.add_transaction(transaction1, false)
+        blockchain.rejects.find(transaction1.id).should eq("chain not mature enough for FAST transactions")
+      end
+    end
+  end
+
   describe "valid_transactions_for_fast_block" do
     it "should the latest index and valid aligned transactions" do
       with_factory do |block_factory, transaction_factory|
