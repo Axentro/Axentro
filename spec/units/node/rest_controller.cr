@@ -389,7 +389,7 @@ describe RESTController do
       with_factory do |block_factory, transaction_factory|
         domain = "sushi.sc"
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
-        exec_rest_api(block_factory.rest.__v1_domain(context("/api/v1/domain/#{domain}"), {domain: domain})) do |result| 
+        exec_rest_api(block_factory.rest.__v1_domain(context("/api/v1/domain/#{domain}"), {domain: domain})) do |result|
         result["status"].to_s.should eq("success")
           result["result"]["confirmation"].should eq(1_i64)
           result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"SUSHI\", \"amount\" => \"35.79996241\"}")

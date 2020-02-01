@@ -206,14 +206,14 @@ module ::Sushi::Core::Controllers
     end
 
     def __v1_address(context, params)
-      with_response(context) do |query_params|
+      with_response(context) do
         address = params["address"]
         @blockchain.utxo.amount_impl(address, "all", 1)
       end
     end
 
     def __v1_address_token(context, params)
-      with_response(context) do |query_params|
+      with_response(context) do
         address = params["address"]
         token = params["token"]
         @blockchain.utxo.amount_impl(address, token, 1)
@@ -232,7 +232,7 @@ module ::Sushi::Core::Controllers
     end
 
     def __v1_domain(context, params)
-      with_response(context) do |query_params|
+      with_response(context) do
         domain = params["domain"]
         address = convert_domain_to_address(domain)
         @blockchain.utxo.amount_impl(address, "all", 1)
@@ -240,7 +240,7 @@ module ::Sushi::Core::Controllers
     end
 
     def __v1_domain_token(context, params)
-      with_response(context) do |query_params|
+      with_response(context) do
         domain = params["domain"]
         token = params["token"]
         address = convert_domain_to_address(domain)
@@ -257,7 +257,7 @@ module ::Sushi::Core::Controllers
     def __v1_scars(context, params)
       domain = params["domain"]
 
-      with_response(context) do |query_params|
+      with_response(context) do
         @blockchain.scars.scars_resolve_impl(domain)
       end
     end
