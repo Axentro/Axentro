@@ -62,6 +62,12 @@ module ::Sushi::Core::DApps
       @blockchain.node
     end
 
+    private def confirmation_depth(highest_index : Int64, depth : Int64) : Int64
+      confirmation_depth = depth > 100 ? 100 : depth
+      return highest_index if highest_index < depth
+      highest_index - depth
+    end
+
     private def database : Database
       @blockchain.database
     end

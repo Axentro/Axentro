@@ -105,9 +105,6 @@ module ::Sushi::Core::Data::Transactions
     idx
   end
 
-  # convert the confirmation_depth to a block id 
-  # confirmation_block_id = latest_block_id - confirmation_depth
-  # then change query to do: and block_id = confirmation_block_id
   def get_domain_map_for(domain_name : String) : DomainMap
     domain_map = DomainMap.new
     @db.query(

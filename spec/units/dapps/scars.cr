@@ -52,7 +52,7 @@ describe Scars do
         chain = block_factory.add_slow_block.chain
         scars = Scars.new(block_factory.blockchain)
         scars.record(chain)
-        scars.resolve_for("domain1.sc", 1).should be_nil
+        scars.resolve_for("domain1.sc").should be_nil
       end
     end
 
@@ -61,7 +61,7 @@ describe Scars do
         chain = block_factory.add_slow_blocks(10).chain
         scars = Scars.new(block_factory.blockchain)
         scars.record(chain)
-        scars.resolve_for("domain1.sc", 1).should be_nil
+        scars.resolve_for("domain1.sc").should be_nil
       end
     end
 
@@ -72,7 +72,7 @@ describe Scars do
         scars = Scars.new(block_factory.blockchain)
         scars.record(chain)
 
-        on_success(scars.resolve_for(domain, 1)) do |result|
+        on_success(scars.resolve_for(domain)) do |result|
           result["domain_name"].should eq(domain)
           result["address"].should eq(transaction_factory.sender_wallet.address)
           result["status"].should eq(Status::ACQUIRED)

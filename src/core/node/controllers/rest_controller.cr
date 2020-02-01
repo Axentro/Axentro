@@ -208,8 +208,7 @@ module ::Sushi::Core::Controllers
     def __v1_address(context, params)
       with_response(context) do |query_params|
         address = params["address"]
-        confirmation = query_params["confirmation"]?.try &.to_i || 1
-        @blockchain.utxo.amount_impl(address, "all", confirmation)
+        @blockchain.utxo.amount_impl(address, "all", 1)
       end
     end
 
@@ -217,8 +216,7 @@ module ::Sushi::Core::Controllers
       with_response(context) do |query_params|
         address = params["address"]
         token = params["token"]
-        confirmation = query_params["confirmation"]?.try &.to_i || 1
-        @blockchain.utxo.amount_impl(address, token, confirmation)
+        @blockchain.utxo.amount_impl(address, token, 1)
       end
     end
 
@@ -226,10 +224,9 @@ module ::Sushi::Core::Controllers
       with_response(context) do |query_params|
         page, per_page, direction = paginated(query_params)
         actions = query_params["actions"]?.try &.split(",") || [] of String
-        confirmation = query_params["confirmation"]?.try &.to_i || 1
 
         domain = params["domain"]
-        address = convert_domain_to_address(domain, confirmation)
+        address = convert_domain_to_address(domain)
         @blockchain.blockchain_info.transactions_address_impl(address, page, per_page, direction, actions)
       end
     end
@@ -237,9 +234,8 @@ module ::Sushi::Core::Controllers
     def __v1_domain(context, params)
       with_response(context) do |query_params|
         domain = params["domain"]
-        confirmation = query_params["confirmation"]?.try &.to_i || 1
-        address = convert_domain_to_address(domain, confirmation)
-        @blockchain.utxo.amount_impl(address, "all", confirmation)
+        address = convert_domain_to_address(domain)
+        @blockchain.utxo.amount_impl(address, "all", 1)
       end
     end
 
@@ -247,9 +243,8 @@ module ::Sushi::Core::Controllers
       with_response(context) do |query_params|
         domain = params["domain"]
         token = params["token"]
-        confirmation = query_params["confirmation"]?.try &.to_i || 1
-        address = convert_domain_to_address(domain, confirmation)
-        @blockchain.utxo.amount_impl(address, token, confirmation)
+        address = convert_domain_to_address(domain)
+        @blockchain.utxo.amount_impl(address, token, 1)
       end
     end
 
@@ -263,8 +258,7 @@ module ::Sushi::Core::Controllers
       domain = params["domain"]
 
       with_response(context) do |query_params|
-        confirmation = query_params["confirmation"]?.try &.to_i || 1
-        @blockchain.scars.scars_resolve_impl(domain, confirmation)
+        @blockchain.scars.scars_resolve_impl(domain)
       end
     end
 
@@ -334,8 +328,8 @@ module ::Sushi::Core::Controllers
       JSON.parse(payload)
     end
 
-    private def convert_domain_to_address(domain : String, confirmation : Int32) : String
-      resolved = @blockchain.scars.scars_resolve_impl(domain, confirmation)
+    private def convert_domain_to_address(domain : String) : String
+      resolved = @blockchain.scars.scars_resolve_impl(domain)
       raise "the domain #{domain} is not resolved" unless resolved[:resolved]
 
       resolved[:domain][:address]

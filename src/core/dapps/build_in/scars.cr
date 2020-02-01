@@ -33,7 +33,7 @@ module ::Sushi::Core::DApps::BuildIn
 
     def resolve_pending(domain_name : String, transactions : Array(Transaction)) : Domain?
       domain_map = create_domain_map_for_transactions(transactions)
-      domain_map[domain_name]? || resolve_for(domain_name, 1)
+      domain_map[domain_name]? || resolve_for(domain_name)
     end
 
     def transaction_actions : Array(String)
@@ -158,7 +158,7 @@ RULE
     def clear
     end
 
-    def resolve_for(domain_name : String, confirmation_depth : Int32) : Domain?
+    def resolve_for(domain_name : String) : Domain?
       database.get_domain_map_for(domain_name)[domain_name]?
     end
 
@@ -234,20 +234,19 @@ RULE
 
     def scars_resolve(json, context, params)
       domain_name = json["domain_name"].as_s
-      confirmation = json["confirmation"].as_i
 
-      context.response.print api_success(scars_resolve_impl(domain_name, confirmation))
+      context.response.print api_success(scars_resolve_impl(domain_name))
       context
     end
 
-    def scars_resolve_impl(domain_name : String, confirmation : Int32)
-      domain = resolve_for(domain_name, confirmation)
+    def scars_resolve_impl(domain_name : String)
+      domain = resolve_for(domain_name)
 
       if domain
-        {resolved: true, confirmation: confirmation, domain: scale_decimal(domain)}
+        {resolved: true, confirmation: 1, domain: scale_decimal(domain)}
       else
         default_domain = {domain_name: domain_name, address: "", status: Status::NOT_FOUND, price: "0.0"}
-        {resolved: false, confirmation: confirmation, domain: default_domain}
+        {resolved: false, confirmation: 1, domain: default_domain}
       end
     end
 
