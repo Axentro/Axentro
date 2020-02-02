@@ -208,7 +208,7 @@ module ::Sushi::Core::Controllers
     def __v1_address(context, params)
       with_response(context) do
         address = params["address"]
-        @blockchain.utxo.amount_impl(address, "all", 1)
+        @blockchain.utxo.amount_impl(address, "all")
       end
     end
 
@@ -216,7 +216,7 @@ module ::Sushi::Core::Controllers
       with_response(context) do
         address = params["address"]
         token = params["token"]
-        @blockchain.utxo.amount_impl(address, token, 1)
+        @blockchain.utxo.amount_impl(address, token)
       end
     end
 
@@ -235,7 +235,7 @@ module ::Sushi::Core::Controllers
       with_response(context) do
         domain = params["domain"]
         address = convert_domain_to_address(domain)
-        @blockchain.utxo.amount_impl(address, "all", 1)
+        @blockchain.utxo.amount_impl(address, "all")
       end
     end
 
@@ -244,7 +244,7 @@ module ::Sushi::Core::Controllers
         domain = params["domain"]
         token = params["token"]
         address = convert_domain_to_address(domain)
-        @blockchain.utxo.amount_impl(address, token, 1)
+        @blockchain.utxo.amount_impl(address, token)
       end
     end
 

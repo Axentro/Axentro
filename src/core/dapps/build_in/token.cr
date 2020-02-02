@@ -78,24 +78,24 @@ RULE
     end
 
     def record(chain : Blockchain::Chain)
-      the_chain = @blockchain.database.get_blocks_not_in_list(@recorded_indices)
-      the_chain.each do |block|
-        block.transactions.each do |transaction|
-          next unless transaction.action == "create_token"
+      # the_chain = @blockchain.database.get_blocks_not_in_list(@recorded_indices)
+      # the_chain.each do |block|
+      #   block.transactions.each do |transaction|
+      #     next unless transaction.action == "create_token"
 
-          address = transaction.senders[0][:address]
-          amount = transaction.senders[0][:amount]
-          token = transaction.token
+      #     address = transaction.senders[0][:address]
+      #     amount = transaction.senders[0][:amount]
+      #     token = transaction.token
 
-          if !@tokens.includes?(transaction.token)
-            @tokens << transaction.token
+      #     if !@tokens.includes?(transaction.token)
+      #       @tokens << transaction.token
 
-            blockchain.utxo.create_token(address, amount, token)
-          end
-        end
-        @recorded_indices << block.index
-      end
-      @recorded_indices
+      #       blockchain.utxo.create_token(address, amount, token)
+      #     end
+      #   end
+      #   @recorded_indices << block.index
+      # end
+      # @recorded_indices
     end
 
     def clear
