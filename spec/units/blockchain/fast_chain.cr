@@ -103,7 +103,11 @@ describe Blockchain do
 
         block_factory.add_slow_blocks(2)
         blockchain.add_transaction(transaction1, false)
-        blockchain.rejects.find(transaction1.id).should eq("chain not mature enough for FAST transactions")
+        if reject = blockchain.rejects.find(transaction1.id)
+          reject.reason.should eq("chain not mature enough for FAST transactions")
+        else
+          fail "no rejects found"
+        end
       end
     end
   end
