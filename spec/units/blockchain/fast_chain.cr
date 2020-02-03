@@ -194,7 +194,11 @@ describe Blockchain do
         blockchain.pending_fast_transactions.size.should eq(0)
         blockchain.replace_fast_transactions([transaction1, transaction2])
         blockchain.pending_fast_transactions.size.should eq(1)
-        blockchain.rejects.find(transaction2.id).should eq("the amount is out of range")
+        if reject = blockchain.rejects.find(transaction2.id)
+          reject.reason.should eq("the amount is out of range")
+        else
+          fail "no rejects found"
+        end  
       end
     end
   end

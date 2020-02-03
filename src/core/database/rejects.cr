@@ -11,6 +11,9 @@
 # Removal or modification of this copyright notice is prohibited.
 require "../blockchain/*"
 require "../blockchain/block/*"
+require "../node/*"
+require "../dapps/dapp"
+require "../dapps/build_in/rejects"
 
 module ::Sushi::Core::Data::Rejects
   # ------- Definition -------
@@ -23,12 +26,12 @@ module ::Sushi::Core::Data::Rejects
   end
 
   # ------- Insert -------
-  def insert_reject(reject : Reject) : Array(DB::Any)
-    db.exec("insert into rejects values (?, ?)", reject.transaction_id, reject.reason)
+  def insert_reject(reject : Reject)
+    @db.exec("insert or ignore into rejects values (?, ?)", reject.transaction_id, reject.reason)
   end
 
   # ------- Query -------
-  def find_reject(transaction_id : String) : Reject
+  def find_reject(transaction_id : String) : Reject?
     rejects = [] of Reject
     @db.query("select * from rejects where transaction_id = ?", transaction_id) do |rows|
       rows.each do
@@ -37,7 +40,11 @@ module ::Sushi::Core::Data::Rejects
         rejects << Reject.new(tid, reason)
       end
     end
-    rejects
+    rejects.size > 0 ? rejects.first : nil
+  end
+
+  def total_rejects : Int32
+    @db.query_one("select count(*) from rejects", as: Int32)
   end
 
   include Sushi::Core::DApps::BuildIn

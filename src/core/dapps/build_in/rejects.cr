@@ -16,6 +16,11 @@ module ::Sushi::Core::DApps::BuildIn
     getter reason
 
     def initialize(@transaction_id : String, @reason : String); end
+
+    def to_json(b)
+      {transaction_id => reason}.to_json
+    end
+
   end
 
   class Rejects < DApp
@@ -54,11 +59,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def find(transaction_id : String) : Reject?
-      if reject = database.find_reject(transaction_id)
-        return reject
-      end
-
-      nil
+      database.find_reject(transaction_id)
     end
 
     def on_message(action : String, from_address : String, content : String, from = nil)

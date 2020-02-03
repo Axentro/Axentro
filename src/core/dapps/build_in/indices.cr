@@ -83,11 +83,11 @@ module ::Sushi::Core::DApps::BuildIn
         }
       end
 
-      if rejected_reason = blockchain.rejects.find(transaction_id)
+      if reject = blockchain.rejects.find(transaction_id)
         return {
           status:      "rejected",
           transaction: nil,
-          reason:      rejected_reason,
+          reason:      reject.reason,
         }
       end
 

@@ -43,14 +43,6 @@ describe Rejects do
       rejects.valid_transaction?(chain.last.transactions.first, chain.last.transactions).should be_true
     end
   end
-  it "should perform #record" do
-    with_factory do |block_factory, _|
-      chain = block_factory.add_slow_blocks(2).chain
-      rejects = Rejects.new(block_factory.blockchain)
-      rejects.record(chain).should be_nil
-    end
-  end
-
   describe "record_reject" do
     it "should record a rejected transaction with exception message" do
       with_factory do |block_factory, _|
@@ -58,7 +50,11 @@ describe Rejects do
         transaction_id = chain.last.transactions.last.id
         rejects = Rejects.new(block_factory.blockchain)
         rejects.record_reject(transaction_id, Exception.new("oops"))
-        rejects.@rejects.should eq({transaction_id => "oops"})
+        if reject = block_factory.database.find_reject(transaction_id)
+          reject.reason.should eq("oops")
+        else
+          fail "no reject found"
+        end
       end
     end
     it "should record a rejected transaction with default exception message" do
@@ -67,18 +63,12 @@ describe Rejects do
         transaction_id = chain.last.transactions.last.id
         rejects = Rejects.new(block_factory.blockchain)
         rejects.record_reject(transaction_id, Exception.new)
-        rejects.@rejects.should eq({transaction_id => "unknown"})
+        if reject = block_factory.database.find_reject(transaction_id)
+          reject.reason.should eq("unknown")
+        else
+          fail "no reject found"
+        end
       end
     end
   end
-  it "should perform #clear" do
-    with_factory do |block_factory, _|
-      chain = block_factory.add_slow_blocks(2).chain
-      rejects = Rejects.new(block_factory.blockchain)
-      rejects.record_reject(chain.last.transactions.last.id, Exception.new)
-      rejects.clear
-      rejects.@rejects.size.should eq(0)
-    end
-  end
-
 end
