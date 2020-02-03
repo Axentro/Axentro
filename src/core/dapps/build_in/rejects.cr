@@ -20,11 +20,9 @@ module ::Sushi::Core::DApps::BuildIn
     def to_json(b)
       {transaction_id => reason}.to_json
     end
-
   end
 
   class Rejects < DApp
-    
     def setup
     end
 

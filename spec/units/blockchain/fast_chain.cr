@@ -198,7 +198,7 @@ describe Blockchain do
           reject.reason.should eq("the amount is out of range")
         else
           fail "no rejects found"
-        end  
+        end
       end
     end
   end
