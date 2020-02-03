@@ -11,7 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::DApps::BuildIn
-
   struct TokenQuantity
     getter token : String
     getter amount : Int64
@@ -31,18 +30,17 @@ module ::Sushi::Core::DApps::BuildIn
 
     def get_pending(address : String, transactions : Array(Transaction), token : String) : Int64
       historic = get_for(address, token)
-      
+
       if token == "SUSHI"
-        fees_sum = transactions.flat_map(&.senders).select{|s| s[:address] == address}.map(&.[:fee]).sum
-        senders_sum = transactions.select{|t| t.token == token}.flat_map(&.senders).select{|s| s[:address] == address}.map(&.[:amount]).sum
-        recipients_sum = transactions.select{|t| t.token == token}.flat_map(&.recipients).select { |r| r[:address] == address }.map(&.[:amount]).sum
+        fees_sum = transactions.flat_map(&.senders).select { |s| s[:address] == address }.map(&.[:fee]).sum
+        senders_sum = transactions.select { |t| t.token == token }.flat_map(&.senders).select { |s| s[:address] == address }.map(&.[:amount]).sum
+        recipients_sum = transactions.select { |t| t.token == token }.flat_map(&.recipients).select { |r| r[:address] == address }.map(&.[:amount]).sum
         historic + (recipients_sum - (senders_sum + fees_sum))
       else
-        senders_sum = transactions.select{|t| t.token == token}.flat_map(&.senders).select{|s| s[:address] == address}.map(&.[:amount]).sum
-        recipients_sum = transactions.select{|t| t.token == token}.flat_map(&.recipients).select { |r| r[:address] == address }.map(&.[:amount]).sum
+        senders_sum = transactions.select { |t| t.token == token }.flat_map(&.senders).select { |s| s[:address] == address }.map(&.[:amount]).sum
+        recipients_sum = transactions.select { |t| t.token == token }.flat_map(&.recipients).select { |r| r[:address] == address }.map(&.[:amount]).sum
         historic + (recipients_sum - (senders_sum))
       end
-
     end
 
     def transaction_actions : Array(String)
