@@ -11,9 +11,15 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::DApps::BuildIn
-  class Rejects < DApp
-    @rejects : Hash(String, String) = Hash(String, String).new
+  struct Reject
+    getter transaction_id
+    getter reason
 
+    def initialize(@transaction_id : String, @reason : String); end
+  end
+
+  class Rejects < DApp
+    
     def setup
     end
 
@@ -34,26 +40,22 @@ module ::Sushi::Core::DApps::BuildIn
       record_reject(transaction_id, error_message)
     end
 
-    # TODO - this should be recorded in the db
     def record_reject(transaction_id : String, error_message : String)
-      @rejects[transaction_id] ||= error_message
+      database.insert_reject(Reject.new(transaction_id, error_message))
     end
 
-    # TODO - Store rejects in the db and only keep latest 10,000
-    # record should load the 10k into mem and trim the db
     def record(chain : Blockchain::Chain)
     end
 
     def clear
-      @rejects.clear
     end
 
     def define_rpc?(call, json, context, params) : HTTP::Server::Context?
     end
 
-    def find(transaction_id : String) : String?
-      if rejected_reason = @rejects[transaction_id]?
-        return rejected_reason
+    def find(transaction_id : String) : Reject?
+      if reject = database.find_reject(transaction_id)
+        return reject
       end
 
       nil
