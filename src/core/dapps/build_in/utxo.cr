@@ -82,14 +82,6 @@ module ::Sushi::Core::DApps::BuildIn
       true
     end
 
-    
-
-    # def create_token(address : String, amount : Int64, token : String)
-    #   @utxo_internal << TokenQuantity.new(token, [AddressQuantity.new(address, amount)])
-    # end
-
-
-
     def record(chain : Blockchain::Chain)
     end
 

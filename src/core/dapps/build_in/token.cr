@@ -14,8 +14,6 @@ module ::Sushi::Core::DApps::BuildIn
   class Token < DApp
     getter tokens : Array(String) = ["SUSHI"]
 
-    @recorded_indices : Array(Int64) = [] of Int64
-
     def setup
     end
 
@@ -78,30 +76,9 @@ RULE
     end
 
     def record(chain : Blockchain::Chain)
-      # the_chain = @blockchain.database.get_blocks_not_in_list(@recorded_indices)
-      # the_chain.each do |block|
-      #   block.transactions.each do |transaction|
-      #     next unless transaction.action == "create_token"
-
-      #     address = transaction.senders[0][:address]
-      #     amount = transaction.senders[0][:amount]
-      #     token = transaction.token
-
-      #     if !@tokens.includes?(transaction.token)
-      #       @tokens << transaction.token
-
-      #       blockchain.utxo.create_token(address, amount, token)
-      #     end
-      #   end
-      #   @recorded_indices << block.index
-      # end
-      # @recorded_indices
     end
 
     def clear
-      @tokens.clear
-      @tokens << "SUSHI"
-      @recorded_indices.clear
     end
 
     def define_rpc?(call, json, context, params) : HTTP::Server::Context?

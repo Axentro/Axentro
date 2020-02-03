@@ -214,6 +214,7 @@ module ::Sushi::Core::Data::Transactions
       "from transactions t " \
       "join senders s on s.transaction_id = t.id " \
       "where s.address = ? " \
+      "and t.action = 'send' " \
       "group by t.token",
       address
     ) do |rows|
