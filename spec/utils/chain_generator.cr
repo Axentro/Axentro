@@ -46,6 +46,7 @@ module ::Units::Utils::ChainGenerator
       @node_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @miner_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @database = memory_kind == MemoryKind::SINGLE ? Sushi::Core::Database.in_memory : Sushi::Core::Database.in_shared_memory
+      # @database = Sushi::Core::Database.new("./utxo.sqlite3")
       @node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, @database, developer_fund, nil, 512, 512, false)
       @blockchain = @node.blockchain
       # the node setup is run in a spawn so we have to wait until it's finished before running any tests

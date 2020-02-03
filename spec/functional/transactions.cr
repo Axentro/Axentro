@@ -44,7 +44,7 @@ class Transactions < SpinachTestCase
       wallet_a_final_balance = Wallets.balance_for(wallet_a, block_factory)
       wallet_b_final_balance = Wallets.balance_for(wallet_b, block_factory)
 
-      rejected = block_factory.blockchain.rejects.@rejects.keys.size.to_s
+      rejected = block_factory.database.total_rejects.to_s
 
       {"wallet_balance_a" => wallet_a_final_balance, "wallet_balance_b" => wallet_b_final_balance, "rejections" => rejected}
     end
@@ -76,7 +76,7 @@ class Transactions < SpinachTestCase
       wallet_a_final_balance = Wallets.balance_for(wallet_a, block_factory)
       wallet_a_final_custom_balance = Wallets.balance_for(wallet_a, block_factory, token_name)
 
-      rejected = block_factory.blockchain.rejects.@rejects.keys.size.to_s
+      rejected = block_factory.database.total_rejects.to_s
 
       {"wallet_balance_a" => wallet_a_final_balance, "wallet_balance_a_custom" => wallet_a_final_custom_balance, "rejections" => rejected}
     end
@@ -118,7 +118,7 @@ class Transactions < SpinachTestCase
       wallet_balance_a_kings = Wallets.balance_for(wallet_a, block_factory, token_name)
       wallet_balance_b_kings = Wallets.balance_for(wallet_b, block_factory, token_name)
 
-      rejected = block_factory.blockchain.rejects.@rejects.keys.size.to_s
+      rejected = block_factory.database.total_rejects.to_s
 
       {"wallet_balance_a" => wallet_a_final_balance, "wallet_balance_b" => wallet_b_final_balance, "wallet_balance_a_kings" => wallet_balance_a_kings, "wallet_balance_b_kings" => wallet_balance_b_kings, "rejections" => rejected}
     end

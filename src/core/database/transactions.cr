@@ -168,6 +168,80 @@ module ::Sushi::Core::Data::Transactions
     end
   end
 
+  # --------- utxo -----------
+
+  def get_address_amount(address : String) : Array(TokenQuantity)
+    recipient_sum = get_recipient_sum(address)
+    sender_sum = get_sender_sum(address)
+    unique_tokens = (recipient_sum + sender_sum).map(&.token).push("SUSHI").uniq
+    fee = get_fee_sum(address)
+    unique_tokens.map do |token|
+      recipient = recipient_sum.select { |r| r.token == token }.map(&.amount).sum
+      sender = sender_sum.select { |s| s.token == token }.map(&.amount).sum
+
+      if token == "SUSHI"
+        sender = sender + fee
+      end
+      balance = recipient - sender
+
+      TokenQuantity.new(token, balance)
+    end
+  end
+
+  private def get_recipient_sum(address : String) : Array(TokenQuantity)
+    token_quantity = [] of TokenQuantity
+    @db.query(
+      "select t.token, sum(r.amount) " \
+      "from transactions t " \
+      "join recipients r on r.transaction_id = t.id " \
+      "where r.address = ? " \
+      "group by t.token",
+      address
+    ) do |rows|
+      rows.each do
+        token = rows.read(String)
+        amount = rows.read(Int64 | Nil) || 0_i64
+        token_quantity << TokenQuantity.new(token, amount)
+      end
+    end
+    token_quantity
+  end
+
+  private def get_sender_sum(address : String) : Array(TokenQuantity)
+    token_quantity = [] of TokenQuantity
+    @db.query(
+      "select t.token, sum(s.amount) " \
+      "from transactions t " \
+      "join senders s on s.transaction_id = t.id " \
+      "where s.address = ? " \
+      "and t.action = 'send' " \
+      "group by t.token",
+      address
+    ) do |rows|
+      rows.each do
+        token = rows.read(String)
+        amount = rows.read(Int64 | Nil) || 0_i64
+        token_quantity << TokenQuantity.new(token, amount)
+      end
+    end
+    token_quantity
+  end
+
+  private def get_fee_sum(address : String) : Int64
+    amount = 0_i64
+    @db.query(
+      "select sum(fee) " \
+      "from senders " \
+      "where address = ?",
+      address
+    ) do |rows|
+      rows.each do
+        amount = rows.read(Int64 | Nil) || 0_i64
+      end
+    end
+    amount
+  end
+
   # ------- Helpers -------
   def transactions_by_query(query, *args)
     transactions = [] of Transaction

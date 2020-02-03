@@ -136,7 +136,11 @@ describe Blockchain do
         blockchain.add_transaction(transaction, false)
         blockchain.pending_slow_transactions.size.should eq(0)
         blockchain.embedded_slow_transactions.size.should eq(0)
-        blockchain.rejects.find(transaction.id).should eq("the amount is out of range")
+        if reject = blockchain.rejects.find(transaction.id)
+          reject.reason.should eq("the amount is out of range")
+        else
+          fail "no rejects found"
+        end
       end
     end
 
@@ -150,7 +154,11 @@ describe Blockchain do
         block_factory.add_slow_blocks(2)
         blockchain.pending_slow_transactions.size.should eq(0)
         blockchain.embedded_slow_transactions.size.should eq(0)
-        blockchain.rejects.find(transaction.id).should eq("the transaction #{transaction.id} is already included in block: 2")
+        if reject = blockchain.rejects.find(transaction.id)
+          reject.reason.should eq("the transaction #{transaction.id} is already included in block: 2")
+        else
+          fail "no rejects found"
+        end
       end
     end
   end
@@ -279,7 +287,6 @@ describe Blockchain do
       end
     end
     describe "fast chain" do
-
       it "should return the whole fast chain as a subchain when the fast chain size is less than the in memory allocation" do
         with_factory do |block_factory|
           block_factory.add_slow_blocks(1).add_fast_blocks(4)
@@ -441,7 +448,11 @@ describe Blockchain do
         blockchain.pending_slow_transactions.size.should eq(0)
         blockchain.replace_slow_transactions([transaction1, transaction2])
         blockchain.pending_slow_transactions.size.should eq(1)
-        blockchain.rejects.find(transaction2.id).should eq("the amount is out of range")
+        if reject = blockchain.rejects.find(transaction2.id)
+          reject.reason.should eq("the amount is out of range")
+        else
+          fail "no rejects found"
+        end
       end
     end
   end

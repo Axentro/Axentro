@@ -25,7 +25,7 @@ describe Scars do
         scars = Scars.new(block_factory.blockchain)
         scars.record(chain)
         wallet = Wallet.from_json(Wallet.create(true).to_json)
-        scars.lookup(wallet.address).should eq [] of Array(Domain)
+        scars.lookup_for(wallet.address).should eq [] of Array(Domain)
       end
     end
 
@@ -38,7 +38,7 @@ describe Scars do
         scars = Scars.new(block_factory.blockchain)
         scars.record(chain)
 
-        on_success(scars.lookup(transaction_factory.sender_wallet.address)) do |result|
+        on_success(scars.lookup_for(transaction_factory.sender_wallet.address)) do |result|
           result.first["domain_name"].should eq(domains[0])
           result[1]["domain_name"].should eq(domains[1])
         end
@@ -52,7 +52,7 @@ describe Scars do
         chain = block_factory.add_slow_block.chain
         scars = Scars.new(block_factory.blockchain)
         scars.record(chain)
-        scars.resolve("domain1.sc", 1).should be_nil
+        scars.resolve_for("domain1.sc").should be_nil
       end
     end
 
@@ -61,7 +61,7 @@ describe Scars do
         chain = block_factory.add_slow_blocks(10).chain
         scars = Scars.new(block_factory.blockchain)
         scars.record(chain)
-        scars.resolve("domain1.sc", 1).should be_nil
+        scars.resolve_for("domain1.sc").should be_nil
       end
     end
 
@@ -72,7 +72,7 @@ describe Scars do
         scars = Scars.new(block_factory.blockchain)
         scars.record(chain)
 
-        on_success(scars.resolve(domain, 1)) do |result|
+        on_success(scars.resolve_for(domain)) do |result|
           result["domain_name"].should eq(domain)
           result["address"].should eq(transaction_factory.sender_wallet.address)
           result["status"].should eq(Status::ACQUIRED)
