@@ -420,7 +420,7 @@ module ::Sushi::Core
             debug "gonna delete at index #{i}"
             @chain.delete_at(i) if @chain[i].index >= index
           }
-         dapps_clear_record
+          dapps_clear_record
         end
         break
       end

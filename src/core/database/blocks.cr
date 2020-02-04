@@ -167,6 +167,7 @@ module ::Sushi::Core::Data::Blocks
 
   # ------- API -------
   def get_paginated_blocks(page, per_page, direction) : Blockchain::Chain
+    page = page * per_page
     get_blocks_via_query(
       "select * from blocks " \
       "where oid not in ( select oid from blocks " \

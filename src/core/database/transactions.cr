@@ -74,6 +74,7 @@ module ::Sushi::Core::Data::Transactions
 
   def get_paginated_tokens(page : Int32, per_page : Int32, direction : String)
     res = [] of String
+    page = page * per_page
     @db.query(
       "select distinct(token) from transactions " \
       "where oid not in " \
