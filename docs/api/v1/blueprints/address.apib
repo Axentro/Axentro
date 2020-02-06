@@ -1,6 +1,6 @@
 ## Group Address
 
-# /address/{address}{?confirmation}
+# /address/{address}
 
 ## GET
 
@@ -8,7 +8,6 @@ This retrieves amounts of tokens for an address as Json
 
 + Parameters
     + address (string) - The address
-    + confirmation: 1 (number, optional) - Number of confirmations
     
 + Response 200 (application/json)
 
@@ -78,14 +77,13 @@ This retrieves the transactions for an address as Json
             }
 
         
-## address/amount/token [GET /address/{address}/token/{token}{?confirmation}]
+## address/amount/token [GET /address/{address}/token/{token}]
 
 This retrieves the amount for a specified token for an address as Json
 
 + Parameters
     + address (string) - The address
     + token (string) - The token
-    + confirmation: 1 (number, optional) - Number of confirmations
     
 + Response 200 (application/json)
 

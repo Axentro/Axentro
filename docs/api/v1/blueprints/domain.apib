@@ -1,6 +1,6 @@
 ## Group Domain
 
-# /domain/{domain}{?confirmation}
+# /domain/{domain}
 
 ## GET
 
@@ -8,7 +8,6 @@ This retrieves amounts of tokens for a domain as Json
 
 + Parameters
     + domain (string) - The domain
-    + confirmation: 1 (number, optional) - Number of confirmations
     
 + Response 200 (application/json)
 
@@ -34,14 +33,15 @@ This retrieves amounts of tokens for a domain as Json
             }
 
         
-## domain/transactions [GET /domain/{domain}/transactions{?page}{?page_size}{?actions}]
+## domain/transactions [GET /domain/{domain}/transactions{?page}{?per_page}{?direction}{?actions}]
 
 This retrieves the transactions for a domain as Json
 
 + Parameters
     + domain (string) - The domain
-    + page: 0 (number, optional) - page to retrieve
-    + page_size: 20 (number, optional) - number of items per page
+    + page: 0 (number, optional) - The page
+    + per_page: 20 (number, optional) - The number of items per page
+    + direction: up (string, optional) - The direction (up = ascending, down = descending)
     + actions (string, optional) - actions to filter in a comma delimited list e.g `?send,head`
     
 + Response 200 (application/json)
@@ -78,14 +78,13 @@ This retrieves the transactions for a domain as Json
             }
 
         
-## domain/amount/token [GET /domain/{domain}/token/{token}{?confirmation}]
+## domain/amount/token [GET /domain/{domain}/token/{token}]
 
 This retrieves the amount for a specified token for a domain as Json
 
 + Parameters
     + domain (string) - The domain
     + token (string) - The token
-    + confirmation: 1 (number, optional) - Number of confirmations
     
 + Response 200 (application/json)
 

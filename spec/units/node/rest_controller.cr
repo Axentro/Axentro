@@ -229,28 +229,6 @@ describe RESTController do
     end
   end
 
-  describe "__v1_transaction_id_confirmations" do
-    it "should return the confirmations for the specified transaction id" do
-      with_factory do |block_factory, transaction_factory|
-        transaction = transaction_factory.make_send(100_i64)
-        block_factory.add_slow_block([transaction]).add_slow_blocks(2)
-        exec_rest_api(block_factory.rest.__v1_transaction_id_confirmations(context("/api/v1/transaction/#{transaction.id}/confirmations"), {id: transaction.id})) do |result|
-          result["status"].to_s.should eq("success")
-          result["result"]["confirmations"].should eq(2_i64)
-        end
-      end
-    end
-    it "should return not found when transaction is not found" do
-      with_factory do |block_factory, _|
-        block_factory.add_slow_blocks(2)
-        exec_rest_api(block_factory.rest.__v1_transaction_id_confirmations(context("/api/v1/transaction/non-existing-txn-id/confirmations"), {id: "non-existing-txn-id"})) do |result|
-          result["status"].to_s.should eq("error")
-          result["reason"].should eq("failed to find a block for the transaction non-existing-txn-id")
-        end
-      end
-    end
-  end
-
   describe "__v1_transaction_fees" do
     it "should return the transaction fees" do
       with_factory do |block_factory, _|

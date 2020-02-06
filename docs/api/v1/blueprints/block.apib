@@ -57,13 +57,16 @@ This retrieves the block header at the specified index as Json
             }
 
 
-## block/transactions [GET /block/{index}/transactions]
+## block/transactions [GET /block/{index}/transactions{?page}{?per_page}{?direction}]
 
 This retrieves the transactions for the block specified at index as Json
 
 + Parameters
 
     + index (number) - The block index
+    + page: 0 (number, optional) - The page
+    + per_page: 20 (number, optional) - The number of items per page
+    + direction: up (string, optional) - The direction (up = ascending, down = descending)
     
 + Response 200 (application/json)
 

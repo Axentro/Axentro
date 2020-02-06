@@ -46,8 +46,8 @@ module ::E2E::Utils::API
     nil
   end
 
-  def amount(port : Int32, num : Int32, confirmation : Int32 = 1) : BigDecimal
-    args = ["wallet", "amount", "-w", wallet(num), "-n", "http://127.0.0.1:#{port}", "--json", "--confirmation=#{confirmation}"]
+  def amount(port : Int32, num : Int32) : BigDecimal
+    args = ["wallet", "amount", "-w", wallet(num), "-n", "http://127.0.0.1:#{port}", "--json"]
 
     res = `#{sushi(args)}`
 

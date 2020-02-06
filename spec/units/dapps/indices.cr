@@ -116,30 +116,5 @@ describe Indices do
         end
       end
     end
-
-    describe "#confirmation" do
-      it "should return confirmation info for the supplied transaction id" do
-        with_factory do |block_factory, _|
-          block_factory.add_slow_blocks(9)
-          payload = {call: "confirmation", transaction_id: block_factory.chain[2].transactions.first.id}.to_json
-          json = JSON.parse(payload)
-
-          with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            json_result = JSON.parse(result)
-            json_result["confirmations"].as_i.should eq(7)
-          end
-        end
-      end
-      it "should fail to find a block for the supplied transaction id" do
-        with_factory do |block_factory, _|
-          payload = {call: "confirmation", transaction_id: "non-existing-transaction-id"}.to_json
-          json = JSON.parse(payload)
-
-          with_rpc_exec_internal_post(block_factory.rpc, json) do |res|
-            res.includes?("failed to find a block for the transaction non-existing-transaction-id")
-          end
-        end
-      end
-    end
   end
 end

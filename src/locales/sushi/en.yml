@@ -33,7 +33,7 @@ sushi:
         desc:       "show remaining amount of Sushi tokens for specified address"
         messages:
           amount: "\n  showing amount of each token for %{address}."
-          confirmation: "  confirmation: %{confirmation}\n"
+          confirmation: "  confirmations: %{confirmation}"
     blockchain:
       title:        "blockchain"
       desc:         "get a whole blockchain or each block (bc for short)"
@@ -74,11 +74,6 @@ sushi:
           rejected: "the transaction was rejected because: %{reason}"
           not_found: "the transaction was not found"
           unknown: "unknown status for the transaction"
-      confirmation:
-        title: "confirmation"
-        desc: "get the number of confirmations (cf for short)"
-        messages:
-          confirmation: "show the number of confirmations of %{transaction_id}"
       fees:
         title: "fees"
         desc: "show fees for each action"

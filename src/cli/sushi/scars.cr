@@ -47,7 +47,6 @@ module ::Sushi::Interface::Sushi
         Options::WALLET_PATH,
         Options::WALLET_PASSWORD,
         Options::JSON,
-        Options::CONFIRMATION,
         Options::FEE,
         Options::PRICE,
         Options::DOMAIN,
@@ -86,7 +85,7 @@ module ::Sushi::Interface::Sushi
 
       Core::DApps::BuildIn::Scars.valid_domain?(domain)
 
-      resolved = resolve_internal(node, domain, 1)
+      resolved = resolve_internal(node, domain)
 
       wallet = get_wallet(wallet_path, G.op.__wallet_password)
 
@@ -124,7 +123,7 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_PRICE) unless price = G.op.__price
       puts_help(HELP_DOMAIN) unless domain = G.op.__domain
 
-      resolved = resolve_internal(node, domain, 1)
+      resolved = resolve_internal(node, domain)
 
       raise "the domain #{domain} is not resolved" unless resolved["resolved"].as_bool
 
@@ -161,7 +160,7 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_FEE) unless fee = G.op.__fee
       puts_help(HELP_DOMAIN) unless domain = G.op.__domain
 
-      resolved = resolve_internal(node, domain, 1)
+      resolved = resolve_internal(node, domain)
 
       raise "the domain #{domain} is not resolved" unless resolved["resolved"].as_bool
 
@@ -219,7 +218,7 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
       puts_help(HELP_DOMAIN) unless domain = G.op.__domain
 
-      resolved = resolve_internal(node, domain, G.op.__confirmation)
+      resolved = resolve_internal(node, domain)
 
       if G.op.__json
         puts resolved.to_json
