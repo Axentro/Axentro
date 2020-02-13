@@ -426,11 +426,11 @@ describe Scars do
             domain = "awesome.sc"
             block_factory.add_slow_blocks(10).add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(10)
 
-            payload = {call: "scars_resolve", domain_name: domain, confirmation: 1}.to_json
+            payload = {call: "scars_resolve", domain_name: domain, confirmation: 0}.to_json
             json = JSON.parse(payload)
 
             with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-              result.should eq("{\"resolved\":true,\"confirmation\":20,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":0,\"price\":\"0\",\"block\":22}}")
+              result.should eq("{\"resolved\":true,\"confirmation\":10,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":0,\"price\":\"0\",\"block\":22}}")
             end
           end
         end

@@ -185,7 +185,7 @@ RULE
             address:     address,
             price:       price,
             status:      Status::ACQUIRED,
-            block:       0_i64
+            block:       0_i64,
           }
         when "scars_sell"
           domain_map[domain_name] = {
@@ -193,7 +193,7 @@ RULE
             address:     address,
             price:       price,
             status:      Status::FOR_SALE,
-            block:       0_i64
+            block:       0_i64,
           }
         when "scars_cancel"
           domain_map[domain_name] = {
@@ -201,7 +201,7 @@ RULE
             address:     address,
             price:       price,
             status:      Status::ACQUIRED,
-            block:       0_i64
+            block:       0_i64,
           }
         end
       end
@@ -244,9 +244,9 @@ RULE
 
     def scars_resolve_impl(domain_name : String)
       domain = resolve_for(domain_name)
-      
+
       if domain
-        confirmation = database.get_confirmations(domain[:block]) 
+        confirmation = database.get_confirmations(domain[:block])
         {resolved: true, confirmation: confirmation, domain: scale_decimal(domain)}
       else
         default_domain = {domain_name: domain_name, address: "", status: Status::NOT_FOUND, price: "0.0"}
@@ -291,7 +291,7 @@ RULE
         address:     domain[:address],
         status:      domain[:status],
         price:       scale_decimal(domain[:price]),
-        block:       domain[:block]
+        block:       domain[:block],
       }
     end
 
