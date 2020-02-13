@@ -41,7 +41,11 @@ sushi:
         title: "size"
         desc: "show current blockchain size"
         messages:
-          size: "current blockchain size is %{size}"
+          total_size: "total blocks: %{size}"
+          total_slow: "total slow blocks: %{size}"
+          total_fast: "total fast blocks: %{size}"
+          height_slow: "slow block height: %{size}"
+          height_fast: "fast block height: %{size}"
       all:
         title: "all"
         desc: "get whole blockchain. headers (without transactions) only with --header option"

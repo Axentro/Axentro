@@ -60,11 +60,14 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def blockchain_size_impl
-      {size: database.total_blocks}
+      {totals:       {total_size: database.total_blocks, total_fast: database.total(Block::BlockKind::FAST), total_slow: database.total(Block::BlockKind::SLOW)},
+       block_height: {slow: database.highest_index_of_kind(Block::BlockKind::SLOW),
+                      fast: database.highest_index_of_kind(Block::BlockKind::FAST)}}
     end
 
     def blockchain(json, context, params)
-      page, per_page, direction = 0, 50, 0
+      page, per_page, direction = 0, 50, 1
+
       context.response.print api_success(blockchain_impl(json["header"].as_bool, page, per_page, direction))
       context
     end
@@ -111,7 +114,7 @@ module ::Sushi::Core::DApps::BuildIn
     end
 
     def transactions(json, context, params)
-      page, per_page, direction = 0, 50, 0
+      page, per_page, direction = 0, 50, 1
       context.response.print api_success(transactions_impl(json["index"]?, json["address"]?, page, per_page, direction))
       context
     end

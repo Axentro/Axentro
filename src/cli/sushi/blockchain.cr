@@ -66,7 +66,11 @@ module ::Sushi::Interface::Sushi
         puts body
       else
         json = JSON.parse(body)
-        puts_success(I18n.translate("sushi.cli.blockchain.size.messages.size", {size: json["size"]}))
+        puts_success(I18n.translate("sushi.cli.blockchain.size.messages.total_size", {size: json["totals"]["total_size"]}))
+        puts_success(I18n.translate("sushi.cli.blockchain.size.messages.total_slow", {size: json["totals"]["total_slow"]}))
+        puts_success(I18n.translate("sushi.cli.blockchain.size.messages.total_fast", {size: json["totals"]["total_fast"]}))
+        puts_success(I18n.translate("sushi.cli.blockchain.size.messages.height_slow", {size: json["block_height"]["slow"]}))
+        puts_success(I18n.translate("sushi.cli.blockchain.size.messages.height_fast", {size: json["block_height"]["fast"]}))
       end
     end
 

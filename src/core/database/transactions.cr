@@ -201,10 +201,10 @@ module ::Sushi::Core::Data::Transactions
     block = nil
     @db.query("select max(block_id) from recipients where address = ?", address) do |rows|
       rows.each do
-        block = rows.read(Int64 | Nil) 
+        block = rows.read(Int64 | Nil)
       end
     end
-    if block 
+    if block
       get_confirmations(block.not_nil!)
     else
       0_i64

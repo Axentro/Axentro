@@ -92,7 +92,11 @@ describe RESTController do
         block_factory.add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_blockchain_size(context("/api/v1/blockchain/size"), no_params)) do |result|
           result["status"].to_s.should eq("success")
-          result["result"]["size"].should eq(3)
+          result["result"]["totals"]["total_size"].should eq(3)
+          result["result"]["totals"]["total_fast"].should eq(0)
+          result["result"]["totals"]["total_slow"].should eq(3)
+          result["result"]["block_height"]["fast"].should eq(-1)
+          result["result"]["block_height"]["slow"].should eq(4)
         end
       end
     end
@@ -102,7 +106,7 @@ describe RESTController do
         block_factory.add_slow_blocks(blocks_to_add)
         exec_rest_api(block_factory.rest.__v1_blockchain_size(context("/api/v1/blockchain/size"), no_params)) do |result|
           result["status"].to_s.should eq("success")
-          result["result"]["size"].should eq(blocks_to_add + 1)
+          result["result"]["totals"]["total_size"].should eq(blocks_to_add + 1)
         end
       end
     end
