@@ -182,7 +182,7 @@ module ::Sushi::Interface::Sushi
       if G.op.__json
         puts body
       else
-        confirmation = json["confirmation"] || 1
+        confirmation = json["confirmation"]
         puts_success(I18n.translate("sushi.cli.wallet.amount.messages.amount", {address: address}))
         puts_success(I18n.translate("sushi.cli.wallet.amount.messages.confirmation", {confirmation: confirmation}))
 

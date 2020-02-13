@@ -23,8 +23,8 @@ module ::Sushi::Core::DApps::BuildIn
     NOT_FOUND = -1
   end
 
-  alias Domain = NamedTuple(domain_name: String, address: String, status: Status, price: Int64)
-  alias DomainResult = NamedTuple(domain_name: String, address: String, status: Status, price: String)
+  alias Domain = NamedTuple(domain_name: String, address: String, status: Status, price: Int64, block: Int64)
+  alias DomainResult = NamedTuple(domain_name: String, address: String, status: Status, price: String, block: Int64)
   alias DomainMap = Hash(String, Domain)
 
   class Scars < DApp
@@ -185,6 +185,7 @@ RULE
             address:     address,
             price:       price,
             status:      Status::ACQUIRED,
+            block:       0_i64
           }
         when "scars_sell"
           domain_map[domain_name] = {
@@ -192,6 +193,7 @@ RULE
             address:     address,
             price:       price,
             status:      Status::FOR_SALE,
+            block:       0_i64
           }
         when "scars_cancel"
           domain_map[domain_name] = {
@@ -199,6 +201,7 @@ RULE
             address:     address,
             price:       price,
             status:      Status::ACQUIRED,
+            block:       0_i64
           }
         end
       end
@@ -241,12 +244,13 @@ RULE
 
     def scars_resolve_impl(domain_name : String)
       domain = resolve_for(domain_name)
-
+      
       if domain
-        {resolved: true, confirmation: 1, domain: scale_decimal(domain)}
+        confirmation = database.get_confirmations(domain[:block]) 
+        {resolved: true, confirmation: confirmation, domain: scale_decimal(domain)}
       else
         default_domain = {domain_name: domain_name, address: "", status: Status::NOT_FOUND, price: "0.0"}
-        {resolved: false, confirmation: 1, domain: default_domain}
+        {resolved: false, confirmation: 0, domain: default_domain}
       end
     end
 
@@ -275,7 +279,8 @@ RULE
           domain_name: domain[:domain_name],
           address: domain[:address],
           status: domain[:status],
-          price: scale_decimal(domain[:price]))
+          price: scale_decimal(domain[:price]),
+          block: domain[:block])
       end
       {address: address, domains: domain_results}
     end
@@ -286,6 +291,7 @@ RULE
         address:     domain[:address],
         status:      domain[:status],
         price:       scale_decimal(domain[:price]),
+        block:       domain[:block]
       }
     end
 
