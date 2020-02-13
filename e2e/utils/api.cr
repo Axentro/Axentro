@@ -27,7 +27,7 @@ module ::E2E::Utils::API
     res = `#{sushi(args)}`
 
     if json = parse_json(res)
-      return json["size"].as_i
+      return json["totals"]["total_size"].as_i
     end
 
     0
