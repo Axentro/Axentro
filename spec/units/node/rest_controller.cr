@@ -39,18 +39,18 @@ end
 
 describe RESTController do
   describe "__v1_blockchain" do
-    it "should return the full blockchain with pagination defaults (page:0,per_page:20,direction:asc)" do
+    it "should return the full blockchain with pagination defaults (page:0,per_page:20,direction:desc)" do
       asset_blockchain("/api/v1/blockchain") do |result|
         blocks = Array(SlowBlock).from_json(result.to_json)
         blocks.size.should eq(20)
-        blocks.first.index.should eq(0)
+        blocks.first.index.should eq(100)
       end
     end
-    it "should return the full blockchain with pagination specified direction (page:0,per_page:20,direction:desc)" do
-      asset_blockchain("/api/v1/blockchain?direction=down") do |result|
+    it "should return the full blockchain with pagination specified direction (page:0,per_page:20,direction:asc)" do
+      asset_blockchain("/api/v1/blockchain?direction=up") do |result|
         blocks = Array(SlowBlock).from_json(result.to_json)
         blocks.size.should eq(20)
-        blocks.first.index.should eq(100)
+        blocks.first.index.should eq(0)
       end
     end
     it "should return the full blockchain with pagination specified direction (page:2,per_page:1,direction:desc)" do
@@ -63,18 +63,18 @@ describe RESTController do
   end
 
   describe "__v1_blockchain_header" do
-    it "should return the blockchain headers with pagination defaults (page:0,per_page:20,direction:asc)" do
+    it "should return the blockchain headers with pagination defaults (page:0,per_page:20,direction:desc)" do
       asset_blockchain_header("/api/v1/blockchain/header") do |result|
         blocks = Array(Blockchain::SlowHeader).from_json(result.to_json)
         blocks.size.should eq(20)
-        blocks.first[:index].should eq(0)
+        blocks.first[:index].should eq(100)
       end
     end
-    it "should return the blockchain headers with pagination specified direction (page:0,per_page:20,direction:desc)" do
-      asset_blockchain_header("/api/v1/blockchain/header/?direction=down") do |result|
+    it "should return the blockchain headers with pagination specified direction (page:0,per_page:20,direction:asc)" do
+      asset_blockchain_header("/api/v1/blockchain/header/?direction=up") do |result|
         blocks = Array(Blockchain::SlowHeader).from_json(result.to_json)
         blocks.size.should eq(20)
-        blocks.first[:index].should eq(100)
+        blocks.first[:index].should eq(0)
       end
     end
     it "should return the blockchain headers with pagination specified direction (page:2,per_page:1,direction:desc)" do

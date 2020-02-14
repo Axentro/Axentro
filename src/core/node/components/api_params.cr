@@ -26,7 +26,7 @@ module ::Sushi::Core::NodeComponents
       end
     end
 
-    def paginated(query_params, page = 0, per_page = 20, direction = Direction::Up)
+    def paginated(query_params, page = 0, per_page = 20, direction = Direction::Down)
       per_page = per_page > 100 ? 100 : per_page
       [query_params["page"]?.try &.to_i || page,
        query_params["per_page"]?.try &.to_i || per_page,
