@@ -68,7 +68,7 @@ describe BlockchainInfo do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq(%{{"size":11}})
+            result.should eq(%{{"totals":{"total_size":11,"total_fast":0,"total_slow":11},"block_height":{"slow":20,"fast":-1}}})
           end
         end
       end
@@ -82,7 +82,7 @@ describe BlockchainInfo do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq(block_factory.blockchain.chain.to_json)
+            result.should eq(block_factory.blockchain.chain.reverse.to_json)
           end
         end
       end
@@ -95,7 +95,7 @@ describe BlockchainInfo do
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
             expected_headers = block_factory.database.get_paginated_blocks(0, 50, "asc").map(&.to_header)
-            result.should eq(expected_headers.to_json)
+            result.should eq(expected_headers.reverse.to_json)
           end
         end
       end
@@ -122,7 +122,7 @@ describe BlockchainInfo do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            transactions_for_the_address = block_factory.chain.flat_map { |blk| blk.transactions }.select { |txn| txn.recipients.map { |r| r["address"] }.includes?(address) }.to_json
+            transactions_for_the_address = block_factory.chain.flat_map { |blk| blk.transactions }.select { |txn| txn.recipients.map { |r| r["address"] }.includes?(address) }.reverse.to_json
             result.should eq(transactions_for_the_address)
           end
         end

@@ -285,7 +285,7 @@ describe UTXO do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq("{\"confirmation\":1,\"pairs\":[{\"token\":\"SUSHI\",\"amount\":\"71.99986848\"}]}")
+            result.should eq("{\"confirmation\":0,\"pairs\":[{\"token\":\"SUSHI\",\"amount\":\"71.99986848\"}]}")
           end
         end
       end

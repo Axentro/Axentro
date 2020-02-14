@@ -53,7 +53,6 @@ module ::Sushi::Interface::Sushi
         Options::IS_TESTNET,
         Options::IS_PRIVATE,
         # Options::JSON,
-        # Options::CONFIRMATION,
         Options::BIND_HOST,
         Options::BIND_PORT,
         Options::PUBLIC_URL,

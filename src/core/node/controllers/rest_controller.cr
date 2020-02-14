@@ -31,7 +31,6 @@ module ::Sushi::Core::Controllers
   # [GET] api/v1/transaction/{:id}                        | transaction for supplied txn id
   # [GET] api/v1/transaction/{:id}/block                  | full block containing txn id
   # [GET] api/v1/transaction/{:id}/block/header           | block header containing txn id
-  # [GET] api/v1/transaction/{:id}/confirmations          | number confirmations for txn id
   # [GET] api/v1/transaction/fees                         | fees
   # [POST] api/v1/transaction                             | create and broadcast a transaction
   # [POST] api/v1/transaction/unsigned                    | create an unsigned transaction
@@ -72,7 +71,6 @@ module ::Sushi::Core::Controllers
       get "/api/v1/transaction/:id" { |context, params| __v1_transaction_id(context, params) }
       get "/api/v1/transaction/:id/block" { |context, params| __v1_transaction_id_block(context, params) }
       get "/api/v1/transaction/:id/block/header" { |context, params| __v1_transaction_id_block_header(context, params) }
-      get "/api/v1/transaction/:id/confirmations" { |context, params| __v1_transaction_id_confirmations(context, params) }
       get "/api/v1/transaction/fees" { |context, params| __v1_transaction_fees(context, params) }
       get "/api/v1/address/:address" { |context, params| __v1_address(context, params) }
       get "/api/v1/address/:address/token/:token" { |context, params| __v1_address_token(context, params) }
@@ -154,13 +152,6 @@ module ::Sushi::Core::Controllers
       with_response(context) do
         id = params["id"]
         @blockchain.blockchain_info.block_transaction_impl(true, id)
-      end
-    end
-
-    def __v1_transaction_id_confirmations(context, params)
-      with_response(context) do
-        id = params["id"]
-        @blockchain.indices.confirmation_impl(id)
       end
     end
 

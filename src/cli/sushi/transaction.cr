@@ -27,10 +27,6 @@ module ::Sushi::Interface::Sushi
           desc: I18n.translate("sushi.cli.transaction.transaction.desc"),
         },
         {
-          name: I18n.translate("sushi.cli.transaction.confirmation.title"),
-          desc: I18n.translate("sushi.cli.transaction.confirmation.desc"),
-        },
-        {
           name: I18n.translate("sushi.cli.transaction.fees.title"),
           desc: I18n.translate("sushi.cli.transaction.fees.desc"),
         },
@@ -42,7 +38,6 @@ module ::Sushi::Interface::Sushi
         Options::CONNECT_NODE,
         Options::WALLET_PATH,
         Options::WALLET_PASSWORD,
-        Options::CONFIRMATION,
         Options::JSON,
         Options::ADDRESS,
         Options::AMOUNT,
@@ -66,8 +61,6 @@ module ::Sushi::Interface::Sushi
         return transactions
       when I18n.translate("sushi.cli.transaction.transaction.title"), "tx"
         return transaction
-      when I18n.translate("sushi.cli.transaction.confirmation.title"), "cf"
-        return confirmation
       when I18n.translate("sushi.cli.transaction.fees.title")
         return fees
       end
@@ -89,7 +82,7 @@ module ::Sushi::Interface::Sushi
       recipient_address = if address = G.op.__address
                             address
                           else
-                            resolved = resolve_internal(node, G.op.__domain.not_nil!, G.op.__confirmation)
+                            resolved = resolve_internal(node, G.op.__domain.not_nil!)
                             raise "domain #{G.op.__domain.not_nil!} is not resolved" unless resolved["resolved"].as_bool
                             resolved["domain"]["address"].as_s
                           end
@@ -169,27 +162,6 @@ module ::Sushi::Interface::Sushi
         else
           puts_error(I18n.translate("sushi.cli.transaction.transaction.messages.unknown"))
         end
-      end
-    end
-
-    def confirmation
-      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
-      puts_help(HELP_TRANSACTION_ID) unless transaction_id = G.op.__transaction_id
-
-      payload = {call: "confirmation", transaction_id: transaction_id}.to_json
-
-      body = rpc(node, payload)
-
-      if G.op.__json
-        puts body
-      else
-        puts_success(I18n.translate("sushi.cli.transaction.confirmation.messages.rejected", {transaction_id: transaction_id}))
-
-        json = JSON.parse(body)
-
-        puts_info("transaction id: #{transaction_id}")
-        puts_info("--------------")
-        puts_info("confirmations: #{json["confirmations"]}")
       end
     end
 

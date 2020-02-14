@@ -426,11 +426,11 @@ describe Scars do
             domain = "awesome.sc"
             block_factory.add_slow_blocks(10).add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(10)
 
-            payload = {call: "scars_resolve", domain_name: domain, confirmation: 1}.to_json
+            payload = {call: "scars_resolve", domain_name: domain, confirmation: 0}.to_json
             json = JSON.parse(payload)
 
             with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-              result.should eq("{\"resolved\":true,\"confirmation\":1,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":0,\"price\":\"0\"}}")
+              result.should eq("{\"resolved\":true,\"confirmation\":10,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":0,\"price\":\"0\",\"block\":22}}")
             end
           end
         end
@@ -444,7 +444,7 @@ describe Scars do
             json = JSON.parse(payload)
 
             with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-              result.should eq("{\"resolved\":false,\"confirmation\":1,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"\",\"status\":-1,\"price\":\"0.0\"}}")
+              result.should eq("{\"resolved\":false,\"confirmation\":0,\"domain\":{\"domain_name\":\"awesome.sc\",\"address\":\"\",\"status\":-1,\"price\":\"0.0\"}}")
             end
           end
         end
@@ -463,7 +463,7 @@ describe Scars do
             json = JSON.parse(payload)
 
             with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-              result.should eq("[{\"domain_name\":\"awesome.sc\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":1,\"price\":\"0.2\"}]")
+              result.should eq("[{\"domain_name\":\"awesome.sc\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":1,\"price\":\"0.2\",\"block\":22}]")
             end
           end
         end

@@ -52,11 +52,7 @@ module ::Sushi::Interface::Sushi
         {
           name: I18n.translate("sushi.cli.client.title"),
           desc: I18n.translate("sushi.cli.client.desc"),
-        },
-        {
-          name: I18n.translate("sushi.cli.version.title"),
-          desc: I18n.translate("sushi.cli.version.desc"),
-        },
+        }
       ]
     end
 

@@ -119,8 +119,8 @@ module ::Sushi::Core::DApps::BuildIn
           pairs << {token: tq.token, amount: scale_decimal(tq.amount)}
         end
       end
-
-      {confirmation: 1, pairs: pairs}
+      confirmation = database.get_amount_confirmation(address)
+      {confirmation: confirmation, pairs: pairs}
     end
 
     def self.fee(action : String) : Int64

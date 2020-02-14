@@ -27,7 +27,7 @@ module ::E2E::Utils::API
     res = `#{sushi(args)}`
 
     if json = parse_json(res)
-      return json["size"].as_i
+      return json["totals"]["total_size"].as_i
     end
 
     0
@@ -46,8 +46,8 @@ module ::E2E::Utils::API
     nil
   end
 
-  def amount(port : Int32, num : Int32, confirmation : Int32 = 1) : BigDecimal
-    args = ["wallet", "amount", "-w", wallet(num), "-n", "http://127.0.0.1:#{port}", "--json", "--confirmation=#{confirmation}"]
+  def amount(port : Int32, num : Int32) : BigDecimal
+    args = ["wallet", "amount", "-w", wallet(num), "-n", "http://127.0.0.1:#{port}", "--json"]
 
     res = `#{sushi(args)}`
 

@@ -95,6 +95,16 @@ module ::Sushi::Core
       idx || 0_i64
     end
 
+    def total(kind : Block::BlockKind)
+      idx : Int64? = nil
+      @db.query("select count(*) from blocks where kind = ?", kind.to_s) do |rows|
+        rows.each do
+          idx = rows.read(Int64 | Nil)
+        end
+      end
+      idx || 0_i64
+    end
+
     include Logger
     include Data::Blocks
     include Data::Rejects

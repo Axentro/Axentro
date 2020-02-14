@@ -12,7 +12,6 @@ cli:
       url:        "public url of your node that can be accessed from internet. if your node is behind a NAT, you can add --private flag instread of this option"
     private:      "launch a node in private mode. it will not be connected to other nodes."
     json:         "print results as json"
-    confirmation: "set the length for the confirmation"
     binding:
       host:       "binding host; '0.0.0.0' by default"
       port:       "binding port; 3000 by default"

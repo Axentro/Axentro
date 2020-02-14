@@ -1,11 +1,15 @@
 ## Group Blockchain Info
 
-# /blockchain
+# /blockchain{?page}{?per_page}{?direction}
 
 ## GET
 
 Retrieves the entire blockchain as Json
 
++ Parameters
+    + page: 0 (number, optional) - The page
+    + per_page: 20 (number, optional) - The number of items per page
+    + direction: up (string, optional) - The direction (up = ascending, down = descending)
 
 + Response 200 (application/json)
 
@@ -29,9 +33,14 @@ Retrieves the entire blockchain as Json
                 ]
             }
 
-## blockchain/header [GET /blockchain/header]
+## blockchain/header [GET /blockchain/header{?page}{?per_page}{?direction}]
 
 This retrieves the headers of the entire blockchain as Json
+
++ Parameters
+    + page: 0 (number, optional) - The page
+    + per_page: 20 (number, optional) - The number of items per page
+    + direction: up (string, optional) - The direction (up = ascending, down = descending)
 
 + Response 200 (application/json)
 

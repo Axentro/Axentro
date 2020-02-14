@@ -28,7 +28,6 @@ module ::Sushi::Interface
     @is_private : Bool = false
     @is_private_changed = false
     @json : Bool = false
-    @confirmation : Int32 = 1
 
     @bind_host : String = "0.0.0.0"
     @bind_port : Int32 = 3000
@@ -75,7 +74,6 @@ module ::Sushi::Interface
       IS_TESTNET
       IS_PRIVATE
       JSON
-      CONFIRMATION
       # for node setting up
       BIND_HOST
       BIND_PORT
@@ -122,7 +120,6 @@ module ::Sushi::Interface
         parse_public(parser, actives)
         parse_private(parser, actives)
         parse_json(parser, actives)
-        parse_confirmation(parser, actives)
         parse_bind_host(parser, actives)
         parse_bind_port(parser, actives)
         parse_public_url(parser, actives)
@@ -210,12 +207,6 @@ module ::Sushi::Interface
       parser.on("-j", "--json", I18n.translate("cli.options.json")) {
         @json = true
       } if is_active?(actives, Options::JSON)
-    end
-
-    private def parse_confirmation(parser : OptionParser, actives : Array(Options))
-      parser.on("--confirmation=CONFIRMATION", I18n.translate("cli.options.confirmation")) { |confirmation|
-        @confirmation = confirmation.to_i
-      } if is_active?(actives, Options::CONFIRMATION)
     end
 
     private def parse_bind_host(parser : OptionParser, actives : Array(Options))
@@ -411,10 +402,6 @@ module ::Sushi::Interface
 
     def __json : Bool
       @json
-    end
-
-    def __confirmation : Int32
-      @confirmation
     end
 
     def __bind_host : String

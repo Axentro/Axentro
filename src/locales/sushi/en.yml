@@ -33,7 +33,7 @@ sushi:
         desc:       "show remaining amount of Sushi tokens for specified address"
         messages:
           amount: "\n  showing amount of each token for %{address}."
-          confirmation: "  confirmation: %{confirmation}\n"
+          confirmation: "  confirmations: %{confirmation}"
     blockchain:
       title:        "blockchain"
       desc:         "get a whole blockchain or each block (bc for short)"
@@ -41,7 +41,11 @@ sushi:
         title: "size"
         desc: "show current blockchain size"
         messages:
-          size: "current blockchain size is %{size}"
+          total_size: "total blocks: %{size}"
+          total_slow: "total slow blocks: %{size}"
+          total_fast: "total fast blocks: %{size}"
+          height_slow: "slow block height: %{size}"
+          height_fast: "fast block height: %{size}"
       all:
         title: "all"
         desc: "get whole blockchain. headers (without transactions) only with --header option"
@@ -74,11 +78,6 @@ sushi:
           rejected: "the transaction was rejected because: %{reason}"
           not_found: "the transaction was not found"
           unknown: "unknown status for the transaction"
-      confirmation:
-        title: "confirmation"
-        desc: "get the number of confirmations (cf for short)"
-        messages:
-          confirmation: "show the number of confirmations of %{transaction_id}"
       fees:
         title: "fees"
         desc: "show fees for each action"

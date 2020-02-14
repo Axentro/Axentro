@@ -28,8 +28,8 @@ module ::Sushi::Interface::Sushi
         regex:   /^send\s(.+?)\s(.+?)\s(.+?)\s(.+?)\s(.+)$/,
       },
       {
-        command: "amount [token] [confirmation]",
-        desc:    "show the amount of the token of the client for the confirmation",
+        command: "amount [token]",
+        desc:    "show the amount of the token of the client",
         regex:   /^amount\s(.+?)\s(\d+)$/,
       },
       {
@@ -212,9 +212,8 @@ module ::Sushi::Interface::Sushi
       end
 
       token = $1.to_s
-      confirmation = $2.to_i
 
-      client.amount(token, confirmation)
+      client.amount(token)
     end
 
     def fee(input : String)

@@ -50,8 +50,6 @@ module ::Sushi::Core::DApps::BuildIn
       case call
       when "transaction"
         return transaction(json, context, params)
-      when "confirmation"
-        return confirmation(json, context, params)
       end
 
       nil
@@ -68,8 +66,10 @@ module ::Sushi::Core::DApps::BuildIn
       if block_index = get(transaction_id)
         if block = database.get_block(block_index)
           if transaction = block.find_transaction(transaction_id)
+            p confirmation = database.get_confirmations(block_index)
             return {
               status:      "accepted",
+              confirmation: confirmation,
               transaction: transaction,
             }
           end
@@ -94,26 +94,6 @@ module ::Sushi::Core::DApps::BuildIn
       {
         status:      "not found",
         transaction: nil,
-      }
-    end
-
-    def confirmation(json, context, params)
-      transaction_id = json["transaction_id"].as_s
-
-      context.response.print api_success(confirmation_impl(transaction_id))
-      context
-    end
-
-    def confirmation_impl(transaction_id : String)
-      unless block_index = get(transaction_id)
-        raise "failed to find a block for the transaction #{transaction_id}"
-      end
-
-      highest_index = database.highest_index_of_kind(BlockKind::SLOW)
-      confirmations = (highest_index - block_index) / 2
-
-      {
-        confirmations: confirmations.to_i,
       }
     end
 

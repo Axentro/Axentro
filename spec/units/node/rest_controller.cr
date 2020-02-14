@@ -92,7 +92,11 @@ describe RESTController do
         block_factory.add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_blockchain_size(context("/api/v1/blockchain/size"), no_params)) do |result|
           result["status"].to_s.should eq("success")
-          result["result"]["size"].should eq(3)
+          result["result"]["totals"]["total_size"].should eq(3)
+          result["result"]["totals"]["total_fast"].should eq(0)
+          result["result"]["totals"]["total_slow"].should eq(3)
+          result["result"]["block_height"]["fast"].should eq(-1)
+          result["result"]["block_height"]["slow"].should eq(4)
         end
       end
     end
@@ -102,7 +106,7 @@ describe RESTController do
         block_factory.add_slow_blocks(blocks_to_add)
         exec_rest_api(block_factory.rest.__v1_blockchain_size(context("/api/v1/blockchain/size"), no_params)) do |result|
           result["status"].to_s.should eq("success")
-          result["result"]["size"].should eq(blocks_to_add + 1)
+          result["result"]["totals"]["total_size"].should eq(blocks_to_add + 1)
         end
       end
     end
@@ -229,28 +233,6 @@ describe RESTController do
     end
   end
 
-  describe "__v1_transaction_id_confirmations" do
-    it "should return the confirmations for the specified transaction id" do
-      with_factory do |block_factory, transaction_factory|
-        transaction = transaction_factory.make_send(100_i64)
-        block_factory.add_slow_block([transaction]).add_slow_blocks(2)
-        exec_rest_api(block_factory.rest.__v1_transaction_id_confirmations(context("/api/v1/transaction/#{transaction.id}/confirmations"), {id: transaction.id})) do |result|
-          result["status"].to_s.should eq("success")
-          result["result"]["confirmations"].should eq(2_i64)
-        end
-      end
-    end
-    it "should return not found when transaction is not found" do
-      with_factory do |block_factory, _|
-        block_factory.add_slow_blocks(2)
-        exec_rest_api(block_factory.rest.__v1_transaction_id_confirmations(context("/api/v1/transaction/non-existing-txn-id/confirmations"), {id: "non-existing-txn-id"})) do |result|
-          result["status"].to_s.should eq("error")
-          result["reason"].should eq("failed to find a block for the transaction non-existing-txn-id")
-        end
-      end
-    end
-  end
-
   describe "__v1_transaction_fees" do
     it "should return the transaction fees" do
       with_factory do |block_factory, _|
@@ -274,7 +256,7 @@ describe RESTController do
         address = transaction_factory.sender_wallet.address
         exec_rest_api(block_factory.rest.__v1_address(context("/api/v1/address/#{address}"), {address: address})) do |result|
           result["status"].to_s.should eq("success")
-          result["result"]["confirmation"].should eq(1_i64)
+          result["result"]["confirmation"].should eq(0_i64)
           result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"SUSHI\", \"amount\" => \"23.9999812\"}")
         end
       end
@@ -284,7 +266,7 @@ describe RESTController do
         block_factory.add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_address(context("/api/v1/address/non-existing-address"), {address: "non-existing-address"})) do |result|
           result["status"].to_s.should eq("success")
-          result["result"]["confirmation"].should eq(1_i64)
+          result["result"]["confirmation"].should eq(0_i64)
           result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"SUSHI\", \"amount\" => \"0\"}")
         end
       end
@@ -298,7 +280,7 @@ describe RESTController do
         address = transaction_factory.sender_wallet.address
         exec_rest_api(block_factory.rest.__v1_address_token(context("/api/v1/address/#{address}/token/SUSHI"), {address: address, token: "SUSHI"})) do |result|
           result["status"].to_s.should eq("success")
-          result["result"]["confirmation"].should eq(1_i64)
+          result["result"]["confirmation"].should eq(0_i64)
           result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"SUSHI\", \"amount\" => \"23.9999812\"}")
         end
       end
@@ -308,7 +290,7 @@ describe RESTController do
         block_factory.add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_address_token(context("/api/v1/address/non-existing-address/token/NONE"), {address: "non-existing-address", token: "NONE"})) do |result|
           result["status"].to_s.should eq("success")
-          result["result"]["confirmation"].should eq(1_i64)
+          result["result"]["confirmation"].should eq(0_i64)
           result["result"]["pairs"].to_s.should eq("[]")
         end
       end
@@ -391,7 +373,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_domain(context("/api/v1/domain/#{domain}"), {domain: domain})) do |result|
         result["status"].to_s.should eq("success")
-          result["result"]["confirmation"].should eq(1_i64)
+          result["result"]["confirmation"].should eq(0_i64)
           result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"SUSHI\", \"amount\" => \"35.79996241\"}")
         end
       end
@@ -414,7 +396,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_domain_token(context("/api/v1/domain/#{domain}/token/SUSHI"), {domain: domain, token: "SUSHI"})) do |result|
           result["status"].to_s.should eq("success")
-          result["result"]["confirmation"].should eq(1_i64)
+          result["result"]["confirmation"].should eq(0_i64)
           result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"SUSHI\", \"amount\" => \"35.79996241\"}")
         end
       end
@@ -425,7 +407,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_domain_token(context("/api/v1/address/#{domain}/token/NONE"), {domain: domain, token: "NONE"})) do |result|
           result["status"].to_s.should eq("success")
-          result["result"]["confirmation"].should eq(1_i64)
+          result["result"]["confirmation"].should eq(0_i64)
           result["result"]["pairs"].to_s.should eq("[]")
         end
       end

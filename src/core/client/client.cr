@@ -113,8 +113,8 @@ module ::Sushi::Core
       show_cursor
     end
 
-    def amount(token : String, confirmation : Int32)
-      content = {token: token, confirmation: confirmation}.to_json
+    def amount(token : String)
+      content = {token: token}.to_json
       create_content("amount", content)
 
       show_cursor
