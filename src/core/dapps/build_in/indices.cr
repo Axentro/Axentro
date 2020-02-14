@@ -66,7 +66,7 @@ module ::Sushi::Core::DApps::BuildIn
       if block_index = get(transaction_id)
         if block = database.get_block(block_index)
           if transaction = block.find_transaction(transaction_id)
-            p confirmation = database.get_confirmations(block_index)
+            confirmation = database.get_confirmations(block_index)
             return {
               status:      "accepted",
               confirmation: confirmation,
