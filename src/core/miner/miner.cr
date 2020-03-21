@@ -148,7 +148,7 @@ module ::Sushi::Core
     end
 
     def update(worker, difficulty, block)
-      worker.exec({start_nonce: Random.rand(UInt64::MAX), difficulty: difficulty, block: block}.to_json)
+      worker.exec({start_nonce: Random.rand(UInt64::MAX).to_s, difficulty: difficulty, block: block}.to_json)
     end
 
     def clean_workers
