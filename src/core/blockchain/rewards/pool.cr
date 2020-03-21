@@ -64,6 +64,10 @@ module ::Sushi::Core
       @pool.reject! { |mn| mn.id == miner_nonce.id }
     end
 
+    def self.delete_embedded
+      @pool.reject! {|mn| instance.embedded.includes?(mn)}
+    end
+
     def self.replace(miner_nonces : MinerNonces)
       instance.replace(miner_nonces)
     end
@@ -108,16 +112,20 @@ module ::Sushi::Core
       @locked = true
     end
 
+    def find_by_mid(mid : String) : MinerNonces
+      @pool.select {|mn| mn.mid == mid}
+    end
+
+    def self.find_by_mid(mid : String) : MinerNonces
+      instance.find_by_mid(mid)
+    end
+
     def self.find(miner_nonce : MinerNonce)
       instance.find(miner_nonce)
     end
 
     def find(miner_nonce : MinerNonce) : MinerNonce?
       return nil unless @pool.find { |mn| mn == miner_nonce }
-
-      # set node id for a miner_nonce?
-      # found_miner_nonce.prev_hash = transaction.prev_hash
-      # found_transaction
     end
 
     include Logger

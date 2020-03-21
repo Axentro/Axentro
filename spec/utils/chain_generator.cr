@@ -53,7 +53,7 @@ module ::Units::Utils::ChainGenerator
       while @node.@phase != Sushi::Core::Node::SetupPhase::DONE
         sleep 0.000001
       end
-      @miner = {context: {address: miner_wallet.address, nonces: [] of BlockNonce}, socket: MockWebSocket.new, mid: "535061bddb0549f691c8b9c012a55ee2"}
+      @miner = {socket: MockWebSocket.new, mid: "535061bddb0549f691c8b9c012a55ee2"}
       @transaction_factory = TransactionFactory.new(@node_wallet)
       @rpc = RPCController.new(@blockchain)
       @rest = RESTController.new(@blockchain)

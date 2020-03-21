@@ -13,15 +13,8 @@
 module ::Sushi::Core::NodeComponents
   class MinersManager < HandleSocket
     include NonceModels
-    alias MinerContext = NamedTuple(
-      address: String,
-      nonces: Array(BlockNonce),
-    )
-
-    alias MinerContexts = Array(MinerContext)
 
     alias Miner = NamedTuple(
-      context: MinerContext,
       socket: HTTP::WebSocket,
       mid: String)
 
@@ -76,8 +69,7 @@ module ::Sushi::Core::NodeComponents
         })
       end
 
-      miner_context = {address: address, nonces: [] of String}
-      miner = {context: miner_context, socket: socket, mid: mid}
+      miner = {socket: socket, mid: mid}
 
       @miners << miner
 
@@ -113,7 +105,7 @@ module ::Sushi::Core::NodeComponents
         debug "Received a freshly mined block..."
         block.to_s
 
-        if @miners.map { |m| m[:context][:nonces] }.flatten.includes?(miner_nonce.value)
+        if @blockchain.miner_nonce_pool.find(miner_nonce)
           warning "nonce #{miner_nonce.value} has already been discovered"
           return
         end
@@ -134,12 +126,11 @@ module ::Sushi::Core::NodeComponents
           })
         else
           miner_name = HumanHash.humanize(miner[:mid])
-          debug "miner #{miner_name} found nonce at timestamp #{mined_timestamp}.. (nonces: #{miner[:context][:nonces].size}) mined with difficulty #{mined_difficulty} "
+          nonces_size = @blockchain.miner_nonce_pool.find_by_mid(miner[:mid]).size
+          debug "miner #{miner_name} found nonce at timestamp #{mined_timestamp}.. (nonces: #{nonces_size}) mined with difficulty #{mined_difficulty} "
 
-          miner[:context][:nonces].push(miner_nonce.value)
-
-           # add nonce to pool
-           miner_nonce = miner_nonce.with_node_id(node.get_node_id)
+          # add nonce to pool - maybe batch instead of sending one nonce at a time?
+           miner_nonce = miner_nonce.with_node_id(node.get_node_id).with_mid(miner[:mid])
            @blockchain.add_miner_nonce(miner_nonce)
            node.send_miner_nonce(miner_nonce)
 
@@ -170,13 +161,6 @@ module ::Sushi::Core::NodeComponents
       @block_start_time = __timestamp
       node.new_block(block)
       node.send_block(block)
-      clear_nonces
-    end
-
-    def clear_nonces
-      @miners.each do |m|
-        m[:context][:nonces].clear
-      end
     end
 
     def forget_most_difficult
@@ -211,10 +195,6 @@ module ::Sushi::Core::NodeComponents
 
     def size
       @miners.size
-    end
-
-    def miner_contexts : MinerContexts
-      @miners.map { |m| m[:context] }
     end
 
     private def node
