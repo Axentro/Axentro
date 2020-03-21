@@ -14,7 +14,6 @@ require "./node/*"
 
 module ::Sushi::Core
   class Node < HandleSocket
-
     alias Network = NamedTuple(
       prefix: String,
       name: String,
@@ -139,7 +138,6 @@ module ::Sushi::Core
       node.listen
     end
 
-
     private def sync_chain(socket : HTTP::WebSocket? = nil)
       info "start synching chain"
 
@@ -159,7 +157,7 @@ module ::Sushi::Core
         fast_sync_index = @conflicted_fast_index.nil? ? latest_fast_index : @conflicted_fast_index.not_nil!
         debug "asking to sync chain (slow) at index #{slow_sync_index}"
         debug "asking to sync chain (fast) at index #{fast_sync_index}"
-        send( _s, M_TYPE_NODE_REQUEST_CHAIN, { latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index })
+        send(_s, M_TYPE_NODE_REQUEST_CHAIN, {latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index})
       else
         warning "successor not found. skip synching blockchain"
 
@@ -175,7 +173,7 @@ module ::Sushi::Core
     end
 
     private def get_latest_fast_index
-      @blockchain.has_no_blocks? ? 0 :(@blockchain.latest_fast_block || @blockchain.get_genesis_block).index
+      @blockchain.has_no_blocks? ? 0 : (@blockchain.latest_fast_block || @blockchain.get_genesis_block).index
     end
 
     private def tell_peer_to_sync_chain(socket : HTTP::WebSocket? = nil)
@@ -189,14 +187,13 @@ module ::Sushi::Core
           M_TYPE_NODE_ASK_REQUEST_CHAIN,
           {
             latest_slow_index: latest_slow_index,
-            latest_fast_index: latest_fast_index
+            latest_fast_index: latest_fast_index,
           }
         )
       else
         warning "wanted to tell peer to sync chain but no peer found"
       end
     end
-
 
     private def sync_transactions(socket : HTTP::WebSocket? = nil)
       info "start synching transactions"
@@ -223,6 +220,36 @@ module ::Sushi::Core
         warning "successor not found. skip synching transactions"
 
         if @phase == SetupPhase::TRANSACTION_SYNCING
+          @phase = SetupPhase::MINER_NONCE_SYNCING
+          proceed_setup
+        end
+      end
+    end
+
+    private def sync_miner_nonces(socket : HTTP::WebSocket? = nil)
+      info "start syncing miner nonces"
+
+      s = if _socket = socket
+            _socket
+          elsif predecessor = @chord.find_predecessor?
+            predecessor[:socket]
+          elsif successor = @chord.find_successor?
+            successor[:socket]
+          end
+
+      if _s = s
+        miner_nonces = @blockchain.pending_miner_nonces
+        send(
+          _s,
+          M_TYPE_NODE_REQUEST_MINER_NONCES,
+          {
+            nonces: miner_nonces,
+          }
+        )
+      else
+        warning "successor not found. skip syncing miner nonces"
+
+        if @phase == SetupPhase::MINER_NONCE_SYNCING
           @phase = SetupPhase::PRE_DONE
           proceed_setup
         end
@@ -295,6 +322,12 @@ module ::Sushi::Core
           _request_transactions(socket, message_content)
         when M_TYPE_NODE_RECEIVE_TRANSACTIONS
           _receive_transactions(socket, message_content)
+        when M_TYPE_NODE_BROADCAST_MINER_NONCE
+          _broadcast_miner_nonce(socket, message_content)
+        when M_TYPE_NODE_REQUEST_MINER_NONCES
+          _request_miner_nonces(socket, message_content)
+        when M_TYPE_NODE_RECEIVE_MINER_NONCES
+          _receive_miner_nonces(socket, message_content)
         when M_TYPE_NODE_SEND_CLIENT_CONTENT
           _receive_client_content(socket, message_content)
         when M_TYPE_NODE_BROADCAST_HEARTBEAT
@@ -354,6 +387,24 @@ module ::Sushi::Core
       send_transaction(transaction, from)
 
       @blockchain.add_transaction(transaction)
+    end
+
+    def broadcast_miner_nonce(miner_nonce : MinerNonce, from : Chord::NodeContext? = nil)
+      info "new miner nonce coming: #{miner_nonce.value} from node: #{miner_nonce.node_id} for address: #{miner_nonce.address}"
+
+      send_miner_nonce(miner_nonce, from)
+
+      @blockchain.add_miner_nonce(miner_nonce)
+    end
+
+    def send_miner_nonce(miner_nonce : MinerNonce, from : Chord::NodeContext? = nil)
+      content = if from.nil? || (!from.nil? && from[:is_private])
+                  {nonce: miner_nonce, from: @chord.context}
+                else
+                  {nonce: miner_nonce, from: from}
+                end
+
+      send_on_chord(M_TYPE_NODE_BROADCAST_MINER_NONCE, content, from)
     end
 
     def send_block(block : SlowBlock | FastBlock, from : Chord::NodeContext? = nil)
@@ -518,6 +569,17 @@ module ::Sushi::Core
       from = _m_content.from
 
       broadcast_transaction(transaction, from)
+    end
+
+    private def _broadcast_miner_nonce(socket, _content)
+      return unless @phase == SetupPhase::DONE
+
+      _m_content = MContentNodeBroadcastMinerNonce.from_json(_content)
+
+      miner_nonce = _m_content.nonce
+      from = _m_content.from
+
+      broadcast_miner_nonce(miner_nonce, from)
     end
 
     private def _broadcast_block(socket, _content)
@@ -728,6 +790,36 @@ module ::Sushi::Core
       @blockchain.replace_fast_transactions(transactions.select(&.is_fast_transaction?))
 
       if @phase == SetupPhase::TRANSACTION_SYNCING
+        @phase = SetupPhase::MINER_NONCE_SYNCING
+        proceed_setup
+      end
+    end
+
+    private def _request_miner_nonces(socket, _content)
+      MContentNodeRequestMinerNonces.from_json(_content)
+
+      info "requested miner nonces"
+
+      miner_nonces = @blockchain.pending_miner_nonces
+      send(
+        socket,
+        M_TYPE_NODE_RECEIVE_MINER_NONCES,
+        {
+          nonces: miner_nonces,
+        }
+      )
+    end
+
+    private def _receive_miner_nonces(socket, _content)
+      _m_content = MContentNodeReceiveMinerNonces.from_json(_content)
+
+      miner_nonces = _m_content.nonces
+
+      info "received #{miner_nonces.size} miner nonces"
+
+      @blockchain.replace_miner_nonces(miner_nonces)
+
+      if @phase == SetupPhase::MINER_NONCE_SYNCING
         @phase = SetupPhase::PRE_DONE
         proceed_setup
       end
@@ -787,24 +879,23 @@ module ::Sushi::Core
         @phase = SetupPhase::CONNECTING_NODES
         proceed_setup
       else
+        info "loaded blockchain's total size: #{light_cyan(@blockchain.chain.size)}"
+        info "highest slow block index: #{light_cyan(@blockchain.latest_slow_block.index)}"
+        info "highest fast block index: #{light_cyan(@blockchain.latest_fast_block_index_or_zero)}"
 
-      info "loaded blockchain's total size: #{light_cyan(@blockchain.chain.size)}"
-      info "highest slow block index: #{light_cyan(@blockchain.latest_slow_block.index)}"
-      info "highest fast block index: #{light_cyan(@blockchain.latest_fast_block_index_or_zero)}"
+        if @database
+          @conflicted_slow_index = nil
+          @conflicted_fast_index = nil
+        else
+          warning "no database has been specified"
+        end
 
-      if @database
-        @conflicted_slow_index = nil
-        @conflicted_fast_index = nil
-      else
-        warning "no database has been specified"
+        unless @developer_fund.nil?
+          info "Developer fund has been invoked based on this configuration: #{@developer_fund.not_nil!.get_path}"
+        end
+        @phase = SetupPhase::DATABASE_VALIDATING
+        proceed_setup
       end
-
-      unless @developer_fund.nil?
-        info "Developer fund has been invoked based on this configuration: #{@developer_fund.not_nil!.get_path}"
-      end
-      @phase = SetupPhase::DATABASE_VALIDATING
-      proceed_setup
-    end
     end
 
     def proceed_setup
@@ -824,6 +915,8 @@ module ::Sushi::Core
         sync_chain
       when SetupPhase::TRANSACTION_SYNCING
         sync_transactions
+      when SetupPhase::MINER_NONCE_SYNCING
+        sync_miner_nonces
       when SetupPhase::PRE_DONE
         info "successfully setup the node"
         @phase = SetupPhase::DONE

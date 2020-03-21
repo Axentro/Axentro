@@ -49,7 +49,7 @@ module ::Sushi::Core::Protocol
 
   struct MContentMinerFoundNonce
     JSON.mapping({
-      nonce:     MinerNonce
+      nonce: MinerNonce,
     })
   end
 
@@ -149,8 +149,8 @@ module ::Sushi::Core::Protocol
 
   struct MContentChordJoin
     JSON.mapping({
-      version: Int32,
-      context: Core::NodeComponents::Chord::NodeContext,
+      version:         Int32,
+      context:         Core::NodeComponents::Chord::NodeContext,
       validation_hash: String,
     })
   end
@@ -159,8 +159,8 @@ module ::Sushi::Core::Protocol
 
   struct MContentChordJoinProvate
     JSON.mapping({
-      version: Int32,
-      context: Core::NodeComponents::Chord::NodeContext,
+      version:         Int32,
+      context:         Core::NodeComponents::Chord::NodeContext,
       validation_hash: String,
     })
   end
@@ -287,27 +287,48 @@ module ::Sushi::Core::Protocol
 
   struct MContentNodeBroadcastHeartbeat
     JSON.mapping({
-      address: String,
-      node_id: String,
+      address:    String,
+      node_id:    String,
       public_key: String,
-      hash_salt: String,
-      sign_r: String,
-      sign_s: String,
+      hash_salt:  String,
+      sign_r:     String,
+      sign_s:     String,
+      from:       Core::NodeComponents::Chord::NodeContext,
+    })
+  end
+
+  M_TYPE_NODE_BROADCAST_MINER_NONCE = 0x0110
+
+  struct MContentNodeBroadcastMinerNonce
+    JSON.mapping({
+      nonce: MinerNonce,
       from:  Core::NodeComponents::Chord::NodeContext,
     })
+  end
+
+  M_TYPE_NODE_REQUEST_MINER_NONCES = 0x0111
+
+  struct MContentNodeRequestMinerNonces
+    JSON.mapping({nonces: Array(MinerNonce)})
+  end
+
+  M_TYPE_NODE_RECEIVE_MINER_NONCES = 0x0112
+
+  struct MContentNodeReceiveMinerNonces
+    JSON.mapping({nonces: Array(MinerNonce)})
   end
 
   ######################################
   # DATABASE VALIDATION
   ######################################
 
-  M_TYPE_VALIDATION_REQUEST= 0x010a
+  M_TYPE_VALIDATION_REQUEST = 0x010a
 
   struct MContentValidationRequest
     JSON.mapping({
-      version: Int32,
-      source_host: String,
-      source_port: Int32,
+      version:           Int32,
+      source_host:       String,
+      source_port:       Int32,
       max_slow_block_id: Int64,
       max_fast_block_id: Int64,
     })
@@ -323,13 +344,13 @@ module ::Sushi::Core::Protocol
 
   struct MContentValidationChallengeResponse
     JSON.mapping({
-      source_host: String,
-      source_port: Int32,
+      source_host:   String,
+      source_port:   Int32,
       solution_hash: String,
     })
   end
 
-  M_TYPE_VALIDATION_FAILED = 0x010d
+  M_TYPE_VALIDATION_FAILED    = 0x010d
   M_TYPE_VALIDATION_SUCCEEDED = 0x010e
 
   struct MContentValidationResult
@@ -349,6 +370,7 @@ module ::Sushi::Core::Protocol
     CONNECTING_NODES
     BLOCKCHAIN_SYNCING
     TRANSACTION_SYNCING
+    MINER_NONCE_SYNCING
     PRE_DONE
     DONE
   end

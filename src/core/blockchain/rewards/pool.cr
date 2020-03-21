@@ -14,7 +14,7 @@ module ::Sushi::Core
   class MinerNoncePool
     LIMIT = 2000
 
-    @@instance : MinerNonce? = nil
+    @@instance : MinerNoncePool? = nil
 
     @pool : MinerNonces = MinerNonces.new
     @pool_locked : MinerNonces = MinerNonces.new
@@ -25,6 +25,10 @@ module ::Sushi::Core
 
     def self.instance : MinerNoncePool
       @@instance.not_nil!
+    end
+
+    def self.setup
+      @@instance ||= MinerNoncePool.new
     end
 
     def self.add(miner_nonce : MinerNonce)
@@ -40,7 +44,7 @@ module ::Sushi::Core
     end
 
     def insert(miner_nonce : MinerNonce)
-      @pool.insert(index || @pool.size, miner_nonce)
+      @pool.insert(@pool.size, miner_nonce)
     end
 
     def self.clear_all

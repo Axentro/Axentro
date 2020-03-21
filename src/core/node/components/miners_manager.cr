@@ -91,7 +91,6 @@ module ::Sushi::Core::NodeComponents
       })
     end
 
-    # TODO - kings - check this is ok for nonces
     def found_nonce(socket, _content)
       return unless node.phase == SetupPhase::DONE
 
@@ -138,6 +137,11 @@ module ::Sushi::Core::NodeComponents
           debug "miner #{miner_name} found nonce at timestamp #{mined_timestamp}.. (nonces: #{miner[:context][:nonces].size}) mined with difficulty #{mined_difficulty} "
 
           miner[:context][:nonces].push(miner_nonce.value)
+
+           # add nonce to pool
+           miner_nonce = miner_nonce.with_node_id(node.get_node_id)
+           @blockchain.add_miner_nonce(miner_nonce)
+           node.send_miner_nonce(miner_nonce)
 
           debug "found nonce of #{block.nonce} that doesn't satisfy block difficulty, checking if it is the best so far"
           current_miner_difficulty = block_difficulty_to_miner_difficulty(@blockchain.mining_block_difficulty)

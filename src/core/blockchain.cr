@@ -13,6 +13,7 @@
 require "./blockchain/*"
 require "./blockchain/block/*"
 require "./blockchain/chain/*"
+require "./blockchain/rewards/*"
 require "./dapps"
 
 module ::Sushi::Core
@@ -50,6 +51,7 @@ module ::Sushi::Core
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup
+      MinerNoncePool.setup
 
       @security_level_percentage = security_level_percentage || SECURITY_LEVEL_PERCENTAGE
       info "Security Level Percentage used for blockchain validation is #{@security_level_percentage}"
@@ -448,6 +450,16 @@ module ::Sushi::Core
       rejects.record_reject(transaction.id, e)
     end
 
+    def add_miner_nonce(miner_nonce : MinerNonce, with_spawn : Bool = true)
+      with_spawn ? spawn { _add_miner_nonce(miner_nonce) } : _add_miner_nonce(miner_nonce)
+    end
+
+    private def _add_miner_nonce(miner_nonce : MinerNonce)
+      # TODO - check if nonce is valid here? before putting into the pool?
+      debug "adding miner nonce to pool: #{miner_nonce.value}"
+      MinerNoncePool.add(miner_nonce)
+    end
+
     def latest_block : SlowBlock | FastBlock
       @chain[-1]
     end
@@ -526,6 +538,10 @@ module ::Sushi::Core
 
     def available_actions : Array(String)
       @dapps.map { |dapp| dapp.transaction_actions }.flatten
+    end
+
+    def pending_miner_nonces : MinerNonces
+      MinerNoncePool.all
     end
 
     def pending_slow_transactions : Transactions
@@ -677,6 +693,21 @@ module ::Sushi::Core
       SlowTransactionPool.replace(replace_transactions)
     end
 
+    def replace_miner_nonces(miner_nonces : Array(MinerNonce))
+      replace_miner_nonces = [] of MinerNonce
+
+      miner_nonces.each_with_index do |mn, i|
+        # TODO - kings - check nonce is valid
+        mn = MinerNoncePool.find(mn) || mn
+        replace_miner_nonces << mn
+      rescue e : Exception
+        debug "nonce was not added to pool due to: #{e}"  
+      end
+
+      MinerNoncePool.lock
+      MinerNoncePool.replace(replace_miner_nonces)
+    end
+
     def clean_slow_transactions_used_in_block(block : SlowBlock)
       SlowTransactionPool.lock
       transactions = pending_slow_transactions.reject { |t| block.find_transaction(t.id) == true }.select(&.is_slow_transaction?)
@@ -710,6 +741,7 @@ module ::Sushi::Core
     include Protocol
     include Consensus
     include TransactionModels
+    include NonceModels
     include Common::Timestamp
   end
 end
