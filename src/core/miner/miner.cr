@@ -121,10 +121,13 @@ module ::Sushi::Core
         spawn do
           loop do
             nonce_found_message = w.receive.try &.to_s || "error"
-
+           
             debug "received nonce #{nonce_found_message} from worker"
 
-            send(socket, M_TYPE_MINER_FOUND_NONCE, MContentMinerFoundNonce.from_json(nonce_found_message)) unless nonce_found_message == "error"
+            unless nonce_found_message == "error" 
+              nonce_with_address_json = {nonce: MinerNonce.from_json(nonce_found_message).with_address(@wallet.address)}.to_json
+              send(socket, M_TYPE_MINER_FOUND_NONCE, MContentMinerFoundNonce.from_json(nonce_found_message))
+            end
 
             update(w, difficulty, block)
           rescue ioe : IO::EOFError
@@ -156,5 +159,6 @@ module ::Sushi::Core
     include Logger
     include Protocol
     include Common::Color
+    include NonceModels
   end
 end

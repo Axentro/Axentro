@@ -11,34 +11,37 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core
-  alias MinerWork = NamedTuple(start_nonce: UInt64, difficulty: Int32, block: SlowBlock)
+  alias MinerWork = NamedTuple(start_nonce: BlockNonce, difficulty: Int32, block: SlowBlock)
 
   class MinerWorker < Tokoroten::Worker
     def task(message : String)
       work = MinerWork.from_json(message)
 
-      nonce = work[:start_nonce]
+      block_nonce = work[:start_nonce]
+      miner_nonce = MinerNonce.from(block_nonce)
       nonce_counter = 0
 
       latest_nonce_counter = nonce_counter
       time_now = __timestamp
       latest_time = time_now
-      block = work[:block].with_nonce(nonce)
+      block = work[:block].with_nonce(block_nonce)
 
       loop do
         time_now = __timestamp
-        block = work[:block].with_nonce(nonce)
-        break if valid_nonce?(block.to_hash, nonce, work[:difficulty]) == work[:difficulty]
+        block = work[:block].with_nonce(block_nonce)
+        break if valid_nonce?(block.to_hash, block_nonce, work[:difficulty]) == work[:difficulty]
 
         nonce_counter += 1
-        nonce += 1
+        block_nonce = (block_nonce.to_u64 + 1).to_s
+        miner_nonce.with_value(block_nonce)
 
         if nonce_counter % 100 == 0
           time_diff = time_now - latest_time
 
           break if time_diff == 0
-
-          nonce = Random.rand(UInt64::MAX)
+          
+          block_nonce = Random.rand(UInt64::MAX).to_s
+          miner_nonce = MinerNonce.from(block_nonce)
 
           work_rate = (nonce_counter - latest_nonce_counter) / time_diff.to_f64
 
@@ -49,11 +52,11 @@ module ::Sushi::Core
         end
       end
 
-      debug "found new nonce(#{work[:difficulty]}): #{light_green(nonce)}"
+      debug "found new nonce(#{work[:difficulty]}): #{light_green(block_nonce)}"
       debug "Found block..."
       block.to_s
 
-      response({nonce: nonce, timestamp: time_now}.to_json)
+      response(miner_nonce.with_timestamp(time_now).to_json)
     rescue e : Exception
       error e.message.not_nil!
       error e.backtrace.join("\n")
@@ -71,4 +74,5 @@ module ::Sushi::Core
     include Common::Color
     include Common::Timestamp
   end
+  include NonceModels
 end

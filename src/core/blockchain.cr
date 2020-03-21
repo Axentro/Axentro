@@ -27,7 +27,7 @@ module ::Sushi::Core
 
     alias SlowHeader = NamedTuple(
       index: Int64,
-      nonce: UInt64,
+      nonce: BlockNonce,
       prev_hash: String,
       merkle_tree_root: String,
       timestamp: Int64,
@@ -183,8 +183,8 @@ module ::Sushi::Core
       database.delete_blocks(current_index.not_nil!)
     end
 
-    def valid_nonce?(nonce : UInt64) : SlowBlock?
-      return mining_block.with_nonce(nonce) if mining_block.with_nonce(nonce).valid_nonce?(mining_block_difficulty)
+    def valid_nonce?(block_nonce : BlockNonce) : SlowBlock?
+      return mining_block.with_nonce(block_nonce) if mining_block.with_nonce(block_nonce).valid_nonce?(mining_block_difficulty)
       nil
     end
 
@@ -492,7 +492,7 @@ module ::Sushi::Core
     def genesis_block : SlowBlock
       genesis_index = 0_i64
       genesis_transactions = @developer_fund ? DeveloperFund.transactions(@developer_fund.not_nil!.get_config) : [] of Transaction
-      genesis_nonce = 0_u64
+      genesis_nonce = "0"
       genesis_prev_hash = "genesis"
       genesis_timestamp = 0_i64
       genesis_difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
@@ -584,7 +584,7 @@ module ::Sushi::Core
       @mining_block = SlowBlock.new(
         the_latest_index,
         transactions,
-        0_u64,
+        "0",
         latest_slow_block.to_hash,
         timestamp,
         difficulty,

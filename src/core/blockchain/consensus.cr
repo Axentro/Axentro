@@ -12,8 +12,8 @@
 
 module ::Sushi::Core::Consensus
 
-  def valid_pow?(block_hash : String, nonce : UInt64, difficulty : Int32) : Int32
-    nonce_salt = nonce.to_s(16)
+  def valid_pow?(block_hash : String, block_nonce : BlockNonce, difficulty : Int32) : Int32
+    nonce_salt = block_nonce.to_u64.to_s(16)
     nonce_salt = "0" + nonce_salt if nonce_salt.bytesize % 2 != 0
 
     nonce_slice = Slice(UInt8).new((nonce_salt.bytesize / 2).to_i64)
@@ -29,9 +29,9 @@ module ::Sushi::Core::Consensus
     leading_bits.split("1")[0].size
   end
 
-  def valid_nonce?(block_hash : String, nonce : UInt64, difficulty : Int32)
+  def valid_nonce?(block_hash : String, block_nonce : BlockNonce, difficulty : Int32)
     difficulty = ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY") # for unit test
-    valid_pow?(block_hash, nonce, difficulty)
+    valid_pow?(block_hash, block_nonce, difficulty)
   end
 
   def block_difficulty_to_miner_difficulty(diff : Int32)

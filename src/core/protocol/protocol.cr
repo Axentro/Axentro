@@ -10,6 +10,7 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 require "../blockchain/block.cr"
+require "../blockchain/rewards/models.cr"
 
 module ::Sushi::Core::Protocol
   ######################################
@@ -48,8 +49,7 @@ module ::Sushi::Core::Protocol
 
   struct MContentMinerFoundNonce
     JSON.mapping({
-      nonce:     UInt64,
-      timestamp: Int64,
+      nonce:     MinerNonce
     })
   end
 
@@ -354,4 +354,5 @@ module ::Sushi::Core::Protocol
   end
 
   include Block
+  include ::Sushi::Core::NonceModels
 end

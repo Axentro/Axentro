@@ -12,9 +12,10 @@
 
 module ::Sushi::Core::NodeComponents
   class MinersManager < HandleSocket
+    include NonceModels
     alias MinerContext = NamedTuple(
       address: String,
-      nonces: Array(UInt64),
+      nonces: Array(BlockNonce),
     )
 
     alias MinerContexts = Array(MinerContext)
@@ -22,8 +23,7 @@ module ::Sushi::Core::NodeComponents
     alias Miner = NamedTuple(
       context: MinerContext,
       socket: HTTP::WebSocket,
-      mid: String
-    )
+      mid: String)
 
     alias Miners = Array(Miner)
 
@@ -62,7 +62,7 @@ module ::Sushi::Core::NodeComponents
         return send(socket,
           M_TYPE_MINER_HANDSHAKE_REJECTED,
           {
-            reason: "The max number of miners allowed to connect to this node has been reached (#{@blockchain.max_miners})"
+            reason: "The max number of miners allowed to connect to this node has been reached (#{@blockchain.max_miners})",
           })
       end
 
@@ -76,7 +76,7 @@ module ::Sushi::Core::NodeComponents
         })
       end
 
-      miner_context = {address: address, nonces: [] of UInt64}
+      miner_context = {address: address, nonces: [] of String}
       miner = {context: miner_context, socket: socket, mid: mid}
 
       @miners << miner
@@ -91,6 +91,7 @@ module ::Sushi::Core::NodeComponents
       })
     end
 
+    # TODO - kings - check this is ok for nonces
     def found_nonce(socket, _content)
       return unless node.phase == SetupPhase::DONE
 
@@ -98,13 +99,12 @@ module ::Sushi::Core::NodeComponents
 
       _m_content = MContentMinerFoundNonce.from_json(_content)
 
-      nonce = _m_content.nonce
-      mined_timestamp = _m_content.timestamp
-
-      debug "received a nonce of #{nonce} from a miner at timestamp #{mined_timestamp}"
+      miner_nonce = _m_content.nonce
+      mined_timestamp = miner_nonce.timestamp
+      debug "received a nonce of #{miner_nonce.value} from a miner at timestamp #{mined_timestamp}"
 
       if miner = find?(socket)
-        block = @blockchain.mining_block.with_nonce(nonce)
+        block = @blockchain.mining_block.with_nonce(miner_nonce.value)
 
         if ENV.has_key?("SC_SET_DIFFICULTY")
           mint_block(block)
@@ -114,8 +114,8 @@ module ::Sushi::Core::NodeComponents
         debug "Received a freshly mined block..."
         block.to_s
 
-        if @miners.map { |m| m[:context][:nonces] }.flatten.includes?(nonce)
-          warning "nonce #{nonce} has already been discovered"
+        if @miners.map { |m| m[:context][:nonces] }.flatten.includes?(miner_nonce.value)
+          warning "nonce #{miner_nonce.value} has already been discovered"
           return
         end
 
@@ -131,13 +131,13 @@ module ::Sushi::Core::NodeComponents
 
           send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
             block:      @blockchain.mining_block,
-            difficulty: @blockchain.mining_block_difficulty_miner
+            difficulty: @blockchain.mining_block_difficulty_miner,
           })
         else
           miner_name = HumanHash.humanize(miner[:mid])
-          debug "miner #{miner_name} found nonce at timestamp #{mined_timestamp }.. (nonces: #{miner[:context][:nonces].size}) mined with difficulty #{mined_difficulty} "
+          debug "miner #{miner_name} found nonce at timestamp #{mined_timestamp}.. (nonces: #{miner[:context][:nonces].size}) mined with difficulty #{mined_difficulty} "
 
-          miner[:context][:nonces].push(nonce)
+          miner[:context][:nonces].push(miner_nonce.value)
 
           debug "found nonce of #{block.nonce} that doesn't satisfy block difficulty, checking if it is the best so far"
           current_miner_difficulty = block_difficulty_to_miner_difficulty(@blockchain.mining_block_difficulty)
@@ -189,7 +189,7 @@ module ::Sushi::Core::NodeComponents
       @miners.each do |miner|
         send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
           block:      @blockchain.mining_block,
-          difficulty: @blockchain.mining_block_difficulty_miner
+          difficulty: @blockchain.mining_block_difficulty_miner,
         })
       end
     end

@@ -24,7 +24,7 @@ describe Consensus do
     # TODO: this test is probably erroneously passing since the change to the 'valid' methods
     it "should return a valid difficulty value" do
       ENV.delete("SC_SET_DIFFICULTY")
-      nonce = 2978736204850283095_u64
+      nonce = "2978736204850283095"
       valid_nonce?("block_hash", nonce, 2).should be < 3
       valid_pow?("block_hash", nonce, 2).should be < 3
     end
@@ -32,7 +32,7 @@ describe Consensus do
     # TODO: this test is probably erroneously passing since the change to the 'valid' methods
     it "should return an invalid difficulty value" do
       ENV.delete("SC_SET_DIFFICULTY")
-      nonce = 2978736204850283095_u64
+      nonce = "2978736204850283095"
       valid_nonce?("block_hash", nonce, 20).should be < 3
       valid_pow?("block_hash", nonce, 20).should be < 3
     end

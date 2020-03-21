@@ -58,8 +58,7 @@ module ::Sushi::Core::Data::Blocks
     @db.query(the_query, args: args.to_a) do |rows|
       rows.each do
         idx = rows.read(Int64)
-        nonce_string = rows.read(String)
-        nonce = nonce_string.size > 0 ? nonce_string.to_u64 : 0_u64
+        nonce = rows.read(String)
         prev_hash = rows.read(String)
         timestamp = rows.read(Int64)
         diffculty = rows.read(Int32)
@@ -70,7 +69,6 @@ module ::Sushi::Core::Data::Blocks
         sign_s = rows.read(String)
         hash = rows.read(String)
         verbose "read block idx: #{idx}"
-        verbose "read nonce string: #{nonce_string}"
         verbose "read nonce: #{nonce}"
         verbose "read prev_hash: #{prev_hash}"
         verbose "read timestamp: #{timestamp}"
