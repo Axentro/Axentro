@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core
-   class MinerNoncePool
+  class MinerNoncePool
     LIMIT = 2000
 
     @@instance : MinerNonce? = nil
@@ -109,9 +109,9 @@ module ::Sushi::Core
     end
 
     def find(miner_nonce : MinerNonce) : MinerNonce?
-      return nil unless found_miner_nonce = @pool.find { |mn| mn == miner_nonce }
+      return nil unless @pool.find { |mn| mn == miner_nonce }
 
-      # set node id for a miner_nonce? 
+      # set node id for a miner_nonce?
       # found_miner_nonce.prev_hash = transaction.prev_hash
       # found_transaction
     end

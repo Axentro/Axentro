@@ -39,7 +39,7 @@ module ::Sushi::Core
           time_diff = time_now - latest_time
 
           break if time_diff == 0
-          
+
           block_nonce = Random.rand(UInt64::MAX).to_s
           miner_nonce = MinerNonce.from(block_nonce)
 
@@ -74,5 +74,6 @@ module ::Sushi::Core
     include Common::Color
     include Common::Timestamp
   end
+
   include NonceModels
 end

@@ -53,7 +53,7 @@ module ::Sushi::Core
       send(socket, M_TYPE_MINER_HANDSHAKE, {
         version: Core::CORE_VERSION,
         address: @wallet.address,
-        mid: @mid
+        mid:     @mid,
       })
 
       socket.run
@@ -121,12 +121,12 @@ module ::Sushi::Core
         spawn do
           loop do
             nonce_found_message = w.receive.try &.to_s || "error"
-           
+
             debug "received nonce #{nonce_found_message} from worker"
 
-            unless nonce_found_message == "error" 
+            unless nonce_found_message == "error"
               nonce_with_address_json = {nonce: MinerNonce.from_json(nonce_found_message).with_address(@wallet.address)}.to_json
-              send(socket, M_TYPE_MINER_FOUND_NONCE, MContentMinerFoundNonce.from_json(nonce_found_message))
+              send(socket, M_TYPE_MINER_FOUND_NONCE, MContentMinerFoundNonce.from_json(nonce_with_address_json))
             end
 
             update(w, difficulty, block)

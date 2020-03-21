@@ -27,30 +27,26 @@ module ::Sushi::Core::NonceModels
     def initialize(@value : BlockNonce); end
 
     def self.from(block_nonce : BlockNonce) : MinerNonce
-        MinerNonce.new(block_nonce)
+      MinerNonce.new(block_nonce)
     end
 
     def ==(other) : Bool
       value == other.value
     end
 
-    def with_value(new_value : String) : MinerNonce
-        value = new_value
-        self
-    end
-
-    def with_timestamp(new_timestamp : Int64) : MinerNonce
-      timestamp = new_timestamp
+    def with_value(@value : String) : MinerNonce
       self
     end
 
-    def with_address(new_address : String) : MinerNonce
-      address = new_address
+    def with_timestamp(@timestamp : Int64) : MinerNonce
       self
     end
 
-    def with_node_id(new_node_id : String) : MinerNonce
-      node_id = new_node_id
+    def with_address(@address : String) : MinerNonce
+      self
+    end
+
+    def with_node_id(@node_id : String) : MinerNonce
       self
     end
   end
