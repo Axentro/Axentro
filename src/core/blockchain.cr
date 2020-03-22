@@ -593,7 +593,7 @@ module ::Sushi::Core
       the_latest_index = get_latest_index_for_slow
       coinbase_amount = coinbase_slow_amount(the_latest_index, embedded_slow_transactions)
       coinbase_transaction = create_coinbase_slow_transaction(coinbase_amount, node.miners)
-      
+
       # TODO - delete all nonces that were used to create the coinbase_transaction
       MinerNoncePool.delete_embedded
 
@@ -638,33 +638,21 @@ module ::Sushi::Core
     end
 
     def create_coinbase_slow_transaction(coinbase_amount : Int64, miners : NodeComponents::MinersManager::Miners) : Transaction
-      # miners_nonces_size = miners.reduce(0) { |sum, m| sum + m[:context][:nonces].size }
-      # miners_rewards_total = (coinbase_amount * 3_i64) / 4_i64
-      # miners_recipients = if miners_nonces_size > 0
-      #                       miners.map { |m|
-      #                         amount = (miners_rewards_total * m[:context][:nonces].size) / miners_nonces_size
-      #                         {address: m[:context][:address], amount: amount.to_i64}
-      #                       }.reject { |m| m[:amount] == 0 }
-      #                     else
-      #                       [] of NamedTuple(address: String, amount: Int64)
-      #                     end
+      # TODO - simple solution for now - but should move to it's own class for calculating rewards
+      miners_nonces = miners.map { |m| MinerNoncePool.find_by_mid(m[:mid]) }.flatten.compact
+      miners_rewards_total = (coinbase_amount * 3_i64) / 4_i64
+      miners_recipients = miners_nonces.group_by { |mn| mn.address }.map do |address, nonces|
+        amount = (miners_rewards_total * nonces.size) / miners_nonces.size
+        {address: address, amount: amount.to_i64}
+      end.to_a.flatten.reject { |m| m[:amount] == 0 }
 
-      # node_reccipient = {
-      #   address: @wallet.address,
-      #   amount:  coinbase_amount - miners_recipients.reduce(0_i64) { |sum, m| sum + m[:amount] },
-      # }
-
-      # TODO - calculate the correct rewards based on the miner nonce pool for each address for the coinbase transaction.
-
-      node_reccipient = {
+      node_recipient = {
         address: @wallet.address,
-        amount:  coinbase_amount,
+        amount:  coinbase_amount - miners_recipients.reduce(0_i64) { |sum, m| sum + m[:amount] },
       }
 
       senders = [] of Transaction::Sender # No senders
-
-      # recipients = miners_rewards_total > 0 ? [node_reccipient] + miners_recipients : [] of Transaction::Recipient
-      recipients = [] of Transaction::Recipient
+      recipients = miners_rewards_total > 0 ? [node_recipient] + miners_recipients : [] of Transaction::Recipient
 
       Transaction.new(
         Transaction.create_id,
@@ -682,8 +670,8 @@ module ::Sushi::Core
 
     def coinbase_slow_amount(index : Int64, transactions) : Int64
       return total_fees(transactions) if index >= @block_reward_calculator.max_blocks
-      @block_reward_calculator.reward_for_block(index) 
-      # TODO - can we just + total_fees(transactions) to the reward_for_block? 
+      @block_reward_calculator.reward_for_block(index)
+      # TODO - can we just + total_fees(transactions) to the reward_for_block?
     end
 
     def total_fees(transactions) : Int64
@@ -718,7 +706,7 @@ module ::Sushi::Core
         mn = MinerNoncePool.find(mn) || mn
         replace_miner_nonces << mn
       rescue e : Exception
-        debug "nonce was not added to pool due to: #{e}"  
+        debug "nonce was not added to pool due to: #{e}"
       end
 
       MinerNoncePool.lock

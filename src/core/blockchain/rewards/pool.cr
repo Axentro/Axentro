@@ -65,7 +65,11 @@ module ::Sushi::Core
     end
 
     def self.delete_embedded
-      @pool.reject! {|mn| instance.embedded.includes?(mn)}
+      instance.delete_embedded
+    end
+
+    def delete_embedded
+      @pool.reject! {|mn| embedded.includes?(mn)}
     end
 
     def self.replace(miner_nonces : MinerNonces)
