@@ -456,8 +456,13 @@ module ::Sushi::Core
 
     private def _add_miner_nonce(miner_nonce : MinerNonce)
       # TODO - check if nonce is valid here? before putting into the pool?
-      debug "adding miner nonce to pool: #{miner_nonce.value}"
-      MinerNoncePool.add(miner_nonce)
+
+      if valid_nonce?(miner_nonce.value)
+        debug "adding miner nonce to pool: #{miner_nonce.value}"
+        MinerNoncePool.add(miner_nonce)
+      end
+    rescue e : Exception
+      warning "nonce was not added to pool due to: #{e}"
     end
 
     def miner_nonce_pool
@@ -593,8 +598,6 @@ module ::Sushi::Core
       the_latest_index = get_latest_index_for_slow
       coinbase_amount = coinbase_slow_amount(the_latest_index, embedded_slow_transactions)
       coinbase_transaction = create_coinbase_slow_transaction(coinbase_amount, node.miners)
-
-      # TODO - delete all nonces that were used to create the coinbase_transaction
       MinerNoncePool.delete_embedded
 
       transactions = align_slow_transactions(coinbase_transaction, coinbase_amount)
@@ -639,12 +642,16 @@ module ::Sushi::Core
 
     def create_coinbase_slow_transaction(coinbase_amount : Int64, miners : NodeComponents::MinersManager::Miners) : Transaction
       # TODO - simple solution for now - but should move to it's own class for calculating rewards
-      miners_nonces = miners.map { |m| MinerNoncePool.find_by_mid(m[:mid]) }.flatten.compact
-      miners_rewards_total = (coinbase_amount * 3_i64) / 4_i64
+
+      miners_nonces = MinerNoncePool.embedded
+      pp miners_rewards_total = (coinbase_amount * 3_i64) / 4_i64
+      p "-----------"
       miners_recipients = miners_nonces.group_by { |mn| mn.address }.map do |address, nonces|
         amount = (miners_rewards_total * nonces.size) / miners_nonces.size
         {address: address, amount: amount.to_i64}
       end.to_a.flatten.reject { |m| m[:amount] == 0 }
+
+      pp miners_recipients
 
       node_recipient = {
         address: @wallet.address,
@@ -702,11 +709,12 @@ module ::Sushi::Core
       replace_miner_nonces = [] of MinerNonce
 
       miner_nonces.each do |mn|
-        # TODO - kings - check nonce is valid
         mn = MinerNoncePool.find(mn) || mn
-        replace_miner_nonces << mn
+        if valid_nonce?(mn.value)
+          replace_miner_nonces << mn
+        end
       rescue e : Exception
-        debug "nonce was not added to pool due to: #{e}"
+        warning "nonce was not added to pool due to: #{e}"
       end
 
       MinerNoncePool.lock

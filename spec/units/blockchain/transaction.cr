@@ -76,7 +76,7 @@ describe Transaction do
         transactions = chain.last.transactions
 
         transaction = transaction_factory.make_send(1000_i64)
-        expect_raises(Exception, "be not checked signing") do
+        expect_raises(Exception, "transactions have not been validated") do
           transaction.valid_as_embedded?(block_factory.blockchain, transactions)
         end
       end
@@ -171,7 +171,7 @@ describe Transaction do
           TransactionKind::SLOW
         )
 
-        expect_raises(Exception, "be not checked signing") do
+        expect_raises(Exception, "transactions have not been validated") do
           transaction.valid_as_coinbase?(block_factory.blockchain, 1, transactions)
         end
       end

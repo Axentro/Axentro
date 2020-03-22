@@ -33,9 +33,6 @@ module ::Sushi::Core::FastChain
     debug "current_leader_in_contest: #{node.get_current_leader}"
   end
 
-  # TODO - include node_id so that we don't have mulitple leaders if using the same wallet address
-  # when a node comes online have it broadcast it's ranking and take over leadership if able
-  # restrict the ranking check to the last couple days worth of chain blocks
   private def leadership_contest
     loop do
       if chain_mature_enough_for_fast_blocks?

@@ -12,7 +12,7 @@
 
 module ::Sushi::Core
   class MinerNoncePool
-    LIMIT = 2000
+    LIMIT = 8000000
 
     @@instance : MinerNoncePool? = nil
 
