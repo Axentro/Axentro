@@ -701,7 +701,7 @@ module ::Sushi::Core
     def replace_miner_nonces(miner_nonces : Array(MinerNonce))
       replace_miner_nonces = [] of MinerNonce
 
-      miner_nonces.each_with_index do |mn, i|
+      miner_nonces.each do |mn|
         # TODO - kings - check nonce is valid
         mn = MinerNoncePool.find(mn) || mn
         replace_miner_nonces << mn
