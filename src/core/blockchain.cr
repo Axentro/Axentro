@@ -455,11 +455,9 @@ module ::Sushi::Core
     end
 
     private def _add_miner_nonce(miner_nonce : MinerNonce)
-      # TODO - check if nonce is valid here? before putting into the pool?
-
       if valid_nonce?(miner_nonce.value)
         debug "adding miner nonce to pool: #{miner_nonce.value}"
-        MinerNoncePool.add(miner_nonce)
+        MinerNoncePool.add(miner_nonce) if MinerNoncePool.find(miner_nonce).nil?
       end
     rescue e : Exception
       warning "nonce was not added to pool due to: #{e}"
@@ -644,14 +642,12 @@ module ::Sushi::Core
       # TODO - simple solution for now - but should move to it's own class for calculating rewards
 
       miners_nonces = MinerNoncePool.embedded
-      pp miners_rewards_total = (coinbase_amount * 3_i64) / 4_i64
-      p "-----------"
+      miners_rewards_total = (coinbase_amount * 3_i64) / 4_i64
+
       miners_recipients = miners_nonces.group_by { |mn| mn.address }.map do |address, nonces|
         amount = (miners_rewards_total * nonces.size) / miners_nonces.size
         {address: address, amount: amount.to_i64}
       end.to_a.flatten.reject { |m| m[:amount] == 0 }
-
-      pp miners_recipients
 
       node_recipient = {
         address: @wallet.address,
