@@ -139,7 +139,7 @@ describe Transaction do
           Transaction.create_id,
           "head", # action
           [] of Transaction::Sender,
-          [a_recipient(transaction_factory.recipient_wallet, 1199999686_i64)],
+          [a_recipient(transaction_factory.recipient_wallet, 1200009686_i64)],
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -322,7 +322,7 @@ describe Transaction do
         )
 
         transaction.valid_common?.should be_true
-        expect_raises(Exception, "invalid served amount for coinbase transaction at index: 1 expected 1199999686 but got 1000") do
+        expect_raises(Exception, "invalid served amount for coinbase transaction at index: 1 expected 1200009686 but got 1000") do
           transaction.valid_as_coinbase?(block_factory.blockchain, 1, transactions).should be_true
         end
       end

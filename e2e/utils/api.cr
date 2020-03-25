@@ -71,7 +71,6 @@ module ::E2E::Utils::API
     recipient_address = ::Sushi::Core::Wallet.from_path(wallet(n_recipient)).address
 
     args = ["transaction", "create", "-w", wallet(n_sender), "-a", recipient_address, "-m", "0.00000001", "-n", "http://127.0.0.1:#{port}", "--message='E2E Test'", "-f", "0.0001", "--json"]
-    #TODO: add back in fast transactions - jjf
     args << "--fast-transaction" if fast_transaction
 
     res = `#{sushi(args)}`

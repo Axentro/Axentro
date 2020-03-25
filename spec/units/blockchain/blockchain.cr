@@ -147,14 +147,9 @@ describe Blockchain do
     it "should reject a transaction if already present" do
       with_factory do |block_factory, transaction_factory|
         transaction = transaction_factory.make_send(200000000_i64)
-        block_factory.add_slow_block([transaction]).add_slow_blocks(3)
-        blockchain = block_factory.blockchain
-        blockchain.add_transaction(transaction, false)
-        blockchain.add_transaction(transaction, false)
-        block_factory.add_slow_blocks(2)
-        blockchain.pending_slow_transactions.size.should eq(0)
-        blockchain.embedded_slow_transactions.size.should eq(0)
-        if reject = blockchain.rejects.find(transaction.id)
+        block_factory.add_slow_block([transaction]).add_slow_block([transaction])
+
+        if reject = block_factory.blockchain.rejects.find(transaction.id)
           reject.reason.should eq("the transaction #{transaction.id} is already included in block: 2")
         else
           fail "no rejects found"
