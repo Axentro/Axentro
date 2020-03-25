@@ -66,8 +66,7 @@ module ::Sushi::Core
     def valid_as_embedded?(blockchain : Blockchain, prev_transactions : Array(Transaction)) : Bool
       verbose "tx -- #{short_id}: validating embedded transactions"
 
-      # TODO: Definitely needs changing, but to what?
-      raise "be not checked signing" unless @common_checked
+      raise "transactions have not been validated" unless @common_checked
 
       if sender_total_amount != recipient_total_amount
         raise "amount mismatch for senders (#{scale_decimal(sender_total_amount)}) " +
@@ -90,8 +89,7 @@ module ::Sushi::Core
     def valid_as_coinbase?(blockchain : Blockchain, block_index : Int64, embedded_transactions : Array(Transaction)) : Bool
       verbose "tx -- #{short_id}: validating coinbase transaction"
 
-      # TODO: See above comment
-      raise "be not checked signing" unless @common_checked
+      raise "transactions have not been validated" unless @common_checked
 
       raise "actions has to be 'head' for coinbase transaction " if @action != "head"
       raise "message has to be '0' for coinbase transaction" if @message != "0"

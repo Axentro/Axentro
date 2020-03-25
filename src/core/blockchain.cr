@@ -13,6 +13,7 @@
 require "./blockchain/*"
 require "./blockchain/block/*"
 require "./blockchain/chain/*"
+require "./blockchain/rewards/*"
 require "./dapps"
 
 module ::Sushi::Core
@@ -27,7 +28,7 @@ module ::Sushi::Core
 
     alias SlowHeader = NamedTuple(
       index: Int64,
-      nonce: UInt64,
+      nonce: BlockNonce,
       prev_hash: String,
       merkle_tree_root: String,
       timestamp: Int64,
@@ -50,6 +51,7 @@ module ::Sushi::Core
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup
+      MinerNoncePool.setup
 
       @security_level_percentage = security_level_percentage || SECURITY_LEVEL_PERCENTAGE
       info "Security Level Percentage used for blockchain validation is #{@security_level_percentage}"
@@ -183,8 +185,8 @@ module ::Sushi::Core
       database.delete_blocks(current_index.not_nil!)
     end
 
-    def valid_nonce?(nonce : UInt64) : SlowBlock?
-      return mining_block.with_nonce(nonce) if mining_block.with_nonce(nonce).valid_nonce?(mining_block_difficulty)
+    def valid_nonce?(block_nonce : BlockNonce) : SlowBlock?
+      return mining_block.with_nonce(block_nonce) if mining_block.with_nonce(block_nonce).valid_nonce?(mining_block_difficulty)
       nil
     end
 
@@ -448,6 +450,23 @@ module ::Sushi::Core
       rejects.record_reject(transaction.id, e)
     end
 
+    def add_miner_nonce(miner_nonce : MinerNonce, with_spawn : Bool = true)
+      with_spawn ? spawn { _add_miner_nonce(miner_nonce) } : _add_miner_nonce(miner_nonce)
+    end
+
+    private def _add_miner_nonce(miner_nonce : MinerNonce)
+      if valid_nonce?(miner_nonce.value)
+        debug "adding miner nonce to pool: #{miner_nonce.value}"
+        MinerNoncePool.add(miner_nonce) if MinerNoncePool.find(miner_nonce).nil?
+      end
+    rescue e : Exception
+      warning "nonce was not added to pool due to: #{e}"
+    end
+
+    def miner_nonce_pool
+      MinerNoncePool
+    end
+
     def latest_block : SlowBlock | FastBlock
       @chain[-1]
     end
@@ -492,7 +511,7 @@ module ::Sushi::Core
     def genesis_block : SlowBlock
       genesis_index = 0_i64
       genesis_transactions = @developer_fund ? DeveloperFund.transactions(@developer_fund.not_nil!.get_config) : [] of Transaction
-      genesis_nonce = 0_u64
+      genesis_nonce = "0"
       genesis_prev_hash = "genesis"
       genesis_timestamp = 0_i64
       genesis_difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
@@ -526,6 +545,10 @@ module ::Sushi::Core
 
     def available_actions : Array(String)
       @dapps.map { |dapp| dapp.transaction_actions }.flatten
+    end
+
+    def pending_miner_nonces : MinerNonces
+      MinerNoncePool.all
     end
 
     def pending_slow_transactions : Transactions
@@ -573,6 +596,8 @@ module ::Sushi::Core
       the_latest_index = get_latest_index_for_slow
       coinbase_amount = coinbase_slow_amount(the_latest_index, embedded_slow_transactions)
       coinbase_transaction = create_coinbase_slow_transaction(coinbase_amount, node.miners)
+      MinerNoncePool.delete_embedded
+
       transactions = align_slow_transactions(coinbase_transaction, coinbase_amount)
       timestamp = __timestamp
 
@@ -584,7 +609,7 @@ module ::Sushi::Core
       @mining_block = SlowBlock.new(
         the_latest_index,
         transactions,
-        0_u64,
+        "0",
         latest_slow_block.to_hash,
         timestamp,
         difficulty,
@@ -614,25 +639,23 @@ module ::Sushi::Core
     end
 
     def create_coinbase_slow_transaction(coinbase_amount : Int64, miners : NodeComponents::MinersManager::Miners) : Transaction
-      miners_nonces_size = miners.reduce(0) { |sum, m| sum + m[:context][:nonces].size }
-      miners_rewards_total = (coinbase_amount * 3_i64) / 4_i64
-      miners_recipients = if miners_nonces_size > 0
-                            miners.map { |m|
-                              amount = (miners_rewards_total * m[:context][:nonces].size) / miners_nonces_size
-                              {address: m[:context][:address], amount: amount.to_i64}
-                            }.reject { |m| m[:amount] == 0 }
-                          else
-                            [] of NamedTuple(address: String, amount: Int64)
-                          end
+      # TODO - simple solution for now - but should move to it's own class for calculating rewards
 
-      node_reccipient = {
+      miners_nonces = MinerNoncePool.embedded
+      miners_rewards_total = (coinbase_amount * 3_i64) / 4_i64
+
+      miners_recipients = miners_nonces.group_by { |mn| mn.address }.map do |address, nonces|
+        amount = (miners_rewards_total * nonces.size) / miners_nonces.size
+        {address: address, amount: amount.to_i64}
+      end.to_a.flatten.reject { |m| m[:amount] == 0 }
+
+      node_recipient = {
         address: @wallet.address,
         amount:  coinbase_amount - miners_recipients.reduce(0_i64) { |sum, m| sum + m[:amount] },
       }
 
       senders = [] of Transaction::Sender # No senders
-
-      recipients = miners_rewards_total > 0 ? [node_reccipient] + miners_recipients : [] of Transaction::Recipient
+      recipients = miners_rewards_total > 0 ? [node_recipient] + miners_recipients : [] of Transaction::Recipient
 
       Transaction.new(
         Transaction.create_id,
@@ -650,7 +673,7 @@ module ::Sushi::Core
 
     def coinbase_slow_amount(index : Int64, transactions) : Int64
       return total_fees(transactions) if index >= @block_reward_calculator.max_blocks
-      @block_reward_calculator.reward_for_block(index)
+      @block_reward_calculator.reward_for_block(index) + total_fees(transactions)
     end
 
     def total_fees(transactions) : Int64
@@ -675,6 +698,22 @@ module ::Sushi::Core
 
       SlowTransactionPool.lock
       SlowTransactionPool.replace(replace_transactions)
+    end
+
+    def replace_miner_nonces(miner_nonces : Array(MinerNonce))
+      replace_miner_nonces = [] of MinerNonce
+
+      miner_nonces.each do |mn|
+        mn = MinerNoncePool.find(mn) || mn
+        if valid_nonce?(mn.value)
+          replace_miner_nonces << mn
+        end
+      rescue e : Exception
+        warning "nonce was not added to pool due to: #{e}"
+      end
+
+      MinerNoncePool.lock
+      MinerNoncePool.replace(replace_miner_nonces)
     end
 
     def clean_slow_transactions_used_in_block(block : SlowBlock)
@@ -710,6 +749,7 @@ module ::Sushi::Core
     include Protocol
     include Consensus
     include TransactionModels
+    include NonceModels
     include Common::Timestamp
   end
 end

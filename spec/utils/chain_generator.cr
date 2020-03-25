@@ -53,7 +53,7 @@ module ::Units::Utils::ChainGenerator
       while @node.@phase != Sushi::Core::Node::SetupPhase::DONE
         sleep 0.000001
       end
-      @miner = {context: {address: miner_wallet.address, nonces: [] of UInt64}, socket: MockWebSocket.new, mid: "535061bddb0549f691c8b9c012a55ee2"}
+      @miner = {socket: MockWebSocket.new, mid: "535061bddb0549f691c8b9c012a55ee2"}
       @transaction_factory = TransactionFactory.new(@node_wallet)
       @rpc = RPCController.new(@blockchain)
       @rest = RESTController.new(@blockchain)
@@ -130,7 +130,7 @@ module ::Units::Utils::ChainGenerator
       enable_difficulty("0")
       @blockchain.refresh_mining_block(0) if with_refresh
       block = @blockchain.mining_block
-      block.nonce = 11719215035155661212_u64
+      block.nonce = "11719215035155661212"
       block.difficulty = 0 # difficulty will be set to 0 for most unit tests
       valid_block = @blockchain.valid_block?(block)
       case valid_block

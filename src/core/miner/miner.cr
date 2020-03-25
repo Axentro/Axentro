@@ -53,7 +53,7 @@ module ::Sushi::Core
       send(socket, M_TYPE_MINER_HANDSHAKE, {
         version: Core::CORE_VERSION,
         address: @wallet.address,
-        mid: @mid
+        mid:     @mid,
       })
 
       socket.run
@@ -124,7 +124,10 @@ module ::Sushi::Core
 
             debug "received nonce #{nonce_found_message} from worker"
 
-            send(socket, M_TYPE_MINER_FOUND_NONCE, MContentMinerFoundNonce.from_json(nonce_found_message)) unless nonce_found_message == "error"
+            unless nonce_found_message == "error"
+              nonce_with_address_json = {nonce: MinerNonce.from_json(nonce_found_message).with_address(@wallet.address)}.to_json
+              send(socket, M_TYPE_MINER_FOUND_NONCE, MContentMinerFoundNonce.from_json(nonce_with_address_json))
+            end
 
             update(w, difficulty, block)
           rescue ioe : IO::EOFError
@@ -145,7 +148,7 @@ module ::Sushi::Core
     end
 
     def update(worker, difficulty, block)
-      worker.exec({start_nonce: Random.rand(UInt64::MAX), difficulty: difficulty, block: block}.to_json)
+      worker.exec({start_nonce: Random.rand(UInt64::MAX).to_s, difficulty: difficulty, block: block}.to_json)
     end
 
     def clean_workers
@@ -156,5 +159,6 @@ module ::Sushi::Core
     include Logger
     include Protocol
     include Common::Color
+    include NonceModels
   end
 end

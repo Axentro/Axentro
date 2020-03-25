@@ -76,7 +76,7 @@ describe Transaction do
         transactions = chain.last.transactions
 
         transaction = transaction_factory.make_send(1000_i64)
-        expect_raises(Exception, "be not checked signing") do
+        expect_raises(Exception, "transactions have not been validated") do
           transaction.valid_as_embedded?(block_factory.blockchain, transactions)
         end
       end
@@ -139,7 +139,7 @@ describe Transaction do
           Transaction.create_id,
           "head", # action
           [] of Transaction::Sender,
-          [a_recipient(transaction_factory.recipient_wallet, 1199999686_i64)],
+          [a_recipient(transaction_factory.recipient_wallet, 1200009686_i64)],
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -171,7 +171,7 @@ describe Transaction do
           TransactionKind::SLOW
         )
 
-        expect_raises(Exception, "be not checked signing") do
+        expect_raises(Exception, "transactions have not been validated") do
           transaction.valid_as_coinbase?(block_factory.blockchain, 1, transactions)
         end
       end
@@ -322,7 +322,7 @@ describe Transaction do
         )
 
         transaction.valid_common?.should be_true
-        expect_raises(Exception, "invalid served amount for coinbase transaction at index: 1 expected 1199999686 but got 1000") do
+        expect_raises(Exception, "invalid served amount for coinbase transaction at index: 1 expected 1200009686 but got 1000") do
           transaction.valid_as_coinbase?(block_factory.blockchain, 1, transactions).should be_true
         end
       end

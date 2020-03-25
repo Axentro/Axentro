@@ -12,18 +12,11 @@
 
 module ::Sushi::Core::NodeComponents
   class MinersManager < HandleSocket
-    alias MinerContext = NamedTuple(
-      address: String,
-      nonces: Array(UInt64),
-    )
-
-    alias MinerContexts = Array(MinerContext)
+    include NonceModels
 
     alias Miner = NamedTuple(
-      context: MinerContext,
       socket: HTTP::WebSocket,
-      mid: String
-    )
+      mid: String)
 
     alias Miners = Array(Miner)
 
@@ -62,7 +55,7 @@ module ::Sushi::Core::NodeComponents
         return send(socket,
           M_TYPE_MINER_HANDSHAKE_REJECTED,
           {
-            reason: "The max number of miners allowed to connect to this node has been reached (#{@blockchain.max_miners})"
+            reason: "The max number of miners allowed to connect to this node has been reached (#{@blockchain.max_miners})",
           })
       end
 
@@ -76,8 +69,7 @@ module ::Sushi::Core::NodeComponents
         })
       end
 
-      miner_context = {address: address, nonces: [] of UInt64}
-      miner = {context: miner_context, socket: socket, mid: mid}
+      miner = {socket: socket, mid: mid}
 
       @miners << miner
 
@@ -98,13 +90,12 @@ module ::Sushi::Core::NodeComponents
 
       _m_content = MContentMinerFoundNonce.from_json(_content)
 
-      nonce = _m_content.nonce
-      mined_timestamp = _m_content.timestamp
-
-      debug "received a nonce of #{nonce} from a miner at timestamp #{mined_timestamp}"
+      miner_nonce = _m_content.nonce
+      mined_timestamp = miner_nonce.timestamp
+      debug "received a nonce of #{miner_nonce.value} from a miner at timestamp #{mined_timestamp}"
 
       if miner = find?(socket)
-        block = @blockchain.mining_block.with_nonce(nonce)
+        block = @blockchain.mining_block.with_nonce(miner_nonce.value)
 
         if ENV.has_key?("SC_SET_DIFFICULTY")
           mint_block(block)
@@ -114,8 +105,8 @@ module ::Sushi::Core::NodeComponents
         debug "Received a freshly mined block..."
         block.to_s
 
-        if @miners.map { |m| m[:context][:nonces] }.flatten.includes?(nonce)
-          warning "nonce #{nonce} has already been discovered"
+        if @blockchain.miner_nonce_pool.find(miner_nonce)
+          warning "nonce #{miner_nonce.value} has already been discovered"
           return
         end
 
@@ -131,13 +122,17 @@ module ::Sushi::Core::NodeComponents
 
           send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
             block:      @blockchain.mining_block,
-            difficulty: @blockchain.mining_block_difficulty_miner
+            difficulty: @blockchain.mining_block_difficulty_miner,
           })
         else
           miner_name = HumanHash.humanize(miner[:mid])
-          debug "miner #{miner_name} found nonce at timestamp #{mined_timestamp }.. (nonces: #{miner[:context][:nonces].size}) mined with difficulty #{mined_difficulty} "
+          nonces_size = @blockchain.miner_nonce_pool.find_by_mid(miner[:mid]).size
+          debug "miner #{miner_name} found nonce at timestamp #{mined_timestamp}.. (nonces: #{nonces_size}) mined with difficulty #{mined_difficulty} "
 
-          miner[:context][:nonces].push(nonce)
+          # add nonce to pool - maybe batch instead of sending one nonce at a time?
+           miner_nonce = miner_nonce.with_node_id(node.get_node_id).with_mid(miner[:mid])
+           @blockchain.add_miner_nonce(miner_nonce)
+           node.send_miner_nonce(miner_nonce)
 
           debug "found nonce of #{block.nonce} that doesn't satisfy block difficulty, checking if it is the best so far"
           current_miner_difficulty = block_difficulty_to_miner_difficulty(@blockchain.mining_block_difficulty)
@@ -166,13 +161,6 @@ module ::Sushi::Core::NodeComponents
       @block_start_time = __timestamp
       node.new_block(block)
       node.send_block(block)
-      clear_nonces
-    end
-
-    def clear_nonces
-      @miners.each do |m|
-        m[:context][:nonces].clear
-      end
     end
 
     def forget_most_difficult
@@ -189,7 +177,7 @@ module ::Sushi::Core::NodeComponents
       @miners.each do |miner|
         send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
           block:      @blockchain.mining_block,
-          difficulty: @blockchain.mining_block_difficulty_miner
+          difficulty: @blockchain.mining_block_difficulty_miner,
         })
       end
     end
@@ -207,10 +195,6 @@ module ::Sushi::Core::NodeComponents
 
     def size
       @miners.size
-    end
-
-    def miner_contexts : MinerContexts
-      @miners.map { |m| m[:context] }
     end
 
     private def node
