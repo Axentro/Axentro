@@ -43,7 +43,7 @@ module ::Sushi::Core
           block_nonce = Random.rand(UInt64::MAX).to_s
           miner_nonce = MinerNonce.from(block_nonce)
 
-          work_rate = (nonce_counter - latest_nonce_counter) / time_diff.to_f64
+          work_rate = (nonce_counter - latest_nonce_counter) / (time_diff / 1000)
 
           info "#{nonce_counter - latest_nonce_counter} works, #{work_rate_with_unit(work_rate)}"
 
