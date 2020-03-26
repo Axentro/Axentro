@@ -11,6 +11,40 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::DApps::BuildIn
+
+    struct TokenAmount
+        JSON.mapping(
+            name: String,
+            amount: String
+        )
+        def initialize(@name : String, @amount : String); end
+    end
+
+    struct WalletTransaction
+        JSON.mapping(
+            transaction_id: String,
+            block_index: String,
+            kind: String,
+            from: String,
+            from_readable: String,
+            category: String,
+            datetime: String,
+            status: String,
+            rejection_reason: String
+        )
+
+        def initialize(@transaction_id : String, @block_index : String, @kind : String, @from : String, @from_readable : String, @category : String, @datetime : String, )
+    end
+
+    struct WalletInfoResponse
+        JSON.mapping(
+            address: String,
+            readable: Array(String),
+            tokens: Array(TokenAmount),
+            recent_transactions: Array(WalletTransaction)  
+        )
+    end
+
   class WalletInfo < DApp
     def setup
     end
@@ -42,21 +76,15 @@ module ::Sushi::Core::DApps::BuildIn
       nil
     end
 
-    def fees(json, context, params)
+    def wallet_info(json, context, params)
       context.response.print api_success(walle_info_impl)
       context
     end
 
-    def wallet_info_impl
-      fees = Hash(String, String).new
-
-      blockchain.dapps.each do |dapp|
-        dapp.transaction_actions.each do |action|
-          fees[action] = scale_decimal(dapp.class.fee(action)) if dapp.class.fee(action) > 0
-        end
-      end
-
-      fees
+    def wallet_info_impl(address)
+        readable = database.get_domain_map_for_address(address)
+        wallet_info_response = WalletInfoResponse.new(address, readable)
+      
     end
 
     def on_message(action : String, from_address : String, content : String, from = nil)

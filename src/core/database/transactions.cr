@@ -149,6 +149,14 @@ module ::Sushi::Core::Data::Transactions
     domain_map
   end
 
+  def get_domains_for_address(address : String) : Array(String)
+    @db.query(
+      "select message as domain " \
+      "from transactions t " \
+      "where action in ('scars_buy', 'scars_sell', 'scars_cancel') " \
+      "and address = ?", address)
+  end
+
   def get_confirmations(block_index : Int64) : Int64
     kind = block_index.odd? ? Block::BlockKind::FAST : Block::BlockKind::SLOW
     current_index = highest_index_of_kind(kind)
