@@ -89,6 +89,8 @@ module ::Sushi::Core::Controllers
       post "/api/v1/transaction" { |context, params| __v1_transaction(context, params) }
       post "/api/v1/transaction/unsigned" { |context, params| __v1_transaction_unsigned(context, params) }
 
+      get "/api/v1/wallet/:address" {|context, params| __v1_wallet(context, params) }
+
       route_handler
     end
 
