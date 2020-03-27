@@ -137,12 +137,12 @@ module ::Sushi::Core::Data::Transactions
       "where action in ('scars_buy', 'scars_sell', 'scars_cancel') " \
       "and address = ? " \
       "order by t.block_id desc", address) do |rows|
-      rows.each do 
+      rows.each do
         domains << rows.read(String)
       end
     end
-    domain_maps = domains.uniq.map{|domain|get_domain_map_for(domain)}
-    domain_maps.reduce(domain_map){|acc, dm| acc.merge(dm) }.select{|n,d| d[:address] == address }
+    domain_maps = domains.uniq.map { |domain| get_domain_map_for(domain) }
+    domain_maps.reduce(domain_map) { |acc, dm| acc.merge(dm) }.select { |_, d| d[:address] == address }
   end
 
   # def get_domain_map_for_address(address : String) : DomainMap
