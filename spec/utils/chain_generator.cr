@@ -270,7 +270,7 @@ module ::Units::Utils::ChainGenerator
         1,             # scaled
         TransactionKind::SLOW
       )
-      unsigned_transaction.as_signed([sender_wallet])
+      unsigned_transaction.as_signed([recipient_wallet])
     end
 
     def make_buy_domain_from_seller(domain : String, recipient_amount : Int64, recipients : Array(Transaction::Recipient)) : Transaction
