@@ -372,7 +372,7 @@ describe RESTController do
         domain = "sushi.sc"
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_domain(context("/api/v1/domain/#{domain}"), {domain: domain})) do |result|
-        result["status"].to_s.should eq("success")
+          result["status"].to_s.should eq("success")
           result["result"]["confirmation"].should eq(0_i64)
           result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"SUSHI\", \"amount\" => \"35.79996241\"}")
         end
@@ -523,6 +523,28 @@ describe RESTController do
           result_domains = Array(DomainResult).from_json(result["result"]["domains"].to_json)
           result_domains.first.domain_name.should eq(domains[0])
           result_domains[1].domain_name.should eq(domains[1])
+        end
+      end
+    end
+    it "should return the correct list of domains after a domain has been sold" do
+      with_factory do |block_factory, transaction_factory|
+        domain_name = "domain1.sc"
+        domain_name2 = "domain2.sc"
+        block_factory.add_slow_blocks(2).add_slow_block(
+          [transaction_factory.make_buy_domain_from_platform(domain_name, 0_i64),
+           transaction_factory.make_buy_domain_from_platform(domain_name2, 0_i64),
+          ])
+          .add_slow_blocks(2)
+          .add_slow_block([transaction_factory.make_sell_domain(domain_name, 100_i64)])
+          .add_slow_block([transaction_factory.make_send(2000000000)])
+          .add_slow_block([transaction_factory.make_buy_domain_from_seller(domain_name, 100_i64)])
+          .add_slow_blocks(2)
+        address = transaction_factory.sender_wallet.address
+        exec_rest_api(block_factory.rest.__v1_scars_lookup(context("/api/v1/scars/lookup/#{address}"), {address: address})) do |result|
+          result["status"].to_s.should eq("success")
+          result_domains = Array(DomainResult).from_json(result["result"]["domains"].to_json)
+          result_domains.size.should eq(1)
+          result_domains.first.domain_name.should eq(domain_name2)
         end
       end
     end

@@ -271,6 +271,7 @@ RULE
     end
 
     def scars_lookup_impl(address : String)
+
       domains = lookup_for(address)
       domain_results = Array(DomainResult).new
 
