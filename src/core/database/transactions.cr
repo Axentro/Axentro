@@ -145,27 +145,6 @@ module ::Sushi::Core::Data::Transactions
     domain_maps.reduce(domain_map) { |acc, dm| acc.merge(dm) }.select { |_, d| d[:address] == address }
   end
 
-  # def get_domain_map_for_address(address : String) : DomainMap
-  #   domain_map = DomainMap.new
-  #   @db.query(
-  #     "select message, address, action, amount, t.block_id " \
-  #     "from transactions t " \
-  #     "join senders s on s.transaction_id = t.id " \
-  #     "where action in ('scars_buy', 'scars_sell', 'scars_cancel') ") do |rows|
-  #     rows.each do
-  #       domain_name = rows.read(String)
-  #       domain_map[domain_name] = {
-  #         domain_name: domain_name,
-  #         address:     rows.read(String),
-  #         status:      status(rows.read(String)),
-  #         price:       rows.read(Int64),
-  #         block:       rows.read(Int64),
-  #       }
-  #     end
-  #   end
-  #   domain_map.select{|n,d| d[:address] == address }
-  # end
-
   def get_confirmations(block_index : Int64) : Int64
     kind = block_index.odd? ? Block::BlockKind::FAST : Block::BlockKind::SLOW
     current_index = highest_index_of_kind(kind)
