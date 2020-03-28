@@ -26,12 +26,14 @@ module ::Sushi::Core::DApps::BuildIn
       kind: String,
       from: String,
       from_readable: String,
+      amount: String,
+      token: String,
       category: String,
       datetime: String,
       status: String,
     )
 
-    def initialize(@transaction_id : String, @kind : String, @from : String, @from_readable : String, @category : String, @datetime : String, @status : String); end
+    def initialize(@transaction_id : String, @kind : String, @from : String, @from_readable : String, @amount : String, @token : String, @category : String, @datetime : String, @status : String); end
   end
 
   struct OutgoingWalletTransaction
@@ -40,12 +42,14 @@ module ::Sushi::Core::DApps::BuildIn
       kind: String,
       to: String,
       to_readable: String,
+      amount: String,
+      token: String,
       category: String,
       datetime: String,
       status: String,
     )
 
-    def initialize(@transaction_id : String, @kind : String, @to : String, @to_readable : String, @category : String, @datetime : String, @status : String); end
+    def initialize(@transaction_id : String, @kind : String, @to : String, @to_readable : String, @amount : String, @token : String, @category : String, @datetime : String, @status : String); end
   end
 
   struct RejectedWalletTransaction
@@ -136,11 +140,11 @@ module ::Sushi::Core::DApps::BuildIn
       page, per_page, direction = 0, 100, 1
 
       all_completed_transactions = database.get_paginated_transactions_for_address(address, page, per_page, Direction.new(direction).to_s, [] of String)
-      incoming_completed_transactions = incoming("Completed", all_completed_transactions.select { |t| t.recipients.map { |r| r[:address] }.includes?(address) })
-      outgoing_completed_transactions = outgoing("Completed", all_completed_transactions.select { |t| t.senders.map { |r| r[:address] }.includes?(address) })
+      incoming_completed_transactions = incoming(address, "Completed", all_completed_transactions.select { |t| t.recipients.map { |r| r[:address] }.includes?(address) })
+      outgoing_completed_transactions = outgoing(address, "Completed", all_completed_transactions.select { |t| t.senders.map { |r| r[:address] }.includes?(address) })
 
-      incoming_pending_transactions = incoming("Pending", (blockchain.pending_slow_transactions + blockchain.pending_fast_transactions).select { |t| t.recipients.map { |r| r.[:address] }.includes?(address) })
-      outgoing_pending_transactions = outgoing("Pending", (blockchain.pending_slow_transactions + blockchain.pending_fast_transactions).select { |t| t.senders.map { |r| r.[:address] }.includes?(address) })
+      incoming_pending_transactions = incoming(address, "Pending", (blockchain.pending_slow_transactions + blockchain.pending_fast_transactions).select { |t| t.recipients.map { |r| r.[:address] }.includes?(address) })
+      outgoing_pending_transactions = outgoing(address, "Pending", (blockchain.pending_slow_transactions + blockchain.pending_fast_transactions).select { |t| t.senders.map { |r| r.[:address] }.includes?(address) })
 
       WalletInfoResponse.new(address, readable, tokens,
         IncomingTransactions.new(incoming_pending_transactions, incoming_completed_transactions),
@@ -149,22 +153,45 @@ module ::Sushi::Core::DApps::BuildIn
       )
     end
 
-    private def outgoing(status : String, transactions : Array(Transaction)) : Array(OutgoingWalletTransaction)
+    private def outgoing(address, status : String, transactions : Array(Transaction)) : Array(OutgoingWalletTransaction)
       transactions.map do |t|
         OutgoingWalletTransaction.new(
-          t.id, t.kind.to_s, t.senders.map(&.[:address]).first,
-          domain_for_senders(t.senders), "Incoming", t.timestamp.to_s, status
+          t.id, t.kind.to_s, t.recipients.map(&.[:address]).first,
+          domain_for_recipients(t.recipients), amount_for_senders(address, t.senders), t.token, category(t.action), Time.unix_ms(t.timestamp).to_s, status
         )
-      end
+      end.sort_by(&.datetime).reverse
     end
 
-    private def incoming(status : String, transactions : Array(Transaction)) : Array(IncomingWalletTransaction)
+    private def incoming(address, status : String, transactions : Array(Transaction)) : Array(IncomingWalletTransaction)
       transactions.map do |t|
         IncomingWalletTransaction.new(
           t.id, t.kind.to_s, t.recipients.map(&.[:address]).first,
-          domain_for_recipients(t.recipients), "Outgoing", t.timestamp.to_s, status
+          domain_for_recipients(t.recipients), amount_for_recipients(address, t.recipients), t.token, category(t.action), Time.unix_ms(t.timestamp).to_s, status
         )
-      end
+      end.sort_by(&.datetime).reverse
+    end
+
+    private def category(action : String) : String
+      case action
+      when "head"
+        "Mining reward"
+      when "send"
+        "Payment"
+      when "scars_buy"
+        "Payment (Human readable address)"
+      when "scars_sell"
+        "Payment (Human readable address)"    
+      else
+        action
+      end    
+    end
+
+    private def amount_for_recipients(address, recipients) : String
+      scale_decimal(recipients.select{|r| r[:address] == address}.map(&.[:amount]).reduce(0_i64){|acc,v| acc + v})
+    end
+
+    private def amount_for_senders(address, senders) : String
+      scale_decimal(senders.select{|s| s[:address] == address}.map(&.[:amount]).reduce(0_i64){|acc,v| acc + v})
     end
 
     private def domain_for_senders(senders) : String
