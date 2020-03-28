@@ -40,7 +40,7 @@ module ::Sushi::Core::Controllers
       end
   
       # TODO - send latest wallet information when a new block is created - using the socket_addresses 
-      def broadcast_latest_block
+      def update_wallet_information
         debug "broadcast to the subscribers (#{@sockets.size})"
   
         @sockets.each do |socket|

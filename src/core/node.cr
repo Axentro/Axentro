@@ -31,6 +31,7 @@ module ::Sushi::Core
     @rpc_controller : Controllers::RPCController
     @rest_controller : Controllers::RESTController
     @pubsub_controller : Controllers::PubsubController
+    @wallet_info_controller : Controllers::WalletInfoController
 
     @conflicted_slow_index : Int64? = nil
     @conflicted_fast_index : Int64? = nil
@@ -81,6 +82,7 @@ module ::Sushi::Core
       @rpc_controller = Controllers::RPCController.new(@blockchain)
       @rest_controller = Controllers::RESTController.new(@blockchain)
       @pubsub_controller = Controllers::PubsubController.new(@blockchain)
+      @wallet_info_controller = Controllers::WalletInfoController.new(@blockchain)
 
       wallet_network = Wallet.address_network_type(@wallet.address)
 
@@ -544,6 +546,7 @@ module ::Sushi::Core
       end
 
       @pubsub_controller.broadcast_latest_block
+      @wallet_info_controller.update_wallet_information
     end
 
     def clean_connection(socket : HTTP::WebSocket)
@@ -831,6 +834,7 @@ module ::Sushi::Core
         @rpc_controller.get_handler,
         @rest_controller.get_handler,
         @pubsub_controller.get_handler,
+        @wallet_info_controller.get_handler,
         HTTP::StaticFileHandler.new("api/v1/dist", true, false),
         v1_api_documentation_handler,
       ]

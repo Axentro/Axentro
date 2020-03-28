@@ -292,7 +292,15 @@ module ::Sushi::Core::Controllers
 
     def __v1_wallet(context, params)
       with_response(context) do |query_params|
-        address = params["address"].to_s
+        address_or_domain = params["address"].to_s
+        address = address_or_domain
+        if address.ends_with?(".sc") 
+          domain_name = address_or_domain
+          result = @blockchain.database.get_domain_map_for(domain_name)[domain_name]?
+          if result
+            address = result[:address]
+          end
+        end
         @blockchain.wallet_info.wallet_info_impl(address)
       end
     end
