@@ -290,6 +290,13 @@ module ::Sushi::Core::Controllers
       end
     end
 
+    def __v1_wallet(context, params)
+      with_response(context) do |query_params|
+        address = params["address"].to_s
+        @blockchain.wallet_info.wallet_info_impl(address)
+      end
+    end
+
     private def with_response(context, &block)
       query_params = HTTP::Params.parse(context.request.query || "")
 
