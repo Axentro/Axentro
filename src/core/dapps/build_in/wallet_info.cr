@@ -23,7 +23,6 @@ module ::Sushi::Core::DApps::BuildIn
   struct IncomingWalletTransaction
     JSON.mapping(
       transaction_id: String,
-      block_index: String,
       kind: String,
       from: String,
       from_readable: String,
@@ -32,13 +31,12 @@ module ::Sushi::Core::DApps::BuildIn
       status: String,
     )
 
-    def initialize(@transaction_id : String, @block_index : String, @kind : String, @from : String, @from_readable : String, @category : String, @datetime : String, @status : String); end
+    def initialize(@transaction_id : String, @kind : String, @from : String, @from_readable : String, @category : String, @datetime : String, @status : String); end
   end
 
   struct OutgoingWalletTransaction
     JSON.mapping(
       transaction_id: String,
-      block_index: String,
       kind: String,
       to: String,
       to_readable: String,
@@ -47,7 +45,7 @@ module ::Sushi::Core::DApps::BuildIn
       status: String,
     )
 
-    def initialize(@transaction_id : String, @block_index : String, @kind : String, @to : String, @to_readable : String, @category : String, @datetime : String, @status : String); end
+    def initialize(@transaction_id : String, @kind : String, @to : String, @to_readable : String, @category : String, @datetime : String, @status : String); end
   end
 
   struct RejectedWalletTransaction
@@ -65,6 +63,7 @@ module ::Sushi::Core::DApps::BuildIn
       pending_transactions: Array(IncomingWalletTransaction),
       completed_transactions: Array(IncomingWalletTransaction),
     )
+
     def initialize(@pending_transactions : Array(IncomingWalletTransaction), @completed_transactions : Array(IncomingWalletTransaction)); end
   end
 
@@ -73,7 +72,8 @@ module ::Sushi::Core::DApps::BuildIn
       pending_transactions: Array(OutgoingWalletTransaction),
       completed_transactions: Array(OutgoingWalletTransaction),
     )
-    def initialize(@pending_transactions : Array(OutgoingWalletTransaction), @completed_transactions : Array(IncomingWaOutgoingWalletTransactionlletTransaction)); end
+
+    def initialize(@pending_transactions : Array(OutgoingWalletTransaction), @completed_transactions : Array(OutgoingWalletTransaction)); end
   end
 
   struct WalletInfoResponse
@@ -86,11 +86,10 @@ module ::Sushi::Core::DApps::BuildIn
       rejected_transactions: Array(RejectedWalletTransaction),
     )
 
-    def initialize(@address : String, @readable : Array(String), @tokens : Array(TokenAmount), 
-      @incoming_transactions : IncomingTransactions,
-      @outgoing_transactions : OutgoingTransactions,
-      @rejected_transactions : Array(RejectedWalletTransaction)
-      ); end
+    def initialize(@address : String, @readable : Array(String), @tokens : Array(TokenAmount),
+                   @incoming_transactions : IncomingTransactions,
+                   @outgoing_transactions : OutgoingTransactions,
+                   @rejected_transactions : Array(RejectedWalletTransaction)); end
   end
 
   class WalletInfo < DApp
@@ -132,67 +131,67 @@ module ::Sushi::Core::DApps::BuildIn
 
     def wallet_info_impl(address)
       readable = database.get_domain_map_for_address(address).keys
-      tokens = database.get_address_amount(address).map{|tq| TokenAmount.new(tq.token, scale_decimal(tq.amount)) }
-      
+      tokens = database.get_address_amount(address).map { |tq| TokenAmount.new(tq.token, scale_decimal(tq.amount)) }
+
       page, per_page, direction = 0, 100, 1
-      
+
       all_completed_transactions = database.get_paginated_transactions_for_address(address, page, per_page, Direction.new(direction).to_s, [] of String)
-      incoming_completed_transactions = incoming("Completed", all_completed_transactions.select{|t| t.recipients.map{|r| r[:address]}.includes?(address)})
-      outgoing_completed_transactions = outgoing("Completed", all_completed_transactions.select{|t| t.senders.map{|r| r[:address]}.includes?(address)})
-      
-      incoming_pending_transactions = incoming((blockchain.pending_slow_transactions + blockchain.pending_fast_transactions).select{|t| t.recipients.map{|r| r.address}.includes?(address)})
-      outgoing_pending_transactions = incoming((blockchain.pending_slow_transactions + blockchain.pending_fast_transactions).select{|t| t.senders.map{|r| r.address}.includes?(address)})
+      incoming_completed_transactions = incoming("Completed", all_completed_transactions.select { |t| t.recipients.map { |r| r[:address] }.includes?(address) })
+      outgoing_completed_transactions = outgoing("Completed", all_completed_transactions.select { |t| t.senders.map { |r| r[:address] }.includes?(address) })
 
-      
+      incoming_pending_transactions = incoming("Pending", (blockchain.pending_slow_transactions + blockchain.pending_fast_transactions).select { |t| t.recipients.map { |r| r.[:address] }.includes?(address) })
+      outgoing_pending_transactions = outgoing("Pending", (blockchain.pending_slow_transactions + blockchain.pending_fast_transactions).select { |t| t.senders.map { |r| r.[:address] }.includes?(address) })
 
-
-     
-      WalletInfoResponse.new(address, readable, tokens, 
-      IncomingTransactions.new(incoming_pending_transactions, incoming_completed_transactions),
-      OutgoingTransactions.new(outgoing_pending_transactions, outgoing_completed_transactions),
-      [] of RejectedWalletTransaction
+      WalletInfoResponse.new(address, readable, tokens,
+        IncomingTransactions.new(incoming_pending_transactions, incoming_completed_transactions),
+        OutgoingTransactions.new(outgoing_pending_transactions, outgoing_completed_transactions),
+        [] of RejectedWalletTransaction
       )
     end
 
-    private def outgoing(status : String, t : Transaction) : IncomingWalletTransaction
-      IncomingWalletTransaction.new(
-        t.id, t.block_id, t.kind, t.senders.map(&.address).first, 
-        domain_for_senders(t.senders), "Incoming", t.timestamp.to_s, status 
+    private def outgoing(status : String, transactions : Array(Transaction)) : Array(OutgoingWalletTransaction)
+      transactions.map do |t|
+        OutgoingWalletTransaction.new(
+          t.id, t.kind.to_s, t.senders.map(&.[:address]).first,
+          domain_for_senders(t.senders), "Incoming", t.timestamp.to_s, status
         )
-    end
-
-    private def incoming(status : String, t : Transaction) : OutgoingWalletTransaction
-      OutgoingWalletTransaction.new(
-        t.id, t.block_id, t.kind, t.recipients.map(&.address).first, 
-        domain_for_recipients(t.recipients), "Outgoing", t.timestamp.to_s, status 
-      )
-    end
-
-    private def domain_for_senders(senders)
-      _senders = senders.map(&.address).uniq
-      if _senders.size > 0
-        domains = _senders.map{|s| database.get_domain_map_for_address(s.address).keys.uniq}
-        if domains.size > 0
-          domains.first
-        else
-          [] of String  
-        end
-      else
-        [] of String
       end
     end
 
-    private def domain_for_recipients(recipients)
-      _recipients = recipients.map(&.address).uniq
-      if _recipients.size > 0
-        domains = _recipients.map{|r| database.get_domain_map_for_address(r.address).keys.uniq}
+    private def incoming(status : String, transactions : Array(Transaction)) : Array(IncomingWalletTransaction)
+      transactions.map do |t|
+        IncomingWalletTransaction.new(
+          t.id, t.kind.to_s, t.recipients.map(&.[:address]).first,
+          domain_for_recipients(t.recipients), "Outgoing", t.timestamp.to_s, status
+        )
+      end
+    end
+
+    private def domain_for_senders(senders) : String
+      _senders = senders.map(&.[:address]).uniq
+      if _senders.size > 0
+        domains = _senders.flat_map { |address| database.get_domain_map_for_address(address).keys.uniq }
         if domains.size > 0
-          domains.first
+           domains.first
         else
-          [] of String  
+           ""
         end
       else
-        [] of String
+        ""
+      end
+    end
+
+    private def domain_for_recipients(recipients) : String
+      _recipients = recipients.map(&.[:address]).uniq
+      if _recipients.size > 0
+        domains = _recipients.flat_map { |address| database.get_domain_map_for_address(address).keys.uniq }
+        if domains.size > 0
+           domains.first
+        else
+           ""
+        end
+      else
+        ""
       end
     end
 
