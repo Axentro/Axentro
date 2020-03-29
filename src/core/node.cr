@@ -389,6 +389,7 @@ module ::Sushi::Core
       send_transaction(transaction, from)
 
       @blockchain.add_transaction(transaction)
+      @wallet_info_controller.update_wallet_information([transaction])
     end
 
     def broadcast_miner_nonce(miner_nonce : MinerNonce, from : Chord::NodeContext? = nil)
@@ -546,7 +547,7 @@ module ::Sushi::Core
       end
 
       @pubsub_controller.broadcast_latest_block
-      @wallet_info_controller.update_wallet_information
+      @wallet_info_controller.update_wallet_information(block.transactions)
     end
 
     def clean_connection(socket : HTTP::WebSocket)
