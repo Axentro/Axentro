@@ -20,26 +20,12 @@ module ::Sushi::Core::DApps::BuildIn
     def initialize(@name : String, @amount : String); end
   end
 
-  struct IncomingWalletTransaction
+  struct RecentWalletTransaction
     JSON.mapping(
       transaction_id: String,
       kind: String,
       from: String,
       from_readable: String,
-      amount: String,
-      token: String,
-      category: String,
-      datetime: String,
-      status: String,
-    )
-
-    def initialize(@transaction_id : String, @kind : String, @from : String, @from_readable : String, @amount : String, @token : String, @category : String, @datetime : String, @status : String); end
-  end
-
-  struct OutgoingWalletTransaction
-    JSON.mapping(
-      transaction_id: String,
-      kind: String,
       to: String,
       to_readable: String,
       amount: String,
@@ -47,9 +33,10 @@ module ::Sushi::Core::DApps::BuildIn
       category: String,
       datetime: String,
       status: String,
+      direction: String
     )
 
-    def initialize(@transaction_id : String, @kind : String, @to : String, @to_readable : String, @amount : String, @token : String, @category : String, @datetime : String, @status : String); end
+    def initialize(@transaction_id : String, @kind : String, @from : String, @from_readable : String, @to : String, @to_readable : String, @amount : String, @token : String, @category : String, @datetime : String, @status : String, @direction : String); end
   end
 
   struct RejectedWalletTransaction
@@ -62,37 +49,17 @@ module ::Sushi::Core::DApps::BuildIn
     def initialize(@transaction_id : String, @rejection_reason : String, @status : String = "Rejected"); end
   end
 
-  struct IncomingTransactions
-    JSON.mapping(
-      pending_transactions: Array(IncomingWalletTransaction),
-      completed_transactions: Array(IncomingWalletTransaction),
-    )
-
-    def initialize(@pending_transactions : Array(IncomingWalletTransaction), @completed_transactions : Array(IncomingWalletTransaction)); end
-  end
-
-  struct OutgoingTransactions
-    JSON.mapping(
-      pending_transactions: Array(OutgoingWalletTransaction),
-      completed_transactions: Array(OutgoingWalletTransaction),
-    )
-
-    def initialize(@pending_transactions : Array(OutgoingWalletTransaction), @completed_transactions : Array(OutgoingWalletTransaction)); end
-  end
-
   struct WalletInfoResponse
     JSON.mapping(
       address: String,
       readable: Array(String),
       tokens: Array(TokenAmount),
-      incoming_transactions: IncomingTransactions,
-      outgoing_transactions: OutgoingTransactions,
+      recent_transactions: Array(RecentWalletTransaction),
       rejected_transactions: Array(RejectedWalletTransaction),
     )
 
     def initialize(@address : String, @readable : Array(String), @tokens : Array(TokenAmount),
-                   @incoming_transactions : IncomingTransactions,
-                   @outgoing_transactions : OutgoingTransactions,
+                   @recent_transactions : Array(RecentWalletTransaction),
                    @rejected_transactions : Array(RejectedWalletTransaction)); end
   end
 
@@ -146,29 +113,39 @@ module ::Sushi::Core::DApps::BuildIn
       incoming_pending_transactions = incoming(address, "Pending", (blockchain.pending_slow_transactions + blockchain.pending_fast_transactions).select { |t| t.recipients.map { |r| r.[:address] }.includes?(address) })
       outgoing_pending_transactions = outgoing(address, "Pending", (blockchain.pending_slow_transactions + blockchain.pending_fast_transactions).select { |t| t.senders.map { |r| r.[:address] }.includes?(address) })
 
-      WalletInfoResponse.new(address, readable, tokens,
-        IncomingTransactions.new(incoming_pending_transactions, incoming_completed_transactions),
-        OutgoingTransactions.new(outgoing_pending_transactions, outgoing_completed_transactions),
-        [] of RejectedWalletTransaction
-      )
+      recent_transactions = incoming_completed_transactions + outgoing_completed_transactions + incoming_pending_transactions + outgoing_pending_transactions
+
+      WalletInfoResponse.new(address, readable, tokens, recent_transactions.sort_by(&.datetime).reverse, [] of RejectedWalletTransaction)
     end
 
-    private def outgoing(address, status : String, transactions : Array(Transaction)) : Array(OutgoingWalletTransaction)
+    private def outgoing(address, status : String, transactions : Array(Transaction)) : Array(RecentWalletTransaction)
       transactions.map do |t|
-        OutgoingWalletTransaction.new(
-          t.id, t.kind.to_s, t.recipients.map(&.[:address]).first,
-          domain_for_recipients(t.recipients), amount_for_senders(address, t.senders), t.token, category(t.action), Time.unix_ms(t.timestamp).to_s, status
+        RecentWalletTransaction.new(
+          t.id, t.kind.to_s, "", "", first_recipient(t.recipients),
+          domain_for_recipients(t.recipients), amount_for_senders(address, t.senders), t.token, category(t.action),
+          Time.unix_ms(t.timestamp).to_s, status, "Outgoing"
         )
-      end.sort_by(&.datetime).reverse
+      end
     end
 
-    private def incoming(address, status : String, transactions : Array(Transaction)) : Array(IncomingWalletTransaction)
+    private def incoming(address, status : String, transactions : Array(Transaction)) : Array(RecentWalletTransaction)
       transactions.map do |t|
-        IncomingWalletTransaction.new(
-          t.id, t.kind.to_s, t.recipients.map(&.[:address]).first,
-          domain_for_recipients(t.recipients), amount_for_recipients(address, t.recipients), t.token, category(t.action), Time.unix_ms(t.timestamp).to_s, status
+        RecentWalletTransaction.new(
+          t.id, t.kind.to_s, first_sender(t.senders), domain_for_senders(t.senders), "", "",
+           amount_for_recipients(address, t.recipients), t.token, category(t.action),
+           Time.unix_ms(t.timestamp).to_s, status, "Incoming"
         )
-      end.sort_by(&.datetime).reverse
+      end
+    end
+
+    private def first_recipient(recipients)
+      r = recipients.map(&.[:address])
+      r.size > 0 ? r.first : ""
+    end
+
+    private def first_sender(senders)
+      s = senders.map(&.[:address])
+      s.size > 0 ? s.first : ""
     end
 
     private def category(action : String) : String
