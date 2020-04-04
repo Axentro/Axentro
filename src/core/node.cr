@@ -132,6 +132,10 @@ module ::Sushi::Core
       @is_private
     end
 
+    def wallet_info_controller
+      @wallet_info_controller
+    end
+
     def run!
       info "start running Sushi's node on #{light_green(@bind_host)}:#{light_green(@bind_port)}"
 
@@ -389,7 +393,6 @@ module ::Sushi::Core
       send_transaction(transaction, from)
 
       @blockchain.add_transaction(transaction)
-      @wallet_info_controller.update_wallet_information([transaction])
     end
 
     def broadcast_miner_nonce(miner_nonce : MinerNonce, from : Chord::NodeContext? = nil)

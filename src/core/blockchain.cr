@@ -445,6 +445,7 @@ module ::Sushi::Core
         else
           SlowTransactionPool.add(transaction)
         end
+        node.wallet_info_controller.update_wallet_information([transaction])
       end
     rescue e : Exception
       rejects.record_reject(transaction.id, e)
