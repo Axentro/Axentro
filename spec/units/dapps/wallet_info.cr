@@ -71,29 +71,12 @@ describe WalletInfo do
         json = JSON.parse(payload)
 
         with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            pp result
-        #   result.should eq(block_factory.blockchain.chain.reverse.to_json)
+            wi = WalletInfoResponse.from_json(result)
+            wi.address.should eq(transaction_factory.sender_wallet.address)
+            wi.readable.should eq(["domain1.sc", "domain2.sc"])
+            wi.tokens.should eq([TokenAmount.new("SUSHI","59.99990605")])
         end
       end
     end
   end
 end
-
-#   describe "#define_rpc?" do
-#     describe "#blockchain_size" do
-#       it "should return the blockchain size for the current node" do
-#         with_factory do |block_factory, _|
-#           block_factory.add_slow_blocks(10)
-#           payload = {call: "blockchain_size"}.to_json
-#           json = JSON.parse(payload)
-
-#           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-#             result.should eq(%{{"totals":{"total_size":11,"total_fast":0,"total_slow":11},"block_height":{"slow":20,"fast":-1}}})
-#           end
-#         end
-#       end
-#     end
-
-#   end
-
-# end

@@ -25,7 +25,6 @@ module ::Sushi::Core::Controllers
     def wallet_info(socket : HTTP::WebSocket)
       socket.on_close do |_|
         @sockets.delete(socket)
-        # remove from socket_address also
         @socket_address.each do |a,s|
           if s == socket
             @socket_address.delete(a)
@@ -45,7 +44,7 @@ module ::Sushi::Core::Controllers
           @socket_address[address] = socket
           socket.send(@blockchain.wallet_info.wallet_info_impl(address).to_json)
         rescue
-          socket.send({message: "oops"}.to_json)
+          socket.send({message: "could not process message: #{message}"}.to_json)
         end
       end
     end
