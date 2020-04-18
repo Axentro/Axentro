@@ -9,6 +9,9 @@
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
+require "../../node/*"
+require "../../dapps/dapp"
+require "../../dapps/build_in/rejects"
 
 module ::Sushi::Core::FastChain
   alias FastHeader = NamedTuple(
@@ -54,7 +57,7 @@ module ::Sushi::Core::FastChain
           end
         end
       end
-      sleep Random.new.rand(1.5 .. 2.0)
+      sleep Random.new.rand(1.5..2.0)
     end
   end
 
@@ -183,7 +186,7 @@ module ::Sushi::Core::FastChain
       aligned_transactions << t
     rescue e : Exception
       debug "align_fast_transactions: REJECTED transaction due to #{e}"
-      rejects.record_reject(t.id, e)
+      rejects.record_reject(t.id, Rejects.address_from_senders(t.senders), e)
 
       FastTransactionPool.delete(t)
     end
@@ -232,7 +235,7 @@ module ::Sushi::Core::FastChain
 
       replace_transactions << t
     rescue e : Exception
-      rejects.record_reject(t.id, e)
+      rejects.record_reject(t.id, Rejects.address_from_senders(t.senders), e)
     end
 
     FastTransactionPool.lock
@@ -255,7 +258,7 @@ module ::Sushi::Core::FastChain
     FastTransactionPool.replace(transactions)
   end
 
-def push_fast_block(block : FastBlock)
+  def push_fast_block(block : FastBlock)
     _push_block(block)
     clean_fast_transactions
 
@@ -263,4 +266,5 @@ def push_fast_block(block : FastBlock)
   end
 
   include Block
+  include ::Sushi::Core::DApps::BuildIn
 end

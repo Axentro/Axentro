@@ -18,7 +18,7 @@ require "../dapps/build_in/rejects"
 module ::Sushi::Core::Data::Rejects
   # ------- Definition -------
   def rejects_table_create_string
-    "transaction_id text, reason text"
+    "transaction_id text, address text, reason text, timestamp integer"
   end
 
   def rejects_primary_key_string
@@ -27,7 +27,7 @@ module ::Sushi::Core::Data::Rejects
 
   # ------- Insert -------
   def insert_reject(reject : Reject)
-    @db.exec("insert or ignore into rejects values (?, ?)", reject.transaction_id, reject.reason)
+    @db.exec("insert or ignore into rejects values (?, ?, ?, ?)", reject.transaction_id, reject.sender_address, reject.reason, reject.timestamp)
   end
 
   # ------- Query -------
@@ -36,11 +36,27 @@ module ::Sushi::Core::Data::Rejects
     @db.query("select * from rejects where transaction_id = ?", transaction_id) do |rows|
       rows.each do
         tid = rows.read(String)
+        addr = rows.read(String)
         reason = rows.read(String)
-        rejects << Reject.new(tid, reason)
+        timestamp = rows.read(Int64)
+        rejects << Reject.new(tid, addr, reason, timestamp)
       end
     end
     rejects.size > 0 ? rejects.first : nil
+  end
+
+  def find_reject_by_address(address : String, limit : Int32 = 5) : Array(Reject)
+    rejects = [] of Reject
+    @db.query("select * from rejects where address = ? order by timestamp desc limit ?", address, limit) do |rows|
+      rows.each do
+        tid = rows.read(String)
+        addr = rows.read(String)
+        reason = rows.read(String)
+        timestamp = rows.read(Int64)
+        rejects << Reject.new(tid, addr, reason, timestamp)
+      end
+    end
+    rejects
   end
 
   def total_rejects : Int32

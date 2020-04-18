@@ -13,17 +13,24 @@
 module ::Sushi::Core::DApps::BuildIn
   struct Reject
     getter transaction_id
+    getter sender_address
     getter reason
+    getter timestamp
 
-    def initialize(@transaction_id : String, @reason : String); end
+    def initialize(@transaction_id : String, @sender_address : String, @reason : String, @timestamp : Int64); end
 
     def to_json(b)
-      {transaction_id => reason}.to_json
+      {"transaction_id" => transaction_id, "sender_address" => sender_address, "reason" => reason, "timestamp" => timestamp}.to_json
     end
   end
 
   class Rejects < DApp
     def setup
+    end
+
+    def self.address_from_senders(senders : Array(Sender))
+      sender_list = senders.map { |s| s[:address] }
+      sender_list.empty? ? "" : sender_list.first
     end
 
     def transaction_actions : Array(String)
@@ -38,13 +45,13 @@ module ::Sushi::Core::DApps::BuildIn
       true
     end
 
-    def record_reject(transaction_id : String, e : Exception)
+    def record_reject(transaction_id : String, sender_address : String, e : Exception)
       error_message = e.message ? e.message.not_nil! : "unknown"
-      record_reject(transaction_id, error_message)
+      record_reject(transaction_id, sender_address, error_message)
     end
 
-    def record_reject(transaction_id : String, error_message : String)
-      database.insert_reject(Reject.new(transaction_id, error_message))
+    def record_reject(transaction_id : String, sender_address : String, error_message : String)
+      database.insert_reject(Reject.new(transaction_id, sender_address, error_message, __timestamp))
     end
 
     def record(chain : Blockchain::Chain)
@@ -58,6 +65,10 @@ module ::Sushi::Core::DApps::BuildIn
 
     def find(transaction_id : String) : Reject?
       database.find_reject(transaction_id)
+    end
+
+    def find_by_address(address : String, limit : Int32 = 5) : Array(Reject)
+      database.find_reject_by_address(address, limit)
     end
 
     def on_message(action : String, from_address : String, content : String, from = nil)

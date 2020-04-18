@@ -89,6 +89,8 @@ module ::Sushi::Core::Controllers
       post "/api/v1/transaction" { |context, params| __v1_transaction(context, params) }
       post "/api/v1/transaction/unsigned" { |context, params| __v1_transaction_unsigned(context, params) }
 
+      get "/api/v1/wallet/:address" { |context, params| __v1_wallet(context, params) }
+
       route_handler
     end
 
@@ -285,6 +287,21 @@ module ::Sushi::Core::Controllers
 
       with_response(context) do
         @blockchain.node_info.node_id_impl(id)
+      end
+    end
+
+    def __v1_wallet(context, params)
+      with_response(context) do |_|
+        address_or_domain = params["address"].to_s
+        address = address_or_domain
+        if address.ends_with?(".sc")
+          domain_name = address_or_domain
+          result = @blockchain.database.get_domain_map_for(domain_name)[domain_name]?
+          if result
+            address = result[:address]
+          end
+        end
+        @blockchain.wallet_info.wallet_info_impl(address)
       end
     end
 
