@@ -393,7 +393,7 @@ describe Transaction do
 
         transaction = transaction_factory.make_send(2000_i64)
         transaction = transaction.as_unsigned
-        expect_raises(Exception, /invalid private key: outside of ec field size/) do
+        expect_raises(Exception, /invalid signing for sender/) do
           transaction.valid_common?
         end
       end

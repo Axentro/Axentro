@@ -60,7 +60,7 @@ module ::Sushi::Core
     def highest_index_of_kind(kind : Block::BlockKind) : Int64
       idx : Int64? = nil
 
-      @db.query "select max(idx) from blocks where kind = '#{kind.to_s}'" do |rows|
+      @db.query "select max(idx) from blocks where kind = '#{kind}'" do |rows|
         rows.each do
           idx = rows.read(Int64 | Nil)
         end
@@ -84,7 +84,7 @@ module ::Sushi::Core
     def lowest_index_after_time(given_time : Int64, kind : Block::BlockKind)
       idx : Int64? = nil
 
-      the_query = "select min(idx) from blocks where timestamp >= #{given_time} and kind = '#{kind.to_s}'"
+      the_query = "select min(idx) from blocks where timestamp >= #{given_time} and kind = '#{kind}'"
       debug "query in lowest_index_after_time: #{the_query}"
       @db.query the_query do |rows|
         rows.each do

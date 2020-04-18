@@ -14,7 +14,7 @@ shards:
 
   crystal-ecdsa:
     github: sushichain/crystal-ecdsa
-    version: 0.1.7
+    version: 0.1.6
 
   db:
     github: crystal-lang/crystal-db
@@ -39,14 +39,6 @@ shards:
   router:
     github: tbrand/router.cr
     version: 0.2.7
-
-  secp256k1:
-    github: q9f/secp256k1.cr
-    version: 0.3.2
-
-  sha3:
-    github: OscarBarrett/crystal-sha3
-    version: 0.3.2
 
   spinach:
     github: sushichain/spinach
