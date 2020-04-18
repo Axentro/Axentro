@@ -45,11 +45,12 @@ describe Rejects do
   end
   describe "record_reject" do
     it "should record a rejected transaction with exception message" do
-      with_factory do |block_factory, _|
+      with_factory do |block_factory, transaction_factory|
+        sender_address = transaction_factory.sender_wallet.address
         chain = block_factory.add_slow_blocks(2).chain
         transaction_id = chain.last.transactions.last.id
         rejects = Rejects.new(block_factory.blockchain)
-        rejects.record_reject(transaction_id, Exception.new("oops"))
+        rejects.record_reject(transaction_id, sender_address, Exception.new("oops"))
         if reject = block_factory.database.find_reject(transaction_id)
           reject.reason.should eq("oops")
         else
@@ -58,11 +59,12 @@ describe Rejects do
       end
     end
     it "should record a rejected transaction with default exception message" do
-      with_factory do |block_factory, _|
+      with_factory do |block_factory, transaction_factory|
+        sender_address = transaction_factory.sender_wallet.address
         chain = block_factory.add_slow_blocks(2).chain
         transaction_id = chain.last.transactions.last.id
         rejects = Rejects.new(block_factory.blockchain)
-        rejects.record_reject(transaction_id, Exception.new)
+        rejects.record_reject(transaction_id, sender_address, Exception.new)
         if reject = block_factory.database.find_reject(transaction_id)
           reject.reason.should eq("unknown")
         else

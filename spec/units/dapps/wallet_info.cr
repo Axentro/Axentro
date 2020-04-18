@@ -62,19 +62,19 @@ describe WalletInfo do
   describe "#wallet_info" do
     it "should return the wallet info for the specified address" do
       with_factory do |block_factory, transaction_factory|
-            block_factory.add_slow_blocks(2).add_slow_block(
-            [transaction_factory.make_buy_domain_from_platform("domain1.sc", 0_i64),
-             transaction_factory.make_buy_domain_from_platform("domain2.sc", 0_i64),
-            ]).add_slow_blocks(2)
+        block_factory.add_slow_blocks(2).add_slow_block(
+          [transaction_factory.make_buy_domain_from_platform("domain1.sc", 0_i64),
+           transaction_factory.make_buy_domain_from_platform("domain2.sc", 0_i64),
+           transaction_factory.make_send(99900000000),
+          ]).add_slow_blocks(2)
 
         payload = {call: "wallet_info", address: transaction_factory.sender_wallet.address}.to_json
         json = JSON.parse(payload)
 
         with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            wi = WalletInfoResponse.from_json(result)
-            wi.address.should eq(transaction_factory.sender_wallet.address)
-            wi.readable.should eq(["domain1.sc", "domain2.sc"])
-            wi.tokens.should eq([TokenAmount.new("SUSHI","59.99990605")])
+          wi = WalletInfoResponse.from_json(result)
+          wi.address.should eq(transaction_factory.sender_wallet.address)
+          wi.readable.should eq(["domain1.sc", "domain2.sc"])
         end
       end
     end

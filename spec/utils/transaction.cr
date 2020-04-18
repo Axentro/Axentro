@@ -18,9 +18,24 @@ module ::Units::Utils::TransactionHelper
      amount:  amount}
   end
 
+  def a_recipient(recipient_address : String, amount : Int64) : Transaction::Recipient
+    {address: recipient_address,
+     amount:  amount}
+  end
+
   def a_sender(wallet : Wallet, amount : Int64, fee : Int64 = 10000_i64) : Transaction::Sender
     {address:    wallet.address,
      public_key: wallet.public_key,
+     amount:     amount,
+     fee:        fee,
+     sign_r:     "0",
+     sign_s:     "0",
+    }
+  end
+
+  def a_sender(sender_address : String, sender_public_key : String, amount : Int64, fee : Int64 = 10000_i64) : Transaction::Sender
+    {address:    sender_address,
+     public_key: sender_public_key,
      amount:     amount,
      fee:        fee,
      sign_r:     "0",

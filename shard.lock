@@ -2,7 +2,7 @@ version: 1.0
 shards:
   ameba:
     github: veelenga/ameba
-    version: 0.11.0
+    version: 0.12.1
 
   baked_file_system:
     github: schovi/baked_file_system
@@ -14,11 +14,11 @@ shards:
 
   crystal-ecdsa:
     github: sushichain/crystal-ecdsa
-    version: 0.1.6
+    version: 0.1.7
 
   db:
     github: crystal-lang/crystal-db
-    version: 0.8.0
+    version: 0.9.0
 
   humanhash:
     github: kingsleyh/humanhash
@@ -40,13 +40,21 @@ shards:
     github: tbrand/router.cr
     version: 0.2.7
 
+  secp256k1:
+    github: q9f/secp256k1.cr
+    version: 0.3.2
+
+  sha3:
+    github: OscarBarrett/crystal-sha3
+    version: 0.3.2
+
   spinach:
     github: sushichain/spinach
     version: 0.1.8
 
   sqlite3:
     github: crystal-lang/crystal-sqlite3
-    version: 0.15.0
+    version: 0.16.0
 
   tokoroten:
     github: tbrand/tokoroten

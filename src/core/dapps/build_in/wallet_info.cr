@@ -42,11 +42,13 @@ module ::Sushi::Core::DApps::BuildIn
   struct RejectedWalletTransaction
     JSON.mapping(
       transaction_id: String,
+      sender_address: String,
       rejection_reason: String,
+      datetime: String,
       status: String
     )
 
-    def initialize(@transaction_id : String, @rejection_reason : String, @status : String = "Rejected"); end
+    def initialize(@transaction_id : String, @sender_address : String, @rejection_reason : String, @datetime : String, @status : String = "Rejected"); end
   end
 
   struct WalletInfoResponse
@@ -115,7 +117,16 @@ module ::Sushi::Core::DApps::BuildIn
 
       recent_transactions = incoming_completed_transactions + outgoing_completed_transactions + incoming_pending_transactions + outgoing_pending_transactions
 
-      WalletInfoResponse.new(address, readable, tokens, recent_transactions.sort_by(&.datetime).reverse, [] of RejectedWalletTransaction)
+      rejected_transactions = rejections(database.find_reject_by_address(address))
+
+      WalletInfoResponse.new(address, readable, tokens, recent_transactions.sort_by(&.datetime).reverse, rejected_transactions)
+    end
+
+    private def rejections(rejects : Array(Reject)) : Array(RejectedWalletTransaction)
+      rejects.map do |t|
+        RejectedWalletTransaction.new(
+          t.transaction_id, t.sender_address, t.reason, Time.unix_ms(t.timestamp).to_s)
+      end
     end
 
     private def outgoing(address, status : String, transactions : Array(Transaction)) : Array(RecentWalletTransaction)
@@ -132,8 +143,8 @@ module ::Sushi::Core::DApps::BuildIn
       transactions.map do |t|
         RecentWalletTransaction.new(
           t.id, t.kind.to_s, first_sender(t.senders), domain_for_senders(t.senders), "", "",
-           amount_for_recipients(address, t.recipients), t.token, category(t.action),
-           Time.unix_ms(t.timestamp).to_s, status, "Incoming"
+          amount_for_recipients(address, t.recipients), t.token, category(t.action),
+          Time.unix_ms(t.timestamp).to_s, status, "Incoming"
         )
       end
     end
@@ -157,18 +168,18 @@ module ::Sushi::Core::DApps::BuildIn
       when "scars_buy"
         "Payment (Human readable address)"
       when "scars_sell"
-        "Payment (Human readable address)"    
+        "Payment (Human readable address)"
       else
         action
-      end    
+      end
     end
 
     private def amount_for_recipients(address, recipients) : String
-      scale_decimal(recipients.select{|r| r[:address] == address}.map(&.[:amount]).reduce(0_i64){|acc,v| acc + v})
+      scale_decimal(recipients.select { |r| r[:address] == address }.map(&.[:amount]).reduce(0_i64) { |acc, v| acc + v })
     end
 
     private def amount_for_senders(address, senders) : String
-      scale_decimal(senders.select{|s| s[:address] == address}.map(&.[:amount]).reduce(0_i64){|acc,v| acc + v})
+      scale_decimal(senders.select { |s| s[:address] == address }.map(&.[:amount]).reduce(0_i64) { |acc, v| acc + v })
     end
 
     private def domain_for_senders(senders) : String
@@ -176,9 +187,9 @@ module ::Sushi::Core::DApps::BuildIn
       if _senders.size > 0
         domains = _senders.flat_map { |address| database.get_domain_map_for_address(address).keys.uniq }
         if domains.size > 0
-           domains.first
+          domains.first
         else
-           ""
+          ""
         end
       else
         ""
@@ -190,9 +201,9 @@ module ::Sushi::Core::DApps::BuildIn
       if _recipients.size > 0
         domains = _recipients.flat_map { |address| database.get_domain_map_for_address(address).keys.uniq }
         if domains.size > 0
-           domains.first
+          domains.first
         else
-           ""
+          ""
         end
       else
         ""

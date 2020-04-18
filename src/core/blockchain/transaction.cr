@@ -99,14 +99,12 @@ module ::Sushi::Core
 
       served_sum = @recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
 
-      served_sum_expected = self.is_slow_transaction? ?
-      blockchain.coinbase_slow_amount(block_index, embedded_transactions)
-      : blockchain.coinbase_fast_amount(block_index, embedded_transactions)
+      served_sum_expected = self.is_slow_transaction? ? blockchain.coinbase_slow_amount(block_index, embedded_transactions) : blockchain.coinbase_fast_amount(block_index, embedded_transactions)
 
-        if served_sum != served_sum_expected
-          raise "invalid served amount for coinbase transaction at index: #{block_index} " +
-                "expected #{served_sum_expected} but got #{served_sum} "
-        end
+      if served_sum != served_sum_expected
+        raise "invalid served amount for coinbase transaction at index: #{block_index} " +
+              "expected #{served_sum_expected} but got #{served_sum} "
+      end
 
       true
     end
@@ -125,12 +123,22 @@ module ::Sushi::Core
         network = Keys::Address.from(sender[:address], "sender").network
         public_key = Keys::PublicKey.new(sender[:public_key], network)
 
-        if !ECCrypto.verify(
-             public_key.as_hex,
-             self.as_unsigned.to_hash,
-             sender[:sign_r],
-             sender[:sign_s]
-           )
+        verbose "unsigned_json: #{self.as_unsigned.to_json}"
+        verbose "unsigned_json_hash: #{self.as_unsigned.to_hash}"
+        verbose "public key: #{public_key.as_hex}"
+        verbose "sign_r: #{sender[:sign_r]}"
+        verbose "sign_s: #{sender[:sign_s]}"
+
+        verify_result = ECCrypto.verify(
+          public_key.as_hex,
+          self.as_unsigned.to_hash,
+          sender[:sign_r],
+          sender[:sign_s]
+        )
+
+        verbose "verify signature result: #{verify_result}"
+
+        if !verify_result
           raise "invalid signing for sender: #{sender[:address]}"
         end
 
@@ -235,7 +243,6 @@ module ::Sushi::Core
 
     def set_recipients(@recipients)
     end
-
 
     #
     # ignore prev_hash for comparison

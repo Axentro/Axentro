@@ -448,7 +448,7 @@ module ::Sushi::Core
         node.wallet_info_controller.update_wallet_information([transaction])
       end
     rescue e : Exception
-      rejects.record_reject(transaction.id, e)
+      rejects.record_reject(transaction.id, Rejects.address_from_senders(transaction.senders), e)
     end
 
     def add_miner_nonce(miner_nonce : MinerNonce, with_spawn : Bool = true)
@@ -630,7 +630,7 @@ module ::Sushi::Core
 
         aligned_transactions << t
       rescue e : Exception
-        rejects.record_reject(t.id, e)
+        rejects.record_reject(t.id, Rejects.address_from_senders(t.senders), e)
 
         SlowTransactionPool.delete(t)
       end
@@ -674,7 +674,7 @@ module ::Sushi::Core
 
     def coinbase_slow_amount(index : Int64, transactions) : Int64
       return total_fees(transactions) if index >= @block_reward_calculator.max_blocks
-      @block_reward_calculator.reward_for_block(index) + total_fees(transactions)
+      @block_reward_calculator.reward_for_block(index) #+ total_fees(transactions)
     end
 
     def total_fees(transactions) : Int64
@@ -694,7 +694,7 @@ module ::Sushi::Core
 
         replace_transactions << t
       rescue e : Exception
-        rejects.record_reject(t.id, e)
+        rejects.record_reject(t.id, Rejects.address_from_senders(t.senders), e)
       end
 
       SlowTransactionPool.lock
