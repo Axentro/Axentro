@@ -28,7 +28,7 @@ require "openssl/pkcs5"
 require "openssl/digest"
 require "humanhash"
 require "crystal-argon2"
-require "crystal-ecdsa"
+require "monocypher"
 require "i18n"
 require "baked_file_system"
 

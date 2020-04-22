@@ -14,6 +14,14 @@ module ::Sushi::Core::Keys
   include Sushi::Core::Hashes
 
   class KeyUtils
+    def self.create_new_keypair
+      secret_key = Crypto::SecretKey.new
+      {
+        hex_private_key: secret_key.to_slice.hexstring,
+        hex_public_key:  Crypto::Ed25519PublicSigningKey.new(secret: secret_key).to_slice.hexstring,
+      }
+    end
+
     def self.to_hex(bytes : Bytes) : String
       bytes.to_unsafe.to_slice(bytes.size).hexstring
     end

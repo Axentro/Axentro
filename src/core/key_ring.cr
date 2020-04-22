@@ -26,7 +26,7 @@ module ::Sushi::Core::Keys
     end
 
     def self.generate(network : Core::Node::Network = MAINNET)
-      key_pair = ECCrypto.create_key_pair
+      key_pair = KeyUtils.create_new_keypair
       private_key = PrivateKey.new(key_pair[:hex_private_key], network)
       public_key = PublicKey.new(key_pair[:hex_public_key], network)
       KeyRing.new(private_key, public_key, private_key.wif, public_key.address)

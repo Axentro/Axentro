@@ -18,7 +18,7 @@ include Sushi::Core::Keys
 describe PublicKey do
   describe "#initialize" do
     it "should create a public key object from a public key string" do
-      key_pair = ECCrypto.create_key_pair
+      key_pair = KeyUtils.create_new_keypair
       hex_public_key = key_pair[:hex_public_key]
 
       public_key = PublicKey.new(hex_public_key)
@@ -34,7 +34,7 @@ describe PublicKey do
 
   describe "#from hex" do
     it "should create a public key object from a public key string" do
-      key_pair = ECCrypto.create_key_pair
+      key_pair = KeyUtils.create_new_keypair
       hex_public_key = key_pair[:hex_public_key]
 
       public_key = PublicKey.from(hex_public_key)
@@ -44,7 +44,7 @@ describe PublicKey do
 
   describe "#from bytes" do
     it "should create a public key object from a public key byte array" do
-      key_pair = ECCrypto.create_key_pair
+      key_pair = KeyUtils.create_new_keypair
       hex_public_key = key_pair[:hex_public_key]
       hexbytes = hex_public_key.hexbytes
 
@@ -57,7 +57,7 @@ describe PublicKey do
   end
 
   it "should convert a public key from hex to bytes with #as_bytes" do
-    key_pair = ECCrypto.create_key_pair
+    key_pair = KeyUtils.create_new_keypair
     hex_public_key = key_pair[:hex_public_key]
     hexbytes = hex_public_key.hexbytes
 
@@ -66,7 +66,7 @@ describe PublicKey do
   end
 
   it "should convert a public key from bytes to hex with #as_hex" do
-    key_pair = ECCrypto.create_key_pair
+    key_pair = KeyUtils.create_new_keypair
     hex_public_key = key_pair[:hex_public_key]
     hexbytes = hex_public_key.hexbytes
 
@@ -85,10 +85,10 @@ describe PublicKey do
 
   describe "#address" do
     it "should return the address" do
-      hex_public_key = "049ec703e3eab6beba4b1ea5745da006ecce8a556144cfb7d8bbbe0f31896c08f9aac3aee3410b38fe61b6cfc5afd447faa1ca051f1e0adf1d466addf55fc77d50"
+      hex_public_key = "bf668c4c446d540452f47b4c10ff85235f5aedb088a90eba8af59cf982489373"
 
       public_key = PublicKey.from(hex_public_key)
-      public_key.address.as_hex.should eq("TTAzZGQxYzhmMDMyYmFhM2VmZDBmNTI5YTRmNTY0MjVhOWI3NjljOGYwODgyNDlk")
+      public_key.address.as_hex.should eq("TTA5OGFmMWM5MzEzOTg4OWVjNGMyNjVmNmY1ZWMwMzhlN2M3ZWMwZGFkZjdhYWU0")
     end
 
     it "should return a mainnet address" do
@@ -109,5 +109,4 @@ describe PublicKey do
       KeyRing.generate.public_key.is_valid?.should be_true
     end
   end
-
 end
