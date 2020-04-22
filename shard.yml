@@ -30,9 +30,8 @@ dependencies:
     github: kingsleyh/humanhash
   crystal-argon2:
     github: sushichain/crystal-argon2
-  crystal-ecdsa:
-    github: sushichain/crystal-ecdsa
-    version: 0.1.6
+  monocypher:
+    github: sushichain/monocypher.cr
   i18n:
     github: TechMagister/i18n.cr
   baked_file_system:
