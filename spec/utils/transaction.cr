@@ -28,8 +28,7 @@ module ::Units::Utils::TransactionHelper
      public_key: wallet.public_key,
      amount:     amount,
      fee:        fee,
-     sign_r:     "0",
-     sign_s:     "0",
+     signature: "0"
     }
   end
 
@@ -38,18 +37,16 @@ module ::Units::Utils::TransactionHelper
      public_key: sender_public_key,
      amount:     amount,
      fee:        fee,
-     sign_r:     "0",
-     sign_s:     "0",
+     signature: "0"
     }
   end
 
-  def a_signed_sender(wallet : Wallet, amount : Int64, sign_r : String, sign_s : String, fee : Int64 = 10000_i64) : Transaction::Sender
+  def a_signed_sender(wallet : Wallet, amount : Int64, signature : String, fee : Int64 = 10000_i64) : Transaction::Sender
     {address:    wallet.address,
      public_key: wallet.public_key,
      amount:     amount,
      fee:        fee,
-     sign_r:     "0",
-     sign_s:     "0",
+     signature: "0"
     }
   end
 
@@ -63,8 +60,7 @@ module ::Units::Utils::TransactionHelper
      public_key: wallet.public_key,
      amount:     amount,
      fee:        fee,
-     sign_r:     "0",
-     sign_s:     "0",
+     signature: "0"
     }
   end
 

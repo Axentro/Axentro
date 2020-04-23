@@ -11,7 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Sushi::Core::TransactionModels
-
   enum TransactionKind
     SLOW
     FAST
@@ -26,9 +25,7 @@ module ::Sushi::Core::TransactionModels
     public_key: String,
     amount: Int64,
     fee: Int64,
-    sign_r: String,
-    sign_s: String,
-  )
+    signature: String)
 
   alias Senders = Array(Sender)
 
@@ -37,9 +34,7 @@ module ::Sushi::Core::TransactionModels
     public_key: String,
     amount: String,
     fee: String,
-    sign_r: String,
-    sign_s: String,
-  )
+    signature: String)
 
   alias SendersDecimal = Array(SenderDecimal)
 

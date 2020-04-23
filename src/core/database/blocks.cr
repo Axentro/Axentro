@@ -15,11 +15,11 @@ require "../blockchain/block/*"
 module ::Sushi::Core::Data::Blocks
   # ------- Definition -------
   def block_table_create_string : String
-    "idx integer primary key, nonce text, prev_hash text, timestamp integer, difficulty integer, address text, kind text, public_key text, sign_r text, sign_s text, hash text"
+    "idx integer primary key, nonce text, prev_hash text, timestamp integer, difficulty integer, address text, kind text, public_key text, signature text, hash text"
   end
 
   def block_insert_fields_string : String
-    "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
+    "?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
   end
 
   # ------- Insert -------
@@ -27,9 +27,9 @@ module ::Sushi::Core::Data::Blocks
     ary = [] of DB::Any
     case block
     when SlowBlock
-      ary << block.index << block.nonce.to_s << block.prev_hash << block.timestamp << block.difficulty << block.address << block.kind.to_s << "" << "" << "" << ""
+      ary << block.index << block.nonce.to_s << block.prev_hash << block.timestamp << block.difficulty << block.address << block.kind.to_s << "" << "" << ""
     when FastBlock
-      ary << block.index << "" << block.prev_hash << block.timestamp << 0 << block.address << block.kind.to_s << block.public_key << block.sign_r << block.sign_s << block.hash
+      ary << block.index << "" << block.prev_hash << block.timestamp << 0 << block.address << block.kind.to_s << block.public_key << block.signature << block.hash
     end
     ary
   end
@@ -65,8 +65,7 @@ module ::Sushi::Core::Data::Blocks
         address = rows.read(String)
         kind_string = rows.read(String)
         public_key = rows.read(String)
-        sign_r = rows.read(String)
-        sign_s = rows.read(String)
+        signature = rows.read(String)
         hash = rows.read(String)
         verbose "read block idx: #{idx}"
         verbose "read nonce: #{nonce}"
@@ -79,10 +78,9 @@ module ::Sushi::Core::Data::Blocks
           blocks << SlowBlock.new(idx, [] of Transaction, nonce, prev_hash, timestamp, diffculty, address)
         else
           verbose "read public_key: #{public_key}"
-          verbose "read sign_r: #{sign_r}"
-          verbose "read sign_s: #{sign_s}"
+          verbose "read signature: #{signature}"
           verbose "read hash: #{hash}"
-          blocks << FastBlock.new(idx, [] of Transaction, prev_hash, timestamp, address, public_key, sign_r, sign_s, hash)
+          blocks << FastBlock.new(idx, [] of Transaction, prev_hash, timestamp, address, public_key, signature, hash)
         end
       end
     end

@@ -23,8 +23,7 @@ module ::Sushi::Core
       kind:             BlockKind,
       address:          String,
       public_key:       String,
-      sign_r:           String,
-      sign_s:           String,
+      signature:        String,
       hash:             String,
     })
 
@@ -35,8 +34,7 @@ module ::Sushi::Core
       @timestamp : Int64,
       @address : String,
       @public_key : String,
-      @sign_r : String,
-      @sign_s : String,
+      @signature : String,
       @hash : String
     )
       raise "index must be odd number" if index.even?
@@ -114,12 +112,9 @@ module ::Sushi::Core
     end
 
     def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool, doing_replace : Bool) : Bool
-      valid_signature = ECCrypto.verify(
-        @public_key,
-        @hash,
-        @sign_r,
-        @sign_s
-      )
+
+      valid_signature = KeyUtils.verify_signature(@hash, @signature, @public_key)
+
       raise "Invalid Block Signature: the current block index: #{@index} has an invalid signature" unless valid_signature
 
       valid_leader = Ranking.rank(@address, Ranking.chain(blockchain.chain)) > 0
@@ -194,13 +189,12 @@ module ::Sushi::Core
       merkle_tree_root: String,
       address:          String,
       public_key:       String,
-      sign_r:           String,
-      sign_s:           String,
+      signature:        String,
       hash:             String,
     })
 
     def self.from_fast_block(b : FastBlock)
-      self.new(b.index, b.transactions, b.prev_hash, b.merkle_tree_root, b.address, b.public_key, b.sign_r, b.sign_s, b.hash)
+      self.new(b.index, b.transactions, b.prev_hash, b.merkle_tree_root, b.address, b.public_key, b.signature, b.hash)
     end
 
     def initialize(
@@ -210,8 +204,7 @@ module ::Sushi::Core
       @merkle_tree_root : String,
       @address : String,
       @public_key : String,
-      @sign_r : String,
-      @sign_s : String,
+      @signature : String,
       @hash : String
     )
     end

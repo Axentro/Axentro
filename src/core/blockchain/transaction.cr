@@ -126,15 +126,9 @@ module ::Sushi::Core
         verbose "unsigned_json: #{self.as_unsigned.to_json}"
         verbose "unsigned_json_hash: #{self.as_unsigned.to_hash}"
         verbose "public key: #{public_key.as_hex}"
-        verbose "sign_r: #{sender[:sign_r]}"
-        verbose "sign_s: #{sender[:sign_s]}"
+        verbose "signature: #{sender[:signature]}"
 
-        verify_result = ECCrypto.verify(
-          public_key.as_hex,
-          self.as_unsigned.to_hash,
-          sender[:sign_r],
-          sender[:sign_s]
-        )
+        verify_result = KeyUtils.verify_signature(self.as_unsigned.to_hash, sender[:signature], public_key.as_hex)
 
         verbose "verify signature result: #{verify_result}"
 
@@ -169,8 +163,7 @@ module ::Sushi::Core
           public_key: s[:public_key],
           amount:     s[:amount],
           fee:        s[:fee],
-          sign_r:     "0",
-          sign_s:     "0",
+          signature:  "0",
         }
       }
 
@@ -192,15 +185,15 @@ module ::Sushi::Core
       signed_senders = self.senders.map_with_index { |s, i|
         private_key = Wif.new(wallets[i].wif).private_key
 
-        sign = ECCrypto.sign(private_key.as_hex, self.to_hash)
+        # sign = ECCrypto.sign(private_key.as_hex, self.to_hash)
+        signature = KeyUtils.sign(private_key.as_hex, self.to_hash)
 
         {
           address:    s[:address],
           public_key: s[:public_key],
           amount:     s[:amount],
           fee:        s[:fee],
-          sign_r:     sign["r"],
-          sign_s:     sign["s"],
+          signature:  signature,
         }
       }
 

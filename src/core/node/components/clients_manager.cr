@@ -51,17 +51,11 @@ module ::Sushi::Core::NodeComponents
       network = Keys::Address.from(_m_content.address, "client").network
       public_key = Keys::PublicKey.new(_m_content.public_key, network)
 
-      sign_r = _m_content.sign_r
-      sign_s = _m_content.sign_s
+      signature = _m_content.signature
 
       hash_salt = sha256(@salt + _m_content.public_key)
 
-      if ECCrypto.verify(
-           public_key.as_hex,
-           hash_salt,
-           sign_r,
-           sign_s
-         )
+      if KeyUtils.verify_signature(hash_salt, signature, public_key.as_hex)
         client_context = {address: _m_content.address}
         client = {context: client_context, socket: socket}
 

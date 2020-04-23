@@ -600,15 +600,14 @@ module ::Sushi::Core
       broadcast_block(socket, block, from)
     end
 
-    def broadcast_heartbeat(node_address, node_id, public_key, hash_salt, sign_r, sign_s, from : Chord::NodeContext? = nil)
+    def broadcast_heartbeat(node_address, node_id, public_key, hash_salt, signature, from : Chord::NodeContext? = nil)
       content =
         {
           address:    node_address,
           node_id:    node_id,
           public_key: public_key,
           hash_salt:  hash_salt,
-          sign_r:     sign_r,
-          sign_s:     sign_s,
+          signature:  signature,
           from:       @chord.context,
         }
       debug "sending heartbeat: #{node_id}_#{node_address}"
@@ -636,11 +635,10 @@ module ::Sushi::Core
       node_id = _m_content.node_id
       public_key = _m_content.public_key
       hash_salt = _m_content.hash_salt
-      sign_r = _m_content.sign_r
-      sign_s = _m_content.sign_s
+      signature = _m_content.signature
       from = _m_content.from
 
-      if valid_heartbeat?(address, public_key, hash_salt, sign_r, sign_s)
+      if valid_heartbeat?(address, public_key, hash_salt, signature)
         debug "receiving valid heartbeat: #{address} #{node_id}"
         if get_wallet.address == address
           debug "heartbeat leader has same address as me so setting current leader to nil"
@@ -666,21 +664,15 @@ module ::Sushi::Core
           node_id:    node_id,
           public_key: public_key,
           hash_salt:  hash_salt,
-          sign_r:     sign_r,
-          sign_s:     sign_s,
+          signature:  signature,
           from:       from,
         }
 
       send_heartbeat_on_chord(c)
     end
 
-    private def valid_heartbeat?(address, public_key, hash_salt, sign_r, sign_s)
-      valid_signature = ECCrypto.verify(
-        public_key,
-        hash_salt,
-        sign_r,
-        sign_s
-      )
+    private def valid_heartbeat?(address, public_key, hash_salt, signature)
+      valid_signature = KeyUtils.verify_signature(hash_salt, signature, public_key)
       valid_leader = Ranking.rank(address, Ranking.chain(self.blockchain.chain)) > 0
       valid_signature && valid_leader
     end

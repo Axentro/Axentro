@@ -50,7 +50,7 @@ describe SlowBlock do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = SlowBlock.new(2_i64, [coinbase_transaction, transaction1], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS)
-      block.calculate_merkle_tree_root.should eq("f8443333f72316e88b954cbfdb6b61e8be0fc5cf")
+      block.calculate_merkle_tree_root.should eq("0c61385d0a13578295ee80ea407d47475e63925f")
     end
   end
 
@@ -253,22 +253,22 @@ def a_recipient_with_address(address : String, amount : Int64)
 end
 
 def a_fixed_sender_wallet
-  Wallet.new("f3df738b74757c81499e0780e93a43a7e6fca21909709163cf3f90223b350c55dc203ab377fef06529cfa9a471ba4bec3e8cbd91ab811728614524adbc1aa6c3",
-    "TTBkN2I1YmMwZDI0YTYxNDRiZDQ5YWZmMmYyMDIzMGNkZDBlMWMwZDVlNzdiZjc3MzhhZGU0N2I4YjZhYzZmYWQ5OGIyNWQ0",
-    "VDAyNTk0YjdlMTc4N2FkODRmYTU0YWZmODM1YzQzOTA2YTEzY2NjYmMyNjdkYjVm")
+  Wallet.new("3a133bb891f14aa755af119907bd20c7fcfd126fa187288cc2b9d626552f6802",
+    "VDAwYjIxODI2NDg3MDE3YjA2YTYxOTJiYjUzMjg0MDAzZWNkZGRhZDJlYmUwNjMxYWM3NmIwMzFlYTg4MjlkMTBhMzBkZmNk",
+    "VDAwZTdkZGNjYjg1NDA1ZjdhYzk1M2ExMDAzNmY5MjUyYjI0MmMwNGJjZWY4NjA3")
 end
 
 def a_fixed_signed_transaction
   sender_wallet = a_fixed_sender_wallet
 
-  recipient_wallet = Wallet.new("2ee4c6a6197e334c3de5b6384af495ae08093e3aceb4122ce7270a072caba1a9cd119eb7bc59adcd925123deba2fba44f70aefcd189c6c145cd2d00290a385cf",
-    "TTA0MGQyMjc2ODMxNmE2MzlmZTNmNDZmNzRlYTU0NDFmNDM3MGY0MDBmNzU3NGVlMDE2OThkNDM4MjcxMTk0NzY4NjM4NWVj",
-    "TTA4ZGViYmM1NTdiNTkyNmU1MmUwZmQ5NThkZWQ1M2E1ODE5NjU2NDg1OWM2MWQw")
+  recipient_wallet = Wallet.new("7ff8c8296a62c29119f5914d0e7ae0341f13bd82967c4e25b66485ff0e2610af",
+    "VDBmZmQwNzNhOTE2M2ExZThhZjYxNzcwMzI3M2EzZTJjMDRkZDZmZDljMzI2MWM3YzQyMTgwOGViMThjOWIzNmNiYjA4YmRj",
+    "VDBjY2NmOGMyZmQ0MDc4NTIyNDBmYzNmOWQ3M2NlMzljODExOTBjYTQ0ZjMxMGFl")
 
   Transaction.new(
     "ded1ea5373f55b4e84ea9c140761ba181af31a94cc6c2bb22685b2f86639ca1e",
     "send", # action
-    [a_signed_sender(sender_wallet, 1000_i64, "6fee937285f5bfb59d84d4e371ab28f6e2a9226091ef781b6039781778662b0f", "c033714ab9a447ac08b7e2774b42ff894a143663147923403b2da171ffd6f7e9")],
+    [a_signed_sender(sender_wallet, 1000_i64, "6fee937285f5bfb59d84d4e371ab28f6e2a9226091ef781b6039781778662b0f")],
     [a_recipient(recipient_wallet, 10_i64)],
     "0",           # message
     TOKEN_DEFAULT, # token

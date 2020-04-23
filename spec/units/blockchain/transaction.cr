@@ -393,7 +393,7 @@ describe Transaction do
 
         transaction = transaction_factory.make_send(2000_i64)
         transaction = transaction.as_unsigned
-        expect_raises(Exception, /invalid signing for sender/) do
+        expect_raises(Exception, /string size should be 128, not 1/) do
           transaction.valid_common?
         end
       end
@@ -408,8 +408,7 @@ describe Transaction do
           public_key: transaction_factory.sender_wallet.public_key,
           amount:     1000_i64,
           fee:        1_i64,
-          sign_r:     "0",
-          sign_s:     "0",
+          signature:  "0",
         }
 
         transaction = Transaction.new(
@@ -478,8 +477,7 @@ describe Transaction do
 
       signed_transaction = unsigned_transaction.as_signed([sender_wallet])
 
-      signed_transaction.senders.first["sign_r"].should_not eq("0")
-      signed_transaction.senders.first["sign_s"].should_not eq("0")
+      signed_transaction.senders.first["signature"].should_not eq("0")
     end
   end
 
@@ -502,12 +500,10 @@ describe Transaction do
 
       signed_transaction = unsigned_transaction.as_signed([sender_wallet])
 
-      signed_transaction.senders.first["sign_r"].should_not eq("0")
-      signed_transaction.senders.first["sign_s"].should_not eq("0")
+      signed_transaction.senders.first["signature"].should_not eq("0")
 
       unsigned = signed_transaction.as_unsigned
-      unsigned.senders.first["sign_r"].should eq("0")
-      unsigned.senders.first["sign_s"].should eq("0")
+      unsigned.senders.first["signature"].should eq("0")
     end
   end
 

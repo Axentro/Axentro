@@ -178,8 +178,7 @@ module ::Sushi::Interface::Sushi
           public_key: wallets[0].public_key,
           amount:     amount,
           fee:        fee,
-          sign_r:     "0",
-          sign_s:     "0",
+          signature:     "0"
         }
       )
 

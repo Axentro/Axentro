@@ -49,7 +49,7 @@ module ::Sushi::Interface::Sushi
         Options::DOMAIN,
         Options::TOKEN,
         Options::CONFIG_NAME,
-        Options::IS_FAST_TRANSACTION
+        Options::IS_FAST_TRANSACTION,
       ])
     end
 
@@ -99,8 +99,7 @@ module ::Sushi::Interface::Sushi
           public_key: wallet.public_key,
           amount:     amount,
           fee:        fee,
-          sign_r:     "0",
-          sign_s:     "0",
+          signature:  "0",
         }
       )
 

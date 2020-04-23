@@ -37,7 +37,7 @@ describe Blockchain do
 
     genesis_block = blockchain.chain.first
     genesis_block.prev_hash.should eq("genesis")
-    expected_recipients = [{address: "VDA2NjU5N2JlNDA3ZDk5Nzg4MGY2NjY5YjhhOTUwZTE2M2VmNjM5OWM2M2EyMWQz", amount: 500000000000}, {address: "VDAyMzEwODI2NmE1MWJiYTAxOTA2YjE0NzRjYTRjYjllYTk0ZDZhYmJhZGU3MmIz", amount: 900000000000}]
+    expected_recipients = [{address: "VDAwZTdkZGNjYjg1NDA1ZjdhYzk1M2ExMDAzNmY5MjUyYjI0MmMwNGJjZWY4NjA3", amount: 500000000000}, {address: "VDBjY2NmOGMyZmQ0MDc4NTIyNDBmYzNmOWQ3M2NlMzljODExOTBjYTQ0ZjMxMGFl", amount: 900000000000}]
     genesis_block.transactions.flat_map(&.recipients).sort_by(&.["amount"]).should eq(expected_recipients)
   end
 end

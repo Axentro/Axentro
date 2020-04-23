@@ -15,7 +15,7 @@ require "../blockchain/block/*"
 module ::Sushi::Core::Data::Senders
   # ------- Definition -------
   def sender_table_create_string
-    "transaction_id text, block_id integer, idx integer, address text, public_key text, amount integer, fee integer, sign_r text, sign_s text"
+    "transaction_id text, block_id integer, idx integer, address text, public_key text, amount integer, fee integer, signature text"
   end
 
   def sender_primary_key_string
@@ -23,14 +23,14 @@ module ::Sushi::Core::Data::Senders
   end
 
   def sender_insert_fields_string
-    "?, ?, ?, ?, ?, ?, ?, ?, ?"
+    "?, ?, ?, ?, ?, ?, ?, ?"
   end
 
   # ------- Insert -------
   def sender_insert_values_array(b : Block, t : Transaction, sender_index : Int32) : Array(DB::Any)
     ary = [] of DB::Any
     s = t.senders[sender_index]
-    ary << t.id << b.index << sender_index << s[:address] << s[:public_key] << s[:amount] << s[:fee] << s[:sign_r] << s[:sign_s]
+    ary << t.id << b.index << sender_index << s[:address] << s[:public_key] << s[:amount] << s[:fee] << s[:signature]
   end
 
   # ------- Query -------
@@ -46,8 +46,7 @@ module ::Sushi::Core::Data::Senders
           public_key: rows.read(String),
           amount:     rows.read(Int64),
           fee:        rows.read(Int64),
-          sign_r:     rows.read(String),
-          sign_s:     rows.read(String),
+          signature:  rows.read(String),
         }
       end
     end
