@@ -34,17 +34,16 @@ module FunctionalHelper
   class Transactions
     def self.single_sender(wallet, amount, fee) : Array(Transaction::Sender)
       [{address:    wallet.address,
-       public_key: wallet.public_key,
-       amount:     amount,
-       fee:        fee,
-       sign_r:     "0",
-       sign_s:     "0",
+        public_key: wallet.public_key,
+        amount:     amount,
+        fee:        fee,
+        signature:  "0",
       }]
     end
 
     def self.single_recipient(wallet, amount) : Array(Transaction::Recipient)
       [{address: wallet.address,
-       amount:  amount}]
+        amount:  amount}]
     end
   end
 

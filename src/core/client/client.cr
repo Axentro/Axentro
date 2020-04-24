@@ -63,13 +63,13 @@ module ::Sushi::Core
       _m_content = MContentClientSalt.from_json(_content)
 
       private_key = Core::Keys::Wif.new(@wallet.wif).private_key
-      sign = ECCrypto.sign(private_key.as_hex, _m_content.salt)
+
+      signature = KeyUtils.sign(private_key.as_hex, _m_content.salt)
 
       send(socket, M_TYPE_CLIENT_UPGRADE, {
         address:    @wallet.address,
         public_key: @wallet.public_key,
-        sign_r:     sign["r"],
-        sign_s:     sign["s"]
+        signature:  signature,
       })
     end
 

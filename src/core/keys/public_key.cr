@@ -44,7 +44,7 @@ module ::Sushi::Core::Keys
     end
 
     def is_valid? : Bool
-      @hex.hexbytes? != nil && @hex.size == 130
+      @hex.hexbytes? != nil && @hex.size == 64
     end
   end
 end

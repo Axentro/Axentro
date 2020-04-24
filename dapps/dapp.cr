@@ -172,8 +172,7 @@ module ::Sushi::Core::DApps::User
         public_key: blockchain.wallet.public_key,
         amount:     amount,
         fee:        "0.0001",
-        sign_r:     "0",
-        sign_s:     "0",
+        signature:  "0",
       })
       senders
     end
@@ -274,7 +273,7 @@ module ::Sushi::Core::DApps::User
     @latest_loaded_block_index = 0
 
     def record(chain : Blockchain::Chain)
-      #TODO - replace this with fetch from db
+      # TODO - replace this with fetch from db
       return if chain.size < @latest_loaded_block_index
 
       chain[@latest_loaded_block_index..-1].each do |block|

@@ -88,8 +88,7 @@ module ::Sushi::Core::Protocol
     JSON.mapping({
       address:    String,
       public_key: String,
-      sign_r:     String,
-      sign_s:     String,
+      signature:  String,
     })
   end
 
@@ -291,8 +290,7 @@ module ::Sushi::Core::Protocol
       node_id:    String,
       public_key: String,
       hash_salt:  String,
-      sign_r:     String,
-      sign_s:     String,
+      signature:  String,
       from:       Core::NodeComponents::Chord::NodeContext,
     })
   end

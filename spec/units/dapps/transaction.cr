@@ -126,8 +126,7 @@ describe TransactionCreator do
               transaction.action.should eq("send")
               transaction.prev_hash.should eq("0")
               transaction.message.should eq("0")
-              transaction.senders.first["sign_r"].should_not eq("0")
-              transaction.senders.first["sign_s"].should_not eq("0")
+              transaction.senders.first["signature"].should_not eq("0")
               transaction.senders.should_not eq(senders)
             end
           end

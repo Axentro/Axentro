@@ -77,8 +77,9 @@ module ::Sushi::Core::FastChain
     hash_salt = sha256(node.get_heartbeat_salt + public_key)
     private_key = Wif.new(wallet.wif).private_key.as_hex
 
-    sig = ECCrypto.sign(private_key, hash_salt)
-    node.broadcast_heartbeat(address, node_id, public_key, hash_salt, sig["r"], sig["s"])
+    # sig = ECCrypto.sign(private_key, hash_salt)
+    signature = KeyUtils.sign(private_key, hash_salt)
+    node.broadcast_heartbeat(address, node_id, public_key, hash_salt, signature)
   end
 
   def process_fast_transactions
@@ -160,7 +161,7 @@ module ::Sushi::Core::FastChain
     hash_salt = sha256(node.get_heartbeat_salt + public_key)
     private_key = Wif.new(wallet.wif).private_key.as_hex
 
-    sig = ECCrypto.sign(private_key, hash_salt)
+    signature = KeyUtils.sign(private_key, hash_salt)
 
     FastBlock.new(
       latest_index,
@@ -169,8 +170,7 @@ module ::Sushi::Core::FastChain
       timestamp,
       address,
       public_key,
-      sig["r"],
-      sig["s"],
+      signature,
       hash_salt
     )
   end

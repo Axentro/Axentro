@@ -44,7 +44,8 @@ module ::Sushi::Core::Keys
     end
 
     def public_key : PublicKey
-      hex_public_key = ECCrypto.get_public_key_from_private(@hex)
+      secret_key = Crypto::SecretKey.new(self.as_hex)
+      hex_public_key = Crypto::Ed25519PublicSigningKey.new(secret: secret_key).to_slice.hexstring
       PublicKey.new(hex_public_key, @network)
     end
 

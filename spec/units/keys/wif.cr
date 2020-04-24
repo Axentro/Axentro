@@ -59,11 +59,11 @@ describe Wif do
 
   describe "#address" do
     it "should return the address" do
-      hex_private_key = "11a9bbd62f1e657492f7e1f2bdbf7a007ab23170aaac4cc442b868b3d1c2d4e2"
+      hex_private_key = "4c66f13692c476c57ab685b16b697496a1aac019b2b5ab54e1e692ec2e200c57"
       private_key = PrivateKey.from(hex_private_key)
 
       wif = private_key.wif
-      wif.address.as_hex.should eq("TTA3OTFlN2ZkZTYwOTFhMGMwYjBiNmM2NjFhMWEyOWU4MThjYzAzYTc3ZmQzY2Ji")
+      wif.address.as_hex.should eq("TTBhZWVkYWZmYzM4OWVkYzkxNmJlNjIxYjI1YzUxZDAwNmQyMzdjOGFlMTVjZDA3")
     end
   end
 

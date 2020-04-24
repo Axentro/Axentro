@@ -126,7 +126,7 @@ describe Wallet do
 end
 
 def create_unknown_network_address
-  public_key = ECCrypto.create_key_pair[:hex_public_key]
+  public_key = KeyUtils.create_new_keypair[:hex_public_key]
   prefix = "U0"
   hashed_address = ripemd160(sha256(public_key))
   version_address = prefix + hashed_address
