@@ -12,8 +12,10 @@
 
 require "../src/common"
 require "../src/core"
+require "../src/core/miner/multi_process"
 require "./runner"
 require "option_parser"
+
 
 include ::Sushi::Common::Color
 

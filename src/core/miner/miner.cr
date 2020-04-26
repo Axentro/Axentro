@@ -16,7 +16,7 @@ module ::Sushi::Core
     @use_ssl : Bool
     @mid : String = HumanHash.uuid.digest
 
-    @workers : Array(Tokoroten::Worker) = [] of Tokoroten::Worker
+    @workers : Array(MultiProcess::Worker) = [] of MultiProcess::Worker
 
     def initialize(@is_testnet : Bool, @host : String, @port : Int32, @wallet : Wallet, @num_processes : Int32, @use_ssl : Bool)
       welcome

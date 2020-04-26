@@ -13,7 +13,7 @@
 module ::Sushi::Core
   alias MinerWork = NamedTuple(start_nonce: BlockNonce, difficulty: Int32, block: SlowBlock)
 
-  class MinerWorker < Tokoroten::Worker
+  class MinerWorker < MultiProcess::Worker
     def task(message : String)
       work = MinerWork.from_json(message)
 

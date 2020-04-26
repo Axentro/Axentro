@@ -14,8 +14,8 @@ require "random"
 require "./utils"
 
 module ::E2E
-  class Client < Tokoroten::Worker
-    @@client : Tokoroten::Worker? = nil
+  class Client < ::Sushi::Core::MultiProcess::Worker
+    @@client : ::Sushi::Core::MultiProcess::Worker? = nil
     @@no_transactions : Bool = false
 
     alias ClientWork = NamedTuple(call: Int32, content: String)

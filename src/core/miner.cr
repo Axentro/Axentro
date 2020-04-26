@@ -10,5 +10,7 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
+require "./miner/multi_process"
 require "./miner/worker"
 require "./miner/miner"
+
