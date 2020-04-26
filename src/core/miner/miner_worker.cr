@@ -13,8 +13,15 @@
 module ::Sushi::Core
   alias MinerWork = NamedTuple(start_nonce: BlockNonce, difficulty: Int32, block: SlowBlock)
 
-  class MinerWorker < Tokoroten::Worker
-    def task(message : String)
+  class MinerWorker
+
+    def self.create(num_processes : Int32, channel : Channel(String)) : Array(MinerWorker)
+      (1..num_processes).map{|n| MinerWorker.new(channel) }
+    end
+
+    def initialize(@channel : Channel(String)); end
+
+    def exec(message : String)
       work = MinerWork.from_json(message)
 
       block_nonce = work[:start_nonce]
@@ -56,7 +63,7 @@ module ::Sushi::Core
       debug "Found block..."
       block.to_s
 
-      response(miner_nonce.with_timestamp(time_now).to_json)
+      @channel.send(miner_nonce.with_timestamp(time_now).to_json)
     rescue e : Exception
       error e.message.not_nil!
       error e.backtrace.join("\n")

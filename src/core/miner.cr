@@ -10,5 +10,6 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-require "./miner/worker"
+require "./miner/miner_worker"
 require "./miner/miner"
+

@@ -17,6 +17,7 @@ module ::Sushi::Core
     def send(socket, t, content)
       #socket.send({type: t, content: content.to_json}.to_json)
       m = {type: t, content: content.to_json}.to_json
+      sleep 0.00000001 # prevent strange errors
       debug "sending message of type #{t} and size #{m.size}" if (t != 257) && (t != 22) && (t != 23)
       socket.send(m)
     rescue e : Exception

@@ -16,9 +16,19 @@ module ::Sushi::Core
     @use_ssl : Bool
     @mid : String = HumanHash.uuid.digest
 
-    @workers : Array(Tokoroten::Worker) = [] of Tokoroten::Worker
+    @workers : Array(MinerWorker) = [] of MinerWorker
+    @channel : Channel(String)
 
     def initialize(@is_testnet : Bool, @host : String, @port : Int32, @wallet : Wallet, @num_processes : Int32, @use_ssl : Bool)
+      @channel = Channel(String).new(@num_processes)
+      spawn {
+        loop do
+          if @channel.closed?
+            warning "Channel was closed - re-opening"
+            @channel = Channel(String).new(@num_processes)
+          end
+        end
+      }
       welcome
 
       info "launched #{@num_processes} processes..."
@@ -109,6 +119,7 @@ module ::Sushi::Core
 
     def clean_connection(socket)
       clean_workers
+      @channel.close
 
       error "the connection to the node has been closed"
       error "exit the mining process with -1"
@@ -116,22 +127,30 @@ module ::Sushi::Core
     end
 
     def start_workers(difficulty, block)
-      @workers = MinerWorker.create(@num_processes)
+      @workers = MinerWorker.create(@num_processes, @channel)
       @workers.each do |w|
         spawn do
           loop do
-            nonce_found_message = w.receive.try &.to_s || "error"
+            nonce_found_message = @channel.receive.try &.to_s || "error"
 
             debug "received nonce #{nonce_found_message} from worker"
 
             unless nonce_found_message == "error"
               nonce_with_address_json = {nonce: MinerNonce.from_json(nonce_found_message).with_address(@wallet.address)}.to_json
-              send(socket, M_TYPE_MINER_FOUND_NONCE, MContentMinerFoundNonce.from_json(nonce_with_address_json))
+              info "SENDING nonce"
+              payload = MContentMinerFoundNonce.from_json(nonce_with_address_json)
+              
+
+              send(socket, M_TYPE_MINER_FOUND_NONCE, payload)
             end
 
             update(w, difficulty, block)
           rescue ioe : IO::EOFError
             warning "received invalid message. will be ignored"
+          rescue
+            warning "something strange is afoot!"
+            clean_workers
+            start_workers(difficulty, block)
           end
         end
       end
@@ -153,7 +172,7 @@ module ::Sushi::Core
 
     def clean_workers
       debug "clean workers"
-      @workers.each(&.kill)
+      @workers.clear
     end
 
     include Logger
