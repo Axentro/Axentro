@@ -23,7 +23,7 @@ require "random"
 require "openssl"
 require "colorize"
 # remove tokoroten and replace with spawn or maybe mt_preview threading
-require "tokoroten" 
+# require "tokoroten" 
 require "http/server"
 require "openssl/pkcs5"
 require "openssl/digest"

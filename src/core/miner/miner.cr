@@ -20,12 +20,12 @@ module ::Sushi::Core
     @channel : Channel(String)
 
     def initialize(@is_testnet : Bool, @host : String, @port : Int32, @wallet : Wallet, @num_processes : Int32, @use_ssl : Bool)
-      @channel = Channel(String).new(@num_processes)
+      @channel = Channel(String).new
       spawn {
         loop do
           if @channel.closed?
             warning "Channel was closed - re-opening"
-            @channel = Channel(String).new(@num_processes)
+            @channel = Channel(String).new
           end
         end
       }
