@@ -1,4 +1,4 @@
-FROM crystallang/crystal:0.32.1
+FROM crystallang/crystal:0.34.0
 
 RUN mkdir -p /usr/local/SushiChain
 RUN mkdir -p /usr/local/bin
