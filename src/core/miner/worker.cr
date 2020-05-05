@@ -13,9 +13,12 @@
 module ::Sushi::Core
   alias MinerWork = NamedTuple(start_nonce: BlockNonce, difficulty: Int32, block: SlowBlock)
 
-  class MinerWorker < MultiProcess::Worker
-    def task(message : String)
-      work = MinerWork.from_json(message)
+  class MinerWorker 
+
+    def task(work : MinerWork, terminate : Channel(Nil))
+
+      debug "inside task: #{Fiber.current.name} with work: #{work}"
+      # work = MinerWork.from_json(message)
 
       block_nonce = work[:start_nonce]
       miner_nonce = MinerNonce.from(block_nonce)
@@ -45,10 +48,12 @@ module ::Sushi::Core
 
           work_rate = (nonce_counter - latest_nonce_counter) / (time_diff / 1000)
 
-          info "#{nonce_counter - latest_nonce_counter} works, #{work_rate_with_unit(work_rate)}"
+          info "#{Fiber.current.name} block: #{block.index}, #{nonce_counter - latest_nonce_counter} works, #{work_rate_with_unit(work_rate)}"
 
           latest_nonce_counter = nonce_counter
           latest_time = time_now
+          break if terminate.closed?
+          Fiber.yield
         end
       end
 
@@ -56,7 +61,9 @@ module ::Sushi::Core
       debug "Found block..."
       block.to_s
 
-      response(miner_nonce.with_timestamp(time_now).to_json)
+      miner_nonce.with_timestamp(time_now)
+      # @channel.send(miner_nonce.with_timestamp(time_now))
+      # response(miner_nonce.with_timestamp(time_now).to_json)
     rescue e : Exception
       error e.message.not_nil!
       error e.backtrace.join("\n")

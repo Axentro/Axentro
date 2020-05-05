@@ -15,7 +15,7 @@ module ::Sushi::Core
     @wallet : Wallet
     @use_ssl : Bool
     @mid : String = HumanHash.uuid.digest
-
+    @terminate : Channel(Nil) = Channel(Nil).new
     @workers : Array(MultiProcess::Worker) = [] of MultiProcess::Worker
 
     def initialize(@is_testnet : Bool, @host : String, @port : Int32, @wallet : Wallet, @num_processes : Int32, @use_ssl : Bool)
@@ -79,7 +79,8 @@ module ::Sushi::Core
       debug "set difficulty: #{light_cyan(difficulty)}"
       debug "set block: #{light_green(block.index)}"
 
-      start_workers(difficulty, block)
+      start_mining_with_multiple_fibers(difficulty, block)
+      # start_workers(difficulty, block)
     end
 
     private def _handshake_miner_rejected(_content)
@@ -102,59 +103,102 @@ module ::Sushi::Core
       debug "set difficulty: #{light_cyan(difficulty)}"
       debug "set block: #{light_green(block.index)}"
 
-      clean_workers
-
-      start_workers(difficulty, block)
+      # clean_workers
+      @terminate.close
+      
+      start_mining_with_multiple_fibers(difficulty, block)
+      # start_workers(difficulty, block)
     end
 
     def clean_connection(socket)
-      clean_workers
+      # clean_workers
 
       error "the connection to the node has been closed"
       error "exit the mining process with -1"
       exit -1
     end
 
-    def start_workers(difficulty, block)
-      @workers = MinerWorker.create(@num_processes)
-      @workers.each do |w|
-        spawn do
+    #  ---
+    # 1. when the miner handshake succeeds then start a number of workers on mining
+    # 2. when one of the miners finds a valid nonce it should send it to the main miner process to be sent on to the node
+    # 3. when a block update arrives - all workers should either die and new workers start up (or the existing workers get a new task)
+    #  ---
+
+    def start_mining_with_multiple_fibers(difficulty, block)
+      # create all workers
+      @terminate = Channel(Nil).new
+      local_terminate = @terminate
+      res_channels = (1..@num_processes).map do |n|
+        result = Channel(MinerNonce).new
+        spawn(name: "worker_#{n}") do
           loop do
-            nonce_found_message = w.receive.try &.to_s || "error"
-
-            debug "received nonce #{nonce_found_message} from worker"
-
-            unless nonce_found_message == "error"
-              nonce_with_address_json = {nonce: MinerNonce.from_json(nonce_found_message).with_address(@wallet.address)}.to_json
-              send(socket, M_TYPE_MINER_FOUND_NONCE, MContentMinerFoundNonce.from_json(nonce_with_address_json))
-            end
-
-            update(w, difficulty, block)
-          rescue ioe : IO::EOFError
-            warning "received invalid message. will be ignored"
+            break if local_terminate.closed?
+            debug "inside worker: #{Fiber.current.name}"
+            message = {start_nonce: Random.rand(UInt64::MAX).to_s, difficulty: difficulty, block: block}
+            miner_nonce = MinerWorker.new.task(message, local_terminate)
+            debug "NONCE FOUND: by #{Fiber.current.name}"
+            result.send(miner_nonce.not_nil!)
           end
         end
+        result
       end
-
-      update(difficulty, block)
-    end
-
-    def update(difficulty, block)
-      debug "update new workers"
-
-      @workers.each do |w|
-        update(w, difficulty, block)
+      debug "#{Fiber.current.name}: done spawning fibers"
+      loop do
+        break if local_terminate.closed?
+        miner_nonce = Channel.receive_first(res_channels)
+        nonce_with_address_json = {nonce: miner_nonce.with_address(@wallet.address)}.to_json
+        send(socket, M_TYPE_MINER_FOUND_NONCE, MContentMinerFoundNonce.from_json(nonce_with_address_json))
       end
+      # res_channels.each do |result|
+      #   miner_nonce = result.receive
+      #   nonce_with_address_json = {nonce: miner_nonce.with_address(@wallet.address)}.to_json
+      #   send(socket, M_TYPE_MINER_FOUND_NONCE, MContentMinerFoundNonce.from_json(nonce_with_address_json))
+      # end
+
+      # receive from a worker and send to node
+
     end
 
-    def update(worker, difficulty, block)
-      worker.exec({start_nonce: Random.rand(UInt64::MAX).to_s, difficulty: difficulty, block: block}.to_json)
-    end
+    # def start_workers(difficulty, block)
+    #   @workers = MinerWorker.create(@num_processes)
+    #   @workers.each do |w|
+    #     spawn do
+    #       loop do
+    #         nonce_found_message = w.receive.try &.to_s || "error"
 
-    def clean_workers
-      debug "clean workers"
-      @workers.each(&.kill)
-    end
+    #         debug "received nonce #{nonce_found_message} from worker"
+
+    #         unless nonce_found_message == "error"
+    #           nonce_with_address_json = {nonce: MinerNonce.from_json(nonce_found_message).with_address(@wallet.address)}.to_json
+    #           send(socket, M_TYPE_MINER_FOUND_NONCE, MContentMinerFoundNonce.from_json(nonce_with_address_json))
+    #         end
+
+    #         update(w, difficulty, block)
+    #       rescue ioe : IO::EOFError
+    #         warning "received invalid message. will be ignored"
+    #       end
+    #     end
+    #   end
+
+    #   update(difficulty, block)
+    # end
+
+    # def update(difficulty, block)
+    #   debug "update new workers"
+
+    #   @workers.each do |w|
+    #     update(w, difficulty, block)
+    #   end
+    # end
+
+    # def update(worker, difficulty, block)
+    #   worker.exec({start_nonce: Random.rand(UInt64::MAX).to_s, difficulty: difficulty, block: block}.to_json)
+    # end
+
+    # def clean_workers
+    #   debug "clean workers"
+    #   @workers.each(&.kill)
+    # end
 
     include Logger
     include Protocol
