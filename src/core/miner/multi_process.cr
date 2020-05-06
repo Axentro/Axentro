@@ -2,13 +2,17 @@ module ::Sushi::Core::MultiProcess
   abstract class Worker
     abstract def task(message : String)
 
+    getter terminate : Channel(Nil)
+    getter name : String
+
     def self.create(number_of_workers : Int32) : Array(Worker)
       workers = [] of Worker
-      inbound = Channel(String).new
-      outbound = Channel(String).new
-
-      number_of_workers.times do |_|
-        worker = new(inbound, outbound)
+   
+      (1..number_of_workers).each do |n|
+        inbound = Channel(String).new
+        outbound = Channel(String).new
+        terminate = Channel(Nil).new
+        worker = new(inbound, outbound, terminate, "worker_#{n}")
         worker.run
         workers << worker
       end
@@ -17,13 +21,14 @@ module ::Sushi::Core::MultiProcess
 
     @message_pool = [] of String
 
-    def initialize(@inbound : Channel(String), @outbound : Channel(String))
+    def initialize(@inbound : Channel(String), @outbound : Channel(String), @terminate : Channel(Nil), @name : String)
     end
 
     def run
-      spawn do
+      spawn(name: "run_fiber") do
         loop do
-          next unless message = @inbound.receive
+          break if @terminate.closed?
+          next unless message = @inbound.receive?
 
           task(message)
         end
@@ -32,9 +37,10 @@ module ::Sushi::Core::MultiProcess
     end
 
     def wait_fiber
-      spawn do
+      spawn(name: "wait_fiber") do
        loop do
-          sleep 0.01
+          break if @terminate.closed?
+          # sleep 0.01
           next unless message = @message_pool.shift?
           @inbound.send(message)
         end
@@ -50,13 +56,16 @@ module ::Sushi::Core::MultiProcess
     end
 
     def receive : String?
-      return nil unless message = @outbound.receive
+      return nil unless message = @outbound.receive?
 
       message
     end
 
     def kill
-     # no idea how to stop the Fiber
+      @terminate.close
+      @message_pool.clear
+      @inbound.close
+      @outbound.close
     end
   end
 end

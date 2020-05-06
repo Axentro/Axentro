@@ -15,7 +15,7 @@ module ::Sushi::Core
     @wallet : Wallet
     @use_ssl : Bool
     @mid : String = HumanHash.uuid.digest
-
+    # @terminate : Channel(Nil) = Channel(Nil).new() 
     @workers : Array(MultiProcess::Worker) = [] of MultiProcess::Worker
 
     def initialize(@is_testnet : Bool, @host : String, @port : Int32, @wallet : Wallet, @num_processes : Int32, @use_ssl : Bool)
@@ -118,11 +118,12 @@ module ::Sushi::Core
     def start_workers(difficulty, block)
       @workers = MinerWorker.create(@num_processes)
       @workers.each do |w|
-        spawn do
+        spawn(name: w.name) do
           loop do
+            break if w.terminate.closed?
             nonce_found_message = w.receive.try &.to_s || "error"
 
-            debug "received nonce #{nonce_found_message} from worker"
+            debug "#{Fiber.current.name} received nonce #{nonce_found_message} from worker"
 
             unless nonce_found_message == "error"
               nonce_with_address_json = {nonce: MinerNonce.from_json(nonce_found_message).with_address(@wallet.address)}.to_json

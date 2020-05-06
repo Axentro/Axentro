@@ -27,6 +27,7 @@ module ::Sushi::Core
       block = work[:block].with_nonce(block_nonce)
 
       loop do
+        break if @terminate.closed?
         time_now = __timestamp
         block = work[:block].with_nonce(block_nonce)
         break if valid_nonce?(block.to_hash, block_nonce, work[:difficulty]) == work[:difficulty]
@@ -45,18 +46,19 @@ module ::Sushi::Core
 
           work_rate = (nonce_counter - latest_nonce_counter) / (time_diff / 1000)
 
-          info "#{nonce_counter - latest_nonce_counter} works, #{work_rate_with_unit(work_rate)}"
+          info "#{Fiber.current.name} block: #{block.index} #{nonce_counter - latest_nonce_counter} works, #{work_rate_with_unit(work_rate)}"
 
           latest_nonce_counter = nonce_counter
           latest_time = time_now
+          Fiber.yield
         end
       end
 
       debug "found new nonce(#{work[:difficulty]}): #{light_green(block_nonce)}"
-      debug "Found block..."
-      block.to_s
+      debug "Found block: #{block.index}"
+   
 
-      response(miner_nonce.with_timestamp(time_now).to_json)
+      response(miner_nonce.with_timestamp(time_now).to_json) unless @terminate.closed?
     rescue e : Exception
       error e.message.not_nil!
       error e.backtrace.join("\n")
