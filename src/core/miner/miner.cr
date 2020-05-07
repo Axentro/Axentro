@@ -104,8 +104,10 @@ module ::Sushi::Core
       debug "set block: #{light_green(block.index)}"
 
       # clean_workers
+      debug "#{Fiber.current.name}: update received - terminating channel"
       @terminate.close
-      
+
+      debug "#{Fiber.current.name}: update received - starting new miners"
       start_mining_with_multiple_fibers(difficulty, block)
       # start_workers(difficulty, block)
     end
@@ -131,24 +133,45 @@ module ::Sushi::Core
       res_channels = (1..@num_processes).map do |n|
         result = Channel(MinerNonce).new
         spawn(name: "worker_#{n}") do
+          count = 0
           loop do
-            break if local_terminate.closed?
-            debug "inside worker: #{Fiber.current.name}"
-            message = {start_nonce: Random.rand(UInt64::MAX).to_s, difficulty: difficulty, block: block}
-            miner_nonce = MinerWorker.new.task(message, local_terminate)
-            debug "NONCE FOUND: by #{Fiber.current.name}"
-            result.send(miner_nonce.not_nil!)
+            count += 1
+            if local_terminate.closed?
+              warning "#{Fiber.current.name}: TERMNATED (workers)"
+              break
+            end
+            debug "#{Fiber.current.name}: inside worker"
+            starting_nonce = Random.rand(UInt64::MAX).to_s
+            debug "#{Fiber.current.name}: starting nonce is: #{starting_nonce}"
+            message = {start_nonce: starting_nonce, difficulty: difficulty, block: block}
+
+           
+              miner_nonce = MinerWorker.new.task(message, local_terminate)
+              debug "#{Fiber.current.name}: NONCE FOUND - sending to result channel"
+              result.send(miner_nonce.not_nil!)
+         
+         
+
           end
         end
         result
       end
       debug "#{Fiber.current.name}: done spawning fibers"
-      loop do
-        break if local_terminate.closed?
-        miner_nonce = Channel.receive_first(res_channels)
-        nonce_with_address_json = {nonce: miner_nonce.with_address(@wallet.address)}.to_json
-        send(socket, M_TYPE_MINER_FOUND_NONCE, MContentMinerFoundNonce.from_json(nonce_with_address_json))
+
+      spawn(name: "receive") do
+        loop do
+          debug " #{Fiber.current.name}: in receive"
+          if local_terminate.closed?
+            warning "#{Fiber.current.name}: TERMNATED (recieve)"
+            break
+          end
+          miner_nonce = Channel.receive_first(res_channels)
+          debug " #{Fiber.current.name}: found miner nonce in receive"
+          nonce_with_address_json = {nonce: miner_nonce.with_address(@wallet.address)}.to_json
+          send(socket, M_TYPE_MINER_FOUND_NONCE, MContentMinerFoundNonce.from_json(nonce_with_address_json))
+        end
       end
+
       # res_channels.each do |result|
       #   miner_nonce = result.receive
       #   nonce_with_address_json = {nonce: miner_nonce.with_address(@wallet.address)}.to_json

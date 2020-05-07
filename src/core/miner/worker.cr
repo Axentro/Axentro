@@ -17,12 +17,13 @@ module ::Sushi::Core
 
     def task(work : MinerWork, terminate : Channel(Nil))
 
-      debug "inside task: #{Fiber.current.name} with work: #{work}"
+      debug "#{Fiber.current.name}_#{work[:block].index} inside task with work: #{work[:block].index}"
       # work = MinerWork.from_json(message)
 
       block_nonce = work[:start_nonce]
       miner_nonce = MinerNonce.from(block_nonce)
       nonce_counter = 0
+      yield_counter = 0
 
       latest_nonce_counter = nonce_counter
       time_now = __timestamp
@@ -38,6 +39,12 @@ module ::Sushi::Core
         block_nonce = (block_nonce.to_u64 + 1).to_s
         miner_nonce.with_value(block_nonce)
 
+        yield_counter += 1
+        if yield_counter == 1000
+          yield_counter = 0
+          Fiber.yield
+        end 
+
         if nonce_counter % 100 == 0
           time_diff = time_now - latest_time
 
@@ -48,18 +55,22 @@ module ::Sushi::Core
 
           work_rate = (nonce_counter - latest_nonce_counter) / (time_diff / 1000)
 
-          info "#{Fiber.current.name} block: #{block.index}, #{nonce_counter - latest_nonce_counter} works, #{work_rate_with_unit(work_rate)}"
+          info "#{Fiber.current.name}_#{block.index}, #{nonce_counter - latest_nonce_counter} works, #{work_rate_with_unit(work_rate)}"
 
           latest_nonce_counter = nonce_counter
           latest_time = time_now
-          break if terminate.closed?
-          Fiber.yield
+          if terminate.closed?
+            warning "#{Fiber.current.name}_#{block.index}: TERMNATED (task)"
+            break
+          end
+          
         end
+        
       end
 
-      debug "found new nonce(#{work[:difficulty]}): #{light_green(block_nonce)}"
-      debug "Found block..."
-      block.to_s
+      debug "#{Fiber.current.name}_#{block.index} found new nonce(#{work[:difficulty]}): #{light_green(block_nonce)}"
+      debug "#{Fiber.current.name}_#{block.index} Found block: #{block.index}"
+    
 
       miner_nonce.with_timestamp(time_now)
       # @channel.send(miner_nonce.with_timestamp(time_now))
