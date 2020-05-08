@@ -123,6 +123,10 @@ module ::Sushi::Core
         network = Keys::Address.from(sender[:address], "sender").network
         public_key = Keys::PublicKey.new(sender[:public_key], network)
 
+        if public_key.address.as_hex != sender[:address]
+          raise "sender public key mismatch - sender public key: #{public_key.as_hex} is not for sender address: #{sender[:address]}"
+        end
+
         verbose "unsigned_json: #{self.as_unsigned.to_json}"
         verbose "unsigned_json_hash: #{self.as_unsigned.to_hash}"
         verbose "public key: #{public_key.as_hex}"
@@ -185,7 +189,6 @@ module ::Sushi::Core
       signed_senders = self.senders.map_with_index { |s, i|
         private_key = Wif.new(wallets[i].wif).private_key
 
-        # sign = ECCrypto.sign(private_key.as_hex, self.to_hash)
         signature = KeyUtils.sign(private_key.as_hex, self.to_hash)
 
         {

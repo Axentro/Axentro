@@ -58,6 +58,58 @@ describe Keys do
     end
   end
 
+  describe "#KeyRing.generate_hd" do
+    it "should generate a random seed master keypair when no derivation and no seed supplied" do
+      keys = KeyRing.generate_hd
+
+      keys.private_key.should be_a(PrivateKey)
+      keys.private_key.as_hex.size.should eq(64)
+
+      keys.public_key.should be_a(PublicKey)
+      keys.public_key.as_hex.size.should eq(64)
+
+      keys.public_key.network.should eq(MAINNET)
+      keys.wif.network.should eq(MAINNET)
+      keys.address.network.should eq(MAINNET)
+
+      keys.seed.should_not be_nil
+    end
+
+    it "should generate a master keypair based on the supplied seed" do
+      seed = "000102030405060708090a0b0c0d0e0f"
+      keys = KeyRing.generate_hd(seed)
+
+      keys.private_key.as_hex.should eq("2b4be7f19ee27bbf30c667b642d5f4aa69fd169872f8fc3059c08ebae2eb19e7")
+      keys.public_key.as_hex.should eq("a4b2856bfec510abab89753fac1ac0e1112364e7d250545963f135f2a33188ed")
+      keys.wif.as_hex.should eq("TTAyYjRiZTdmMTllZTI3YmJmMzBjNjY3YjY0MmQ1ZjRhYTY5ZmQxNjk4NzJmOGZjMzA1OWMwOGViYWUyZWIxOWU3Nzg4ZTA3")
+
+      keys.seed.should_not be_nil
+    end
+
+    it "should generate a child keypair based on the supplied seed" do
+      seed = "000102030405060708090a0b0c0d0e0f"
+      keys = KeyRing.generate_hd(seed, "m/0'")
+
+      keys.private_key.as_hex.should eq("433acfc3055954411068990af648eb8a24b85b40b76db87661592e4fda13fdc7")
+      keys.public_key.as_hex.should eq("883c44f8eb19e5ca570ab371c2cc6212b8099cb25c5fb0f66a3645a06069b836")
+      keys.wif.as_hex.should eq("TTA0MzNhY2ZjMzA1NTk1NDQxMTA2ODk5MGFmNjQ4ZWI4YTI0Yjg1YjQwYjc2ZGI4NzY2MTU5MmU0ZmRhMTNmZGM3MWU0MGVi")
+
+      keys.seed.should_not be_nil
+    end
+
+    it "should generate a child keypair based on a random seed" do
+      keys = KeyRing.generate_hd(nil, "m/0'")
+
+      keys.private_key.should be_a(PrivateKey)
+      keys.private_key.as_hex.size.should eq(64)
+
+      keys.public_key.should be_a(PublicKey)
+      keys.public_key.as_hex.size.should eq(64)
+
+      keys.seed.should_not be_nil
+    end
+  end
+
   describe "#KeyRing.is_valid?" do
     it "should return true when valid" do
       keys = KeyRing.generate(TESTNET)
@@ -83,5 +135,4 @@ describe Keys do
       end
     end
   end
-
 end

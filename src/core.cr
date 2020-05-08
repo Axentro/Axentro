@@ -29,6 +29,7 @@ require "openssl/digest"
 require "humanhash"
 require "crystal-argon2"
 require "monocypher"
+require "ed25519-hd"
 require "i18n"
 require "baked_file_system"
 

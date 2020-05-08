@@ -70,6 +70,17 @@ module ::Sushi::Core
       }
     end
 
+    def self.create_hd(seed = nil, derivation = nil, testnet = false)
+      network = testnet ? TESTNET : MAINNET
+      keys = KeyRing.generate_hd(seed, derivation, network)
+      seed = keys.seed
+      {wallet: {
+        public_key: keys.public_key.as_hex,
+        wif:        keys.wif.as_hex,
+        address:    keys.address.as_hex,
+      }, seed: seed}
+    end
+
     def self.verify!(public_key : String, wif : String, address : String) : Bool
       KeyRing.is_valid?(public_key, wif, address)
     end

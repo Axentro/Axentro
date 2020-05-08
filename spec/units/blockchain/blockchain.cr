@@ -144,6 +144,45 @@ describe Blockchain do
       end
     end
 
+    it "should reject a transaction when trying to fake the sender" do
+      victim_wallet = Wallet.from_json(Wallet.create(true).to_json)
+      hacker_wallet = Wallet.from_json(Wallet.create(true).to_json)
+
+      sender = {address:    victim_wallet.address,
+                public_key: hacker_wallet.public_key,
+                amount:     10000000_i64,
+                fee:        10000000_i64,
+                signature:  "0",
+      }
+
+      recipient = {address: hacker_wallet.address,
+                   amount:  10000000_i64}
+
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        "send", # action
+        [sender],
+        [recipient],
+        "0",   # message
+        "SUSHI", # token
+        "0",   # prev_hash
+        0_i64, # timestamp
+        1,     # scaled
+        TransactionKind::SLOW
+      )
+      transaction = unsigned_transaction.as_signed([hacker_wallet])
+
+      with_factory do |block_factory, transaction_factory|
+        block_factory.add_slow_block([transaction]).add_slow_blocks(2)
+        if reject = block_factory.blockchain.rejects.find(transaction.id)
+          reject.reason.should eq("sender public key mismatch - sender public key: #{hacker_wallet.public_key} is not for sender address: #{victim_wallet.address}")
+        else
+          fail "no rejects found"
+        end
+      end
+    end
+
     it "should reject a transaction if already present" do
       with_factory do |block_factory, transaction_factory|
         transaction = transaction_factory.make_send(200000000_i64)
