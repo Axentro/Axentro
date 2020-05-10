@@ -173,7 +173,7 @@ describe Blockchain do
       )
       transaction = unsigned_transaction.as_signed([hacker_wallet])
 
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         block_factory.add_slow_block([transaction]).add_slow_blocks(2)
         if reject = block_factory.blockchain.rejects.find(transaction.id)
           reject.reason.should eq("sender public key mismatch - sender public key: #{hacker_wallet.public_key} is not for sender address: #{victim_wallet.address}")
