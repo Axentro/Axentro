@@ -1,8 +1,7 @@
-name: SushiBlockchain
+name: SushiChain
 version: 0.1.0
 
 authors:
-  - tbrand <taichiro0709@gmail.com>
   - kingsleyh <kingsley.hendrickse@gmail.com>
 
 scripts:
