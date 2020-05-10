@@ -44,11 +44,13 @@ module ::Sushi::Interface::Sushi
         Options::WALLET_PASSWORD,
         Options::IS_TESTNET,
         Options::ENCRYPTED,
+        Options::SEED,
+        Options::DERIVATION,
         Options::JSON,
         Options::ADDRESS,
         Options::DOMAIN,
         Options::TOKEN,
-        Options::CONFIG_NAME
+        Options::CONFIG_NAME,
       ])
     end
 
@@ -79,6 +81,13 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_WALLET_ALREADY_EXISTS % wallet_path) if File.exists?(wallet_path)
 
       wallet = Core::Wallet.from_json(Core::Wallet.create(G.op.__is_testnet).to_json)
+      seed = nil
+
+      if G.op.__seed || G.op.__derivation
+        hd = Core::Wallet.create_hd(G.op.__seed, G.op.__derivation, G.op.__is_testnet)
+        seed = hd[:seed]
+        wallet = Core::Wallet.from_json(hd[:wallet].to_json)
+      end
 
       if G.op.__encrypted
         puts_help(HELP_WALLET_PASSWORD) unless wallet_password = (G.op.__wallet_password || ENV["SC_WALLET_PASSWORD"]?)
@@ -95,6 +104,9 @@ module ::Sushi::Interface::Sushi
       else
         puts_success(I18n.translate("sushi.cli.wallet.create.messages.creation", {wallet_path: wallet_path}))
         puts_success(I18n.translate("sushi.cli.wallet.create.messages.backup"))
+      end
+      if seed
+        puts_success(I18n.translate("sushi.cli.wallet.create.messages.seed", {seed: seed.not_nil!}))
       end
     end
 

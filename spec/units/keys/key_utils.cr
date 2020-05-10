@@ -33,4 +33,5 @@ describe KeyUtils do
 
     KeyUtils.verify_signature(message, signature_hex, hex_public_key).should be_true
   end
+
 end

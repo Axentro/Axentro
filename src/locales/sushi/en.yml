@@ -10,6 +10,7 @@ sushi:
         messages:
           creation: "your new wallet has been created at %{wallet_path}"
           backup:   "please make a backup of the json file and keep it secret."
+          seed:     "Your wallet was generated with this seed: %{seed} (please keep it very safe)"
       verify:
         title:      "verify"
         desc:       "verify a wallet file"

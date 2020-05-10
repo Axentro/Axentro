@@ -21,8 +21,9 @@ module ::Sushi::Core::Keys
     getter public_key : PublicKey
     getter wif : Wif
     getter address : Address
+    getter seed : String?
 
-    def initialize(@private_key : PrivateKey, @public_key : PublicKey, @wif : Wif, @address : Address)
+    def initialize(@private_key : PrivateKey, @public_key : PublicKey, @wif : Wif, @address : Address, @seed : String? = nil)
     end
 
     def self.generate(network : Core::Node::Network = MAINNET)
@@ -30,6 +31,16 @@ module ::Sushi::Core::Keys
       private_key = PrivateKey.new(key_pair[:hex_private_key], network)
       public_key = PublicKey.new(key_pair[:hex_public_key], network)
       KeyRing.new(private_key, public_key, private_key.wif, public_key.address)
+    end
+
+    def self.generate_hd(seed : String? = nil, derivation : String? = nil, network : Core::Node::Network = MAINNET)
+      _seed = seed.nil? ? Random::Secure.random_bytes(64).hexstring : seed.not_nil!
+      keys = (derivation.nil? || derivation.not_nil! == "m") ? ED25519::HD::KeyRing.get_master_key_from_seed(_seed) : ED25519::HD::KeyRing.derive_path(derivation.not_nil!, _seed, ED25519::HD::HARDENED_SUSHI)
+
+      private_key = PrivateKey.new(keys.private_key, network)
+      _public_key = ED25519::HD::KeyRing.get_public_key(keys.private_key)
+      public_key = PublicKey.new(_public_key.hexbytes[1..-1].hexstring, network)
+      KeyRing.new(private_key, public_key, private_key.wif, public_key.address, _seed)
     end
 
     def self.is_valid?(public_key : String, wif : String, address : String)

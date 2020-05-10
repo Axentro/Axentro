@@ -49,6 +49,8 @@ module ::Sushi::Interface
     @processes : Int32 = 1
 
     @encrypted : Bool = false
+    @seed : String?
+    @derivation : String?
 
     @price : String?
     @domain : String?
@@ -94,6 +96,8 @@ module ::Sushi::Interface
       PROCESSES
       # for wallet
       ENCRYPTED
+      SEED
+      DERIVATION
       # for scars
       PRICE
       DOMAIN
@@ -145,6 +149,8 @@ module ::Sushi::Interface
         parse_fast_transaction(parser, actives)
         parse_max_miners(parser, actives)
         parse_max_private_nodes(parser, actives)
+        parse_seed(parser, actives)
+        parse_derivation(parser, actives)
       end
     end
 
@@ -300,6 +306,18 @@ module ::Sushi::Interface
       parser.on("-e", "--encrypted", I18n.translate("cli.options.encrypted")) {
         @encrypted = true
       } if is_active?(actives, Options::ENCRYPTED)
+    end
+
+    private def parse_seed(parser : OptionParser, actives : Array(Options))
+      parser.on("--seed=SEED", I18n.translate("cli.options.seed")) { |seed|
+        @seed = seed
+      } if is_active?(actives, Options::SEED)
+    end
+
+    private def parse_derivation(parser : OptionParser, actives : Array(Options))
+      parser.on("--derivation=\"m/0'\"", I18n.translate("cli.options.derivation")) { |derivation|
+        @derivation = derivation
+      } if is_active?(actives, Options::DERIVATION)
     end
 
     private def parse_price(parser : OptionParser, actives : Array(Options))
@@ -466,6 +484,14 @@ module ::Sushi::Interface
       return @encrypted if @encrypted
       return cm.get_bool("encrypted", @config_name).not_nil! if cm.get_bool("encrypted", @config_name)
       @encrypted
+    end
+
+    def __seed : String?
+      @seed
+    end
+
+    def __derivation : String?
+      @derivation
     end
 
     def __price : String?
