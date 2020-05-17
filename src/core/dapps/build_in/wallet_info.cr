@@ -108,7 +108,7 @@ module ::Sushi::Core::DApps::BuildIn
 
       page, per_page, direction = 0, 100, 1
 
-      all_completed_transactions = database.get_paginated_transactions_for_address(address, page, per_page, Direction.new(direction).to_s, [] of String)
+      all_completed_transactions = database.get_paginated_transactions_for_address(address, page, per_page, Direction.new(direction).to_s, [] of String, true)
       incoming_completed_transactions = incoming(address, "Completed", all_completed_transactions.select { |t| t.recipients.map { |r| r[:address] }.includes?(address) })
       outgoing_completed_transactions = outgoing(address, "Completed", all_completed_transactions.select { |t| t.senders.map { |r| r[:address] }.includes?(address) })
 
