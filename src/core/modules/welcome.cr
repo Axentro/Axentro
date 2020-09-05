@@ -12,7 +12,7 @@
 
 module ::Axentro::Core::Welcome
   def logo
-    plain = <<-LOGO                                                                                                                                 
+    plain = <<-LOGO
            d8888                            888                    
           d88888                            888                    
          d88P888                            888                    
