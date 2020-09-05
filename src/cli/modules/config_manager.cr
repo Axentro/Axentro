@@ -30,7 +30,7 @@ module ::Axentro::Interface
     end
 
     def set(name : String, value : Configurable)
-      return if value.is_a?(Nil)
+      return if value.nil?
       @config_map[name] = value
     end
 
