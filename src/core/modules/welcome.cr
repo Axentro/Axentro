@@ -12,14 +12,16 @@
 
 module ::Axentro::Core::Welcome
   def logo
-    plain = <<-LOGO
-.d8888. db    db .d8888. db   db d888888b  .o88b. db   db  .d8b.  d888888b d8b   db
-88'  YP 88    88 88'  YP 88   88   `88'   d8P  Y8 88   88 d8' `8b   `88'   888o  88
-`8bo.   88    88 `8bo.   88ooo88    88    8P      88ooo88 88ooo88    88    88V8o 88
-  `Y8b. 88    88   `Y8b. 88~~~88    88    8b      88~~~88 88~~~88    88    88 V8o88
-db   8D 88b  d88 db   8D 88   88   .88.   Y8b  d8 88   88 88   88   .88.   88  V888
-`8888Y' ~Y8888P' `8888Y' YP   YP Y888888P  `Y88P' YP   YP YP   YP Y888888P VP   V8P
-LOGO
+    plain = <<-LOGO                                                                                                                                 
+           d8888                            888                    
+          d88888                            888                    
+         d88P888                            888                    
+        d88P 888 888  888  .d88b.  88888b.  888888 888d888 .d88b.  
+       d88P  888 `Y8bd8P' d8P  Y8b 888 "88b 888    888P"  d88""88b 
+      d88P   888   X88K   88888888 888  888 888    888    888  888 
+     d8888888888 .d8""8b. Y8b.     888  888 Y88b.  888    Y88..88P 
+    d88P     888 888  888  "Y8888  888  888  "Y888 888     "Y88P"                                                 
+    LOGO
 
     light_green(plain)
   end
