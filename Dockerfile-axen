@@ -1,4 +1,4 @@
-FROM crystallang/crystal:0.34.0
+FROM crystallang/crystal:0.35.1
 
 RUN mkdir -p /usr/local/Axentro
 RUN mkdir -p /usr/local/bin
@@ -16,9 +16,9 @@ RUN ln -s /usr/local/Axentro/bin/axen /usr/local/bin/axen
 RUN ln -s /usr/local/Axentro/bin/axem /usr/local/bin/axem
 RUN ln -s /usr/local/Axentro/bin/axe  /usr/local/bin/axe
 
-RUN mkdir -p /usr/local/sc
+RUN mkdir -p /usr/local/ax
 
-WORKDIR /usr/local/sc
+WORKDIR /usr/local/ax
 
 EXPOSE 3000
 
