@@ -166,7 +166,7 @@ describe Token do
       with_factory do |block_factory, _|
         token = Token.new(block_factory.blockchain)
         expect_raises(Exception) do
-          token.valid_token_name?("123456789012345678901.sc")
+          token.valid_token_name?("123456789012345678901.ax")
         end
       end
     end

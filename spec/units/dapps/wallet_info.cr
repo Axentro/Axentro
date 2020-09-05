@@ -63,8 +63,8 @@ describe WalletInfo do
     it "should return the wallet info for the specified address" do
       with_factory do |block_factory, transaction_factory|
         block_factory.add_slow_blocks(2).add_slow_block(
-          [transaction_factory.make_buy_domain_from_platform("domain1.sc", 0_i64),
-           transaction_factory.make_buy_domain_from_platform("domain2.sc", 0_i64),
+          [transaction_factory.make_buy_domain_from_platform("domain1.ax", 0_i64),
+           transaction_factory.make_buy_domain_from_platform("domain2.ax", 0_i64),
            transaction_factory.make_send(99900000000),
           ]).add_slow_blocks(2)
 
@@ -74,7 +74,7 @@ describe WalletInfo do
         with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
           wi = WalletInfoResponse.from_json(result)
           wi.address.should eq(transaction_factory.sender_wallet.address)
-          wi.readable.should eq(["domain1.sc", "domain2.sc"])
+          wi.readable.should eq(["domain1.ax", "domain2.ax"])
         end
       end
     end

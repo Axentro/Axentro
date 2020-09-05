@@ -70,7 +70,7 @@ module ::Axentro::Core::Controllers
     private def get_address(maybe_address)
       address_or_domain = maybe_address
       address = address_or_domain
-      if address.ends_with?(".sc")
+      if address.ends_with?(".ax")
         domain_name = address_or_domain
         result = @blockchain.database.get_domain_map_for(domain_name)[domain_name]?
         if result

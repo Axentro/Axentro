@@ -15,7 +15,7 @@ module ::Axentro::Core::DApps::BuildIn
   # Axentro Address Resolution System
   #
   # valid suffixes
-  SUFFIX = %w(sc)
+  SUFFIX = %w(ax)
 
   enum Status
     ACQUIRED

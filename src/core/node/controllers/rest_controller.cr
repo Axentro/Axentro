@@ -294,7 +294,7 @@ module ::Axentro::Core::Controllers
       with_response(context) do |_|
         address_or_domain = params["address"].to_s
         address = address_or_domain
-        if address.ends_with?(".sc")
+        if address.ends_with?(".ax")
           domain_name = address_or_domain
           result = @blockchain.database.get_domain_map_for(domain_name)[domain_name]?
           if result
