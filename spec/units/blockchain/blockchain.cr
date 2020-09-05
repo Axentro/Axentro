@@ -500,9 +500,11 @@ describe Blockchain do
       block_factory.blockchain.embedded_slow_transactions.size.should eq(transaction_total)
       coinbase_transaction = block_factory.blockchain.chain.last.transactions.first
 
-      puts Benchmark.measure {
+      result = Benchmark.measure {
         block_factory.blockchain.align_slow_transactions(coinbase_transaction, 1)
       }
+
+      (result.real < 0.005).should be_true
     end
   end
 
@@ -514,9 +516,11 @@ describe Blockchain do
       block_factory.add_slow_block(transactions, false)
       block_factory.blockchain.pending_slow_transactions.size.should eq(transaction_total)
 
-      puts Benchmark.measure {
+      result = Benchmark.measure {
         block_factory.blockchain.clean_slow_transactions
       }
+
+      (result.real < 0.005).should be_true
     end
   end
 end

@@ -14,17 +14,16 @@ module ::Axentro::Core
   class SlowBlock
     extend Hashes
 
-    JSON.mapping({
-      index:            Int64,
-      transactions:     Array(Transaction),
-      nonce:            BlockNonce,
-      prev_hash:        String,
-      merkle_tree_root: String,
-      timestamp:        Int64,
-      difficulty:       Int32,
-      kind:             BlockKind,
-      address:          String,
-    })
+    include JSON::Serializable
+    property index : Int64
+    property transactions : Array(Transaction)
+    property nonce : BlockNonce
+    property prev_hash : String
+    property merkle_tree_root : String
+    property timestamp : Int64
+    property difficulty : Int32
+    property kind : BlockKind
+    property address : String
 
     def initialize(
       @index : Int64,
@@ -208,15 +207,14 @@ module ::Axentro::Core
   end
 
   class SlowBlockNoTimestamp
-    JSON.mapping({
-      index:            Int64,
-      transactions:     Array(Transaction),
-      nonce:            String,
-      prev_hash:        String,
-      merkle_tree_root: String,
-      difficulty:       Int32,
-      address:          String,
-    })
+    include JSON::Serializable
+    property index : Int64
+    property transactions : Array(Transaction)
+    property nonce : String
+    property prev_hash : String
+    property merkle_tree_root : String
+    property difficulty : Int32
+    property address : String
 
     def self.from_slow_block(b : SlowBlock)
       SlowBlockNoTimestamp.new(b.index, b.transactions, b.nonce, b.prev_hash, b.merkle_tree_root, b.difficulty, b.address)

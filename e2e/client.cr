@@ -21,11 +21,17 @@ module ::E2E
     alias ClientWork = NamedTuple(call: Int32, content: String)
 
     struct Initialize
-      JSON.mapping({node_ports: Array(Int32), num_miners: Int32, num_tps: Int32, pct_fast_txns: Int32})
+      include JSON::Serializable
+      property node_ports : Array(Int32)
+      property num_miners : Int32
+      property num_tps : Int32
+      property pct_fast_txns : Int32
     end
 
     struct Result
-      JSON.mapping({num_transactions: Int32, duration: Float64})
+      include JSON::Serializable
+      property num_transactions : Int32
+      property duration : Float64
     end
 
     def self.client

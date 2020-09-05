@@ -14,18 +14,17 @@ module ::Axentro::Core
   class FastBlock
     extend Hashes
 
-    JSON.mapping({
-      index:            Int64,
-      transactions:     Array(Transaction),
-      prev_hash:        String,
-      merkle_tree_root: String,
-      timestamp:        Int64,
-      kind:             BlockKind,
-      address:          String,
-      public_key:       String,
-      signature:        String,
-      hash:             String,
-    })
+    include JSON::Serializable
+    property index : Int64
+    property transactions : Array(Transaction)
+    property prev_hash : String
+    property merkle_tree_root : String
+    property timestamp : Int64
+    property kind : BlockKind
+    property address : String
+    property public_key : String
+    property signature : String
+    property hash : String
 
     def initialize(
       @index : Int64,
@@ -181,16 +180,15 @@ module ::Axentro::Core
   end
 
   class FastBlockNoTimestamp
-    JSON.mapping({
-      index:            Int64,
-      transactions:     Array(Transaction),
-      prev_hash:        String,
-      merkle_tree_root: String,
-      address:          String,
-      public_key:       String,
-      signature:        String,
-      hash:             String,
-    })
+    include JSON::Serializable
+    property index : Int64
+    property transactions : Array(Transaction)
+    property prev_hash : String
+    property merkle_tree_root : String
+    property address : String
+    property public_key : String
+    property signature : String
+    property hash : String
 
     def self.from_fast_block(b : FastBlock)
       self.new(b.index, b.transactions, b.prev_hash, b.merkle_tree_root, b.address, b.public_key, b.signature, b.hash)

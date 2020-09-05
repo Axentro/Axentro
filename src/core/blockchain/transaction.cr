@@ -29,9 +29,19 @@ module ::Axentro::Core
       scaled: Int32,
       kind: TransactionKind
     )
+    # include JSON::Serializable
+    # property id : String
+    # property action : String
+    # property senders : Senders
+    # property recipients : Recipients
+    # property message : String
+    # property token : String
+    # property prev_hash : String
+    # property timestamp : Int64
+    # property scaled : Int32
+    # property kind : TransactionKind
 
     setter prev_hash : String
-
     @common_checked : Bool = false
 
     def initialize(

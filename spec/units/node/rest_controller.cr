@@ -636,31 +636,28 @@ describe RESTController do
 end
 
 struct DomainResult
-  JSON.mapping({
-    domain_name: String,
-    address:     String,
-    status:      Int64,
-    price:       String,
-  })
+  include JSON::Serializable
+  property domain_name : String
+  property address : String
+  property status : Int64
+  property price : String
 end
 
 struct NodeResult
-  JSON.mapping({
-    id:         String,
-    host:       String,
-    port:       Int64,
-    ssl:        Bool,
-    type:       String,
-    is_private: Bool,
-  })
+  include JSON::Serializable
+  property id : String
+  property host : String
+  property port : Int64
+  property ssl : Bool
+  property type : String
+  property is_private : Bool
 end
 
 struct NodesResult
-  JSON.mapping({
-    successor_list: Array(String),
-    predecessor:    Nil,
-    private_nodes:  Array(String),
-  })
+  include JSON::Serializable
+  property successor_list : Array(String)
+  property predecessor : Nil
+  property private_nodes : Array(String)
 end
 
 def context(url : String, method : String = "GET", body : IO = IO::Memory.new)

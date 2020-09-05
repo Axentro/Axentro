@@ -12,53 +12,49 @@
 
 module ::Axentro::Core::DApps::BuildIn
   struct TokenAmount
-    JSON.mapping(
-      name: String,
-      amount: String
-    )
+    include JSON::Serializable
+    property name : String
+    property amount : String
 
     def initialize(@name : String, @amount : String); end
   end
 
   struct RecentWalletTransaction
-    JSON.mapping(
-      transaction_id: String,
-      kind: String,
-      from: String,
-      from_readable: String,
-      to: String,
-      to_readable: String,
-      amount: String,
-      token: String,
-      category: String,
-      datetime: String,
-      status: String,
-      direction: String
-    )
+    include JSON::Serializable
+    property transaction_id : String
+    property kind : String
+    property from : String
+    property from_readable : String
+    property to : String
+    property to_readable : String
+    property amount : String
+    property token : String
+    property category : String
+    property datetime : String
+    property status : String
+    property direction : String
 
     def initialize(@transaction_id : String, @kind : String, @from : String, @from_readable : String, @to : String, @to_readable : String, @amount : String, @token : String, @category : String, @datetime : String, @status : String, @direction : String); end
   end
 
   struct RejectedWalletTransaction
-    JSON.mapping(
-      transaction_id: String,
-      sender_address: String,
-      rejection_reason: String,
-      datetime: String,
-      status: String
-    )
+    include JSON::Serializable
+    property transaction_id : String
+    property sender_address : String
+    property rejection_reason : String
+    property datetime : String
+    property status : String
 
     def initialize(@transaction_id : String, @sender_address : String, @rejection_reason : String, @datetime : String, @status : String = "Rejected"); end
   end
 
   struct WalletInfoResponse
-    JSON.mapping(
-      address: String,
-      readable: Array(String),
-      tokens: Array(TokenAmount),
-      recent_transactions: Array(RecentWalletTransaction),
-      rejected_transactions: Array(RejectedWalletTransaction),
-    )
+    include JSON::Serializable
+    property address : String
+    property readable : Array(String)
+    property tokens : Array(TokenAmount)
+    property recent_transactions : Array(RecentWalletTransaction)
+    property rejected_transactions : Array(RejectedWalletTransaction)
 
     def initialize(@address : String, @readable : Array(String), @tokens : Array(TokenAmount),
                    @recent_transactions : Array(RecentWalletTransaction),

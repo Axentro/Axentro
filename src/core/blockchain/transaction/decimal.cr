@@ -12,18 +12,17 @@
 
 module ::Axentro::Core
   class TransactionDecimal
-    JSON.mapping(
-      id: String,
-      action: String,
-      senders: SendersDecimal,
-      recipients: RecipientsDecimal,
-      message: String,
-      token: String,
-      prev_hash: String,
-      timestamp: Int64,
-      scaled: Int32,
-      kind: TransactionKind
-    )
+    include JSON::Serializable
+    property id : String
+    property action : String
+    property senders : SendersDecimal
+    property recipients : RecipientsDecimal
+    property message : String
+    property token : String
+    property prev_hash : String
+    property timestamp : Int64
+    property scaled : Int32
+    property kind : TransactionKind
 
     def initialize(
       @id : String,

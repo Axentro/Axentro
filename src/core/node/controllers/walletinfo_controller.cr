@@ -12,7 +12,8 @@
 
 module ::Axentro::Core::Controllers
   struct WalletMessage
-    JSON.mapping(address: String)
+    include JSON::Serializable
+    property address : String
   end
 
   class WalletInfoController

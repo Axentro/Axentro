@@ -15,12 +15,11 @@ module ::Axentro::Core
   end
 
   class EncryptedWallet
-    JSON.mapping({
-      source:     String,
-      ciphertext: String,
-      address:    String,
-      salt:       String,
-    })
+    include JSON::Serializable
+    property source : String
+    property ciphertext : String
+    property address : String
+    property salt : String
 
     def self.from_path(wallet_path : String) : EncryptedWallet
       raise "failed to find encrypted wallet at #{wallet_path}" unless File.exists?(wallet_path)
@@ -33,12 +32,7 @@ module ::Axentro::Core
   end
 
   class Wallet
-    JSON.mapping({
-      public_key: String,
-      wif:        String,
-      address:    String,
-    })
-
+    include JSON::Serializable
     getter public_key : String
     getter wif : String
     getter address : String

@@ -72,7 +72,8 @@ module ::Axentro::Core
   end
 
   class DeveloperFundConfig
-    YAML.mapping(addresses: Array(Hash(String, String)))
+    include YAML::Serializable
+    property addresses : Array(Hash(String, String))
 
     def initialize(@addresses : Array(Hash(String, String)))
     end

@@ -14,12 +14,12 @@ module ::Axentro::Core::Hashes
   def sha256(base : Bytes | String) : String
     hash = OpenSSL::Digest.new("SHA256")
     hash.update(base)
-    hash.hexdigest
+    hash.final.hexstring
   end
 
   def ripemd160(base : Bytes | String) : String
     hash = OpenSSL::Digest.new("RIPEMD160")
     hash.update(base)
-    hash.hexdigest
+    hash.final.hexstring
   end
 end

@@ -12,13 +12,7 @@
 
 module ::Axentro::Core::NonceModels
   struct MinerNonce
-    JSON.mapping({
-      mid:       String,
-      value:     BlockNonce,
-      timestamp: Int64,
-      address:   String,
-      node_id:   String,
-    })
+    include JSON::Serializable
 
     getter mid : String = "0"
     getter value : BlockNonce
