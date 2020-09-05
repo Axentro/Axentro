@@ -72,5 +72,4 @@ describe Wif do
       KeyRing.generate.wif.is_valid?.should be_true
     end
   end
-
 end

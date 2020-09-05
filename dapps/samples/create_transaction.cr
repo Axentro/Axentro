@@ -71,13 +71,13 @@ module ::Axentro::Core::DApps::User
           id = create_transaction_id(block, transaction)
 
           created = create_transaction(
-            id,                                                                 # id
-            "send",                                                             # action
-            sender,                                                             # sender
-            recipient,                                                          # recipient
+            id,                                                             # id
+            "send",                                                         # action
+            sender,                                                         # sender
+            recipient,                                                      # recipient
             "Thanks for sending me 0.0001 AXE! I'll back you 0.00005 AXE!", # message
-            TOKEN_DEFAULT,                                                      # token
-            TransactionKind::SLOW                                               # kind
+            TOKEN_DEFAULT,                                                  # token
+            TransactionKind::SLOW                                           # kind
           )
 
           info "created a transaction from CreateTranscation(UserDApp): #{id}" if created

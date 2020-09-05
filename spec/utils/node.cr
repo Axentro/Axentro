@@ -73,7 +73,7 @@ module ::Units::Utils::NodeHelper
       if json_result["status"].as_s == "success"
         # json_result step above does JSON.parse which converts the nonce to i64 instead of u64
         # so this is a quick fix as we hardcode all the nonces in the specs
-        yield json_result["result"].to_json.gsub("-6727529038553890404","11719215035155661212")
+        yield json_result["result"].to_json.gsub("-6727529038553890404", "11719215035155661212")
       else
         yield json_result["reason"].as_s
       end

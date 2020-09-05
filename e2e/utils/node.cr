@@ -42,5 +42,4 @@ module ::E2E::Utils::Node
       system("rm -rf #{log_path(num, "node")} && #{Envs.setup_env} && #{bin} &> #{log_path(num, "node")}")
     end
   end
-
 end

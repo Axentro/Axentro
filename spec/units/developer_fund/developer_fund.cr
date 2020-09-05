@@ -46,5 +46,4 @@ describe DeveloperFund do
     expected_recipients = [{address: "VDAwZTdkZGNjYjg1NDA1ZjdhYzk1M2ExMDAzNmY5MjUyYjI0MmMwNGJjZWY4NjA3", amount: 500000000000}, {address: "VDBjY2NmOGMyZmQ0MDc4NTIyNDBmYzNmOWQ3M2NlMzljODExOTBjYTQ0ZjMxMGFl", amount: 900000000000}]
     DeveloperFund.transactions(developer_fund.not_nil!.get_config).flat_map(&.recipients).sort_by(&.["amount"]).should eq(expected_recipients)
   end
-
 end

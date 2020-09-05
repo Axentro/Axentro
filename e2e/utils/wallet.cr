@@ -11,7 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::E2E::Utils::Wallet
-
   def wallets_path
     "../../wallets"
   end

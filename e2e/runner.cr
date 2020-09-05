@@ -327,7 +327,7 @@ module ::E2E
       STDERR.puts "-> FAILED!"
       safe_error_message = e.message
       if safe_error_message
-        STDERR.puts "   the reason: #{safe_error_message[0,200]}"
+        STDERR.puts "   the reason: #{safe_error_message[0, 200]}"
       end
 
       @exit_code = -1

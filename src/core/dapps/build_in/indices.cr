@@ -12,7 +12,6 @@
 
 module ::Axentro::Core::DApps::BuildIn
   class Indices < DApp
-
     def setup
     end
 
@@ -68,9 +67,9 @@ module ::Axentro::Core::DApps::BuildIn
           if transaction = block.find_transaction(transaction_id)
             confirmation = database.get_confirmations(block_index)
             return {
-              status:      "accepted",
+              status:       "accepted",
               confirmation: confirmation,
-              transaction: transaction,
+              transaction:  transaction,
             }
           end
         end

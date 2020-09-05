@@ -198,5 +198,4 @@ describe SlowTransactionPool do
       pool.all.size.should eq(2)
     end
   end
-
 end

@@ -94,5 +94,4 @@ describe TransactionDecimal do
     non_decimal = transaction.to_transaction
     typeof(non_decimal).should eq(Axentro::Core::Transaction)
   end
-
 end

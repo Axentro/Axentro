@@ -16,7 +16,7 @@ require "../database/*"
 module ::Axentro::Core
   class Database
     getter path : String
-    MEMORY = "%3Amemory%3A"
+    MEMORY        = "%3Amemory%3A"
     SHARED_MEMORY = "%3Amemory%3A%3Fcache%3Dshared"
 
     @db : DB::Database

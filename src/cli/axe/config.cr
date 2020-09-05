@@ -138,7 +138,7 @@ module ::Axentro::Interface::Axe
 
     def remove
       with_config do |configs, current_config|
-        G.op.__name.nil? ? remove_all : with_name(G.op.__name, configs) {|_, name| configs.keys.size > 1 ? remove_config(name, current_config.name) : remove_all }
+        G.op.__name.nil? ? remove_all : with_name(G.op.__name, configs) { |_, name| configs.keys.size > 1 ? remove_config(name, current_config.name) : remove_all }
       end
     end
 

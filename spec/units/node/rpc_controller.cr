@@ -32,7 +32,7 @@ describe RPCController do
             recipients: recipients,
             message:    "",
             token:      TOKEN_DEFAULT,
-            kind:       "SLOW"
+            kind:       "SLOW",
           }.to_json
 
           json = JSON.parse(payload)
@@ -87,5 +87,4 @@ describe RPCController do
       end
     end
   end
-
 end

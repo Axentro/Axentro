@@ -55,7 +55,7 @@ describe PrivateKey do
   end
 
   it "should convert a private key from hex to bytes with #as_bytes" do
-  key_pair = KeyUtils.create_new_keypair
+    key_pair = KeyUtils.create_new_keypair
     hex_private_key = key_pair[:hex_private_key]
     hexbytes = hex_private_key.hexbytes
 
@@ -64,7 +64,7 @@ describe PrivateKey do
   end
 
   it "should convert a private key from bytes to hex with #as_hex" do
-  key_pair = KeyUtils.create_new_keypair
+    key_pair = KeyUtils.create_new_keypair
     hex_private_key = key_pair[:hex_private_key]
     hexbytes = hex_private_key.hexbytes
 
@@ -107,5 +107,4 @@ describe PrivateKey do
       KeyRing.generate.private_key.is_valid?.should be_true
     end
   end
-
 end

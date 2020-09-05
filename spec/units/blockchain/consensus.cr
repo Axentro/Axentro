@@ -18,7 +18,6 @@ include Axentro::Core::Consensus
 include Axentro::Interface::Logger
 include Units::Utils
 
-
 describe Consensus do
   describe "#valid?, #valid_pow?" do
     # TODO: this test is probably erroneously passing since the change to the 'valid' methods

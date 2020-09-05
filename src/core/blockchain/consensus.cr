@@ -11,7 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core::Consensus
-
   def valid_pow?(block_hash : String, block_nonce : BlockNonce, difficulty : Int32) : Int32
     nonce_salt = block_nonce.to_u64.to_s(16)
     nonce_salt = "0" + nonce_salt if nonce_salt.bytesize % 2 != 0
@@ -40,14 +39,14 @@ module ::Axentro::Core::Consensus
   end
 
   # Dark Gravity Wave history lookback for averaging (in blocks)
-  HISTORY_LOOKBACK       =      24
+  HISTORY_LOOKBACK = 24
 
   # Axentro desired block spacing (2 minutes .. 120 seconds expressed in milliseconds and seconds)
   POW_TARGET_SPACING      = 120000_f64
-  POW_TARGET_SPACING_SECS = 120_i64
+  POW_TARGET_SPACING_SECS =    120_i64
 
   # Difficulty value to be used when there is absolutely no history reference
-  DEFAULT_DIFFICULTY_TARGET      = 17_i32
+  DEFAULT_DIFFICULTY_TARGET = 17_i32
 
   # Dark Gravity Wave based difficulty adjustment calculation (Original algorithm created by Evan Duffield)
 
@@ -60,9 +59,9 @@ module ::Axentro::Core::Consensus
 
     # return difficulty default target if chain non-existant or not enough block history
     chain = blockchain.chain.select(&.is_slow_block?)
-    #debug "entered block_difficulty with chain length of #{chain.size}" if chain
+    # debug "entered block_difficulty with chain length of #{chain.size}" if chain
     if !chain || chain.size < 3
-      #debug "entered block_difficulty with short initial chain (fewer than 3 blocks), returning default difficulty of #{DEFAULT_DIFFICULTY_TARGET}"
+      # debug "entered block_difficulty with short initial chain (fewer than 3 blocks), returning default difficulty of #{DEFAULT_DIFFICULTY_TARGET}"
       return DEFAULT_DIFFICULTY_TARGET
     end
 
@@ -71,7 +70,7 @@ module ::Axentro::Core::Consensus
     oldest_history_spot = Math.max(chain.size - HISTORY_LOOKBACK, 1)
     i = oldest_history_spot
     last_block_time = chain[i].as(SlowBlock).timestamp
-    #debug "Oldest history spot: #{oldest_history_spot}"
+    # debug "Oldest history spot: #{oldest_history_spot}"
     while i < chain.size
       block_reading = chain[i].as(SlowBlock)
       calculated_difficulty = calculate_running_difficulty_avg(calculated_difficulty, block_reading.difficulty, count_blocks)
@@ -82,12 +81,12 @@ module ::Axentro::Core::Consensus
       i += 1
     end
 
-    #debug "Number of blocks in history lookback: #{count_blocks}"
-    #debug "calculated average difficulty: #{calculated_difficulty}"
-    #debug "calculated actual timespan: #{actual_timespan}"
+    # debug "Number of blocks in history lookback: #{count_blocks}"
+    # debug "calculated average difficulty: #{calculated_difficulty}"
+    # debug "calculated actual timespan: #{actual_timespan}"
 
     if count_blocks == 0
-      #debug "No valid blocks in history for averaging, returning default difficulty"
+      # debug "No valid blocks in history for averaging, returning default difficulty"
       return DEFAULT_DIFFICULTY_TARGET
     end
 
@@ -97,19 +96,19 @@ module ::Axentro::Core::Consensus
     # calculate average block time for the history block
     # average_block_time = (actual_timespan / count_blocks).to_f64
 
-    #debug "calculated target timespan: #{target_timespan}"
-    #debug "average generation time per block: #{average_block_time} seconds"
+    # debug "calculated target timespan: #{target_timespan}"
+    # debug "average generation time per block: #{average_block_time} seconds"
 
     # Calculate the new difficulty based on actual and target timespan.
     calculated_difficulty *= target_timespan
     calculated_difficulty /= actual_timespan
-    #debug "Difficulty adjusted by timespane #{calculated_difficulty}"
+    # debug "Difficulty adjusted by timespane #{calculated_difficulty}"
 
     calculated_difficulty_i32 = calculated_difficulty.round.to_i32
 
-    #debug "DGW calculated difficulty adjusted by timespans (and rounded): #{calculated_difficulty_i32}"
+    # debug "DGW calculated difficulty adjusted by timespans (and rounded): #{calculated_difficulty_i32}"
     if calculated_difficulty_i32 < 0
-      #info "DGW calculation yielded negative value, return default of #{DEFAULT_DIFFICULTY_TARGET}"
+      # info "DGW calculation yielded negative value, return default of #{DEFAULT_DIFFICULTY_TARGET}"
       return DEFAULT_DIFFICULTY_TARGET
     end
     calculated_difficulty_i32
@@ -119,7 +118,7 @@ module ::Axentro::Core::Consensus
     if count_blocks == 0
       calculated_difficulty = this_block_difficulty.to_f64
     else
-      calculated_difficulty = ((calculated_difficulty * count_blocks)+(this_block_difficulty)) / (count_blocks + 1).to_f64
+      calculated_difficulty = ((calculated_difficulty * count_blocks) + (this_block_difficulty)) / (count_blocks + 1).to_f64
     end
     calculated_difficulty
   end
@@ -128,10 +127,10 @@ module ::Axentro::Core::Consensus
     time_diff = (this_block_timestamp - last_block_time).to_f64
     if (time_diff > POW_TARGET_SPACING * 0.5) && (time_diff < POW_TARGET_SPACING * 1.5)
       accumulated_timespan = current_timespan + time_diff
-      #debug "Had a difference of  #{time_diff} now actual timespan is #{accumulated_timespan}"
+      # debug "Had a difference of  #{time_diff} now actual timespan is #{accumulated_timespan}"
     else
       accumulated_timespan = current_timespan
-      #debug "Had a difference of  #{time_diff} out of range for averaging probably due to a period of time with no miners"
+      # debug "Had a difference of  #{time_diff} out of range for averaging probably due to a period of time with no miners"
     end
     accumulated_timespan
   end

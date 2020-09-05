@@ -112,7 +112,6 @@ module ::Axentro::Core
     end
 
     def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool, doing_replace : Bool) : Bool
-
       valid_signature = KeyUtils.verify_signature(@hash, @signature, @public_key)
 
       raise "Invalid Block Signature: the current block index: #{@index} has an invalid signature" unless valid_signature

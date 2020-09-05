@@ -17,7 +17,7 @@ module ::Axentro::Interface::Axe
         {
           name: "listen",
           desc: "listen for new blocks",
-        }
+        },
       ]
     end
 

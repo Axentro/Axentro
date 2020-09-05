@@ -138,7 +138,7 @@ describe BlockchainInfo do
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
             target_index = 2
-            unless expected_block = block_factory.chain.find{|block| block.index == target_index}
+            unless expected_block = block_factory.chain.find { |block| block.index == target_index }
               fail "could not find block: #{target_index} in chain"
             end
             result.should eq(expected_block.to_json)
@@ -216,5 +216,4 @@ describe BlockchainInfo do
       end
     end
   end
-
 end

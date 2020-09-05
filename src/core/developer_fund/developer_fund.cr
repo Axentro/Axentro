@@ -35,7 +35,7 @@ module ::Axentro::Core
     end
 
     def get_total_amount : Int64
-      @config.addresses.reduce(0_i64){|total, item| total + scale_i64(item["amount"])}
+      @config.addresses.reduce(0_i64) { |total, item| total + scale_i64(item["amount"]) }
     end
 
     def self.transactions(config : DeveloperFundConfig)
@@ -77,5 +77,6 @@ module ::Axentro::Core
     def initialize(@addresses : Array(Hash(String, String)))
     end
   end
+
   include TransactionModels
 end

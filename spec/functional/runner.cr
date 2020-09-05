@@ -16,4 +16,4 @@ ENV["SPINACH_LOCATION"] = "/spec/functional"
 
 require "./transactions"
 
-describe "runner" do ; end
+describe "runner" do; end

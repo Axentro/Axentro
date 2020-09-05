@@ -25,7 +25,7 @@ module ::Axentro::Core::Controllers
     def wallet_info(socket : HTTP::WebSocket)
       socket.on_close do |_|
         @sockets.delete(socket)
-        @socket_address.each do |a,s|
+        @socket_address.each do |a, s|
           if s == socket
             @socket_address.delete(a)
             break
@@ -52,8 +52,8 @@ module ::Axentro::Core::Controllers
     def update_wallet_information(transactions)
       debug "broadcast to the subscribers (#{@sockets.size})"
 
-      senders = transactions.flat_map{|t| t.senders.map(&.[:address])}
-      recipients = transactions.flat_map{|t| t.recipients.map(&.[:address])}
+      senders = transactions.flat_map { |t| t.senders.map(&.[:address]) }
+      recipients = transactions.flat_map { |t| t.recipients.map(&.[:address]) }
       addresses = (senders + recipients).uniq
 
       addresses.each do |address|

@@ -58,5 +58,4 @@ describe Address do
       end
     end
   end
-
 end

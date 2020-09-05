@@ -30,8 +30,8 @@ module ::Axentro::Interface
       @axe_action : AxeAction,
       @parents : Array(AxeAction)
     )
-    STDOUT.sync = true
-    STDERR.sync = true
+      STDOUT.sync = true
+      STDERR.sync = true
     end
 
     def puts_help(message = "showing help message.", exit_code = -1)
@@ -192,7 +192,6 @@ module ::Axentro::Interface
                                     message : String,
                                     token : String,
                                     kind : TransactionKind) : Core::Transaction
-
       payload = {
         call:       "create_unsigned_transaction",
         action:     action,
@@ -200,7 +199,7 @@ module ::Axentro::Interface
         recipients: recipients,
         message:    message,
         token:      token,
-        kind:       kind
+        kind:       kind,
       }.to_json
 
       body = rpc(node, payload)

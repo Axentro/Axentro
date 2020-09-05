@@ -30,7 +30,7 @@ class Transactions < SpinachTestCase
     developer_fund = DeveloperFunds.with_funds([
       {"address" => wallet_a.address, "amount" => wallet_a_amount},
       {"address" => wallet_b.address, "amount" => wallet_b_amount},
-      ])
+    ])
 
     with_factory(developer_fund) do |block_factory, transaction_factory|
       transaction = send_token_transaction(transaction_factory, "AXE", amount, fee_amount, wallet_a, wallet_b, block_kind)
@@ -60,11 +60,10 @@ class Transactions < SpinachTestCase
     wallet_a = Wallets.create
     wallet_a_amount = Quantity.as_fund_amount("wallet_balance_a", @variables)
     developer_fund = DeveloperFunds.with_funds([
-      {"address" => wallet_a.address, "amount" => wallet_a_amount}
-      ])
+      {"address" => wallet_a.address, "amount" => wallet_a_amount},
+    ])
 
     with_factory(developer_fund) do |block_factory, transaction_factory|
-
       transaction = create_custom_token_transaction(transaction_factory, token_name, token_amount, fee_amount, wallet_a, block_kind)
 
       if block_kind == "fast"
@@ -97,10 +96,9 @@ class Transactions < SpinachTestCase
     developer_fund = DeveloperFunds.with_funds([
       {"address" => wallet_a.address, "amount" => wallet_a_amount},
       {"address" => wallet_b.address, "amount" => wallet_b_amount},
-      ])
+    ])
 
     with_factory(developer_fund) do |block_factory, transaction_factory|
-
       wallet_balance_a_kings = Quantity.as_fund_amount("wallet_balance_a_kings", @variables)
       kings_create_transaction = create_custom_token_transaction(transaction_factory, token_name, wallet_balance_a_kings, "0.1", wallet_a, block_kind)
       kings_send_transaction = send_token_transaction(transaction_factory, token_name, amount, fee_amount, wallet_a, wallet_b, block_kind)
@@ -110,7 +108,6 @@ class Transactions < SpinachTestCase
       else
         block_factory.add_slow_block([kings_create_transaction]).add_slow_block([kings_send_transaction])
       end
-
 
       wallet_a_final_balance = Wallets.balance_for(wallet_a, block_factory)
       wallet_b_final_balance = Wallets.balance_for(wallet_b, block_factory)
@@ -122,8 +119,6 @@ class Transactions < SpinachTestCase
 
       {"wallet_balance_a" => wallet_a_final_balance, "wallet_balance_b" => wallet_b_final_balance, "wallet_balance_a_kings" => wallet_balance_a_kings, "wallet_balance_b_kings" => wallet_balance_b_kings, "rejections" => rejected}
     end
-
-
   end
 
   private def send_token_transaction(transaction_factory, token_name, amount, fee_amount, wallet_a, wallet_b, block_kind = "slow")

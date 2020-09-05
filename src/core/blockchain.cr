@@ -674,7 +674,7 @@ module ::Axentro::Core
 
     def coinbase_slow_amount(index : Int64, transactions) : Int64
       return total_fees(transactions) if index >= @block_reward_calculator.max_blocks
-      @block_reward_calculator.reward_for_block(index) #+ total_fees(transactions)
+      @block_reward_calculator.reward_for_block(index) # + total_fees(transactions)
     end
 
     def total_fees(transactions) : Int64

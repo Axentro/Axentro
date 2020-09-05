@@ -67,8 +67,8 @@ module ::Axentro::Core::NodeComponents
         connect_port,
         M_TYPE_CHORD_JOIN,
         {
-          version: Core::CORE_VERSION,
-          context: context,
+          version:         Core::CORE_VERSION,
+          context:         context,
           validation_hash: @validation_manager.calculated_validation_hash,
         })
     rescue e : Exception
@@ -96,8 +96,8 @@ module ::Axentro::Core::NodeComponents
         socket,
         M_TYPE_CHORD_JOIN_PRIVATE,
         {
-          version: Core::CORE_VERSION,
-          context: context,
+          version:         Core::CORE_VERSION,
+          context:         context,
           validation_hash: @validation_manager.calculated_validation_hash,
         }
       )
@@ -118,15 +118,15 @@ module ::Axentro::Core::NodeComponents
       debug "#{_context[:host]}:#{_context[:port]} try to join Axentro"
 
       if _context[:type] != @network_type
-        send_once( socket, M_TYPE_CHORD_JOIN_REJECTED, { reason: "network type mismatch. " +
-                    "your network: #{_context[:type]}, our network: #{@network_type}", })
+        send_once(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "network type mismatch. " +
+                                                               "your network: #{_context[:type]}, our network: #{@network_type}"})
         return
       end
 
       if @validation_manager.node_passed_validation?(validation_hash)
         search_successor(node, _context)
       else
-        send_once( socket, M_TYPE_CHORD_JOIN_REJECTED, { reason: "Node has not passed database validation." })
+        send_once(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Node has not passed database validation."})
       end
     end
 
@@ -139,13 +139,13 @@ module ::Axentro::Core::NodeComponents
       debug "private node trying to join Axentro"
 
       if @private_nodes.size >= @max_private_nodes
-        send( socket, M_TYPE_CHORD_JOIN_REJECTED, { reason: "The max private node connections of #{@max_private_nodes} for this node has been reached" })
+        send(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "The max private node connections of #{@max_private_nodes} for this node has been reached"})
         return
       end
 
       if _context[:type] != @network_type
-        send( socket, M_TYPE_CHORD_JOIN_REJECTED, { reason: "network type mismatch. " +
-                    "your network: #{_context[:type]}, our network: #{@network_type}", })
+        send(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "network type mismatch. " +
+                                                          "your network: #{_context[:type]}, our network: #{@network_type}"})
         return
       end
 
@@ -155,9 +155,9 @@ module ::Axentro::Core::NodeComponents
           socket:  socket,
           context: _context,
         }
-        send( socket, M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED, { context: context, })
+        send(socket, M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED, {context: context})
       else
-        send( socket, M_TYPE_CHORD_JOIN_REJECTED, { reason: "Node has not passed database validation." })
+        send(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Node has not passed database validation."})
       end
     end
 

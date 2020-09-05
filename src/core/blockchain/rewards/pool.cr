@@ -69,7 +69,7 @@ module ::Axentro::Core
     end
 
     def delete_embedded
-      @pool.reject! {|mn| embedded.includes?(mn)}
+      @pool.reject! { |mn| embedded.includes?(mn) }
     end
 
     def self.replace(miner_nonces : MinerNonces)
@@ -117,7 +117,7 @@ module ::Axentro::Core
     end
 
     def find_by_mid(mid : String) : MinerNonces
-      @pool.select {|mn| mn.mid == mid}
+      @pool.select { |mn| mn.mid == mid }
     end
 
     def self.find_by_mid(mid : String) : MinerNonces

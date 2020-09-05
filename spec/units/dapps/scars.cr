@@ -34,7 +34,7 @@ describe Scars do
         domains = ["domain1.sc", "domain2.sc"]
         chain = block_factory.add_slow_blocks(10).add_slow_block(
           [transaction_factory.make_buy_domain_from_platform(domains[0], 0_i64),
-          transaction_factory.make_buy_domain_from_platform(domains[1], 0_i64)]).add_slow_blocks(10).chain
+           transaction_factory.make_buy_domain_from_platform(domains[1], 0_i64)]).add_slow_blocks(10).chain
         scars = Scars.new(block_factory.blockchain)
         scars.record(chain)
 

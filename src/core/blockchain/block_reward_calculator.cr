@@ -29,6 +29,7 @@ module ::Axentro::Core
     def self.init
       BlockRewardCalculator.new(BigDecimal.new(12), BigDecimal.new(46_000_000), 8_000_000_i64)
     end
+
     include Logger
   end
 end

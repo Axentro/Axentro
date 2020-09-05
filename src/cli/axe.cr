@@ -52,7 +52,7 @@ module ::Axentro::Interface::Axe
         {
           name: I18n.translate("axe.cli.client.title"),
           desc: I18n.translate("axe.cli.client.desc"),
-        }
+        },
       ]
     end
 

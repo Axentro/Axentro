@@ -30,7 +30,7 @@ module ::Axentro::Core::NodeComponents
       per_page = per_page > 100 ? 100 : per_page
       [query_params["page"]?.try &.to_i || page,
        query_params["per_page"]?.try &.to_i || per_page,
-       query_params["direction"]?.try{|d| d == "up" ? 0 : 1 } || direction.value
+       query_params["direction"]?.try { |d| d == "up" ? 0 : 1 } || direction.value,
       ]
     end
   end

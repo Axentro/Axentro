@@ -178,7 +178,7 @@ module ::Axentro::Interface::Axe
           public_key: wallets[0].public_key,
           amount:     amount,
           fee:        fee,
-          signature:     "0"
+          signature:  "0",
         }
       )
 

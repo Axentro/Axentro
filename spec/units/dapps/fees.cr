@@ -73,5 +73,4 @@ describe Fees do
       end
     end
   end
-
 end

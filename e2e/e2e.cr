@@ -76,7 +76,7 @@ class AxentroE2E
         @keep_logs = true
         ENV["SC_LOG"] = "debug"
         ENV.delete("SC_SET_DIFFICULTY")
-        #ENV.delete("AXE_TESTING")
+        # ENV.delete("AXE_TESTING")
       end
 
       parser.on("--no-transactions", "don't send any transactions during run") do

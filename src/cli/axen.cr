@@ -34,7 +34,7 @@ module ::Axentro::Interface::Axen
         Options::DEVELOPER_FUND,
         Options::SECURITY_LEVEL_PERCENTAGE,
         Options::MAX_MINERS,
-        Options::MAX_PRIVATE_NODES
+        Options::MAX_PRIVATE_NODES,
       ])
     end
 

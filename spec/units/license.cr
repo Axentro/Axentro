@@ -24,5 +24,4 @@ describe "License" do
       end
     end
   end
-
 end

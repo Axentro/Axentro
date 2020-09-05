@@ -28,7 +28,7 @@ module ::Units::Utils::TransactionHelper
      public_key: wallet.public_key,
      amount:     amount,
      fee:        fee,
-     signature: "0"
+     signature:  "0",
     }
   end
 
@@ -37,7 +37,7 @@ module ::Units::Utils::TransactionHelper
      public_key: sender_public_key,
      amount:     amount,
      fee:        fee,
-     signature: "0"
+     signature:  "0",
     }
   end
 
@@ -46,7 +46,7 @@ module ::Units::Utils::TransactionHelper
      public_key: wallet.public_key,
      amount:     amount,
      fee:        fee,
-     signature: "0"
+     signature:  "0",
     }
   end
 
@@ -60,7 +60,7 @@ module ::Units::Utils::TransactionHelper
      public_key: wallet.public_key,
      amount:     amount,
      fee:        fee,
-     signature: "0"
+     signature:  "0",
     }
   end
 

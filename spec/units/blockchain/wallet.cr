@@ -122,7 +122,6 @@ describe Wallet do
       end
     end
   end
-
 end
 
 def create_unknown_network_address

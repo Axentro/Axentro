@@ -130,9 +130,9 @@ module ::Axentro::Core::NodeComponents
           debug "miner #{miner_name} found nonce at timestamp #{mined_timestamp}.. (nonces: #{nonces_size}) mined with difficulty #{mined_difficulty} "
 
           # add nonce to pool - maybe batch instead of sending one nonce at a time?
-           miner_nonce = miner_nonce.with_node_id(node.get_node_id).with_mid(miner[:mid])
-           @blockchain.add_miner_nonce(miner_nonce)
-           node.send_miner_nonce(miner_nonce)
+          miner_nonce = miner_nonce.with_node_id(node.get_node_id).with_mid(miner[:mid])
+          @blockchain.add_miner_nonce(miner_nonce)
+          node.send_miner_nonce(miner_nonce)
 
           debug "found nonce of #{block.nonce} that doesn't satisfy block difficulty, checking if it is the best so far"
           current_miner_difficulty = block_difficulty_to_miner_difficulty(@blockchain.mining_block_difficulty)
