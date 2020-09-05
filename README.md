@@ -10,6 +10,8 @@
 <a href="https://twitter.com/sushichainhq"><img src="https://img.shields.io/twitter/follow/sushichainhq.svg?label=Follow&style=social"/></a>
 </p>
 
+<h1>We are currently migrating to a new name: Axentro - so many things will probably be broken while we do this. It should be complete and back up again before end of September 2020</h1>
+
 Axentro is an original proof of work blockchain platform that empowers developers to build decentralised apps quickly and cheaply. It features the following:
 
 * CPU mining using the award winning Argon2d hashing algorithm
