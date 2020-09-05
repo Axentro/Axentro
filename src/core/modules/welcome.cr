@@ -27,14 +27,14 @@ LOGO
   def welcome_message : String
     <<-MSG
 
-Welcome to
+  Welcome to
 
-#{logo}
+  #{logo}
 
-Core version: #{light_green(CORE_VERSION)}
+  Core version: #{light_green(CORE_VERSION)}
 
 
-MSG
+  MSG
   end
 
   include Common::Color

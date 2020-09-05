@@ -140,12 +140,12 @@ module ::Axentro::Core::DApps::BuildIn
     def self.valid_domain?(domain_name : String) : Bool
       unless domain_name =~ /^[a-zA-Z0-9]{1,20}\.(#{SUFFIX.join("|")})$/
         domain_rule = <<-RULE
-Your domain '#{domain_name}' is not valid
+    Your domain '#{domain_name}' is not valid
 
-1. domain name can only contain only alphanumerics
-2. domain name must end with one of these suffixes: #{SUFFIX}
-3. domain name length must be between 1 and 20 characters (excluding suffix)
-RULE
+    1. domain name can only contain only alphanumerics
+    2. domain name must end with one of these suffixes: #{SUFFIX}
+    3. domain name length must be between 1 and 20 characters (excluding suffix)
+    RULE
         raise domain_rule
       end
 
@@ -271,7 +271,6 @@ RULE
     end
 
     def scars_lookup_impl(address : String)
-
       domains = lookup_for(address)
       domain_results = Array(DomainResult).new
 
