@@ -1,26 +1,26 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Interface::Sushi
+module ::Axentro::Interface::Axe
   class Token < CLI
     def sub_actions
       [
         {
-          name: I18n.translate("sushi.cli.token.create.title"),
-          desc: I18n.translate("sushi.cli.token.create.desc"),
+          name: I18n.translate("axe.cli.token.create.title"),
+          desc: I18n.translate("axe.cli.token.create.desc"),
         },
         {
-          name: I18n.translate("sushi.cli.token.list.title"),
-          desc: I18n.translate("sushi.cli.token.list.desc"),
+          name: I18n.translate("axe.cli.token.list.title"),
+          desc: I18n.translate("axe.cli.token.list.desc"),
         },
       ]
     end
@@ -41,9 +41,9 @@ module ::Sushi::Interface::Sushi
 
     def run_impl(action_name)
       case action_name
-      when I18n.translate("sushi.cli.token.create.title")
+      when I18n.translate("axe.cli.token.create.title")
         return create
-      when I18n.translate("sushi.cli.token.list.title")
+      when I18n.translate("axe.cli.token.list.title")
         return list
       end
 
@@ -94,7 +94,7 @@ module ::Sushi::Interface::Sushi
       if G.op.__json
         puts body
       else
-        puts_success "show a list of every token in SushiChain"
+        puts_success "show a list of every token in Axentro"
 
         json.as_a.each do |token|
           puts_info "- #{token}"

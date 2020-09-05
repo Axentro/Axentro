@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -13,8 +13,8 @@
 require "./../../spec_helper"
 
 include Units::Utils
-include Sushi::Core
-include Sushi::Core::TransactionModels
+include Axentro::Core
+include Axentro::Core::TransactionModels
 include Hashes
 
 describe Transaction do
@@ -227,7 +227,7 @@ describe Transaction do
       end
     end
 
-    it "should raise token error if not set to SUSHI" do
+    it "should raise token error if not set to AXE" do
       with_factory do |block_factory, transaction_factory|
         chain = block_factory.add_slow_block([transaction_factory.make_send(2000_i64)]).chain
         transactions = chain.last.transactions
@@ -246,7 +246,7 @@ describe Transaction do
         )
 
         transaction.valid_common?.should be_true
-        expect_raises(Exception, "token has to be SUSHI for coinbase transaction") do
+        expect_raises(Exception, "token has to be AXE for coinbase transaction") do
           transaction.valid_as_coinbase?(block_factory.blockchain, 1, transactions)
         end
       end

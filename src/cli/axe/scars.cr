@@ -1,42 +1,42 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Interface::Sushi
+module ::Axentro::Interface::Axe
   class Scars < CLI
     def sub_actions
       [
         {
-          name: I18n.translate("sushi.cli.scars.buy.title"),
-          desc: I18n.translate("sushi.cli.scars.buy.desc"),
+          name: I18n.translate("axe.cli.scars.buy.title"),
+          desc: I18n.translate("axe.cli.scars.buy.desc"),
         },
         {
-          name: I18n.translate("sushi.cli.scars.sell.title"),
-          desc: I18n.translate("sushi.cli.scars.sell.desc"),
+          name: I18n.translate("axe.cli.scars.sell.title"),
+          desc: I18n.translate("axe.cli.scars.sell.desc"),
         },
         {
-          name: I18n.translate("sushi.cli.scars.cancel.title"),
-          desc: I18n.translate("sushi.cli.scars.cancel.desc"),
+          name: I18n.translate("axe.cli.scars.cancel.title"),
+          desc: I18n.translate("axe.cli.scars.cancel.desc"),
         },
         {
-          name: I18n.translate("sushi.cli.scars.resolve.title"),
-          desc: I18n.translate("sushi.cli.scars.resolve.desc"),
+          name: I18n.translate("axe.cli.scars.resolve.title"),
+          desc: I18n.translate("axe.cli.scars.resolve.desc"),
         },
         {
-          name: I18n.translate("sushi.cli.scars.sales.title"),
-          desc: I18n.translate("sushi.cli.scars.sales.desc"),
+          name: I18n.translate("axe.cli.scars.sales.title"),
+          desc: I18n.translate("axe.cli.scars.sales.desc"),
         },
         {
-          name: I18n.translate("sushi.cli.scars.lookup.title"),
-          desc: I18n.translate("sushi.cli.scars.lookup.desc"),
+          name: I18n.translate("axe.cli.scars.lookup.title"),
+          desc: I18n.translate("axe.cli.scars.lookup.desc"),
         },
       ]
     end
@@ -57,17 +57,17 @@ module ::Sushi::Interface::Sushi
 
     def run_impl(action_name)
       case action_name
-      when I18n.translate("sushi.cli.scars.buy.title")
+      when I18n.translate("axe.cli.scars.buy.title")
         return buy
-      when I18n.translate("sushi.cli.scars.cancel.title")
+      when I18n.translate("axe.cli.scars.cancel.title")
         return cancel
-      when I18n.translate("sushi.cli.scars.sell.title")
+      when I18n.translate("axe.cli.scars.sell.title")
         return sell
-      when I18n.translate("sushi.cli.scars.resolve.title")
+      when I18n.translate("axe.cli.scars.resolve.title")
         return resolve
-      when I18n.translate("sushi.cli.scars.sales.title")
+      when I18n.translate("axe.cli.scars.sales.title")
         return sales
-      when I18n.translate("sushi.cli.scars.lookup.title")
+      when I18n.translate("axe.cli.scars.lookup.title")
         return lookup
       end
 

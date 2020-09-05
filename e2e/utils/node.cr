@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -11,12 +11,12 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::E2E::Utils::Node
-  def sushid(args) : String
+  def axen(args) : String
     _args = args
       .map { |arg| arg.to_s }
       .join(" ")
 
-    bin = File.expand_path("../../../bin/sushid", __FILE__)
+    bin = File.expand_path("../../../bin/axen", __FILE__)
 
     "#{bin} #{_args}"
   end
@@ -36,7 +36,7 @@ module ::E2E::Utils::Node
       args << "http://127.0.0.1:#{port}"
     end
 
-    bin = sushid(args)
+    bin = axen(args)
 
     spawn do
       system("rm -rf #{log_path(num, "node")} && #{Envs.setup_env} && #{bin} &> #{log_path(num, "node")}")

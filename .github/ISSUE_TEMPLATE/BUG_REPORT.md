@@ -5,7 +5,7 @@ about: If something isn't working as expected
 ---
 
 ## Checklist
-- [ ] You've tried with the latest version of SushiChain
+- [ ] You've tried with the latest version of Axentro
 - [ ] You've confirmed this issue is not a duplicate
 
 ## Description
@@ -15,7 +15,7 @@ about: If something isn't working as expected
 <!-- Running environment -->
 - Using docker: (yes or no)
 - Crystal version: x.x.x
-- Which environment? (http://testnet.sushichain.io:3000, http://localhost:300 or so on)
+- Which environment? (http://testnet.axentro.io:3000, http://localhost:3000 or so on)
 
 ## Command Lines and results
 <!-- Paste specific command lines and their results here -->

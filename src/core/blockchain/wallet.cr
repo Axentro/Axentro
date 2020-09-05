@@ -1,16 +1,16 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Core
+module ::Axentro::Core
   class WalletException < Exception
   end
 
@@ -25,7 +25,7 @@ module ::Sushi::Core
     def self.from_path(wallet_path : String) : EncryptedWallet
       raise "failed to find encrypted wallet at #{wallet_path}" unless File.exists?(wallet_path)
       encrypted_wallet = self.from_json(File.read(wallet_path))
-      raise "this wallet was not encrypted with the sushi binary" unless encrypted_wallet.source == "sushi"
+      raise "this wallet was not encrypted with the Axentro binary" unless encrypted_wallet.source == "axentro"
       encrypted_wallet
     rescue e : Exception
       raise "#{e.message}"
@@ -92,7 +92,7 @@ module ::Sushi::Core
     def self.encrypt(password : String, wallet : Wallet)
       encrypted = BlowFish.encrypt(password, wallet.to_json)
       {
-        source:     "sushi",
+        source:     "axentro",
         ciphertext: encrypted[:data],
         address:    wallet.address,
         salt:       encrypted[:salt],

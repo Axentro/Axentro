@@ -1,16 +1,16 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Core
+module ::Axentro::Core
   class Client < HandleSocket
     @socket : HTTP::WebSocket?
 
@@ -44,7 +44,7 @@ module ::Sushi::Core
       end
 
       puts ""
-      puts light_green("  starting client for sushi...")
+      puts light_green("  starting client for axentro...")
 
       send(socket, M_TYPE_CLIENT_HANDSHAKE, {public_key: @wallet.public_key})
 

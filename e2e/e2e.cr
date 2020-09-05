@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -15,9 +15,9 @@ require "../src/core"
 require "./runner"
 require "option_parser"
 
-include ::Sushi::Common::Color
+include ::Axentro::Common::Color
 
-class SushiChainE2E
+class AxentroE2E
   @mode : String = "all_public"
   @num_nodes : Int32 = 3
   @num_miners : Int32 = 3
@@ -28,7 +28,7 @@ class SushiChainE2E
   @no_transactions : Bool = false
 
   def initialize
-    ENV["SC_TESTING"] = "true"
+    ENV["AXE_TESTING"] = "true"
   end
 
   def parse_option!
@@ -76,7 +76,7 @@ class SushiChainE2E
         @keep_logs = true
         ENV["SC_LOG"] = "debug"
         ENV.delete("SC_SET_DIFFICULTY")
-        #ENV.delete("SC_TESTING")
+        #ENV.delete("AXE_TESTING")
       end
 
       parser.on("--no-transactions", "don't send any transactions during run") do
@@ -114,6 +114,6 @@ class SushiChainE2E
   end
 end
 
-e2e = SushiChainE2E.new
+e2e = AxentroE2E.new
 e2e.parse_option!
 e2e.run!

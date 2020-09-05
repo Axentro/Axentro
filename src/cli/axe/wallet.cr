@@ -1,38 +1,38 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Interface::Sushi
+module ::Axentro::Interface::Axe
   class Wallet < CLI
     def sub_actions
       [
         {
-          name: I18n.translate("sushi.cli.wallet.create.title"),
-          desc: I18n.translate("sushi.cli.wallet.create.desc"),
+          name: I18n.translate("axe.cli.wallet.create.title"),
+          desc: I18n.translate("axe.cli.wallet.create.desc"),
         },
         {
-          name: I18n.translate("sushi.cli.wallet.verify.title"),
-          desc: I18n.translate("sushi.cli.wallet.verify.desc"),
+          name: I18n.translate("axe.cli.wallet.verify.title"),
+          desc: I18n.translate("axe.cli.wallet.verify.desc"),
         },
         {
-          name: I18n.translate("sushi.cli.wallet.encrypt.title"),
-          desc: I18n.translate("sushi.cli.wallet.encrypt.desc"),
+          name: I18n.translate("axe.cli.wallet.encrypt.title"),
+          desc: I18n.translate("axe.cli.wallet.encrypt.desc"),
         },
         {
-          name: I18n.translate("sushi.cli.wallet.decrypt.title"),
-          desc: I18n.translate("sushi.cli.wallet.decrypt.desc"),
+          name: I18n.translate("axe.cli.wallet.decrypt.title"),
+          desc: I18n.translate("axe.cli.wallet.decrypt.desc"),
         },
         {
-          name: I18n.translate("sushi.cli.wallet.amount.title"),
-          desc: I18n.translate("sushi.cli.wallet.amount.desc"),
+          name: I18n.translate("axe.cli.wallet.amount.title"),
+          desc: I18n.translate("axe.cli.wallet.amount.desc"),
         },
       ]
     end
@@ -56,15 +56,15 @@ module ::Sushi::Interface::Sushi
 
     def run_impl(action_name)
       case action_name
-      when I18n.translate("sushi.cli.wallet.create.title")
+      when I18n.translate("axe.cli.wallet.create.title")
         return create
-      when I18n.translate("sushi.cli.wallet.verify.title")
+      when I18n.translate("axe.cli.wallet.verify.title")
         return verify
-      when I18n.translate("sushi.cli.wallet.encrypt.title")
+      when I18n.translate("axe.cli.wallet.encrypt.title")
         return encrypt
-      when I18n.translate("sushi.cli.wallet.decrypt.title")
+      when I18n.translate("axe.cli.wallet.decrypt.title")
         return decrypt
-      when I18n.translate("sushi.cli.wallet.amount.title")
+      when I18n.translate("axe.cli.wallet.amount.title")
         return amount
       end
 
@@ -102,11 +102,11 @@ module ::Sushi::Interface::Sushi
       if G.op.__json
         puts wallet.to_json
       else
-        puts_success(I18n.translate("sushi.cli.wallet.create.messages.creation", {wallet_path: wallet_path}))
-        puts_success(I18n.translate("sushi.cli.wallet.create.messages.backup"))
+        puts_success(I18n.translate("axe.cli.wallet.create.messages.creation", {wallet_path: wallet_path}))
+        puts_success(I18n.translate("axe.cli.wallet.create.messages.backup"))
       end
       if seed
-        puts_success(I18n.translate("sushi.cli.wallet.create.messages.seed", {seed: seed.not_nil!}))
+        puts_success(I18n.translate("axe.cli.wallet.create.messages.seed", {seed: seed.not_nil!}))
       end
     end
 
@@ -115,11 +115,11 @@ module ::Sushi::Interface::Sushi
 
       wallet = get_wallet(wallet_path, G.op.__wallet_password)
 
-      puts_success I18n.translate("sushi.cli.wallet.verify.messages.verify", {wallet_path: wallet_path}) if wallet.verify!
-      puts_success I18n.translate("sushi.cli.wallet.verify.messages.address", {wallet_address: wallet.address})
+      puts_success I18n.translate("axe.cli.wallet.verify.messages.verify", {wallet_path: wallet_path}) if wallet.verify!
+      puts_success I18n.translate("axe.cli.wallet.verify.messages.address", {wallet_address: wallet.address})
 
       network = Core::Wallet.address_network_type(wallet.address)
-      puts_success I18n.translate("sushi.cli.wallet.verify.messages.network", {network_prefix: network[:prefix], network_name: network[:name]})
+      puts_success I18n.translate("axe.cli.wallet.verify.messages.network", {network_prefix: network[:prefix], network_name: network[:name]})
     end
 
     def encrypt
@@ -136,8 +136,8 @@ module ::Sushi::Interface::Sushi
       if G.op.__json
         puts encrypted_wallet_json
       else
-        puts_success(I18n.translate("sushi.cli.wallet.encrypt.messages.encrypt", {encrypted_wallet_path: encrypted_wallet_path}))
-        puts_success(I18n.translate("sushi.cli.wallet.encrypt.messages.password"))
+        puts_success(I18n.translate("axe.cli.wallet.encrypt.messages.encrypt", {encrypted_wallet_path: encrypted_wallet_path}))
+        puts_success(I18n.translate("axe.cli.wallet.encrypt.messages.password"))
       end
     end
 
@@ -155,7 +155,7 @@ module ::Sushi::Interface::Sushi
       if G.op.__json
         puts decrypted_wallet_json
       else
-        puts_success(I18n.translate("sushi.cli.wallet.decrypt.messages.decrypt", {decrypted_wallet_path: decrypted_wallet_path}))
+        puts_success(I18n.translate("axe.cli.wallet.decrypt.messages.decrypt", {decrypted_wallet_path: decrypted_wallet_path}))
       end
     end
 
@@ -195,8 +195,8 @@ module ::Sushi::Interface::Sushi
         puts body
       else
         confirmation = json["confirmation"]
-        puts_success(I18n.translate("sushi.cli.wallet.amount.messages.amount", {address: address}))
-        puts_success(I18n.translate("sushi.cli.wallet.amount.messages.confirmation", {confirmation: confirmation}))
+        puts_success(I18n.translate("axe.cli.wallet.amount.messages.amount", {address: address}))
+        puts_success(I18n.translate("axe.cli.wallet.amount.messages.confirmation", {confirmation: confirmation}))
 
         puts_info("  + %20s - %20s +" % ["-" * 20, "-" * 20])
         puts_info("  | %20s | %20s |" % ["token", "amount"])

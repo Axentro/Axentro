@@ -1,16 +1,16 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Core::DApps::BuildIn
+module ::Axentro::Core::DApps::BuildIn
   struct TokenQuantity
     getter token : String
     getter amount : Int64
@@ -19,7 +19,7 @@ module ::Sushi::Core::DApps::BuildIn
   end
 
   class UTXO < DApp
-    DEFAULT = "SUSHI"
+    DEFAULT = "AXE"
 
     def setup
     end
@@ -31,7 +31,7 @@ module ::Sushi::Core::DApps::BuildIn
     def get_pending(address : String, transactions : Array(Transaction), token : String) : Int64
       historic = get_for(address, token)
 
-      if token == "SUSHI"
+      if token == "AXE"
         fees_sum = transactions.flat_map(&.senders).select { |s| s[:address] == address }.map(&.[:fee]).sum
         senders_sum = transactions.select { |t| t.token == token }.flat_map(&.senders).select { |s| s[:address] == address }.map(&.[:amount]).sum
         recipients_sum = transactions.select { |t| t.token == token }.flat_map(&.recipients).select { |r| r[:address] == address }.map(&.[:amount]).sum

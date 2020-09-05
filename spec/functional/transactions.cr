@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -33,7 +33,7 @@ class Transactions < SpinachTestCase
       ])
 
     with_factory(developer_fund) do |block_factory, transaction_factory|
-      transaction = send_token_transaction(transaction_factory, "SUSHI", amount, fee_amount, wallet_a, wallet_b, block_kind)
+      transaction = send_token_transaction(transaction_factory, "AXE", amount, fee_amount, wallet_a, wallet_b, block_kind)
 
       if block_kind == "fast"
         block_factory.add_slow_block.add_slow_block.add_slow_block.add_slow_block.add_fast_block([transaction])
@@ -92,8 +92,8 @@ class Transactions < SpinachTestCase
     wallet_a = Wallets.create
     wallet_b = Wallets.create
 
-    wallet_a_amount = Quantity.as_fund_amount("wallet_balance_a_sushi", @variables)
-    wallet_b_amount = Quantity.as_fund_amount("wallet_balance_b_sushi", @variables)
+    wallet_a_amount = Quantity.as_fund_amount("wallet_balance_a_axe", @variables)
+    wallet_b_amount = Quantity.as_fund_amount("wallet_balance_b_axe", @variables)
     developer_fund = DeveloperFunds.with_funds([
       {"address" => wallet_a.address, "amount" => wallet_a_amount},
       {"address" => wallet_b.address, "amount" => wallet_b_amount},

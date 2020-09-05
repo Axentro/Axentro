@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -13,10 +13,10 @@
 require "../cli"
 require "../core/developer_fund/*"
 
-module ::Sushi::Interface::SushiD
+module ::Axentro::Interface::Axen
   class Root < CLI
     def sub_actions
-      [] of SushiAction
+      [] of AxeAction
     end
 
     def option_parser
@@ -89,9 +89,9 @@ module ::Sushi::Interface::SushiD
   end
 end
 
-include ::Sushi::Interface
-include Sushi::Core::Keys
+include ::Axentro::Interface
+include Axentro::Core::Keys
 
-::Sushi::Interface::SushiD::Root.new(
-  {name: "sushid", desc: "sushi's node"}, [] of SushiAction
+::Axentro::Interface::Axen::Root.new(
+  {name: "axen", desc: "Axentro node"}, [] of AxeAction
 ).run

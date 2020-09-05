@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -16,7 +16,7 @@ require "./blockchain/chain/*"
 require "./blockchain/rewards/*"
 require "./dapps"
 
-module ::Sushi::Core
+module ::Axentro::Core
   class Blockchain
     TOKEN_DEFAULT = Core::DApps::BuildIn::UTXO::DEFAULT
 
@@ -56,7 +56,7 @@ module ::Sushi::Core
       @security_level_percentage = security_level_percentage || SECURITY_LEVEL_PERCENTAGE
       info "Security Level Percentage used for blockchain validation is #{@security_level_percentage}"
 
-      hours_to_hold = ENV.has_key?("SC_TESTING") ? 2 : 48
+      hours_to_hold = ENV.has_key?("AXE_TESTING") ? 2 : 48
       @blocks_to_hold = (SLOW_BLOCKS_PER_HOUR * hours_to_hold).to_i64
     end
 

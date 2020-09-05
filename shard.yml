@@ -1,19 +1,19 @@
-name: SushiChain
+name: Axentro
 version: 0.1.0
 
 authors:
-  - kingsleyh <kingsley.hendrickse@gmail.com>
+  - kingsleyh <kingsley@axentro.io>
 
 scripts:
   postinstall: cd ext && make
 
 targets:
-  sushi:
-    main: src/cli/sushi.cr
-  sushid:
-    main: src/cli/sushid.cr
-  sushim:
-    main: src/cli/sushim.cr
+  axe:
+    main: src/cli/axe.cr
+  axen:
+    main: src/cli/axen.cr
+  axem:
+    main: src/cli/axem.cr
   e2e:
     main: e2e/e2e.cr
 
@@ -28,11 +28,11 @@ dependencies:
   humanhash:
     github: kingsleyh/humanhash
   crystal-argon2:
-    github: sushichain/crystal-argon2
+    github: axentro/crystal-argon2
   monocypher:
-    github: sushichain/monocypher.cr
+    github: axentro/monocypher.cr
   ed25519-hd:
-    github: sushichain/ed25519-hd  
+    github: axentro/ed25519-hd  
   i18n:
     github: TechMagister/i18n.cr
   baked_file_system:
@@ -41,7 +41,7 @@ dependencies:
 
 development_dependencies:
   spinach:
-    github: sushichain/spinach
+    github: axentro/spinach
   ameba:
     github: veelenga/ameba
 

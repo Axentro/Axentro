@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -11,12 +11,12 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::E2E::Utils::API
-  def sushi(args) : String
+  def axe(args) : String
     _args = args
       .map { |arg| arg.to_s }
       .join(" ")
 
-    bin = File.expand_path("../../../bin/sushi", __FILE__)
+    bin = File.expand_path("../../../bin/axe", __FILE__)
 
     "#{bin} #{_args}"
   end
@@ -24,7 +24,7 @@ module ::E2E::Utils::API
   def blockchain_size(port : Int32) : Int32
     args = ["blockchain", "size", "-n", "http://127.0.0.1:#{port}", "--json"]
 
-    res = `#{sushi(args)}`
+    res = `#{axe(args)}`
 
     if json = parse_json(res)
       return json["totals"]["total_size"].as_i
@@ -36,7 +36,7 @@ module ::E2E::Utils::API
   def block(port : Int32, index : Int32) : JSON::Any?
     args = ["blockchain", "block", "-n", "http://127.0.0.1:#{port}", "-i", index, "--json"]
 
-    res = `#{sushi(args)}`
+    res = `#{axe(args)}`
 
     if parsed_res = parse_json(res)
       parsed_res["index"]
@@ -49,7 +49,7 @@ module ::E2E::Utils::API
   def amount(port : Int32, num : Int32) : BigDecimal
     args = ["wallet", "amount", "-w", wallet(num), "-n", "http://127.0.0.1:#{port}", "--json"]
 
-    res = `#{sushi(args)}`
+    res = `#{axe(args)}`
 
     if json = parse_json(res)
       if json["error"]?
@@ -68,12 +68,12 @@ module ::E2E::Utils::API
 
     return nil if a < BigDecimal.new("0.00010001")
 
-    recipient_address = ::Sushi::Core::Wallet.from_path(wallet(n_recipient)).address
+    recipient_address = ::Axentro::Core::Wallet.from_path(wallet(n_recipient)).address
 
     args = ["transaction", "create", "-w", wallet(n_sender), "-a", recipient_address, "-m", "0.00000001", "-n", "http://127.0.0.1:#{port}", "--message='E2E Test'", "-f", "0.0001", "--json"]
     args << "--fast-transaction" if fast_transaction
 
-    res = `#{sushi(args)}`
+    res = `#{axe(args)}`
 
     if json = parse_json(res)
       return json["id"].to_s
@@ -85,7 +85,7 @@ module ::E2E::Utils::API
   def transaction(port : Int32, transaction_id : String)
     args = ["transaction", "transaction", "-t", transaction_id, "-n", "http://127.0.0.1:#{port}", "--json"]
 
-    res = `#{sushi(args)}`
+    res = `#{axe(args)}`
     res
   end
 
@@ -99,5 +99,5 @@ module ::E2E::Utils::API
     nil
   end
 
-  include ::Sushi::Common::Denomination
+  include ::Axentro::Common::Denomination
 end

@@ -1,6 +1,6 @@
-sushi:
+axe:
   cli:
-    title:          "sushi's command line client"
+    title:          "Axentro command line client"
     wallet:
       title:        "wallet"
       desc:         "create, encrypt or decrypt your wallet (wt for short)"
@@ -20,18 +20,18 @@ sushi:
           network: "network (%{network_prefix}): %{network_name}"
       encrypt:
         title:      "encrypt"
-        desc:       "encrypt a sushi wallet"
+        desc:       "encrypt an Axentro wallet"
         messages:
           encrypt: "your wallet has been encrypted at %{encrypted_wallet_path}"
           password: "please don't forget your password - there is no way to recover an encrypted wallet."
       decrypt:
         title:      "decrypt"
-        desc:       "decrypt a sushi wallet (that was encrypted using sushi)"
+        desc:       "decrypt an Axentro wallet (that was encrypted using Axentro)"
         messages:
           decrypt: "your wallet has been decrypted at %{decrypted_wallet_path}"
       amount:
         title:      "amount"
-        desc:       "show remaining amount of Sushi tokens for specified address"
+        desc:       "show remaining amount of Axe tokens for specified address"
         messages:
           amount: "\n  showing amount of each token for %{address}."
           confirmation: "  confirmations: %{confirmation}"
@@ -95,7 +95,7 @@ sushi:
         desc: "show the specified node (connecting node by default)"
     scars:
       title:        "scars"
-      desc:         "SushiChain Address Resolution System (SCARS), buy/sell a readable domain for your address (sc for short)"
+      desc:         "Axentro Address Resolution System (SCARS), buy/sell a readable domain for your address (sc for short)"
       buy:
         title: "buy"
         desc: "buy specified domain"
@@ -125,10 +125,10 @@ sushi:
         desc: "list existing tokens"
     config:
       title:        "config"
-      desc:         "save default configuration used by sushi, sushid and sushim (cg for short)"
+      desc:         "save default configuration used by axe, axen and axem (cg for short)"
       save:
         title: "save"
-        desc: "save the specified options as default for sushi, sushid and sushim"
+        desc: "save the specified options as default for axe, axen and axem"
       show:
         title: "show"
         desc: "show current default configuration"

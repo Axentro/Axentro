@@ -19,7 +19,7 @@ e2e/logs/*.log
 
 !.gitkeep
 
-sushicoin_profile.sh
+axentro_profile.sh
 
 .vscode
 .idea

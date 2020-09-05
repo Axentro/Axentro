@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -12,7 +12,7 @@
 
 require "./node_id"
 
-module ::Sushi::Core::NodeComponents
+module ::Axentro::Core::NodeComponents
   class Chord < HandleSocket
     SUCCESSOR_LIST_SIZE = 3
 
@@ -115,7 +115,7 @@ module ::Sushi::Core::NodeComponents
       _context = _m_content.context
       validation_hash = _m_content.validation_hash
 
-      debug "#{_context[:host]}:#{_context[:port]} try to join SushiChain"
+      debug "#{_context[:host]}:#{_context[:port]} try to join Axentro"
 
       if _context[:type] != @network_type
         send_once( socket, M_TYPE_CHORD_JOIN_REJECTED, { reason: "network type mismatch. " +
@@ -136,7 +136,7 @@ module ::Sushi::Core::NodeComponents
       _context = _m_content.context
       validation_hash = _m_content.validation_hash
 
-      debug "private node trying to join SushiChain"
+      debug "private node trying to join Axentro"
 
       if @private_nodes.size >= @max_private_nodes
         send( socket, M_TYPE_CHORD_JOIN_REJECTED, { reason: "The max private node connections of #{@max_private_nodes} for this node has been reached" })

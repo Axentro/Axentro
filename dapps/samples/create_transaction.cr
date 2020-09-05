@@ -1,16 +1,16 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Core::DApps::User
+module ::Axentro::Core::DApps::User
   class CreateTransaction < UserDApp
     #
     # The target action name in transaction's field
@@ -75,7 +75,7 @@ module ::Sushi::Core::DApps::User
             "send",                                                             # action
             sender,                                                             # sender
             recipient,                                                          # recipient
-            "Thanks for sending me 0.0001 SUSHI! I'll back you 0.00005 SUSHI!", # message
+            "Thanks for sending me 0.0001 AXE! I'll back you 0.00005 AXE!", # message
             TOKEN_DEFAULT,                                                      # token
             TransactionKind::SLOW                                               # kind
           )

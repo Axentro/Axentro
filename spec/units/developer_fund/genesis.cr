@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -12,13 +12,13 @@
 
 require "./../../spec_helper"
 
-include Sushi::Core
+include Axentro::Core
 
 describe Blockchain do
   it "should create a genesis block with no transactions when no developer fund is provided" do
     node_wallet = Wallet.from_json(Wallet.create(true).to_json)
-    database = Sushi::Core::Database.in_memory
-    node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, node_wallet, database, nil, nil, 512, 512, false)
+    database = Axentro::Core::Database.in_memory
+    node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, node_wallet, database, nil, nil, 512, 512, false)
     blockchain = node.blockchain
     blockchain.setup(node)
 
@@ -29,9 +29,9 @@ describe Blockchain do
 
   it "should create a genesis block with the specified transactions when developer fund is provided" do
     node_wallet = Wallet.from_json(Wallet.create(true).to_json)
-    database = Sushi::Core::Database.in_memory
+    database = Axentro::Core::Database.in_memory
     developer_fund = DeveloperFund.validate("#{__DIR__}/../../utils/data/developer_fund.yml")
-    node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, node_wallet, database, developer_fund, nil, 512, 512, false)
+    node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, node_wallet, database, developer_fund, nil, 512, 512, false)
     blockchain = node.blockchain
     blockchain.setup(node)
 

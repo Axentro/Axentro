@@ -1,30 +1,30 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Interface::Sushi
+module ::Axentro::Interface::Axe
   class Blockchain < CLI
     def sub_actions
       [
         {
-          name: I18n.translate("sushi.cli.blockchain.size.title"),
-          desc: I18n.translate("sushi.cli.blockchain.size.desc"),
+          name: I18n.translate("axe.cli.blockchain.size.title"),
+          desc: I18n.translate("axe.cli.blockchain.size.desc"),
         },
         {
-          name: I18n.translate("sushi.cli.blockchain.all.title"),
-          desc: I18n.translate("sushi.cli.blockchain.all.desc"),
+          name: I18n.translate("axe.cli.blockchain.all.title"),
+          desc: I18n.translate("axe.cli.blockchain.all.desc"),
         },
         {
-          name: I18n.translate("sushi.cli.blockchain.block.title"),
-          desc: I18n.translate("sushi.cli.blockchain.block.desc"),
+          name: I18n.translate("axe.cli.blockchain.block.title"),
+          desc: I18n.translate("axe.cli.blockchain.block.desc"),
         },
       ]
     end
@@ -42,11 +42,11 @@ module ::Sushi::Interface::Sushi
 
     def run_impl(action_name)
       case action_name
-      when I18n.translate("sushi.cli.blockchain.size.title")
+      when I18n.translate("axe.cli.blockchain.size.title")
         return size
-      when I18n.translate("sushi.cli.blockchain.all.title")
+      when I18n.translate("axe.cli.blockchain.all.title")
         return all
-      when I18n.translate("sushi.cli.blockchain.block.title")
+      when I18n.translate("axe.cli.blockchain.block.title")
         return block
       end
 
@@ -66,11 +66,11 @@ module ::Sushi::Interface::Sushi
         puts body
       else
         json = JSON.parse(body)
-        puts_success(I18n.translate("sushi.cli.blockchain.size.messages.total_size", {size: json["totals"]["total_size"]}))
-        puts_success(I18n.translate("sushi.cli.blockchain.size.messages.total_slow", {size: json["totals"]["total_slow"]}))
-        puts_success(I18n.translate("sushi.cli.blockchain.size.messages.total_fast", {size: json["totals"]["total_fast"]}))
-        puts_success(I18n.translate("sushi.cli.blockchain.size.messages.height_slow", {size: json["block_height"]["slow"]}))
-        puts_success(I18n.translate("sushi.cli.blockchain.size.messages.height_fast", {size: json["block_height"]["fast"]}))
+        puts_success(I18n.translate("axe.cli.blockchain.size.messages.total_size", {size: json["totals"]["total_size"]}))
+        puts_success(I18n.translate("axe.cli.blockchain.size.messages.total_slow", {size: json["totals"]["total_slow"]}))
+        puts_success(I18n.translate("axe.cli.blockchain.size.messages.total_fast", {size: json["totals"]["total_fast"]}))
+        puts_success(I18n.translate("axe.cli.blockchain.size.messages.height_slow", {size: json["block_height"]["slow"]}))
+        puts_success(I18n.translate("axe.cli.blockchain.size.messages.height_fast", {size: json["block_height"]["fast"]}))
       end
     end
 
@@ -84,7 +84,7 @@ module ::Sushi::Interface::Sushi
       if G.op.__json
         puts body
       else
-        puts_success(I18n.translate("sushi.cli.blockchain.all.messages.all"))
+        puts_success(I18n.translate("axe.cli.blockchain.all.messages.all"))
         puts_info(body)
       end
     end
@@ -94,10 +94,10 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_BLOCK_INDEX_OR_TRANSACTION_ID) if G.op.__block_index.nil? && G.op.__transaction_id.nil?
 
       payload = if block_index = G.op.__block_index
-                  success_message = I18n.translate("sushi.cli.blockchain.block.messages.index", {block_index: G.op.__block_index})
+                  success_message = I18n.translate("axe.cli.blockchain.block.messages.index", {block_index: G.op.__block_index})
                   {call: "block", index: block_index, header: G.op.__header}.to_json
                 elsif transaction_id = G.op.__transaction_id
-                  success_message = I18n.translate("sushi.cli.blockchain.block.messages.transaction", {block_index: G.op.__transaction_id})
+                  success_message = I18n.translate("axe.cli.blockchain.block.messages.transaction", {block_index: G.op.__transaction_id})
                   {call: "block", transaction_id: transaction_id, header: G.op.__header}.to_json
                 else
                   puts_help(HELP_BLOCK_INDEX_OR_TRANSACTION_ID)

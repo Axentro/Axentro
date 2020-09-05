@@ -16,4 +16,10 @@ RUN ln -s /usr/local/Axentro/bin/axen /usr/local/bin/axen
 RUN ln -s /usr/local/Axentro/bin/axem /usr/local/bin/axem
 RUN ln -s /usr/local/Axentro/bin/axe  /usr/local/bin/axe
 
-EXPOSE 3000 3443
+RUN mkdir -p /usr/local/sc
+
+WORKDIR /usr/local/sc
+
+EXPOSE 3000
+
+CMD axen -w testnet-wallet-1.json --testnet -u http://testnet.axentro.io:3000 -d testnet.sqlite3 -h 209.216.230.35

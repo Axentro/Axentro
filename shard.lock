@@ -1,58 +1,58 @@
-version: 1.0
+version: 2.0
 shards:
   ameba:
-    github: veelenga/ameba
-    version: 0.12.1
+    git: https://github.com/veelenga/ameba.git
+    version: 0.13.2
 
   baked_file_system:
-    github: schovi/baked_file_system
+    git: https://github.com/schovi/baked_file_system.git
     version: 0.9.8
 
   crystal-argon2:
-    github: sushichain/crystal-argon2
+    git: https://github.com/axentro/crystal-argon2.git
     version: 0.1.1
 
   db:
-    github: crystal-lang/crystal-db
+    git: https://github.com/crystal-lang/crystal-db.git
     version: 0.9.0
 
   ed25519-hd:
-    github: sushichain/ed25519-hd
-    version: 0.1.0
+    git: https://github.com/axentro/ed25519-hd.git
+    version: 0.1.2
 
   humanhash:
-    github: kingsleyh/humanhash
+    git: https://github.com/kingsleyh/humanhash.git
     version: 0.1.2
 
   i18n:
-    github: TechMagister/i18n.cr
+    git: https://github.com/TechMagister/i18n.cr.git
     version: 0.3.1
 
   monocypher:
-    github: sushichain/monocypher.cr
-    commit: 2491de07b0e3ed73181c34ca685bdd92f1719190
+    git: https://github.com/axentro/monocypher.cr.git
+    version: 3.0.0+git.commit.2491de07b0e3ed73181c34ca685bdd92f1719190
 
   myhtml:
-    github: kostya/myhtml
-    version: 1.5.1
+    git: https://github.com/kostya/myhtml.git
+    version: 1.5.2
 
   radix:
-    github: luislavena/radix
+    git: https://github.com/luislavena/radix.git
     version: 0.3.9
 
   router:
-    github: tbrand/router.cr
+    git: https://github.com/tbrand/router.cr.git
     version: 0.2.7
 
   spinach:
-    github: sushichain/spinach
+    git: https://github.com/axentro/spinach.git
     version: 0.1.8
 
   sqlite3:
-    github: crystal-lang/crystal-sqlite3
+    git: https://github.com/crystal-lang/crystal-sqlite3.git
     version: 0.16.0
 
   tokoroten:
-    github: tbrand/tokoroten
+    git: https://github.com/tbrand/tokoroten.git
     version: 0.1.3
 

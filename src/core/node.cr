@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -12,7 +12,7 @@
 
 require "./node/*"
 
-module ::Sushi::Core
+module ::Axentro::Core
   class Node < HandleSocket
     alias Network = NamedTuple(
       prefix: String,
@@ -137,7 +137,7 @@ module ::Sushi::Core
     end
 
     def run!
-      info "start running Sushi's node on #{light_green(@bind_host)}:#{light_green(@bind_port)}"
+      info "Axentro node started on #{light_green(@bind_host)}:#{light_green(@bind_port)}"
 
       node = HTTP::Server.new(handlers)
       node.bind_tcp(@bind_host, @bind_port)

@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -20,15 +20,15 @@ require "./core"
 require "./cli/helps"
 require "./cli/modules"
 
-module ::Sushi::Interface
-  alias SushiAction = NamedTuple(name: String, desc: String)
+module ::Axentro::Interface
+  alias AxeAction = NamedTuple(name: String, desc: String)
 
   TOKEN_DEFAULT = Core::DApps::BuildIn::UTXO::DEFAULT
 
   abstract class CLI
     def initialize(
-      @sushi_action : SushiAction,
-      @parents : Array(SushiAction)
+      @axe_action : AxeAction,
+      @parents : Array(AxeAction)
     )
     STDOUT.sync = true
     STDERR.sync = true
@@ -50,7 +50,7 @@ module ::Sushi::Interface
       messages = message.split("\n").map { |m| white_bg(black(" %-#{message_size}s " % m)) }
 
       puts "\n" +
-           "#{light_magenta("> " + command_line)} | #{@sushi_action[:desc]}\n\n" +
+           "#{light_magenta("> " + command_line)} | #{@axe_action[:desc]}\n\n" +
            "#{white_bg(black(" " + "-" * message_size + " "))}\n" +
            messages.join("\n") + "\n" +
            "#{white_bg(black(" " + "-" * message_size + " "))}\n\n" +
@@ -94,12 +94,12 @@ module ::Sushi::Interface
     end
 
     def command_line
-      return @sushi_action[:name] if @parents.size == 0
-      @parents.map { |a| a[:name] }.join(" ") + " " + @sushi_action[:name]
+      return @axe_action[:name] if @parents.size == 0
+      @parents.map { |a| a[:name] }.join(" ") + " " + @axe_action[:name]
     end
 
-    def next_parents : Array(SushiAction)
-      @parents.concat([@sushi_action])
+    def next_parents : Array(AxeAction)
+      @parents.concat([@axe_action])
     end
 
     def sub_action_names : Array(String)
@@ -226,7 +226,7 @@ module ::Sushi::Interface
       JSON.parse(body)
     end
 
-    abstract def sub_actions : Array(SushiAction)
+    abstract def sub_actions : Array(AxeAction)
     abstract def option_parser : OptionParser?
     abstract def run_impl(action_name : String?) : OptionParser?
 

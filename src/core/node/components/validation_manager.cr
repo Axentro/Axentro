@@ -1,18 +1,18 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Core::NodeComponents
+module ::Axentro::Core::NodeComponents
   class ValidationManager < HandleSocket
-    # node component to manage both sides of the process of validating the database of a new node that attempts connection to the SushiChain network
+    # node component to manage both sides of the process of validating the database of a new node that attempts connection to the Axentro network
 
     alias ValidatingNode = NamedTuple(
       host: String,
@@ -147,7 +147,7 @@ module ::Sushi::Core::NodeComponents
     end
 
     # handles challenge response containing solution hash - if it matches the one calculated in existing node when challenge
-    #  was sent, the new node is accepted, otherwise the new node fails and cannot join the SushiChain network
+    #  was sent, the new node is accepted, otherwise the new node fails and cannot join the Axentro network
     def validation_challenge_response_received(socket, _content)
       debug "got into validation challenge response received"
       _m_content = MContentValidationChallengeResponse.from_json(_content)
@@ -177,11 +177,11 @@ module ::Sushi::Core::NodeComponents
       reason = _m_content.reason
       debug "reason - #{reason}"
       if message_type == M_TYPE_VALIDATION_SUCCEEDED
-        info "Validation succeeded - will attempt connection to SushiChain network"
+        info "Validation succeeded - will attempt connection to Axentro network"
         node.phase = SetupPhase::CONNECTING_NODES
         node.proceed_setup
       else
-        error "Validation failed - cannot connect to SushiChain network"
+        error "Validation failed - cannot connect to Axentro network"
         error "exit with -1"
         exit -1
       end

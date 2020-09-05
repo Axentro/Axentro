@@ -6,4 +6,4 @@ html:
     env: testnet
     environments:
       testnet:
-        url: http://testnet.sushichain.io:3000/api/v1/
+        url: http://testnet.axentro.io:3000/api/v1/

@@ -1,17 +1,17 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
 module FunctionalHelper
-  include Sushi::Core
-  include Sushi::Common::Denomination
+  include Axentro::Core
+  include Axentro::Common::Denomination
 
   class Quantity
     def self.as_internal_amount(variable_name : String, variables) : Int64
@@ -48,7 +48,7 @@ module FunctionalHelper
   end
 
   class Wallets
-    def self.balance_for(wallet, block_factory, token : String = "SUSHI")
+    def self.balance_for(wallet, block_factory, token : String = "AXE")
       Quantity.as_human_amount(block_factory.blockchain.utxo.get_for(wallet.address, token))
     end
 

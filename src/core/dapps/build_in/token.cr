@@ -1,18 +1,18 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Core::DApps::BuildIn
+module ::Axentro::Core::DApps::BuildIn
   class Token < DApp
-    getter tokens : Array(String) = ["SUSHI"]
+    getter tokens : Array(String) = ["AXE"]
 
     def setup
     end
@@ -97,7 +97,7 @@ RULE
     end
 
     def tokens_list_impl(page, per_page, direction)
-      (["SUSHI"] + database.get_paginated_tokens(page, per_page, Direction.new(direction).to_s)).to_set
+      (["AXE"] + database.get_paginated_tokens(page, per_page, Direction.new(direction).to_s)).to_set
     end
 
     def self.fee(action : String) : Int64

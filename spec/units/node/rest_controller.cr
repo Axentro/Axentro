@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -12,10 +12,10 @@
 
 require "./../../spec_helper"
 
-include Sushi::Core
+include Axentro::Core
 include Units::Utils
-include Sushi::Core::Controllers
-include Sushi::Core::Keys
+include Axentro::Core::Controllers
+include Axentro::Core::Keys
 
 private def asset_blockchain(api_path)
   with_factory do |block_factory, _|
@@ -257,7 +257,7 @@ describe RESTController do
         exec_rest_api(block_factory.rest.__v1_address(context("/api/v1/address/#{address}"), {address: address})) do |result|
           result["status"].to_s.should eq("success")
           result["result"]["confirmation"].should eq(0_i64)
-          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"SUSHI\", \"amount\" => \"23.9999812\"}")
+          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"AXE\", \"amount\" => \"23.9999812\"}")
         end
       end
     end
@@ -267,7 +267,7 @@ describe RESTController do
         exec_rest_api(block_factory.rest.__v1_address(context("/api/v1/address/non-existing-address"), {address: "non-existing-address"})) do |result|
           result["status"].to_s.should eq("success")
           result["result"]["confirmation"].should eq(0_i64)
-          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"SUSHI\", \"amount\" => \"0\"}")
+          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"AXE\", \"amount\" => \"0\"}")
         end
       end
     end
@@ -278,10 +278,10 @@ describe RESTController do
       with_factory do |block_factory, transaction_factory|
         block_factory.add_slow_blocks(2)
         address = transaction_factory.sender_wallet.address
-        exec_rest_api(block_factory.rest.__v1_address_token(context("/api/v1/address/#{address}/token/SUSHI"), {address: address, token: "SUSHI"})) do |result|
+        exec_rest_api(block_factory.rest.__v1_address_token(context("/api/v1/address/#{address}/token/AXE"), {address: address, token: "AXE"})) do |result|
           result["status"].to_s.should eq("success")
           result["result"]["confirmation"].should eq(0_i64)
-          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"SUSHI\", \"amount\" => \"23.9999812\"}")
+          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"AXE\", \"amount\" => \"23.9999812\"}")
         end
       end
     end
@@ -369,12 +369,12 @@ describe RESTController do
   describe "__v1_domain" do
     it "should return the amounts for the specified domain" do
       with_factory do |block_factory, transaction_factory|
-        domain = "sushi.sc"
+        domain = "axentro.sc"
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_domain(context("/api/v1/domain/#{domain}"), {domain: domain})) do |result|
           result["status"].to_s.should eq("success")
           result["result"]["confirmation"].should eq(0_i64)
-          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"SUSHI\", \"amount\" => \"35.79996241\"}")
+          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"AXE\", \"amount\" => \"35.79996241\"}")
         end
       end
     end
@@ -392,18 +392,18 @@ describe RESTController do
   describe "__v1_domain_token" do
     it "should return the amounts for the specified domain and token" do
       with_factory do |block_factory, transaction_factory|
-        domain = "sushi.sc"
+        domain = "axentro.sc"
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
-        exec_rest_api(block_factory.rest.__v1_domain_token(context("/api/v1/domain/#{domain}/token/SUSHI"), {domain: domain, token: "SUSHI"})) do |result|
+        exec_rest_api(block_factory.rest.__v1_domain_token(context("/api/v1/domain/#{domain}/token/AXE"), {domain: domain, token: "AXE"})) do |result|
           result["status"].to_s.should eq("success")
           result["result"]["confirmation"].should eq(0_i64)
-          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"SUSHI\", \"amount\" => \"35.79996241\"}")
+          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"AXE\", \"amount\" => \"35.79996241\"}")
         end
       end
     end
     it "should return no pairs when token is not found" do
       with_factory do |block_factory, transaction_factory|
-        domain = "sushi.sc"
+        domain = "axentro.sc"
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_domain_token(context("/api/v1/address/#{domain}/token/NONE"), {domain: domain, token: "NONE"})) do |result|
           result["status"].to_s.should eq("success")
@@ -418,7 +418,7 @@ describe RESTController do
     it "should return all transactions for the specified domain" do
       with_factory do |block_factory, transaction_factory|
         transaction = transaction_factory.make_send(100_i64)
-        domain = "sushi.sc"
+        domain = "axentro.sc"
         block_factory.add_slow_block([transaction, transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_domain_transactions(context("/api/v1/domain/#{domain}/transactions"), {domain: domain})) do |result|
           result["status"].to_s.should eq("success")
@@ -429,7 +429,7 @@ describe RESTController do
     it "should return filtered transactions for the specified domain" do
       with_factory do |block_factory, transaction_factory|
         transaction = transaction_factory.make_send(100_i64)
-        domain = "sushi.sc"
+        domain = "axentro.sc"
         block_factory.add_slow_block([transaction, transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_domain_transactions(context("/api/v1/domain/#{domain}/transactions?actions=send"), {domain: domain, actions: "send"})) do |result|
           result["status"].to_s.should eq("success")
@@ -441,7 +441,7 @@ describe RESTController do
     it "should return empty list for filtered transactions for the specified domain" do
       with_factory do |block_factory, transaction_factory|
         transaction = transaction_factory.make_send(100_i64)
-        domain = "sushi.sc"
+        domain = "axentro.sc"
         block_factory.add_slow_block([transaction, transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_domain_transactions(context("/api/v1/domain/#{domain}/transactions?actions=unknown"), {domain: domain, actions: "unknown"})) do |result|
           result["status"].to_s.should eq("success")
@@ -451,7 +451,7 @@ describe RESTController do
     end
     it "should paginate default 20 transactions for the specified domain" do
       with_factory do |block_factory, transaction_factory|
-        domain = "sushi.sc"
+        domain = "axentro.sc"
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(100)
         exec_rest_api(block_factory.rest.__v1_domain_transactions(context("/api/v1/domain/#{domain}/transactions"), {domain: domain})) do |result|
           result["status"].to_s.should eq("success")
@@ -462,7 +462,7 @@ describe RESTController do
     end
     it "should paginate transactions for the specified domain" do
       with_factory do |block_factory, transaction_factory|
-        domain = "sushi.sc"
+        domain = "axentro.sc"
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(200)
         exec_rest_api(block_factory.rest.__v1_domain_transactions(context("/api/v1/domain/#{domain}/transactions?per_page=50&page=2"), {domain: domain, page_size: 50, page: 1})) do |result|
           result["status"].to_s.should eq("success")
@@ -476,7 +476,7 @@ describe RESTController do
   describe "__v1_scars_sales" do
     it "should return the domains for sale" do
       with_factory do |block_factory, transaction_factory|
-        domain = "sushi.sc"
+        domain = "axentro.sc"
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2).add_slow_block([transaction_factory.make_sell_domain(domain, 1_i64)]).add_slow_blocks(3)
 
         exec_rest_api(block_factory.rest.__v1_scars_sales(context("/api/v1/scars/sales"), no_params)) do |result|
@@ -493,7 +493,7 @@ describe RESTController do
   describe "__v1_scars" do
     it "should return true when domain is resolved" do
       with_factory do |block_factory, transaction_factory|
-        domain = "sushi.sc"
+        domain = "axentro.sc"
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_scars(context("/api/v1/scars/#{domain}"), {domain: domain})) do |result|
           result["status"].to_s.should eq("success")
@@ -503,7 +503,7 @@ describe RESTController do
     end
     it "should return false when domain is not resolved" do
       with_factory do |block_factory, _|
-        domain = "sushi.sc"
+        domain = "axentro.sc"
         block_factory.add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_scars(context("/api/v1/scars/#{domain}"), {domain: domain})) do |result|
           result["status"].to_s.should eq("success")
@@ -557,7 +557,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction_factory.make_create_token(token, 10000_i64)]).add_slow_blocks(3)
         exec_rest_api(block_factory.rest.__v1_tokens(context("/api/v1/tokens"), no_params)) do |result|
           result["status"].to_s.should eq("success")
-          result["result"].to_s.should eq("[\"SUSHI\", \"KINGS\"]")
+          result["result"].to_s.should eq("[\"AXE\", \"KINGS\"]")
         end
       end
     end

@@ -1,16 +1,16 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Core::DApps
+module ::Axentro::Core::DApps
   abstract class DApp
     extend Common::Denomination
 
@@ -46,7 +46,7 @@ module ::Sushi::Core::DApps
     end
 
     #
-    # Default fee is 0.0001 SUSHI
+    # Default fee is 0.0001 AXE
     # All thrid party dApps cannot override here.
     # Otherwise the transactions will be rejected from other nodes.
     #

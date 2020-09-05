@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -12,10 +12,10 @@
 
 require "./../../spec_helper"
 
-include Sushi::Core
+include Axentro::Core
 include Units::Utils
-include Sushi::Core::DApps::BuildIn
-include Sushi::Core::Controllers
+include Axentro::Core::DApps::BuildIn
+include Axentro::Core::Controllers
 
 describe Token do
   it "should perform #setup" do
@@ -204,7 +204,7 @@ describe Token do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq("[\"SUSHI\"]")
+            result.should eq("[\"AXE\"]")
           end
         end
       end

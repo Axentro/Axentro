@@ -15,7 +15,7 @@ help:
     transaction: "please specify a block index or transaction id: -i [block index] or -t [transaction id]"
   transaction: "please specify a transaction id: -t [transaction id]"
   url: "please specify a public url that can be accessed from internet: -u http://[host]:[port]. If your node is behind a NET, you can use --private flag instead of this option"
-  fee: "please specify transaction fee: -f [fee]. you can check minimum fee with `sushi tx fees`"
+  fee: "please specify transaction fee: -f [fee]. you can check minimum fee with `axe tx fees`"
   price:         "please specify a price for scars --price=[PRICE]"
   domain: "please specify a domain for scars: --domain=[DOMAIN]"
   lookup_address: "please specify an address: -a [address] or --address=[address]"

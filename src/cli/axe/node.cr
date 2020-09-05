@@ -1,26 +1,26 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Interface::Sushi
+module ::Axentro::Interface::Axe
   class Node < CLI
     def sub_actions
       [
         {
-          name: I18n.translate("sushi.cli.node.nodes.title"),
-          desc: I18n.translate("sushi.cli.node.nodes.desc"),
+          name: I18n.translate("axe.cli.node.nodes.title"),
+          desc: I18n.translate("axe.cli.node.nodes.desc"),
         },
         {
-          name: I18n.translate("sushi.cli.node.node.title"),
-          desc: I18n.translate("sushi.cli.node.node.desc"),
+          name: I18n.translate("axe.cli.node.node.title"),
+          desc: I18n.translate("axe.cli.node.node.desc"),
         },
       ]
     end
@@ -35,9 +35,9 @@ module ::Sushi::Interface::Sushi
 
     def run_impl(action_name)
       case action_name
-      when I18n.translate("sushi.cli.node.nodes.title")
+      when I18n.translate("axe.cli.node.nodes.title")
         return nodes
-      when I18n.translate("sushi.cli.node.node.title")
+      when I18n.translate("axe.cli.node.node.title")
         return node
       end
 

@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -15,7 +15,7 @@ require "../node/*"
 require "../dapps/dapp"
 require "../dapps/build_in/rejects"
 
-module ::Sushi::Core::Data::Rejects
+module ::Axentro::Core::Data::Rejects
   # ------- Definition -------
   def rejects_table_create_string
     "transaction_id text, address text, reason text, timestamp integer"
@@ -63,5 +63,5 @@ module ::Sushi::Core::Data::Rejects
     @db.query_one("select count(*) from rejects", as: Int32)
   end
 
-  include Sushi::Core::DApps::BuildIn
+  include Axentro::Core::DApps::BuildIn
 end

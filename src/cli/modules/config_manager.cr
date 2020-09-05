@@ -1,16 +1,16 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Interface
+module ::Axentro::Interface
   class ConfigManager
     alias Configurable = String | Int32 | Int64 | Bool | Nil
 
@@ -43,7 +43,7 @@ module ::Sushi::Interface
     end
 
     def get_configs : Hash(String, Hash(String, ConfigManager::Configurable))
-      raise "no configuration file found at: #{config_path} - to create, exec `sushi config save [your_options]" unless File.exists?(config_path)
+      raise "no configuration file found at: #{config_path} - to create, exec `axe config save [your_options]" unless File.exists?(config_path)
       config = Config.from_yaml(File.read(config_path))
       config.configs
     end
@@ -115,8 +115,8 @@ module ::Sushi::Interface
 
     def config_path : String
       home = Path.home.to_s
-      FileUtils.mkdir_p("#{home}/.sushi")
-      "#{home}/.sushi/config"
+      FileUtils.mkdir_p("#{home}/.axentro")
+      "#{home}/.axentro/config"
     end
   end
 end

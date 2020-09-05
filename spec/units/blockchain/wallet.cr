@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -12,8 +12,8 @@
 
 require "./../../spec_helper"
 
-include Sushi::Core
-include Sushi::Core::Keys
+include Axentro::Core
+include Axentro::Core::Keys
 include Hashes
 
 describe Wallet do
@@ -80,7 +80,7 @@ describe Wallet do
       it "should encrypt a wallet" do
         wallet = "#{__DIR__}/../../utils/data/wallet1.json"
         encrypted_wallet = EncryptedWallet.from_json(Wallet.encrypt("password", wallet).to_json)
-        encrypted_wallet.source.should eq("sushi")
+        encrypted_wallet.source.should eq("axentro")
         encrypted_wallet.ciphertext.nil?.should be_false
         encrypted_wallet.salt.nil?.should be_false
         encrypted_wallet.address.should eq(Wallet.from_json(File.read(wallet)).address)
@@ -109,8 +109,8 @@ describe Wallet do
         end
       end
 
-      it "should raise an error if the encrypted wallet source is not 'sushi'" do
-        expect_raises(Exception, "this wallet was not encrypted with the sushi binary") do
+      it "should raise an error if the encrypted wallet source is not 'axentro'" do
+        expect_raises(Exception, "this wallet was not encrypted with the Axentro binary") do
           Wallet.from_json(Wallet.decrypt("password", "#{__DIR__}/../../utils/data/encrypted-wallet2.json"))
         end
       end

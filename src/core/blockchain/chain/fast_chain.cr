@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -13,7 +13,7 @@ require "../../node/*"
 require "../../dapps/dapp"
 require "../../dapps/build_in/rejects"
 
-module ::Sushi::Core::FastChain
+module ::Axentro::Core::FastChain
   alias FastHeader = NamedTuple(
     index: Int64,
     prev_hash: String,
@@ -116,7 +116,7 @@ module ::Sushi::Core::FastChain
   def chain_mature_enough_for_fast_blocks?
     return true if node.has_no_connections? && !node.is_private_node?
     latest = get_latest_index_for_slow
-    if ENV.has_key?("SC_TESTING")
+    if ENV.has_key?("AXE_TESTING")
       return true if latest > 8_i64
     end
     latest > 1440_i64
@@ -266,5 +266,5 @@ module ::Sushi::Core::FastChain
   end
 
   include Block
-  include ::Sushi::Core::DApps::BuildIn
+  include ::Axentro::Core::DApps::BuildIn
 end

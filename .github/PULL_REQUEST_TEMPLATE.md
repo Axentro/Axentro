@@ -4,7 +4,7 @@
 ## Related Issues
 <!-- Related Issues List -->
 <!-- For example
-- https://github.com/SushiChain/SushiChain/issues/1
+- https://github.com/Axentro/Axentro/issues/1
 -->
 
 ## Checklist

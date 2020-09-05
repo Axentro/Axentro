@@ -1,16 +1,16 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/SushiChain/SushiChain/master/imgs/sc_logo_light.svg?sanitize=true"/>
+  <img src="https://raw.githubusercontent.com/Axentro/Axentro/master/imgs/sc_logo_light.svg?sanitize=true"/>
 </p>
 
 <p align="center"><i>To be the <b>go to</b> platform for building <b>dApps</b> quickly and cheaply for business and gaming</i></p>
 
 <p align="center">
-<a href="https://circleci.com/gh/SushiChain/SushiChain/tree/master"><img src="https://circleci.com/gh/SushiChain/SushiChain/tree/master.png?circle-token=099c1a2ed8be9aebf10eb09f79d65dfa4b05cf8e"></a>
+<a href="https://circleci.com/gh/Axentro/Axentro/tree/master"><img src="https://circleci.com/gh/Axentro/Axentro/tree/master.png?circle-token=099c1a2ed8be9aebf10eb09f79d65dfa4b05cf8e"></a>
 <a href="https://t.me/sushichainhq"><img src="https://img.shields.io/static/v1.svg?label=chat&message=telegram&color=informational"/></a>
 <a href="https://twitter.com/sushichainhq"><img src="https://img.shields.io/twitter/follow/sushichainhq.svg?label=Follow&style=social"/></a>
 </p>
 
-Sushichain is an original proof of work blockchain platform that empowers developers to build decentralised apps quickly and cheaply. It features the following:
+Axentro is an original proof of work blockchain platform that empowers developers to build decentralised apps quickly and cheaply. It features the following:
 
 * CPU mining using the award winning Argon2d hashing algorithm
 * Decentralised apps platform
@@ -20,32 +20,32 @@ Sushichain is an original proof of work blockchain platform that empowers develo
 
 ## Platform status
 
-The platform is still in heavy development but the [TestNet](http://testnet.sushichain.io:3000) is up and running however it is currently unstable due to ongoing  development which requires frequent restarts and updates. See the roadmap for more information about the delivery schedule.
+The platform is still in heavy development but the [TestNet](http://testnet.axentro.io:3000) is up and running however it is currently unstable due to ongoing  development which requires frequent restarts and updates. See the roadmap for more information about the delivery schedule.
 
 |          Environment |                Url                |    Status    |
 | -------------------: | :-------------------------------: | :----------: |
-|              Testnet | http://testnet.sushichain.io:3000 |   Unstable   |
+|              Testnet | http://testnet.axentro.io:3000 |   Unstable   |
 
-Follow the [Getting Started](https://guide.sushichain.io/) documentation to explore further.
+Follow the [Getting Started](https://guide.axentro.io/) documentation to explore further.
 
 ## Documentation
 
-* [Offical docs](https://guide.sushichain.io/)
-* [Roadmap](https://sushichain.io/#roadmap)
+* [Offical docs](https://guide.axentro.io/)
+* [Roadmap](https://axentro.io/#roadmap)
 
 ## Blockchain Specification
 
 |            Coin name |          Sushi           |
 | -------------------: | :----------------------: |
-|          Coin ticker |          SUSHI           |
+|          Coin ticker |           AXE            |
 |            Consensus |           PoW            |
-|         Block reward |        0.5 SUSHI         |
+|         Block reward |        0.5 AXE           |
 |         Miner reward | Prorated on contribution |
 |        Block spacing |     10 to 40 seconds     |
-|             Pre-mine |  2,000,000 SUSHI (10%)   |
-|         Total Supply |     20,000,000 SUSHI     |
+|             Pre-mine |  2,000,000 AXE (10%)     |
+|         Total Supply |     20,000,000 AXE       |
 |             Maturity |        20 Blocks         |
-|      Minimum txn fee |       0.0001 SUSHI       |
+|      Minimum txn fee |       0.0001 AXE         |
 | PoW mining algorithm |         Argon2d          |
 |                 Port |           3000           |
 

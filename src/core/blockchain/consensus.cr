@@ -1,16 +1,16 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Core::Consensus
+module ::Axentro::Core::Consensus
 
   def valid_pow?(block_hash : String, block_nonce : BlockNonce, difficulty : Int32) : Int32
     nonce_salt = block_nonce.to_u64.to_s(16)
@@ -42,7 +42,7 @@ module ::Sushi::Core::Consensus
   # Dark Gravity Wave history lookback for averaging (in blocks)
   HISTORY_LOOKBACK       =      24
 
-  # SushiChain desired block spacing (2 minutes .. 120 seconds expressed in milliseconds and seconds)
+  # Axentro desired block spacing (2 minutes .. 120 seconds expressed in milliseconds and seconds)
   POW_TARGET_SPACING      = 120000_f64
   POW_TARGET_SPACING_SECS = 120_i64
 

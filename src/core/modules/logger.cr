@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 require "./welcome"
 
-module ::Sushi::Core::Logger
+module ::Axentro::Core::Logger
   LL_VERBOSE = 0
   LL_DEBUG   = 1
   LL_INFO    = 2
@@ -36,30 +36,30 @@ module ::Sushi::Core::Logger
   end
 
   def welcome
-    return if ENV.has_key?("SC_TESTING")
+    return if ENV.has_key?("AXE_TESTING")
     puts welcome_message
   end
 
   def verbose(msg : String)
-    return if ENV.has_key?("SC_TESTING")
+    return if ENV.has_key?("AXE_TESTING")
     return if log_level > LL_VERBOSE
     log_out("Verb", msg, :dark_gray)
   end
 
   def debug(msg : String)
-    # return if ENV.has_key?("SC_TESTING")
+    # return if ENV.has_key?("AXE_TESTING")
     return if log_level > LL_DEBUG
     log_out("Debg", msg, :dark_gray)
   end
 
   def info(msg : String)
-    return if ENV.has_key?("SC_TESTING")
+    return if ENV.has_key?("AXE_TESTING")
     return if log_level > LL_INFO
     log_out("Info", msg, :light_green)
   end
 
   def warning(msg : String)
-    return if ENV.has_key?("SC_TESTING")
+    return if ENV.has_key?("AXE_TESTING")
     log_out("Warn", msg, :yellow)
   end
 
@@ -75,7 +75,7 @@ module ::Sushi::Core::Logger
                     "\u{259C}", "\u{259D}", "\u{259E}", "\u{259F}"]
 
   def progress(msg : String, current : Int, max : Int)
-    return if ENV.has_key?("SC_TESTING")
+    return if ENV.has_key?("AXE_TESTING")
     return if max == 0
 
     ratio = (current * PROGRESS_BAR_WIDTH) / max

@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -12,7 +12,7 @@
 
 require "./../../spec_helper"
 
-include Sushi::Core
+include Axentro::Core
 include Block
 include Hashes
 include Units::Utils
@@ -43,14 +43,14 @@ describe SlowBlock do
     it "should calculate merkle tree root when coinbase transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
       block = SlowBlock.new(2_i64, [coinbase_transaction], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS)
-      block.calculate_merkle_tree_root.should eq("f1a5402b71f528bc6d34dfc2e1973eea822db0e4")
+      block.calculate_merkle_tree_root.should eq("003bdb1986ed0f546289d69f96c92089744ae356")
     end
 
     it "should calculate merkle tree root when 2 transactions (first is coinbase)" do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = SlowBlock.new(2_i64, [coinbase_transaction, transaction1], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS)
-      block.calculate_merkle_tree_root.should eq("0c61385d0a13578295ee80ea407d47475e63925f")
+      block.calculate_merkle_tree_root.should eq("14240332191b3cba6541f3d08de77189486001e9")
     end
   end
 
@@ -142,7 +142,7 @@ describe SlowBlock do
         timestamp = chain[1].timestamp
         block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS)
         block.merkle_tree_root = "invalid"
-        expect_raises(Exception, "Invalid Merkle Tree Root: (expected invalid but got 616efa391561ec059a6558eca2215398ac051fb8)") do
+        expect_raises(Exception, "Invalid Merkle Tree Root: (expected invalid but got 99cc94c9a0fc90db9f869e3a6902d2b73dca0830)") do
           block.valid_as_latest?(block_factory.blockchain, false)
         end
       end

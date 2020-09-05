@@ -1,16 +1,16 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Core::DApps::User
+module ::Axentro::Core::DApps::User
   #
   # This is a super class of every user defined dApps.
   #
@@ -27,13 +27,13 @@ module ::Sushi::Core::DApps::User
   #
   abstract class UserDApp < DApp
     #
-    # It's "SUSHI"
+    # It's "AXE"
     #
     TOKEN_DEFAULT = BuildIn::UTXO::DEFAULT
 
     #
     # This method is required when you want to create transactions in your dApps.
-    # As a restriction of dApps on SushiChain, you have to host a node to create transactions in your dApps.
+    # As a restriction of dApps on Axentro, you have to host a node to create transactions in your dApps.
     #
     # Hard code valid addresses and return it as a array of strings.
     # ```
@@ -49,7 +49,7 @@ module ::Sushi::Core::DApps::User
 
     #
     # You can define the network types which your dApps will be activated on.
-    # Currently there are "testnet" and "mainnet" on SushiChain.
+    # Currently there are "testnet" and "mainnet" on Axentro.
     #
     # If you just want to activate it only on "testnet", return this.
     # ```
@@ -94,7 +94,7 @@ module ::Sushi::Core::DApps::User
     # if transaction.senders.size == 1 &&
     #    transaction.recipients.size == 1 &&
     #    transaction.senders[0][:amount] == 10 &&
-    #    transaction.token == "SUSHI"
+    #    transaction.token == "AXE"
     #   return true
     # end
     #
@@ -108,7 +108,7 @@ module ::Sushi::Core::DApps::User
     # You can access the transactions in the block by `block.transactions`
     # Note that transactions which are not related to your dApps are also included in `block.transactions`.
     #
-    # For example, let me assume the dApp will send 0.00005 SUSHI back to the senders if "some_action" transactions are created.
+    # For example, let me assume the dApp will send 0.00005 AXE back to the senders if "some_action" transactions are created.
     # ```
     # block.transactions.each do |transaction|
     #   if transaction.action == "some_action"
@@ -116,7 +116,7 @@ module ::Sushi::Core::DApps::User
     #     action = "send"
     #     sender = create_sender(scale_i64("0.00005"))
     #     recipient = create_recipient(transaction.recipients[0][:address], scale_i64("0.00005"))
-    #     message = "I'll back you 0.00005 SUSHI"
+    #     message = "I'll back you 0.00005 AXE"
     #     token = TOKEN_DEFAULT
     #
     #     create_transaction(id, action, sender, recipient, message, token)
@@ -160,10 +160,10 @@ module ::Sushi::Core::DApps::User
 
     #
     # This is a wrapper method that you can create a sender
-    # Note that creating transactions on dApps on SushiChain is restricted.
+    # Note that creating transactions on dApps on Axentro is restricted.
     # The sender must be the node launcher which the dApps be activated on.
     # So, in this method, you only have to specify the sending amount of the token.
-    # Also the fee is fixed as 0.0001 SUSHI.
+    # Also the fee is fixed as 0.0001 AXE.
     #
     def create_sender(amount : String) : SendersDecimal
       senders = SendersDecimal.new

@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -13,10 +13,10 @@
 require "./../../spec_helper"
 
 include Units::Utils
-include Sushi::Core
-include Sushi::Common::Denomination
+include Axentro::Core
+include Axentro::Common::Denomination
 
-describe Sushi::Common::Denomination do
+describe Axentro::Common::Denomination do
   it "should convert string value into Int64 for scale_i64" do
     scale_i64("0.0001").should eq(10000)
   end

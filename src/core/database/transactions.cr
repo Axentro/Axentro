@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -15,7 +15,7 @@ require "../node/*"
 require "../dapps/dapp"
 require "../dapps/build_in/scars"
 
-module ::Sushi::Core::Data::Transactions
+module ::Axentro::Core::Data::Transactions
   # ------- Definition -------
   def transaction_table_create_string
     "id text, idx integer, block_id integer, action text, message text, token text, prev_hash text, timestamp integer, scaled integer, kind text"
@@ -180,13 +180,13 @@ module ::Sushi::Core::Data::Transactions
   def get_address_amount(address : String) : Array(TokenQuantity)
     recipient_sum = get_recipient_sum(address)
     sender_sum = get_sender_sum(address)
-    unique_tokens = (recipient_sum + sender_sum).map(&.token).push("SUSHI").uniq
+    unique_tokens = (recipient_sum + sender_sum).map(&.token).push("AXE").uniq
     fee = get_fee_sum(address)
     unique_tokens.map do |token|
       recipient = recipient_sum.select { |r| r.token == token }.map(&.amount).sum
       sender = sender_sum.select { |s| s.token == token }.map(&.amount).sum
 
-      if token == "SUSHI"
+      if token == "AXE"
         sender = sender + fee
       end
       balance = recipient - sender
@@ -295,5 +295,5 @@ module ::Sushi::Core::Data::Transactions
     transactions
   end
 
-  include Sushi::Core::DApps::BuildIn
+  include Axentro::Core::DApps::BuildIn
 end

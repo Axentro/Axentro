@@ -1,34 +1,34 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Interface::Sushi
+module ::Axentro::Interface::Axe
   class Transaction < CLI
     def sub_actions
       [
         {
-          name: I18n.translate("sushi.cli.transaction.create.title"),
-          desc: I18n.translate("sushi.cli.transaction.create.desc"),
+          name: I18n.translate("axe.cli.transaction.create.title"),
+          desc: I18n.translate("axe.cli.transaction.create.desc"),
         },
         {
-          name: I18n.translate("sushi.cli.transaction.transactions.title"),
-          desc: I18n.translate("sushi.cli.transaction.transactions.desc"),
+          name: I18n.translate("axe.cli.transaction.transactions.title"),
+          desc: I18n.translate("axe.cli.transaction.transactions.desc"),
         },
         {
-          name: I18n.translate("sushi.cli.transaction.transaction.title"),
-          desc: I18n.translate("sushi.cli.transaction.transaction.desc"),
+          name: I18n.translate("axe.cli.transaction.transaction.title"),
+          desc: I18n.translate("axe.cli.transaction.transaction.desc"),
         },
         {
-          name: I18n.translate("sushi.cli.transaction.fees.title"),
-          desc: I18n.translate("sushi.cli.transaction.fees.desc"),
+          name: I18n.translate("axe.cli.transaction.fees.title"),
+          desc: I18n.translate("axe.cli.transaction.fees.desc"),
         },
       ]
     end
@@ -55,13 +55,13 @@ module ::Sushi::Interface::Sushi
 
     def run_impl(action_name)
       case action_name
-      when I18n.translate("sushi.cli.transaction.create.title")
+      when I18n.translate("axe.cli.transaction.create.title")
         return create
-      when I18n.translate("sushi.cli.transaction.transactions.title"), "txs"
+      when I18n.translate("axe.cli.transaction.transactions.title"), "txs"
         return transactions
-      when I18n.translate("sushi.cli.transaction.transaction.title"), "tx"
+      when I18n.translate("axe.cli.transaction.transaction.title"), "tx"
         return transaction
-      when I18n.translate("sushi.cli.transaction.fees.title")
+      when I18n.translate("axe.cli.transaction.fees.title")
         return fees
       end
 
@@ -121,10 +121,10 @@ module ::Sushi::Interface::Sushi
       puts_help(HELP_BLOCK_INDEX_OR_ADDRESS) if G.op.__block_index.nil? && G.op.__address.nil?
 
       payload = if block_index = G.op.__block_index
-                  success_message = I18n.translate("sushi.cli.transaction.transactions.messages.index", {block_index: block_index})
+                  success_message = I18n.translate("axe.cli.transaction.transactions.messages.index", {block_index: block_index})
                   {call: "transactions", index: block_index}.to_json
                 elsif address = G.op.__address
-                  success_message = I18n.translate("sushi.cli.transaction.transactions.messages.index", {address: address})
+                  success_message = I18n.translate("axe.cli.transaction.transactions.messages.index", {address: address})
                   {call: "transactions", address: address}.to_json
                 else
                   puts_help(HELP_BLOCK_INDEX_OR_ADDRESS)
@@ -150,16 +150,16 @@ module ::Sushi::Interface::Sushi
       else
         case json["status"].as_s
         when "accepted"
-          puts_success(I18n.translate("sushi.cli.transaction.transaction.messages.accepted"))
+          puts_success(I18n.translate("axe.cli.transaction.transaction.messages.accepted"))
           puts body
         when "pending"
-          puts_success(I18n.translate("sushi.cli.transaction.transaction.messages.pending"))
+          puts_success(I18n.translate("axe.cli.transaction.transaction.messages.pending"))
         when "rejected"
-          puts_error(I18n.translate("sushi.cli.transaction.transaction.messages.rejected", {reason: json["reason"].as_s}))
+          puts_error(I18n.translate("axe.cli.transaction.transaction.messages.rejected", {reason: json["reason"].as_s}))
         when "not found"
-          puts_error(I18n.translate("sushi.cli.transaction.transaction.messages.not_found"))
+          puts_error(I18n.translate("axe.cli.transaction.transaction.messages.not_found"))
         else
-          puts_error(I18n.translate("sushi.cli.transaction.transaction.messages.unknown"))
+          puts_error(I18n.translate("axe.cli.transaction.transaction.messages.unknown"))
         end
       end
     end
@@ -175,7 +175,7 @@ module ::Sushi::Interface::Sushi
       if G.op.__json
         puts body
       else
-        puts_success(I18n.translate("sushi.cli.transaction.fees.messages.fees"))
+        puts_success(I18n.translate("axe.cli.transaction.fees.messages.fees"))
 
         puts_info("  + %30s - %30s +" % ["-" * 30, "-" * 30])
         puts_info("  | %30s | %30s |" % ["action", "fee"])

@@ -3,7 +3,7 @@ jobs:
 
   tests:
     docker:
-      - image: crystallang/crystal:0.34.0
+      - image: crystallang/crystal:0.35.1
     steps:
       - checkout
       - run: |
@@ -18,7 +18,7 @@ jobs:
 
   e2e-tests-all-public:
     docker:
-      - image: crystallang/crystal:0.34.0
+      - image: crystallang/crystal:0.35.1
     steps:
       - checkout
       - run: |
@@ -30,7 +30,7 @@ jobs:
 
   e2e-tests-all-private:
     docker:
-      - image: crystallang/crystal:0.34.0
+      - image: crystallang/crystal:0.35.1
     steps:
       - checkout
       - run: |
@@ -42,7 +42,7 @@ jobs:
 
   e2e-tests-one-private:
     docker:
-      - image: crystallang/crystal:0.34.0
+      - image: crystallang/crystal:0.35.1
     steps:
       - checkout
       - run: |
@@ -57,8 +57,8 @@ jobs:
     steps:
       - checkout
       - run: |
-          docker build -t sushichain/sushichain .
-          docker build -f ./Dockerfile-sushid -t sushichain/sushid .
+          docker build -t axentro/axentro .
+          docker build -f ./Dockerfile-axen -t axentro/axen .
 
   docker-deploy:
     machine: true
@@ -66,10 +66,10 @@ jobs:
       - checkout
       - run: |
           docker login -u $DOCKER_USER -p $DOCKER_PASS
-          docker build -t sushichain/sushichain .
-          docker push sushichain/sushichain
-          docker build -t sushichain/sushid .
-          docker push sushichain/sushid
+          docker build -t axentro/axentro .
+          docker push axentro/axentro
+          docker build -t axentro/axen .
+          docker push axentro/axen
 
   publish-bintray:
     machine: true
@@ -82,7 +82,7 @@ jobs:
 workflows:
   version: 2
 
-  sushi_workflow:
+  axentro_workflow:
 
     jobs:
       - tests

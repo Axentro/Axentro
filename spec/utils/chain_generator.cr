@@ -1,9 +1,9 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
@@ -13,9 +13,9 @@ require "file_utils"
 require "./transaction"
 
 module ::Units::Utils::ChainGenerator
-  include Sushi::Core
-  include Sushi::Core::Keys
-  include Sushi::Core::Controllers
+  include Axentro::Core
+  include Axentro::Core::Keys
+  include Axentro::Core::Controllers
 
   enum MemoryKind
     SINGLE
@@ -40,16 +40,16 @@ module ::Units::Utils::ChainGenerator
     property transaction_factory : TransactionFactory
     property blockchain : Blockchain
     property database : Database
-    property node : Sushi::Core::Node
+    property node : Axentro::Core::Node
 
     def initialize(developer_fund, memory_kind = MemoryKind::SINGLE)
       @node_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @miner_wallet = Wallet.from_json(Wallet.create(true).to_json)
-      @database = memory_kind == MemoryKind::SINGLE ? Sushi::Core::Database.in_memory : Sushi::Core::Database.in_shared_memory
-      @node = Sushi::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, @database, developer_fund, nil, 512, 512, false)
+      @database = memory_kind == MemoryKind::SINGLE ? Axentro::Core::Database.in_memory : Axentro::Core::Database.in_shared_memory
+      @node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, @database, developer_fund, nil, 512, 512, false)
       @blockchain = @node.blockchain
       # the node setup is run in a spawn so we have to wait until it's finished before running any tests
-      while @node.@phase != Sushi::Core::Node::SetupPhase::DONE
+      while @node.@phase != Axentro::Core::Node::SetupPhase::DONE
         sleep 0.000001
       end
       @miner = {socket: MockWebSocket.new, mid: "535061bddb0549f691c8b9c012a55ee2"}

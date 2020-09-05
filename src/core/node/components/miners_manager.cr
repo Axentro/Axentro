@@ -1,16 +1,16 @@
-# Copyright © 2017-2018 The SushiChain Core developers
+# Copyright © 2017-2018 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
 #
-# Unless otherwise agreed in a custom licensing agreement with the SushiChain Core developers,
+# Unless otherwise agreed in a custom licensing agreement with the Axentro Core developers,
 # no part of this software, including this file, may be copied, modified,
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Sushi::Core::NodeComponents
+module ::Axentro::Core::NodeComponents
   class MinersManager < HandleSocket
     include NonceModels
 
@@ -46,7 +46,7 @@ module ::Sushi::Core::NodeComponents
         return send(socket,
           M_TYPE_MINER_HANDSHAKE_REJECTED,
           {
-            reason: "your sushim is out of date, please update it" +
+            reason: "your axem is out of date, please update it" +
                     "(node version: #{Core::CORE_VERSION}, miner version: #{version})",
           })
       end
