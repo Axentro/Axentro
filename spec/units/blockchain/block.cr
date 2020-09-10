@@ -43,14 +43,14 @@ describe SlowBlock do
     it "should calculate merkle tree root when coinbase transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
       block = SlowBlock.new(2_i64, [coinbase_transaction], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS)
-      block.calculate_merkle_tree_root.should eq("003bdb1986ed0f546289d69f96c92089744ae356")
+      block.calculate_merkle_tree_root.should eq("e1b588d3459d6a82a2ab46eb832a713eab24d4d8")
     end
 
     it "should calculate merkle tree root when 2 transactions (first is coinbase)" do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = SlowBlock.new(2_i64, [coinbase_transaction, transaction1], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS)
-      block.calculate_merkle_tree_root.should eq("14240332191b3cba6541f3d08de77189486001e9")
+      block.calculate_merkle_tree_root.should eq("67212163cb1e428460cd9d3a2302b92b992eb7a5")
     end
   end
 
@@ -142,7 +142,7 @@ describe SlowBlock do
         timestamp = chain[1].timestamp
         block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS)
         block.merkle_tree_root = "invalid"
-        expect_raises(Exception, "Invalid Merkle Tree Root: (expected invalid but got 99cc94c9a0fc90db9f869e3a6902d2b73dca0830)") do
+        expect_raises(Exception, "Invalid Merkle Tree Root: (expected invalid but got 56031743b6662cbbe3e7bc7f2a268967eaaa2687)") do
           block.valid_as_latest?(block_factory.blockchain, false)
         end
       end

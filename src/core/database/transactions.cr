@@ -180,13 +180,13 @@ module ::Axentro::Core::Data::Transactions
   def get_address_amount(address : String) : Array(TokenQuantity)
     recipient_sum = get_recipient_sum(address)
     sender_sum = get_sender_sum(address)
-    unique_tokens = (recipient_sum + sender_sum).map(&.token).push("AXE").uniq
+    unique_tokens = (recipient_sum + sender_sum).map(&.token).push("AXNT").uniq
     fee = get_fee_sum(address)
     unique_tokens.map do |token|
       recipient = recipient_sum.select { |r| r.token == token }.map(&.amount).sum
       sender = sender_sum.select { |s| s.token == token }.map(&.amount).sum
 
-      if token == "AXE"
+      if token == "AXNT"
         sender = sender + fee
       end
       balance = recipient - sender

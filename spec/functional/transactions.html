@@ -12,15 +12,15 @@
     <p>You can send tokens from your wallet to another wallet in slow mode which goes through proof of work concensus or fast mode which uses proof of history.</p>
     <br/>
     <hr/>
-      <h3>AXE Slow Transactions</h3>
+      <h3>AXNT Slow Transactions</h3>
       <br/>
 
-      <div spinach:scenario="scenario 1: sending AXE via slow transaction">
-	      Given I have <b spinach:set="wallet_balance_a">10</b> AXE in my wallet<br/>
-	      And my friend has <b spinach:set="wallet_balance_b">0</b> AXE in their wallet<br/>
-	      When I <b spinach:execute="result = send_amount(amount_to_send, fee_amount)">send</b> them <b spinach:set="amount_to_send">5</b> AXE at the fee of <b spinach:set="fee_amount">0.0001</b> via <b spinach:set="block_kind">slow</b> transaction<br/>
-	      Then my wallet should be debited the sending amount plus fee leaving me <b spinach:assert_equals="result.wallet_balance_a">4.9999</b> AXE<br/>
-	      And my friends wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_b">5</b> AXE<br/>
+      <div spinach:scenario="scenario 1: sending AXNT via slow transaction">
+	      Given I have <b spinach:set="wallet_balance_a">10</b> AXNT in my wallet<br/>
+	      And my friend has <b spinach:set="wallet_balance_b">0</b> AXNT in their wallet<br/>
+	      When I <b spinach:execute="result = send_amount(amount_to_send, fee_amount)">send</b> them <b spinach:set="amount_to_send">5</b> AXNT at the fee of <b spinach:set="fee_amount">0.0001</b> via <b spinach:set="block_kind">slow</b> transaction<br/>
+	      Then my wallet should be debited the sending amount plus fee leaving me <b spinach:assert_equals="result.wallet_balance_a">4.9999</b> AXNT<br/>
+	      And my friends wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_b">5</b> AXNT<br/>
         And there should be <b spinach:assert_equals="result.rejections">0</b> rejected transactions
       </div>
 
@@ -95,10 +95,10 @@
     <br/>
 
     <div spinach:scenario="scenario 3: creating slow custom tokens">
-      Given I have <b spinach:set="wallet_balance_a">10</b> AXE in my wallet<br/>
+      Given I have <b spinach:set="wallet_balance_a">10</b> AXNT in my wallet<br/>
       When I <b spinach:execute="result = create_token(token_name, token_amount, fee_amount, block_kind)">create</b> the custom token <b spinach:set="token_name">KINGS</b> via <b spinach:set="block_kind">slow</b> transaction<br/>
       with the amount <b spinach:set="token_amount">100000</b> and the fee <b spinach:set="fee_amount">1</b> <br/>
-      Then my wallet should be debited the fee leaving me <b spinach:assert_equals="result.wallet_balance_a">9</b> AXE<br/>
+      Then my wallet should be debited the fee leaving me <b spinach:assert_equals="result.wallet_balance_a">9</b> AXNT<br/>
       And my wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_a_custom">100000</b> KINGS<br/>
       And there should be <b spinach:assert_equals="result.rejections">0</b> rejected transactions
     </div>
@@ -108,13 +108,13 @@
       <br/>
 
       <div spinach:scenario="scenario 4: sending slow custom tokens">
-        Given I have <b spinach:set="wallet_balance_a_axe">10</b> AXE in my wallet<br/>
+        Given I have <b spinach:set="wallet_balance_a_axe">10</b> AXNT in my wallet<br/>
         And I create <b spinach:set="wallet_balance_a_kings">10</b> KINGS in my wallet (at fee <i>0.1</i>)<br/>
-        And my friend has <b spinach:set="wallet_balance_b_axe">0</b> AXE in their wallet<br/>
+        And my friend has <b spinach:set="wallet_balance_b_axe">0</b> AXNT in their wallet<br/>
         When I <b spinach:execute="result = send_custom_token(token_name, amount_to_send, fee_amount, block_kind)">send</b> them <b spinach:set="amount_to_send">5</b> <b spinach:set="token_name">KINGS</b> at the fee of <b spinach:set="fee_amount">0.0001</b> via <b spinach:set="block_kind">slow</b> transaction<br/>
-        Then my wallet should be debited the sent amount + sending fee + token creation fee, leaving me <b spinach:assert_equals="result.wallet_balance_a">9.8999</b> AXE<br/>
+        Then my wallet should be debited the sent amount + sending fee + token creation fee, leaving me <b spinach:assert_equals="result.wallet_balance_a">9.8999</b> AXNT<br/>
         And my wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_a_kings">5</b> KINGS<br/>
-        And my friends wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_b">0</b> AXE<br/>
+        And my friends wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_b">0</b> AXNT<br/>
         And my friends wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_b_kings">5</b> KINGS<br/>
         And there should be <b spinach:assert_equals="result.rejections">0</b> rejected transactions
       </div>
@@ -126,16 +126,16 @@
     <table spinach:table_scenario="scenario 5: further examples of slow custom token transactions" class="table table-striped">
       <thead class="thead-dark">
         <tr>
-          <th spinach:set="wallet_balance_a_axe">My AXE</th>
+          <th spinach:set="wallet_balance_a_axe">My AXNT</th>
           <th spinach:set="wallet_balance_a_kings">My KINGS</th>
-          <th spinach:set="wallet_balance_b_axe">Friends AXE</th>
+          <th spinach:set="wallet_balance_b_axe">Friends AXNT</th>
           <th spinach:set="amount_to_send">Sending</th>
           <th spinach:set="token_name">Token</th>
           <th spinach:set="fee_amount">Fee</th>
           <th spinach:set="block_kind">Speed</th>
-          <th spinach:assert_equals="result.wallet_balance_a">My final AXE</th>
+          <th spinach:assert_equals="result.wallet_balance_a">My final AXNT</th>
           <th spinach:assert_equals="result.wallet_balance_a_kings">My final KINGS</th>
-          <th spinach:assert_equals="result.wallet_balance_b">Friends final AXE</th>
+          <th spinach:assert_equals="result.wallet_balance_b">Friends final AXNT</th>
           <th spinach:assert_equals="result.wallet_balance_b_kings">Friends final KINGS</th>
           <th spinach:assert_equals="result.rejections">Rejected transactions</th>
           <th spinach:execute="result = send_custom_token(token_name, amount_to_send, fee_amount, block_kind)"></th>
@@ -209,15 +209,15 @@
     <hr/>
     <h2>Fast Transactions</h2>
     <br/>
-      <h3>AXE Fast Transactions</h3>
+      <h3>AXNT Fast Transactions</h3>
       <br/>
 
-      <div spinach:scenario="scenario 6: sending AXE via fast transactions">
-        Given I have <b spinach:set="wallet_balance_a">10</b> AXE in my wallet<br/>
-        And my friend has <b spinach:set="wallet_balance_b">0</b> AXE in their wallet<br/>
-        When I <b spinach:execute="result = send_amount(amount_to_send, fee_amount, block_kind)">send</b> them <b spinach:set="amount_to_send">5</b> AXE at the fee of <b spinach:set="fee_amount">0.0001</b> via <b spinach:set="block_kind">fast</b> transaction<br/>
-        Then my wallet should be debited the sending amount plus fee leaving me <b spinach:assert_equals="result.wallet_balance_a">4.9999</b> AXE<br/>
-        And my friends wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_b">5</b> AXE<br/>
+      <div spinach:scenario="scenario 6: sending AXNT via fast transactions">
+        Given I have <b spinach:set="wallet_balance_a">10</b> AXNT in my wallet<br/>
+        And my friend has <b spinach:set="wallet_balance_b">0</b> AXNT in their wallet<br/>
+        When I <b spinach:execute="result = send_amount(amount_to_send, fee_amount, block_kind)">send</b> them <b spinach:set="amount_to_send">5</b> AXNT at the fee of <b spinach:set="fee_amount">0.0001</b> via <b spinach:set="block_kind">fast</b> transaction<br/>
+        Then my wallet should be debited the sending amount plus fee leaving me <b spinach:assert_equals="result.wallet_balance_a">4.9999</b> AXNT<br/>
+        And my friends wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_b">5</b> AXNT<br/>
         And there should be <b spinach:assert_equals="result.rejections">0</b> rejected transactions
       </div>
 
@@ -292,10 +292,10 @@
     <br/>
 
     <div spinach:scenario="scenario 3: creating fast custom tokens">
-      Given I have <b spinach:set="wallet_balance_a">10</b> AXE in my wallet<br/>
+      Given I have <b spinach:set="wallet_balance_a">10</b> AXNT in my wallet<br/>
       When I <b spinach:execute="result = create_token(token_name, token_amount, fee_amount, block_kind)">create</b> the custom token <b spinach:set="token_name">KINGS</b> via <b spinach:set="block_kind">fast</b> transaction<br/>
       with the amount <b spinach:set="token_amount">100000</b> and the fee <b spinach:set="fee_amount">1</b> <br/>
-      Then my wallet should be debited the fee leaving me <b spinach:assert_equals="result.wallet_balance_a">9</b> AXE<br/>
+      Then my wallet should be debited the fee leaving me <b spinach:assert_equals="result.wallet_balance_a">9</b> AXNT<br/>
       And my wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_a_custom">100000</b> KINGS<br/>
       And there should be <b spinach:assert_equals="result.rejections">0</b> rejected transactions
     </div>
@@ -305,13 +305,13 @@
       <br/>
 
       <div spinach:scenario="scenario 4: sending fast custom tokens">
-        Given I have <b spinach:set="wallet_balance_a_axe">10</b> AXE in my wallet<br/>
+        Given I have <b spinach:set="wallet_balance_a_axe">10</b> AXNT in my wallet<br/>
         And I create <b spinach:set="wallet_balance_a_kings">10</b> KINGS in my wallet (at fee <i>0.1</i>)<br/>
-        And my friend has <b spinach:set="wallet_balance_b_axe">0</b> AXE in their wallet<br/>
+        And my friend has <b spinach:set="wallet_balance_b_axe">0</b> AXNT in their wallet<br/>
         When I <b spinach:execute="result = send_custom_token(token_name, amount_to_send, fee_amount, block_kind)">send</b> them <b spinach:set="amount_to_send">5</b> <b spinach:set="token_name">KINGS</b> at the fee of <b spinach:set="fee_amount">0.0001</b> via <b spinach:set="block_kind">fast</b> transaction<br/>
-        Then my wallet should be debited the sent amount + sending fee + token creation fee, leaving me <b spinach:assert_equals="result.wallet_balance_a">9.8999</b> AXE<br/>
+        Then my wallet should be debited the sent amount + sending fee + token creation fee, leaving me <b spinach:assert_equals="result.wallet_balance_a">9.8999</b> AXNT<br/>
         And my wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_a_kings">5</b> KINGS<br/>
-        And my friends wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_b">0</b> AXE<br/>
+        And my friends wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_b">0</b> AXNT<br/>
         And my friends wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_b_kings">5</b> KINGS<br/>
         And there should be <b spinach:assert_equals="result.rejections">0</b> rejected transactions
       </div>
@@ -323,16 +323,16 @@
     <table spinach:table_scenario="scenario 5: further examples of fast custom token transactions" class="table table-striped">
       <thead class="thead-dark">
         <tr>
-          <th spinach:set="wallet_balance_a_axe">My AXE</th>
+          <th spinach:set="wallet_balance_a_axe">My AXNT</th>
           <th spinach:set="wallet_balance_a_kings">My KINGS</th>
-          <th spinach:set="wallet_balance_b_axe">Friends AXE</th>
+          <th spinach:set="wallet_balance_b_axe">Friends AXNT</th>
           <th spinach:set="amount_to_send">Sending</th>
           <th spinach:set="token_name">Token</th>
           <th spinach:set="fee_amount">Fee</th>
           <th spinach:set="block_kind">Speed</th>
-          <th spinach:assert_equals="result.wallet_balance_a">My final AXE</th>
+          <th spinach:assert_equals="result.wallet_balance_a">My final AXNT</th>
           <th spinach:assert_equals="result.wallet_balance_a_kings">My final KINGS</th>
-          <th spinach:assert_equals="result.wallet_balance_b">Friends final AXE</th>
+          <th spinach:assert_equals="result.wallet_balance_b">Friends final AXNT</th>
           <th spinach:assert_equals="result.wallet_balance_b_kings">Friends final KINGS</th>
           <th spinach:assert_equals="result.rejections">Rejected transactions</th>
           <th spinach:execute="result = send_custom_token(token_name, amount_to_send, fee_amount, block_kind)"></th>

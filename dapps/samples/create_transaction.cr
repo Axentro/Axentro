@@ -75,7 +75,7 @@ module ::Axentro::Core::DApps::User
             "send",                                                         # action
             sender,                                                         # sender
             recipient,                                                      # recipient
-            "Thanks for sending me 0.0001 AXE! I'll back you 0.00005 AXE!", # message
+            "Thanks for sending me 0.0001 AXNT! I'll back you 0.00005 AXNT!", # message
             TOKEN_DEFAULT,                                                  # token
             TransactionKind::SLOW                                           # kind
           )

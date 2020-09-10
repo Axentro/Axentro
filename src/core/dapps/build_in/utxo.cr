@@ -19,7 +19,7 @@ module ::Axentro::Core::DApps::BuildIn
   end
 
   class UTXO < DApp
-    DEFAULT = "AXE"
+    DEFAULT = "AXNT"
 
     def setup
     end
@@ -31,7 +31,7 @@ module ::Axentro::Core::DApps::BuildIn
     def get_pending(address : String, transactions : Array(Transaction), token : String) : Int64
       historic = get_for(address, token)
 
-      if token == "AXE"
+      if token == "AXNT"
         fees_sum = transactions.flat_map(&.senders).select { |s| s[:address] == address }.map(&.[:fee]).sum
         senders_sum = transactions.select { |t| t.token == token }.flat_map(&.senders).select { |s| s[:address] == address }.map(&.[:amount]).sum
         recipients_sum = transactions.select { |t| t.token == token }.flat_map(&.recipients).select { |r| r[:address] == address }.map(&.[:amount]).sum

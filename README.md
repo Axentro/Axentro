@@ -39,15 +39,15 @@ Follow the [Getting Started](https://guide.axentro.io/) documentation to explore
 
 |            Coin name |          Sushi           |
 | -------------------: | :----------------------: |
-|          Coin ticker |           AXE            |
+|          Coin ticker |           AXNT           |
 |            Consensus |           PoW            |
-|         Block reward |        0.5 AXE           |
+|         Block reward |        0.5 AXNT          |
 |         Miner reward | Prorated on contribution |
 |        Block spacing |     10 to 40 seconds     |
-|             Pre-mine |  2,000,000 AXE (10%)     |
-|         Total Supply |     20,000,000 AXE       |
+|             Pre-mine |  2,000,000 AXNT (10%)    |
+|         Total Supply |     20,000,000 AXNT      |
 |             Maturity |        20 Blocks         |
-|      Minimum txn fee |       0.0001 AXE         |
+|      Minimum txn fee |       0.0001 AXNT        |
 | PoW mining algorithm |         Argon2d          |
 |                 Port |           3000           |
 

@@ -27,7 +27,7 @@ module ::Axentro::Core::DApps::User
   #
   abstract class UserDApp < DApp
     #
-    # It's "AXE"
+    # It's "AXNT"
     #
     TOKEN_DEFAULT = BuildIn::UTXO::DEFAULT
 
@@ -94,7 +94,7 @@ module ::Axentro::Core::DApps::User
     # if transaction.senders.size == 1 &&
     #    transaction.recipients.size == 1 &&
     #    transaction.senders[0][:amount] == 10 &&
-    #    transaction.token == "AXE"
+    #    transaction.token == "AXNT"
     #   return true
     # end
     #
@@ -108,7 +108,7 @@ module ::Axentro::Core::DApps::User
     # You can access the transactions in the block by `block.transactions`
     # Note that transactions which are not related to your dApps are also included in `block.transactions`.
     #
-    # For example, let me assume the dApp will send 0.00005 AXE back to the senders if "some_action" transactions are created.
+    # For example, let me assume the dApp will send 0.00005 AXNT back to the senders if "some_action" transactions are created.
     # ```
     # block.transactions.each do |transaction|
     #   if transaction.action == "some_action"
@@ -116,7 +116,7 @@ module ::Axentro::Core::DApps::User
     #     action = "send"
     #     sender = create_sender(scale_i64("0.00005"))
     #     recipient = create_recipient(transaction.recipients[0][:address], scale_i64("0.00005"))
-    #     message = "I'll back you 0.00005 AXE"
+    #     message = "I'll back you 0.00005 AXNT"
     #     token = TOKEN_DEFAULT
     #
     #     create_transaction(id, action, sender, recipient, message, token)
@@ -163,7 +163,7 @@ module ::Axentro::Core::DApps::User
     # Note that creating transactions on dApps on Axentro is restricted.
     # The sender must be the node launcher which the dApps be activated on.
     # So, in this method, you only have to specify the sending amount of the token.
-    # Also the fee is fixed as 0.0001 AXE.
+    # Also the fee is fixed as 0.0001 AXNT.
     #
     def create_sender(amount : String) : SendersDecimal
       senders = SendersDecimal.new

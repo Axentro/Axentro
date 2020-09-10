@@ -12,7 +12,7 @@
 
 module ::Axentro::Core::DApps::BuildIn
   class Token < DApp
-    getter tokens : Array(String) = ["AXE"]
+    getter tokens : Array(String) = ["AXNT"]
 
     def setup
     end
@@ -97,7 +97,7 @@ RULE
     end
 
     def tokens_list_impl(page, per_page, direction)
-      (["AXE"] + database.get_paginated_tokens(page, per_page, Direction.new(direction).to_s)).to_set
+      (["AXNT"] + database.get_paginated_tokens(page, per_page, Direction.new(direction).to_s)).to_set
     end
 
     def self.fee(action : String) : Int64

@@ -33,7 +33,7 @@ class Transactions < SpinachTestCase
     ])
 
     with_factory(developer_fund) do |block_factory, transaction_factory|
-      transaction = send_token_transaction(transaction_factory, "AXE", amount, fee_amount, wallet_a, wallet_b, block_kind)
+      transaction = send_token_transaction(transaction_factory, "AXNT", amount, fee_amount, wallet_a, wallet_b, block_kind)
 
       if block_kind == "fast"
         block_factory.add_slow_block.add_slow_block.add_slow_block.add_slow_block.add_fast_block([transaction])

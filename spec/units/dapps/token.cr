@@ -204,7 +204,7 @@ describe Token do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq("[\"AXE\"]")
+            result.should eq("[\"AXNT\"]")
           end
         end
       end

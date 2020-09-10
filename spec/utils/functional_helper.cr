@@ -48,7 +48,7 @@ module FunctionalHelper
   end
 
   class Wallets
-    def self.balance_for(wallet, block_factory, token : String = "AXE")
+    def self.balance_for(wallet, block_factory, token : String = "AXNT")
       Quantity.as_human_amount(block_factory.blockchain.utxo.get_for(wallet.address, token))
     end
 

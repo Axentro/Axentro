@@ -165,7 +165,7 @@ describe Blockchain do
         [sender],
         [recipient],
         "0",   # message
-        "AXE", # token
+        "AXNT", # token
         "0",   # prev_hash
         0_i64, # timestamp
         1,     # scaled

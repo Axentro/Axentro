@@ -227,7 +227,7 @@ describe Transaction do
       end
     end
 
-    it "should raise token error if not set to AXE" do
+    it "should raise token error if not set to AXNT" do
       with_factory do |block_factory, transaction_factory|
         chain = block_factory.add_slow_block([transaction_factory.make_send(2000_i64)]).chain
         transactions = chain.last.transactions
@@ -246,7 +246,7 @@ describe Transaction do
         )
 
         transaction.valid_common?.should be_true
-        expect_raises(Exception, "token has to be AXE for coinbase transaction") do
+        expect_raises(Exception, "token has to be AXNT for coinbase transaction") do
           transaction.valid_as_coinbase?(block_factory.blockchain, 1, transactions)
         end
       end

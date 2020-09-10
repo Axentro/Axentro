@@ -257,7 +257,7 @@ describe RESTController do
         exec_rest_api(block_factory.rest.__v1_address(context("/api/v1/address/#{address}"), {address: address})) do |result|
           result["status"].to_s.should eq("success")
           result["result"]["confirmation"].should eq(0_i64)
-          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"AXE\", \"amount\" => \"23.9999812\"}")
+          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"AXNT\", \"amount\" => \"23.9999812\"}")
         end
       end
     end
@@ -267,7 +267,7 @@ describe RESTController do
         exec_rest_api(block_factory.rest.__v1_address(context("/api/v1/address/non-existing-address"), {address: "non-existing-address"})) do |result|
           result["status"].to_s.should eq("success")
           result["result"]["confirmation"].should eq(0_i64)
-          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"AXE\", \"amount\" => \"0\"}")
+          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"AXNT\", \"amount\" => \"0\"}")
         end
       end
     end
@@ -278,10 +278,10 @@ describe RESTController do
       with_factory do |block_factory, transaction_factory|
         block_factory.add_slow_blocks(2)
         address = transaction_factory.sender_wallet.address
-        exec_rest_api(block_factory.rest.__v1_address_token(context("/api/v1/address/#{address}/token/AXE"), {address: address, token: "AXE"})) do |result|
+        exec_rest_api(block_factory.rest.__v1_address_token(context("/api/v1/address/#{address}/token/AXNT"), {address: address, token: "AXNT"})) do |result|
           result["status"].to_s.should eq("success")
           result["result"]["confirmation"].should eq(0_i64)
-          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"AXE\", \"amount\" => \"23.9999812\"}")
+          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"AXNT\", \"amount\" => \"23.9999812\"}")
         end
       end
     end
@@ -374,7 +374,7 @@ describe RESTController do
         exec_rest_api(block_factory.rest.__v1_domain(context("/api/v1/domain/#{domain}"), {domain: domain})) do |result|
           result["status"].to_s.should eq("success")
           result["result"]["confirmation"].should eq(0_i64)
-          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"AXE\", \"amount\" => \"35.79996241\"}")
+          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"AXNT\", \"amount\" => \"35.79996241\"}")
         end
       end
     end
@@ -394,10 +394,10 @@ describe RESTController do
       with_factory do |block_factory, transaction_factory|
         domain = "axentro.ax"
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
-        exec_rest_api(block_factory.rest.__v1_domain_token(context("/api/v1/domain/#{domain}/token/AXE"), {domain: domain, token: "AXE"})) do |result|
+        exec_rest_api(block_factory.rest.__v1_domain_token(context("/api/v1/domain/#{domain}/token/AXNT"), {domain: domain, token: "AXNT"})) do |result|
           result["status"].to_s.should eq("success")
           result["result"]["confirmation"].should eq(0_i64)
-          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"AXE\", \"amount\" => \"35.79996241\"}")
+          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"AXNT\", \"amount\" => \"35.79996241\"}")
         end
       end
     end
@@ -557,7 +557,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction_factory.make_create_token(token, 10000_i64)]).add_slow_blocks(3)
         exec_rest_api(block_factory.rest.__v1_tokens(context("/api/v1/tokens"), no_params)) do |result|
           result["status"].to_s.should eq("success")
-          result["result"].to_s.should eq("[\"AXE\", \"KINGS\"]")
+          result["result"].to_s.should eq("[\"AXNT\", \"KINGS\"]")
         end
       end
     end

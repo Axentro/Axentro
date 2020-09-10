@@ -26,7 +26,7 @@ describe UTXO do
         utxo.record(chain)
         address = chain[1].transactions.first.recipients.first[:address]
 
-        utxo.get_for(address, "AXE").should eq(11999965560_i64)
+        utxo.get_for(address, "AXNT").should eq(11999965560_i64)
       end
     end
   end
@@ -198,7 +198,7 @@ describe UTXO do
         utxo = UTXO.new(block_factory.blockchain)
 
         utxo.record(chain)
-        expect_raises(Exception, "Unable to send 20 AXE to recipient because you do not have enough AXE. You currently have: 10.99989373 AXE and you are receiving: 0 AXE from senders,  giving a total of: 10.99989373 AXE") do
+        expect_raises(Exception, "Unable to send 20 AXNT to recipient because you do not have enough AXNT. You currently have: 10.99989373 AXNT and you are receiving: 0 AXNT from senders,  giving a total of: 10.99989373 AXNT") do
           utxo.valid_transaction?(transaction2, [transaction1])
         end
       end
@@ -285,7 +285,7 @@ describe UTXO do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq("{\"confirmation\":0,\"pairs\":[{\"token\":\"AXE\",\"amount\":\"71.99986848\"}]}")
+            result.should eq("{\"confirmation\":0,\"pairs\":[{\"token\":\"AXNT\",\"amount\":\"71.99986848\"}]}")
           end
         end
       end

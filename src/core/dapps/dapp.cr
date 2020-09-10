@@ -46,7 +46,7 @@ module ::Axentro::Core::DApps
     end
 
     #
-    # Default fee is 0.0001 AXE
+    # Default fee is 0.0001 AXNT
     # All thrid party dApps cannot override here.
     # Otherwise the transactions will be rejected from other nodes.
     #
