@@ -1,13 +1,13 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Axentro/Axentro/master/imgs/sc_logo_light.svg?sanitize=true"/>
+  <img src="https://raw.githubusercontent.com/Axentro/Axentro/master/imgs/axentro_logo.svg?sanitize=true"/>
 </p>
 
 <p align="center"><i>To be the <b>go to</b> platform for building <b>dApps</b> quickly and cheaply for business and gaming</i></p>
 
 <p align="center">
 <a href="https://circleci.com/gh/Axentro/Axentro/tree/master"><img src="https://circleci.com/gh/Axentro/Axentro/tree/master.png?circle-token=099c1a2ed8be9aebf10eb09f79d65dfa4b05cf8e"></a>
-<a href="https://t.me/sushichainhq"><img src="https://img.shields.io/static/v1.svg?label=chat&message=telegram&color=informational"/></a>
-<a href="https://twitter.com/sushichainhq"><img src="https://img.shields.io/twitter/follow/sushichainhq.svg?label=Follow&style=social"/></a>
+<a href="https://t.me/axentrohq"><img src="https://img.shields.io/static/v1.svg?label=chat&message=telegram&color=informational"/></a>
+<a href="https://twitter.com/sushichainhq"><img src="https://img.shields.io/twitter/follow/axentrohq.svg?label=Follow&style=social"/></a>
 </p>
 
 <h1>We are currently migrating to a new name: Axentro - so many things will probably be broken while we do this. It should be complete and back up again before end of September 2020</h1>
