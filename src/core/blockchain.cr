@@ -449,6 +449,7 @@ module ::Axentro::Core
       end
     rescue e : Exception
       rejects.record_reject(transaction.id, Rejects.address_from_senders(transaction.senders), e)
+      node.wallet_info_controller.update_wallet_information([transaction])
     end
 
     def add_miner_nonce(miner_nonce : MinerNonce, with_spawn : Bool = true)
