@@ -52,6 +52,7 @@ module ::Axentro::Interface::Axe
         Options::DOMAIN,
         Options::CONFIG_NAME,
         Options::ADDRESS,
+        Options::IS_FAST_TRANSACTION,
       ])
     end
 
