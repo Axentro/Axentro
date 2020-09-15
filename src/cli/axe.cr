@@ -34,8 +34,8 @@ module ::Axentro::Interface::Axe
           desc: I18n.translate("axe.cli.node.desc"),
         },
         {
-          name: I18n.translate("axe.cli.scars.title"),
-          desc: I18n.translate("axe.cli.scars.desc"),
+          name: I18n.translate("axe.cli.hra.title"),
+          desc: I18n.translate("axe.cli.hra.desc"),
         },
         {
           name: I18n.translate("axe.cli.token.title"),
@@ -82,9 +82,9 @@ module ::Axentro::Interface::Axe
           {name: I18n.translate("axe.cli.node.title"), desc: I18n.translate("axe.cli.node.desc")},
           next_parents,
         ).run
-      when I18n.translate("axe.cli.scars.title"), "sc"
-        return Scars.new(
-          {name: I18n.translate("axe.cli.scars.title"), desc: I18n.translate("axe.cli.scars.desc")},
+      when I18n.translate("axe.cli.hra.title"), "sc"
+        return Hra.new(
+          {name: I18n.translate("axe.cli.hra.title"), desc: I18n.translate("axe.cli.hra.desc")},
           next_parents,
         ).run
       when I18n.translate("axe.cli.token.title"), "tk"

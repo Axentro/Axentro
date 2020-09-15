@@ -13,7 +13,7 @@ require "../blockchain/*"
 require "../blockchain/block/*"
 require "../node/*"
 require "../dapps/dapp"
-require "../dapps/build_in/scars"
+require "../dapps/build_in/hra"
 
 module ::Axentro::Core::Data::Transactions
   # ------- Definition -------
@@ -114,7 +114,7 @@ module ::Axentro::Core::Data::Transactions
       "select message, address, action, amount, t.block_id " \
       "from transactions t " \
       "join senders s on s.transaction_id = t.id " \
-      "where action in ('scars_buy', 'scars_sell', 'scars_cancel') " \
+      "where action in ('hra_buy', 'hra_sell', 'hra_cancel') " \
       "and message = ?", domain_name) do |rows|
       rows.each do
         domain_map[domain_name] = {
@@ -136,7 +136,7 @@ module ::Axentro::Core::Data::Transactions
       "select message, address, action, amount, t.block_id " \
       "from transactions t " \
       "join senders s on s.transaction_id = t.id " \
-      "where action in ('scars_buy', 'scars_sell', 'scars_cancel') " \
+      "where action in ('hra_buy', 'hra_sell', 'hra_cancel') " \
       "and address = ? " \
       "order by t.block_id desc", address) do |rows|
       rows.each do
@@ -156,7 +156,7 @@ module ::Axentro::Core::Data::Transactions
   def get_domains_for_sale : Array(Domain)
     domain_names = [] of String
     @db.query(
-      "select distinct(message) from transactions where action = 'scars_sell'") do |rows|
+      "select distinct(message) from transactions where action = 'hra_sell'") do |rows|
       rows.each do
         domain_names << rows.read(String)
       end
@@ -166,9 +166,9 @@ module ::Axentro::Core::Data::Transactions
 
   private def status(action) : Status
     case action
-    when "scars_buy"
+    when "hra_buy"
       Status::ACQUIRED
-    when "scars_sell"
+    when "hra_sell"
       Status::FOR_SALE
     else
       Status::ACQUIRED

@@ -30,9 +30,9 @@ cli:
     encrypted:    "set this flag when creating a wallet to create an encrypted wallet"
     seed:         "generate an hd wallet from a seed (master keypair if --derivation not speficied)"
     derivation:   "generate an hd wallet at the specified derivation path (random seed if --seed not specified, use 'm' for master)"
-    scars:
-      price:      "buy/sell price for SCARS"
-      domain:     "specify a domain for SCARS"
+    hra:
+      price:      "buy/sell price for Human Readable Addresses"
+      domain:     "specify a domain for Human Readable Addresses"
     config:       "specify a config name"
     developer_fund:      "invoke developer fund with supplied configuration"
     fast_transaction: "set transaction kind as fast transaction (default is slow transaction)"

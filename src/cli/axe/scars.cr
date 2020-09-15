@@ -11,32 +11,32 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Interface::Axe
-  class Scars < CLI
+  class Hra < CLI
     def sub_actions
       [
         {
-          name: I18n.translate("axe.cli.scars.buy.title"),
-          desc: I18n.translate("axe.cli.scars.buy.desc"),
+          name: I18n.translate("axe.cli.hra.buy.title"),
+          desc: I18n.translate("axe.cli.hra.buy.desc"),
         },
         {
-          name: I18n.translate("axe.cli.scars.sell.title"),
-          desc: I18n.translate("axe.cli.scars.sell.desc"),
+          name: I18n.translate("axe.cli.hra.sell.title"),
+          desc: I18n.translate("axe.cli.hra.sell.desc"),
         },
         {
-          name: I18n.translate("axe.cli.scars.cancel.title"),
-          desc: I18n.translate("axe.cli.scars.cancel.desc"),
+          name: I18n.translate("axe.cli.hra.cancel.title"),
+          desc: I18n.translate("axe.cli.hra.cancel.desc"),
         },
         {
-          name: I18n.translate("axe.cli.scars.resolve.title"),
-          desc: I18n.translate("axe.cli.scars.resolve.desc"),
+          name: I18n.translate("axe.cli.hra.resolve.title"),
+          desc: I18n.translate("axe.cli.hra.resolve.desc"),
         },
         {
-          name: I18n.translate("axe.cli.scars.sales.title"),
-          desc: I18n.translate("axe.cli.scars.sales.desc"),
+          name: I18n.translate("axe.cli.hra.sales.title"),
+          desc: I18n.translate("axe.cli.hra.sales.desc"),
         },
         {
-          name: I18n.translate("axe.cli.scars.lookup.title"),
-          desc: I18n.translate("axe.cli.scars.lookup.desc"),
+          name: I18n.translate("axe.cli.hra.lookup.title"),
+          desc: I18n.translate("axe.cli.hra.lookup.desc"),
         },
       ]
     end
@@ -57,17 +57,17 @@ module ::Axentro::Interface::Axe
 
     def run_impl(action_name)
       case action_name
-      when I18n.translate("axe.cli.scars.buy.title")
+      when I18n.translate("axe.cli.hra.buy.title")
         return buy
-      when I18n.translate("axe.cli.scars.cancel.title")
+      when I18n.translate("axe.cli.hra.cancel.title")
         return cancel
-      when I18n.translate("axe.cli.scars.sell.title")
+      when I18n.translate("axe.cli.hra.sell.title")
         return sell
-      when I18n.translate("axe.cli.scars.resolve.title")
+      when I18n.translate("axe.cli.hra.resolve.title")
         return resolve
-      when I18n.translate("axe.cli.scars.sales.title")
+      when I18n.translate("axe.cli.hra.sales.title")
         return sales
-      when I18n.translate("axe.cli.scars.lookup.title")
+      when I18n.translate("axe.cli.hra.lookup.title")
         return lookup
       end
 
@@ -83,7 +83,7 @@ module ::Axentro::Interface::Axe
       puts_help(HELP_PRICE) unless price = G.op.__price
       puts_help(HELP_DOMAIN) unless domain = G.op.__domain
 
-      Core::DApps::BuildIn::Scars.valid_domain?(domain)
+      Core::DApps::BuildIn::Hra.valid_domain?(domain)
 
       resolved = resolve_internal(node, domain)
 
@@ -112,7 +112,7 @@ module ::Axentro::Interface::Axe
 
       kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW
 
-      add_transaction(node, "scars_buy", [wallet], senders, recipients, domain, TOKEN_DEFAULT, kind)
+      add_transaction(node, "hra_buy", [wallet], senders, recipients, domain, TOKEN_DEFAULT, kind)
     end
 
     def sell
@@ -149,7 +149,7 @@ module ::Axentro::Interface::Axe
 
       kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW
 
-      add_transaction(node, "scars_sell", [wallet], senders, recipients, domain, TOKEN_DEFAULT, kind)
+      add_transaction(node, "hra_sell", [wallet], senders, recipients, domain, TOKEN_DEFAULT, kind)
     end
 
     def cancel
@@ -185,20 +185,20 @@ module ::Axentro::Interface::Axe
 
       kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW
 
-      add_transaction(node, "scars_cancel", [wallet], senders, recipients, domain, TOKEN_DEFAULT, kind)
+      add_transaction(node, "hra_cancel", [wallet], senders, recipients, domain, TOKEN_DEFAULT, kind)
     end
 
     def sales
       puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
 
-      payload = {call: "scars_for_sale"}.to_json
+      payload = {call: "hra_for_sale"}.to_json
 
       body = rpc(node, payload)
 
       if G.op.__json
         puts body
       else
-        puts_success "\n SCARS domains for sale!\n"
+        puts_success "\n Human Readable Addresses for sale!\n"
 
         puts "   %20s | %64s | %s" % ["Domain", "Address", "Price"]
 
@@ -244,7 +244,7 @@ module ::Axentro::Interface::Axe
 
       json = lookup_internal(node, address)
 
-      puts_success "\n SCARS domains mapped to address #{address}\n"
+      puts_success "\n Human Readable Address domains mapped to address #{address}\n"
 
       puts "   %s" % ["Domain"]
 

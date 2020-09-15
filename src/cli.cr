@@ -212,14 +212,14 @@ module ::Axentro::Interface
     end
 
     def resolve_internal(node, domain) : JSON::Any
-      payload = {call: "scars_resolve", domain_name: domain}.to_json
+      payload = {call: "hra_resolve", domain_name: domain}.to_json
 
       body = rpc(node, payload)
       JSON.parse(body)
     end
 
     def lookup_internal(node, address) : JSON::Any
-      payload = {call: "scars_lookup", address: address}.to_json
+      payload = {call: "hra_lookup", address: address}.to_json
 
       body = rpc(node, payload)
       JSON.parse(body)

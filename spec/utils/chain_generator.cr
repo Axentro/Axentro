@@ -242,7 +242,7 @@ module ::Units::Utils::ChainGenerator
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
         transaction_id,
-        "scars_buy", # action
+        "hra_buy", # action
         [a_sender(sender_wallet, sender_amount, 20000000_i64)],
         [] of Transaction::Recipient,
         domain,        # message
@@ -259,7 +259,7 @@ module ::Units::Utils::ChainGenerator
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
         transaction_id,
-        "scars_buy", # action
+        "hra_buy", # action
         [a_sender(recipient_wallet, recipient_amount, 20000000_i64)],
         [a_recipient(@sender_wallet, 100_i64)],
         domain,        # message
@@ -276,7 +276,7 @@ module ::Units::Utils::ChainGenerator
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
         transaction_id,
-        "scars_buy", # action
+        "hra_buy", # action
         [a_sender(recipient_wallet, recipient_amount, 20000000_i64)],
         recipients,
         domain,        # message
@@ -293,7 +293,7 @@ module ::Units::Utils::ChainGenerator
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
         transaction_id,
-        "scars_sell", # action
+        "hra_sell", # action
         [a_sender(sender_wallet, sender_amount, 20000000_i64)],
         [a_recipient(sender_wallet, sender_amount)],
         domain,        # message
@@ -310,7 +310,7 @@ module ::Units::Utils::ChainGenerator
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
         transaction_id,
-        "scars_sell", # action
+        "hra_sell", # action
         [a_sender(sender_wallet, sender_amount, 20000000_i64)],
         recipients,
         domain,        # message
@@ -327,7 +327,7 @@ module ::Units::Utils::ChainGenerator
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
         transaction_id,
-        "scars_cancel", # action
+        "hra_cancel", # action
         [a_sender(sender_wallet, sender_amount, 20000000_i64)],
         [a_recipient(sender_wallet, sender_amount)],
         domain,        # message
@@ -344,7 +344,7 @@ module ::Units::Utils::ChainGenerator
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
         transaction_id,
-        "scars_cancel", # action
+        "hra_cancel", # action
         [a_sender(sender_wallet, sender_amount, 20000000_i64)],
         recipients,
         domain,        # message

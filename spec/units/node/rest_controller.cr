@@ -240,9 +240,9 @@ describe RESTController do
         exec_rest_api(block_factory.rest.__v1_transaction_fees(context("/api/v1/transaction/fees"), no_params)) do |result|
           result["status"].to_s.should eq("success")
           result["result"]["send"].should eq("0.0001")
-          result["result"]["scars_buy"].should eq("0.001")
-          result["result"]["scars_sell"].should eq("0.0001")
-          result["result"]["scars_cancel"].should eq("0.0001")
+          result["result"]["hra_buy"].should eq("0.001")
+          result["result"]["hra_sell"].should eq("0.0001")
+          result["result"]["hra_cancel"].should eq("0.0001")
           result["result"]["create_token"].should eq("0.1")
         end
       end
@@ -473,13 +473,13 @@ describe RESTController do
     end
   end
 
-  describe "__v1_scars_sales" do
+  describe "__v1_hra_sales" do
     it "should return the domains for sale" do
       with_factory do |block_factory, transaction_factory|
         domain = "axentro.ax"
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2).add_slow_block([transaction_factory.make_sell_domain(domain, 1_i64)]).add_slow_blocks(3)
 
-        exec_rest_api(block_factory.rest.__v1_scars_sales(context("/api/v1/scars/sales"), no_params)) do |result|
+        exec_rest_api(block_factory.rest.__v1_hra_sales(context("/api/v1/hra/sales"), no_params)) do |result|
           result["status"].to_s.should eq("success")
           result = Array(DomainResult).from_json(result["result"].to_json).first
           result.domain_name.should eq(domain)
@@ -490,12 +490,12 @@ describe RESTController do
     end
   end
 
-  describe "__v1_scars" do
+  describe "__v1_hra" do
     it "should return true when domain is resolved" do
       with_factory do |block_factory, transaction_factory|
         domain = "axentro.ax"
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
-        exec_rest_api(block_factory.rest.__v1_scars(context("/api/v1/scars/#{domain}"), {domain: domain})) do |result|
+        exec_rest_api(block_factory.rest.__v1_hra(context("/api/v1/hra/#{domain}"), {domain: domain})) do |result|
           result["status"].to_s.should eq("success")
           result["result"]["resolved"].to_s.should eq("true")
         end
@@ -505,7 +505,7 @@ describe RESTController do
       with_factory do |block_factory, _|
         domain = "axentro.ax"
         block_factory.add_slow_blocks(2)
-        exec_rest_api(block_factory.rest.__v1_scars(context("/api/v1/scars/#{domain}"), {domain: domain})) do |result|
+        exec_rest_api(block_factory.rest.__v1_hra(context("/api/v1/hra/#{domain}"), {domain: domain})) do |result|
           result["status"].to_s.should eq("success")
           result["result"]["resolved"].to_s.should eq("false")
         end
@@ -518,7 +518,7 @@ describe RESTController do
           [transaction_factory.make_buy_domain_from_platform(domains[0], 0_i64),
            transaction_factory.make_buy_domain_from_platform(domains[1], 0_i64)]).add_slow_blocks(2)
         address = transaction_factory.sender_wallet.address
-        exec_rest_api(block_factory.rest.__v1_scars_lookup(context("/api/v1/scars/lookup/#{address}"), {address: address})) do |result|
+        exec_rest_api(block_factory.rest.__v1_hra_lookup(context("/api/v1/hra/lookup/#{address}"), {address: address})) do |result|
           result["status"].to_s.should eq("success")
           result_domains = Array(DomainResult).from_json(result["result"]["domains"].to_json)
           result_domains.first.domain_name.should eq(domains[0])
@@ -540,7 +540,7 @@ describe RESTController do
           .add_slow_block([transaction_factory.make_buy_domain_from_seller(domain_name, 100_i64)])
           .add_slow_blocks(2)
         address = transaction_factory.sender_wallet.address
-        exec_rest_api(block_factory.rest.__v1_scars_lookup(context("/api/v1/scars/lookup/#{address}"), {address: address})) do |result|
+        exec_rest_api(block_factory.rest.__v1_hra_lookup(context("/api/v1/hra/lookup/#{address}"), {address: address})) do |result|
           result["status"].to_s.should eq("success")
           result_domains = Array(DomainResult).from_json(result["result"]["domains"].to_json)
           result_domains.size.should eq(1)

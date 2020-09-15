@@ -161,9 +161,9 @@ module ::Axentro::Core::DApps::BuildIn
         "Mining reward"
       when "send"
         "Payment"
-      when "scars_buy"
+      when "hra_buy"
         "Payment (Human readable address)"
-      when "scars_sell"
+      when "hra_sell"
         "Payment (Human readable address)"
       else
         action

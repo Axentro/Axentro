@@ -47,11 +47,11 @@ module ::Axentro::Core::Controllers
   # [GET] api/v1/domain/{:domain}/token/{:token}        | amount for domain for the token
   # [GET] api/v1/domain/{:domain}/transactions          | transactions for domain
   #
-  # --- scars
+  # --- hra
   #
-  # [GET] api/v1/scars/sales                              | get all scars's domains for sales
-  # [GET] api/v1/scars/{:domain}                          | get the status of the domain
-  # [GET] api/v1/scars/lookup/{:address}                  | get the domains for an address
+  # [GET] api/v1/hra/sales                              | get all hra's domains for sales
+  # [GET] api/v1/hra/{:domain}                          | get the status of the domain
+  # [GET] api/v1/hra/lookup/{:address}                  | get the domains for an address
   #
   class RESTController
     def initialize(@blockchain : Blockchain)
@@ -78,9 +78,9 @@ module ::Axentro::Core::Controllers
       get "/api/v1/domain/:domain" { |context, params| __v1_domain(context, params) }
       get "/api/v1/domain/:domain/token/:token" { |context, params| __v1_domain_token(context, params) }
       get "/api/v1/domain/:domain/transactions" { |context, params| __v1_domain_transactions(context, params) }
-      get "/api/v1/scars/sales" { |context, params| __v1_scars_sales(context, params) }
-      get "/api/v1/scars/:domain" { |context, params| __v1_scars(context, params) }
-      get "/api/v1/scars/lookup/:address" { |context, params| __v1_scars_lookup(context, params) }
+      get "/api/v1/hra/sales" { |context, params| __v1_hra_sales(context, params) }
+      get "/api/v1/hra/:domain" { |context, params| __v1_hra(context, params) }
+      get "/api/v1/hra/lookup/:address" { |context, params| __v1_hra_lookup(context, params) }
       get "/api/v1/tokens" { |context, params| __v1_tokens(context, params) }
       get "/api/v1/nodes" { |context, params| __v1_nodes(context, params) }
       get "/api/v1/node" { |context, params| __v1_node(context, params) }
@@ -241,25 +241,25 @@ module ::Axentro::Core::Controllers
       end
     end
 
-    def __v1_scars_sales(context, params)
+    def __v1_hra_sales(context, params)
       with_response(context) do
-        @blockchain.scars.scars_for_sale_impl
+        @blockchain.hra.hra_for_sale_impl
       end
     end
 
-    def __v1_scars(context, params)
+    def __v1_hra(context, params)
       domain = params["domain"]
 
       with_response(context) do
-        @blockchain.scars.scars_resolve_impl(domain)
+        @blockchain.hra.hra_resolve_impl(domain)
       end
     end
 
-    def __v1_scars_lookup(context, params)
+    def __v1_hra_lookup(context, params)
       address = params["address"]
 
       with_response(context) do |_|
-        @blockchain.scars.scars_lookup_impl(address)
+        @blockchain.hra.hra_lookup_impl(address)
       end
     end
 
@@ -337,7 +337,7 @@ module ::Axentro::Core::Controllers
     end
 
     private def convert_domain_to_address(domain : String) : String
-      resolved = @blockchain.scars.scars_resolve_impl(domain)
+      resolved = @blockchain.hra.hra_resolve_impl(domain)
       raise "the domain #{domain} is not resolved" unless resolved[:resolved]
 
       resolved[:domain][:address]

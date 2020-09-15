@@ -13,7 +13,7 @@
 require "./build_in/*"
 
 module ::Axentro::Core::DApps::BuildIn
-  BUILD_IN_DAPPS = %w(BlockchainInfo NodeInfo TransactionCreator UTXO Scars Token Indices Rejects Fees Messenger WalletInfo)
+  BUILD_IN_DAPPS = %w(BlockchainInfo NodeInfo TransactionCreator UTXO Hra Token Indices Rejects Fees Messenger WalletInfo)
 
   {% for dapp in BUILD_IN_DAPPS %}
     @{{ dapp.id.underscore }} : {{ dapp.id }}?

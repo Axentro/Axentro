@@ -93,9 +93,9 @@ axe:
       node:
         title: "node"
         desc: "show the specified node (connecting node by default)"
-    scars:
-      title:        "scars"
-      desc:         "Axentro Address Resolution System (SCARS), buy/sell a readable domain for your address (sc for short)"
+    hra:
+      title:        "hra"
+      desc:         "Axentro Human Readable Addresses (HRA), buy/sell a readable domain for your address (sc for short)"
       buy:
         title: "buy"
         desc: "buy specified domain"

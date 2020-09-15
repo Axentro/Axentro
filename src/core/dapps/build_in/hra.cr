@@ -27,7 +27,7 @@ module ::Axentro::Core::DApps::BuildIn
   alias DomainResult = NamedTuple(domain_name: String, address: String, status: Status, price: String, block: Int64)
   alias DomainMap = Hash(String, Domain)
 
-  class Scars < DApp
+  class Hra < DApp
     def setup
     end
 
@@ -37,20 +37,20 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def transaction_actions : Array(String)
-      ["scars_buy", "scars_sell", "scars_cancel"]
+      ["hra_buy", "hra_sell", "hra_cancel"]
     end
 
     def transaction_related?(action : String) : Bool
-      action.starts_with?("scars_")
+      action.starts_with?("hra_")
     end
 
     def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
       case transaction.action
-      when "scars_buy"
+      when "hra_buy"
         return valid_buy?(transaction, prev_transactions)
-      when "scars_sell"
+      when "hra_sell"
         return valid_sell?(transaction, prev_transactions)
-      when "scars_cancel"
+      when "hra_cancel"
         return valid_cancel?(transaction, prev_transactions)
       end
 
@@ -58,8 +58,8 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def valid_buy?(transaction : Transaction, transactions : Array(Transaction)) : Bool
-      raise "senders can only be 1 for scars action" if transaction.senders.size != 1
-      raise "you must pay by #{UTXO::DEFAULT} for SCARS" unless transaction.token == UTXO::DEFAULT
+      raise "senders can only be 1 for hra action" if transaction.senders.size != 1
+      raise "you must pay by #{UTXO::DEFAULT} for Human Readable Addresses" unless transaction.token == UTXO::DEFAULT
 
       sender = transaction.senders[0]
       recipients = transaction.recipients
@@ -89,7 +89,7 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def valid_sell?(transaction : Transaction, transactions : Array(Transaction)) : Bool
-      raise "senders can only be 1 for scars action" if transaction.senders.size != 1
+      raise "senders can only be 1 for hra action" if transaction.senders.size != 1
       raise "you have to set one recipient" if transaction.recipients.size != 1
 
       sender = transaction.senders[0]
@@ -104,15 +104,15 @@ module ::Axentro::Core::DApps::BuildIn
       raise "domain #{domain_name} not found" unless domain = resolve_pending(domain_name, transactions)
       raise "domain #{domain_name} is already for sale" if domain[:status] == Status::FOR_SALE
       raise "domain address mismatch: expected #{address} but got #{domain[:address]}" unless address == domain[:address]
-      raise "address mismatch for scars_sell: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
-      raise "price mismatch for scars_sell: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
+      raise "address mismatch for hra_sell: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
+      raise "price mismatch for hra_sell: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
       raise "the selling price must be 0 or higher" if price < 0
 
       true
     end
 
     def valid_cancel?(transaction : Transaction, transactions : Array(Transaction)) : Bool
-      raise "senders can only be 1 for scars action" if transaction.senders.size != 1
+      raise "senders can only be 1 for hra action" if transaction.senders.size != 1
       raise "you have to set one recipient" if transaction.recipients.size != 1
 
       sender = transaction.senders[0]
@@ -127,14 +127,14 @@ module ::Axentro::Core::DApps::BuildIn
       raise "domain #{domain_name} not found" unless domain = resolve_pending(domain_name, transactions)
       raise "domain #{domain_name} is not for sale" if domain[:status] != Status::FOR_SALE
       raise "domain address mismatch: expected #{address} but got #{domain[:address]}" unless address == domain[:address]
-      raise "address mismatch for scars_cancel: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
-      raise "price mismatch for scars_cancel: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
+      raise "address mismatch for hra_cancel: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
+      raise "price mismatch for hra_cancel: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
 
       true
     end
 
     def valid_domain?(domain_name : String) : Bool
-      Core::DApps::BuildIn::Scars.valid_domain?(domain_name)
+      Core::DApps::BuildIn::Hra.valid_domain?(domain_name)
     end
 
     def self.valid_domain?(domain_name : String) : Bool
@@ -170,16 +170,16 @@ module ::Axentro::Core::DApps::BuildIn
       domain_map = DomainMap.new
 
       transactions.each do |transaction|
-        next if transaction.action != "scars_buy" &&
-                transaction.action != "scars_sell" &&
-                transaction.action != "scars_cancel"
+        next if transaction.action != "hra_buy" &&
+                transaction.action != "hra_sell" &&
+                transaction.action != "hra_cancel"
 
         domain_name = transaction.message
         address = transaction.senders[0][:address]
         price = transaction.senders[0][:amount]
 
         case transaction.action
-        when "scars_buy"
+        when "hra_buy"
           domain_map[domain_name] = {
             domain_name: domain_name,
             address:     address,
@@ -187,7 +187,7 @@ module ::Axentro::Core::DApps::BuildIn
             status:      Status::ACQUIRED,
             block:       0_i64,
           }
-        when "scars_sell"
+        when "hra_sell"
           domain_map[domain_name] = {
             domain_name: domain_name,
             address:     address,
@@ -195,7 +195,7 @@ module ::Axentro::Core::DApps::BuildIn
             status:      Status::FOR_SALE,
             block:       0_i64,
           }
-        when "scars_cancel"
+        when "hra_cancel"
           domain_map[domain_name] = {
             domain_name: domain_name,
             address:     address,
@@ -211,38 +211,38 @@ module ::Axentro::Core::DApps::BuildIn
 
     def self.fee(action : String) : Int64
       case action
-      when "scars_buy"
+      when "hra_buy"
         return scale_i64("0.001")
-      when "scars_sell"
+      when "hra_sell"
         return scale_i64("0.0001")
-      when "scars_cancel"
+      when "hra_cancel"
         return scale_i64("0.0001")
       end
 
-      raise "got unknown action #{action} while getting a fee for scars"
+      raise "got unknown action #{action} while getting a fee for hra"
     end
 
     def define_rpc?(call, json, context, params) : HTTP::Server::Context?
       case call
-      when "scars_resolve"
-        return scars_resolve(json, context, params)
-      when "scars_for_sale"
-        return scars_for_sale(json, context, params)
-      when "scars_lookup"
-        return scars_lookup(json, context, params)
+      when "hra_resolve"
+        return hra_resolve(json, context, params)
+      when "hra_for_sale"
+        return hra_for_sale(json, context, params)
+      when "hra_lookup"
+        return hra_lookup(json, context, params)
       end
 
       nil
     end
 
-    def scars_resolve(json, context, params)
+    def hra_resolve(json, context, params)
       domain_name = json["domain_name"].as_s
 
-      context.response.print api_success(scars_resolve_impl(domain_name))
+      context.response.print api_success(hra_resolve_impl(domain_name))
       context
     end
 
-    def scars_resolve_impl(domain_name : String)
+    def hra_resolve_impl(domain_name : String)
       domain = resolve_for(domain_name)
 
       if domain
@@ -254,23 +254,23 @@ module ::Axentro::Core::DApps::BuildIn
       end
     end
 
-    def scars_for_sale(json, context, params)
-      context.response.print api_success(scars_for_sale_impl)
+    def hra_for_sale(json, context, params)
+      context.response.print api_success(hra_for_sale_impl)
       context
     end
 
-    def scars_for_sale_impl
+    def hra_for_sale_impl
       database.get_domains_for_sale.map { |d| scale_decimal(d) }
     end
 
-    def scars_lookup(json, context, params)
+    def hra_lookup(json, context, params)
       address = json["address"].as_s
 
-      context.response.print api_success(scars_lookup_impl(address))
+      context.response.print api_success(hra_lookup_impl(address))
       context
     end
 
-    def scars_lookup_impl(address : String)
+    def hra_lookup_impl(address : String)
       domains = lookup_for(address)
       domain_results = Array(DomainResult).new
 

@@ -98,7 +98,7 @@ module ::Axentro::Interface
       ENCRYPTED
       SEED
       DERIVATION
-      # for scars
+      # for hra
       PRICE
       DOMAIN
       # for tokens
@@ -321,7 +321,7 @@ module ::Axentro::Interface
     end
 
     private def parse_price(parser : OptionParser, actives : Array(Options))
-      parser.on("--price=PRICE", I18n.translate("cli.options.scars.price")) { |price|
+      parser.on("--price=PRICE", I18n.translate("cli.options.hra.price")) { |price|
         decimal_option(price) do
           @price = price
         end
@@ -329,7 +329,7 @@ module ::Axentro::Interface
     end
 
     private def parse_domain(parser : OptionParser, actives : Array(Options))
-      parser.on("--domain=DOMAIN", I18n.translate("cli.options.scars.domain")) { |domain|
+      parser.on("--domain=DOMAIN", I18n.translate("cli.options.hra.domain")) { |domain|
         @domain = domain
       } if is_active?(actives, Options::DOMAIN)
     end
