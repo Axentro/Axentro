@@ -33,7 +33,7 @@ module ::Axentro::Core::Data::Rejects
   # ------- Query -------
   def find_reject(transaction_id : String) : Reject?
     rejects = [] of Reject
-    @db.query("select * from rejects where transaction_id = ?", transaction_id) do |rows|
+    @db.query("select * from rejects where transaction_id like ? || '%'", transaction_id) do |rows|
       rows.each do
         tid = rows.read(String)
         addr = rows.read(String)

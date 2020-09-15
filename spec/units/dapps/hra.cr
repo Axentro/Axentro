@@ -155,6 +155,23 @@ describe Hra do
         end
       end
 
+      it "should raise error when trying to buy more than one domain for an address" do
+        with_factory do |block_factory, transaction_factory|
+          txns = [
+            transaction_factory.make_buy_domain_from_platform("domain1.ax", 0_i64)
+          ]
+
+          chain = block_factory.add_slow_block(txns).add_slow_blocks(2).chain
+          hra = Hra.new(block_factory.blockchain)
+          hra.record(chain)
+
+          tx1 = transaction_factory.make_buy_domain_from_platform("domain2.ax", 0_i64)
+          expect_raises(Exception, "You may only have 1 human readable address per wallet address. You already own: domain1.ax") do
+            hra.valid_buy?(tx1, txns)
+          end
+        end
+      end
+
       it "should raise error when domain name not for sale" do
         with_factory do |block_factory, transaction_factory|
           txns = [

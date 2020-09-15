@@ -105,6 +105,21 @@ describe Indices do
         end
       end
 
+      it "should return a transaction for the supplied partial transaction id" do
+        with_factory do |block_factory, _|
+          block_factory.add_slow_blocks(10)
+          transaction = block_factory.chain[1].transactions.first
+          payload = {call: "transaction", transaction_id: transaction.id[0,8]}.to_json
+          json = JSON.parse(payload)
+
+          with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
+            data = JSON.parse(result)
+            data["status"].should eq("accepted")
+            data["transaction"].should eq(JSON.parse(transaction.to_json))
+          end
+        end
+      end
+
       it "should raise an exception for the invalid transaction id" do
         with_factory do |block_factory, _|
           payload = {call: "transaction", transaction_id: "invalid-transaction-id"}.to_json

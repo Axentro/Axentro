@@ -100,7 +100,7 @@ module ::Axentro::Core::Data::Transactions
 
   def get_block_index_for_transaction(transaction_id : String) : Int64?
     idx : Int64? = nil
-    @db.query("select block_id from transactions where id = ?", transaction_id) do |rows|
+    @db.query("select block_id from transactions where id like ? || '%'", transaction_id) do |rows|
       rows.each do
         idx = rows.read(Int64 | Nil)
       end

@@ -199,6 +199,12 @@ describe SlowBlock do
       block.find_transaction(coinbase_transaction.id).should eq(coinbase_transaction)
     end
 
+    it "should find a transaction when an matching one exists given a partial transaction id" do
+      coinbase_transaction = a_fixed_coinbase_transaction
+      block = SlowBlock.new(2_i64, [coinbase_transaction, a_fixed_signed_transaction], a_nonce, "prev_hash_1", 0_i64, 3_i32, NODE_ADDRESS)
+      block.find_transaction(coinbase_transaction.id[0,8]).should eq(coinbase_transaction)
+    end
+
     it "should return nil when cannot find a matching transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
       block = SlowBlock.new(2_i64, [coinbase_transaction, a_fixed_signed_transaction], a_nonce, "prev_hash_1", 0_i64, 3_i32, NODE_ADDRESS)

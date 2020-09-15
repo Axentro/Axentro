@@ -188,7 +188,7 @@ module ::Axentro::Core
     end
 
     def find_transaction(transaction_id : String) : Transaction?
-      @transactions.find { |t| t.id == transaction_id }
+      @transactions.find { |t| t.id.starts_with?(transaction_id) }
     end
 
     def set_transactions(txns : Transactions)

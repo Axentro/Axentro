@@ -30,6 +30,36 @@ describe Rejects do
       rejects.transaction_actions.size.should eq(0)
     end
   end
+  it "should find a rejected transaction" do
+    with_factory do |block_factory, transaction_factory|
+      sender_address = transaction_factory.sender_wallet.address
+      chain = block_factory.add_slow_blocks(2).chain
+      transaction_id = chain.last.transactions.last.id
+      rejects = Rejects.new(block_factory.blockchain)
+      rejects.record_reject(transaction_id, sender_address, Exception.new("oops"))
+      rejects.find(transaction_id).not_nil!.transaction_id.should eq(transaction_id)
+    end
+  end
+  it "should find a rejected transaction using partial transaction id" do
+    with_factory do |block_factory, transaction_factory|
+      sender_address = transaction_factory.sender_wallet.address
+      chain = block_factory.add_slow_blocks(2).chain
+      transaction_id = chain.last.transactions.last.id
+      rejects = Rejects.new(block_factory.blockchain)
+      rejects.record_reject(transaction_id, sender_address, Exception.new("oops"))
+      rejects.find(transaction_id[0,8]).not_nil!.transaction_id.should eq(transaction_id)
+    end
+  end
+  it "should find rejected transactions by address" do
+    with_factory do |block_factory, transaction_factory|
+      sender_address = transaction_factory.sender_wallet.address
+      chain = block_factory.add_slow_blocks(2).chain
+      transaction_id = chain.last.transactions.last.id
+      rejects = Rejects.new(block_factory.blockchain)
+      rejects.record_reject(transaction_id, sender_address, Exception.new("oops"))
+      rejects.find_by_address(sender_address).size.should eq(1)
+    end
+  end
   it "should perform #transaction_related?" do
     with_factory do |block_factory, _|
       rejects = Rejects.new(block_factory.add_slow_block.blockchain)
