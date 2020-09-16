@@ -31,10 +31,12 @@ module ::Axentro::Core::DApps::BuildIn
     property token : String
     property category : String
     property datetime : String
+    property fee : String
     property status : String
     property direction : String
+    property data : String
 
-    def initialize(@transaction_id : String, @kind : String, @from : String, @from_readable : String, @to : String, @to_readable : String, @amount : String, @token : String, @category : String, @datetime : String, @status : String, @direction : String); end
+    def initialize(@transaction_id : String, @kind : String, @from : String, @from_readable : String, @to : String, @to_readable : String, @amount : String, @token : String, @category : String, @datetime : String, @fee : String, @data : String, @status : String, @direction : String); end
   end
 
   struct RejectedWalletTransaction
@@ -130,7 +132,7 @@ module ::Axentro::Core::DApps::BuildIn
         RecentWalletTransaction.new(
           t.id, t.kind.to_s, "", "", first_recipient(t.recipients),
           domain_for_recipients(t.recipients), amount_for_senders(address, t.senders), t.token, category(t.action),
-          Time.unix_ms(t.timestamp).to_s, status, "Outgoing"
+          Time.unix_ms(t.timestamp).to_s, fee_for_senders(address, t.senders), t.message, status, "Outgoing"
         )
       end
     end
@@ -140,7 +142,7 @@ module ::Axentro::Core::DApps::BuildIn
         RecentWalletTransaction.new(
           t.id, t.kind.to_s, first_sender(t.senders), domain_for_senders(t.senders), "", "",
           amount_for_recipients(address, t.recipients), t.token, category(t.action),
-          Time.unix_ms(t.timestamp).to_s, status, "Incoming"
+          Time.unix_ms(t.timestamp).to_s, fee_for_senders(address, t.senders), t.message, status, "Incoming"
         )
       end
     end
@@ -176,6 +178,10 @@ module ::Axentro::Core::DApps::BuildIn
 
     private def amount_for_senders(address, senders) : String
       scale_decimal(senders.select { |s| s[:address] == address }.map(&.[:amount]).reduce(0_i64) { |acc, v| acc + v })
+    end
+
+    private def fee_for_senders(address, senders) : String
+      scale_decimal(senders.select { |s| s[:address] == address }.map(&.[:fee]).reduce(0_i64) { |acc, v| acc + v })
     end
 
     private def domain_for_senders(senders) : String
