@@ -53,6 +53,7 @@ module ::Axentro::Core
       @wallet : Wallet,
       @database : Database,
       @developer_fund : DeveloperFund?,
+      @fastnode_address : String?,
       @security_level_percentage : Int64?,
       @max_miners : Int32,
       @max_private_nodes : Int32,
@@ -61,7 +62,7 @@ module ::Axentro::Core
       welcome
 
       @heartbeat_salt = Random::Secure.hex(32)
-      @blockchain = Blockchain.new(@wallet, @database, @developer_fund, @security_level_percentage, @max_miners, is_standalone?)
+      @blockchain = Blockchain.new(@wallet, @database, @developer_fund, @fastnode_address, @security_level_percentage, @max_miners, is_standalone?)
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @validation_manager = ValidationManager.new(@blockchain, @bind_host, @bind_port, @use_ssl)
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @validation_manager, @max_private_nodes)
@@ -892,6 +893,9 @@ module ::Axentro::Core
 
         unless @developer_fund.nil?
           info "Developer fund has been invoked based on this configuration: #{@developer_fund.not_nil!.get_path}"
+        end
+        unless @fastnode_address.nil?
+          info "Fast node has been set to this address: #{@fastnode_address.not_nil!}"
         end
         @phase = SetupPhase::DATABASE_VALIDATING
         proceed_setup

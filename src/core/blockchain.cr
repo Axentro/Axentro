@@ -47,7 +47,7 @@ module ::Axentro::Core
     @max_miners : Int32
     @is_standalone : Bool
 
-    def initialize(@wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, security_level_percentage : Int64?, @max_miners : Int32, @is_standalone : Bool)
+    def initialize(@wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, @fastnode_address : String?, security_level_percentage : Int64?, @max_miners : Int32, @is_standalone : Bool)
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup
@@ -510,9 +510,15 @@ module ::Axentro::Core
       @database.get_slow_blocks(from)
     end
 
+    private def get_genesis_block_transactions
+      developer_fund_transactions = @developer_fund ? DeveloperFund.transactions(@developer_fund.not_nil!.get_config) : [] of Transaction
+      fastnode_transactions = @fastnode_address ? FastNode.transactions(@fastnode_address.not_nil!) : [] of Transaction
+      developer_fund_transactions + fastnode_transactions
+    end
+
     def genesis_block : SlowBlock
       genesis_index = 0_i64
-      genesis_transactions = @developer_fund ? DeveloperFund.transactions(@developer_fund.not_nil!.get_config) : [] of Transaction
+      genesis_transactions = get_genesis_block_transactions
       genesis_nonce = "0"
       genesis_prev_hash = "genesis"
       genesis_timestamp = 0_i64

@@ -62,6 +62,7 @@ module ::Axentro::Interface
     @node_id : String?
 
     @developer_fund_path : String?
+    @fastnode_address : String?
 
     @security_level_percentage : Int64?
 
@@ -108,6 +109,7 @@ module ::Axentro::Interface
       # for node
       NODE_ID
       DEVELOPER_FUND
+      FASTNODE_ADDRESS
       SECURITY_LEVEL_PERCENTAGE
       MAX_MINERS
       MAX_PRIVATE_NODES
@@ -144,6 +146,7 @@ module ::Axentro::Interface
         parse_config_name(parser, actives)
         parse_node_id(parser, actives)
         parse_developer_fund(parser, actives)
+        parse_fast_node_address(parser, actives)
         parse_security_level_percentage(parser, actives)
         parse_slow_transaction(parser, actives)
         parse_fast_transaction(parser, actives)
@@ -358,6 +361,12 @@ module ::Axentro::Interface
       } if is_active?(actives, Options::DEVELOPER_FUND)
     end
 
+    private def parse_fast_node_address(parser : OptionParser, actives : Array(Options))
+      parser.on("--fastnode-address=FASTNODE_ADDRESS", I18n.translate("cli.options.fastnode_address")) { |fastnode_address|
+        @fastnode_address = fastnode_address
+      } if is_active?(actives, Options::FASTNODE_ADDRESS)
+    end
+
     private def parse_security_level_percentage(parser : OptionParser, actives : Array(Options))
       parser.on("--security-level-percentage=PERCENT_VALUE", I18n.translate("cli.options.security_level_percentage")) { |slp|
         @security_level_percentage = slp.to_i64
@@ -516,6 +525,10 @@ module ::Axentro::Interface
 
     def __developer_fund : Core::DeveloperFund?
       Core::DeveloperFund.validate(@developer_fund_path)
+    end
+
+    def __fastnode_address : String?
+      Core::FastNode.validate(@fastnode_address)
     end
 
     def __security_level_percentage : Int64?
