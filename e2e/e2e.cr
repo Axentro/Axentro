@@ -74,8 +74,8 @@ class AxentroE2E
 
       parser.on("--keep-logs", "keep generated logs, wallets and db") do
         @keep_logs = true
-        ENV["SC_LOG"] = "debug"
-        ENV.delete("SC_SET_DIFFICULTY")
+        ENV["AX_LOG"] = "debug"
+        ENV.delete("AX_SET_DIFFICULTY")
         # ENV.delete("AXE_TESTING")
       end
 

@@ -201,7 +201,7 @@ module ::Axentro::Core
     end
 
     def mining_block_difficulty : Int32
-      return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
+      return ENV["AX_SET_DIFFICULTY"].to_i if ENV.has_key?("AX_SET_DIFFICULTY")
       the_mining_block = @mining_block
       if the_mining_block
         the_mining_block.difficulty
@@ -211,7 +211,7 @@ module ::Axentro::Core
     end
 
     def mining_block_difficulty_miner : Int32
-      return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
+      return ENV["AX_SET_DIFFICULTY"].to_i if ENV.has_key?("AX_SET_DIFFICULTY")
       block_difficulty_to_miner_difficulty(mining_block_difficulty)
     end
 
@@ -436,11 +436,13 @@ module ::Axentro::Core
     private def _add_transaction(transaction : Transaction)
       if transaction.valid_common?
         if transaction.kind == TransactionKind::FAST
-          if !chain_mature_enough_for_fast_blocks?
-            raise "chain not mature enough for FAST transactions"
-          else
+          if chain_mature_enough_for_fast_blocks? && i_am_the_current_leader
             debug "adding fast transaction to pool: #{transaction.id}"
             FastTransactionPool.add(transaction)
+          else
+            debug "chain is not mature enough for FAST transactions so adding to slow transaction pool: #{transaction.id}"
+            transaction.kind = TransactionKind::SLOW
+            SlowTransactionPool.add(transaction)
           end
         else
           SlowTransactionPool.add(transaction)
@@ -638,6 +640,7 @@ module ::Axentro::Core
         aligned_transactions << t
       rescue e : Exception
         rejects.record_reject(t.id, Rejects.address_from_senders(t.senders), e)
+        node.wallet_info_controller.update_wallet_information([t])
 
         SlowTransactionPool.delete(t)
       end
@@ -702,6 +705,7 @@ module ::Axentro::Core
         replace_transactions << t
       rescue e : Exception
         rejects.record_reject(t.id, Rejects.address_from_senders(t.senders), e)
+        node.wallet_info_controller.update_wallet_information([t])
       end
 
       SlowTransactionPool.lock

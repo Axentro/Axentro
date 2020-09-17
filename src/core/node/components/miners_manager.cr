@@ -97,7 +97,7 @@ module ::Axentro::Core::NodeComponents
       if miner = find?(socket)
         block = @blockchain.mining_block.with_nonce(miner_nonce.value)
 
-        if ENV.has_key?("SC_SET_DIFFICULTY")
+        if ENV.has_key?("AX_SET_DIFFICULTY")
           mint_block(block)
           return
         end

@@ -22,7 +22,7 @@ describe Consensus do
   describe "#valid?, #valid_pow?" do
     # TODO: this test is probably erroneously passing since the change to the 'valid' methods
     it "should return a valid difficulty value" do
-      ENV.delete("SC_SET_DIFFICULTY")
+      ENV.delete("AX_SET_DIFFICULTY")
       nonce = "2978736204850283095"
       valid_nonce?("block_hash", nonce, 2).should be < 3
       valid_pow?("block_hash", nonce, 2).should be < 3
@@ -30,7 +30,7 @@ describe Consensus do
 
     # TODO: this test is probably erroneously passing since the change to the 'valid' methods
     it "should return an invalid difficulty value" do
-      ENV.delete("SC_SET_DIFFICULTY")
+      ENV.delete("AX_SET_DIFFICULTY")
       nonce = "2978736204850283095"
       valid_nonce?("block_hash", nonce, 20).should be < 3
       valid_pow?("block_hash", nonce, 20).should be < 3
@@ -39,8 +39,8 @@ describe Consensus do
 
   describe "difficulty" do
     describe "should return the #block_diffulty over time" do
-      current_env = ENV["SC_SET_DIFFICULTY"]?
-      ENV.delete("SC_SET_DIFFICULTY")
+      current_env = ENV["AX_SET_DIFFICULTY"]?
+      ENV.delete("AX_SET_DIFFICULTY")
 
       describe "(before block Dark Gravity Wave running average can be built)" do
         it "should use default difficulty when less than 3 blocks in the chain" do
@@ -81,7 +81,7 @@ describe Consensus do
         end
       end
 
-      ENV["SC_SET_DIFFICULTY"] = current_env
+      ENV["AX_SET_DIFFICULTY"] = current_env
     end
   end
 end

@@ -13,7 +13,7 @@
 module ::E2E::Utils
   class Envs
     def self.setup_env
-      " SC_LOG=debug "
+      " AX_LOG=debug "
     end
   end
 end

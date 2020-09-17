@@ -27,7 +27,7 @@ module ::Axentro::Core::FastChain
 
   private def i_can_lead?(my_ranking)
     return false if node.is_private_node?
-    my_ranking > 0
+    my_ranking > 0 && i_have_fastnode_tokens?
   end
 
   private def assume_leadership
@@ -112,13 +112,17 @@ module ::Axentro::Core::FastChain
     end
   end
 
+  def i_have_fastnode_tokens? : Bool
+    !node.database.get_address_amount(node.get_wallet.address).find{|tq| tq.token == FastNode::FASTNODE_TOKEN}.nil?
+  end
+
   def chain_mature_enough_for_fast_blocks?
     return true if node.has_no_connections? && !node.is_private_node?
     latest = get_latest_index_for_slow
     if ENV.has_key?("AXE_TESTING")
       return true if latest > 8_i64
     end
-    latest > 1440_i64
+    latest > 1_i64
   end
 
   def latest_fast_block : FastBlock?
@@ -186,6 +190,7 @@ module ::Axentro::Core::FastChain
     rescue e : Exception
       debug "align_fast_transactions: REJECTED transaction due to #{e}"
       rejects.record_reject(t.id, Rejects.address_from_senders(t.senders), e)
+      node.wallet_info_controller.update_wallet_information([t])
 
       FastTransactionPool.delete(t)
     end
@@ -235,6 +240,7 @@ module ::Axentro::Core::FastChain
       replace_transactions << t
     rescue e : Exception
       rejects.record_reject(t.id, Rejects.address_from_senders(t.senders), e)
+      node.wallet_info_controller.update_wallet_information([t])
     end
 
     FastTransactionPool.lock

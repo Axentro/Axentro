@@ -29,7 +29,7 @@ module ::Axentro::Core::Consensus
   end
 
   def valid_nonce?(block_hash : String, block_nonce : BlockNonce, difficulty : Int32)
-    difficulty = ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY") # for unit test
+    difficulty = ENV["AX_SET_DIFFICULTY"].to_i if ENV.has_key?("AX_SET_DIFFICULTY") # for unit test
     valid_pow?(block_hash, block_nonce, difficulty)
   end
 
@@ -55,7 +55,7 @@ module ::Axentro::Core::Consensus
     calculated_difficulty = 0_f64
 
     # return difficulty from env var if it has be set
-    return ENV["SC_SET_DIFFICULTY"].to_i if ENV.has_key?("SC_SET_DIFFICULTY")
+    return ENV["AX_SET_DIFFICULTY"].to_i if ENV.has_key?("AX_SET_DIFFICULTY")
 
     # return difficulty default target if chain non-existant or not enough block history
     chain = blockchain.chain.select(&.is_slow_block?)

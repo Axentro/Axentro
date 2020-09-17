@@ -286,9 +286,9 @@ def a_fixed_signed_transaction
 end
 
 def with_difficulty(difficulty : Int32, &block)
-  ENV["SC_SET_DIFFICULTY"] = "#{difficulty}"
+  ENV["AX_SET_DIFFICULTY"] = "#{difficulty}"
 
   yield
 
-  ENV.delete("SC_SET_DIFFICULTY")
+  ENV.delete("AX_SET_DIFFICULTY")
 end

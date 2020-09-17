@@ -106,11 +106,11 @@ module ::Units::Utils::ChainGenerator
     end
 
     def remove_difficulty
-      ENV.delete("SC_SET_DIFFICULTY")
+      ENV.delete("AX_SET_DIFFICULTY")
     end
 
     def enable_difficulty(difficulty = "0")
-      ENV["SC_SET_DIFFICULTY"] = difficulty
+      ENV["AX_SET_DIFFICULTY"] = difficulty
     end
 
     def rpc

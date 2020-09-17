@@ -17,8 +17,8 @@ module ::Axentro::Core::Logger
   LL_INFO    = 2
 
   def log_level : Int32
-    return LL_VERBOSE if ENV["SC_LOG"]? == "verbose"
-    return LL_DEBUG if ENV["SC_LOG"]? == "debug"
+    return LL_VERBOSE if ENV["AX_LOG"]? == "verbose"
+    return LL_DEBUG if ENV["AX_LOG"]? == "debug"
     LL_INFO
   end
 

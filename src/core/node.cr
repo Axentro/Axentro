@@ -24,6 +24,7 @@ module ::Axentro::Core
     getter blockchain : Blockchain
     getter network_type : String
     getter chord : Chord
+    getter database : Database
 
     @miners_manager : MinersManager
     @clients_manager : ClientsManager
