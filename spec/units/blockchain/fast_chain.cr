@@ -96,17 +96,17 @@ describe Blockchain do
   end
 
   describe "fast_transaction_maturity_check" do
-    it "should raise an exception if chain is not mature enough for fast transactions" do
+    it "should convert to a slow transaction if chain is not mature enough for fast transactions" do
       with_factory do |block_factory, transaction_factory|
         transaction1 = transaction_factory.make_fast_send(200000000_i64)
         blockchain = block_factory.blockchain
 
         block_factory.add_slow_blocks(2)
         blockchain.add_transaction(transaction1, false)
-        if reject = blockchain.rejects.find(transaction1.id)
-          reject.reason.should eq("chain not mature enough for FAST transactions")
+        if slow_transaction = SlowTransactionPool.find(transaction1)
+          slow_transaction.id.should eq(transaction1.id)
         else
-          fail "no rejects found"
+          fail "no slow transaction found"
         end
       end
     end
@@ -120,6 +120,9 @@ describe Blockchain do
         blockchain = block_factory.blockchain
 
         block_factory.add_slow_blocks(4)
+
+        transaction1.id
+        transaction2.id
 
         blockchain.add_transaction(transaction1, false)
         blockchain.add_transaction(transaction2, false)

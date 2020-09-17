@@ -66,6 +66,7 @@ module ::Axentro::Core::FastChain
   end
 
   private def i_am_the_current_leader
+    return true if ENV.has_key?("AXE_TESTING")
     CurrentLeader.new(node.get_node_id, node.get_wallet.address) == node.get_current_leader
   end
 
@@ -117,11 +118,12 @@ module ::Axentro::Core::FastChain
   end
 
   def chain_mature_enough_for_fast_blocks?
-    return true if node.has_no_connections? && !node.is_private_node?
     latest = get_latest_index_for_slow
     if ENV.has_key?("AXE_TESTING")
-      return true if latest > 8_i64
+      return false if latest < 8_i64
     end
+    return true if node.has_no_connections? && !node.is_private_node?
+    
     latest > 1_i64
   end
 
