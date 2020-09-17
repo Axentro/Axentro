@@ -17,7 +17,7 @@ module ::Axentro::Core
     def self.validate(address : String | Nil)
       if address
         raise("Fastnode address must be a valid address - you supplied #{address}") unless Keys::Address.is_valid?(address)
-      end  
+      end
       address
     end
 
@@ -40,7 +40,6 @@ module ::Axentro::Core
         TransactionKind::SLOW
       ).to_transaction]
     end
-
   end
 
   include TransactionModels

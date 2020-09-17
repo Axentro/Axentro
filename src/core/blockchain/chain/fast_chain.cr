@@ -114,7 +114,7 @@ module ::Axentro::Core::FastChain
   end
 
   def i_have_fastnode_tokens? : Bool
-    !node.database.get_address_amount(node.get_wallet.address).find{|tq| tq.token == FastNode::FASTNODE_TOKEN}.nil?
+    !node.database.get_address_amount(node.get_wallet.address).find { |tq| tq.token == FastNode::FASTNODE_TOKEN }.nil?
   end
 
   def chain_mature_enough_for_fast_blocks?
@@ -123,7 +123,6 @@ module ::Axentro::Core::FastChain
       return false if latest < 8_i64
     end
     return true if node.has_no_connections? && !node.is_private_node?
-    
     latest > 1_i64
   end
 
