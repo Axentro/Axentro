@@ -7,3 +7,7 @@ html:
     environments:
       testnet:
         url: http://testnet.axentro.io:3000/api/v1/
+      integration: 
+        url: http://integration.axentro.io/api/v1
+      local:
+        url: http://localhost:3000/api/v1    
