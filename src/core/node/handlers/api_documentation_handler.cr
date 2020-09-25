@@ -22,6 +22,8 @@ module ::Axentro::Core
       if context.request.path.try &.starts_with?(@path)
         context.response.headers["Content-Type"] = "text/html"
         context.response << FileStorage.get(@filename).gets_to_end
+      elsif context.request.path.try &.ends_with?(".nex")
+        context.response << File.read(@filename)
       else
         call_next(context)
       end
