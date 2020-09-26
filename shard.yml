@@ -37,6 +37,8 @@ dependencies:
     github: TechMagister/i18n.cr
   baked_file_system:
     github: schovi/baked_file_system
+  json_mapping:
+    github: crystal-lang/json_mapping.cr  
 
 
 development_dependencies:

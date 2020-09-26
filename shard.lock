@@ -28,6 +28,10 @@ shards:
     git: https://github.com/TechMagister/i18n.cr.git
     version: 0.3.1
 
+  json_mapping:
+    git: https://github.com/crystal-lang/json_mapping.cr.git
+    version: 0.1.0
+
   monocypher:
     git: https://github.com/axentro/monocypher.cr.git
     version: 3.1.1

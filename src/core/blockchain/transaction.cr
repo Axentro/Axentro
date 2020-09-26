@@ -11,6 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "./transaction/models"
+require "json_mapping"
 
 module ::Axentro::Core
   class Transaction
