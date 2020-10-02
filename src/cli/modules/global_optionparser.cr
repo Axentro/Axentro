@@ -1,4 +1,4 @@
-# Copyright © 2017-2018 The Axentro Core developers
+# Copyright © 2017-2020 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
@@ -63,6 +63,7 @@ module ::Axentro::Interface
 
     @developer_fund_path : String?
     @fastnode_address : String?
+    @official_nodes_path : String?
 
     @security_level_percentage : Int64?
 
@@ -110,6 +111,7 @@ module ::Axentro::Interface
       NODE_ID
       DEVELOPER_FUND
       FASTNODE_ADDRESS
+      OFFICIAL_NODES
       SECURITY_LEVEL_PERCENTAGE
       MAX_MINERS
       MAX_PRIVATE_NODES
@@ -147,6 +149,7 @@ module ::Axentro::Interface
         parse_node_id(parser, actives)
         parse_developer_fund(parser, actives)
         parse_fast_node_address(parser, actives)
+        parse_official_nodes(parser, actives)
         parse_security_level_percentage(parser, actives)
         parse_slow_transaction(parser, actives)
         parse_fast_transaction(parser, actives)
@@ -361,6 +364,12 @@ module ::Axentro::Interface
       } if is_active?(actives, Options::DEVELOPER_FUND)
     end
 
+    private def parse_official_nodes(parser : OptionParser, actives : Array(Options))
+      parser.on("--developer-fund=OFFICAL_NODES", I18n.translate("cli.options.official_nodes")) { |official_nodes|
+        @official_nodes_path = official_nodes
+      } if is_active?(actives, Options::OFFICIAL_NODES)
+    end
+
     private def parse_fast_node_address(parser : OptionParser, actives : Array(Options))
       parser.on("--fastnode-address=FASTNODE_ADDRESS", I18n.translate("cli.options.fastnode_address")) { |fastnode_address|
         @fastnode_address = fastnode_address
@@ -525,6 +534,10 @@ module ::Axentro::Interface
 
     def __developer_fund : Core::DeveloperFund?
       Core::DeveloperFund.validate(@developer_fund_path)
+    end
+
+    def __official_nodes : Core::OfficialNodes?
+      Core::OfficialNodes.validate(@official_nodes_path)
     end
 
     def __fastnode_address : String?

@@ -1,4 +1,4 @@
-# Copyright © 2017-2018 The Axentro Core developers
+# Copyright © 2017-2020 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
@@ -21,6 +21,12 @@ module ::E2E::Utils::Wallet
 
   def wallet(num : Int32) : String
     File.expand_path("#{wallets_path}/testnet-#{num}.json", __FILE__)
+  end
+
+  def wallet_address(num : Int32) : String
+    wallet_json = File.read(wallet(num))
+    the_parsed_wallet = JSON.parse(wallet_json)
+    the_parsed_wallet["address"].as_s
   end
 
   def developer_fund_file

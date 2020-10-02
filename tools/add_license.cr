@@ -1,4 +1,4 @@
-# Copyright © 2017-2018 The Axentro Core developers
+# Copyright © 2017-2020 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
@@ -15,7 +15,7 @@ if !Dir.entries(".").includes?("add_license.cr")
 end
 
 LICENSE = <<-LIC
-# Copyright © 2017-2018 The Axentro Core developers
+# Copyright © 2017-2020 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.

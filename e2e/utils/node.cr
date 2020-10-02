@@ -1,4 +1,4 @@
-# Copyright © 2017-2018 The Axentro Core developers
+# Copyright © 2017-2020 The Axentro Core developers
 #
 # See the LICENSE file at the top-level directory of this distribution
 # for licensing information.
@@ -22,7 +22,7 @@ module ::E2E::Utils::Node
   end
 
   def node(port : Int32, is_private : Bool, connect_port : Int32?, num : Int32, _db_name : String)
-    args = ["-p", port, "-w", wallet(num), "--developer-fund=#{developer_fund_file}", "--testnet"]
+    args = ["-p", port, "-w", wallet(num), "--developer-fund=#{developer_fund_file}", "--fastnode-address=#{wallet_address(0)}", "--testnet"]
     args << "-n http://127.0.0.1:#{connect_port}" if connect_port
 
     if db_name = _db_name
