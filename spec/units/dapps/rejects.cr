@@ -47,7 +47,7 @@ describe Rejects do
       transaction_id = chain.last.transactions.last.id
       rejects = Rejects.new(block_factory.blockchain)
       rejects.record_reject(transaction_id, sender_address, Exception.new("oops"))
-      rejects.find(transaction_id[0,8]).not_nil!.transaction_id.should eq(transaction_id)
+      rejects.find(transaction_id[0, 8]).not_nil!.transaction_id.should eq(transaction_id)
     end
   end
   it "should find rejected transactions by address" do

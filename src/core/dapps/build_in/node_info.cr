@@ -75,6 +75,10 @@ module ::Axentro::Core::DApps::BuildIn
       node.chord.find_node(id)
     end
 
+    def node_address_impl(address : String)
+      node.chord.find_node_by_address(address)
+    end
+
     def on_message(action : String, from_address : String, content : String, from = nil)
       false
     end

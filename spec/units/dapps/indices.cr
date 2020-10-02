@@ -109,7 +109,7 @@ describe Indices do
         with_factory do |block_factory, _|
           block_factory.add_slow_blocks(10)
           transaction = block_factory.chain[1].transactions.first
-          payload = {call: "transaction", transaction_id: transaction.id[0,8]}.to_json
+          payload = {call: "transaction", transaction_id: transaction.id[0, 8]}.to_json
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|

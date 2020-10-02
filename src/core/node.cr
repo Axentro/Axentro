@@ -67,7 +67,7 @@ module ::Axentro::Core
       @blockchain = Blockchain.new(@wallet, @database, @developer_fund, @fastnode_address, @security_level_percentage, @max_miners, is_standalone?)
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @validation_manager = ValidationManager.new(@blockchain, @bind_host, @bind_port, @use_ssl)
-      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @validation_manager, @max_private_nodes)
+      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @validation_manager, @max_private_nodes, @wallet.address)
       @miners_manager = MinersManager.new(@blockchain)
       @clients_manager = ClientsManager.new(@blockchain)
 
@@ -317,6 +317,8 @@ module ::Axentro::Core
           @chord.stabilize_as_successor(self, socket, message_content)
         when M_TYPE_CHORD_STABILIZE_AS_PREDECESSOR
           @chord.stabilize_as_predecessor(self, socket, message_content)
+        when M_TYPE_CHORD_BROADCAST_NODE_JOINED
+          _broadcast_node_joined(socket, message_content)
         when M_TYPE_NODE_REQUEST_CHAIN
           _request_chain(socket, message_content)
         when M_TYPE_NODE_RECEIVE_CHAIN
@@ -398,11 +400,18 @@ module ::Axentro::Core
       @blockchain.add_transaction(transaction)
     end
 
-    def broadcast_miner_nonce(miner_nonce : MinerNonce, from : Chord::NodeContext? = nil)
+    # ----- miner nonces -----
+    private def _broadcast_miner_nonce(socket, _content)
+      return unless @phase == SetupPhase::DONE
+
+      _m_content = MContentNodeBroadcastMinerNonce.from_json(_content)
+
+      miner_nonce = _m_content.nonce
+      from = _m_content.from
+
       info "new miner nonce coming: #{miner_nonce.value} from node: #{miner_nonce.node_id} for address: #{miner_nonce.address}"
 
       send_miner_nonce(miner_nonce, from)
-
       @blockchain.add_miner_nonce(miner_nonce)
     end
 
@@ -415,6 +424,28 @@ module ::Axentro::Core
 
       send_on_chord(M_TYPE_NODE_BROADCAST_MINER_NONCE, content, from)
     end
+
+    # ----- chord finger table -----
+    private def _broadcast_node_joined(socket, _content)
+      _m_content = MContentChordBroadcastNodeJoined.from_json(_content)
+      joined_nodes = _m_content.nodes
+      from = _m_content.from
+
+      send_nodes_joined(joined_nodes, from)
+      @chord.add_to_finger_table(joined_nodes)
+    end
+
+    def send_nodes_joined(joined_nodes : Array(Chord::NodeContext), from : Chord::NodeContext? = nil)
+      content = if from.nil? || (!from.nil? && from[:is_private])
+                  {nodes: joined_nodes, from: @chord.context}
+                else
+                  {nodes: joined_nodes, from: from}
+                end
+
+      send_on_chord(M_TYPE_CHORD_BROADCAST_NODE_JOINED, content, from)
+    end
+
+    # ----- blocks -----
 
     def send_block(block : SlowBlock | FastBlock, from : Chord::NodeContext? = nil)
       debug "entering send_block"
@@ -579,17 +610,6 @@ module ::Axentro::Core
       from = _m_content.from
 
       broadcast_transaction(transaction, from)
-    end
-
-    private def _broadcast_miner_nonce(socket, _content)
-      return unless @phase == SetupPhase::DONE
-
-      _m_content = MContentNodeBroadcastMinerNonce.from_json(_content)
-
-      miner_nonce = _m_content.nonce
-      from = _m_content.from
-
-      broadcast_miner_nonce(miner_nonce, from)
     end
 
     private def _broadcast_block(socket, _content)

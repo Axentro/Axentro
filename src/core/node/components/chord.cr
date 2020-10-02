@@ -23,7 +23,7 @@ module ::Axentro::Core::NodeComponents
       ssl: Bool,
       type: String,
       is_private: Bool,
-    )
+      address: String)
 
     alias NodeContexts = Array(NodeContext)
 
@@ -39,6 +39,7 @@ module ::Axentro::Core::NodeComponents
     @successor_list : Nodes = Nodes.new
     @predecessor : Node?
     @private_nodes : Nodes = Nodes.new
+    @finger_table : Set(NodeContext) = Set.new([] of NodeContext)
 
     @show_network = 0
 
@@ -50,13 +51,31 @@ module ::Axentro::Core::NodeComponents
       @is_private : Bool,
       @use_ssl : Bool,
       @validation_manager : ValidationManager,
-      @max_private_nodes : Int32
+      @max_private_nodes : Int32,
+      @wallet_address : String
     )
       @node_id = NodeID.new
 
       info "node id: #{light_green(@node_id.to_s)}"
 
       stabilize_process
+    end
+
+    def all_node_contexts
+      contexts = Set.new(@successor_list.map { |s| s[:context] })
+      if predecessor = @predecessor
+        contexts.add(predecessor[:context])
+      end
+      contexts.add(context)
+      contexts.to_a
+    end
+
+    def add_to_finger_table(joined_nodes)
+      joined_nodes.each { |n| @finger_table.add(n) }
+    end
+
+    def clean_finger_table
+      @finger_table.clear
     end
 
     def join_to(node, connect_host : String, connect_port : Int32)
@@ -261,6 +280,7 @@ module ::Axentro::Core::NodeComponents
           connect_to_successor(node, _context)
         end
       end
+      node.send_nodes_joined(all_node_contexts)
     end
 
     def table_line(col0 : String, col1 : String, delimiter = "|")
@@ -301,6 +321,8 @@ module ::Axentro::Core::NodeComponents
           ping_all
 
           align_successors
+
+          stabilise_finger_table
         end
       end
     end
@@ -468,6 +490,18 @@ module ::Axentro::Core::NodeComponents
       end
     end
 
+    def stabilise_finger_table
+      sockets = [] of HTTP::WebSocket
+      @finger_table.each do |ctx|
+        socket = HTTP::WebSocket.new(ctx[:host], "/peer", ctx[:port], @use_ssl)
+        sockets << socket
+        socket.ping
+      rescue i : IO::Error
+        @finger_table.delete(ctx)
+      end
+      sockets.each { |s| s.close }
+    end
+
     def ping(socket : HTTP::WebSocket)
       socket.ping
     rescue i : IO::Error
@@ -480,7 +514,6 @@ module ::Axentro::Core::NodeComponents
           current_successors = @successor_list.size
 
           @successor_list.delete(successor)
-
           debug "successor has been removed from successor list."
           debug "#{current_successors} => #{@successor_list.size}"
 
@@ -511,6 +544,7 @@ module ::Axentro::Core::NodeComponents
         ssl:        @ssl || false,
         type:       @network_type,
         is_private: @is_private,
+        address:    @is_private ? "" : @wallet_address,
       }
     end
 
@@ -519,6 +553,7 @@ module ::Axentro::Core::NodeComponents
         successor_list: extract_context(@successor_list),
         predecessor:    extract_context(@predecessor),
         private_nodes:  extract_context(@private_nodes),
+        finger_table:   @finger_table,
       }
     end
 
@@ -537,19 +572,21 @@ module ::Axentro::Core::NodeComponents
     def find_node(id : String) : NodeContext
       return context if context[:id] == id
 
-      @successor_list.each do |n|
-        return extract_context(n) if n[:context][:id] == id
-      end
-
-      if n = @predecessor
-        return extract_context(n) if n[:context][:id] == id
-      end
-
-      @private_nodes.each do |node|
-        return extract_context(node) if node[:context][:id] == id
+      (@finger_table.to_a + @private_nodes.map { |n| extract_context(n) }).each do |ctx|
+        return ctx if ctx[:id] == id
       end
 
       raise "the node #{id} not found. (only searching nodes which are currently connected.)"
+    end
+
+    def find_node_by_address(address : String) : NodeContext
+      return context if context[:address] == address
+
+      (@finger_table.to_a + @private_nodes.map { |n| extract_context(n) }).each do |ctx|
+        return ctx if ctx[:address] == address
+      end
+
+      raise "the node with address #{address} not found. (only searching nodes which are currently connected.)"
     end
 
     include Protocol

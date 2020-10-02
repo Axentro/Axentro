@@ -26,11 +26,11 @@ class X
 
   def self.transaction(from_wallet, to_address, iterations = 10)
     File.open("txns.txt", "w") { |f|
-      (1..iterations).to_a.each do |iter|
+      (1..iterations).to_a.each do |_|
         path = File.expand_path(from_wallet, __FILE__)
         wallet_json = File.read(path)
         w = JSON.parse(wallet_json)
-       
+
         id = create_id
         from_address = w["address"].as_s
         public_key = w["public_key"].as_s
@@ -45,10 +45,8 @@ class X
 
         txn = unsigned_transaction.gsub(%Q{"signature":"0"}, %Q{"signature":"#{signed_transaction}"})
 
-        # f.puts %Q({"transaction": #{txn}})
-
         body = %Q({"transaction": #{txn}})
-        encoded_body = Base64.encode(body).gsub("\n","")
+        encoded_body = Base64.encode(body).gsub("\n", "")
 
         f.puts %Q({"method":"POST","url":"http://localhost:3000/api/v1/transaction","body":"#{encoded_body}"})
       end
@@ -56,8 +54,8 @@ class X
   end
 end
 
-iters = 10000
-X.transaction("../../perf-test.json", "VDBjMjZkNzgwOWE2NWEzMzZmNjA2MmI0Njc2YzZkMWZjNWY3ODQwYjVmYWM3NmUx", iters)
+# iters = 10000
+# X.transaction("../../perf-test.json", "VDBjMjZkNzgwOWE2NWEzMzZmNjA2MmI0Njc2YzZkMWZjNWY3ODQwYjVmYWM3NmUx", iters)
 
 # vegeta attack -targets="txns.txt" -format=json -rate=100 | vegeta encode
 

@@ -36,7 +36,7 @@ module ::Axentro::Interface::Axe
         Options::PRICE,
         Options::TOKEN,
         Options::CONFIG_NAME,
-        Options::IS_FAST_TRANSACTION
+        Options::IS_FAST_TRANSACTION,
       ])
     end
 

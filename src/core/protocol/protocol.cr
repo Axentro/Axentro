@@ -191,6 +191,14 @@ module ::Axentro::Core::Protocol
     property reason : String
   end
 
+  M_TYPE_CHORD_BROADCAST_NODE_JOINED = 0x0019
+
+  struct MContentChordBroadcastNodeJoined
+    include JSON::Serializable
+    property nodes : Array(Core::NodeComponents::Chord::NodeContext)
+    property from : Core::NodeComponents::Chord::NodeContext
+  end
+
   ######################################
   # NODE
   ######################################

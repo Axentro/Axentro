@@ -164,11 +164,11 @@ describe Blockchain do
         "send", # action
         [sender],
         [recipient],
-        "0",   # message
+        "0",    # message
         "AXNT", # token
-        "0",   # prev_hash
-        0_i64, # timestamp
-        1,     # scaled
+        "0",    # prev_hash
+        0_i64,  # timestamp
+        1,      # scaled
         TransactionKind::SLOW
       )
       transaction = unsigned_transaction.as_signed([hacker_wallet])

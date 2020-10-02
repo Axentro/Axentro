@@ -158,7 +158,7 @@ describe Hra do
       it "should raise error when trying to buy more than one domain for an address" do
         with_factory do |block_factory, transaction_factory|
           txns = [
-            transaction_factory.make_buy_domain_from_platform("domain1.ax", 0_i64)
+            transaction_factory.make_buy_domain_from_platform("domain1.ax", 0_i64),
           ]
 
           chain = block_factory.add_slow_block(txns).add_slow_blocks(2).chain

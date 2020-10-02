@@ -85,6 +85,7 @@ module ::Axentro::Core::Controllers
       get "/api/v1/nodes" { |context, params| __v1_nodes(context, params) }
       get "/api/v1/node" { |context, params| __v1_node(context, params) }
       get "/api/v1/node/:id" { |context, params| __v1_node_id(context, params) }
+      get "/api/v1/node/address/:address" { |context, params| __v1_node_address(context, params) }
 
       post "/api/v1/transaction" { |context, params| __v1_transaction(context, params) }
       post "/api/v1/transaction/unsigned" { |context, params| __v1_transaction_unsigned(context, params) }
@@ -287,6 +288,14 @@ module ::Axentro::Core::Controllers
 
       with_response(context) do
         @blockchain.node_info.node_id_impl(id)
+      end
+    end
+
+    def __v1_node_address(context, params)
+      address = params["address"]
+
+      with_response(context) do
+        @blockchain.node_info.node_address_impl(address)
       end
     end
 
