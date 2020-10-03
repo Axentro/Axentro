@@ -64,29 +64,84 @@ module ::Axentro::Interface::Axe
       else
         json = JSON.parse(body)
 
-        puts_success ""
-        puts_success "show the connected node"
-        puts_success ""
+        # pp json
 
-        puts_title
+        successors = multi_node_data(json["successor_list"].as_a, "successor")
+        privates = multi_node_data(json["successor_list"].as_a, "private")
+        all_nodes = multi_node_data(json["finger_table"].as_a, "")
 
-        json["successor_list"].as_a.each_with_index do |successor, i|
-          puts_node_context("successor (#{i})", node_context(successor))
-          puts_line if i == 0
+        table = Tallboy.table do
+          columns do
+            add "kind"
+            add "id"
+            add "host"
+            add "port"
+            add "network"
+            add "address"
+            add "private?"
+          end
+          header "#{green("showing connected nodes")}"
+          header
+          rows successors
+          if predecessor = json["predecessor"]?
+            row single_node_json_data(predecessor, "predecessor")
+          end
+          rows privates
         end
 
-        if predecessor = json["predecessor"]?
-          puts_node_context("predecessor", node_context(predecessor))
-          puts_line
+        table2 = Tallboy.table do
+          columns do
+            add "kind"
+            add "id"
+            add "host"
+            add "port"
+            add "network"
+            add "address"
+            add "private?"
+          end
+          header "#{green("showing all connected nodes on the network")}"
+          header
+          rows all_nodes
         end
 
-        json["private_nodes"].as_a.each_with_index do |private_node, i|
-          puts_node_context("private node (#{i})", node_context(private_node))
-          puts_line if i == 0
-        end
+        puts table.render
+        puts table2.render
 
-        puts_info ""
+        # puts_success ""
+        # puts_success "show the connected node"
+        # puts_success ""
+
+        # puts_title
+
+        # json["successor_list"].as_a.each_with_index do |successor, i|
+        #   puts_node_context("successor (#{i})", node_context(successor))
+        #   puts_line if i == 0
+        # end
+
+        # if predecessor = json["predecessor"]?
+        #   puts_node_context("predecessor", node_context(predecessor))
+        #   puts_line
+        # end
+
+        # json["private_nodes"].as_a.each_with_index do |private_node, i|
+        #   puts_node_context("private node (#{i})", node_context(private_node))
+        #   puts_line if i == 0
+        # end
+
+        # puts_info ""
       end
+    end
+
+    private def single_node_json_data(json, kind = "")
+      [kind, json["id"].as_s, json["host"].as_s, json["port"].as_i, json["type"].as_s, json["address"].as_s, json["is_private"].as_bool]
+    end
+
+    private def single_node_map_data(d, kind = "")
+      [kind, d["id"], d["host"], d["port"], d["type"], d["address"], d["is_private"]]
+    end
+
+    private def multi_node_data(data_array, kind)
+      data_array.map { |d| single_node_map_data(d, kind) }
     end
 
     def node
