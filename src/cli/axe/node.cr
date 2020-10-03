@@ -64,8 +64,6 @@ module ::Axentro::Interface::Axe
       else
         json = JSON.parse(body)
 
-        # pp json
-
         successors = multi_node_data(json["successor_list"].as_a, "successor")
         privates = multi_node_data(json["successor_list"].as_a, "private")
         all_nodes = multi_node_data(json["finger_table"].as_a, "")
@@ -106,29 +104,6 @@ module ::Axentro::Interface::Axe
 
         puts table.render
         puts table2.render
-
-        # puts_success ""
-        # puts_success "show the connected node"
-        # puts_success ""
-
-        # puts_title
-
-        # json["successor_list"].as_a.each_with_index do |successor, i|
-        #   puts_node_context("successor (#{i})", node_context(successor))
-        #   puts_line if i == 0
-        # end
-
-        # if predecessor = json["predecessor"]?
-        #   puts_node_context("predecessor", node_context(predecessor))
-        #   puts_line
-        # end
-
-        # json["private_nodes"].as_a.each_with_index do |private_node, i|
-        #   puts_node_context("private node (#{i})", node_context(private_node))
-        #   puts_line if i == 0
-        # end
-
-        # puts_info ""
       end
     end
 
@@ -205,36 +180,6 @@ module ::Axentro::Interface::Axe
 
         puts table.render
       end
-    end
-
-    def puts_title
-      puts_line
-      puts_info "| %20s | %32s | %30s | %10s |" % ["role", "id", "remote", "private?"]
-      puts_line
-    end
-
-    def puts_line
-      puts_info "+-%20s-+-%32s-+-%30s-+-%10s-|" % ["-" * 20, "-" * 32, "-" * 30, "-" * 10]
-    end
-
-    def puts_node_context(role : String, node_context)
-      puts_info "| %20s | %32s | %30s | %10s |" % [
-        role,
-        node_context[:id],
-        node_context[:port] != -1 ? "#{node_context[:host]}:#{node_context[:port]}" : "-",
-        node_context[:is_private],
-      ]
-    end
-
-    def node_context(json)
-      {
-        id:         json["id"].as_s,
-        host:       json["host"].as_s,
-        port:       json["port"].as_i,
-        ssl:        json["ssl"].as_bool,
-        type:       json["type"].as_s,
-        is_private: json["is_private"].as_bool,
-      }
     end
   end
 end
