@@ -38,7 +38,9 @@ dependencies:
   baked_file_system:
     github: schovi/baked_file_system
   json_mapping:
-    github: crystal-lang/json_mapping.cr  
+    github: crystal-lang/json_mapping.cr 
+  tallboy:
+    github: epoch/tallboy   
 
 
 development_dependencies:

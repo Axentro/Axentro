@@ -22,6 +22,10 @@ module ::Axentro::Interface::Axe
           name: I18n.translate("axe.cli.node.node.title"),
           desc: I18n.translate("axe.cli.node.node.desc"),
         },
+        {
+          name: I18n.translate("axe.cli.node.official.title"),
+          desc: I18n.translate("axe.cli.node.official.desc"),
+        },
       ]
     end
 
@@ -39,6 +43,8 @@ module ::Axentro::Interface::Axe
         return nodes
       when I18n.translate("axe.cli.node.node.title")
         return node
+      when I18n.translate("axe.cli.node.official.title")
+        return official_nodes
       end
 
       specify_sub_action!(action_name)
@@ -99,17 +105,50 @@ module ::Axentro::Interface::Axe
       else
         json = JSON.parse(body)
 
-        puts_success ""
-        puts_success "show the node"
-        puts_success ""
+        table = Tallboy.table do
+          columns do
+            add "id"
+            add "host"
+            add "port"
+            add "network"
+            add "address"
+            add "private?"
+          end
+          header "#{green("showing information about this node")}"
+          header
+          rows [[json["id"].as_s, json["host"].as_s, json["port"].as_i, json["type"].as_s, json["address"].as_s, json["is_private"].as_bool]]
+        end
 
-        puts_title
+        puts table.render
+      end
+    end
 
-        puts_node_context("-", node_context(json))
+    def official_nodes
+      puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
 
-        puts_line
+      payload = {call: "official_nodes"}.to_json
 
-        puts_info ""
+      body = rpc(node, payload)
+
+      if G.op.__json
+        puts body
+      else
+        json = JSON.parse(body)
+
+        table = Tallboy.table do
+          columns do
+            add "id"
+            add "address"
+            add "url"
+          end
+          header "#{green("all official node addresses")}"
+          header json["all"].as_a.join("\n")
+          header "#{green("online official nodes")}"
+          header
+          rows json["online"].as_a.map { |n| [n["id"], n["address"], n["url"]] }
+        end
+
+        puts table.render
       end
     end
 

@@ -32,6 +32,7 @@ require "monocypher"
 require "ed25519-hd"
 require "i18n"
 require "baked_file_system"
+require "tallboy"
 
 require "./common"
 require "./core/modules"

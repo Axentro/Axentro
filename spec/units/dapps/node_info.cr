@@ -129,11 +129,3 @@ describe NodeInfo do
     end
   end
 end
-
-#   def node_address_impl(address : String)
-#     node.chord.find_node_by_address(address)
-#   end
-
-#   def official_nodes_impl
-#     node.chord.official_nodes_list
-#   end

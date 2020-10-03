@@ -93,6 +93,9 @@ axe:
       node:
         title: "node"
         desc: "show the specified node (connecting node by default)"
+      official:
+        title: "official_nodes"
+        desc: "show a list of the official nodes"  
     hra:
       title:        "hra"
       desc:         "Axentro Human Readable Addresses (HRA), buy/sell a readable domain for your address (sc for short)"
