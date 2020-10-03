@@ -41,5 +41,7 @@ cli:
     security_level_percentage: "set the percentage of blocks to validate on sync (default is 20%)"
     max_miners: "set the max number of miners that can connect to the node (default is 512)"
     max_private_nodes: "set the max number of private nodes that can connect to the node (default is 512)"
+    official_nodes: "configure the list of official nodes"
+    unofficial: "terminate the node when not connected to an official network"
   errors:
     decimal: "please supply valid decimal number: %{value}"

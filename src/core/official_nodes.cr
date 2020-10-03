@@ -11,6 +11,8 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core
+  alias OfficialNodesConfig = Hash(String, Array(String))
+
   class OfficialNodes
     @config : OfficialNodesConfig
 
@@ -36,7 +38,7 @@ module ::Axentro::Core
 
     def initialize(node_list : Hash(String, Array(String)))
       @path = nil
-      @config = OfficialNodesConfig.new(node_list)
+      @config = node_list
     end
 
     def get_config
@@ -54,18 +56,10 @@ module ::Axentro::Core
     private def validate(path : String)
       raise("Official nodes input file must be a valid .yml file - you supplied #{path}") unless File.extname(path) == ".yml"
       content = OfficialNodesConfig.from_yaml(File.read(path))
-      content.addresses.values.flatten.each do |address|
+      content.values.flatten.each do |address|
         raise("The supplied address: #{address} is invalid") unless Address.is_valid?(address)
       end
       content
-    end
-  end
-
-  class OfficialNodesConfig
-    include YAML::Serializable
-    property addresses : Hash(String, Array(String))
-
-    def initialize(@addresses : Hash(String, Array(String)))
     end
   end
 

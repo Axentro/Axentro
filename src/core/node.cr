@@ -56,6 +56,7 @@ module ::Axentro::Core
       @developer_fund : DeveloperFund?,
       @fastnode_address : String?,
       @official_nodes : OfficialNodes,
+      @exit_on_unofficial : Bool,
       @security_level_percentage : Int64?,
       @max_miners : Int32,
       @max_private_nodes : Int32,
@@ -67,7 +68,7 @@ module ::Axentro::Core
       @blockchain = Blockchain.new(@wallet, @database, @developer_fund, @fastnode_address, @security_level_percentage, @max_miners, is_standalone?)
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @validation_manager = ValidationManager.new(@blockchain, @bind_host, @bind_port, @use_ssl)
-      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @validation_manager, @max_private_nodes, @wallet.address)
+      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @validation_manager, @max_private_nodes, @wallet.address, @official_nodes, @exit_on_unofficial)
       @miners_manager = MinersManager.new(@blockchain)
       @clients_manager = ClientsManager.new(@blockchain)
 

@@ -64,6 +64,7 @@ module ::Axentro::Interface
     @developer_fund_path : String?
     @fastnode_address : String?
     @official_nodes_path : String?
+    @exit_if_unofficial : Bool = false
 
     @security_level_percentage : Int64?
 
@@ -115,6 +116,7 @@ module ::Axentro::Interface
       SECURITY_LEVEL_PERCENTAGE
       MAX_MINERS
       MAX_PRIVATE_NODES
+      EXIT_IF_UNOFFICIAL
     end
 
     def create_option_parser(actives : Array(Options)) : OptionParser
@@ -150,6 +152,7 @@ module ::Axentro::Interface
         parse_developer_fund(parser, actives)
         parse_fast_node_address(parser, actives)
         parse_official_nodes(parser, actives)
+        parse_if_unofficial_nodes(parser, actives)
         parse_security_level_percentage(parser, actives)
         parse_slow_transaction(parser, actives)
         parse_fast_transaction(parser, actives)
@@ -199,6 +202,12 @@ module ::Axentro::Interface
         @is_testnet = true
         @is_testnet_changed = true
       } if is_active?(actives, Options::IS_TESTNET)
+    end
+
+    private def parse_if_unofficial_nodes(parser : OptionParser, actives : Array(Options))
+      parser.on("--exit-if-unofficial", I18n.translate("cli.options.unofficial")) {
+        @exit_if_unofficial = true
+      } if is_active?(actives, Options::EXIT_IF_UNOFFICIAL)
     end
 
     private def parse_public(parser : OptionParser, actives : Array(Options))
@@ -365,7 +374,7 @@ module ::Axentro::Interface
     end
 
     private def parse_official_nodes(parser : OptionParser, actives : Array(Options))
-      parser.on("--developer-fund=OFFICAL_NODES", I18n.translate("cli.options.official_nodes")) { |official_nodes|
+      parser.on("--official-nodes=OFFICAL_NODES", I18n.translate("cli.options.official_nodes")) { |official_nodes|
         @official_nodes_path = official_nodes
       } if is_active?(actives, Options::OFFICIAL_NODES)
     end
@@ -542,6 +551,10 @@ module ::Axentro::Interface
 
     def __fastnode_address : String?
       Core::FastNode.validate(@fastnode_address)
+    end
+
+    def __exit_if_unofficial : Bool
+      @exit_if_unofficial
     end
 
     def __security_level_percentage : Int64?

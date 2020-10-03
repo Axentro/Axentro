@@ -11,6 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "./node_id"
+require "./../../official_nodes"
 
 module ::Axentro::Core::NodeComponents
   class Chord < HandleSocket
@@ -52,13 +53,16 @@ module ::Axentro::Core::NodeComponents
       @use_ssl : Bool,
       @validation_manager : ValidationManager,
       @max_private_nodes : Int32,
-      @wallet_address : String
+      @wallet_address : String,
+      @official_nodes : Core::OfficialNodes,
+      @exit_if_unofficial : Bool
     )
       @node_id = NodeID.new
 
       info "node id: #{light_green(@node_id.to_s)}"
 
       stabilize_process
+      check_for_official_nodes
     end
 
     def all_node_contexts
@@ -289,6 +293,7 @@ module ::Axentro::Core::NodeComponents
 
     def stabilize_process
       spawn do
+        now = Time.local
         loop do
           sleep Random.rand
 
@@ -323,7 +328,41 @@ module ::Axentro::Core::NodeComponents
           align_successors
 
           stabilise_finger_table
+
+          if (Time.local - now) >= 8.seconds
+            check_for_official_nodes
+            now = Time.local
+          end
         end
+      end
+    end
+
+    private def official_nodes_for(network : String)
+      node_list = @official_nodes.get_config[network]
+
+      if @finger_table.size > 0 && !is_only_this_node
+        if (node_list & @finger_table.map { |n| n[:address] }).empty?
+          warning "This node is #{red("NOT connected")} to an official network"
+          if @exit_if_unofficial
+            warning "This node is configured to terminate if not connected to an official network - terminating now"
+            exit -1
+          end
+        else
+          verbose "This node is connected to an official network"
+        end
+      end
+    end
+
+    private def is_only_this_node
+      @finger_table.size == 1 && @finger_table.map { |n| n[:address] }.first == @wallet_address
+    end
+
+    def check_for_official_nodes
+      if @network_type == "mainnet"
+        official_nodes_for("mainnet")
+      else
+        @network_type == "testnet"
+        official_nodes_for("testnet")
       end
     end
 
