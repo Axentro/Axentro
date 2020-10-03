@@ -618,18 +618,26 @@ module ::Axentro::Core::NodeComponents
       raise "the node #{id} not found. (only searching nodes which are currently connected.)"
     end
 
-    def find_node_by_address(address : String) : NodeContext
-      return context if context[:address] == address
+    def find_node_by_address(address : String) : Array(NodeContext)
+      list = @finger_table.to_a + @private_nodes.map { |n| extract_context(n) }
+      list = list << context
+      result = list.select { |ctx| ctx[:address] == address }
 
-      (@finger_table.to_a + @private_nodes.map { |n| extract_context(n) }).each do |ctx|
-        return ctx if ctx[:address] == address
-      end
-
-      raise "the node with address #{address} not found. (only searching nodes which are currently connected.)"
+      raise "the node with address #{address} not found. (only searching nodes which are currently connected.)" if result.empty?
+      result.uniq
     end
 
     def official_nodes_list
-      @official_nodes.get_config
+      {
+        all:    @official_nodes.get_config[@network_type],
+        online: online_official_nodes,
+      }
+    end
+
+    private def online_official_nodes
+      list = @finger_table << context
+      list = list.select { |ctx| @official_nodes.get_config[@network_type].includes?(ctx[:address]) }
+      list.map { |ctx| {id: ctx[:id], address: ctx[:address], url: "https://#{ctx[:host]}:#{ctx[:port]}"} }
     end
 
     include Protocol

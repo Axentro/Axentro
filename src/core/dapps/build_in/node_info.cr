@@ -41,6 +41,10 @@ module ::Axentro::Core::DApps::BuildIn
         return node(json, context, params)
       when "node_id"
         return node_id(json, context, params)
+      when "node_address"
+        return node_address(json, context, params)
+      when "official_nodes"
+        return official_nodes(json, context, params)
       end
 
       nil
@@ -68,6 +72,18 @@ module ::Axentro::Core::DApps::BuildIn
       id = json["id"].as_s
 
       context.response.print api_success(node_id_impl(id))
+      context
+    end
+
+    def node_address(json, context, params)
+      address = json["address"].as_s
+
+      context.response.print api_success(node_address_impl(address))
+      context
+    end
+
+    def official_nodes(json, context, params)
+      context.response.print api_success(official_nodes_impl)
       context
     end
 

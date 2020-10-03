@@ -19,7 +19,8 @@ Show information about the current node
                   "port": 3000,
                   "ssl": false,
                   "type": "testnet",
-                  "is_private": false
+                  "is_private": false,
+                  "address": ""
                 }
             }
 
@@ -45,10 +46,36 @@ Show information about the specified node id
                   "port": 3000,
                   "ssl": false,
                   "type": "testnet",
-                  "is_private": false
+                  "is_private": false,
+                  "address": ""
                 }
             }
 
+## node/address/{address} [GET /node/address/{address}]
+
+Find a node with the specified wallet address
+
++ Parameters
+
+    + address (string) - The wallet address of the node
+    
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "status": "success",
+              "result": 
+                {
+                  "id": "0bd4b62baa97bf1ac608ae311d41c0b6",
+                  "host": "testnet.axentro.io",
+                  "port": 3000,
+                  "ssl": false,
+                  "type": "testnet",
+                  "is_private": false,
+                  "address": ""
+                }
+            }
 
 ## nodes [GET /nodes]
 
@@ -72,10 +99,34 @@ Show information about the connecting nodes
                         "port": -1,
                         "ssl": false,
                         "type": "testnet",
-                        "is_private": true
+                        "is_private": true,
+                        "address": ""
                       }
-                    ]
+                    ],
+                  "finger_table": []  
                 }
             }
 
-            
+## node/official_nodes [GET /node/official_nodes]
+
+Show information about the connecting nodes
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "status":"success",
+              "result":{
+                "all":[
+                  "VDBiNGU3OGRjYzUzYTFjMjAwNmZiMzNmMTA0NTVhZmViZjY1MWI2ODQ0NWJjMDIy"
+                ],
+                "online":[
+                {
+                 "id":"5fecec2d9abeaabc24603f69f8debe80",
+                 "address":"VDBiNGU3OGRjYzUzYTFjMjAwNmZiMzNmMTA0NTVhZmViZjY1MWI2ODQ0NWJjMDIy",
+                 "url":"https://localhost:3002"
+                }
+                ]
+              }
+            }            
