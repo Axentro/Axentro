@@ -628,6 +628,10 @@ module ::Axentro::Core::NodeComponents
       raise "the node with address #{address} not found. (only searching nodes which are currently connected.)"
     end
 
+    def official_nodes_list
+      @official_nodes.get_config
+    end
+
     include Protocol
     include Consensus
     include Common::Color

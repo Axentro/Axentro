@@ -79,6 +79,10 @@ module ::Axentro::Core::DApps::BuildIn
       node.chord.find_node_by_address(address)
     end
 
+    def official_nodes_impl
+      node.chord.official_nodes_list
+    end
+
     def on_message(action : String, from_address : String, content : String, from = nil)
       false
     end
