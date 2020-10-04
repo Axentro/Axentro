@@ -10,15 +10,13 @@
 <a href="https://twitter.com/axentrohq"><img src="https://img.shields.io/twitter/follow/axentrohq.svg?label=Follow&style=social"/></a>
 </p>
 
-<h1>We are currently migrating to a new name: Axentro - so many things will probably be broken while we do this. It should be complete and back up again before end of September 2020</h1>
-
 Axentro is an original proof of work blockchain platform that empowers developers to build decentralised apps quickly and cheaply. It features the following:
 
 * CPU mining using the award winning Argon2d hashing algorithm
 * Decentralised apps platform
 * Human readable addresses
-* Smart assets
-* Distributed two factor authentication.
+* Globally distributed mining rewards
+* Unique double helix chain with Slow and Fast transactions
 
 ## Platform status
 
@@ -41,13 +39,17 @@ Follow the [Getting Started](https://guide.axentro.io/) documentation to explore
 | -------------------: | :----------------------: |
 |          Coin ticker |           AXNT           |
 |            Consensus |           PoW            |
-|         Block reward |        0.5 AXNT          |
+|     Max Block reward |          8 AXNT          |
 |         Miner reward | Prorated on contribution |
-|        Block spacing |     10 to 40 seconds     |
-|             Pre-mine |  2,000,000 AXNT (10%)    |
-|         Total Supply |     20,000,000 AXNT      |
-|             Maturity |        20 Blocks         |
+|   Slow Block spacing |        120 seconds       |
+|   Fast Block spacing |         2 seconds        |
+|   Block spacing algo |  Modified Dark Gravity   |
+|       Developer fund |  10,000,000 AXNT (10%)   |
+|         Total Supply |     30,000,000 AXNT      |
+|             Maturity |        10 Blocks         |
 |      Minimum txn fee |       0.0001 AXNT        |
+|      Slow Concensus  |      Proof of Work       |
+|      Fast Concensus  |     Proof of History     |
 | PoW mining algorithm |         Argon2d          |
 |                 Port |           3000           |
 
