@@ -35,23 +35,23 @@ Follow the [Getting Started](https://guide.axentro.io/) documentation to explore
 
 ## Blockchain Specification
 
-|            Coin name |          Sushi           |
-| -------------------: | :----------------------: |
-|          Coin ticker |           AXNT           |
-|            Consensus |           PoW            |
-|     Max Block reward |          8 AXNT          |
-|         Miner reward | Prorated on contribution |
-|   Slow Block spacing |        120 seconds       |
-|   Fast Block spacing |         2 seconds        |
-|   Block spacing algo |  Modified Dark Gravity   |
-|       Developer fund |  10,000,000 AXNT (10%)   |
-|         Total Supply |     30,000,000 AXNT      |
-|             Maturity |        10 Blocks         |
-|      Minimum txn fee |       0.0001 AXNT        |
-|      Slow Concensus  |      Proof of Work       |
-|      Fast Concensus  |     Proof of History     |
-| PoW mining algorithm |         Argon2d          |
-|                 Port |           3000           |
+|                 Name  |  Axentro                    |
+| :-------------------: | :-------------------------: |
+|          Coin ticker  |  AXNT                       |
+|            Consensus  |  PoW                        |
+|     Max Block reward  |  8 AXNT                     |
+|         Miner reward  |  Prorated on contribution   |
+|   Slow Block spacing  |  120 seconds                |
+|   Fast Block spacing  |  2 seconds                  |
+|   Block spacing algo  |  Modified Dark Gravity Wave |
+|       Developer fund  |  6,000,000 AXNT (20%)       |
+|         Total Supply  |  30,000,000 AXNT            |
+|             Maturity  |  10 Blocks                  |
+|      Minimum txn fee  |  0.0001 AXNT                |
+|       Slow Concensus  |  Proof of Work              |
+|       Fast Concensus  |  Proof of History           |
+| PoW mining algorithm  |  Argon2d                    |
+|                 Port  |  3000                       |
 
 
 
