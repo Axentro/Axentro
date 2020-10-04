@@ -36,7 +36,7 @@ Follow the [Getting Started](https://guide.axentro.io/) documentation to explore
 ## Blockchain Specification
 
 |                 Name  |  Axentro                    |
-| :-------------------: | :-------------------------: |
+| --------------------: | :-------------------------- |
 |          Coin ticker  |  AXNT                       |
 |            Consensus  |  PoW                        |
 |     Max Block reward  |  8 AXNT                     |
