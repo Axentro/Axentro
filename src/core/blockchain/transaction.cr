@@ -74,6 +74,10 @@ module ::Axentro::Core
       @id[0..7]
     end
 
+    def self.short_id(txn_id) : String
+      txn_id[0..7]
+    end
+
     def valid_as_embedded?(blockchain : Blockchain, prev_transactions : Array(Transaction)) : Bool
       verbose "tx -- #{short_id}: validating embedded transactions"
 

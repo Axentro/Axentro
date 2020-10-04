@@ -124,16 +124,62 @@ module ::Axentro::Interface::Axe
                   success_message = I18n.translate("axe.cli.transaction.transactions.messages.index", {block_index: block_index})
                   {call: "transactions", index: block_index}.to_json
                 elsif address = G.op.__address
-                  success_message = I18n.translate("axe.cli.transaction.transactions.messages.index", {address: address})
+                  success_message = I18n.translate("axe.cli.transaction.transactions.messages.address", {address: address})
                   {call: "transactions", address: address}.to_json
                 else
                   puts_help(HELP_BLOCK_INDEX_OR_ADDRESS)
                 end
 
       body = rpc(node, payload)
+      json = JSON.parse(body)
 
       puts_success(success_message) unless G.op.__json
-      puts body
+
+      if G.op.__json
+        puts body
+      else
+        table = Tallboy.table do
+          columns do
+            add "timestamp"
+            add "token"
+            add "id"
+            add "action"
+            add "from"
+            add "to"
+            add "amount"
+            add "message"
+            add "kind"
+          end
+          header
+          rows json.as_a.map { |t| [t["timestamp"], t["token"], Core::Transaction.short_id(t["id"].as_s), t["action"], recipients(t["recipients"].as_a, t["action"].as_s), to(t["senders"].as_a), amount(t["recipients"].as_a), t["message"], t["kind"]] }
+        end
+
+        puts table.render
+      end
+    end
+
+    private def recipients(recipients, action)
+      r = recipients.map { |x| x["address"].as_s.strip }
+      r.empty? ? "" : "#{r.first} #{for_action(action, r.size)} "
+    end
+
+    private def to(senders)
+      r = senders.map { |x| x["address"].as_s.strip }
+      r.empty? ? "" : "#{r.first} #{if_lots(r.size)} "
+    end
+
+    private def amount(recipients)
+      scale_decimal(recipients.map { |r| r["amount"].as_i64 }.sum)
+    end
+
+    private def if_lots(size)
+      size > 1 ? "(1/#{size})" : ""
+    end
+
+    private def for_action(action, size)
+      if action == "head"
+        if_lots(size)
+      end
     end
 
     def transaction
@@ -151,7 +197,28 @@ module ::Axentro::Interface::Axe
         case json["status"].as_s
         when "accepted"
           puts_success(I18n.translate("axe.cli.transaction.transaction.messages.accepted"))
-          puts body
+
+          h = json.as_h
+
+          table = Tallboy.table do
+            columns do
+              add "status"
+              add "timestamp"
+              add "token"
+              add "id"
+              add "action"
+              add "from"
+              add "to"
+              add "amount"
+              add "message"
+              add "kind"
+              add "confirmations"
+            end
+            header
+            rows [h["transaction"]].map { |t| [h["status"], t["timestamp"], t["token"], Core::Transaction.short_id(t["id"].as_s), t["action"], recipients(t["recipients"].as_a, t["action"].as_s), to(t["senders"].as_a), amount(t["recipients"].as_a), t["message"], t["kind"], h["confirmation"]] }
+          end
+
+          puts table.render
         when "pending"
           puts_success(I18n.translate("axe.cli.transaction.transaction.messages.pending"))
         when "rejected"
@@ -172,21 +239,21 @@ module ::Axentro::Interface::Axe
       body = rpc(node, payload)
       json = JSON.parse(body)
 
+      puts_success(I18n.translate("axe.cli.transaction.fees.messages.fees"))
+
       if G.op.__json
         puts body
       else
-        puts_success(I18n.translate("axe.cli.transaction.fees.messages.fees"))
-
-        puts_info("  + %30s - %30s +" % ["-" * 30, "-" * 30])
-        puts_info("  | %30s | %30s |" % ["action", "fee"])
-        puts_info("  | %30s | %30s |" % ["-" * 30, "-" * 30])
-
-        json.as_h.each do |action, fee|
-          puts_info("  | %30s | %30s |" % [action, fee])
+        table = Tallboy.table do
+          columns do
+            add "action", align: :right
+            add "fee", align: :right, width: 20
+          end
+          header
+          rows json.as_h.map { |action, fee| [action, fee] }
         end
 
-        puts_info("  + %30s - %30s +" % ["-" * 30, "-" * 30])
-        puts_info("")
+        puts table.render
       end
     end
   end
