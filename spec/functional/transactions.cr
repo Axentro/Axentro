@@ -100,7 +100,7 @@ class Transactions < SpinachTestCase
 
     with_factory(developer_fund) do |block_factory, transaction_factory|
       wallet_balance_a_kings = Quantity.as_fund_amount("wallet_balance_a_kings", @variables)
-      kings_create_transaction = create_custom_token_transaction(transaction_factory, token_name, wallet_balance_a_kings, "0.1", wallet_a, block_kind)
+      kings_create_transaction = create_custom_token_transaction(transaction_factory, token_name, wallet_balance_a_kings, "10", wallet_a, block_kind)
       kings_send_transaction = send_token_transaction(transaction_factory, token_name, amount, fee_amount, wallet_a, wallet_b, block_kind)
 
       if block_kind == "fast"

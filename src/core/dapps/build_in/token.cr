@@ -101,7 +101,7 @@ RULE
     end
 
     def self.fee(action : String) : Int64
-      scale_i64("0.1")
+      scale_i64("10")
     end
 
     def on_message(action : String, from_address : String, content : String, from = nil)

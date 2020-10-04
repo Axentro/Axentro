@@ -243,7 +243,7 @@ describe RESTController do
           result["result"]["hra_buy"].should eq("0.001")
           result["result"]["hra_sell"].should eq("0.0001")
           result["result"]["hra_cancel"].should eq("0.0001")
-          result["result"]["create_token"].should eq("0.1")
+          result["result"]["create_token"].should eq("10")
         end
       end
     end
@@ -554,7 +554,7 @@ describe RESTController do
     it "should return a list of existing tokens" do
       with_factory do |block_factory, transaction_factory|
         token = "KINGS"
-        block_factory.add_slow_block([transaction_factory.make_create_token(token, 10000_i64)]).add_slow_blocks(3)
+        block_factory.add_slow_blocks(10).add_slow_block([transaction_factory.make_create_token(token, 10000_i64)]).add_slow_blocks(3)
         exec_rest_api(block_factory.rest.__v1_tokens(context("/api/v1/tokens"), no_params)) do |result|
           result["status"].to_s.should eq("success")
           result["result"].to_s.should eq("[\"AXNT\", \"KINGS\"]")

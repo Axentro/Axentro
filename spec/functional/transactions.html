@@ -95,10 +95,10 @@
     <br/>
 
     <div spinach:scenario="scenario 3: creating slow custom tokens">
-      Given I have <b spinach:set="wallet_balance_a">10</b> AXNT in my wallet<br/>
+      Given I have <b spinach:set="wallet_balance_a">20</b> AXNT in my wallet<br/>
       When I <b spinach:execute="result = create_token(token_name, token_amount, fee_amount, block_kind)">create</b> the custom token <b spinach:set="token_name">KINGS</b> via <b spinach:set="block_kind">slow</b> transaction<br/>
-      with the amount <b spinach:set="token_amount">100000</b> and the fee <b spinach:set="fee_amount">1</b> <br/>
-      Then my wallet should be debited the fee leaving me <b spinach:assert_equals="result.wallet_balance_a">9</b> AXNT<br/>
+      with the amount <b spinach:set="token_amount">100000</b> and the fee <b spinach:set="fee_amount">10</b> <br/>
+      Then my wallet should be debited the fee leaving me <b spinach:assert_equals="result.wallet_balance_a">10</b> AXNT<br/>
       And my wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_a_custom">100000</b> KINGS<br/>
       And there should be <b spinach:assert_equals="result.rejections">0</b> rejected transactions
     </div>
@@ -108,11 +108,11 @@
       <br/>
 
       <div spinach:scenario="scenario 4: sending slow custom tokens">
-        Given I have <b spinach:set="wallet_balance_a_axe">10</b> AXNT in my wallet<br/>
-        And I create <b spinach:set="wallet_balance_a_kings">10</b> KINGS in my wallet (at fee <i>0.1</i>)<br/>
+        Given I have <b spinach:set="wallet_balance_a_axe">20</b> AXNT in my wallet<br/>
+        And I create <b spinach:set="wallet_balance_a_kings">10</b> KINGS in my wallet (at fee <i>10</i>)<br/>
         And my friend has <b spinach:set="wallet_balance_b_axe">0</b> AXNT in their wallet<br/>
         When I <b spinach:execute="result = send_custom_token(token_name, amount_to_send, fee_amount, block_kind)">send</b> them <b spinach:set="amount_to_send">5</b> <b spinach:set="token_name">KINGS</b> at the fee of <b spinach:set="fee_amount">0.0001</b> via <b spinach:set="block_kind">slow</b> transaction<br/>
-        Then my wallet should be debited the sent amount + sending fee + token creation fee, leaving me <b spinach:assert_equals="result.wallet_balance_a">9.8999</b> AXNT<br/>
+        Then my wallet should be debited the sent amount + sending fee + token creation fee, leaving me <b spinach:assert_equals="result.wallet_balance_a">9.9999</b> AXNT<br/>
         And my wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_a_kings">5</b> KINGS<br/>
         And my friends wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_b">0</b> AXNT<br/>
         And my friends wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_b_kings">5</b> KINGS<br/>
@@ -121,7 +121,7 @@
 
       <br/>
       <h5>Some further examples of slow custom token transactions</h5>
-      <p>These examples use a fixed token creation fee of <i>0.1</i></p>
+      <p>These examples use a fixed token creation fee of <i>10</i></p>
     <br/>
     <table spinach:table_scenario="scenario 5: further examples of slow custom token transactions" class="table table-striped">
       <thead class="thead-dark">
@@ -143,14 +143,14 @@
         </thead/>
         <tbody>
           <tr>
-            <td>10</td>
+            <td>20</td>
             <td>10</td>
             <td>12</td>
             <td>5</td>
             <td>KINGS</td>
             <td>1</td>
             <td>slow</td>
-            <td>8.9</td>
+            <td>9</td>
             <td>5</td>
             <td>12</td>
             <td>5</td>
@@ -158,14 +158,14 @@
             <td></td>
           </tr>
           <tr>
-            <td>10</td>
+            <td>20</td>
             <td>10</td>
             <td>0</td>
             <td>20</td>
             <td>KINGS</td>
             <td>0.0001</td>
             <td>slow</td>
-            <td>9.9</td>
+            <td>10</td>
             <td>10</td>
             <td>0</td>
             <td>0</td>
@@ -188,14 +188,14 @@
             <td></td>
           </tr>
           <tr>
-            <td>10</td>
+            <td>20</td>
             <td>10</td>
             <td>0</td>
             <td>0.00000001</td>
             <td>KINGS</td>
             <td>0.0001</td>
             <td>slow</td>
-            <td>9.8999</td>
+            <td>9.9999</td>
             <td>9.99999999</td>
             <td>0</td>
             <td>0.00000001</td>
@@ -292,10 +292,10 @@
     <br/>
 
     <div spinach:scenario="scenario 3: creating fast custom tokens">
-      Given I have <b spinach:set="wallet_balance_a">10</b> AXNT in my wallet<br/>
+      Given I have <b spinach:set="wallet_balance_a">20</b> AXNT in my wallet<br/>
       When I <b spinach:execute="result = create_token(token_name, token_amount, fee_amount, block_kind)">create</b> the custom token <b spinach:set="token_name">KINGS</b> via <b spinach:set="block_kind">fast</b> transaction<br/>
-      with the amount <b spinach:set="token_amount">100000</b> and the fee <b spinach:set="fee_amount">1</b> <br/>
-      Then my wallet should be debited the fee leaving me <b spinach:assert_equals="result.wallet_balance_a">9</b> AXNT<br/>
+      with the amount <b spinach:set="token_amount">100000</b> and the fee <b spinach:set="fee_amount">10</b> <br/>
+      Then my wallet should be debited the fee leaving me <b spinach:assert_equals="result.wallet_balance_a">10</b> AXNT<br/>
       And my wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_a_custom">100000</b> KINGS<br/>
       And there should be <b spinach:assert_equals="result.rejections">0</b> rejected transactions
     </div>
@@ -305,11 +305,11 @@
       <br/>
 
       <div spinach:scenario="scenario 4: sending fast custom tokens">
-        Given I have <b spinach:set="wallet_balance_a_axe">10</b> AXNT in my wallet<br/>
-        And I create <b spinach:set="wallet_balance_a_kings">10</b> KINGS in my wallet (at fee <i>0.1</i>)<br/>
+        Given I have <b spinach:set="wallet_balance_a_axe">20</b> AXNT in my wallet<br/>
+        And I create <b spinach:set="wallet_balance_a_kings">10</b> KINGS in my wallet (at fee <i>10</i>)<br/>
         And my friend has <b spinach:set="wallet_balance_b_axe">0</b> AXNT in their wallet<br/>
         When I <b spinach:execute="result = send_custom_token(token_name, amount_to_send, fee_amount, block_kind)">send</b> them <b spinach:set="amount_to_send">5</b> <b spinach:set="token_name">KINGS</b> at the fee of <b spinach:set="fee_amount">0.0001</b> via <b spinach:set="block_kind">fast</b> transaction<br/>
-        Then my wallet should be debited the sent amount + sending fee + token creation fee, leaving me <b spinach:assert_equals="result.wallet_balance_a">9.8999</b> AXNT<br/>
+        Then my wallet should be debited the sent amount + sending fee + token creation fee, leaving me <b spinach:assert_equals="result.wallet_balance_a">9.9999</b> AXNT<br/>
         And my wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_a_kings">5</b> KINGS<br/>
         And my friends wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_b">0</b> AXNT<br/>
         And my friends wallet should have a balance of <b spinach:assert_equals="result.wallet_balance_b_kings">5</b> KINGS<br/>
@@ -318,7 +318,7 @@
 
       <br/>
       <h5>Some further examples of fast custom token transactions</h5>
-      <p>These examples use a fixed token creation fee of <i>0.1</i></p>
+      <p>These examples use a fixed token creation fee of <i>10</i></p>
     <br/>
     <table spinach:table_scenario="scenario 5: further examples of fast custom token transactions" class="table table-striped">
       <thead class="thead-dark">
@@ -340,14 +340,14 @@
         </thead/>
         <tbody>
           <tr>
-            <td>10</td>
+            <td>20</td>
             <td>10</td>
             <td>12</td>
             <td>5</td>
             <td>KINGS</td>
             <td>1</td>
             <td>fast</td>
-            <td>8.9</td>
+            <td>9</td>
             <td>5</td>
             <td>12</td>
             <td>5</td>
@@ -355,14 +355,14 @@
             <td></td>
           </tr>
           <tr>
-            <td>10</td>
+            <td>20</td>
             <td>10</td>
             <td>0</td>
             <td>20</td>
             <td>KINGS</td>
             <td>0.0001</td>
             <td>fast</td>
-            <td>9.9</td>
+            <td>10</td>
             <td>10</td>
             <td>0</td>
             <td>0</td>
@@ -385,14 +385,14 @@
             <td></td>
           </tr>
           <tr>
-            <td>10</td>
+            <td>20</td>
             <td>10</td>
             <td>0</td>
             <td>0.00000001</td>
             <td>KINGS</td>
             <td>0.0001</td>
             <td>fast</td>
-            <td>9.8999</td>
+            <td>9.9999</td>
             <td>9.99999999</td>
             <td>0</td>
             <td>0.00000001</td>

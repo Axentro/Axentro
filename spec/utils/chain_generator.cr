@@ -362,7 +362,7 @@ module ::Units::Utils::ChainGenerator
       unsigned_transaction = Transaction.new(
         transaction_id,
         "create_token", # action
-        [a_sender(sender_wallet, sender_amount, 20000000_i64)],
+        [a_sender(sender_wallet, sender_amount, 1000000000_i64)],
         [a_recipient(sender_wallet, sender_amount)],
         "0",   # message
         token, # token
