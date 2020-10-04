@@ -44,7 +44,7 @@ Follow the [Getting Started](https://guide.axentro.io/) documentation to explore
 |   Slow Block spacing  |  120 seconds                |
 |   Fast Block spacing  |  2 seconds                  |
 |   Block spacing algo  |  Modified Dark Gravity Wave |
-|       Developer fund  |  6,000,000 AXNT (20%)       |
+|       Developer fund  |  10,000,000 AXNT            |
 |         Total Supply  |  30,000,000 AXNT            |
 |             Maturity  |  10 Blocks                  |
 |      Minimum txn fee  |  0.0001 AXNT                |
