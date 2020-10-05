@@ -35,8 +35,9 @@ module ::Axentro::Core::DApps::BuildIn
     property status : String
     property direction : String
     property data : String
+    property confirmations : String
 
-    def initialize(@transaction_id : String, @kind : String, @from : String, @from_readable : String, @to : String, @to_readable : String, @amount : String, @token : String, @category : String, @datetime : String, @fee : String, @data : String, @status : String, @direction : String); end
+    def initialize(@transaction_id : String, @kind : String, @from : String, @from_readable : String, @to : String, @to_readable : String, @amount : String, @token : String, @category : String, @datetime : String, @fee : String, @data : String, @status : String, @direction : String, @confirmations : String); end
   end
 
   struct RejectedWalletTransaction
@@ -129,20 +130,32 @@ module ::Axentro::Core::DApps::BuildIn
 
     private def outgoing(address, status : String, transactions : Array(Transaction)) : Array(RecentWalletTransaction)
       transactions.map do |t|
+        
+        confirmations = 0
+        if block_index = database.get_block_index_for_transaction(t.id)
+          confirmations = database.get_confirmations(block_index)
+        end
+
         RecentWalletTransaction.new(
           t.id, t.kind.to_s, "", "", first_recipient(t.recipients),
           domain_for_recipients(t.recipients), amount_for_senders(address, t.senders), t.token, category(t.action),
-          Time.unix_ms(t.timestamp).to_s, fee_for_senders(address, t.senders), t.message, status, "Outgoing"
+          Time.unix_ms(t.timestamp).to_s, fee_for_senders(address, t.senders), t.message, status, "Outgoing", confirmations.to_s
         )
       end
     end
 
     private def incoming(address, status : String, transactions : Array(Transaction)) : Array(RecentWalletTransaction)
       transactions.map do |t|
+
+        confirmations = 0
+        if block_index = database.get_block_index_for_transaction(t.id)
+          confirmations = database.get_confirmations(block_index)
+        end
+
         RecentWalletTransaction.new(
           t.id, t.kind.to_s, first_sender(t.senders), domain_for_senders(t.senders), "", "",
           amount_for_recipients(address, t.recipients), t.token, category(t.action),
-          Time.unix_ms(t.timestamp).to_s, fee_for_senders(address, t.senders), t.message, status, "Incoming"
+          Time.unix_ms(t.timestamp).to_s, fee_for_senders(address, t.senders), t.message, status, "Incoming", confirmations.to_s
         )
       end
     end

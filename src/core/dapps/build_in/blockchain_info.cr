@@ -93,7 +93,8 @@ module ::Axentro::Core::DApps::BuildIn
 
     def block_index_impl(header : Bool, block_index : Int64)
       if block = database.get_block(block_index)
-        header ? block.to_header : block
+        confirmations = database.get_confirmations(block_index)
+        header ? block.to_header : {block: block, confirmations: confirmations}
       else
         raise "failed to find a block for the index: #{block_index}"
       end
@@ -101,7 +102,8 @@ module ::Axentro::Core::DApps::BuildIn
 
     def block_transaction_impl(header : Bool, transaction_id : String)
       if block = database.get_block_for_transaction(transaction_id)
-        header ? block.to_header : block
+        confirmations = database.get_confirmations(block.index)
+        header ? block.to_header : {block: block, confirmations: confirmations}
       else
         raise "failed to find a block for the transaction #{transaction_id}"
       end
@@ -124,11 +126,20 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def transactions_index_impl(block_index : Int64, page : Int32, per_page : Int32, direction : Int32)
-      database.get_paginated_transactions(block_index, page, per_page, Direction.new(direction).to_s)
+      confirmations = database.get_confirmations(block_index)
+      {transactions: database.get_paginated_transactions(block_index, page, per_page, Direction.new(direction).to_s), confirmations: confirmations}
     end
 
     def transactions_address_impl(address : String, page : Int32, per_page : Int32, direction : Int32, actions : Array(String) = [] of String)
-      database.get_paginated_transactions_for_address(address, page, per_page, Direction.new(direction).to_s, actions)
+      transactions = database.get_paginated_transactions_for_address(address, page, per_page, Direction.new(direction).to_s, actions)
+      transactions.map do |t|
+        if block_index = database.get_block_index_for_transaction(t.id)  
+        confirmations = database.get_confirmations(block_index)
+        else
+          confirmations = 0
+        end
+        {transaction: t, confirmations: confirmations}
+      end
     end
 
     def on_message(action : String, from_address : String, content : String, from = nil)

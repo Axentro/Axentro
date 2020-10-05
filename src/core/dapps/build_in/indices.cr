@@ -65,10 +65,10 @@ module ::Axentro::Core::DApps::BuildIn
       if block_index = get(transaction_id)
         if block = database.get_block(block_index)
           if transaction = block.find_transaction(transaction_id)
-            confirmation = database.get_confirmations(block_index)
+            confirmations = database.get_confirmations(block_index)
             return {
               status:       "accepted",
-              confirmation: confirmation,
+              confirmations: confirmations,
               transaction:  transaction,
             }
           end
@@ -76,8 +76,15 @@ module ::Axentro::Core::DApps::BuildIn
       end
 
       if transaction = (blockchain.pending_slow_transactions + blockchain.pending_fast_transactions).find { |t| t.id == transaction_id }
+        
+      confirmations = 0
+        if block_index = database.get_block_index_for_transaction(transaction.id)
+          confirmations = database.get_confirmations(block_index)
+        end
+        
         return {
           status:      "pending",
+          confirmations: confirmations,
           transaction: transaction,
         }
       end
