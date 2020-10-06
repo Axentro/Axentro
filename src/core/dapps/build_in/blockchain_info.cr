@@ -133,10 +133,9 @@ module ::Axentro::Core::DApps::BuildIn
     def transactions_address_impl(address : String, page : Int32, per_page : Int32, direction : Int32, actions : Array(String) = [] of String)
       transactions = database.get_paginated_transactions_for_address(address, page, per_page, Direction.new(direction).to_s, actions)
       transactions.map do |t|
-        if block_index = database.get_block_index_for_transaction(t.id)  
-        confirmations = database.get_confirmations(block_index)
-        else
-          confirmations = 0
+        confirmations = 0
+        if block_index = database.get_block_index_for_transaction(t.id)
+          confirmations = database.get_confirmations(block_index)
         end
         {transaction: t, confirmations: confirmations}
       end

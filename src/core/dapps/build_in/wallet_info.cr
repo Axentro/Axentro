@@ -130,7 +130,6 @@ module ::Axentro::Core::DApps::BuildIn
 
     private def outgoing(address, status : String, transactions : Array(Transaction)) : Array(RecentWalletTransaction)
       transactions.map do |t|
-        
         confirmations = 0
         if block_index = database.get_block_index_for_transaction(t.id)
           confirmations = database.get_confirmations(block_index)
@@ -146,7 +145,6 @@ module ::Axentro::Core::DApps::BuildIn
 
     private def incoming(address, status : String, transactions : Array(Transaction)) : Array(RecentWalletTransaction)
       transactions.map do |t|
-
         confirmations = 0
         if block_index = database.get_block_index_for_transaction(t.id)
           confirmations = database.get_confirmations(block_index)

@@ -125,7 +125,7 @@ describe BlockchainInfo do
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
             transactions_for_the_address = block_factory.chain.flat_map { |blk| blk.transactions }.select { |txn| txn.recipients.map { |r| r["address"] }.includes?(address) }.reverse
-            modified = transactions_for_the_address.map_with_index{|t,i| {transaction: t, confirmations: i} }.to_json
+            modified = transactions_for_the_address.map_with_index { |t, i| {transaction: t, confirmations: i} }.to_json
             result.should eq(modified)
           end
         end
@@ -144,7 +144,7 @@ describe BlockchainInfo do
             unless expected_block = block_factory.chain.find { |block| block.index == target_index }
               fail "could not find block: #{target_index} in chain"
             end
-            
+
             json_result = JSON.parse(result)
             json_result["block"].to_json.should eq(expected_block.to_json)
             json_result["confirmations"].as_i.should eq(9)
@@ -177,7 +177,7 @@ describe BlockchainInfo do
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
             expected_block = block_factory.chain.find { |blk| blk.transactions.map { |txn| txn.id }.includes?(transaction_id) }.to_json
-            
+
             json_result = JSON.parse(result)
             json_result["block"].to_json.should eq(expected_block)
             json_result["confirmations"].as_i.should eq(0)
