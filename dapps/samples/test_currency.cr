@@ -43,25 +43,38 @@ module ::Axentro::Core::DApps::User
       sha256(transaction.to_hash)
     end
 
+    def initialize(@blockchain)
+      @address_time_map = {} of String => Int32
+      super(@blockchain)
+    end
+
     def define_rpc?(call, json, context) : HTTP::Server::Context?
       if call == "currency"
         sender = create_sender("500")
         address = json["address"].as_s
-        recipient = create_recipient(address, "500")
 
-        transaction_id = Transaction.create_id
+        time = @address_time_map[address]? || 0
+        if time != Time.local.day_of_year
+          recipient = create_recipient(address, "500")
+          transaction_id = Transaction.create_id
 
-        created = create_transaction(
-          transaction_id,       # id
-          "send",               # action
-          sender,               # sender
-          recipient,            # recipient
-          "",                   # message
-          TOKEN_DEFAULT,        # token
-          TransactionKind::FAST # kind
-        )
+          created = create_transaction(
+            transaction_id,       # id
+            "send",               # action
+            sender,               # sender
+            recipient,            # recipient
+            "",                   # message
+            TOKEN_DEFAULT,        # token
+            TransactionKind::FAST # kind
+          )
 
-        info "created a transaction from TestCurrency(UserDApp): #{transaction_id}" if created
+          @address_time_map[address] = Time.local.day_of_year
+
+          info "created a transaction from TestCurrency(UserDApp): #{transaction_id}" if created
+        else
+          context.response.respond_with_status(400, "Only 1 request per day is allowed")
+          return context
+        end
         return context
       end
 
