@@ -23,31 +23,31 @@ module ::Axentro::Core::FastChain
 
   def process_fast_transactions
     loop do
-      spawn do 
-      if node.i_am_a_fast_node?
-        begin
-          debug "********** process fast transactions ***********"
-          if pending_fast_transactions.size > 0
-            debug "There are #{pending_fast_transactions.size} pending fast transactions"
-            valid_transactions = valid_transactions_for_fast_block
+      spawn do
+        if node.i_am_a_fast_node?
+          begin
+            debug "********** process fast transactions ***********"
+            if pending_fast_transactions.size > 0
+              debug "There are #{pending_fast_transactions.size} pending fast transactions"
+              valid_transactions = valid_transactions_for_fast_block
 
-            if valid_transactions[:transactions].size > 1
-              debug "There are #{valid_transactions.size} valid fast transactions so mint a new fast block"
+              if valid_transactions[:transactions].size > 1
+                debug "There are #{valid_transactions.size} valid fast transactions so mint a new fast block"
 
-              block = mint_fast_block(valid_transactions)
-              if block.valid?(self)
-                debug "record new fast block"
-                node.new_block(block)
-                debug "broadcast new fast block"
-                node.send_block(block)
+                block = mint_fast_block(valid_transactions)
+                if block.valid?(self)
+                  debug "record new fast block"
+                  node.new_block(block)
+                  debug "broadcast new fast block"
+                  node.send_block(block)
+                end
               end
             end
+          rescue e : Exception
+            error e.message.not_nil!
           end
-        rescue e : Exception
-          error e.message.not_nil!
         end
       end
-    end
       sleep 10
     end
   end
@@ -89,8 +89,8 @@ module ::Axentro::Core::FastChain
     address = wallet.address
     public_key = wallet.public_key
     latest_block_hash = _latest_block.to_hash
-    
-    hash = FastBlock.to_hash(latest_index, transactions, latest_block_hash, address, public_key) 
+
+    hash = FastBlock.to_hash(latest_index, transactions, latest_block_hash, address, public_key)
     private_key = Wif.new(wallet.wif).private_key.as_hex
     signature = KeyUtils.sign(private_key, hash)
 

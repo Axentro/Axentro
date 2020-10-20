@@ -1,5 +1,11 @@
 testnet:
- - invalid_address
+  fastnodes:
+   - invalid_address
+  slownodes:
+   - invalid_address 
 mainnet:
- - VDBiNGU3OGRjYzUzYTFjMjAwNmZiMzNmMTA0NTVhZmViZjY1MWI2ODQ0NWJjMDIy
+  fastnodes:
+   - VDBiNGU3OGRjYzUzYTFjMjAwNmZiMzNmMTA0NTVhZmViZjY1MWI2ODQ0NWJjMDIy
+  slownodes: 
+   - VDBiNGU3OGRjYzUzYTFjMjAwNmZiMzNmMTA0NTVhZmViZjY1MWI2ODQ0NWJjMDIy
 

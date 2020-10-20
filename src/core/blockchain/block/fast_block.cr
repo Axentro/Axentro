@@ -57,8 +57,8 @@ module ::Axentro::Core
     end
 
     def self.to_hash(index : Int64, transactions : Array(Transaction), prev_hash : String, address : String, public_key : String) : String
-     string = {index: index, transactions: transactions, prev_hash: prev_hash, address: address, public_key: public_key}.to_json
-     sha256(string)
+      string = {index: index, transactions: transactions, prev_hash: prev_hash, address: address, public_key: public_key}.to_json
+      sha256(string)
     end
 
     def calculate_merkle_tree_root : String

@@ -338,7 +338,7 @@ module ::Axentro::Core::NodeComponents
     end
 
     private def official_nodes_for(network : String)
-      node_list = @official_nodes.get_config[network]
+      node_list = @official_nodes.get_config[network]["slownodes"]
 
       if @finger_table.size > 0 && !is_only_this_node
         if (node_list & @finger_table.map { |n| n[:address] }).empty?

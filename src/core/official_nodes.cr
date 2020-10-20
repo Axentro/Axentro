@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core
-  alias OfficialNodesConfig = Hash(String, Array(String))
+  alias OfficialNodesConfig = Hash(String, Hash(String, Array(String)))
 
   class OfficialNodes
     @config : OfficialNodesConfig
@@ -21,13 +21,24 @@ module ::Axentro::Core
     end
 
     def self.default
-      official_node_list = {
-        "testnet" => [
-          "VDAwZTdkZGNjYjg1NDA1ZjdhYzk1M2ExMDAzNmY5MjUyYjI0MmMwNGJjZWY4NjA3",
-        ],
-        "mainnet" => [
-          "VDAwZTdkZGNjYjg1NDA1ZjdhYzk1M2ExMDAzNmY5MjUyYjI0MmMwNGJjZWY4NjA3",
-        ],
+      official_node_list = 
+      {
+        "testnet" => {
+            "fastnodes" => [
+              "VDAwZTdkZGNjYjg1NDA1ZjdhYzk1M2ExMDAzNmY5MjUyYjI0MmMwNGJjZWY4NjA3",
+            ],
+            "slownodes" => [
+              "VDAwZTdkZGNjYjg1NDA1ZjdhYzk1M2ExMDAzNmY5MjUyYjI0MmMwNGJjZWY4NjA3",
+            ],
+          },
+        "mainnet" => {
+            "fastnodes" => [
+                "VDAwZTdkZGNjYjg1NDA1ZjdhYzk1M2ExMDAzNmY5MjUyYjI0MmMwNGJjZWY4NjA3",
+              ],
+            "slownodes" => [
+                "VDAwZTdkZGNjYjg1NDA1ZjdhYzk1M2ExMDAzNmY5MjUyYjI0MmMwNGJjZWY4NjA3",
+              ],
+          }    
       }
       self.new(official_node_list)
     end
@@ -36,7 +47,7 @@ module ::Axentro::Core
       @config = validate(path)
     end
 
-    def initialize(node_list : Hash(String, Array(String)))
+    def initialize(node_list : Hash(String, Hash(String, Array(String))))
       @path = nil
       @config = node_list
     end
@@ -56,7 +67,7 @@ module ::Axentro::Core
     private def validate(path : String)
       raise("Official nodes input file must be a valid .yml file - you supplied #{path}") unless File.extname(path) == ".yml"
       content = OfficialNodesConfig.from_yaml(File.read(path))
-      content.values.flatten.each do |address|
+      content.values.map(&.values).flatten.each do |address|
         raise("The supplied address: #{address} is invalid") unless Address.is_valid?(address)
       end
       content

@@ -123,7 +123,8 @@ describe NodeInfo do
         json = JSON.parse(payload)
 
         with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-          result.should eq("{\"all\":[\"VDAwZTdkZGNjYjg1NDA1ZjdhYzk1M2ExMDAzNmY5MjUyYjI0MmMwNGJjZWY4NjA3\"],\"online\":[]}")
+          puts result
+          result.should eq("{\"all\":{\"fastnodes\":[\"VDAwZTdkZGNjYjg1NDA1ZjdhYzk1M2ExMDAzNmY5MjUyYjI0MmMwNGJjZWY4NjA3\"],\"slownodes\":[\"VDAwZTdkZGNjYjg1NDA1ZjdhYzk1M2ExMDAzNmY5MjUyYjI0MmMwNGJjZWY4NjA3\"]},\"online\":[]}")
         end
       end
     end
