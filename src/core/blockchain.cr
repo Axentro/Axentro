@@ -47,7 +47,7 @@ module ::Axentro::Core
     @max_miners : Int32
     @is_standalone : Bool
 
-    def initialize(@wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, @fastnode_address : String?, security_level_percentage : Int64?, @max_miners : Int32, @is_standalone : Bool)
+    def initialize(@wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, security_level_percentage : Int64?, @max_miners : Int32, @is_standalone : Bool)
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup
@@ -71,7 +71,6 @@ module ::Axentro::Core
 
       unless node.is_private_node?
         spawn process_fast_transactions
-        spawn leadership_contest
       end
     end
 
@@ -436,7 +435,7 @@ module ::Axentro::Core
     private def _add_transaction(transaction : Transaction)
       if transaction.valid_common?
         if transaction.kind == TransactionKind::FAST
-          if chain_mature_enough_for_fast_blocks? && i_am_the_current_leader
+          if node.i_am_a_fast_node? && node.fast_node_is_online?
             debug "adding fast transaction to pool: #{transaction.id}"
             FastTransactionPool.add(transaction)
           else
@@ -513,9 +512,7 @@ module ::Axentro::Core
     end
 
     private def get_genesis_block_transactions
-      developer_fund_transactions = @developer_fund ? DeveloperFund.transactions(@developer_fund.not_nil!.get_config) : [] of Transaction
-      fastnode_transactions = @fastnode_address ? FastNode.transactions(@fastnode_address.not_nil!) : [] of Transaction
-      developer_fund_transactions + fastnode_transactions
+      @developer_fund ? DeveloperFund.transactions(@developer_fund.not_nil!.get_config) : [] of Transaction
     end
 
     def genesis_block : SlowBlock

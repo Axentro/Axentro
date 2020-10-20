@@ -21,73 +21,11 @@ module ::Axentro::Core::FastChain
     timestamp: Int64,
   )
 
-  private def get_ranking(address)
-    Ranking.rank(address, Ranking.chain(chain))
-  end
-
-  private def i_can_lead?(my_ranking)
-    return false if node.is_private_node?
-    my_ranking > 0 && i_have_fastnode_tokens?
-  end
-
-  private def assume_leadership
-    debug "Assuming leadership role because I'm ranked high enough"
-    node.set_current_leader(CurrentLeader.new(node.get_node_id, node.get_wallet.address))
-    debug "current_leader_in_contest: #{node.get_current_leader}"
-  end
-
-  private def leadership_contest
-    loop do
-      if chain_mature_enough_for_fast_blocks?
-        my_ranking = get_ranking(node.get_wallet.address)
-
-        if node.has_no_connections?
-          if i_can_lead?(my_ranking)
-            debug "setting this node as leader as has no connections and is a high enough rank for this chain"
-            node.set_current_leader(CurrentLeader.new(node.get_node_id, node.get_wallet.address))
-          end
-        else
-          if (Time.utc - node.get_last_heartbeat) > 2.seconds # && i_am_not_the_current_leader
-            debug "Heartbeat not received within 2 second timeout - trying to assume leadership"
-            if i_can_lead?(my_ranking)
-              assume_leadership
-            else
-              debug "I'm not ranked high enough on this chain to become a leader"
-            end
-          end
-        end
-      end
-      sleep Random.new.rand(1.5..2.0)
-    end
-  end
-
-  private def i_am_not_the_current_leader
-    !i_am_the_current_leader
-  end
-
-  private def i_am_the_current_leader
-    return true if ENV.has_key?("AXE_TESTING")
-    CurrentLeader.new(node.get_node_id, node.get_wallet.address) == node.get_current_leader
-  end
-
-  private def broadcast_heartbeat
-    wallet = node.get_wallet
-    address = wallet.address
-    node_id = node.get_node_id
-    public_key = wallet.public_key
-    hash_salt = sha256(node.get_heartbeat_salt + public_key)
-    private_key = Wif.new(wallet.wif).private_key.as_hex
-
-    signature = KeyUtils.sign(private_key, hash_salt)
-    node.broadcast_heartbeat(address, node_id, public_key, hash_salt, signature)
-  end
-
   def process_fast_transactions
     loop do
-      if chain_mature_enough_for_fast_blocks? && i_am_the_current_leader
+      spawn do 
+      if node.i_am_a_fast_node?
         begin
-          broadcast_heartbeat unless node.has_no_connections?
-
           debug "********** process fast transactions ***********"
           if pending_fast_transactions.size > 0
             debug "There are #{pending_fast_transactions.size} pending fast transactions"
@@ -109,21 +47,9 @@ module ::Axentro::Core::FastChain
           error e.message.not_nil!
         end
       end
-      sleep 2
     end
-  end
-
-  def i_have_fastnode_tokens? : Bool
-    !node.database.get_address_amount(node.get_wallet.address).find { |tq| tq.token == FastNode::FASTNODE_TOKEN }.nil?
-  end
-
-  def chain_mature_enough_for_fast_blocks?
-    latest = get_latest_index_for_slow
-    if ENV.has_key?("AXE_TESTING")
-      return false if latest < 8_i64
+      sleep 10
     end
-    return true if node.has_no_connections? && !node.is_private_node?
-    latest > 1_i64
   end
 
   def latest_fast_block : FastBlock?
@@ -162,20 +88,21 @@ module ::Axentro::Core::FastChain
     wallet = node.get_wallet
     address = wallet.address
     public_key = wallet.public_key
-    hash_salt = sha256(node.get_heartbeat_salt + public_key)
+    latest_block_hash = _latest_block.to_hash
+    
+    hash = FastBlock.to_hash(latest_index, transactions, latest_block_hash, address, public_key) 
     private_key = Wif.new(wallet.wif).private_key.as_hex
-
-    signature = KeyUtils.sign(private_key, hash_salt)
+    signature = KeyUtils.sign(private_key, hash)
 
     FastBlock.new(
       latest_index,
       transactions,
-      _latest_block.to_hash,
+      latest_block_hash,
       timestamp,
       address,
       public_key,
       signature,
-      hash_salt
+      hash
     )
   end
 
@@ -186,7 +113,6 @@ module ::Axentro::Core::FastChain
     embedded_fast_transactions.each do |t|
       t.prev_hash = aligned_transactions[-1].to_hash
       t.valid_as_embedded?(self, aligned_transactions)
-
       aligned_transactions << t
     rescue e : Exception
       debug "align_fast_transactions: REJECTED transaction due to #{e}"

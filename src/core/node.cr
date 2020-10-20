@@ -37,10 +37,6 @@ module ::Axentro::Core
     @conflicted_slow_index : Int64? = nil
     @conflicted_fast_index : Int64? = nil
 
-    @last_heartbeat = Time.utc
-    @current_leader : CurrentLeader?
-    @heartbeat_salt : String
-
     def initialize(
       @is_private : Bool,
       @is_testnet : Bool,
@@ -64,8 +60,7 @@ module ::Axentro::Core
     )
       welcome
 
-      @heartbeat_salt = Random::Secure.hex(32)
-      @blockchain = Blockchain.new(@wallet, @database, @developer_fund, @fastnode_address, @security_level_percentage, @max_miners, is_standalone?)
+      @blockchain = Blockchain.new(@wallet, @database, @developer_fund, @security_level_percentage, @max_miners, is_standalone?)
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @validation_manager = ValidationManager.new(@blockchain, @bind_host, @bind_port, @use_ssl)
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @validation_manager, @max_private_nodes, @wallet.address, @official_nodes, @exit_on_unofficial)
@@ -104,28 +99,21 @@ module ::Axentro::Core
       @connect_host.nil?
     end
 
+    def i_am_a_fast_node?
+      true
+      # @wallet.address == @fastnode_address
+    end
+
+    def fast_node_is_online?
+      true
+    end
+
     def get_wallet
       @wallet
     end
 
     def get_node_id
       @chord.context[:id]
-    end
-
-    def get_last_heartbeat
-      @last_heartbeat
-    end
-
-    def get_current_leader : CurrentLeader?
-      @current_leader
-    end
-
-    def set_current_leader(current_leader : CurrentLeader)
-      @current_leader = current_leader
-    end
-
-    def get_heartbeat_salt
-      @heartbeat_salt
     end
 
     def has_no_connections?
@@ -342,8 +330,6 @@ module ::Axentro::Core
           _receive_miner_nonces(socket, message_content)
         when M_TYPE_NODE_SEND_CLIENT_CONTENT
           _receive_client_content(socket, message_content)
-        when M_TYPE_NODE_BROADCAST_HEARTBEAT
-          _broadcast_heartbeat(socket, message_content)
         end
       rescue e : Exception
         handle_exception(socket, e)
@@ -622,83 +608,6 @@ module ::Axentro::Core
       from = _m_content.from
 
       broadcast_block(socket, block, from)
-    end
-
-    def broadcast_heartbeat(node_address, node_id, public_key, hash_salt, signature, from : Chord::NodeContext? = nil)
-      content =
-        {
-          address:    node_address,
-          node_id:    node_id,
-          public_key: public_key,
-          hash_salt:  hash_salt,
-          signature:  signature,
-          from:       @chord.context,
-        }
-      debug "sending heartbeat: #{node_id}_#{node_address}"
-      send_heartbeat_on_chord(content)
-    end
-
-    def send_heartbeat_on_chord(content)
-      _nodes = @chord.find_nodes
-
-      if successor = _nodes[:successor]
-        if successor[:context][:id] != @chord.context[:id] && successor[:context][:id] != content[:from][:id]
-          send(successor[:socket], M_TYPE_NODE_BROADCAST_HEARTBEAT, content)
-        end
-      end
-    end
-
-    private def _broadcast_heartbeat(socket, _content)
-      return unless @phase == SetupPhase::DONE
-
-      @last_heartbeat = Time.utc
-
-      _m_content = MContentNodeBroadcastHeartbeat.from_json(_content)
-
-      address = _m_content.address
-      node_id = _m_content.node_id
-      public_key = _m_content.public_key
-      hash_salt = _m_content.hash_salt
-      signature = _m_content.signature
-      from = _m_content.from
-
-      if valid_heartbeat?(address, public_key, hash_salt, signature)
-        debug "receiving valid heartbeat: #{address} #{node_id}"
-        if get_wallet.address == address
-          debug "heartbeat leader has same address as me so setting current leader to nil"
-          @current_leader = nil
-        else
-          my_rank = Ranking.rank(get_wallet.address, Ranking.chain(self.blockchain.chain))
-          received_rank = Ranking.rank(address, Ranking.chain(self.blockchain.chain))
-          if my_rank > received_rank
-            debug "I outrank the heartbeat from remote leader so assuming leadership"
-            set_current_leader(CurrentLeader.new(get_node_id, get_wallet.address))
-          else
-            debug "setting leader to: #{get_current_leader}"
-            set_current_leader(CurrentLeader.new(node_id, address))
-          end
-        end
-      else
-        info "setting current leader to nil as received an invalid leader heartbeat"
-        @current_leader = nil
-      end
-      c =
-        {
-          address:    address,
-          node_id:    node_id,
-          public_key: public_key,
-          hash_salt:  hash_salt,
-          signature:  signature,
-          from:       from,
-        }
-
-      send_heartbeat_on_chord(c)
-    end
-
-    private def valid_heartbeat?(address, public_key, hash_salt, signature)
-      valid_signature = KeyUtils.verify_signature(hash_salt, signature, public_key)
-      valid_leader = Ranking.rank(address, Ranking.chain(self.blockchain.chain)) > 0
-      valid_signature && valid_leader
     end
 
     private def _receive_client_content(socket, _content)

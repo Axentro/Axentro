@@ -54,8 +54,20 @@ class X
   end
 end
 
-iters = 20000
-X.transaction("../../perf-test.json", "VDBjMjZkNzgwOWE2NWEzMzZmNjA2MmI0Njc2YzZkMWZjNWY3ODQwYjVmYWM3NmUx", iters)
+iters = 50
+X.transaction("../perf-test.json", "VDBjMjZkNzgwOWE2NWEzMzZmNjA2MmI0Njc2YzZkMWZjNWY3ODQwYjVmYWM3NmUx", iters)
+
+# crystal perf/x.cr && vegeta attack -targets="txns.txt" -format=json -rate=1 | vegeta encode
+
+# crystal perf/x.cr && vegeta attack -targets="txns.txt" -format=json -rate=1 -duration=1m | vegeta encode \
+# jaggr @count=rps \
+# hist\[100,200,300,400,500\]:code \
+# p25,p50,p95:latency \
+# sum:bytes_in \
+# sum:bytes_out | \
+# jplot rps+code.hist.100+code.hist.200+code.hist.300+code.hist.400+code.hist.500 \
+# latency.p95+latency.p50+latency.p25 \
+# bytes_in.sum+bytes_out.sum
 
 # vegeta attack -targets="txns.txt" -format=json -rate=100 | vegeta encode
 

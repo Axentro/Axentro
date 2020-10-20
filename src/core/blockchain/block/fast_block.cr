@@ -56,6 +56,11 @@ module ::Axentro::Core
       sha256(string)
     end
 
+    def self.to_hash(index : Int64, transactions : Array(Transaction), prev_hash : String, address : String, public_key : String) : String
+     string = {index: index, transactions: transactions, prev_hash: prev_hash, address: address, public_key: public_key}.to_json
+     sha256(string)
+    end
+
     def calculate_merkle_tree_root : String
       return "" if @transactions.size == 0
 
@@ -112,11 +117,7 @@ module ::Axentro::Core
 
     def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool, doing_replace : Bool) : Bool
       valid_signature = KeyUtils.verify_signature(@hash, @signature, @public_key)
-
       raise "Invalid Block Signature: the current block index: #{@index} has an invalid signature" unless valid_signature
-
-      valid_leader = Ranking.rank(@address, Ranking.chain(blockchain.chain)) > 0
-      raise "Invalid leader: the block was signed by a leader who is not ranked" unless valid_leader
 
       debug "checking validity of fast block while doing replace" if doing_replace
 
