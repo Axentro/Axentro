@@ -358,12 +358,7 @@ module ::Axentro::Core::NodeComponents
     end
 
     def check_for_official_nodes
-      if @network_type == "mainnet"
-        official_nodes_for("mainnet")
-      else
-        @network_type == "testnet"
-        official_nodes_for("testnet")
-      end
+      official_nodes_for(@network_type)
     end
 
     def search_successor(node, _content : String)
