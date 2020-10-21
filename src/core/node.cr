@@ -100,12 +100,12 @@ module ::Axentro::Core
     end
 
     def i_am_a_fast_node?
-      true
-      # @wallet.address == @fastnode_address
+      @official_nodes.i_am_a_fastnode(@wallet.address, @network_type)
     end
 
-    def fast_node_is_online?
-      true
+    def fastnode_is_online?
+      return true if ENV.has_key?("AX_SET_DIFFICULTY")
+      @official_nodes.a_fastnode_is_online?(@chord.official_nodes_list[:online].map(&.[:address]), @network_type)
     end
 
     def get_wallet

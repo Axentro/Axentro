@@ -435,9 +435,11 @@ module ::Axentro::Core
     private def _add_transaction(transaction : Transaction)
       if transaction.valid_common?
         if transaction.kind == TransactionKind::FAST
-          if node.i_am_a_fast_node? && node.fast_node_is_online?
-            debug "adding fast transaction to pool: #{transaction.id}"
-            FastTransactionPool.add(transaction)
+          if node.fastnode_is_online?
+            if node.i_am_a_fast_node?
+              debug "adding fast transaction to pool (I am a fast node): #{transaction.id}"
+              FastTransactionPool.add(transaction)
+            end
           else
             debug "chain is not mature enough for FAST transactions so adding to slow transaction pool: #{transaction.id}"
             transaction.kind = TransactionKind::SLOW

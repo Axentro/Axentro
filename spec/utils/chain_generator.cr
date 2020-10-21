@@ -42,11 +42,35 @@ module ::Units::Utils::ChainGenerator
     property database : Database
     property node : Axentro::Core::Node
 
+    def official_nodes_for_specs(address : String)
+      official_node_list =
+        {
+          "testnet" => {
+            "fastnodes" => [
+              address,
+            ],
+            "slownodes" => [
+              address,
+            ],
+          },
+          "mainnet" => {
+            "fastnodes" => [
+              address,
+            ],
+            "slownodes" => [
+              address,
+            ],
+          },
+        }
+      Axentro::Core::OfficialNodes.new(official_node_list)
+    end
+
     def initialize(developer_fund, memory_kind = MemoryKind::SINGLE)
       @node_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @miner_wallet = Wallet.from_json(Wallet.create(true).to_json)
+      official_nodes = official_nodes_for_specs(@node_wallet.address)
       @database = memory_kind == MemoryKind::SINGLE ? Axentro::Core::Database.in_memory : Axentro::Core::Database.in_shared_memory
-      @node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, @database, developer_fund, nil, Axentro::Core::OfficialNodes.default, false, nil, 512, 512, false)
+      @node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, @database, developer_fund, nil, official_nodes, false, nil, 512, 512, false)
       @blockchain = @node.blockchain
       # the node setup is run in a spawn so we have to wait until it's finished before running any tests
       while @node.@phase != Axentro::Core::Node::SetupPhase::DONE

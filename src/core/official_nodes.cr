@@ -57,15 +57,26 @@ module ::Axentro::Core
     end
 
     def all_for(network : String) : Array(String)
-      @config[network].values.flatten
+      @config[network].values.flatten.uniq
     end
 
     def all_slow_for(network : String) : Array(String)
-      @config[network]["slownodes"]
+      @config[network]["slownodes"].uniq
     end
 
     def all_fast_for(network : String) : Array(String)
-      @config[network]["fastnodes"]
+      @config[network]["fastnodes"].uniq
+    end
+
+    def i_am_a_fastnode(address : String, network : String) : Bool
+      all_fast_for(network).includes?(address)
+    end
+
+    def a_fastnode_is_online?(online_nodes : Array(String), network : String) : Bool
+      all_fast_for(network).each do |fn|
+        return true if online_nodes.includes?(fn)
+      end
+      false
     end
 
     def set_config(config)
