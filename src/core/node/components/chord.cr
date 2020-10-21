@@ -338,7 +338,7 @@ module ::Axentro::Core::NodeComponents
     end
 
     private def official_nodes_for(network : String)
-      node_list = @official_nodes.get_config[network]["slownodes"]
+      node_list = @official_nodes.all_for(network)
 
       if @finger_table.size > 0 && !is_only_this_node
         if (node_list & @finger_table.map { |n| n[:address] }).empty?
@@ -624,14 +624,14 @@ module ::Axentro::Core::NodeComponents
 
     def official_nodes_list
       {
-        all:    @official_nodes.get_config[@network_type],
+        all:    @official_nodes.all_for(@network_type),
         online: online_official_nodes,
       }
     end
 
     private def online_official_nodes
       list = @finger_table << context
-      list = list.select { |ctx| @official_nodes.get_config[@network_type].includes?(ctx[:address]) }
+      list = list.select { |ctx| @official_nodes.all_for(@network_type).includes?(ctx[:address]) }
       list.map { |ctx| {id: ctx[:id], address: ctx[:address], url: "https://#{ctx[:host]}:#{ctx[:port]}"} }
     end
 

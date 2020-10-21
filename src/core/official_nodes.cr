@@ -56,6 +56,18 @@ module ::Axentro::Core
       @config
     end
 
+    def all_for(network : String) : Array(String)
+      @config[network].values.flatten
+    end
+
+    def all_slow_for(network : String) : Array(String)
+      @config[network]["slownodes"]
+    end
+
+    def all_fast_for(network : String) : Array(String)
+      @config[network]["fastnodes"]
+    end
+
     def set_config(config)
       @config = config
     end
