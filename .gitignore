@@ -5,7 +5,9 @@
 
 spec/functional/reports
 e2e/wallets/developer_fund.yml
+e2e/wallets/official_nodes.yml
 developer_fund.yml
+official_nodes.yml
 
 *.log
 *.db
