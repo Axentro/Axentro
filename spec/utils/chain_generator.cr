@@ -41,6 +41,7 @@ module ::Units::Utils::ChainGenerator
     property blockchain : Blockchain
     property database : Database
     property node : Axentro::Core::Node
+    property official_nodes : Axentro::Core::OfficialNodes
 
     def official_nodes_for_specs(address : String)
       official_node_list =
@@ -68,7 +69,7 @@ module ::Units::Utils::ChainGenerator
     def initialize(developer_fund, memory_kind = MemoryKind::SINGLE)
       @node_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @miner_wallet = Wallet.from_json(Wallet.create(true).to_json)
-      official_nodes = official_nodes_for_specs(@node_wallet.address)
+      @official_nodes = official_nodes_for_specs(@node_wallet.address)
       @database = memory_kind == MemoryKind::SINGLE ? Axentro::Core::Database.in_memory : Axentro::Core::Database.in_shared_memory
       @node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, @database, developer_fund, nil, official_nodes, false, nil, 512, 512, false)
       @blockchain = @node.blockchain

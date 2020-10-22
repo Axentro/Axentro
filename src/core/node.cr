@@ -100,7 +100,7 @@ module ::Axentro::Core
     end
 
     def i_am_a_fast_node?
-      @official_nodes.i_am_a_fastnode(@wallet.address, @network_type)
+      @official_nodes.i_am_a_fastnode?(@wallet.address, @network_type)
     end
 
     def fastnode_is_online?
@@ -518,50 +518,63 @@ module ::Axentro::Core
       error e.message.not_nil!
     end
 
+    def fast_block_was_signed_by_official_fast_node?(block : FastBlock) : Bool
+      debug "verifying fast block was signed by official fast node"
+      hash_salt = block.hash
+      signature = block.signature
+      address = block.address
+      public_key = block.public_key
+      @official_nodes.i_am_a_fastnode?(address, @network_type) &&  KeyUtils.verify_signature(hash_salt, signature, public_key)
+    end
+
     private def broadcast_fast_block(socket : HTTP::WebSocket, block : FastBlock, from : Chord::NodeContext? = nil)
-      debug "fast: fast block arriving from peer with index #{block.index}"
-      debug "fast: merkle tree root of arriving block: #{block.merkle_tree_root}"
-      latest_fast_block = @blockchain.latest_fast_block || @blockchain.get_genesis_block
-      if latest_fast_block.index + 2 < block.index
-        debug "fast: latest local fast chain index (#{latest_fast_block.index}) is more than one block behind index of arriving block from a peer(#{block.index})"
-        warning "fast: require new chain: #{latest_fast_block} for #{block.index}"
-        sync_chain(socket)
-        send_block(block, from)
-      elsif latest_fast_block.index < block.index
-        debug "fast: fast block arriving from peer is a new block"
-        debug "fast: sending new block on to peer"
-        send_block(block, from)
-        debug "fast: finished sending new block on to peer"
-        if _block = @blockchain.valid_block?(block)
-          debug "fast: about to create the new block locally"
-          new_block(_block)
-          info "#{magenta("NEW FAST BLOCK broadcasted")}: #{light_green(_block.index)}"
-        end
-      elsif latest_fast_block.index == block.index
-        debug "fast: fast block arriving from peer has the same index as the latest fast block"
-        warning "fast: blockchain conflicted at #{block.index} (#{light_cyan(latest_fast_block)})"
-        @conflicted_fast_index ||= block.index
-        if latest_fast_block.timestamp < block.timestamp
-          warning "fast: local block's timestamp indicates it was minted earlier than arriving block .. not forwarding arriving block to other nodes"
-        elsif block.timestamp < latest_fast_block.timestamp
-          warning "slow: arriving block's timestamp indicates it was minted earlier than latest local block"
-          warning "current local block merkle_tree_root #{latest_fast_block.merkle_tree_root}"
-          warning "arriving block merkle_tree_root #{block.merkle_tree_root}"
+      if fast_block_was_signed_by_official_fast_node?(block)
+        debug "fast: fast block arriving from peer with index #{block.index}"
+        debug "fast: merkle tree root of arriving block: #{block.merkle_tree_root}"
+        latest_fast_block = @blockchain.latest_fast_block || @blockchain.get_genesis_block
+        if latest_fast_block.index + 2 < block.index
+          debug "fast: latest local fast chain index (#{latest_fast_block.index}) is more than one block behind index of arriving block from a peer(#{block.index})"
+          warning "fast: require new chain: #{latest_fast_block} for #{block.index}"
+          sync_chain(socket)
           send_block(block, from)
-          if _block = @blockchain.valid_block?(block, true, true)
-            warning "arriving block passes validity checks, making the arriving block our local latest"
-            @blockchain.replace_with_block_from_peer(_block)
-          else
-            warning "arriving block failed validity check, we can't make it our local latest"
+        elsif latest_fast_block.index < block.index
+          debug "fast: fast block arriving from peer is a new block"
+          debug "fast: sending new block on to peer"
+          send_block(block, from)
+          debug "fast: finished sending new block on to peer"
+          if _block = @blockchain.valid_block?(block)
+            debug "fast: about to create the new block locally"
+            new_block(_block)
+            info "#{magenta("NEW FAST BLOCK broadcasted")}: #{light_green(_block.index)}"
           end
+        elsif latest_fast_block.index == block.index
+          debug "fast: fast block arriving from peer has the same index as the latest fast block"
+          warning "fast: blockchain conflicted at #{block.index} (#{light_cyan(latest_fast_block)})"
+          @conflicted_fast_index ||= block.index
+          if latest_fast_block.timestamp < block.timestamp
+            warning "fast: local block's timestamp indicates it was minted earlier than arriving block .. not forwarding arriving block to other nodes"
+          elsif block.timestamp < latest_fast_block.timestamp
+            warning "slow: arriving block's timestamp indicates it was minted earlier than latest local block"
+            warning "current local block merkle_tree_root #{latest_fast_block.merkle_tree_root}"
+            warning "arriving block merkle_tree_root #{block.merkle_tree_root}"
+            send_block(block, from)
+            if _block = @blockchain.valid_block?(block, true, true)
+              warning "arriving block passes validity checks, making the arriving block our local latest"
+              @blockchain.replace_with_block_from_peer(_block)
+            else
+              warning "arriving block failed validity check, we can't make it our local latest"
+            end
+          end
+        else
+          warning "fast: fast block arriving from peer is an old block, will tell peer to sync"
+          send_block(block, from)
+          tell_peer_to_sync_chain(socket)
         end
       else
-        warning "fast: fast block arriving from peer is an old block, will will tell peer to sync"
-        send_block(block, from)
-        tell_peer_to_sync_chain(socket)
+        warning "fast block arriving from peer was not signed by a valid fast node - ignoring this block"
       end
     rescue e : Exception
-      error e.message.not_nil!
+      error e.message || "no message content for exception"
     end
 
     def new_block(block : SlowBlock | FastBlock)

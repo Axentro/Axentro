@@ -68,7 +68,7 @@ module ::Axentro::Core
       @config[network]["fastnodes"].uniq
     end
 
-    def i_am_a_fastnode(address : String, network : String) : Bool
+    def i_am_a_fastnode?(address : String, network : String) : Bool
       all_fast_for(network).includes?(address)
     end
 
