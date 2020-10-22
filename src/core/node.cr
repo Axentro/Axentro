@@ -524,9 +524,10 @@ module ::Axentro::Core
       signature = block.signature
       address = block.address
       public_key = block.public_key
-      @official_nodes.i_am_a_fastnode?(address, @network_type) &&  KeyUtils.verify_signature(hash_salt, signature, public_key)
+      @official_nodes.i_am_a_fastnode?(address, @network_type) && KeyUtils.verify_signature(hash_salt, signature, public_key)
     end
 
+    # ameba:disable Metrics/CyclomaticComplexity
     private def broadcast_fast_block(socket : HTTP::WebSocket, block : FastBlock, from : Chord::NodeContext? = nil)
       if fast_block_was_signed_by_official_fast_node?(block)
         debug "fast: fast block arriving from peer with index #{block.index}"
