@@ -34,8 +34,12 @@ module ::Axentro::Core::DApps::User
       [] of String
     end
 
-    def valid_transaction?(transaction, prev_transactions) : Bool
-      true
+    # def valid_transaction?(transaction, prev_transactions) : Bool
+    #   true
+    # end
+
+    def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
+      ValidatedTransactions.empty
     end
 
     def activate : Int64?

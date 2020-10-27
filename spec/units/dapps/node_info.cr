@@ -37,13 +37,13 @@ describe NodeInfo do
         transaction_creator.transaction_related?("action").should be_false
       end
     end
-    it "should perform #valid_transaction?" do
-      with_factory do |block_factory, _|
-        chain = block_factory.add_slow_blocks(2).chain
-        transaction_creator = NodeInfo.new(block_factory.blockchain)
-        transaction_creator.valid_transaction?(chain.last.transactions.first, chain.last.transactions).should be_true
-      end
-    end
+    # it "should perform #valid_transaction?" do
+    #   with_factory do |block_factory, _|
+    #     chain = block_factory.add_slow_blocks(2).chain
+    #     transaction_creator = NodeInfo.new(block_factory.blockchain)
+    #     transaction_creator.valid_transaction?(chain.last.transactions.first, chain.last.transactions).should be_true
+    #   end
+    # end
     it "should perform #record" do
       with_factory do |block_factory, _|
         chain = block_factory.add_slow_blocks(2).chain

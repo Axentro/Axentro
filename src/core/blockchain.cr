@@ -433,26 +433,31 @@ module ::Axentro::Core
     end
 
     private def _add_transaction(transaction : Transaction)
-      if transaction.valid_common?
-        if transaction.kind == TransactionKind::FAST
+      vt = Validation::Transaction.validate_common([transaction])
+
+      # TODO - could reject in bulk also
+      vt.failed.each do |ft|
+        rejects.record_reject(ft.transaction.id, Rejects.address_from_senders(ft.transaction.senders), ft.reason)
+        node.wallet_info_controller.update_wallet_information([ft.transaction])
+      end
+
+      vt.passed.each do |_transaction|
+        if _transaction.kind == TransactionKind::FAST
           if node.fastnode_is_online?
             if node.i_am_a_fast_node?
-              debug "adding fast transaction to pool (I am a fast node): #{transaction.id}"
-              FastTransactionPool.add(transaction)
+              debug "adding fast transaction to pool (I am a fast node): #{_transaction.id}"
+              FastTransactionPool.add(_transaction)
             end
           else
-            debug "chain is not mature enough for FAST transactions so adding to slow transaction pool: #{transaction.id}"
-            transaction.kind = TransactionKind::SLOW
-            SlowTransactionPool.add(transaction)
+            debug "chain is not mature enough for FAST transactions so adding to slow transaction pool: #{_transaction.id}"
+            _transaction.kind = TransactionKind::SLOW
+            SlowTransactionPool.add(_transaction)
           end
         else
-          SlowTransactionPool.add(transaction)
+          SlowTransactionPool.add(_transaction)
         end
-        node.wallet_info_controller.update_wallet_information([transaction])
+        node.wallet_info_controller.update_wallet_information([_transaction])
       end
-    rescue e : Exception
-      rejects.record_reject(transaction.id, Rejects.address_from_senders(transaction.senders), e)
-      node.wallet_info_controller.update_wallet_information([transaction])
     end
 
     def add_miner_nonce(miner_nonce : MinerNonce, with_spawn : Bool = true)
@@ -628,24 +633,42 @@ module ::Axentro::Core
       node.miners_broadcast
     end
 
+    # def align_slow_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
+    #   aligned_transactions = [coinbase_transaction]
+
+    #   debug "entered align_slow_transactions with embedded_slow_transactions size: #{embedded_slow_transactions.size}"
+    #   embedded_slow_transactions.each do |t|
+    #     t.prev_hash = aligned_transactions[-1].to_hash
+    #     t.valid_as_embedded?(self, aligned_transactions)
+
+    #     aligned_transactions << t
+    #   rescue e : Exception
+    #     rejects.record_reject(t.id, Rejects.address_from_senders(t.senders), e)
+    #     node.wallet_info_controller.update_wallet_information([t])
+
+    #     SlowTransactionPool.delete(t)
+    #   end
+    #   debug "exited align_slow_transactions with embedded_slow_transactions size: #{embedded_slow_transactions.size}"
+
+    #   aligned_transactions
+    # end
+
     def align_slow_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
-      aligned_transactions = [coinbase_transaction]
+      transactions = [coinbase_transaction] + embedded_slow_transactions
 
-      debug "entered align_slow_transactions with embedded_slow_transactions size: #{embedded_slow_transactions.size}"
-      embedded_slow_transactions.each do |t|
-        t.prev_hash = aligned_transactions[-1].to_hash
-        t.valid_as_embedded?(self, aligned_transactions)
+      vt = Validation::Transaction.validate_common(transactions)
+      skip_prev_hash_check = true
+      vt << Validation::Transaction.validate_embedded(transactions, self, skip_prev_hash_check)
 
-        aligned_transactions << t
-      rescue e : Exception
-        rejects.record_reject(t.id, Rejects.address_from_senders(t.senders), e)
-        node.wallet_info_controller.update_wallet_information([t])
-
-        SlowTransactionPool.delete(t)
+      vt.failed.each do |ft|
+        rejects.record_reject(ft.transaction.id, Rejects.address_from_senders(ft.transaction.senders), ft.reason)
+        node.wallet_info_controller.update_wallet_information([ft.transaction])
+        SlowTransactionPool.delete(ft.transaction)
       end
-      debug "exited align_slow_transactions with embedded_slow_transactions size: #{embedded_slow_transactions.size}"
 
-      aligned_transactions
+      vt.passed.map_with_index do |transaction, index|
+        transaction.add_prev_hash((index == 0 ? "0" : vt.passed[index - 1].to_hash))
+      end
     end
 
     def create_coinbase_slow_transaction(coinbase_amount : Int64, miners : NodeComponents::MinersManager::Miners) : Transaction
@@ -691,24 +714,39 @@ module ::Axentro::Core
       transactions.reduce(0_i64) { |fees, transaction| fees + transaction.total_fees }
     end
 
+    # def replace_slow_transactions(transactions : Array(Transaction))
+    #   transactions = transactions.select(&.is_slow_transaction?)
+    #   replace_transactions = [] of Transaction
+
+    #   transactions.each_with_index do |t, i|
+    #     progress "validating slow transaction #{t.short_id}", i + 1, transactions.size
+
+    #     t = SlowTransactionPool.find(t) || t
+    #     t.valid_common?
+
+    #     replace_transactions << t
+    #   rescue e : Exception
+    #     rejects.record_reject(t.id, Rejects.address_from_senders(t.senders), e)
+    #     node.wallet_info_controller.update_wallet_information([t])
+    #   end
+
+    #   SlowTransactionPool.lock
+    #   SlowTransactionPool.replace(replace_transactions)
+    # end
+
     def replace_slow_transactions(transactions : Array(Transaction))
-      transactions = transactions.select(&.is_slow_transaction?)
-      replace_transactions = [] of Transaction
+      results = SlowTransactionPool.find_all(transactions.select(&.is_slow_transaction?))
+      slow_transactions = results.found + results.not_found
 
-      transactions.each_with_index do |t, i|
-        progress "validating slow transaction #{t.short_id}", i + 1, transactions.size
+      vt = Validation::Transaction.validate_common(slow_transactions)
 
-        t = SlowTransactionPool.find(t) || t
-        t.valid_common?
-
-        replace_transactions << t
-      rescue e : Exception
-        rejects.record_reject(t.id, Rejects.address_from_senders(t.senders), e)
-        node.wallet_info_controller.update_wallet_information([t])
+      vt.failed.each do |ft|
+        rejects.record_reject(ft.transaction.id, Rejects.address_from_senders(ft.transaction.senders), ft.reason)
+        node.wallet_info_controller.update_wallet_information([ft.transaction])
       end
 
       SlowTransactionPool.lock
-      SlowTransactionPool.replace(replace_transactions)
+      SlowTransactionPool.replace(vt.passed)
     end
 
     def replace_miner_nonces(miner_nonces : Array(MinerNonce))

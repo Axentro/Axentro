@@ -189,7 +189,7 @@ describe Blockchain do
         block_factory.add_slow_block([transaction]).add_slow_block([transaction])
 
         if reject = block_factory.blockchain.rejects.find(transaction.id)
-          reject.reason.should eq("the transaction #{transaction.id} is already included in block: 2")
+          reject.reason.should eq("the transaction #{transaction.id} already exists in block: 2")
         else
           fail "no rejects found"
         end

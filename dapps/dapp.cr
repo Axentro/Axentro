@@ -101,7 +101,9 @@ module ::Axentro::Core::DApps::User
     # raise "invalid transaction for my awesome dapps: #{transaction}"
     # ```
     #
-    abstract def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
+    # abstract def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
+
+    abstract def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
 
     #
     # This function is called when new block is mined and broadcasted.

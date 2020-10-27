@@ -25,37 +25,41 @@ module ::Axentro::Core::DApps::BuildIn
       action == "create_token"
     end
 
-    def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-      raise "senders can only be 1 for token action" if transaction.senders.size != 1
-      raise "number of specified senders must be 1 for 'create_token'" if transaction.senders.size != 1
-      raise "number of specified recipients must be 1 for 'create_token'" if transaction.recipients.size != 1
-
-      sender = transaction.senders[0]
-      sender_address = sender[:address]
-      sender_amount = sender[:amount]
-
-      recipient = transaction.recipients[0]
-      recipient_address = recipient[:address]
-      recipient_amount = recipient[:amount]
-
-      raise "address mismatch for 'create_token'. " +
-            "sender: #{sender_address}, recipient: #{recipient_address}" if sender_address != recipient_address
-
-      raise "amount mismatch for 'create_token'. " +
-            "sender: #{sender_amount}, recipient: #{recipient_amount}" if sender_amount != recipient_amount
-
-      token = transaction.token
-
-      raise "invalid token name: #{token}" unless valid_token_name?(token)
-
-      raise "the token #{token} is already created" if database.token_exists?(token)
-
-      prev_transactions.each do |prev_transaction|
-        raise "the token #{token} is already created" if prev_transaction.token == token
-      end
-
-      true
+    def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
+      ValidatedTransactions.empty
     end
+
+    # def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
+    #   raise "senders can only be 1 for token action" if transaction.senders.size != 1
+    #   raise "number of specified senders must be 1 for 'create_token'" if transaction.senders.size != 1
+    #   raise "number of specified recipients must be 1 for 'create_token'" if transaction.recipients.size != 1
+
+    #   sender = transaction.senders[0]
+    #   sender_address = sender[:address]
+    #   sender_amount = sender[:amount]
+
+    #   recipient = transaction.recipients[0]
+    #   recipient_address = recipient[:address]
+    #   recipient_amount = recipient[:amount]
+
+    #   raise "address mismatch for 'create_token'. " +
+    #         "sender: #{sender_address}, recipient: #{recipient_address}" if sender_address != recipient_address
+
+    #   raise "amount mismatch for 'create_token'. " +
+    #         "sender: #{sender_amount}, recipient: #{recipient_amount}" if sender_amount != recipient_amount
+
+    #   token = transaction.token
+
+    #   raise "invalid token name: #{token}" unless valid_token_name?(token)
+
+    #   raise "the token #{token} is already created" if database.token_exists?(token)
+
+    #   prev_transactions.each do |prev_transaction|
+    #     raise "the token #{token} is already created" if prev_transaction.token == token
+    #   end
+
+    #   true
+    # end
 
     def self.valid_token_name?(token : String) : Bool
       unless token =~ /^[A-Z0-9]{1,20}$/

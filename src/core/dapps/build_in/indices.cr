@@ -27,16 +27,26 @@ module ::Axentro::Core::DApps::BuildIn
       true
     end
 
-    def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-      if index = get(transaction.id)
-        raise "the transaction #{transaction.id} is already included in block: #{index}"
+    def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
+      existing_transactions = database.get_transactions_and_block_that_exist(transactions)
+
+      failed = [] of FailedTransaction
+
+      transactions.each do |transaction|
+        existing_transactions.each do |existing_transaction|
+          if existing_transaction.transaction.id == transaction.id
+            failed << FailedTransaction.new(transaction, "the transaction #{transaction.id} already exists in block: #{existing_transaction.block}")
+          end
+        end
       end
 
-      if prev_transactions.count { |t| t.id == transaction.id } > 0
-        raise "the transaction #{transaction.id} already exists in the same block"
+      transactions.map(&.id).tally.select { |_, v| v > 1 }.keys.each do |transaction_id|
+        failed << FailedTransaction.new(transactions.find { |t| t.id == transaction_id }.not_nil!, "the transaction #{transaction_id} already exists in the same block")
       end
 
-      true
+      passed = transactions.reject { |t| failed.map(&.transaction.id).includes?(t.id) }
+
+      ValidatedTransactions.new(failed, passed)
     end
 
     def record(chain : Blockchain::Chain)

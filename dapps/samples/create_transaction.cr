@@ -34,14 +34,18 @@ module ::Axentro::Core::DApps::User
       [TARGET_ACTION]
     end
 
-    def valid_transaction?(transaction, prev_transactions) : Bool
-      raise "the token must be #{TOKEN_DEFAULT}" unless transaction.token == TOKEN_DEFAULT
-      raise "the number of senders must be 1" unless transaction.senders.size == 1
-      raise "the number of recipients must be 1" unless transaction.recipients.size == 1
-      raise "the recipient address must be #{VALID_ADDRESS}" unless transaction.recipients[0][:address] == VALID_ADDRESS
-      raise "the sending amount must be 0.0001" unless transaction.senders[0][:amount] == scale_i64("0.0001")
+    # def valid_transaction?(transaction, prev_transactions) : Bool
+    #   raise "the token must be #{TOKEN_DEFAULT}" unless transaction.token == TOKEN_DEFAULT
+    #   raise "the number of senders must be 1" unless transaction.senders.size == 1
+    #   raise "the number of recipients must be 1" unless transaction.recipients.size == 1
+    #   raise "the recipient address must be #{VALID_ADDRESS}" unless transaction.recipients[0][:address] == VALID_ADDRESS
+    #   raise "the sending amount must be 0.0001" unless transaction.senders[0][:amount] == scale_i64("0.0001")
 
-      true
+    #   true
+    # end
+
+    def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
+      ValidatedTransactions.empty
     end
 
     def activate : Int64?

@@ -51,34 +51,38 @@ module ::Axentro::Core::DApps::BuildIn
       true
     end
 
-    def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-      raise "there must be 1 or less recipients" if transaction.recipients.size > 1
-      raise "there must be 1 sender" if transaction.senders.size != 1
-
-      sender = transaction.senders[0]
-
-      amount_token = get_pending(sender[:address], prev_transactions, transaction.token)
-      amount_default = transaction.token == DEFAULT ? amount_token : get_pending(sender[:address], prev_transactions, DEFAULT)
-
-      as_recipients = transaction.recipients.select { |recipient| recipient[:address] == sender[:address] }
-      amount_token_as_recipients = as_recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
-      amount_default_as_recipients = transaction.token == DEFAULT ? amount_token_as_recipients : 0_i64
-
-      pay_token = sender[:amount]
-      pay_default = (transaction.token == DEFAULT ? sender[:amount] : 0_i64) + sender[:fee]
-
-      total_available = amount_token + amount_token_as_recipients
-      if (total_available - pay_token) < 0
-        raise "Unable to send #{scale_decimal(pay_token)} #{transaction.token} to recipient because you do not have enough #{transaction.token}. You currently have: #{scale_decimal(amount_token)} #{transaction.token} and you are receiving: #{scale_decimal(amount_token_as_recipients)} #{transaction.token} from senders,  giving a total of: #{scale_decimal(total_available)} #{transaction.token}"
-      end
-
-      total_default_available = amount_default + amount_default_as_recipients
-      if (total_default_available - pay_default) < 0
-        raise "Unable to send #{scale_decimal(pay_default)} #{DEFAULT} to recipient because you do not have enough #{DEFAULT}. You currently have: #{scale_decimal(amount_default)} #{DEFAULT} and you are receiving: #{scale_decimal(amount_default_as_recipients)} #{DEFAULT} from senders,  giving a total of: #{scale_decimal(total_default_available)} #{DEFAULT}"
-      end
-
-      true
+    def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
+      ValidatedTransactions.empty
     end
+
+    # def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
+    #   raise "there must be 1 or less recipients" if transaction.recipients.size > 1
+    #   raise "there must be 1 sender" if transaction.senders.size != 1
+
+    #   sender = transaction.senders[0]
+
+    #   amount_token = get_pending(sender[:address], prev_transactions, transaction.token)
+    #   amount_default = transaction.token == DEFAULT ? amount_token : get_pending(sender[:address], prev_transactions, DEFAULT)
+
+    #   as_recipients = transaction.recipients.select { |recipient| recipient[:address] == sender[:address] }
+    #   amount_token_as_recipients = as_recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
+    #   amount_default_as_recipients = transaction.token == DEFAULT ? amount_token_as_recipients : 0_i64
+
+    #   pay_token = sender[:amount]
+    #   pay_default = (transaction.token == DEFAULT ? sender[:amount] : 0_i64) + sender[:fee]
+
+    #   total_available = amount_token + amount_token_as_recipients
+    #   if (total_available - pay_token) < 0
+    #     raise "Unable to send #{scale_decimal(pay_token)} #{transaction.token} to recipient because you do not have enough #{transaction.token}. You currently have: #{scale_decimal(amount_token)} #{transaction.token} and you are receiving: #{scale_decimal(amount_token_as_recipients)} #{transaction.token} from senders,  giving a total of: #{scale_decimal(total_available)} #{transaction.token}"
+    #   end
+
+    #   total_default_available = amount_default + amount_default_as_recipients
+    #   if (total_default_available - pay_default) < 0
+    #     raise "Unable to send #{scale_decimal(pay_default)} #{DEFAULT} to recipient because you do not have enough #{DEFAULT}. You currently have: #{scale_decimal(amount_default)} #{DEFAULT} and you are receiving: #{scale_decimal(amount_default_as_recipients)} #{DEFAULT} from senders,  giving a total of: #{scale_decimal(total_default_available)} #{DEFAULT}"
+    #   end
+
+    #   true
+    # end
 
     def record(chain : Blockchain::Chain)
     end

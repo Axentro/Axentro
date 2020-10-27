@@ -44,18 +44,22 @@ module ::Axentro::Core::DApps::BuildIn
       action.starts_with?("hra_")
     end
 
-    def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-      case transaction.action
-      when "hra_buy"
-        return valid_buy?(transaction, prev_transactions)
-      when "hra_sell"
-        return valid_sell?(transaction, prev_transactions)
-      when "hra_cancel"
-        return valid_cancel?(transaction, prev_transactions)
-      end
-
-      false
+    def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
+      ValidatedTransactions.empty
     end
+
+    # def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
+    #   case transaction.action
+    #   when "hra_buy"
+    #     return valid_buy?(transaction, prev_transactions)
+    #   when "hra_sell"
+    #     return valid_sell?(transaction, prev_transactions)
+    #   when "hra_cancel"
+    #     return valid_cancel?(transaction, prev_transactions)
+    #   end
+
+    #   false
+    # end
 
     def valid_buy?(transaction : Transaction, transactions : Array(Transaction)) : Bool
       raise "senders can only be 1 for hra action" if transaction.senders.size != 1

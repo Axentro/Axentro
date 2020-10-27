@@ -263,6 +263,27 @@ module ::Axentro::Core::Data::Transactions
     amount
   end
 
+  # ------- Indices -------
+  def get_transactions_and_block_that_exist(transactions : Array(Transaction)) : Array(TransactionWithBlock)
+    transaction_list = transactions.map { |t| "'#{t.id}'" }.uniq.join(",")
+    transaction_ids = {} of String => Int64
+    @db.query(
+      "select id, block_id from transactions " \
+      "where id in (#{transaction_list})"
+    ) do |rows|
+      rows.each do
+        transaction_id = rows.read(String)
+        block_id = rows.read(Int64)
+        transaction_ids[transaction_id] = block_id
+      end
+    end
+
+    transactions.select { |t| transaction_ids.keys.includes?(t.id) }.map do |transaction|
+      block = transaction_ids[transaction.id]
+      TransactionWithBlock.new(transaction, block)
+    end
+  end
+
   # ------- Helpers -------
   def transactions_by_query(query, *args)
     transactions = [] of Transaction

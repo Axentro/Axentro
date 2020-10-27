@@ -104,17 +104,32 @@ module ::Axentro::Core
       valid_as_genesis?
     end
 
-    private def process_transaction(blockchain, transaction, idx)
-      t = FastTransactionPool.find(transaction) || transaction
-      t.valid_common?
+    private def validate_transactions(transactions : Array(Transaction), blockchain : Blockchain) : ValidatedTransactions
+      result = FastTransactionPool.find_all(transactions)
+      fast_transactions = result.found + result.not_found
 
-      if idx == 0
-        t.valid_as_coinbase?(blockchain, @index, transactions[1..-1])
-      else
-        t.valid_as_embedded?(blockchain, transactions[0..idx - 1])
-      end
+      vt = Validation::Transaction.validate_common(fast_transactions)
+
+      coinbase_transactions = vt.passed.select(&.is_coinbase?)
+      body_transactions = vt.passed.reject(&.is_coinbase?)
+
+      vt << Validation::Transaction.validate_coinbase(coinbase_transactions, blockchain, @index)
+      vt << Validation::Transaction.validate_embedded(body_transactions, blockchain)
+      vt
     end
 
+    # private def process_transaction(blockchain, transaction, idx)
+    #   t = FastTransactionPool.find(transaction) || transaction
+    #   t.valid_common?
+
+    #   if idx == 0
+    #     t.valid_as_coinbase?(blockchain, @index, transactions[1..-1])
+    #   else
+    #     t.valid_as_embedded?(blockchain, transactions[0..idx - 1])
+    #   end
+    # end
+
+    # ameba:disable Metrics/CyclomaticComplexity
     def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool, doing_replace : Bool) : Bool
       valid_signature = KeyUtils.verify_signature(@hash, @signature, @public_key)
       raise "Invalid Block Signature: the current block index: #{@index} has an invalid signature" unless valid_signature
@@ -131,9 +146,11 @@ module ::Axentro::Core
       end
 
       unless skip_transactions
-        transactions.each_with_index do |t, idx|
-          process_transaction(blockchain, t, idx)
-        end
+        vt = validate_transactions(transactions, blockchain)
+        raise vt.failed.first.reason if vt.failed.size != 0
+        # transactions.each_with_index do |t, idx|
+        #   process_transaction(blockchain, t, idx)
+        # end
       end
 
       if latest_fast_index > 1

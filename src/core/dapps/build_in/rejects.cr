@@ -41,12 +41,16 @@ module ::Axentro::Core::DApps::BuildIn
       false
     end
 
-    def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-      true
+    # def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
+    #   true
+    # end
+
+    def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
+      ValidatedTransactions.empty
     end
 
     def record_reject(transaction_id : String, sender_address : String, e : Exception)
-      error_message = e.message ? e.message.not_nil! : "unknown"
+      error_message = e.message || "unknown"
       record_reject(transaction_id, sender_address, error_message)
     end
 

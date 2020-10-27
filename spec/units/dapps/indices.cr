@@ -55,13 +55,16 @@ describe Indices do
       end
     end
 
-    describe("valid_transaction") do
+    describe("valid_transactions") do
       it "should be valid if not in chain already or in current block" do
         with_factory do |block_factory, transaction_factory|
           indices = Indices.new(block_factory.blockchain)
           transaction = transaction_factory.make_send(200000000_i64)
 
-          indices.valid_transaction?(transaction, [] of Transaction).should be_true
+          result = indices.valid_transactions?([transaction])
+          result.passed.size.should eq(1)
+          result.failed.size.should eq(0)
+          result.passed.first.should eq(transaction)
         end
       end
       it "should not be valid if already in the chain" do
@@ -70,9 +73,12 @@ describe Indices do
           chain = block_factory.add_slow_blocks(2).chain
           transaction = chain.last.transactions.first
 
-          expect_raises(Exception, "the transaction #{transaction.id} is already included in block: 4") do
-            indices.valid_transaction?(transaction, [] of Transaction)
-          end
+          result = indices.valid_transactions?([transaction])
+          result.passed.size.should eq(0)
+
+          result.failed.size.should eq(1)
+          result.failed.first.transaction.should eq(transaction)
+          result.failed.first.reason.should eq("the transaction #{transaction.id} already exists in block: 4")
         end
       end
       it "should not be valid if in the current block" do
@@ -80,9 +86,12 @@ describe Indices do
           indices = Indices.new(block_factory.blockchain)
           transaction = transaction_factory.make_send(200000000_i64)
 
-          expect_raises(Exception, "the transaction #{transaction.id} already exists in the same block") do
-            indices.valid_transaction?(transaction, [transaction])
-          end
+          result = indices.valid_transactions?([transaction, transaction])
+          result.passed.size.should eq(0)
+
+          result.failed.size.should eq(1)
+          result.failed.first.transaction.should eq(transaction)
+          result.failed.first.reason.should eq("the transaction #{transaction.id} already exists in the same block")
         end
       end
     end

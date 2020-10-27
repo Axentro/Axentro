@@ -150,74 +150,74 @@ describe UTXO do
     end
   end
 
-  describe "#valid_transaction?" do
-    it "should return true if valid transaction" do
-      with_factory do |block_factory, transaction_factory|
-        transaction1 = transaction_factory.make_send(100_i64)
-        transaction2 = transaction_factory.make_send(200_i64)
-        chain = block_factory.add_slow_blocks(10).chain
-        utxo = UTXO.new(block_factory.blockchain)
-        utxo.record(chain)
-        utxo.valid_transaction?(transaction2, [transaction1]).should be_true
-      end
-    end
+  # describe "#valid_transaction?" do
+  #   it "should return true if valid transaction" do
+  #     with_factory do |block_factory, transaction_factory|
+  #       transaction1 = transaction_factory.make_send(100_i64)
+  #       transaction2 = transaction_factory.make_send(200_i64)
+  #       chain = block_factory.add_slow_blocks(10).chain
+  #       utxo = UTXO.new(block_factory.blockchain)
+  #       utxo.record(chain)
+  #       utxo.valid_transaction?(transaction2, [transaction1]).should be_true
+  #     end
+  #   end
 
-    it "should raise an error if has a recipient" do
-      with_factory do |block_factory, transaction_factory|
-        transaction1 = transaction_factory.make_send(100_i64)
-        transaction2 = transaction_factory.make_send(200_i64)
-        chain = block_factory.add_slow_block.chain
-        utxo = UTXO.new(block_factory.blockchain)
-        transaction2.recipients = [a_recipient(transaction_factory.recipient_wallet, 10_i64), a_recipient(transaction_factory.recipient_wallet, 10_i64)]
-        utxo.record(chain)
-        expect_raises(Exception, "there must be 1 or less recipients") do
-          utxo.valid_transaction?(transaction2, [transaction1])
-        end
-      end
-    end
+  #   it "should raise an error if has a recipient" do
+  #     with_factory do |block_factory, transaction_factory|
+  #       transaction1 = transaction_factory.make_send(100_i64)
+  #       transaction2 = transaction_factory.make_send(200_i64)
+  #       chain = block_factory.add_slow_block.chain
+  #       utxo = UTXO.new(block_factory.blockchain)
+  #       transaction2.recipients = [a_recipient(transaction_factory.recipient_wallet, 10_i64), a_recipient(transaction_factory.recipient_wallet, 10_i64)]
+  #       utxo.record(chain)
+  #       expect_raises(Exception, "there must be 1 or less recipients") do
+  #         utxo.valid_transaction?(transaction2, [transaction1])
+  #       end
+  #     end
+  #   end
 
-    it "should raise an error if has no senders" do
-      with_factory do |block_factory, transaction_factory|
-        transaction1 = transaction_factory.make_send(100_i64)
-        transaction2 = transaction_factory.make_send(200_i64)
-        chain = block_factory.add_slow_block.chain
-        utxo = UTXO.new(block_factory.blockchain)
-        transaction2.senders = [] of Transaction::Sender
-        utxo.record(chain)
-        expect_raises(Exception, "there must be 1 sender") do
-          utxo.valid_transaction?(transaction2, [transaction1])
-        end
-      end
-    end
+  #   it "should raise an error if has no senders" do
+  #     with_factory do |block_factory, transaction_factory|
+  #       transaction1 = transaction_factory.make_send(100_i64)
+  #       transaction2 = transaction_factory.make_send(200_i64)
+  #       chain = block_factory.add_slow_block.chain
+  #       utxo = UTXO.new(block_factory.blockchain)
+  #       transaction2.senders = [] of Transaction::Sender
+  #       utxo.record(chain)
+  #       expect_raises(Exception, "there must be 1 sender") do
+  #         utxo.valid_transaction?(transaction2, [transaction1])
+  #       end
+  #     end
+  #   end
 
-    it "should raise an error if sender does not have enough tokens to afford the transaction" do
-      with_factory do |block_factory, transaction_factory|
-        transaction1 = transaction_factory.make_send(100000000_i64)
-        transaction2 = transaction_factory.make_send(2000000000_i64)
-        chain = block_factory.add_slow_blocks(1).chain
-        utxo = UTXO.new(block_factory.blockchain)
+  #   it "should raise an error if sender does not have enough tokens to afford the transaction" do
+  #     with_factory do |block_factory, transaction_factory|
+  #       transaction1 = transaction_factory.make_send(100000000_i64)
+  #       transaction2 = transaction_factory.make_send(2000000000_i64)
+  #       chain = block_factory.add_slow_blocks(1).chain
+  #       utxo = UTXO.new(block_factory.blockchain)
 
-        utxo.record(chain)
-        expect_raises(Exception, "Unable to send 20 AXNT to recipient because you do not have enough AXNT. You currently have: 10.99989373 AXNT and you are receiving: 0 AXNT from senders,  giving a total of: 10.99989373 AXNT") do
-          utxo.valid_transaction?(transaction2, [transaction1])
-        end
-      end
-    end
+  #       utxo.record(chain)
+  #       expect_raises(Exception, "Unable to send 20 AXNT to recipient because you do not have enough AXNT. You currently have: 10.99989373 AXNT and you are receiving: 0 AXNT from senders,  giving a total of: 10.99989373 AXNT") do
+  #         utxo.valid_transaction?(transaction2, [transaction1])
+  #       end
+  #     end
+  #   end
 
-    it "should raise an error if sender does not have enough custom tokens to afford the transaction" do
-      with_factory do |block_factory, transaction_factory|
-        transaction1 = transaction_factory.make_send(100000000_i64, "KINGS")
-        transaction2 = transaction_factory.make_send(200000000_i64, "KINGS")
-        chain = block_factory.add_slow_block.chain
-        utxo = UTXO.new(block_factory.blockchain)
-        utxo.record(chain)
+  #   it "should raise an error if sender does not have enough custom tokens to afford the transaction" do
+  #     with_factory do |block_factory, transaction_factory|
+  #       transaction1 = transaction_factory.make_send(100000000_i64, "KINGS")
+  #       transaction2 = transaction_factory.make_send(200000000_i64, "KINGS")
+  #       chain = block_factory.add_slow_block.chain
+  #       utxo = UTXO.new(block_factory.blockchain)
+  #       utxo.record(chain)
 
-        expect_raises(Exception, "Unable to send 2 KINGS to recipient because you do not have enough KINGS. You currently have: -1 KINGS and you are receiving: 0 KINGS from senders,  giving a total of: -1 KINGS") do
-          utxo.valid_transaction?(transaction2, [transaction1])
-        end
-      end
-    end
-  end
+  #       expect_raises(Exception, "Unable to send 2 KINGS to recipient because you do not have enough KINGS. You currently have: -1 KINGS and you are receiving: 0 KINGS from senders,  giving a total of: -1 KINGS") do
+  #         utxo.valid_transaction?(transaction2, [transaction1])
+  #       end
+  #     end
+  #   end
+  # end
 
   # describe "#calculate_for_transactions" do
   #   it "should return utxo for transactions with mixed tokens" do
