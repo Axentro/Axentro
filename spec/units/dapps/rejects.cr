@@ -56,7 +56,6 @@ describe Rejects do
       chain = block_factory.add_slow_blocks(2).chain
       transaction_id = chain.last.transactions.last.id
       rejects = Rejects.new(block_factory.blockchain)
-      puts "record reject with txn: #{transaction_id}"
       rejects.record_reject(transaction_id, sender_address, Exception.new("oops"))
       rejects.find_by_address(sender_address).size.should eq(1)
     end
