@@ -37,13 +37,15 @@ describe Fees do
         fees.transaction_related?("action").should be_false
       end
     end
-    # it "should perform #valid_transaction?" do
-    #   with_factory do |block_factory, _|
-    #     chain = block_factory.add_slow_blocks(2).chain
-    #     fees = Fees.new(block_factory.blockchain)
-    #     fees.valid_transaction?(chain.last.transactions.first, chain.last.transactions).should be_true
-    #   end
-    # end
+    it "should perform #valid_transaction?" do
+      with_factory do |block_factory, _|
+        chain = block_factory.add_slow_blocks(2).chain
+        fees = Fees.new(block_factory.blockchain)
+        result = fees.valid_transactions?(chain.last.transactions)
+        result.failed.size.should eq(0)
+        result.passed.size.should eq(0)
+      end
+    end
     it "should perform #record" do
       with_factory do |block_factory, _|
         chain = block_factory.add_slow_blocks(2).chain

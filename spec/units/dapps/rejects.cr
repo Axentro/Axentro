@@ -66,13 +66,15 @@ describe Rejects do
       rejects.transaction_related?("action").should be_false
     end
   end
-  # it "should perform #valid_transaction?" do
-  #   with_factory do |block_factory, _|
-  #     chain = block_factory.add_slow_blocks(2).chain
-  #     rejects = Rejects.new(block_factory.blockchain)
-  #     rejects.valid_transaction?(chain.last.transactions.first, chain.last.transactions).should be_true
-  #   end
-  # end
+  it "should perform #valid_transaction?" do
+    with_factory do |block_factory, _|
+      chain = block_factory.add_slow_blocks(2).chain
+      rejects = Rejects.new(block_factory.blockchain)
+      result = rejects.valid_transactions?(chain.last.transactions)
+      result.failed.size.should eq(0)
+      result.passed.size.should eq(0)
+    end
+  end
   describe "record_reject" do
     it "should record a rejected transaction with exception message" do
       with_factory do |block_factory, transaction_factory|
