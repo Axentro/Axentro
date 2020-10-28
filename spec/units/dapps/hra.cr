@@ -487,31 +487,32 @@ describe Hra do
       end
     end
 
-    # describe "#valid_transaction?" do
-    #   it "should return true when domain is a valid buy from platform" do
-    #     with_factory do |block_factory, transaction_factory|
-    #       tx1 = transaction_factory.make_buy_domain_from_platform("domain1.ax", 0_i64)
-    #       hra = Hra.new(block_factory.blockchain)
-    #       hra.valid_transaction?(tx1, [] of Transaction)
-    #     end
-    #   end
-    #   it "should return true on valid sell" do
-    #     with_factory do |block_factory, transaction_factory|
-    #       txns = [transaction_factory.make_buy_domain_from_platform("domain1.ax", 0_i64)]
+    describe "#valid_transactions?" do
+      it "should return pass when domain is a valid buy from platform" do
+        with_factory do |block_factory, transaction_factory|
+          tx1 = transaction_factory.make_buy_domain_from_platform("domain1.ax", 0_i64)
+          hra = Hra.new(block_factory.blockchain)
+          result = hra.valid_transactions?([tx1])
+          result.passed.size.should eq(1)
+          result.failed.size.should eq(0)
+          result.passed.first.should eq(tx1)
+        end
+      end
+      it "should return pass on valid sell" do
+        with_factory do |block_factory, transaction_factory|
+          txns = [
+            transaction_factory.make_buy_domain_from_platform("domain1.ax", 0_i64),
+            transaction_factory.make_sell_domain("domain1.ax", 500_i64),
+          ]
 
-    #       tx1 = transaction_factory.make_sell_domain("domain1.ax", 500_i64)
-    #       hra = Hra.new(block_factory.blockchain)
-    #       hra.valid_transaction?(tx1, txns).should be_true
-    #     end
-    #   end
-    #   it "should return false when neither buy or sell" do
-    #     with_factory do |block_factory, transaction_factory|
-    #       tx1 = transaction_factory.make_send(100_i64)
-    #       hra = Hra.new(block_factory.blockchain)
-    #       hra.valid_transaction?(tx1, [] of Transaction).should be_false
-    #     end
-    #   end
-    # end
+          hra = Hra.new(block_factory.blockchain)
+          result = hra.valid_transactions?(txns)
+          result.passed.size.should eq(2)
+          result.failed.size.should eq(0)
+          result.passed.should eq(txns)
+        end
+      end
+    end
 
     describe "#valid_domain?" do
       it "should return true when domain name is valid" do

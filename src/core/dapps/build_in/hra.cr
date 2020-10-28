@@ -45,21 +45,24 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
-      ValidatedTransactions.empty
+      vt = ValidatedTransactions.empty
+      processed_transactions = transactions.select(&.is_coinbase?)
+      transactions.reject(&.is_coinbase?).each do |transaction|
+        case transaction.action
+        when "hra_buy"
+          valid_buy?(transaction, processed_transactions)
+        when "hra_sell"
+          valid_sell?(transaction, processed_transactions)
+        when "hra_cancel"
+          valid_cancel?(transaction, processed_transactions)
+        end
+        vt << transaction.as_validated
+        processed_transactions << transaction
+      rescue e : Exception
+        vt << FailedTransaction.new(transaction, e.message || "unknown error", "hra").as_validated
+      end
+      vt
     end
-
-    # def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-    #   case transaction.action
-    #   when "hra_buy"
-    #     return valid_buy?(transaction, prev_transactions)
-    #   when "hra_sell"
-    #     return valid_sell?(transaction, prev_transactions)
-    #   when "hra_cancel"
-    #     return valid_cancel?(transaction, prev_transactions)
-    #   end
-
-    #   false
-    # end
 
     def valid_buy?(transaction : Transaction, transactions : Array(Transaction)) : Bool
       raise "senders can only be 1 for hra action" if transaction.senders.size != 1
