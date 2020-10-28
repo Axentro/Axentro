@@ -401,8 +401,8 @@ describe Blockchain do
         blockchain = block_factory.blockchain
         block_factory.add_slow_blocks(2, false).add_fast_blocks(4).add_slow_block([transaction_factory.make_send(200000000_i64)], false)
         blockchain.refresh_mining_block(8)
-        
-        # this transaction is already in the db so change it's id 
+
+        # this transaction is already in the db so change it's id
         coinbase_transaction = block_factory.chain.last.transactions.first
         coinbase_transaction.id = Transaction.create_id
 

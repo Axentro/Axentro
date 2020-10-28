@@ -129,7 +129,6 @@ module ::Axentro::Core
     #   end
     # end
 
-    # ameba:disable Metrics/CyclomaticComplexity
     def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool, doing_replace : Bool) : Bool
       valid_signature = KeyUtils.verify_signature(@hash, @signature, @public_key)
       raise "Invalid Block Signature: the current block index: #{@index} has an invalid signature" unless valid_signature
@@ -146,7 +145,7 @@ module ::Axentro::Core
       end
 
       unless skip_transactions
-        vt = validate_transactions(transactions, blockchain)
+        # vt = validate_transactions(transactions, blockchain)
         # raise vt.failed.first.reason if vt.failed.size != 0
         # transactions.each_with_index do |t, idx|
         #   process_transaction(blockchain, t, idx)

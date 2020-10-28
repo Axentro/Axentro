@@ -23,7 +23,7 @@ module ::Axentro::Core
     def validate_embedded(transactions : Array(Core::Transaction), blockchain : Blockchain, skip_prev_hash_check : Bool = false) : ValidatedTransactions
       vt = ValidatedTransactions.empty
 
-      # only applies to non coinbase transactions and returns all non coinbase transactions 
+      # only applies to non coinbase transactions and returns all non coinbase transactions
       vt << Validation::Transaction::Rules::Sender.rule_sender_mismatches(transactions)
 
       # (coinbase are validated in validate_coinbase) and are required to pass into dapps (mainly for utxo)
@@ -176,8 +176,8 @@ module ::Axentro::Core
     def <<(other : ValidatedTransactions) : ValidatedTransactions
       add_passed_unless_dup(other)
       add_failed_unless_dup(other)
-       # remove any rejected from passed
-       self.passed = self.passed.reject{|t| self.failed.map(&.transaction.id).includes?(t.id)}
+      # remove any rejected from passed
+      self.passed = self.passed.reject { |t| self.failed.map(&.transaction.id).includes?(t.id) }
       self
     end
 
@@ -202,7 +202,7 @@ module ::Axentro::Core
       # add the new transactions unless already exists
       other.failed.each do |ft|
         self.failed << ft unless self.failed.map(&.transaction.id).includes?(ft.transaction.id)
-      end 
+      end
     end
   end
 

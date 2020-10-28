@@ -177,7 +177,7 @@ module ::Axentro::Core::Data::Transactions
 
   # --------- utxo -----------
 
-   def get_address_amounts(addresses : Array(String)) : Hash(String, Array(TokenQuantity))
+  def get_address_amounts(addresses : Array(String)) : Hash(String, Array(TokenQuantity))
     address_list = addresses.map { |a| "'#{a}'" }.uniq.join(",")
     amounts_per_address : Hash(String, Array(TokenQuantity)) = {} of String => Array(TokenQuantity)
     addresses.uniq.each { |a| amounts_per_address[a] = [] of TokenQuantity }
