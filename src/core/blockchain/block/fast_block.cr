@@ -147,7 +147,7 @@ module ::Axentro::Core
 
       unless skip_transactions
         vt = validate_transactions(transactions, blockchain)
-        raise vt.failed.first.reason if vt.failed.size != 0
+        # raise vt.failed.first.reason if vt.failed.size != 0
         # transactions.each_with_index do |t, idx|
         #   process_transaction(blockchain, t, idx)
         # end

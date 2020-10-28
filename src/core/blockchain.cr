@@ -657,6 +657,7 @@ module ::Axentro::Core
       transactions = [coinbase_transaction] + embedded_slow_transactions
 
       vt = Validation::Transaction.validate_common(transactions)
+
       skip_prev_hash_check = true
       vt << Validation::Transaction.validate_embedded(transactions, self, skip_prev_hash_check)
 

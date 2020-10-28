@@ -177,6 +177,43 @@ module ::Axentro::Core::Data::Transactions
 
   # --------- utxo -----------
 
+   def get_address_amounts(addresses : Array(String)) : Hash(String, Array(TokenQuantity))
+    address_list = addresses.map { |a| "'#{a}'" }.uniq.join(",")
+    amounts_per_address : Hash(String, Array(TokenQuantity)) = {} of String => Array(TokenQuantity)
+    addresses.uniq.each { |a| amounts_per_address[a] = [] of TokenQuantity }
+
+    @db.query(
+      "select q1.address, q1.token, send, fee, rec from " \
+      "(select r.address, t.token, sum(r.amount) as 'rec' from transactions t " \
+      "join recipients r on r.transaction_id = t.id " \
+      "where r.address in (#{address_list}) " \
+      "group by r.address, t.token) q1 " \
+      "left join " \
+      "(select s.address, t.token, sum(s.amount) as 'send', sum(s.fee) as 'fee' from transactions t " \
+      "join senders s on s.transaction_id = t.id " \
+      "where t.action = 'send' " \
+      "and s.address in (#{address_list}) " \
+      "group by s.address, t.token) q2 " \
+      "on (q1.address = q2.address)") do |rows|
+      rows.each do
+        address = rows.read(String)
+        token = rows.read(String)
+        send = rows.read(Int64 | Nil) || 0_i64
+        fee = rows.read(Int64 | Nil) || 0_i64
+        rec = rows.read(Int64 | Nil) || 0_i64
+
+        if token == "AXNT"
+          send = send + fee
+        end
+
+        balance = rec - send
+
+        amounts_per_address[address] << TokenQuantity.new(token, balance)
+      end
+    end
+    amounts_per_address
+  end
+
   def get_address_amount(address : String) : Array(TokenQuantity)
     recipient_sum = get_recipient_sum(address)
     sender_sum = get_sender_sum(address)

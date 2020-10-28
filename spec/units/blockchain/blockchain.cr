@@ -186,10 +186,10 @@ describe Blockchain do
     it "should reject a transaction if already present" do
       with_factory do |block_factory, transaction_factory|
         transaction = transaction_factory.make_send(200000000_i64)
-        block_factory.add_slow_block([transaction]).add_slow_block([transaction])
+        block_factory.add_slow_blocks(6).add_slow_block([transaction]).add_slow_block([transaction])
 
         if reject = block_factory.blockchain.rejects.find(transaction.id)
-          reject.reason.should eq("the transaction #{transaction.id} already exists in block: 2")
+          reject.reason.should eq("the transaction #{transaction.id} already exists in block: 14")
         else
           fail "no rejects found"
         end
@@ -401,7 +401,11 @@ describe Blockchain do
         blockchain = block_factory.blockchain
         block_factory.add_slow_blocks(2, false).add_fast_blocks(4).add_slow_block([transaction_factory.make_send(200000000_i64)], false)
         blockchain.refresh_mining_block(8)
+        
+        # this transaction is already in the db so change it's id 
         coinbase_transaction = block_factory.chain.last.transactions.first
+        coinbase_transaction.id = Transaction.create_id
+
         blockchain.align_slow_transactions(coinbase_transaction, 1).size.should eq(2)
       end
     end

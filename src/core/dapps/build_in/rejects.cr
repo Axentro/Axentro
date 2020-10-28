@@ -41,10 +41,6 @@ module ::Axentro::Core::DApps::BuildIn
       false
     end
 
-    # def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-    #   true
-    # end
-
     def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
       ValidatedTransactions.empty
     end

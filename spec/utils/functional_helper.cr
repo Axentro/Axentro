@@ -49,7 +49,8 @@ module FunctionalHelper
 
   class Wallets
     def self.balance_for(wallet, block_factory, token : String = "AXNT")
-      Quantity.as_human_amount(block_factory.blockchain.utxo.get_for(wallet.address, token))
+      historic_per_address = block_factory.database.get_address_amounts([wallet.address])
+      Quantity.as_human_amount(block_factory.blockchain.utxo.get_for_batch(wallet.address, token, historic_per_address))
     end
 
     def self.create

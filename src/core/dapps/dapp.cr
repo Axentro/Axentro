@@ -47,15 +47,16 @@ module ::Axentro::Core::DApps
     # end
 
     def valid?(transactions : Array(Transaction)) : ValidatedTransactions
-      validated_transactions = ValidatedTransactions.empty
+      vt = ValidatedTransactions.empty
+      # coinbase transactions should not be checked for fees
       transactions.each do |transaction|
-        validated_transactions << rule_not_enough_fee(transaction)
+        vt << rule_not_enough_fee(transaction) unless transaction.is_coinbase?
       end
-      validated_transactions << valid_transactions?(transactions)
+      vt << valid_transactions?(transactions)
     end
 
     private def rule_not_enough_fee(transaction : Transaction) : ValidatedTransactions
-      transaction.total_fees < self.class.fee(transaction.action) ? FailedTransaction.new(transaction, "not enough fee, should be #{scale_decimal(transaction.total_fees)} >= #{scale_decimal(self.class.fee(transaction.action))}").as_validated : transaction.as_validated
+      transaction.total_fees < self.class.fee(transaction.action) ? FailedTransaction.new(transaction, "not enough fee, should be #{scale_decimal(transaction.total_fees)} >= #{scale_decimal(self.class.fee(transaction.action))}", "not_enough_fee").as_validated : transaction.as_validated
     end
 
     #

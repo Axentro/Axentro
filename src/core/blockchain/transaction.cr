@@ -23,18 +23,18 @@ module ::Axentro::Core
     def validate_embedded(transactions : Array(Core::Transaction), blockchain : Blockchain, skip_prev_hash_check : Bool = false) : ValidatedTransactions
       vt = ValidatedTransactions.empty
 
-      # only applies to non coinbase transactions and returns all non coinbase transactions
+      # only applies to non coinbase transactions and returns all non coinbase transactions 
       vt << Validation::Transaction::Rules::Sender.rule_sender_mismatches(transactions)
 
-      # coinbase was already validated in validate_common
+      # (coinbase are validated in validate_coinbase) and are required to pass into dapps (mainly for utxo)
       transactions.select(&.is_coinbase?).map(&.as_validated).each { |validated| vt << validated }
 
-      # unless skip_prev_hash_check
-      #   vt << Validation::Transaction::Rules::PrevHash.rule_prev_hashes(vt.passed)
-      # end
+      unless skip_prev_hash_check
+        vt << Validation::Transaction::Rules::PrevHash.rule_prev_hashes(vt.passed)
+      end
 
       blockchain.dapps.each do |dapp|
-        related_transactions = vt.passed.reject(&.is_coinbase?).select { |t| dapp.transaction_related?(t.action) }
+        related_transactions = vt.passed.select { |t| dapp.transaction_related?(t.action) }
         if related_transactions.size > 0
           vt << dapp.valid?(related_transactions)
         end
@@ -90,7 +90,7 @@ module ::Axentro::Core
         transaction = transaction.set_common_validated
         vt << transaction.as_validated
       rescue e : Exception
-        vt << FailedTransaction.new(transaction, e.message || "unknown error").as_validated
+        vt << FailedTransaction.new(transaction, e.message || "unknown error", "validate_common").as_validated
       end
       vt
     end
@@ -114,7 +114,7 @@ module ::Axentro::Core
         end
         vt << transaction.as_validated
       rescue e : Exception
-        vt << FailedTransaction.new(transaction, e.message || "unknown error").as_validated
+        vt << FailedTransaction.new(transaction, e.message || "unknown error", "validate_coinbase").as_validated
       end
       vt
     end
@@ -126,7 +126,7 @@ module ::Axentro::Core
         extend self
 
         def rule_sender_mismatch(transaction : Core::Transaction) : ValidatedTransactions
-          transaction.sender_total_amount != transaction.recipient_total_amount ? FailedTransaction.new(transaction, "amount mismatch for senders (#{scale_decimal(transaction.sender_total_amount)}) and recipients (#{scale_decimal(transaction.recipient_total_amount)})").as_validated : transaction.as_validated
+          transaction.sender_total_amount != transaction.recipient_total_amount ? FailedTransaction.new(transaction, "amount mismatch for senders (#{scale_decimal(transaction.sender_total_amount)}) and recipients (#{scale_decimal(transaction.recipient_total_amount)})", "sender_mismatch").as_validated : transaction.as_validated
         end
 
         def rule_sender_mismatches(transactions : Array(Core::Transaction)) : ValidatedTransactions
@@ -142,11 +142,11 @@ module ::Axentro::Core
         extend self
 
         def rule_coinbase_prev_hash(coinbase_transaction : Core::Transaction) : ValidatedTransactions
-          coinbase_transaction.prev_hash != "0" ? FailedTransaction.new(coinbase_transaction, "invalid prev_hash: expected 0 but got #{coinbase_transaction.prev_hash}").as_validated : coinbase_transaction.as_validated
+          coinbase_transaction.prev_hash != "0" ? FailedTransaction.new(coinbase_transaction, "invalid prev_hash: expected 0 but got #{coinbase_transaction.prev_hash}", "prev_hash").as_validated : coinbase_transaction.as_validated
         end
 
         def rule_prev_hash(transaction : Core::Transaction, prev_transaction : Core::Transaction) : ValidatedTransactions
-          transaction.prev_hash != prev_transaction.to_hash ? FailedTransaction.new(transaction, "invalid prev_hash: expected #{prev_transaction.to_hash} but got #{transaction.prev_hash}").as_validated : transaction.as_validated
+          transaction.prev_hash != prev_transaction.to_hash ? FailedTransaction.new(transaction, "invalid prev_hash: expected #{prev_transaction.to_hash} but got #{transaction.prev_hash}", "prev_hash").as_validated : transaction.as_validated
         end
 
         def rule_prev_hashes(transactions : Array(Core::Transaction)) : ValidatedTransactions
@@ -176,13 +176,15 @@ module ::Axentro::Core
     def <<(other : ValidatedTransactions) : ValidatedTransactions
       add_passed_unless_dup(other)
       add_failed_unless_dup(other)
+       # remove any rejected from passed
+       self.passed = self.passed.reject{|t| self.failed.map(&.transaction.id).includes?(t.id)}
       self
     end
 
     def add_passed_unless_dup(other : ValidatedTransactions)
-      # add the new transactions unless already exists
+      # add the new transactions unless already exists or it was already failed
       other.passed.each do |transaction|
-        self.passed << transaction unless self.passed.map(&.id).includes?(transaction.id)
+        self.passed << transaction unless self.passed.map(&.id).includes?(transaction.id) || self.failed.map(&.transaction.id).includes?(transaction.id)
       end
 
       # if any of the new transactions are common validated and already stored in passed - updated the stored ones
@@ -192,20 +194,24 @@ module ::Axentro::Core
           validated_transaction.set_common_validated if transaction.is_common_validated?
         end
       end
+
+      # self.passed = self.passed.reject{|t| self.failed.map(&.transaction.id).includes?(t.id)}
     end
 
     def add_failed_unless_dup(other : ValidatedTransactions)
+      # add the new transactions unless already exists
       other.failed.each do |ft|
         self.failed << ft unless self.failed.map(&.transaction.id).includes?(ft.transaction.id)
-      end
+      end 
     end
   end
 
   class FailedTransaction
     getter transaction : Core::Transaction
     getter reason : String
+    getter location : String
 
-    def initialize(@transaction : Core::Transaction, @reason : String)
+    def initialize(@transaction : Core::Transaction, @reason : String, @location : String)
     end
 
     def as_validated

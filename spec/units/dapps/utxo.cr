@@ -18,119 +18,119 @@ include Axentro::Core::DApps::BuildIn
 include Axentro::Core::Controllers
 
 describe UTXO do
-  describe "#get_for" do
-    it "should get the amount for the supplied token and address" do
-      with_factory do |block_factory, _|
-        chain = block_factory.add_slow_blocks(10).chain
-        utxo = UTXO.new(block_factory.blockchain)
-        utxo.record(chain)
-        address = chain[1].transactions.first.recipients.first[:address]
+  # describe "#get_for" do
+  #   it "should get the amount for the supplied token and address" do
+  #     with_factory do |block_factory, _|
+  #       chain = block_factory.add_slow_blocks(10).chain
+  #       utxo = UTXO.new(block_factory.blockchain)
+  #       utxo.record(chain)
+  #       address = chain[1].transactions.first.recipients.first[:address]
 
-        utxo.get_for(address, "AXNT").should eq(11999965560_i64)
-      end
-    end
-  end
+  #       utxo.get_for(address, "AXNT").should eq(11999965560_i64)
+  #     end
+  #   end
+  # end
 
-  describe "#get_for" do
-    context "when address does not exist" do
-      it "should return 0 when the number of blocks is less than confirmations and the address is not found" do
-        with_factory do |block_factory, _|
-          chain = block_factory.add_slow_block.chain
-          utxo = UTXO.new(block_factory.blockchain)
-          utxo.record(chain)
+  # describe "#get_for" do
+  #   context "when address does not exist" do
+  #     it "should return 0 when the number of blocks is less than confirmations and the address is not found" do
+  #       with_factory do |block_factory, _|
+  #         chain = block_factory.add_slow_block.chain
+  #         utxo = UTXO.new(block_factory.blockchain)
+  #         utxo.record(chain)
 
-          utxo.get_for("address-does-not-exist", TOKEN_DEFAULT).should eq(0)
-        end
-      end
+  #         utxo.get_for("address-does-not-exist", TOKEN_DEFAULT).should eq(0)
+  #       end
+  #     end
 
-      it "should return address amount when the number of blocks is greater than confirmations and the address is not found" do
-        with_factory do |block_factory, _|
-          chain = block_factory.add_slow_blocks(10).chain
-          utxo = UTXO.new(block_factory.blockchain)
-          utxo.record(chain)
+  #     it "should return address amount when the number of blocks is greater than confirmations and the address is not found" do
+  #       with_factory do |block_factory, _|
+  #         chain = block_factory.add_slow_blocks(10).chain
+  #         utxo = UTXO.new(block_factory.blockchain)
+  #         utxo.record(chain)
 
-          utxo.get_for("address-does-not-exist", TOKEN_DEFAULT).should eq(0)
-        end
-      end
-    end
+  #         utxo.get_for("address-does-not-exist", TOKEN_DEFAULT).should eq(0)
+  #       end
+  #     end
+  #   end
 
-    context "when token does not exist" do
-      it "should return 0 when the number of blocks is less than confirmations and the token is not found" do
-        with_factory do |block_factory, _|
-          chain = block_factory.add_slow_block.chain
-          utxo = UTXO.new(block_factory.blockchain)
-          utxo.record(chain)
-          address = chain[1].transactions.first.recipients.first[:address]
+  #   context "when token does not exist" do
+  #     it "should return 0 when the number of blocks is less than confirmations and the token is not found" do
+  #       with_factory do |block_factory, _|
+  #         chain = block_factory.add_slow_block.chain
+  #         utxo = UTXO.new(block_factory.blockchain)
+  #         utxo.record(chain)
+  #         address = chain[1].transactions.first.recipients.first[:address]
 
-          utxo.get_for(address, "UNKNOWN").should eq(0)
-        end
-      end
+  #         utxo.get_for(address, "UNKNOWN").should eq(0)
+  #       end
+  #     end
 
-      it "should return address amount when the number of blocks is greater than confirmations and the token is not found" do
-        with_factory do |block_factory, _|
-          chain = block_factory.add_slow_blocks(10).chain
-          utxo = UTXO.new(block_factory.blockchain)
-          utxo.record(chain)
-          address = chain[1].transactions.first.recipients.first[:address]
+  #     it "should return address amount when the number of blocks is greater than confirmations and the token is not found" do
+  #       with_factory do |block_factory, _|
+  #         chain = block_factory.add_slow_blocks(10).chain
+  #         utxo = UTXO.new(block_factory.blockchain)
+  #         utxo.record(chain)
+  #         address = chain[1].transactions.first.recipients.first[:address]
 
-          utxo.get_for(address, "UNKNOWN").should eq(0)
-        end
-      end
-    end
-  end
+  #         utxo.get_for(address, "UNKNOWN").should eq(0)
+  #       end
+  #     end
+  #   end
+  # end
 
-  describe "#get_pending" do
-    it "should get pending transactions amount for the supplied address in the supplied transactions" do
-      with_factory do |block_factory, _|
-        chain = block_factory.add_slow_block.chain
-        utxo = UTXO.new(block_factory.blockchain)
-        utxo.record(chain)
+  # describe "#get_pending" do
+  #   it "should get pending transactions amount for the supplied address in the supplied transactions" do
+  #     with_factory do |block_factory, _|
+  #       chain = block_factory.add_slow_block.chain
+  #       utxo = UTXO.new(block_factory.blockchain)
+  #       utxo.record(chain)
 
-        transactions = chain.reject { |blk| blk.prev_hash == "genesis" }.flat_map { |blk| blk.transactions }
-        address = chain[1].transactions.first.recipients.first[:address]
-        expected_amount = transactions.flat_map { |txn| txn.recipients.select { |r| r[:address] == address } }.map { |x| x[:amount] }.sum * 2
-        utxo.get_pending(address, transactions, TOKEN_DEFAULT).should eq(expected_amount)
-      end
-    end
+  #       transactions = chain.reject { |blk| blk.prev_hash == "genesis" }.flat_map { |blk| blk.transactions }
+  #       address = chain[1].transactions.first.recipients.first[:address]
+  #       expected_amount = transactions.flat_map { |txn| txn.recipients.select { |r| r[:address] == address } }.map { |x| x[:amount] }.sum * 2
+  #       utxo.get_pending(address, transactions, TOKEN_DEFAULT).should eq(expected_amount)
+  #     end
+  #   end
 
-    it "should get pending transactions amount for the supplied address when no transactions are supplied" do
-      with_factory do |block_factory, _|
-        chain = block_factory.add_slow_block.chain
-        utxo = UTXO.new(block_factory.blockchain)
-        utxo.record(chain)
+  #   it "should get pending transactions amount for the supplied address when no transactions are supplied" do
+  #     with_factory do |block_factory, _|
+  #       chain = block_factory.add_slow_block.chain
+  #       utxo = UTXO.new(block_factory.blockchain)
+  #       utxo.record(chain)
 
-        transactions = [] of Transaction
-        address = chain[1].transactions.first.recipients.first[:address]
-        expected_amount = chain.reject { |blk| blk.prev_hash == "genesis" }.flat_map { |blk| blk.transactions.first.recipients.select { |r| r[:address] == address } }.map { |x| x[:amount] }.sum
-        utxo.get_pending(address, transactions, TOKEN_DEFAULT).should eq(expected_amount)
-      end
-    end
+  #       transactions = [] of Transaction
+  #       address = chain[1].transactions.first.recipients.first[:address]
+  #       expected_amount = chain.reject { |blk| blk.prev_hash == "genesis" }.flat_map { |blk| blk.transactions.first.recipients.select { |r| r[:address] == address } }.map { |x| x[:amount] }.sum
+  #       utxo.get_pending(address, transactions, TOKEN_DEFAULT).should eq(expected_amount)
+  #     end
+  #   end
 
-    context "when chain is empty" do
-      it "should get pending transactions amount for the supplied address when no transactions are supplied and the chain is empty" do
-        with_factory do |block_factory, _|
-          chain = [] of SlowBlock
-          utxo = UTXO.new(block_factory.blockchain)
-          utxo.record(chain)
+  #   context "when chain is empty" do
+  #     it "should get pending transactions amount for the supplied address when no transactions are supplied and the chain is empty" do
+  #       with_factory do |block_factory, _|
+  #         chain = [] of SlowBlock
+  #         utxo = UTXO.new(block_factory.blockchain)
+  #         utxo.record(chain)
 
-          transactions = [] of Transaction
-          address = "any-address"
-          utxo.get_pending(address, transactions, TOKEN_DEFAULT).should eq(0)
-        end
-      end
+  #         transactions = [] of Transaction
+  #         address = "any-address"
+  #         utxo.get_pending(address, transactions, TOKEN_DEFAULT).should eq(0)
+  #       end
+  #     end
 
-      it "should get pending transactions when no transactions are supplied and the chain is empty and the address is unknown" do
-        with_factory do |block_factory, _|
-          chain = [] of SlowBlock
-          utxo = UTXO.new(block_factory.blockchain)
-          utxo.record(chain)
+  #     it "should get pending transactions when no transactions are supplied and the chain is empty and the address is unknown" do
+  #       with_factory do |block_factory, _|
+  #         chain = [] of SlowBlock
+  #         utxo = UTXO.new(block_factory.blockchain)
+  #         utxo.record(chain)
 
-          transactions = [] of Transaction
-          utxo.get_pending("address-does-not-exist", transactions, TOKEN_DEFAULT).should eq(0)
-        end
-      end
-    end
-  end
+  #         transactions = [] of Transaction
+  #         utxo.get_pending("address-does-not-exist", transactions, TOKEN_DEFAULT).should eq(0)
+  #       end
+  #     end
+  #   end
+  # end
 
   describe "#transaction_actions" do
     it "should return actions" do
@@ -150,17 +150,24 @@ describe UTXO do
     end
   end
 
-  # describe "#valid_transaction?" do
-  #   it "should return true if valid transaction" do
-  #     with_factory do |block_factory, transaction_factory|
-  #       transaction1 = transaction_factory.make_send(100_i64)
-  #       transaction2 = transaction_factory.make_send(200_i64)
-  #       chain = block_factory.add_slow_blocks(10).chain
-  #       utxo = UTXO.new(block_factory.blockchain)
-  #       utxo.record(chain)
-  #       utxo.valid_transaction?(transaction2, [transaction1]).should be_true
-  #     end
-  #   end
+  describe "#valid_transactions?" do
+    it "should return true if valid transaction" do
+      with_factory do |block_factory, transaction_factory|
+        transaction1 = transaction_factory.make_send(100_i64)
+        transaction2 = transaction_factory.make_send(200_i64)
+        chain = block_factory.add_slow_blocks(10).chain
+        utxo = UTXO.new(block_factory.blockchain)
+        utxo.record(chain)
+        transactions = [transaction1, transaction2]
+        result = utxo.valid_transactions?(transactions)
+        
+        result.passed.size.should eq(2)
+        result.failed.size.should eq(0)
+        transactions.map(&.id).each do |tid|
+          result.passed.map(&.id).includes?(tid).should eq(true)
+        end
+      end
+    end
 
   #   it "should raise an error if has a recipient" do
   #     with_factory do |block_factory, transaction_factory|
@@ -190,19 +197,21 @@ describe UTXO do
   #     end
   #   end
 
-  #   it "should raise an error if sender does not have enough tokens to afford the transaction" do
-  #     with_factory do |block_factory, transaction_factory|
-  #       transaction1 = transaction_factory.make_send(100000000_i64)
-  #       transaction2 = transaction_factory.make_send(2000000000_i64)
-  #       chain = block_factory.add_slow_blocks(1).chain
-  #       utxo = UTXO.new(block_factory.blockchain)
+    it "should raise an error if sender does not have enough tokens to afford the transaction" do
+      with_factory do |block_factory, transaction_factory|
+        transaction1 = transaction_factory.make_send(100000000_i64)
+        transaction2 = transaction_factory.make_send(2000000000_i64)
+        chain = block_factory.add_slow_blocks(1).chain
+        utxo = UTXO.new(block_factory.blockchain)
+        transactions = [transaction1, transaction2]
 
-  #       utxo.record(chain)
-  #       expect_raises(Exception, "Unable to send 20 AXNT to recipient because you do not have enough AXNT. You currently have: 10.99989373 AXNT and you are receiving: 0 AXNT from senders,  giving a total of: 10.99989373 AXNT") do
-  #         utxo.valid_transaction?(transaction2, [transaction1])
-  #       end
-  #     end
-  #   end
+        utxo.record(chain)
+        result = utxo.valid_transactions?([transaction1, transaction2])
+        result.failed.size.should eq(1)
+        result.passed.size.should eq(1)
+        result.failed.first.reason.should eq("Unable to send 20 AXNT to recipient because you do not have enough AXNT. You currently have: 10.99989373 AXNT and you are receiving: 0 AXNT from senders,  giving a total of: 10.99989373 AXNT")
+      end
+    end
 
   #   it "should raise an error if sender does not have enough custom tokens to afford the transaction" do
   #     with_factory do |block_factory, transaction_factory|
@@ -217,7 +226,7 @@ describe UTXO do
   #       end
   #     end
   #   end
-  # end
+  end
 
   # describe "#calculate_for_transactions" do
   #   it "should return utxo for transactions with mixed tokens" do
