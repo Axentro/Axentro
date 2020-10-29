@@ -35,12 +35,12 @@ module ::Axentro::Core::FastChain
                 debug "There are #{valid_transactions.size} valid fast transactions so mint a new fast block"
 
                 block = mint_fast_block(valid_transactions)
-                if block.valid?(self)
+                # if block.valid?(self)
                   debug "record new fast block"
                   node.new_block(block)
                   debug "broadcast new fast block"
                   node.send_block(block)
-                end
+                # end
               end
             end
           rescue e : Exception
@@ -48,7 +48,7 @@ module ::Axentro::Core::FastChain
           end
         end
       end
-      sleep 10
+      sleep 2
     end
   end
 
@@ -108,6 +108,8 @@ module ::Axentro::Core::FastChain
 
   def align_fast_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
     transactions = [coinbase_transaction] + embedded_fast_transactions
+
+    puts "ALIGN_FAST_TRANSACTIONS quantity: #{transactions.size}"
 
     vt = Validation::Transaction.validate_common(transactions)
     skip_prev_hash_check = true
