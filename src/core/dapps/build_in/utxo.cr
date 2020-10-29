@@ -78,6 +78,16 @@ module ::Axentro::Core::DApps::BuildIn
         pay_token = sender[:amount]
         pay_default = (transaction.token == DEFAULT ? sender[:amount] : 0_i64) + sender[:fee]
 
+        #    puts ""
+        # puts "amount_token: #{amount_token}"
+        # puts "amount_default: #{amount_default}"
+        # puts "as_recipients: #{as_recipients}"
+        # puts "amount_token_as_recipients: #{amount_token_as_recipients}"
+        # puts "amount_default_as_recipients: #{amount_default_as_recipients}"
+        # puts "pay_token: #{pay_token}"
+        # puts "pay_default: #{pay_default}"
+        # puts ""
+
         total_available = amount_token + amount_token_as_recipients
         if (total_available - pay_token) < 0
           raise "Unable to send #{scale_decimal(pay_token)} #{transaction.token} to recipient because you do not have enough #{transaction.token}. You currently have: #{scale_decimal(amount_token)} #{transaction.token} and you are receiving: #{scale_decimal(amount_token_as_recipients)} #{transaction.token} from senders,  giving a total of: #{scale_decimal(total_available)} #{transaction.token}"
@@ -91,6 +101,7 @@ module ::Axentro::Core::DApps::BuildIn
         vt << transaction.as_validated
         processed_transactions << transaction
       rescue e : Exception
+        # puts "utxo failure: #{e.message || "unknown"}"
         vt << FailedTransaction.new(transaction, e.message || "unknown error", "utxo").as_validated
       end
 

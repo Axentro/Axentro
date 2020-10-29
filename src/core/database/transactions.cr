@@ -177,7 +177,7 @@ module ::Axentro::Core::Data::Transactions
 
   # --------- utxo -----------
 
-  def get_address_amounts(addresses : Array(String)) : Hash(String, Array(TokenQuantity))
+  def get_address_amounts_old(addresses : Array(String)) : Hash(String, Array(TokenQuantity))
     address_list = addresses.map { |a| "'#{a}'" }.uniq.join(",")
     amounts_per_address : Hash(String, Array(TokenQuantity)) = {} of String => Array(TokenQuantity)
     addresses.uniq.each { |a| amounts_per_address[a] = [] of TokenQuantity }
@@ -189,12 +189,16 @@ module ::Axentro::Core::Data::Transactions
       "where r.address in (#{address_list}) " \
       "group by r.address, t.token) q1 " \
       "left join " \
-      "(select s.address, t.token, sum(s.amount) as 'send', sum(s.fee) as 'fee' from transactions t " \
+      "(select s.address, t.token, sum(s.amount) as 'send' from transactions t " \
       "join senders s on s.transaction_id = t.id " \
       "where t.action = 'send' " \
       "and s.address in (#{address_list}) " \
       "group by s.address, t.token) q2 " \
-      "on (q1.address = q2.address)") do |rows|
+      "on (q1.address = q2.address) " \
+      "left join " \
+      "(select address, sum(fee) as 'fee' from senders where address in (#{address_list})) f " \
+      "on (q1.address = f.address)"
+    ) do |rows|
       rows.each do
         address = rows.read(String)
         token = rows.read(String)
@@ -206,11 +210,45 @@ module ::Axentro::Core::Data::Transactions
           send = send + fee
         end
 
+        puts "token: #{token}, send: #{scale_decimal(send)}, fee: #{scale_decimal(fee)}, rec: #{scale_decimal(rec)}, address: #{address}"
+
         balance = rec - send
 
         amounts_per_address[address] << TokenQuantity.new(token, balance)
       end
     end
+    amounts_per_address
+  end
+
+  def get_address_amounts(addresses : Array(String)) : Hash(String, Array(TokenQuantity))
+    addresses.uniq!
+    address_list = addresses.map { |a| "'#{a}'" }.join(",")
+    amounts_per_address : Hash(String, Array(TokenQuantity)) = {} of String => Array(TokenQuantity)
+    addresses.each { |a| amounts_per_address[a] = [] of TokenQuantity }
+
+    recipient_sum_per_address = get_recipient_sum_per_address(addresses)
+    sender_sum_per_address = get_sender_sum_per_address(addresses)
+    fee_sum_per_address = get_fee_sum_per_address(addresses)
+
+    addresses.each do |address|
+      recipient_sum = recipient_sum_per_address[address]
+      sender_sum = sender_sum_per_address[address]
+      unique_tokens = (recipient_sum + sender_sum).map(&.token).push("AXNT").uniq
+
+      unique_tokens.map do |token|
+        recipient = recipient_sum.select { |r| r.token == token }.map(&.amount).sum
+        sender = sender_sum.select { |s| s.token == token }.map(&.amount).sum
+        fee = fee_sum_per_address[address]
+
+        if token == "AXNT"
+          sender = sender + fee
+        end
+        balance = recipient - sender
+
+        amounts_per_address[address] << TokenQuantity.new(token, balance)
+      end
+    end
+
     amounts_per_address
   end
 
@@ -265,6 +303,25 @@ module ::Axentro::Core::Data::Transactions
     token_quantity
   end
 
+  private def get_recipient_sum_per_address(addresses : Array(String)) : Hash(String, Array(TokenQuantity))
+    amounts_per_address : Hash(String, Array(TokenQuantity)) = {} of String => Array(TokenQuantity)
+    addresses.uniq.each { |a| amounts_per_address[a] = [] of TokenQuantity }
+    address_list = addresses.map { |a| "'#{a}'" }.uniq.join(",")
+    @db.query(
+      "select r.address, t.token, sum(r.amount) as 'rec' from transactions t " \
+      "join recipients r on r.transaction_id = t.id " \
+      "where r.address in (#{address_list}) " \
+      "group by r.address, t.token") do |rows|
+      rows.each do
+        address = rows.read(String)
+        token = rows.read(String)
+        amount = rows.read(Int64 | Nil) || 0_i64
+        amounts_per_address[address] << TokenQuantity.new(token, amount)
+      end
+    end
+    amounts_per_address
+  end
+
   private def get_sender_sum(address : String) : Array(TokenQuantity)
     token_quantity = [] of TokenQuantity
     @db.query(
@@ -285,6 +342,26 @@ module ::Axentro::Core::Data::Transactions
     token_quantity
   end
 
+  private def get_sender_sum_per_address(addresses : Array(String)) : Hash(String, Array(TokenQuantity))
+    amounts_per_address : Hash(String, Array(TokenQuantity)) = {} of String => Array(TokenQuantity)
+    addresses.uniq.each { |a| amounts_per_address[a] = [] of TokenQuantity }
+    address_list = addresses.map { |a| "'#{a}'" }.uniq.join(",")
+    @db.query(
+      "select s.address, t.token, sum(s.amount) as 'send' from transactions t " \
+      "join senders s on s.transaction_id = t.id " \
+      "where s.address in (#{address_list}) " \
+      "and t.action = 'send' " \
+      "group by s.address, t.token") do |rows|
+      rows.each do
+        address = rows.read(String)
+        token = rows.read(String)
+        amount = rows.read(Int64 | Nil) || 0_i64
+        amounts_per_address[address] << TokenQuantity.new(token, amount)
+      end
+    end
+    amounts_per_address
+  end
+
   private def get_fee_sum(address : String) : Int64
     amount = 0_i64
     @db.query(
@@ -298,6 +375,24 @@ module ::Axentro::Core::Data::Transactions
       end
     end
     amount
+  end
+
+  private def get_fee_sum_per_address(addresses : Array(String)) : Hash(String, Int64)
+    amounts_per_address : Hash(String, Int64) = {} of String => Int64
+    addresses.uniq.each { |a| amounts_per_address[a] = 0_i64 }
+    address_list = addresses.map { |a| "'#{a}'" }.uniq.join(",")
+    @db.query(
+      "select address, sum(fee) as 'fee' " \
+      "from senders " \
+      "where address in (#{address_list})"
+    ) do |rows|
+      rows.each do
+        address = rows.read(String | Nil) || "no-address"
+        fee = rows.read(Int64 | Nil) || 0_i64
+        amounts_per_address[address] = fee
+      end
+    end
+    amounts_per_address
   end
 
   # ------- Indices -------

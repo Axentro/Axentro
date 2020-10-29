@@ -45,9 +45,6 @@ class Transactions < SpinachTestCase
       wallet_b_final_balance = Wallets.balance_for(wallet_b, block_factory)
 
       rejected = block_factory.database.total_rejects.to_s
-      puts "QOOOP"
-      puts rejected
-      pp block_factory.database.all_rejects.map(&.reason)
 
       {"wallet_balance_a" => wallet_a_final_balance, "wallet_balance_b" => wallet_b_final_balance, "rejections" => rejected}
     end
@@ -79,7 +76,6 @@ class Transactions < SpinachTestCase
       wallet_a_final_custom_balance = Wallets.balance_for(wallet_a, block_factory, token_name)
 
       rejected = block_factory.database.total_rejects.to_s
-      # puts "HERE"
 
       {"wallet_balance_a" => wallet_a_final_balance, "wallet_balance_a_custom" => wallet_a_final_custom_balance, "rejections" => rejected}
     end

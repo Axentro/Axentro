@@ -71,6 +71,7 @@ module ::Units::Utils::ChainGenerator
       @miner_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @official_nodes = official_nodes_for_specs(@node_wallet.address)
       @database = memory_kind == MemoryKind::SINGLE ? Axentro::Core::Database.in_memory : Axentro::Core::Database.in_shared_memory
+      # @database = Axentro::Core::Database.new("specs.sqlite3")
       @node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, @database, developer_fund, nil, official_nodes, false, nil, 512, 512, false)
       @blockchain = @node.blockchain
       # the node setup is run in a spawn so we have to wait until it's finished before running any tests

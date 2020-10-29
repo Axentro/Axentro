@@ -219,8 +219,8 @@ describe UTXO do
         transaction2 = transaction_factory.make_send(2000000000_i64)
         chain = block_factory.add_slow_blocks(1).chain
         utxo = UTXO.new(block_factory.blockchain)
-
         utxo.record(chain)
+
         result = utxo.valid_transactions?([transaction1, transaction2])
         result.failed.size.should eq(1)
         result.passed.size.should eq(1)
