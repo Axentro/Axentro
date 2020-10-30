@@ -17,7 +17,6 @@ module ::Axentro::Core::DApps
     abstract def setup
     abstract def transaction_actions : Array(String)
     abstract def transaction_related?(action : String) : Bool
-    # abstract def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
     abstract def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
     abstract def record(chain : Blockchain::Chain)
     abstract def clear
@@ -36,15 +35,6 @@ module ::Axentro::Core::DApps
 
     def initialize(@blockchain : Blockchain)
     end
-
-    # def valid?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-    #   if transaction.total_fees < self.class.fee(transaction.action)
-    #     raise "not enough fee, should be #{scale_decimal(transaction.total_fees)} " +
-    #           ">= #{scale_decimal(self.class.fee(transaction.action))}"
-    #   end
-
-    #   valid_transaction?(transaction, prev_transactions)
-    # end
 
     def valid?(transactions : Array(Transaction)) : ValidatedTransactions
       vt = ValidatedTransactions.empty

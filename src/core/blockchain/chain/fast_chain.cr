@@ -109,8 +109,6 @@ module ::Axentro::Core::FastChain
   def align_fast_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
     transactions = [coinbase_transaction] + embedded_fast_transactions
 
-    puts "ALIGN_FAST_TRANSACTIONS quantity: #{transactions.size}"
-
     vt = Validation::Transaction.validate_common(transactions)
     skip_prev_hash_check = true
     vt << Validation::Transaction.validate_embedded(transactions, self, skip_prev_hash_check)
@@ -125,26 +123,6 @@ module ::Axentro::Core::FastChain
       transaction.add_prev_hash((index == 0 ? "0" : vt.passed[index - 1].to_hash))
     end
   end
-
-  # def align_fast_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
-  #   aligned_transactions = [coinbase_transaction]
-
-  #   debug "entered align_fast_transactions with embedded_fast_transactions size: #{embedded_fast_transactions.size}"
-  #   embedded_fast_transactions.each do |t|
-  #     t.prev_hash = aligned_transactions[-1].to_hash
-  #     t.valid_as_embedded?(self, aligned_transactions)
-  #     aligned_transactions << t
-  #   rescue e : Exception
-  #     debug "align_fast_transactions: REJECTED transaction due to #{e}"
-  #     rejects.record_reject(t.id, Rejects.address_from_senders(t.senders), e)
-  #     node.wallet_info_controller.update_wallet_information([t])
-
-  #     FastTransactionPool.delete(t)
-  #   end
-  #   debug "exited align_fast_transactions with embedded_fast_transactions size: #{embedded_fast_transactions.size}"
-
-  #   aligned_transactions
-  # end
 
   def create_coinbase_fast_transaction(coinbase_amount : Int64) : Transaction
     node_reccipient = {
@@ -173,26 +151,6 @@ module ::Axentro::Core::FastChain
   def coinbase_fast_amount(index : Int64, transactions) : Int64
     total_fees(transactions)
   end
-
-  # def replace_fast_transactions(transactions : Array(Transaction))
-  #   transactions = transactions.select(&.is_fast_transaction?)
-  #   replace_transactions = [] of Transaction
-
-  #   transactions.each_with_index do |t, i|
-  #     progress "validating fast transaction #{t.short_id}", i + 1, transactions.size
-
-  #     t = FastTransactionPool.find(t) || t
-  #     t.valid_common?
-
-  #     replace_transactions << t
-  #   rescue e : Exception
-  #     rejects.record_reject(t.id, Rejects.address_from_senders(t.senders), e)
-  #     node.wallet_info_controller.update_wallet_information([t])
-  #   end
-
-  #   FastTransactionPool.lock
-  #   FastTransactionPool.replace(replace_transactions)
-  # end
 
   def replace_fast_transactions(transactions : Array(Transaction))
     results = FastTransactionPool.find_all(transactions.select(&.is_fast_transaction?))

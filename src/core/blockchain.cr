@@ -633,26 +633,6 @@ module ::Axentro::Core
       node.miners_broadcast
     end
 
-    # def align_slow_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
-    #   aligned_transactions = [coinbase_transaction]
-
-    #   debug "entered align_slow_transactions with embedded_slow_transactions size: #{embedded_slow_transactions.size}"
-    #   embedded_slow_transactions.each do |t|
-    #     t.prev_hash = aligned_transactions[-1].to_hash
-    #     t.valid_as_embedded?(self, aligned_transactions)
-
-    #     aligned_transactions << t
-    #   rescue e : Exception
-    #     rejects.record_reject(t.id, Rejects.address_from_senders(t.senders), e)
-    #     node.wallet_info_controller.update_wallet_information([t])
-
-    #     SlowTransactionPool.delete(t)
-    #   end
-    #   debug "exited align_slow_transactions with embedded_slow_transactions size: #{embedded_slow_transactions.size}"
-
-    #   aligned_transactions
-    # end
-
     def align_slow_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
       transactions = [coinbase_transaction] + embedded_slow_transactions
 
@@ -714,26 +694,6 @@ module ::Axentro::Core
       return 0_i64 if transactions.size < 2
       transactions.reduce(0_i64) { |fees, transaction| fees + transaction.total_fees }
     end
-
-    # def replace_slow_transactions(transactions : Array(Transaction))
-    #   transactions = transactions.select(&.is_slow_transaction?)
-    #   replace_transactions = [] of Transaction
-
-    #   transactions.each_with_index do |t, i|
-    #     progress "validating slow transaction #{t.short_id}", i + 1, transactions.size
-
-    #     t = SlowTransactionPool.find(t) || t
-    #     t.valid_common?
-
-    #     replace_transactions << t
-    #   rescue e : Exception
-    #     rejects.record_reject(t.id, Rejects.address_from_senders(t.senders), e)
-    #     node.wallet_info_controller.update_wallet_information([t])
-    #   end
-
-    #   SlowTransactionPool.lock
-    #   SlowTransactionPool.replace(replace_transactions)
-    # end
 
     def replace_slow_transactions(transactions : Array(Transaction))
       results = SlowTransactionPool.find_all(transactions.select(&.is_slow_transaction?))
