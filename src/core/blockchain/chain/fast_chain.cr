@@ -36,10 +36,10 @@ module ::Axentro::Core::FastChain
 
                 block = mint_fast_block(valid_transactions)
                 # if block.valid?(self)
-                  debug "record new fast block"
-                  node.new_block(block)
-                  debug "broadcast new fast block"
-                  node.send_block(block)
+                debug "record new fast block"
+                node.new_block(block)
+                debug "broadcast new fast block"
+                node.send_block(block)
                 # end
               end
             end
