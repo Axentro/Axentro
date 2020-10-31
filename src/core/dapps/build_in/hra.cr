@@ -12,7 +12,7 @@
 
 module ::Axentro::Core::DApps::BuildIn
   #
-  # Axentro Address Resolution System
+  # Axentro Human Readable Address (HRA)
   #
   # valid suffixes
   SUFFIX = %w(ax)

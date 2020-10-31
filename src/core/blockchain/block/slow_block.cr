@@ -130,17 +130,6 @@ module ::Axentro::Core
       vt
     end
 
-    # private def process_transaction(blockchain, transaction, idx)
-    #   t = SlowTransactionPool.find(transaction) || transaction
-    #   t.valid_common?
-
-    #   if idx == 0
-    #     t.valid_as_coinbase?(blockchain, @index, transactions[1..-1])
-    #   else
-    #     t.valid_as_embedded?(blockchain, transactions[0..idx - 1])
-    #   end
-    # end
-
     # ameba:disable Metrics/CyclomaticComplexity
     def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool
       if doing_replace
@@ -159,7 +148,7 @@ module ::Axentro::Core
         # end
       end
 
-      raise "Index Mismatch: the current block index: #{@index} should match the lastest slow block index: #{latest_slow_index}" if @index != latest_slow_index
+      raise "Index Mismatch: the current block index: #{@index} should match the lastest slow block index: #{latest_slow_index}" if @index != latest_slow_index     
       raise "Invalid Previous Hash: for current index: #{@index} the prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
 
       next_timestamp = __timestamp

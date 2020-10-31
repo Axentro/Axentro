@@ -22,8 +22,8 @@ module ::Units::Utils::ChainGenerator
     SHARED
   end
 
-  def with_factory(developer_fund = nil, memory_kind = MemoryKind::SINGLE, &block)
-    block_factory = BlockFactory.new(developer_fund)
+  def with_factory(developer_fund = nil, skip_official_nodes = false, memory_kind = MemoryKind::SINGLE, &block)
+    block_factory = BlockFactory.new(developer_fund, skip_official_nodes, memory_kind)
     yield block_factory, block_factory.transaction_factory
   end
 
@@ -46,33 +46,23 @@ module ::Units::Utils::ChainGenerator
     def official_nodes_for_specs(address : String)
       official_node_list =
         {
-          "testnet" => {
-            "fastnodes" => [
-              address,
-            ],
-            "slownodes" => [
-              address,
-            ],
-          },
-          "mainnet" => {
-            "fastnodes" => [
-              address,
-            ],
-            "slownodes" => [
-              address,
-            ],
-          },
+          "fastnodes" => [
+            address,
+          ],
+          "slownodes" => [
+            address,
+          ],
         }
       Axentro::Core::OfficialNodes.new(official_node_list)
     end
 
-    def initialize(developer_fund, memory_kind = MemoryKind::SINGLE)
+    def initialize(developer_fund, skip_official_nodes = false, memory_kind = MemoryKind::SINGLE)
       @node_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @miner_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @official_nodes = official_nodes_for_specs(@node_wallet.address)
       @database = memory_kind == MemoryKind::SINGLE ? Axentro::Core::Database.in_memory : Axentro::Core::Database.in_shared_memory
       # @database = Axentro::Core::Database.new("specs.sqlite3")
-      @node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, @database, developer_fund, nil, official_nodes, false, nil, 512, 512, false)
+      @node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, @database, developer_fund, (skip_official_nodes ? nil : official_nodes), false, nil, 512, 512, false)
       @blockchain = @node.blockchain
       # the node setup is run in a spawn so we have to wait until it's finished before running any tests
       while @node.@phase != Axentro::Core::Node::SetupPhase::DONE

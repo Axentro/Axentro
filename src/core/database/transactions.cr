@@ -177,49 +177,6 @@ module ::Axentro::Core::Data::Transactions
 
   # --------- utxo -----------
 
-  def get_address_amounts_old(addresses : Array(String)) : Hash(String, Array(TokenQuantity))
-    address_list = addresses.map { |a| "'#{a}'" }.uniq.join(",")
-    amounts_per_address : Hash(String, Array(TokenQuantity)) = {} of String => Array(TokenQuantity)
-    addresses.uniq.each { |a| amounts_per_address[a] = [] of TokenQuantity }
-
-    @db.query(
-      "select q1.address, q1.token, send, fee, rec from " \
-      "(select r.address, t.token, sum(r.amount) as 'rec' from transactions t " \
-      "join recipients r on r.transaction_id = t.id " \
-      "where r.address in (#{address_list}) " \
-      "group by r.address, t.token) q1 " \
-      "left join " \
-      "(select s.address, t.token, sum(s.amount) as 'send' from transactions t " \
-      "join senders s on s.transaction_id = t.id " \
-      "where t.action = 'send' " \
-      "and s.address in (#{address_list}) " \
-      "group by s.address, t.token) q2 " \
-      "on (q1.address = q2.address) " \
-      "left join " \
-      "(select address, sum(fee) as 'fee' from senders where address in (#{address_list})) f " \
-      "on (q1.address = f.address)"
-    ) do |rows|
-      rows.each do
-        address = rows.read(String)
-        token = rows.read(String)
-        send = rows.read(Int64 | Nil) || 0_i64
-        fee = rows.read(Int64 | Nil) || 0_i64
-        rec = rows.read(Int64 | Nil) || 0_i64
-
-        if token == "AXNT"
-          send = send + fee
-        end
-
-        puts "token: #{token}, send: #{scale_decimal(send)}, fee: #{scale_decimal(fee)}, rec: #{scale_decimal(rec)}, address: #{address}"
-
-        balance = rec - send
-
-        amounts_per_address[address] << TokenQuantity.new(token, balance)
-      end
-    end
-    amounts_per_address
-  end
-
   def get_address_amounts(addresses : Array(String)) : Hash(String, Array(TokenQuantity))
     addresses.uniq!
     amounts_per_address : Hash(String, Array(TokenQuantity)) = {} of String => Array(TokenQuantity)
@@ -413,6 +370,28 @@ module ::Axentro::Core::Data::Transactions
       block = transaction_ids[transaction.id]
       TransactionWithBlock.new(transaction, block)
     end
+  end
+
+  # ------- Official nodes -------
+  def get_official_nodes : OfficialNodesConfig
+    official_nodes_config = {"slownodes" => [] of String, "fastnodes" => [] of String}
+    @db.query(
+      "select r.address, t.action " \
+      "from transactions t " \
+      "join recipients r on r.transaction_id = t.id " \
+      "where action in ( 'create_official_node_slow', 'create_official_node_fast') "
+    ) do |rows|
+      rows.each do
+        address = rows.read(String)
+        action = rows.read(String)
+        if action == "create_official_node_slow"
+          official_nodes_config["slownodes"] << address
+        elsif action == "create_official_node_fast"
+          official_nodes_config["fastnodes"] << address
+        end
+      end
+    end
+    official_nodes_config
   end
 
   # ------- Helpers -------

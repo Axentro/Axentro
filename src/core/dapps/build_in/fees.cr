@@ -50,7 +50,7 @@ module ::Axentro::Core::DApps::BuildIn
     def fees_impl
       fees = Hash(String, String).new
 
-      blockchain.dapps.each do |dapp|
+      OfficialNode.apply_exclusions(blockchain.dapps).each do |dapp|
         dapp.transaction_actions.each do |action|
           fees[action] = scale_decimal(dapp.class.fee(action)) if dapp.class.fee(action) > 0
         end

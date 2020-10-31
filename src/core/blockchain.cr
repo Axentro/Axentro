@@ -47,7 +47,7 @@ module ::Axentro::Core
     @max_miners : Int32
     @is_standalone : Bool
 
-    def initialize(@wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, security_level_percentage : Int64?, @max_miners : Int32, @is_standalone : Bool)
+    def initialize(@wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, @official_nodes : OfficialNodes?, security_level_percentage : Int64?, @max_miners : Int32, @is_standalone : Bool)
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup
@@ -519,7 +519,9 @@ module ::Axentro::Core
     end
 
     private def get_genesis_block_transactions
-      @developer_fund ? DeveloperFund.transactions(@developer_fund.not_nil!.get_config) : [] of Transaction
+      dev_fund = @developer_fund ? DeveloperFund.transactions(@developer_fund.not_nil!.get_config) : [] of Transaction
+      official_nodes = @official_nodes ? OfficialNodes.transactions(@official_nodes.not_nil!.get_config, dev_fund) : [] of Transaction
+      dev_fund + official_nodes
     end
 
     def genesis_block : SlowBlock
@@ -542,25 +544,10 @@ module ::Axentro::Core
       )
     end
 
-    def transactions_for_address(address : String, page : Int32 = 0, page_size : Int32 = 20, actions : Array(String) = [] of String) : Array(Transaction)
-      # TODO - we don't want to load the entire db here - instead use a combination of in memory chain + database query
-      # TODO: Change this database request to something more sophisticated that filters out blocks that don't have txns with the address
-      chain = @database.get_blocks(0_i64)
-      chain
-        .reverse
-        .map { |block| block.transactions }
-        .flatten
-        .select { |transaction| actions.empty? || actions.includes?(transaction.action) }
-        .select { |transaction|
-          transaction.senders.any? { |sender| sender[:address] == address } ||
-            transaction.recipients.any? { |recipient| recipient[:address] == address }
-        }.skip(page*page_size).first(page_size)
-    end
-
     def available_actions : Array(String)
-      @dapps.map { |dapp| dapp.transaction_actions }.flatten
+      OfficialNode.apply_exclusions(@dapps).map { |dapp| dapp.transaction_actions }.flatten
     end
-
+  
     def pending_miner_nonces : MinerNonces
       MinerNoncePool.all
     end

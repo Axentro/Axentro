@@ -50,8 +50,7 @@ module ::Axentro::Core
       @wallet : Wallet,
       @database : Database,
       @developer_fund : DeveloperFund?,
-      @fastnode_address : String?,
-      @official_nodes : OfficialNodes,
+      @official_nodes : OfficialNodes?,
       @exit_on_unofficial : Bool,
       @security_level_percentage : Int64?,
       @max_miners : Int32,
@@ -60,10 +59,10 @@ module ::Axentro::Core
     )
       welcome
 
-      @blockchain = Blockchain.new(@wallet, @database, @developer_fund, @security_level_percentage, @max_miners, is_standalone?)
+      @blockchain = Blockchain.new(@wallet, @database, @developer_fund, @official_nodes, @security_level_percentage, @max_miners, is_standalone?)
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @validation_manager = ValidationManager.new(@blockchain, @bind_host, @bind_port, @use_ssl)
-      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @validation_manager, @max_private_nodes, @wallet.address, @official_nodes, @exit_on_unofficial)
+      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @validation_manager, @max_private_nodes, @wallet.address, @blockchain.official_node, @exit_on_unofficial)
       @miners_manager = MinersManager.new(@blockchain)
       @clients_manager = ClientsManager.new(@blockchain)
 
@@ -100,12 +99,12 @@ module ::Axentro::Core
     end
 
     def i_am_a_fast_node?
-      @official_nodes.i_am_a_fastnode?(@wallet.address, @network_type)
+      @blockchain.official_node.i_am_a_fastnode?(@wallet.address)
     end
 
     def fastnode_is_online?
       return true if ENV.has_key?("AX_SET_DIFFICULTY")
-      @official_nodes.a_fastnode_is_online?(@chord.official_nodes_list[:online].map(&.[:address]), @network_type)
+      @blockchain.official_node.a_fastnode_is_online?(@chord.official_nodes_list[:online].map(&.[:address]))
     end
 
     def get_wallet
@@ -524,7 +523,7 @@ module ::Axentro::Core
       signature = block.signature
       address = block.address
       public_key = block.public_key
-      @official_nodes.i_am_a_fastnode?(address, @network_type) && KeyUtils.verify_signature(hash_salt, signature, public_key)
+      @blockchain.official_node.i_am_a_fastnode?(address) && KeyUtils.verify_signature(hash_salt, signature, public_key)
     end
 
     # ameba:disable Metrics/CyclomaticComplexity
@@ -839,9 +838,6 @@ module ::Axentro::Core
 
         unless @developer_fund.nil?
           info "Developer fund has been invoked based on this configuration: #{@developer_fund.not_nil!.get_path}"
-        end
-        unless @fastnode_address.nil?
-          info "Fast node has been set to this address: #{@fastnode_address.not_nil!}"
         end
         @phase = SetupPhase::DATABASE_VALIDATING
         proceed_setup
