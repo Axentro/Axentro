@@ -1,11 +1,4 @@
-testnet:
-  fastnodes:
+fastnodes:
   - VDA1NjQ3ZmJiNmIwZDZlY2Q5NDMwNTRmYTNjNDYwYmQwMjM4NjExZGZlYTYyNjhj
-  slownodes:
+slownodes:
   - VDA1NjQ3ZmJiNmIwZDZlY2Q5NDMwNTRmYTNjNDYwYmQwMjM4NjExZGZlYTYyNjhj
-mainnet:
-  fastnodes:
-  - VDA1NjQ3ZmJiNmIwZDZlY2Q5NDMwNTRmYTNjNDYwYmQwMjM4NjExZGZlYTYyNjhj
-  slownodes:
-  - VDA1NjQ3ZmJiNmIwZDZlY2Q5NDMwNTRmYTNjNDYwYmQwMjM4NjExZGZlYTYyNjhj
-
