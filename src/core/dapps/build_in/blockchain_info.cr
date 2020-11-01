@@ -24,7 +24,7 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
-      ValidatedTransactions.empty
+      ValidatedTransactions.passed(transactions)
     end
 
     def record(chain : Blockchain::Chain)

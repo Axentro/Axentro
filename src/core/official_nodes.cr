@@ -40,9 +40,9 @@ module ::Axentro::Core
       fast = config["fastnodes"].map do |address|
         create_transaction(address, "create_official_node_fast")
       end
-      
+
       transactions = slow + fast
-      maybe_coinbase = coinbase_transactions.find{|t| t.is_coinbase? } 
+      maybe_coinbase = coinbase_transactions.find { |t| t.is_coinbase? }
       if maybe_coinbase
         transactions = transactions.map_with_index do |transaction, index|
           transaction.add_prev_hash((index == 0 ? maybe_coinbase.not_nil!.to_hash : transactions[index - 1].to_hash))
@@ -84,29 +84,6 @@ module ::Axentro::Core
         TransactionKind::SLOW
       ).to_transaction
     end
-
-    # def all_for(network : String) : Array(String)
-    #   @config[network].values.flatten.uniq
-    # end
-
-    # def all_slow_for(network : String) : Array(String)
-    #   @config[network]["slownodes"].uniq
-    # end
-
-    # def all_fast_for(network : String) : Array(String)
-    #   @config[network]["fastnodes"].uniq
-    # end
-
-    # def i_am_a_fastnode?(address : String, network : String) : Bool
-    #   all_fast_for(network).includes?(address)
-    # end
-
-    # def a_fastnode_is_online?(online_nodes : Array(String), network : String) : Bool
-    #   all_fast_for(network).each do |fn|
-    #     return true if online_nodes.includes?(fn)
-    #   end
-    #   false
-    # end
 
     def set_config(config)
       @config = config

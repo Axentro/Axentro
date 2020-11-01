@@ -68,8 +68,8 @@ describe Blockchain do
     end
 
     it "should return true and replace slow chain" do
-      # This spec has to skip the official nodes in the chain_generator because adding official nodes 
-      # causes the genesis block to have a different hash. So block 2 in blockchain will have a differnet prev_hash compared 
+      # This spec has to skip the official nodes in the chain_generator because adding official nodes
+      # causes the genesis block to have a different hash. So block 2 in blockchain will have a differnet prev_hash compared
       # to the prev_hash for block 2 in the slow_sub_chain - causing the spec to fail. (you can't just put the same official nodes into Blockchain.new as transaction hashes are generated inside official_nodes)
       with_factory(nil, true) do |block_factory|
         slow_sub_chain = block_factory.add_slow_blocks(10).chain

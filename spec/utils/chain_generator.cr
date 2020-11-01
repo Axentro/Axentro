@@ -22,8 +22,8 @@ module ::Units::Utils::ChainGenerator
     SHARED
   end
 
-  def with_factory(developer_fund = nil, skip_official_nodes = false, memory_kind = MemoryKind::SINGLE, &block)
-    block_factory = BlockFactory.new(developer_fund, skip_official_nodes, memory_kind)
+  def with_factory(developer_fund = nil, skip_official_nodes = false, custom_official_nodes = nil, memory_kind = MemoryKind::SINGLE, &block)
+    block_factory = BlockFactory.new(developer_fund, skip_official_nodes, custom_official_nodes, memory_kind)
     yield block_factory, block_factory.transaction_factory
   end
 
@@ -41,7 +41,7 @@ module ::Units::Utils::ChainGenerator
     property blockchain : Blockchain
     property database : Database
     property node : Axentro::Core::Node
-    property official_nodes : Axentro::Core::OfficialNodes
+    property official_nodes : Axentro::Core::OfficialNodes?
 
     def official_nodes_for_specs(address : String)
       official_node_list =
@@ -56,13 +56,26 @@ module ::Units::Utils::ChainGenerator
       Axentro::Core::OfficialNodes.new(official_node_list)
     end
 
-    def initialize(developer_fund, skip_official_nodes = false, memory_kind = MemoryKind::SINGLE)
+    def initialize(developer_fund, skip_official_nodes, custom_official_nodes, memory_kind = MemoryKind::SINGLE)
       @node_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @miner_wallet = Wallet.from_json(Wallet.create(true).to_json)
-      @official_nodes = official_nodes_for_specs(@node_wallet.address)
+      
+      # if custom_official_nodes == "skip"
+      #   _official_nodes = nil
+      # elsif custom_official_nodes.nil?
+      #   _official_nodes = official_nodes_for_specs(@node_wallet.address)
+      # else
+      #   _official_nodes = custom_official_nodes
+      # end
+
+      @official_nodes = custom_official_nodes || official_nodes_for_specs(@node_wallet.address)
+      if skip_official_nodes
+        @official_nodes = nil
+      end
+
       @database = memory_kind == MemoryKind::SINGLE ? Axentro::Core::Database.in_memory : Axentro::Core::Database.in_shared_memory
       # @database = Axentro::Core::Database.new("specs.sqlite3")
-      @node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, @database, developer_fund, (skip_official_nodes ? nil : official_nodes), false, nil, 512, 512, false)
+      @node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, @database, developer_fund, @official_nodes, false, nil, 512, 512, false)
       @blockchain = @node.blockchain
       # the node setup is run in a spawn so we have to wait until it's finished before running any tests
       while @node.@phase != Axentro::Core::Node::SetupPhase::DONE
@@ -403,6 +416,40 @@ module ::Units::Utils::ChainGenerator
         0_i64, # timestamp
         1,     # scaled
         transaction_kind
+      )
+      unsigned_transaction.as_signed([sender_wallet])
+    end
+
+    def make_create_offical_slownode(token : String = TOKEN_DEFAULT, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        "create_official_node_slow", # action
+        [a_sender(sender_wallet, 0_i64)],
+        [a_recipient(recipient_wallet, 0_i64)],
+        "0",   # message
+        token, # token
+        "0",   # prev_hash
+        0_i64, # timestamp
+        1,     # scaled
+        TransactionKind::SLOW
+      )
+      unsigned_transaction.as_signed([sender_wallet])
+    end
+
+    def make_create_offical_fastnode(token : String = TOKEN_DEFAULT, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        "create_official_node_fast", # action
+        [a_sender(sender_wallet, 0_i64)],
+        [a_recipient(recipient_wallet, 0_i64)],
+        "0",   # message
+        token, # token
+        "0",   # prev_hash
+        0_i64, # timestamp
+        1,     # scaled
+        TransactionKind::SLOW
       )
       unsigned_transaction.as_signed([sender_wallet])
     end

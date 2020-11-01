@@ -37,47 +37,6 @@ describe OfficialNodes do
 
   it "should return the config" do
     on = OfficialNodes.new("#{__DIR__}/../../utils/data/official_nodes.yml")
-    on.get_config.should eq({"testnet" => {"fastnodes" => ["VDBkMzRmOWZlYWEwYmM4OWY4MjZhNDlmZThhNTY1MmI3NzZjYTNkZjVlNzYzMjZi"], "slownodes" => ["VDAyNThiOWFiN2Q5YWM3ZjUyYTNhYzQwZTY1NDBmYWJkMjczZmVmZThlOTgzMWM4"]}, "mainnet" => {"fastnodes" => ["VDAwZDRiYTg0MWVlZjE4M2U3OWY2N2E0YmZkZDJjN2JmMWE0ZTViMjE3ZDNmZTU1"], "slownodes" => ["VDBiYjkyMjY1ZDJlOTNkZmNjN2NmYWFhZTVhMzVlYjZmYjY2YzllNWFjYWY3N2Nh"]}})
-  end
-
-  describe "testnet nodes" do
-    it "should return all nodes for" do
-      on = OfficialNodes.new("#{__DIR__}/../../utils/data/official_nodes.yml")
-      on.all_for("testnet").should eq(["VDBkMzRmOWZlYWEwYmM4OWY4MjZhNDlmZThhNTY1MmI3NzZjYTNkZjVlNzYzMjZi", "VDAyNThiOWFiN2Q5YWM3ZjUyYTNhYzQwZTY1NDBmYWJkMjczZmVmZThlOTgzMWM4"])
-    end
-
-    it "should return all slow nodes" do
-      on = OfficialNodes.new("#{__DIR__}/../../utils/data/official_nodes.yml")
-      on.all_slow_for("testnet").should eq(["VDAyNThiOWFiN2Q5YWM3ZjUyYTNhYzQwZTY1NDBmYWJkMjczZmVmZThlOTgzMWM4"])
-    end
-
-    it "should return all fast nodes" do
-      on = OfficialNodes.new("#{__DIR__}/../../utils/data/official_nodes.yml")
-      on.all_fast_for("testnet").should eq(["VDBkMzRmOWZlYWEwYmM4OWY4MjZhNDlmZThhNTY1MmI3NzZjYTNkZjVlNzYzMjZi"])
-    end
-
-    it "should remove duplicates" do
-      on = OfficialNodes.new("#{__DIR__}/../../utils/data/official_nodes_duplicates.yml")
-      on.all_for("testnet").should eq(["VDBkMzRmOWZlYWEwYmM4OWY4MjZhNDlmZThhNTY1MmI3NzZjYTNkZjVlNzYzMjZi", "VDAyNThiOWFiN2Q5YWM3ZjUyYTNhYzQwZTY1NDBmYWJkMjczZmVmZThlOTgzMWM4"])
-      on.all_fast_for("testnet").should eq(["VDBkMzRmOWZlYWEwYmM4OWY4MjZhNDlmZThhNTY1MmI3NzZjYTNkZjVlNzYzMjZi"])
-      on.all_slow_for("testnet").should eq(["VDAyNThiOWFiN2Q5YWM3ZjUyYTNhYzQwZTY1NDBmYWJkMjczZmVmZThlOTgzMWM4"])
-    end
-  end
-
-  describe "mainnet nodes" do
-    it "should return all nodes for" do
-      on = OfficialNodes.new("#{__DIR__}/../../utils/data/official_nodes.yml")
-      on.all_for("mainnet").should eq(["VDAwZDRiYTg0MWVlZjE4M2U3OWY2N2E0YmZkZDJjN2JmMWE0ZTViMjE3ZDNmZTU1", "VDBiYjkyMjY1ZDJlOTNkZmNjN2NmYWFhZTVhMzVlYjZmYjY2YzllNWFjYWY3N2Nh"])
-    end
-
-    it "should return all slow nodes" do
-      on = OfficialNodes.new("#{__DIR__}/../../utils/data/official_nodes.yml")
-      on.all_slow_for("mainnet").should eq(["VDBiYjkyMjY1ZDJlOTNkZmNjN2NmYWFhZTVhMzVlYjZmYjY2YzllNWFjYWY3N2Nh"])
-    end
-
-    it "should return all fast nodes" do
-      on = OfficialNodes.new("#{__DIR__}/../../utils/data/official_nodes.yml")
-      on.all_fast_for("mainnet").should eq(["VDAwZDRiYTg0MWVlZjE4M2U3OWY2N2E0YmZkZDJjN2JmMWE0ZTViMjE3ZDNmZTU1"])
-    end
+    on.get_config.should eq({"fastnodes" => ["VDBkMzRmOWZlYWEwYmM4OWY4MjZhNDlmZThhNTY1MmI3NzZjYTNkZjVlNzYzMjZi"], "slownodes" => ["VDAyNThiOWFiN2Q5YWM3ZjUyYTNhYzQwZTY1NDBmYWJkMjczZmVmZThlOTgzMWM4"]})
   end
 end

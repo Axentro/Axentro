@@ -43,7 +43,7 @@ describe WalletInfo do
         transaction_creator = WalletInfo.new(block_factory.blockchain)
         result = transaction_creator.valid_transactions?(chain.last.transactions)
         result.failed.size.should eq(0)
-        result.passed.size.should eq(0)
+        result.passed.size.should eq(1)
       end
     end
     it "should perform #record" do

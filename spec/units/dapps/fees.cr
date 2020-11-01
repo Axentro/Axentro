@@ -43,7 +43,7 @@ describe Fees do
         fees = Fees.new(block_factory.blockchain)
         result = fees.valid_transactions?(chain.last.transactions)
         result.failed.size.should eq(0)
-        result.passed.size.should eq(0)
+        result.passed.size.should eq(1)
       end
     end
     it "should perform #record" do

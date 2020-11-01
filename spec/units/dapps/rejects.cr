@@ -72,7 +72,7 @@ describe Rejects do
       rejects = Rejects.new(block_factory.blockchain)
       result = rejects.valid_transactions?(chain.last.transactions)
       result.failed.size.should eq(0)
-      result.passed.size.should eq(0)
+      result.passed.size.should eq(1)
     end
   end
   describe "record_reject" do

@@ -173,6 +173,18 @@ module ::Axentro::Core
       ValidatedTransactions.new([] of FailedTransaction, [] of Core::Transaction)
     end
 
+    def self.passed(transactions : Array(Core::Transaction))
+      ValidatedTransactions.new([] of FailedTransaction, transactions)
+    end
+
+    def self.failed(transactions : Array(Core::Transaction), reason : String, location : String)
+      ValidatedTransactions.new(transactions.map { |t| FailedTransaction.new(t, reason, location) })
+    end
+
+    def self.with(failed_transactions : Array(Core::Transaction), reason : String, location : String, passed_transactions : Array(Core::Transaction))
+      ValidatedTransactions.new(failed_transactions.map { |t| FailedTransaction.new(t, reason, location) }, passed_transactions)
+    end
+
     def <<(other : ValidatedTransactions) : ValidatedTransactions
       add_passed_unless_dup(other)
       add_failed_unless_dup(other)

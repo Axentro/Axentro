@@ -25,7 +25,7 @@ module ::Axentro::Core::DApps::User
     end
 
     def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
-      ValidatedTransactions.empty
+      ValidatedTransactions.passed(transactions)
     end
 
     def activate : Int64?

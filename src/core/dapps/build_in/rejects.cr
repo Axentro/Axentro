@@ -42,7 +42,7 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
-      ValidatedTransactions.empty
+      ValidatedTransactions.passed(transactions)
     end
 
     def record_reject(transaction_id : String, sender_address : String, e : Exception)

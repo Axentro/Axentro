@@ -11,6 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "./node_id"
+
 # require "./../../daps/official_node"
 
 module ::Axentro::Core::NodeComponents

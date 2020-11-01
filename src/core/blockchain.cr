@@ -547,7 +547,7 @@ module ::Axentro::Core
     def available_actions : Array(String)
       OfficialNode.apply_exclusions(@dapps).map { |dapp| dapp.transaction_actions }.flatten
     end
-  
+
     def pending_miner_nonces : MinerNonces
       MinerNoncePool.all
     end

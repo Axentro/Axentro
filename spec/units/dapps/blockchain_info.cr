@@ -43,7 +43,7 @@ describe BlockchainInfo do
         transaction_creator = BlockchainInfo.new(block_factory.blockchain)
         result = transaction_creator.valid_transactions?(chain.last.transactions)
         result.failed.size.should eq(0)
-        result.passed.size.should eq(0)
+        result.passed.size.should eq(1)
       end
     end
     it "should perform #record" do
@@ -119,7 +119,7 @@ describe BlockchainInfo do
       end
 
       it "should return transactions for the specified address" do
-        # skip official nodes here to make the test easier as the official nodes are in the same block 
+        # skip official nodes here to make the test easier as the official nodes are in the same block
         # and it makes it difficult to make the expected confirmations
         with_factory(nil, true) do |block_factory, _|
           block_factory.add_slow_blocks(10)

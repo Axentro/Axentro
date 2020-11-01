@@ -16,7 +16,7 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def transaction_actions : Array(String)
-      ["create_offical_node_slow", "create_offical_node_fast"]
+      ["create_official_node_slow", "create_official_node_fast"]
     end
 
     def transaction_related?(action : String) : Bool
@@ -24,8 +24,11 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
-      # force all to be invalid for now until we have a mechanism to administer official_nodes
-      ValidatedTransactions.empty
+      ValidatedTransactions.with(
+        transactions.select { |t| transaction_actions.includes?(t.action) },
+        "Creation of official nodes is not currently permitted. Future changes will enable this.", "official_node",
+        transactions.reject { |t| transaction_actions.includes?(t.action) },
+      )
     end
 
     def record(chain : Blockchain::Chain)
@@ -35,19 +38,6 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def define_rpc?(call, json, context, params) : HTTP::Server::Context?
-      # case call
-      # when "nodes"
-      #   return nodes(json, context, params)
-      # when "node"
-      #   return node(json, context, params)
-      # when "node_id"
-      #   return node_id(json, context, params)
-      # when "node_address"
-      #   return node_address(json, context, params)
-      # when "official_nodes"
-      #   return official_nodes(json, context, params)
-      # end
-
       nil
     end
 
@@ -74,10 +64,10 @@ module ::Axentro::Core::DApps::BuildIn
       false
     end
 
-     # At the moment we don't want to publicise the official_node dapp
-     def self.apply_exclusions(dapps : Array(Axentro::Core::DApps::DApp)) : Array(Axentro::Core::DApps::DApp)
-        dapps.reject{|dapp| dapp.class.to_s == "Axentro::Core::DApps::BuildIn::OfficialNode" }
-      end
+    # At the moment we don't want to publicise the official_node dapp
+    def self.apply_exclusions(dapps : Array(Axentro::Core::DApps::DApp)) : Array(Axentro::Core::DApps::DApp)
+      dapps.reject { |dapp| dapp.class.to_s == "Axentro::Core::DApps::BuildIn::OfficialNode" }
+    end
 
     def on_message(action : String, from_address : String, content : String, from = nil)
       false
