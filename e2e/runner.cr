@@ -64,14 +64,8 @@ module ::E2E
       slownodes = wallet_addresses
 
       official_nodes_string = {
-        "testnet" => {
-          "fastnodes" => fastnodes,
-          "slownodes" => slownodes,
-        },
-        "mainnet" => {
-          "fastnodes" => fastnodes,
-          "slownodes" => slownodes,
-        },
+        "fastnodes" => fastnodes,
+        "slownodes" => slownodes,
       }.to_yaml
 
       File.open(official_nodes_file, "w") { |f| f.puts official_nodes_string }
