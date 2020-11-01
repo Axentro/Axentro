@@ -59,7 +59,7 @@ module ::Units::Utils::ChainGenerator
     def initialize(developer_fund, skip_official_nodes, custom_official_nodes, memory_kind = MemoryKind::SINGLE)
       @node_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @miner_wallet = Wallet.from_json(Wallet.create(true).to_json)
-      
+
       # if custom_official_nodes == "skip"
       #   _official_nodes = nil
       # elsif custom_official_nodes.nil?

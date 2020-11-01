@@ -118,17 +118,7 @@ module ::Axentro::Core
       vt
     end
 
-    # private def process_transaction(blockchain, transaction, idx)
-    #   t = FastTransactionPool.find(transaction) || transaction
-    #   t.valid_common?
-
-    #   if idx == 0
-    #     t.valid_as_coinbase?(blockchain, @index, transactions[1..-1])
-    #   else
-    #     t.valid_as_embedded?(blockchain, transactions[0..idx - 1])
-    #   end
-    # end
-
+    # ameba:disable Metrics/CyclomaticComplexity
     def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool, doing_replace : Bool) : Bool
       valid_signature = KeyUtils.verify_signature(@hash, @signature, @public_key)
       raise "Invalid Block Signature: the current block index: #{@index} has an invalid signature" unless valid_signature
