@@ -35,12 +35,10 @@ module ::Axentro::Core::FastChain
                 debug "There are #{valid_transactions.size} valid fast transactions so mint a new fast block"
 
                 block = mint_fast_block(valid_transactions)
-                # if block.valid?(self)
                 debug "record new fast block"
                 node.new_block(block)
                 debug "broadcast new fast block"
                 node.send_block(block)
-                # end
               end
             end
           rescue e : Exception

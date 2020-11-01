@@ -160,7 +160,9 @@ module ::Units::Utils::ChainGenerator
       block = @blockchain.mining_block
       block.nonce = "11719215035155661212"
       block.difficulty = 0 # difficulty will be set to 0 for most unit tests
-      valid_block = @blockchain.valid_block?(block)
+      # skip validating transactions here so that we can add blocks and still test the transactions in the specs
+      # valid block is tested separately
+      valid_block = @blockchain.valid_block?(block, true)
       case valid_block
       when SlowBlock
         @blockchain.push_slow_block(valid_block)
@@ -172,7 +174,9 @@ module ::Units::Utils::ChainGenerator
     private def add_valid_fast_block
       valid_transactions = @blockchain.valid_transactions_for_fast_block
       block = @blockchain.mint_fast_block(valid_transactions)
-      valid_block = @blockchain.valid_block?(block)
+      # skip validating transactions here so that we can add blocks and still test the transactions in the specs
+      # valid block is tested separately
+      valid_block = @blockchain.valid_block?(block, true)
       case valid_block
       when FastBlock
         @blockchain.push_fast_block(valid_block)
