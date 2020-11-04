@@ -197,6 +197,21 @@ module ::Units::Utils::ChainGenerator
       @recipient_wallet = Wallet.from_json(Wallet.create(true).to_json)
     end
 
+    def make_coinbase : Transaction
+      TransactionDecimal.new(
+        Transaction.create_id,
+        "head",
+        [] of Transaction::SenderDecimal,
+        [] of Transaction::RecipientDecimal,
+        "0",           # message
+        TOKEN_DEFAULT, # token
+        "0",           # prev_hash
+        0,             # timestamp
+        0,             # scaled
+        TransactionKind::SLOW
+      ).to_transaction
+    end
+
     def make_send(sender_amount : Int64, token : String = TOKEN_DEFAULT, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(

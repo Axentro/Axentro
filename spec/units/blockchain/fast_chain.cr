@@ -142,7 +142,13 @@ describe Blockchain do
         blockchain.add_transaction(transaction_factory.make_fast_send(200000000_i64), false)
         coinbase_transaction = blockchain.create_coinbase_fast_transaction(4000000000_i64)
 
-        blockchain.align_fast_transactions(coinbase_transaction, 1).size.should eq(4)
+        aligned = blockchain.align_fast_transactions(coinbase_transaction, 1)
+        aligned.size.should eq(4)
+
+        aligned[0].prev_hash.should eq("0")
+        aligned[1].prev_hash.should eq(aligned[0].to_hash)
+        aligned[2].prev_hash.should eq(aligned[1].to_hash)
+        aligned[3].prev_hash.should eq(aligned[2].to_hash)
       end
     end
   end

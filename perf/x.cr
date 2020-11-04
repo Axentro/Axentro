@@ -54,7 +54,7 @@ class X
   end
 end
 
-iters = 100000
+iters = 1000
 X.transaction("../perf-test.json", "VDBjMjZkNzgwOWE2NWEzMzZmNjA2MmI0Njc2YzZkMWZjNWY3ODQwYjVmYWM3NmUx", iters)
 
 # crystal perf/x.cr && vegeta attack -targets="txns.txt" -format=json -rate=1000 | vegeta encode

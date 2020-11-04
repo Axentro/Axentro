@@ -117,9 +117,16 @@ module ::Axentro::Core::FastChain
       FastTransactionPool.delete(ft.transaction)
     end
 
-    vt.passed.map_with_index do |transaction, index|
-      transaction.add_prev_hash((index == 0 ? "0" : vt.passed[index - 1].to_hash))
+    hashed_transactions = [] of Core::Transaction
+    vt.passed.each_with_index do |transaction, index|
+      hashed_transactions << transaction.add_prev_hash((index == 0 ? "0" : hashed_transactions[index - 1].to_hash))
     end
+
+    hashed_transactions.each_with_index do |t, i|
+      puts "hashed_txn: #{t.prev_hash}, expected: #{(i == 0 ? "0" : hashed_transactions[i - 1].to_hash)}"
+    end
+
+    hashed_transactions
   end
 
   def create_coinbase_fast_transaction(coinbase_amount : Int64) : Transaction

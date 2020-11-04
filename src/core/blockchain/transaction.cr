@@ -98,19 +98,21 @@ module ::Axentro::Core
     def validate_coinbase(transactions : Array(Core::Transaction), blockchain : Blockchain, block_index : Int64) : ValidatedTransactions
       vt = ValidatedTransactions.empty
       transactions.each do |transaction|
-        raise "actions has to be 'head' for coinbase transaction " if transaction.action != "head"
+        raise "actions has to be 'head' for coinbase transaction" if transaction.action != "head"
         raise "message has to be '0' for coinbase transaction" if transaction.message != "0"
         raise "token has to be #{TOKEN_DEFAULT} for coinbase transaction" if transaction.token != TOKEN_DEFAULT
         raise "there should be no Sender for a coinbase transaction" if transaction.senders.size != 0
         raise "prev_hash of coinbase transaction has to be '0'" if transaction.prev_hash != "0"
 
         served_sum = transaction.recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
+        served_sum_expected = transaction.is_slow_transaction? ? blockchain.coinbase_slow_amount(block_index, vt.passed) : blockchain.coinbase_fast_amount(block_index, vt.passed)
 
-        served_sum_expected = transaction.is_slow_transaction? ? blockchain.coinbase_slow_amount(block_index, transactions) : blockchain.coinbase_fast_amount(block_index, transactions)
+        # puts "is slow?: #{transaction.is_slow_transaction?}"
+        # puts "served_sum: #{scale_decimal(served_sum)}, served_sum_expected: #{scale_decimal(served_sum_expected)}"
 
         if served_sum != served_sum_expected
           raise "invalid served amount for coinbase transaction at index: #{block_index} " +
-                "expected #{served_sum_expected} but got #{served_sum} "
+                "expected #{served_sum_expected} but got #{served_sum}"
         end
         vt << transaction.as_validated
       rescue e : Exception
@@ -299,7 +301,7 @@ module ::Axentro::Core
     end
 
     def add_prev_hash(prev_hash : String) : Transaction
-      if is_coinbase?
+      unless is_coinbase?
         self.prev_hash = prev_hash
       end
       self

@@ -33,7 +33,7 @@ module ::Axentro::Core
       @config
     end
 
-    def self.transactions(config : OfficialNodesConfig, coinbase_transactions : Array(Core::Transaction)) : Array(Core::Transaction)
+    def self.transactions(config : OfficialNodesConfig, coinbases : Array(Core::Transaction)) : Array(Core::Transaction)
       slow = config["slownodes"].map do |address|
         create_transaction(address, "create_official_node_slow")
       end
@@ -42,17 +42,22 @@ module ::Axentro::Core
       end
 
       transactions = slow + fast
-      maybe_coinbase = coinbase_transactions.find { |t| t.is_coinbase? }
-      if maybe_coinbase
-        transactions = transactions.map_with_index do |transaction, index|
-          transaction.add_prev_hash((index == 0 ? maybe_coinbase.not_nil!.to_hash : transactions[index - 1].to_hash))
+
+      hashed_transactions = [] of Core::Transaction
+
+      if !coinbases.empty?
+        (coinbases + transactions).each_with_index do |t, i|
+          unless t.is_coinbase?
+            hashed_transactions << t.add_prev_hash((coinbases + hashed_transactions)[i - 1].to_hash)
+          end
         end
       else
-        transactions = ([create_coinbase] + transactions).map_with_index do |transaction, index|
-          transaction.add_prev_hash((index == 0 ? "0" : transactions[index - 1].to_hash))
+        ([create_coinbase] + transactions).each_with_index do |t, i|
+          hashed_transactions << (t.is_coinbase? ? t : t.add_prev_hash(hashed_transactions[i - 1].to_hash))
         end
       end
-      transactions
+
+      hashed_transactions
     end
 
     def self.create_transaction(address : String, node_kind : String) : Core::Transaction
