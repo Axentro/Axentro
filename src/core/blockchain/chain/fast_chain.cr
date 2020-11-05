@@ -35,10 +35,12 @@ module ::Axentro::Core::FastChain
                 debug "There are #{valid_transactions.size} valid fast transactions so mint a new fast block"
 
                 block = mint_fast_block(valid_transactions)
+                if block.valid?(self)
                 debug "record new fast block"
                 node.new_block(block)
                 debug "broadcast new fast block"
                 node.send_block(block)
+                end
               end
             end
           rescue e : Exception
@@ -120,10 +122,6 @@ module ::Axentro::Core::FastChain
     hashed_transactions = [] of Core::Transaction
     vt.passed.each_with_index do |transaction, index|
       hashed_transactions << transaction.add_prev_hash((index == 0 ? "0" : hashed_transactions[index - 1].to_hash))
-    end
-
-    hashed_transactions.each_with_index do |t, i|
-      puts "hashed_txn: #{t.prev_hash}, expected: #{(i == 0 ? "0" : hashed_transactions[i - 1].to_hash)}"
     end
 
     hashed_transactions

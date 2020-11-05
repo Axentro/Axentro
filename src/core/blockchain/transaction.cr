@@ -23,11 +23,11 @@ module ::Axentro::Core
     def validate_embedded(transactions : Array(Core::Transaction), blockchain : Blockchain, skip_prev_hash_check : Bool = false) : ValidatedTransactions
       vt = ValidatedTransactions.empty
 
-      # only applies to non coinbase transactions and returns all non coinbase transactions
-      vt << Validation::Transaction::Rules::Sender.rule_sender_mismatches(transactions)
-
       # (coinbase are validated in validate_coinbase) and are required to pass into dapps (mainly for utxo)
       transactions.select(&.is_coinbase?).map(&.as_validated).each { |validated| vt << validated }
+
+      # only applies to non coinbase transactions and returns all non coinbase transactions
+      vt << Validation::Transaction::Rules::Sender.rule_sender_mismatches(transactions)
 
       unless skip_prev_hash_check
         vt << Validation::Transaction::Rules::PrevHash.rule_prev_hashes(vt.passed)
@@ -95,9 +95,9 @@ module ::Axentro::Core
       vt
     end
 
-    def validate_coinbase(transactions : Array(Core::Transaction), blockchain : Blockchain, block_index : Int64) : ValidatedTransactions
+    def validate_coinbase(coinbase_transactions : Array(Core::Transaction), embedded_transactions : Array(Core::Transaction), blockchain : Blockchain, block_index : Int64) : ValidatedTransactions
       vt = ValidatedTransactions.empty
-      transactions.each do |transaction|
+      coinbase_transactions.each do |transaction|
         raise "actions has to be 'head' for coinbase transaction" if transaction.action != "head"
         raise "message has to be '0' for coinbase transaction" if transaction.message != "0"
         raise "token has to be #{TOKEN_DEFAULT} for coinbase transaction" if transaction.token != TOKEN_DEFAULT
@@ -105,14 +105,11 @@ module ::Axentro::Core
         raise "prev_hash of coinbase transaction has to be '0'" if transaction.prev_hash != "0"
 
         served_sum = transaction.recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
-        served_sum_expected = transaction.is_slow_transaction? ? blockchain.coinbase_slow_amount(block_index, vt.passed) : blockchain.coinbase_fast_amount(block_index, vt.passed)
-
-        # puts "is slow?: #{transaction.is_slow_transaction?}"
-        # puts "served_sum: #{scale_decimal(served_sum)}, served_sum_expected: #{scale_decimal(served_sum_expected)}"
+        served_sum_expected = transaction.is_slow_transaction? ? blockchain.coinbase_slow_amount(block_index, embedded_transactions) : blockchain.coinbase_fast_amount(block_index, embedded_transactions)
 
         if served_sum != served_sum_expected
           raise "invalid served amount for coinbase transaction at index: #{block_index} " +
-                "expected #{served_sum_expected} but got #{served_sum}"
+                "expected #{served_sum_expected} but got #{served_sum} for coinbase: #{transaction.id} txns: #{embedded_transactions.map(&.id)}"
         end
         vt << transaction.as_validated
       rescue e : Exception
