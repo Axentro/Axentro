@@ -110,10 +110,13 @@ module ::Axentro::Core::FastChain
     transactions = [coinbase_transaction] + embedded_fast_transactions
 
     vt = Validation::Transaction.validate_common(transactions)
+    block_index = latest_fast_block.nil? ? 0_i64 : latest_fast_block.not_nil!.index
+    vt << Validation::Transaction.validate_coinbase([coinbase_transaction], embedded_fast_transactions, self, block_index)
     skip_prev_hash_check = true
     vt << Validation::Transaction.validate_embedded(transactions, self, skip_prev_hash_check)
 
     vt.failed.each do |ft|
+      puts "REJECTED #{ft.reason}"
       rejects.record_reject(ft.transaction.id, Rejects.address_from_senders(ft.transaction.senders), ft.reason)
       node.wallet_info_controller.update_wallet_information([ft.transaction])
       FastTransactionPool.delete(ft.transaction)

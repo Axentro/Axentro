@@ -109,7 +109,7 @@ module ::Axentro::Core
 
         if served_sum != served_sum_expected
           raise "invalid served amount for coinbase transaction at index: #{block_index} " +
-                "expected #{served_sum_expected} but got #{served_sum} for coinbase: #{transaction.id} txns: #{embedded_transactions.map(&.id)}"
+                "expected #{served_sum_expected} but got #{served_sum} for coinbase: #{transaction.id} txns: #{embedded_transactions.size}"
         end
         vt << transaction.as_validated
       rescue e : Exception
