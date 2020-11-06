@@ -31,21 +31,10 @@ describe Validation::Transaction do
         transactions = [coinbase_transaction, transaction]
 
         result = Validation::Transaction.validate_embedded(transactions, block_factory.blockchain)
-        result.passed.should eq(transactions.reverse)
+        result.passed.should eq(transactions)
         result.failed.size.should eq(0)
       end
     end
-
-    #   it "should raise not checked signing if not common checked" do
-    #     with_factory do |block_factory, transaction_factory|
-    #       chain = block_factory.add_slow_block([transaction_factory.make_send(2000_i64)]).chain
-    #       transactions = chain.last.transactions
-
-    #       transaction = transaction_factory.make_send(1000_i64)
-    #       expect_raises(Exception, "transactions have not been validated") do
-    #         transaction.valid_as_embedded?(block_factory.blockchain, transactions)
-    #       end
-    #     end
 
     it "should raise amount mismatch for senders and recipients if they are not equal" do
       with_factory do |block_factory, transaction_factory|
@@ -114,35 +103,11 @@ describe Validation::Transaction do
         transactions = [coinbase_transaction]
         block_index = 2_i64
 
-        result = Validation::Transaction.validate_coinbase(transactions, block_factory.blockchain, block_index)
+        result = Validation::Transaction.validate_coinbase(transactions, [] of Transaction, block_factory.blockchain, block_index)
         result.passed.should eq([coinbase_transaction])
         result.failed.size.should eq(0)
       end
     end
-
-    #   it "should raise not checked signing if not common checked" do
-    #     with_factory do |block_factory, transaction_factory|
-    #       chain = block_factory.add_slow_block([transaction_factory.make_send(2000_i64)]).chain
-    #       transactions = chain.last.transactions
-
-    #       transaction = Transaction.new(
-    #         Transaction.create_id,
-    #         "head", # action
-    #         [] of Transaction::Sender,
-    #         [a_recipient(transaction_factory.recipient_wallet, 1199999373_i64)],
-    #         "0",           # message
-    #         TOKEN_DEFAULT, # token
-    #         "0",           # prev_hash
-    #         0_i64,         # timestamp
-    #         1,             # scaled
-    #         TransactionKind::SLOW
-    #       )
-
-    #       expect_raises(Exception, "transactions have not been validated") do
-    #         transaction.valid_as_coinbase?(block_factory.blockchain, 1, transactions)
-    #       end
-    #     end
-    #   end
 
     it "should raise action error if not set to 'head'" do
       with_factory do |block_factory, transaction_factory|
@@ -162,7 +127,7 @@ describe Validation::Transaction do
         transactions = [coinbase_transaction]
         block_index = 2_i64
 
-        result = Validation::Transaction.validate_coinbase(transactions, block_factory.blockchain, block_index)
+        result = Validation::Transaction.validate_coinbase(transactions, [] of Transaction, block_factory.blockchain, block_index)
         result.passed.size.should eq(0)
         result.failed.size.should eq(1)
         result.failed.first.reason.should eq("actions has to be 'head' for coinbase transaction")
@@ -187,7 +152,7 @@ describe Validation::Transaction do
         transactions = [coinbase_transaction]
         block_index = 2_i64
 
-        result = Validation::Transaction.validate_coinbase(transactions, block_factory.blockchain, block_index)
+        result = Validation::Transaction.validate_coinbase(transactions, [] of Transaction, block_factory.blockchain, block_index)
         result.passed.size.should eq(0)
         result.failed.size.should eq(1)
         result.failed.first.reason.should eq("message has to be '0' for coinbase transaction")
@@ -212,7 +177,7 @@ describe Validation::Transaction do
         transactions = [coinbase_transaction]
         block_index = 2_i64
 
-        result = Validation::Transaction.validate_coinbase(transactions, block_factory.blockchain, block_index)
+        result = Validation::Transaction.validate_coinbase(transactions, [] of Transaction, block_factory.blockchain, block_index)
         result.passed.size.should eq(0)
         result.failed.size.should eq(1)
         result.failed.first.reason.should eq("token has to be AXNT for coinbase transaction")
@@ -237,7 +202,7 @@ describe Validation::Transaction do
         transactions = [coinbase_transaction]
         block_index = 2_i64
 
-        result = Validation::Transaction.validate_coinbase(transactions, block_factory.blockchain, block_index)
+        result = Validation::Transaction.validate_coinbase(transactions, [] of Transaction, block_factory.blockchain, block_index)
         result.passed.size.should eq(0)
         result.failed.size.should eq(1)
         result.failed.first.reason.should eq("there should be no Sender for a coinbase transaction")
@@ -262,36 +227,70 @@ describe Validation::Transaction do
         transactions = [coinbase_transaction]
         block_index = 2_i64
 
-        result = Validation::Transaction.validate_coinbase(transactions, block_factory.blockchain, block_index)
+        result = Validation::Transaction.validate_coinbase(transactions, [] of Transaction, block_factory.blockchain, block_index)
         result.passed.size.should eq(0)
         result.failed.size.should eq(1)
         result.failed.first.reason.should eq("prev_hash of coinbase transaction has to be '0'")
       end
     end
 
-    it "should raise invalid served amount if the served amount does not equal the served sum" do
-      with_factory do |block_factory, transaction_factory|
-        coinbase_transaction = Transaction.new(
-          Transaction.create_id,
-          "head", # action
-          [] of Transaction::Sender,
-          [a_recipient(transaction_factory.recipient_wallet, 1000_i64)],
-          "0",           # message
-          TOKEN_DEFAULT, # token
-          "0",           # prev_hash
-          0_i64,         # timestamp
-          1,             # scaled
-          TransactionKind::SLOW
-        )
+    describe "should raise invalid served amount if the served amount does not equal the served sum" do
+      it "when slow coinbase" do
+        with_factory do |block_factory, transaction_factory|
+          coinbase_transaction = Transaction.new(
+            Transaction.create_id,
+            "head", # action
+            [] of Transaction::Sender,
+            [a_recipient(transaction_factory.recipient_wallet, 1000_i64)],
+            "0",           # message
+            TOKEN_DEFAULT, # token
+            "0",           # prev_hash
+            0_i64,         # timestamp
+            1,             # scaled
+            TransactionKind::SLOW
+          )
 
-        transactions = [coinbase_transaction]
-        block_index = 2_i64
+          transactions = [coinbase_transaction]
+          block_index = 2_i64
 
-        result = Validation::Transaction.validate_coinbase(transactions, block_factory.blockchain, block_index)
-        result.passed.size.should eq(0)
-        result.failed.size.should eq(1)
-        result.failed.first.reason.should eq("invalid served amount for coinbase transaction at index: 2 expected 1199999373 but got 1000")
+          # embedded transactions are not used for this validation for slow blocks.
+          result = Validation::Transaction.validate_coinbase(transactions, [] of Transaction, block_factory.blockchain, block_index)
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("invalid served amount for coinbase transaction at index: 2 expected 11.99999373 but got 0.00001")
+        end
       end
+
+      it "when fast coinbase" do
+        with_factory do |block_factory, transaction_factory|
+          coinbase_transaction = Transaction.new(
+            Transaction.create_id,
+            "head", # action
+            [] of Transaction::Sender,
+            [a_recipient(transaction_factory.recipient_wallet, 100000000_i64)],
+            "0",           # message
+            TOKEN_DEFAULT, # token
+            "0",           # prev_hash
+            0_i64,         # timestamp
+            1,             # scaled
+            TransactionKind::FAST
+          )
+
+          transactions = [coinbase_transaction]
+          block_index = 1_i64
+          embedded_transactions = [transaction_factory.make_fast_send(2000)]
+
+
+          result = Validation::Transaction.validate_coinbase(transactions, embedded_transactions, block_factory.blockchain, block_index)
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("invalid served amount for coinbase transaction at index: 1 expected 0.0001 but got 1")
+        end
+      end
+    
+    
+    
+    
     end
   end
 

@@ -140,7 +140,7 @@ describe Blockchain do
         blockchain.add_transaction(transaction_factory.make_fast_send(200000000_i64), false)
         blockchain.add_transaction(transaction_factory.make_fast_send(200000000_i64), false)
         blockchain.add_transaction(transaction_factory.make_fast_send(200000000_i64), false)
-        coinbase_transaction = blockchain.create_coinbase_fast_transaction(4000000000_i64)
+        coinbase_transaction = blockchain.create_coinbase_fast_transaction(30000_i64)
 
         aligned = blockchain.align_fast_transactions(coinbase_transaction, 1)
         aligned.size.should eq(4)

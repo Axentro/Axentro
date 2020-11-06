@@ -35,12 +35,12 @@ module ::Axentro::Core::FastChain
                 debug "There are #{valid_transactions.size} valid fast transactions so mint a new fast block"
 
                 block = mint_fast_block(valid_transactions)
-                if block.valid?(self)
-                debug "record new fast block"
-                node.new_block(block)
-                debug "broadcast new fast block"
-                node.send_block(block)
-                end
+                # if block.valid?(self)
+                  debug "record new fast block"
+                  node.new_block(block)
+                  debug "broadcast new fast block"
+                  node.send_block(block)
+                # end
               end
             end
           rescue e : Exception
@@ -112,11 +112,12 @@ module ::Axentro::Core::FastChain
     vt = Validation::Transaction.validate_common(transactions)
     block_index = latest_fast_block.nil? ? 0_i64 : latest_fast_block.not_nil!.index
     vt << Validation::Transaction.validate_coinbase([coinbase_transaction], embedded_fast_transactions, self, block_index)
+    
+    # don't validate prev hash here as we haven't assigned them yet. We assign lower down after we have all the valid transactions
     skip_prev_hash_check = true
     vt << Validation::Transaction.validate_embedded(transactions, self, skip_prev_hash_check)
 
     vt.failed.each do |ft|
-      puts "REJECTED #{ft.reason}"
       rejects.record_reject(ft.transaction.id, Rejects.address_from_senders(ft.transaction.senders), ft.reason)
       node.wallet_info_controller.update_wallet_information([ft.transaction])
       FastTransactionPool.delete(ft.transaction)

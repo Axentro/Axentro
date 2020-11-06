@@ -678,7 +678,7 @@ module ::Axentro::Core
     end
 
     def total_fees(transactions) : Int64
-      return 0_i64 if transactions.size < 2
+      # return 0_i64 if transactions.size < 2
       transactions.reduce(0_i64) { |fees, transaction| fees + transaction.total_fees }
     end
 
