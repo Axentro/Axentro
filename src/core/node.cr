@@ -59,6 +59,14 @@ module ::Axentro::Core
     )
       welcome
 
+      # Configure HTTP throttle
+      Defense.store = Defense::MemoryStore.new
+      Defense.throttle("throttle requests per second for creating transactions via API", limit: 1000, period: 1) do |request|
+        if request.resource == "/api/v1/transaction" && request.method == "POST"
+          "request"
+        end
+      end
+
       @blockchain = Blockchain.new(@wallet, @database, @developer_fund, @official_nodes, @security_level_percentage, @max_miners, is_standalone?)
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @validation_manager = ValidationManager.new(@blockchain, @bind_host, @bind_port, @use_ssl)
@@ -773,6 +781,7 @@ module ::Axentro::Core
     private def handlers
       [
         peer_handler,
+        Defense::Handler.new,
         @rpc_controller.get_handler,
         @rest_controller.get_handler,
         @pubsub_controller.get_handler,

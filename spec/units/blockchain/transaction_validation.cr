@@ -280,17 +280,12 @@ describe Validation::Transaction do
           block_index = 1_i64
           embedded_transactions = [transaction_factory.make_fast_send(2000)]
 
-
           result = Validation::Transaction.validate_coinbase(transactions, embedded_transactions, block_factory.blockchain, block_index)
           result.passed.size.should eq(0)
           result.failed.size.should eq(1)
           result.failed.first.reason.should eq("invalid served amount for coinbase transaction at index: 1 expected 0.0001 but got 1")
         end
       end
-    
-    
-    
-    
     end
   end
 

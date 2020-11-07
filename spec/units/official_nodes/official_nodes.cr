@@ -59,8 +59,6 @@ describe OfficialNodes do
   end
 
   it "should make official node transactions with a coinbase when developer fund is present" do
-    on = OfficialNodes.new("#{__DIR__}/../../utils/data/official_nodes.yml")
-
     df = DeveloperFund.validate("#{__DIR__}/../../utils/data/developer_fund.yml")
     fund_transactions = DeveloperFund.transactions(df.not_nil!.get_config)
 
