@@ -61,7 +61,7 @@ module ::Axentro::Core
 
       # Configure HTTP throttle
       Defense.store = Defense::MemoryStore.new
-      Defense.throttle("throttle requests per second for creating transactions via API", limit: 1000, period: 1) do |request|
+      Defense.throttle("throttle requests per second for creating transactions via API", limit: 500, period: 1) do |request|
         if request.resource == "/api/v1/transaction" && request.method == "POST"
           "request"
         end
