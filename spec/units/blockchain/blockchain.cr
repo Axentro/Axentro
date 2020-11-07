@@ -347,35 +347,6 @@ describe Blockchain do
     end
   end
 
-  # describe "transactions_for_address" do
-  #   it "should return all transactions for address" do
-  #     with_factory do |block_factory, transaction_factory|
-  #       block_factory.add_slow_blocks(3).add_fast_blocks(4).add_slow_block([transaction_factory.make_send(200000000_i64)])
-  #       blockchain = block_factory.blockchain
-  #       all = blockchain.transactions_for_address(block_factory.node_wallet.address)
-  #       all.size.should eq(7)
-  #     end
-  #   end
-
-  #   it "should return 'send' transactions for address" do
-  #     with_factory do |block_factory, transaction_factory|
-  #       block_factory.add_slow_blocks(3).add_fast_blocks(4).add_slow_block([transaction_factory.make_send(200000000_i64)])
-  #       blockchain = block_factory.blockchain
-  #       all = blockchain.transactions_for_address(block_factory.node_wallet.address, 0, 20, ["send"])
-  #       all.size.should eq(1)
-  #     end
-  #   end
-
-  #   it "should return paginated transactions for address" do
-  #     with_factory do |block_factory, transaction_factory|
-  #       block_factory.add_slow_blocks(5).add_fast_blocks(5).add_slow_block([transaction_factory.make_send(200000000_i64)])
-  #       blockchain = block_factory.blockchain
-  #       blockchain.transactions_for_address(block_factory.node_wallet.address, 0, 3).size.should eq(3)
-  #       blockchain.transactions_for_address(block_factory.node_wallet.address, 2, 1).size.should eq(1)
-  #     end
-  #   end
-  # end
-
   describe "available_actions" do
     it "should return available actions" do
       with_factory do |block_factory, transaction_factory|
@@ -511,7 +482,7 @@ describe Blockchain do
         block_factory.blockchain.align_slow_transactions(coinbase_transaction, 1)
       }
 
-      (result.real < 0.005).should be_true
+      (result.real < 0.010).should be_true
     end
   end
 
@@ -527,7 +498,7 @@ describe Blockchain do
         block_factory.blockchain.clean_slow_transactions
       }
 
-      (result.real < 0.005).should be_true
+      (result.real < 0.010).should be_true
     end
   end
 end
