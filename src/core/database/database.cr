@@ -14,6 +14,48 @@ require "../blockchain/block/*"
 require "../database/*"
 
 module ::Axentro::Core
+  class FastPool
+    @db : DB::Database
+
+    def initialize
+      path = File.expand_path("fast_pool.sqlite3")
+      @db = DB.open("sqlite3://#{path}")
+      @db.exec "create table if not exists transactions (id text primary key,content text not null)"
+      @db.exec "PRAGMA synchronous=OFF"
+      @db.exec "PRAGMA cache_size=10000"
+    end
+
+    # ------- Insert -------
+    def insert_transaction(transaction : Transaction)
+      @db.exec("insert into transactions (id, content) values (?, ?)", transaction.id, transaction.to_json)
+    end
+
+    # ------- Query -------
+    def get_all_transactions : Array(Transaction)
+      transactions = [] of Transaction
+      @db.query(
+        "select content from transactions"
+      ) do |rows|
+        rows.each do
+          json = rows.read(String)
+          transactions << Transaction.from_json(json)
+        end
+        transactions
+      end
+    end
+
+    # ------- Delete -------
+    def delete_all
+      @db.exec("delete from transactions")
+    end
+
+    def delete(transaction : Transaction)
+      @db.exec("delete from transactions where id = ?", transaction.id)
+    end
+
+    include Logger
+  end
+
   class Database
     getter path : String
     MEMORY        = "%3Amemory%3A"

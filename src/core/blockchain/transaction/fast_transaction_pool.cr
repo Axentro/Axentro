@@ -11,10 +11,10 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core
-  abstract class TransactionPool
+  class FastTransactionPool
     LIMIT = 2000
 
-    @@instance : TransactionPool? = nil
+    @@instance : FastTransactionPool? = nil
 
     @pool : Transactions = Transactions.new
     @pool_locked : Transactions = Transactions.new
@@ -23,7 +23,24 @@ module ::Axentro::Core
 
     alias TxPoolWork = NamedTuple(call: Int32, content: String)
 
-    def self.instance : TransactionPool
+    def self.setup
+      @@instance ||= FastTransactionPool.new
+      setup_from_database
+    end
+
+    def initialize
+      @db = FastPool.new
+    end
+
+    def self.setup_from_database
+      instance.setup_from_database
+    end
+
+    def setup_from_database
+      @db.get_all_transactions.each { |t| insert(t) }
+    end
+
+    def self.instance : FastTransactionPool
       @@instance.not_nil!
     end
 
@@ -37,6 +54,7 @@ module ::Axentro::Core
       else
         insert(transaction)
       end
+      @db.insert_transaction(transaction)
     end
 
     def insert(transaction : Transaction)
@@ -54,6 +72,7 @@ module ::Axentro::Core
     def clear_all
       @pool.clear
       @pool_locked.clear
+      @db.delete_all
     end
 
     def self.delete(transaction : Transaction)
@@ -62,6 +81,7 @@ module ::Axentro::Core
 
     def delete(transaction : Transaction)
       @pool.reject! { |t| t.id == transaction.id }
+      @db.delete(transaction)
     end
 
     def self.replace(transactions : Transactions)
@@ -82,6 +102,8 @@ module ::Axentro::Core
       @locked = false
 
       @pool_locked.clear
+
+      @db.delete_all
     end
 
     def self.all
@@ -134,19 +156,5 @@ module ::Axentro::Core
 
     include Logger
     include TransactionModels
-  end
-
-  struct SearchResult
-    getter found : Array(Transaction)
-    getter not_found : Array(Transaction)
-
-    def initialize(@found : Array(Transaction), @not_found : Array(Transaction))
-    end
-  end
-
-  class SlowTransactionPool < TransactionPool
-    def self.setup
-      @@instance ||= SlowTransactionPool.new
-    end
   end
 end
