@@ -74,8 +74,7 @@ module ::Axentro::Interface::Axen
                  end
 
       developer_fund = G.op.__developer_fund
-      fastnode_address = G.op.__fastnode_address
-      official_nodes = G.op.__official_nodes ? G.op.__official_nodes.not_nil! : Core::OfficialNodes.default
+      official_nodes = G.op.__official_nodes
 
       security_level_percentage = G.op.__security_level_percentage
 
@@ -83,9 +82,9 @@ module ::Axentro::Interface::Axen
       max_nodes = G.op.__max_nodes
 
       node = if has_first_connection
-               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, developer_fund, fastnode_address, official_nodes, G.op.__exit_if_unofficial, security_level_percentage, max_miners, max_nodes, use_ssl)
+               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, developer_fund, official_nodes, G.op.__exit_if_unofficial, security_level_percentage, max_miners, max_nodes, use_ssl)
              else
-               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, nil, nil, wallet, database, developer_fund, fastnode_address, official_nodes, G.op.__exit_if_unofficial, security_level_percentage, max_miners, max_nodes, use_ssl)
+               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, nil, nil, wallet, database, developer_fund, official_nodes, G.op.__exit_if_unofficial, security_level_percentage, max_miners, max_nodes, use_ssl)
              end
       node.run!
     end

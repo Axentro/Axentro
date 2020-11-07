@@ -215,7 +215,7 @@ module ::Axentro::Interface::Axe
               add "confirmations"
             end
             header
-            rows [h["transaction"]].map { |t| [h["status"], t["timestamp"], t["token"], Core::Transaction.short_id(t["id"].as_s), t["action"], recipients(t["recipients"].as_a, t["action"].as_s), to(t["senders"].as_a), amount(t["recipients"].as_a), t["message"], t["kind"], h["confirmation"]] }
+            rows [h["transaction"]].map { |t| [h["status"], t["timestamp"], t["token"], Core::Transaction.short_id(t["id"].as_s), t["action"], recipients(t["recipients"].as_a, t["action"].as_s), to(t["senders"].as_a), amount(t["recipients"].as_a), t["message"], t["kind"], h["confirmations"]] }
           end
 
           puts table.render

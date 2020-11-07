@@ -11,7 +11,8 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "./node_id"
-require "./../../official_nodes"
+
+# require "./../../daps/official_node"
 
 module ::Axentro::Core::NodeComponents
   class Chord < HandleSocket
@@ -54,7 +55,7 @@ module ::Axentro::Core::NodeComponents
       @validation_manager : ValidationManager,
       @max_private_nodes : Int32,
       @wallet_address : String,
-      @official_nodes : Core::OfficialNodes,
+      @official_node : DApps::BuildIn::OfficialNode,
       @exit_if_unofficial : Bool
     )
       @node_id = NodeID.new
@@ -337,8 +338,8 @@ module ::Axentro::Core::NodeComponents
       end
     end
 
-    private def official_nodes_for(network : String)
-      node_list = @official_nodes.get_config[network]
+    private def check_for_official_nodes
+      node_list = @official_node.all_impl
 
       if @finger_table.size > 0 && !is_only_this_node
         if (node_list & @finger_table.map { |n| n[:address] }).empty?
@@ -355,15 +356,6 @@ module ::Axentro::Core::NodeComponents
 
     private def is_only_this_node
       @finger_table.size == 1 && @finger_table.map { |n| n[:address] }.first == @wallet_address
-    end
-
-    def check_for_official_nodes
-      if @network_type == "mainnet"
-        official_nodes_for("mainnet")
-      else
-        @network_type == "testnet"
-        official_nodes_for("testnet")
-      end
     end
 
     def search_successor(node, _content : String)
@@ -629,14 +621,14 @@ module ::Axentro::Core::NodeComponents
 
     def official_nodes_list
       {
-        all:    @official_nodes.get_config[@network_type],
+        all:    @official_node.all_impl,
         online: online_official_nodes,
       }
     end
 
     private def online_official_nodes
       list = @finger_table << context
-      list = list.select { |ctx| @official_nodes.get_config[@network_type].includes?(ctx[:address]) }
+      list = list.select { |ctx| @official_node.all_impl.includes?(ctx[:address]) }
       list.map { |ctx| {id: ctx[:id], address: ctx[:address], url: "https://#{ctx[:host]}:#{ctx[:port]}"} }
     end
 

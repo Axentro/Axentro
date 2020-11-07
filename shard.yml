@@ -41,6 +41,8 @@ dependencies:
     github: crystal-lang/json_mapping.cr 
   tallboy:
     github: epoch/tallboy   
+  defense:
+    github: defense-cr/defense
 
 
 development_dependencies:

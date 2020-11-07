@@ -95,23 +95,6 @@ describe Blockchain do
     end
   end
 
-  describe "fast_transaction_maturity_check" do
-    it "should convert to a slow transaction if chain is not mature enough for fast transactions" do
-      with_factory do |block_factory, transaction_factory|
-        transaction1 = transaction_factory.make_fast_send(200000000_i64)
-        blockchain = block_factory.blockchain
-
-        block_factory.add_slow_blocks(2)
-        blockchain.add_transaction(transaction1, false)
-        if slow_transaction = SlowTransactionPool.find(transaction1)
-          slow_transaction.id.should eq(transaction1.id)
-        else
-          fail "no slow transaction found"
-        end
-      end
-    end
-  end
-
   describe "valid_transactions_for_fast_block" do
     it "should the latest index and valid aligned transactions" do
       with_factory do |block_factory, transaction_factory|
@@ -157,9 +140,15 @@ describe Blockchain do
         blockchain.add_transaction(transaction_factory.make_fast_send(200000000_i64), false)
         blockchain.add_transaction(transaction_factory.make_fast_send(200000000_i64), false)
         blockchain.add_transaction(transaction_factory.make_fast_send(200000000_i64), false)
-        coinbase_transaction = blockchain.create_coinbase_fast_transaction(4000000000_i64)
+        coinbase_transaction = blockchain.create_coinbase_fast_transaction(30000_i64)
 
-        blockchain.align_fast_transactions(coinbase_transaction, 1).size.should eq(4)
+        aligned = blockchain.align_fast_transactions(coinbase_transaction, 1)
+        aligned.size.should eq(4)
+
+        aligned[0].prev_hash.should eq("0")
+        aligned[1].prev_hash.should eq(aligned[0].to_hash)
+        aligned[2].prev_hash.should eq(aligned[1].to_hash)
+        aligned[3].prev_hash.should eq(aligned[2].to_hash)
       end
     end
   end

@@ -21,109 +21,35 @@ module ::Axentro::Core::FastChain
     timestamp: Int64,
   )
 
-  private def get_ranking(address)
-    Ranking.rank(address, Ranking.chain(chain))
-  end
-
-  private def i_can_lead?(my_ranking)
-    return false if node.is_private_node?
-    my_ranking > 0 && i_have_fastnode_tokens?
-  end
-
-  private def assume_leadership
-    debug "Assuming leadership role because I'm ranked high enough"
-    node.set_current_leader(CurrentLeader.new(node.get_node_id, node.get_wallet.address))
-    debug "current_leader_in_contest: #{node.get_current_leader}"
-  end
-
-  private def leadership_contest
-    loop do
-      if chain_mature_enough_for_fast_blocks?
-        my_ranking = get_ranking(node.get_wallet.address)
-
-        if node.has_no_connections?
-          if i_can_lead?(my_ranking)
-            debug "setting this node as leader as has no connections and is a high enough rank for this chain"
-            node.set_current_leader(CurrentLeader.new(node.get_node_id, node.get_wallet.address))
-          end
-        else
-          if (Time.utc - node.get_last_heartbeat) > 2.seconds # && i_am_not_the_current_leader
-            debug "Heartbeat not received within 2 second timeout - trying to assume leadership"
-            if i_can_lead?(my_ranking)
-              assume_leadership
-            else
-              debug "I'm not ranked high enough on this chain to become a leader"
-            end
-          end
-        end
-      end
-      sleep Random.new.rand(1.5..2.0)
-    end
-  end
-
-  private def i_am_not_the_current_leader
-    !i_am_the_current_leader
-  end
-
-  private def i_am_the_current_leader
-    return true if ENV.has_key?("AXE_TESTING")
-    CurrentLeader.new(node.get_node_id, node.get_wallet.address) == node.get_current_leader
-  end
-
-  private def broadcast_heartbeat
-    wallet = node.get_wallet
-    address = wallet.address
-    node_id = node.get_node_id
-    public_key = wallet.public_key
-    hash_salt = sha256(node.get_heartbeat_salt + public_key)
-    private_key = Wif.new(wallet.wif).private_key.as_hex
-
-    signature = KeyUtils.sign(private_key, hash_salt)
-    node.broadcast_heartbeat(address, node_id, public_key, hash_salt, signature)
-  end
-
   def process_fast_transactions
     loop do
-      if chain_mature_enough_for_fast_blocks? && i_am_the_current_leader
-        begin
-          broadcast_heartbeat unless node.has_no_connections?
+      spawn do
+        if node.i_am_a_fast_node?
+          begin
+            debug "********** process fast transactions ***********"
+            if pending_fast_transactions.size > 0
+              debug "There are #{pending_fast_transactions.size} pending fast transactions"
+              valid_transactions = valid_transactions_for_fast_block
 
-          debug "********** process fast transactions ***********"
-          if pending_fast_transactions.size > 0
-            debug "There are #{pending_fast_transactions.size} pending fast transactions"
-            valid_transactions = valid_transactions_for_fast_block
+              if valid_transactions[:transactions].size > 1
+                debug "There are #{valid_transactions.size} valid fast transactions so mint a new fast block"
 
-            if valid_transactions[:transactions].size > 1
-              debug "There are #{valid_transactions.size} valid fast transactions so mint a new fast block"
-
-              block = mint_fast_block(valid_transactions)
-              if block.valid?(self)
+                block = mint_fast_block(valid_transactions)
+                # if block.valid?(self)
                 debug "record new fast block"
                 node.new_block(block)
                 debug "broadcast new fast block"
                 node.send_block(block)
+                # end
               end
             end
+          rescue e : Exception
+            error e.message.not_nil!
           end
-        rescue e : Exception
-          error e.message.not_nil!
         end
       end
       sleep 2
     end
-  end
-
-  def i_have_fastnode_tokens? : Bool
-    !node.database.get_address_amount(node.get_wallet.address).find { |tq| tq.token == FastNode::FASTNODE_TOKEN }.nil?
-  end
-
-  def chain_mature_enough_for_fast_blocks?
-    latest = get_latest_index_for_slow
-    if ENV.has_key?("AXE_TESTING")
-      return false if latest < 8_i64
-    end
-    return true if node.has_no_connections? && !node.is_private_node?
-    latest > 1_i64
   end
 
   def latest_fast_block : FastBlock?
@@ -162,42 +88,47 @@ module ::Axentro::Core::FastChain
     wallet = node.get_wallet
     address = wallet.address
     public_key = wallet.public_key
-    hash_salt = sha256(node.get_heartbeat_salt + public_key)
-    private_key = Wif.new(wallet.wif).private_key.as_hex
+    latest_block_hash = _latest_block.to_hash
 
-    signature = KeyUtils.sign(private_key, hash_salt)
+    hash = FastBlock.to_hash(latest_index, transactions, latest_block_hash, address, public_key)
+    private_key = Wif.new(wallet.wif).private_key.as_hex
+    signature = KeyUtils.sign(private_key, hash)
 
     FastBlock.new(
       latest_index,
       transactions,
-      _latest_block.to_hash,
+      latest_block_hash,
       timestamp,
       address,
       public_key,
       signature,
-      hash_salt
+      hash
     )
   end
 
   def align_fast_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
-    aligned_transactions = [coinbase_transaction]
+    transactions = [coinbase_transaction] + embedded_fast_transactions
 
-    debug "entered align_fast_transactions with embedded_fast_transactions size: #{embedded_fast_transactions.size}"
-    embedded_fast_transactions.each do |t|
-      t.prev_hash = aligned_transactions[-1].to_hash
-      t.valid_as_embedded?(self, aligned_transactions)
+    vt = Validation::Transaction.validate_common(transactions)
+    block_index = latest_fast_block.nil? ? 0_i64 : latest_fast_block.not_nil!.index
+    vt << Validation::Transaction.validate_coinbase([coinbase_transaction], embedded_fast_transactions, self, block_index)
 
-      aligned_transactions << t
-    rescue e : Exception
-      debug "align_fast_transactions: REJECTED transaction due to #{e}"
-      rejects.record_reject(t.id, Rejects.address_from_senders(t.senders), e)
-      node.wallet_info_controller.update_wallet_information([t])
+    # don't validate prev hash here as we haven't assigned them yet. We assign lower down after we have all the valid transactions
+    skip_prev_hash_check = true
+    vt << Validation::Transaction.validate_embedded(transactions, self, skip_prev_hash_check)
 
-      FastTransactionPool.delete(t)
+    vt.failed.each do |ft|
+      rejects.record_reject(ft.transaction.id, Rejects.address_from_senders(ft.transaction.senders), ft.reason)
+      node.wallet_info_controller.update_wallet_information([ft.transaction])
+      FastTransactionPool.delete(ft.transaction)
     end
-    debug "exited align_fast_transactions with embedded_fast_transactions size: #{embedded_fast_transactions.size}"
 
-    aligned_transactions
+    hashed_transactions = [] of Core::Transaction
+    vt.passed.each_with_index do |transaction, index|
+      hashed_transactions << transaction.add_prev_hash((index == 0 ? "0" : hashed_transactions[index - 1].to_hash))
+    end
+
+    hashed_transactions
   end
 
   def create_coinbase_fast_transaction(coinbase_amount : Int64) : Transaction
@@ -229,23 +160,18 @@ module ::Axentro::Core::FastChain
   end
 
   def replace_fast_transactions(transactions : Array(Transaction))
-    transactions = transactions.select(&.is_fast_transaction?)
-    replace_transactions = [] of Transaction
+    results = FastTransactionPool.find_all(transactions.select(&.is_fast_transaction?))
+    fast_transactions = results.found + results.not_found
 
-    transactions.each_with_index do |t, i|
-      progress "validating fast transaction #{t.short_id}", i + 1, transactions.size
+    vt = Validation::Transaction.validate_common(fast_transactions)
 
-      t = FastTransactionPool.find(t) || t
-      t.valid_common?
-
-      replace_transactions << t
-    rescue e : Exception
-      rejects.record_reject(t.id, Rejects.address_from_senders(t.senders), e)
-      node.wallet_info_controller.update_wallet_information([t])
+    vt.failed.each do |ft|
+      rejects.record_reject(ft.transaction.id, Rejects.address_from_senders(ft.transaction.senders), ft.reason)
+      node.wallet_info_controller.update_wallet_information([ft.transaction])
     end
 
     FastTransactionPool.lock
-    FastTransactionPool.replace(replace_transactions)
+    FastTransactionPool.replace(vt.passed)
   end
 
   def clean_fast_transactions

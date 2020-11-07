@@ -70,7 +70,9 @@ describe Rejects do
     with_factory do |block_factory, _|
       chain = block_factory.add_slow_blocks(2).chain
       rejects = Rejects.new(block_factory.blockchain)
-      rejects.valid_transaction?(chain.last.transactions.first, chain.last.transactions).should be_true
+      result = rejects.valid_transactions?(chain.last.transactions)
+      result.failed.size.should eq(0)
+      result.passed.size.should eq(1)
     end
   end
   describe "record_reject" do

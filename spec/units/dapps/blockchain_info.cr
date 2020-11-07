@@ -41,7 +41,9 @@ describe BlockchainInfo do
       with_factory do |block_factory, _|
         chain = block_factory.add_slow_blocks(2).chain
         transaction_creator = BlockchainInfo.new(block_factory.blockchain)
-        transaction_creator.valid_transaction?(chain.last.transactions.first, chain.last.transactions).should be_true
+        result = transaction_creator.valid_transactions?(chain.last.transactions)
+        result.failed.size.should eq(0)
+        result.passed.size.should eq(1)
       end
     end
     it "should perform #record" do
@@ -117,7 +119,9 @@ describe BlockchainInfo do
       end
 
       it "should return transactions for the specified address" do
-        with_factory do |block_factory, _|
+        # skip official nodes here to make the test easier as the official nodes are in the same block
+        # and it makes it difficult to make the expected confirmations
+        with_factory(nil, true) do |block_factory, _|
           block_factory.add_slow_blocks(10)
           address = block_factory.chain.last.transactions.last.recipients.last["address"]
           payload = {call: "transactions", address: address}.to_json
@@ -125,8 +129,9 @@ describe BlockchainInfo do
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
             transactions_for_the_address = block_factory.chain.flat_map { |blk| blk.transactions }.select { |txn| txn.recipients.map { |r| r["address"] }.includes?(address) }.reverse
-            modified = transactions_for_the_address.map_with_index { |t, i| {transaction: t, confirmations: i} }.to_json
-            result.should eq(modified)
+            expected = transactions_for_the_address.map_with_index { |t, i| {transaction: t, confirmations: i} }.to_json
+
+            result.should eq(expected)
           end
         end
       end

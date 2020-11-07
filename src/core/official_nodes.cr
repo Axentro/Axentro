@@ -20,18 +20,6 @@ module ::Axentro::Core
       path.nil? ? nil : self.new(path)
     end
 
-    def self.default
-      official_node_list = {
-        "testnet" => [
-          "VDAwZTdkZGNjYjg1NDA1ZjdhYzk1M2ExMDAzNmY5MjUyYjI0MmMwNGJjZWY4NjA3",
-        ],
-        "mainnet" => [
-          "VDAwZTdkZGNjYjg1NDA1ZjdhYzk1M2ExMDAzNmY5MjUyYjI0MmMwNGJjZWY4NjA3",
-        ],
-      }
-      self.new(official_node_list)
-    end
-
     def initialize(@path : String)
       @config = validate(path)
     end
@@ -43,6 +31,63 @@ module ::Axentro::Core
 
     def get_config
       @config
+    end
+
+    def self.transactions(config : OfficialNodesConfig, coinbases : Array(Core::Transaction)) : Array(Core::Transaction)
+      slow = config["slownodes"].map do |address|
+        create_transaction(address, "create_official_node_slow")
+      end
+      fast = config["fastnodes"].map do |address|
+        create_transaction(address, "create_official_node_fast")
+      end
+
+      transactions = slow + fast
+
+      hashed_transactions = [] of Core::Transaction
+
+      if !coinbases.empty?
+        (coinbases + transactions).each_with_index do |t, i|
+          unless t.is_coinbase?
+            hashed_transactions << t.add_prev_hash((coinbases + hashed_transactions)[i - 1].to_hash)
+          end
+        end
+      else
+        ([create_coinbase] + transactions).each_with_index do |t, i|
+          hashed_transactions << (t.is_coinbase? ? t : t.add_prev_hash(hashed_transactions[i - 1].to_hash))
+        end
+      end
+
+      hashed_transactions
+    end
+
+    def self.create_transaction(address : String, node_kind : String) : Core::Transaction
+      TransactionDecimal.new(
+        Transaction.create_id,
+        node_kind,
+        [] of Transaction::SenderDecimal,
+        [{address: address, amount: "0"}],
+        "0",           # message
+        TOKEN_DEFAULT, # token
+        "0",           # prev_hash
+        0,             # timestamp
+        0,             # scaled
+        TransactionKind::SLOW
+      ).to_transaction
+    end
+
+    def self.create_coinbase : Core::Transaction
+      TransactionDecimal.new(
+        Transaction.create_id,
+        "head",
+        [] of Transaction::SenderDecimal,
+        [] of Transaction::RecipientDecimal,
+        "0",           # message
+        TOKEN_DEFAULT, # token
+        "0",           # prev_hash
+        0,             # timestamp
+        0,             # scaled
+        TransactionKind::SLOW
+      ).to_transaction
     end
 
     def set_config(config)

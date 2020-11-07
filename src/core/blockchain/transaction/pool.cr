@@ -119,8 +119,29 @@ module ::Axentro::Core
       found_transaction
     end
 
+    def self.find_all(transactions : Array(Transaction)) : SearchResult
+      found = [] of Transaction
+      not_found = [] of Transaction
+      transactions.each do |transaction|
+        if t = find(transaction)
+          found << t
+        else
+          not_found << transaction
+        end
+      end
+      SearchResult.new(found, not_found)
+    end
+
     include Logger
     include TransactionModels
+  end
+
+  struct SearchResult
+    getter found : Array(Transaction)
+    getter not_found : Array(Transaction)
+
+    def initialize(@found : Array(Transaction), @not_found : Array(Transaction))
+    end
   end
 
   class SlowTransactionPool < TransactionPool

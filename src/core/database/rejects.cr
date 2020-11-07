@@ -63,5 +63,19 @@ module ::Axentro::Core::Data::Rejects
     @db.query_one("select count(*) from rejects", as: Int32)
   end
 
+  def all_rejects : Array(Reject)
+    rejects = [] of Reject
+    @db.query("select * from rejects") do |rows|
+      rows.each do
+        tid = rows.read(String)
+        addr = rows.read(String)
+        reason = rows.read(String)
+        timestamp = rows.read(Int64)
+        rejects << Reject.new(tid, addr, reason, timestamp)
+      end
+    end
+    rejects
+  end
+
   include Axentro::Core::DApps::BuildIn
 end

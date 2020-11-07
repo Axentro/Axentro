@@ -23,8 +23,8 @@ module ::Axentro::Core::DApps::BuildIn
       false
     end
 
-    def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-      true
+    def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
+      ValidatedTransactions.passed(transactions)
     end
 
     def record(chain : Blockchain::Chain)

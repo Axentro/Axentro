@@ -56,6 +56,11 @@ module ::Axentro::Core
       sha256(string)
     end
 
+    def self.to_hash(index : Int64, transactions : Array(Transaction), prev_hash : String, address : String, public_key : String) : String
+      string = {index: index, transactions: transactions, prev_hash: prev_hash, address: address, public_key: public_key}.to_json
+      sha256(string)
+    end
+
     def calculate_merkle_tree_root : String
       return "" if @transactions.size == 0
 
@@ -78,6 +83,7 @@ module ::Axentro::Core
     end
 
     def valid?(blockchain : Blockchain, skip_transactions : Bool = false) : Bool
+      puts "In fast block valid? with index: #{@index}"
       return valid_as_latest?(blockchain, skip_transactions) unless @index == 0
       valid_as_genesis?
     end
@@ -99,24 +105,24 @@ module ::Axentro::Core
       valid_as_genesis?
     end
 
-    private def process_transaction(blockchain, transaction, idx)
-      t = FastTransactionPool.find(transaction) || transaction
-      t.valid_common?
+    private def validate_transactions(transactions : Array(Transaction), blockchain : Blockchain) : ValidatedTransactions
+      result = FastTransactionPool.find_all(transactions)
+      fast_transactions = result.found + result.not_found
 
-      if idx == 0
-        t.valid_as_coinbase?(blockchain, @index, transactions[1..-1])
-      else
-        t.valid_as_embedded?(blockchain, transactions[0..idx - 1])
-      end
+      vt = Validation::Transaction.validate_common(fast_transactions)
+
+      coinbase_transactions = vt.passed.select(&.is_coinbase?)
+      body_transactions = vt.passed.reject(&.is_coinbase?)
+
+      vt << Validation::Transaction.validate_coinbase(coinbase_transactions, body_transactions, blockchain, @index)
+      vt << Validation::Transaction.validate_embedded(coinbase_transactions + body_transactions, blockchain)
+      vt
     end
 
+    # ameba:disable Metrics/CyclomaticComplexity
     def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool, doing_replace : Bool) : Bool
       valid_signature = KeyUtils.verify_signature(@hash, @signature, @public_key)
-
       raise "Invalid Block Signature: the current block index: #{@index} has an invalid signature" unless valid_signature
-
-      valid_leader = Ranking.rank(@address, Ranking.chain(blockchain.chain)) > 0
-      raise "Invalid leader: the block was signed by a leader who is not ranked" unless valid_leader
 
       debug "checking validity of fast block while doing replace" if doing_replace
 
@@ -130,9 +136,8 @@ module ::Axentro::Core
       end
 
       unless skip_transactions
-        transactions.each_with_index do |t, idx|
-          process_transaction(blockchain, t, idx)
-        end
+        vt = validate_transactions(transactions, blockchain)
+        raise vt.failed.first.reason if vt.failed.size != 0
       end
 
       if latest_fast_index > 1

@@ -14,7 +14,7 @@ module ::Axentro::Core::Keys
   include Axentro::Core::Hashes
 
   class KeyUtils
-    def self.verify_signature(message, signature_hex, hex_public_key)
+    def self.verify_signature(message, signature_hex, hex_public_key) : Bool
       public_key = Crypto::Ed25519PublicSigningKey.new(hex_public_key)
       signature = Crypto::Ed25519Signature.new(signature_hex)
       signature.check(message, public: public_key)

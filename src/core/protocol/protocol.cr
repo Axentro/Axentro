@@ -265,18 +265,6 @@ module ::Axentro::Core::Protocol
     property from : Core::NodeComponents::Chord::NodeContext
   end
 
-  M_TYPE_NODE_BROADCAST_HEARTBEAT = 0x0109
-
-  struct MContentNodeBroadcastHeartbeat
-    include JSON::Serializable
-    property address : String
-    property node_id : String
-    property public_key : String
-    property hash_salt : String
-    property signature : String
-    property from : Core::NodeComponents::Chord::NodeContext
-  end
-
   M_TYPE_NODE_BROADCAST_MINER_NONCE = 0x0110
 
   struct MContentNodeBroadcastMinerNonce

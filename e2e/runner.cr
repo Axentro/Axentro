@@ -14,6 +14,7 @@ require "random"
 require "file_utils"
 require "./utils"
 require "./client"
+require "yaml"
 
 module ::E2E
   ALL_PUBLIC  = 0
@@ -55,6 +56,19 @@ module ::E2E
         developer_fund_string += "  - address: #{addr}\n    amount: \"10000\"\n"
       end
       File.write(developer_fund_file, developer_fund_string, "w")
+      create_official_nodes(wallet_addresses)
+    end
+
+    def create_official_nodes(wallet_addresses : Array(String))
+      fastnodes = [wallet_addresses.first]
+      slownodes = wallet_addresses
+
+      official_nodes_string = {
+        "fastnodes" => fastnodes,
+        "slownodes" => slownodes,
+      }.to_yaml
+
+      File.open(official_nodes_file, "w") { |f| f.puts official_nodes_string }
     end
 
     def launch_node(node_port, is_private, connecting_port, idx, db)

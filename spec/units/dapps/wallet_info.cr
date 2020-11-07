@@ -41,7 +41,9 @@ describe WalletInfo do
       with_factory do |block_factory, _|
         chain = block_factory.add_slow_blocks(2).chain
         transaction_creator = WalletInfo.new(block_factory.blockchain)
-        transaction_creator.valid_transaction?(chain.last.transactions.first, chain.last.transactions).should be_true
+        result = transaction_creator.valid_transactions?(chain.last.transactions)
+        result.failed.size.should eq(0)
+        result.passed.size.should eq(1)
       end
     end
     it "should perform #record" do

@@ -1,5 +1,5 @@
-testnet:
+fastnodes:
  - invalid_address
-mainnet:
- - VDBiNGU3OGRjYzUzYTFjMjAwNmZiMzNmMTA0NTVhZmViZjY1MWI2ODQ0NWJjMDIy
+slownodes:
+ - invalid_address 
 

@@ -17,7 +17,7 @@ module ::Axentro::Core::DApps
     abstract def setup
     abstract def transaction_actions : Array(String)
     abstract def transaction_related?(action : String) : Bool
-    abstract def valid_transaction?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
+    abstract def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
     abstract def record(chain : Blockchain::Chain)
     abstract def clear
     abstract def define_rpc?(
@@ -36,18 +36,22 @@ module ::Axentro::Core::DApps
     def initialize(@blockchain : Blockchain)
     end
 
-    def valid?(transaction : Transaction, prev_transactions : Array(Transaction)) : Bool
-      if transaction.total_fees < self.class.fee(transaction.action)
-        raise "not enough fee, should be #{scale_decimal(transaction.total_fees)} " +
-              ">= #{scale_decimal(self.class.fee(transaction.action))}"
+    def valid?(transactions : Array(Transaction)) : ValidatedTransactions
+      vt = ValidatedTransactions.empty
+      # coinbase transactions should not be checked for fees
+      transactions.each do |transaction|
+        vt << rule_not_enough_fee(transaction) unless transaction.is_coinbase?
       end
+      vt << valid_transactions?(transactions)
+    end
 
-      valid_transaction?(transaction, prev_transactions)
+    private def rule_not_enough_fee(transaction : Transaction) : ValidatedTransactions
+      transaction.total_fees < self.class.fee(transaction.action) ? FailedTransaction.new(transaction, "not enough fee, should be #{scale_decimal(transaction.total_fees)} >= #{scale_decimal(self.class.fee(transaction.action))}", "not_enough_fee").as_validated : transaction.as_validated
     end
 
     #
     # Default fee is 0.0001 AXNT
-    # All thrid party dApps cannot override here.
+    # Third party dApps cannot override here.
     # Otherwise the transactions will be rejected from other nodes.
     #
     def self.fee(action : String) : Int64

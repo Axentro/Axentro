@@ -37,11 +37,13 @@ describe TransactionCreator do
         transaction_creator.transaction_related?("action").should be_false
       end
     end
-    it "should perform #valid_transaction?" do
+    it "should perform #valid_transactions?" do
       with_factory do |block_factory, _|
         chain = block_factory.add_slow_blocks(2).chain
         transaction_creator = TransactionCreator.new(block_factory.blockchain)
-        transaction_creator.valid_transaction?(chain.last.transactions.first, chain.last.transactions).should be_true
+        result = transaction_creator.valid_transactions?(chain.last.transactions)
+        result.failed.size.should eq(0)
+        result.passed.size.should eq(1)
       end
     end
     it "should perform #record" do

@@ -47,7 +47,7 @@ module ::Axentro::Core
     @max_miners : Int32
     @is_standalone : Bool
 
-    def initialize(@wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, @fastnode_address : String?, security_level_percentage : Int64?, @max_miners : Int32, @is_standalone : Bool)
+    def initialize(@wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, @official_nodes : OfficialNodes?, security_level_percentage : Int64?, @max_miners : Int32, @is_standalone : Bool)
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup
@@ -71,7 +71,6 @@ module ::Axentro::Core
 
       unless node.is_private_node?
         spawn process_fast_transactions
-        spawn leadership_contest
       end
     end
 
@@ -434,24 +433,31 @@ module ::Axentro::Core
     end
 
     private def _add_transaction(transaction : Transaction)
-      if transaction.valid_common?
-        if transaction.kind == TransactionKind::FAST
-          if chain_mature_enough_for_fast_blocks? && i_am_the_current_leader
-            debug "adding fast transaction to pool: #{transaction.id}"
-            FastTransactionPool.add(transaction)
+      vt = Validation::Transaction.validate_common([transaction])
+
+      # TODO - could reject in bulk also
+      vt.failed.each do |ft|
+        rejects.record_reject(ft.transaction.id, Rejects.address_from_senders(ft.transaction.senders), ft.reason)
+        node.wallet_info_controller.update_wallet_information([ft.transaction])
+      end
+
+      vt.passed.each do |_transaction|
+        if _transaction.kind == TransactionKind::FAST
+          if node.fastnode_is_online?
+            if node.i_am_a_fast_node?
+              debug "adding fast transaction to pool (I am a fast node): #{_transaction.id}"
+              FastTransactionPool.add(_transaction)
+            end
           else
-            debug "chain is not mature enough for FAST transactions so adding to slow transaction pool: #{transaction.id}"
-            transaction.kind = TransactionKind::SLOW
-            SlowTransactionPool.add(transaction)
+            debug "chain is not mature enough for FAST transactions so adding to slow transaction pool: #{_transaction.id}"
+            _transaction.kind = TransactionKind::SLOW
+            SlowTransactionPool.add(_transaction)
           end
         else
-          SlowTransactionPool.add(transaction)
+          SlowTransactionPool.add(_transaction)
         end
-        node.wallet_info_controller.update_wallet_information([transaction])
+        node.wallet_info_controller.update_wallet_information([_transaction])
       end
-    rescue e : Exception
-      rejects.record_reject(transaction.id, Rejects.address_from_senders(transaction.senders), e)
-      node.wallet_info_controller.update_wallet_information([transaction])
     end
 
     def add_miner_nonce(miner_nonce : MinerNonce, with_spawn : Bool = true)
@@ -513,9 +519,9 @@ module ::Axentro::Core
     end
 
     private def get_genesis_block_transactions
-      developer_fund_transactions = @developer_fund ? DeveloperFund.transactions(@developer_fund.not_nil!.get_config) : [] of Transaction
-      fastnode_transactions = @fastnode_address ? FastNode.transactions(@fastnode_address.not_nil!) : [] of Transaction
-      developer_fund_transactions + fastnode_transactions
+      dev_fund = @developer_fund ? DeveloperFund.transactions(@developer_fund.not_nil!.get_config) : [] of Transaction
+      official_nodes = @official_nodes ? OfficialNodes.transactions(@official_nodes.not_nil!.get_config, dev_fund) : [] of Transaction
+      dev_fund + official_nodes
     end
 
     def genesis_block : SlowBlock
@@ -538,23 +544,8 @@ module ::Axentro::Core
       )
     end
 
-    def transactions_for_address(address : String, page : Int32 = 0, page_size : Int32 = 20, actions : Array(String) = [] of String) : Array(Transaction)
-      # TODO - we don't want to load the entire db here - instead use a combination of in memory chain + database query
-      # TODO: Change this database request to something more sophisticated that filters out blocks that don't have txns with the address
-      chain = @database.get_blocks(0_i64)
-      chain
-        .reverse
-        .map { |block| block.transactions }
-        .flatten
-        .select { |transaction| actions.empty? || actions.includes?(transaction.action) }
-        .select { |transaction|
-          transaction.senders.any? { |sender| sender[:address] == address } ||
-            transaction.recipients.any? { |recipient| recipient[:address] == address }
-        }.skip(page*page_size).first(page_size)
-    end
-
     def available_actions : Array(String)
-      @dapps.map { |dapp| dapp.transaction_actions }.flatten
+      OfficialNode.apply_exclusions(@dapps).map { |dapp| dapp.transaction_actions }.flatten
     end
 
     def pending_miner_nonces : MinerNonces
@@ -630,23 +621,22 @@ module ::Axentro::Core
     end
 
     def align_slow_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
-      aligned_transactions = [coinbase_transaction]
+      transactions = [coinbase_transaction] + embedded_slow_transactions
 
-      debug "entered align_slow_transactions with embedded_slow_transactions size: #{embedded_slow_transactions.size}"
-      embedded_slow_transactions.each do |t|
-        t.prev_hash = aligned_transactions[-1].to_hash
-        t.valid_as_embedded?(self, aligned_transactions)
+      vt = Validation::Transaction.validate_common(transactions)
 
-        aligned_transactions << t
-      rescue e : Exception
-        rejects.record_reject(t.id, Rejects.address_from_senders(t.senders), e)
-        node.wallet_info_controller.update_wallet_information([t])
+      skip_prev_hash_check = true
+      vt << Validation::Transaction.validate_embedded(transactions, self, skip_prev_hash_check)
 
-        SlowTransactionPool.delete(t)
+      vt.failed.each do |ft|
+        rejects.record_reject(ft.transaction.id, Rejects.address_from_senders(ft.transaction.senders), ft.reason)
+        node.wallet_info_controller.update_wallet_information([ft.transaction])
+        SlowTransactionPool.delete(ft.transaction)
       end
-      debug "exited align_slow_transactions with embedded_slow_transactions size: #{embedded_slow_transactions.size}"
 
-      aligned_transactions
+      vt.passed.map_with_index do |transaction, index|
+        transaction.add_prev_hash((index == 0 ? "0" : vt.passed[index - 1].to_hash))
+      end
     end
 
     def create_coinbase_slow_transaction(coinbase_amount : Int64, miners : NodeComponents::MinersManager::Miners) : Transaction
@@ -688,28 +678,23 @@ module ::Axentro::Core
     end
 
     def total_fees(transactions) : Int64
-      return 0_i64 if transactions.size < 2
+      # return 0_i64 if transactions.size < 2
       transactions.reduce(0_i64) { |fees, transaction| fees + transaction.total_fees }
     end
 
     def replace_slow_transactions(transactions : Array(Transaction))
-      transactions = transactions.select(&.is_slow_transaction?)
-      replace_transactions = [] of Transaction
+      results = SlowTransactionPool.find_all(transactions.select(&.is_slow_transaction?))
+      slow_transactions = results.found + results.not_found
 
-      transactions.each_with_index do |t, i|
-        progress "validating slow transaction #{t.short_id}", i + 1, transactions.size
+      vt = Validation::Transaction.validate_common(slow_transactions)
 
-        t = SlowTransactionPool.find(t) || t
-        t.valid_common?
-
-        replace_transactions << t
-      rescue e : Exception
-        rejects.record_reject(t.id, Rejects.address_from_senders(t.senders), e)
-        node.wallet_info_controller.update_wallet_information([t])
+      vt.failed.each do |ft|
+        rejects.record_reject(ft.transaction.id, Rejects.address_from_senders(ft.transaction.senders), ft.reason)
+        node.wallet_info_controller.update_wallet_information([ft.transaction])
       end
 
       SlowTransactionPool.lock
-      SlowTransactionPool.replace(replace_transactions)
+      SlowTransactionPool.replace(vt.passed)
     end
 
     def replace_miner_nonces(miner_nonces : Array(MinerNonce))

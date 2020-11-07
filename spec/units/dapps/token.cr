@@ -46,12 +46,17 @@ describe Token do
   end
 
   describe "#valid_transaction?" do
-    it "should return true when valid transaction" do
+    it "should pass when valid transaction" do
       with_factory do |block_factory, transaction_factory|
         transaction = transaction_factory.make_create_token("KINGS", 10_i64)
         chain = block_factory.add_slow_blocks(10).chain
         token = Token.new(block_factory.blockchain)
-        token.valid_transaction?(transaction, chain.last.transactions).should be_true
+        transactions = chain.last.transactions + [transaction]
+
+        result = token.valid_transactions?(transactions)
+        result.passed.size.should eq(1)
+        result.failed.size.should eq(0)
+        result.passed.should eq([transaction])
       end
     end
     it "should raise an error when no senders" do
@@ -61,9 +66,12 @@ describe Token do
         transaction = transaction_factory.make_create_token("KINGS", senders, recipients, transaction_factory.sender_wallet)
         chain = block_factory.add_slow_blocks(10).chain
         token = Token.new(block_factory.blockchain)
-        expect_raises(Exception, "number of specified recipients must be 1 for 'create_token'") do
-          token.valid_transaction?(transaction, chain.last.transactions)
-        end
+        transactions = chain.last.transactions + [transaction]
+
+        result = token.valid_transactions?(transactions)
+        result.failed.size.should eq(1)
+        result.passed.size.should eq(0)
+        result.failed.first.reason.should eq("number of specified recipients must be 1 for 'create_token'")
       end
     end
 
@@ -74,9 +82,12 @@ describe Token do
         transaction = transaction_factory.make_create_token("KINGS", senders, recipients, transaction_factory.sender_wallet)
         chain = block_factory.add_slow_blocks(10).chain
         token = Token.new(block_factory.blockchain)
-        expect_raises(Exception, "address mismatch for 'create_token'. sender: #{transaction_factory.sender_wallet.address}, recipient: #{transaction_factory.recipient_wallet.address}") do
-          token.valid_transaction?(transaction, chain.last.transactions)
-        end
+        transactions = chain.last.transactions + [transaction]
+
+        result = token.valid_transactions?(transactions)
+        result.failed.size.should eq(1)
+        result.passed.size.should eq(0)
+        result.failed.first.reason.should eq("address mismatch for 'create_token'. sender: #{transaction_factory.sender_wallet.address}, recipient: #{transaction_factory.recipient_wallet.address}")
       end
     end
 
@@ -87,9 +98,12 @@ describe Token do
         transaction = transaction_factory.make_create_token("KINGS", senders, recipients, transaction_factory.sender_wallet)
         chain = block_factory.add_slow_blocks(10).chain
         token = Token.new(block_factory.blockchain)
-        expect_raises(Exception, "amount mismatch for 'create_token'. sender: 10, recipient: 20") do
-          token.valid_transaction?(transaction, chain.last.transactions)
-        end
+        transactions = chain.last.transactions + [transaction]
+
+        result = token.valid_transactions?(transactions)
+        result.failed.size.should eq(1)
+        result.passed.size.should eq(0)
+        result.failed.first.reason.should eq("amount mismatch for 'create_token'. sender: 10, recipient: 20")
       end
     end
 
@@ -105,9 +119,12 @@ describe Token do
         1. token name can only contain uppercase letters or numbers
         2. token name length must be between 1 and 20 characters
         RULE
-        expect_raises(Exception, message) do
-          token.valid_transaction?(transaction, chain.last.transactions)
-        end
+        transactions = chain.last.transactions + [transaction]
+
+        result = token.valid_transactions?(transactions)
+        result.failed.size.should eq(1)
+        result.passed.size.should eq(0)
+        result.failed.first.reason.should eq(message)
       end
     end
 
@@ -116,9 +133,12 @@ describe Token do
         transaction1 = transaction_factory.make_create_token("KINGS", 10_i64)
         transaction2 = transaction_factory.make_create_token("KINGS", 10_i64)
         token = Token.new(block_factory.add_slow_blocks(10).blockchain)
-        expect_raises(Exception, "the token KINGS is already created") do
-          token.valid_transaction?(transaction2, [transaction1])
-        end
+        transactions = [transaction1, transaction2]
+
+        result = token.valid_transactions?(transactions)
+        result.failed.size.should eq(1)
+        result.passed.size.should eq(1)
+        result.failed.first.reason.should eq("the token KINGS is already created")
       end
     end
 
@@ -129,10 +149,12 @@ describe Token do
         chain = block_factory.add_slow_block([transaction1]).add_slow_blocks(10).chain
         token = Token.new(block_factory.blockchain)
         token.record(chain)
+        transactions = [transaction2]
 
-        expect_raises(Exception, "the token KINGS is already created") do
-          token.valid_transaction?(transaction2, [] of Transaction)
-        end
+        result = token.valid_transactions?(transactions)
+        result.failed.size.should eq(1)
+        result.passed.size.should eq(0)
+        result.failed.first.reason.should eq("the token KINGS is already created")
       end
     end
   end
