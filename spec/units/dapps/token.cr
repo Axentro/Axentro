@@ -27,7 +27,7 @@ describe Token do
   it "should perform #transaction_actions" do
     with_factory do |block_factory, _|
       token = Token.new(block_factory.add_slow_block.blockchain)
-      token.transaction_actions.should eq(["create_token"])
+      token.transaction_actions.should eq(["create_token","update_token"])
     end
   end
   describe "#transaction_related?" do
@@ -156,6 +156,119 @@ describe Token do
         result.passed.size.should eq(0)
         result.failed.first.reason.should eq("the token KINGS is already created")
       end
+    end
+
+    it "create token quanity should fail if quantity is not a positive number greater than 0" do
+      with_factory do |block_factory, transaction_factory|
+        transaction1 = transaction_factory.make_create_token("KINGS", 0_i64)
+        transaction2 = transaction_factory.make_create_token("KINGS2", -1_i64)
+        token = Token.new(block_factory.add_slow_blocks(10).blockchain)
+        transactions = [transaction1, transaction2]
+
+        result = token.valid_transactions?(transactions)
+        result.failed.size.should eq(2)
+        result.passed.size.should eq(0)
+        result.failed.map(&.reason).should eq(["invalid quantity: 0, must be a positive number greater than 0", "invalid quantity: -1, must be a positive number greater than 0"])
+      end
+    end
+
+    describe "After a token is created only the token creator may create more quantity of this token" do
+      it "update token quantity should pass when done by the token creator when create is same block" do
+        with_factory do |block_factory, transaction_factory|
+          transaction1 = transaction_factory.make_create_token("KINGS", 10_i64)
+          transaction2 = transaction_factory.make_update_token("KINGS", 20_i64)
+          token = Token.new(block_factory.add_slow_blocks(10).blockchain)
+          transactions = [transaction1, transaction2]
+
+          result = token.valid_transactions?(transactions)
+          result.failed.size.should eq(0)
+          result.passed.size.should eq(2)
+          result.passed.should eq(transactions)
+        end
+      end
+
+      it "update token quantity should pass when done by the token creator when create is already in the db" do
+        with_factory do |block_factory, transaction_factory|
+          transaction1 = transaction_factory.make_create_token("KINGS", 10_i64)
+          transaction2 = transaction_factory.make_update_token("KINGS", 20_i64)
+          token = Token.new(block_factory.add_slow_blocks(10).add_slow_block([transaction1]).blockchain)
+          transactions = [transaction2]
+
+          result = token.valid_transactions?(transactions)
+          result.failed.size.should eq(0)
+          result.passed.size.should eq(1)
+          result.passed.should eq(transactions)
+        end
+      end
+
+      it "update token quantity should fail if quantity is not a positive number greater than 0" do
+        with_factory do |block_factory, transaction_factory|
+          transaction1 = transaction_factory.make_create_token("KINGS", 10_i64)
+
+          transaction2 = transaction_factory.make_update_token("KINGS", 0_i64)
+          transaction3 = transaction_factory.make_update_token("KINGS", -1_i64)
+          token = Token.new(block_factory.add_slow_blocks(10).blockchain)
+          transactions = [transaction1, transaction2, transaction3]
+
+          result = token.valid_transactions?(transactions)
+          result.failed.size.should eq(2)
+          result.passed.size.should eq(1)
+          result.passed.first.should eq(transaction1)
+          result.failed.map(&.reason).should eq(["invalid quantity: 0, must be a positive number greater than 0", "invalid quantity: -1, must be a positive number greater than 0"])
+        end
+      end
+
+      it "update token quantity should fail when done by not the creator when create is in the same block" do
+        with_factory do |block_factory, transaction_factory|
+          transaction1 = transaction_factory.make_create_token("KINGS", 10_i64)
+
+          # try update using a different wallet than the one that created the token
+          transaction2 = transaction_factory.make_update_token("KINGS", 20_i64, transaction_factory.recipient_wallet)
+          token = Token.new(block_factory.add_slow_blocks(10).blockchain)
+          transactions = [transaction1, transaction2]
+
+          result = token.valid_transactions?(transactions)
+          result.failed.size.should eq(1)
+          result.passed.size.should eq(1)
+          result.passed.first.should eq(transaction1)
+          result.failed.map(&.reason).should eq(["only the token creator can update the existing token: KINGS"])
+        end
+      end
+
+      it "update token quantity should fail when done by not the creator when create is already in the db" do
+        with_factory do |block_factory, transaction_factory|
+          transaction1 = transaction_factory.make_create_token("KINGS", 10_i64)
+
+          # try update using a different wallet than the one that created the token
+          transaction2 = transaction_factory.make_update_token("KINGS", 20_i64, transaction_factory.recipient_wallet)
+          token = Token.new(block_factory.add_slow_blocks(10).add_slow_block([transaction1]).blockchain)
+          transactions = [transaction2]
+
+          result = token.valid_transactions?(transactions)
+          result.failed.size.should eq(1)
+          result.passed.size.should eq(0)
+          result.failed.map(&.reason).should eq(["only the token creator can update the existing token: KINGS"])
+        end
+      end
+
+      it "update token quantity should fail if no token exists" do
+        with_factory do |block_factory, transaction_factory|
+          transaction = transaction_factory.make_update_token("KINGS", 20_i64)
+          token = Token.new(block_factory.add_slow_blocks(10).blockchain)
+          transactions = [transaction]
+
+          result = token.valid_transactions?(transactions)
+          result.failed.size.should eq(1)
+          result.passed.size.should eq(0)
+          result.failed.map(&.reason).should eq(["the token KINGS does not exist, you must create it before attempting to update it"])
+        end
+      end
+    end
+
+    describe "The token creator may choose to lock the token meaning they cannot create any more of that token" do
+    end
+
+    describe "At any time any user holding the token can choose to burn some or all of it that they hold" do
     end
   end
 

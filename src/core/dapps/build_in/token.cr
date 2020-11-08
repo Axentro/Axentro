@@ -18,11 +18,11 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def transaction_actions : Array(String)
-      ["create_token"]
+      ["create_token", "update_token"]
     end
 
     def transaction_related?(action : String) : Bool
-      action == "create_token"
+      transaction_actions.includes?(action)
     end
 
     def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
@@ -30,9 +30,14 @@ module ::Axentro::Core::DApps::BuildIn
       processed_transactions = transactions.select(&.is_coinbase?)
 
       transactions.reject(&.is_coinbase?).each do |transaction|
+      
+        token = transaction.token
+        action = transaction.action
+
+        # common rules for token
         raise "senders can only be 1 for token action" if transaction.senders.size != 1
-        raise "number of specified senders must be 1 for 'create_token'" if transaction.senders.size != 1
-        raise "number of specified recipients must be 1 for 'create_token'" if transaction.recipients.size != 1
+        raise "number of specified senders must be 1 for '#{action}'" if transaction.senders.size != 1
+        raise "number of specified recipients must be 1 for '#{action}'" if transaction.recipients.size != 1
 
         sender = transaction.senders[0]
         sender_address = sender[:address]
@@ -42,20 +47,45 @@ module ::Axentro::Core::DApps::BuildIn
         recipient_address = recipient[:address]
         recipient_amount = recipient[:amount]
 
-        raise "address mismatch for 'create_token'. " +
+        raise "address mismatch for '#{action}'. " +
               "sender: #{sender_address}, recipient: #{recipient_address}" if sender_address != recipient_address
 
-        raise "amount mismatch for 'create_token'. " +
+        raise "amount mismatch for '#{action}'. " +
               "sender: #{sender_amount}, recipient: #{recipient_amount}" if sender_amount != recipient_amount
-
-        token = transaction.token
 
         raise "invalid token name: #{token}" unless valid_token_name?(token)
 
-        raise "the token #{token} is already created" if database.token_exists?(token)
+        raise "invalid quantity: #{recipient_amount}, must be a positive number greater than 0" unless recipient_amount > 0_i64
 
-        processed_transactions.each do |processed_transaction|
-          raise "the token #{token} is already created" if processed_transaction.token == token
+        # rules for create token
+        token_exists_in_db = database.token_exists?(token)
+
+        if action == "create_token"
+          raise "the token #{token} is already created" if token_exists_in_db
+
+          processed_transactions.each do |processed_transaction|
+            raise "the token #{token} is already created" if processed_transaction.token == token
+          end
+        end
+
+        # rules for update token
+        if action == "update_token"
+          # find if the token was created within the current set of transactions       
+          token_exists_in_transactions = processed_transactions.find { |processed_transaction|
+            processed_transaction.token == token && processed_transaction.action == "create_token"
+          }
+
+          # token must already exist either in the db or in current transactions
+          raise "the token #{token} does not exist, you must create it before attempting to update it" unless (token_exists_in_db || !token_exists_in_transactions.nil?)
+
+          unless token_exists_in_transactions.nil?
+            token_creator = token_exists_in_transactions.not_nil!.recipients[0][:address]
+            raise "only the token creator can update the existing token: #{token}" unless token_creator == recipient_address
+          end
+
+          if token_exists_in_db
+            raise "only the token creator can update the existing token: #{token}" unless database.token_creator(token) == recipient_address
+          end
         end
         vt << transaction.as_validated
         processed_transactions << transaction
@@ -109,7 +139,14 @@ RULE
     end
 
     def self.fee(action : String) : Int64
-      scale_i64("10")
+      case action
+      when "create_token"
+        return scale_i64("10")
+      when "update_token"
+        return scale_i64("0.0001")
+      end
+
+      raise "got unknown action #{action} while getting a fee for token"
     end
 
     def on_message(action : String, from_address : String, content : String, from = nil)

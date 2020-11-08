@@ -439,6 +439,57 @@ module ::Units::Utils::ChainGenerator
       unsigned_transaction.as_signed([sender_wallet])
     end
 
+    def make_update_token(token : String, sender_amount : Int64, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        "update_token", # action
+        [a_sender(sender_wallet, sender_amount, 1000000000_i64)],
+        [a_recipient(sender_wallet, sender_amount)],
+        "0",   # message
+        token, # token
+        "0",   # prev_hash
+        0_i64, # timestamp
+        1,     # scaled
+        TransactionKind::SLOW
+      )
+      unsigned_transaction.as_signed([sender_wallet])
+    end
+
+    def make_lock_token(token : String, sender_amount : Int64, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        "lock_token", # action
+        [a_sender(sender_wallet, sender_amount, 1000000000_i64)],
+        [a_recipient(sender_wallet, sender_amount)],
+        "0",   # message
+        token, # token
+        "0",   # prev_hash
+        0_i64, # timestamp
+        1,     # scaled
+        TransactionKind::SLOW
+      )
+      unsigned_transaction.as_signed([sender_wallet])
+    end
+
+    def make_burn_token(token : String, sender_amount : Int64, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        "burn_token", # action
+        [a_sender(sender_wallet, sender_amount, 1000000000_i64)],
+        [a_recipient(sender_wallet, sender_amount)],
+        "0",   # message
+        token, # token
+        "0",   # prev_hash
+        0_i64, # timestamp
+        1,     # scaled
+        TransactionKind::SLOW
+      )
+      unsigned_transaction.as_signed([sender_wallet])
+    end
+
     def make_create_offical_slownode(token : String = TOKEN_DEFAULT, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(

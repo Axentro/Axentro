@@ -394,6 +394,22 @@ module ::Axentro::Core::Data::Transactions
     official_nodes_config
   end
 
+  # ------- Tokens -------
+  def token_creator(token : String) : String
+    address = "not found"
+    @db.query(
+      "select r.address " \
+      "from transactions t " \
+      "join recipients r on r.transaction_id = t.id " \
+      "where action = 'create_token' and t.token = ?", token
+    ) do |rows|
+      rows.each do
+        address = rows.read(String)
+      end
+    end
+    address
+  end
+
   # ------- Helpers -------
   def transactions_by_query(query, *args)
     transactions = [] of Transaction

@@ -352,7 +352,7 @@ describe Blockchain do
       with_factory do |block_factory, transaction_factory|
         block_factory.add_slow_blocks(3).add_fast_blocks(4).add_slow_block([transaction_factory.make_send(200000000_i64)])
         blockchain = block_factory.blockchain
-        blockchain.available_actions.should eq(["send", "hra_buy", "hra_sell", "hra_cancel", "create_token"])
+        blockchain.available_actions.should eq(["send", "hra_buy", "hra_sell", "hra_cancel", "create_token", "update_token"])
       end
     end
   end
