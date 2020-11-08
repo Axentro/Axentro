@@ -123,6 +123,12 @@ axe:
       create:
         title: "create"
         desc: "create your token"
+      update: 
+        title: "update"
+        desc: "update your token quantity (positive number greater than 0)"  
+      lock:
+        title: "lock"
+        desc: "lock your token forever to prevent updates"  
       list:
         title: "list"
         desc: "list existing tokens"

@@ -41,7 +41,7 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def transaction_related?(action : String) : Bool
-      action.starts_with?("hra_")
+      transaction_actions.includes?(action)
     end
 
     def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions

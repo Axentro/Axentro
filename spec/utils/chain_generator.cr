@@ -229,6 +229,23 @@ module ::Units::Utils::ChainGenerator
       unsigned_transaction.as_signed([sender_wallet])
     end
 
+    def make_transaction(action : String, sender_amount : Int64, token : String = TOKEN_DEFAULT, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        action, # action
+        [a_sender(sender_wallet, sender_amount)],
+        [a_recipient(recipient_wallet, sender_amount)],
+        "0",   # message
+        token, # token
+        "0",   # prev_hash
+        0_i64, # timestamp
+        1,     # scaled
+        TransactionKind::SLOW
+      )
+      unsigned_transaction.as_signed([sender_wallet])
+    end
+
     def make_fast_send(sender_amount : Int64, token : String = TOKEN_DEFAULT, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(

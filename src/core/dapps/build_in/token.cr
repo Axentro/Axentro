@@ -47,6 +47,7 @@ module ::Axentro::Core::DApps::BuildIn
         action = transaction.action
 
         # common rules for token
+        raise "must not be the default token: #{token}" if token == TOKEN_DEFAULT
         raise "senders can only be 1 for token action" if transaction.senders.size != 1
         raise "number of specified senders must be 1 for '#{action}'" if transaction.senders.size != 1
         raise "number of specified recipients must be 1 for '#{action}'" if transaction.recipients.size != 1

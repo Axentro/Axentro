@@ -49,7 +49,7 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def transaction_related?(action : String) : Bool
-      true
+      Data::Transactions::INTERNAL_ACTIONS.includes?(action)
     end
 
     def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions

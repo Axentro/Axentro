@@ -147,6 +147,41 @@ describe Blockchain do
       end
     end
 
+    it "should not change the wallet balance for the default token with an arbitary action" do
+      with_factory do |block_factory, transaction_factory|
+        block_factory.add_slow_blocks(10)
+        address_amount = block_factory.database.get_address_amount(transaction_factory.recipient_wallet.address)
+        address_amount.size.should eq(1)
+        address_amount.first.amount.should eq(0)
+        address_amount.first.token.should eq(TOKEN_DEFAULT)
+        
+        transaction = transaction_factory.make_transaction("something_stupid", 200000000_i64, "AXNT")
+        block_factory.add_slow_block([transaction])
+        address_amount = block_factory.database.get_address_amount(transaction_factory.recipient_wallet.address)
+        address_amount.size.should eq(1)
+        address_amount.first.amount.should eq(0)
+        address_amount.first.token.should eq(TOKEN_DEFAULT)
+      end
+    end
+
+    it "should not change the wallet balance for a custom token with an arbitary action" do
+      with_factory do |block_factory, transaction_factory|
+        block_factory.add_slow_blocks(10)
+        address_amount = block_factory.database.get_address_amount(transaction_factory.recipient_wallet.address)
+        address_amount.size.should eq(1)
+        address_amount.first.amount.should eq(0)
+        address_amount.first.token.should eq(TOKEN_DEFAULT)
+        
+        transaction = transaction_factory.make_transaction("something_stupid", 200000000_i64, "KINGS")
+        block_factory.add_slow_block([transaction])
+        address_amount = block_factory.database.get_address_amount(transaction_factory.recipient_wallet.address)
+        block_factory.blockchain.rejects.find(transaction.id).should be_nil
+        address_amount.size.should eq(1)
+        address_amount.first.amount.should eq(0)
+        address_amount.first.token.should eq(TOKEN_DEFAULT)
+      end
+    end
+
     it "should reject a transaction when trying to fake the sender" do
       victim_wallet = Wallet.from_json(Wallet.create(true).to_json)
       hacker_wallet = Wallet.from_json(Wallet.create(true).to_json)

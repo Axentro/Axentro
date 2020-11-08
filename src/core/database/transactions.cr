@@ -16,6 +16,13 @@ require "../dapps/dapp"
 require "../dapps/build_in/hra"
 
 module ::Axentro::Core::Data::Transactions
+
+  INTERNAL_ACTIONS = ["head","send", "hra_buy", "hra_sell", "hra_cancel", "create_token", "update_token"]
+
+  def internal_actions_list
+    INTERNAL_ACTIONS.map { |action| "'#{action}'" }.uniq.join(",")
+  end
+
   # ------- Definition -------
   def transaction_table_create_string
     "id text, idx integer, block_id integer, action text, message text, token text, prev_hash text, timestamp integer, scaled integer, kind text"
@@ -247,6 +254,7 @@ module ::Axentro::Core::Data::Transactions
       "from transactions t " \
       "join recipients r on r.transaction_id = t.id " \
       "where r.address = ? " \
+      "and t.action in (#{internal_actions_list}) " \
       "group by t.token",
       address
     ) do |rows|
@@ -267,6 +275,7 @@ module ::Axentro::Core::Data::Transactions
       "select r.address, t.token, sum(r.amount) as 'rec' from transactions t " \
       "join recipients r on r.transaction_id = t.id " \
       "where r.address in (#{address_list}) " \
+      "and t.action in (#{internal_actions_list}) " \
       "group by r.address, t.token") do |rows|
       rows.each do
         address = rows.read(String)

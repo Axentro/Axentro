@@ -154,10 +154,13 @@ describe UTXO do
   end
 
   describe "#transaction_related?" do
-    it "should always return true" do
+    it "should only return true for all internal actions" do
       with_factory do |block_factory, _|
         utxo = UTXO.new(block_factory.blockchain)
-        utxo.transaction_related?("whatever").should be_true
+        utxo.transaction_related?("whatever").should be_false
+        Axentro::Core::Data::Transactions::INTERNAL_ACTIONS.each do |action|
+          utxo.transaction_related?(action).should be_true
+        end
       end
     end
   end
