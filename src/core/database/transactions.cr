@@ -395,19 +395,24 @@ module ::Axentro::Core::Data::Transactions
   end
 
   # ------- Tokens -------
-  def token_creator(token : String) : String
-    address = "not found"
+  def token_info(unique_tokens : Array(String)) : Hash(String, DApps::BuildIn::TokenInfo)
+    token_list = unique_tokens.map { |t| "'#{t}'" }.uniq.join(",")
+    token_map = {} of String => DApps::BuildIn::TokenInfo
     @db.query(
-      "select r.address " \
+      "select t.token, r.address, t.action " \
       "from transactions t " \
       "join recipients r on r.transaction_id = t.id " \
-      "where action = 'create_token' and t.token = ?", token
+      "where t.token in (#{token_list}) " \
+      "and t.action in ('create_token','lock_token')"
     ) do |rows|
       rows.each do
+        token = rows.read(String)
         address = rows.read(String)
+        action = rows.read(String)
+        token_map[token] = DApps::BuildIn::TokenInfo.new(address, action == "lock_token")
       end
     end
-    address
+    token_map
   end
 
   # ------- Helpers -------

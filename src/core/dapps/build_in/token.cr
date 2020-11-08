@@ -11,6 +11,14 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core::DApps::BuildIn
+  struct TokenInfo
+    getter created_by : String
+    getter is_locked : Bool
+
+    def initialize(@created_by : String, @is_locked : Bool)
+    end
+  end
+
   class Token < DApp
     getter tokens : Array(String) = ["AXNT"]
 
@@ -25,12 +33,16 @@ module ::Axentro::Core::DApps::BuildIn
       transaction_actions.includes?(action)
     end
 
+    # split these out to reduce complexity in the future
+    # ameba:disable Metrics/CyclomaticComplexity
     def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
       vt = ValidatedTransactions.empty
       processed_transactions = transactions.select(&.is_coinbase?)
 
-      transactions.reject(&.is_coinbase?).each do |transaction|
-      
+      body_transactions = transactions.reject(&.is_coinbase?)
+      token_map = database.token_info(body_transactions.map(&.token).reject { |t| t == TOKEN_DEFAULT }.uniq)
+
+      body_transactions.each do |transaction|
         token = transaction.token
         action = transaction.action
 
@@ -55,10 +67,22 @@ module ::Axentro::Core::DApps::BuildIn
 
         raise "invalid token name: #{token}" unless valid_token_name?(token)
 
-        raise "invalid quantity: #{recipient_amount}, must be a positive number greater than 0" unless recipient_amount > 0_i64
+        if ["create_token", "update_token"].includes?(action)
+          raise "invalid quantity: #{recipient_amount}, must be a positive number greater than 0" unless recipient_amount > 0_i64
+        end
 
         # rules for create token
-        token_exists_in_db = database.token_exists?(token)
+        token_exists_in_db = !token_map[token]?.nil?
+
+        # find if the token was created within the current set of transactions
+        token_exists_in_transactions = processed_transactions.find { |processed_transaction|
+          processed_transaction.token == token && processed_transaction.action == "create_token"
+        }
+
+        # find if the token was locked within the current set of transactions
+        token_locked_in_transactions = processed_transactions.find { |processed_transaction|
+          processed_transaction.token == token && processed_transaction.action == "lock_token"
+        }
 
         if action == "create_token"
           raise "the token #{token} is already created" if token_exists_in_db
@@ -68,25 +92,39 @@ module ::Axentro::Core::DApps::BuildIn
           end
         end
 
-        # rules for update token
+        # rules for just update
         if action == "update_token"
-          # find if the token was created within the current set of transactions       
-          token_exists_in_transactions = processed_transactions.find { |processed_transaction|
-            processed_transaction.token == token && processed_transaction.action == "create_token"
-          }
+          if (token_exists_in_db && token_map[token].is_locked) || !token_locked_in_transactions.nil?
+            raise "the token: #{token} is locked and may no longer be updated"
+          end
+        end
+
+        # rules for update and lock token
+        if ["update_token", "lock_token"].includes?(action)
+          action_name = action.split("_").join(" ")
 
           # token must already exist either in the db or in current transactions
-          raise "the token #{token} does not exist, you must create it before attempting to update it" unless (token_exists_in_db || !token_exists_in_transactions.nil?)
+          raise "the token #{token} does not exist, you must create it before attempting to perform #{action_name}" unless (token_exists_in_db || token_exists_in_transactions)
 
           unless token_exists_in_transactions.nil?
             token_creator = token_exists_in_transactions.not_nil!.recipients[0][:address]
-            raise "only the token creator can update the existing token: #{token}" unless token_creator == recipient_address
+            raise "only the token creator can perform #{action_name} on existing token: #{token}" unless token_creator == recipient_address
           end
 
           if token_exists_in_db
-            raise "only the token creator can update the existing token: #{token}" unless database.token_creator(token) == recipient_address
+            raise "only the token creator can perform #{action_name} on existing token: #{token}" unless token_map[token].created_by == recipient_address
           end
         end
+
+        # rules for just lock token
+        if action == "lock_token"
+          raise "the sender amount must be 0 when locking the token: KINGS" unless recipient_amount == 0_i64
+
+          if (token_exists_in_db && token_map[token].is_locked) || !token_locked_in_transactions.nil?
+            raise "the token: #{token} is already locked"
+          end
+        end
+
         vt << transaction.as_validated
         processed_transactions << transaction
       rescue e : Exception
