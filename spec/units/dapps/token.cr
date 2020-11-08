@@ -27,7 +27,7 @@ describe Token do
   it "should perform #transaction_actions" do
     with_factory do |block_factory, _|
       token = Token.new(block_factory.add_slow_block.blockchain)
-      token.transaction_actions.should eq(["create_token", "update_token"])
+      token.transaction_actions.should eq(["create_token", "update_token", "lock_token"])
     end
   end
   describe "#transaction_related?" do

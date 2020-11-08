@@ -104,11 +104,6 @@ module ::Axentro::Core::DApps::BuildIn
         if ["update_token", "lock_token"].includes?(action)
           action_name = action.split("_").join(" ")
 
-          puts "In token validation"
-          pp token_map
-          puts "token_exists_in_db: #{token_exists_in_db}"
-          puts "map for address: #{token_map[token].created_by}, recipient: #{recipient_address}, sender: #{sender_address}"
-
           # token must already exist either in the db or in current transactions
           raise "the token #{token} does not exist, you must create it before attempting to perform #{action_name}" unless (token_exists_in_db || token_exists_in_transactions)
 
@@ -189,7 +184,7 @@ RULE
       when "update_token"
         return scale_i64("0.0001")
       when "lock_token"
-        return scale_i64("0.0001")  
+        return scale_i64("0.0001")
       end
 
       raise "got unknown action #{action} while getting a fee for token"
