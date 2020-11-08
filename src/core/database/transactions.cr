@@ -16,8 +16,7 @@ require "../dapps/dapp"
 require "../dapps/build_in/hra"
 
 module ::Axentro::Core::Data::Transactions
-
-  INTERNAL_ACTIONS = ["head","send", "hra_buy", "hra_sell", "hra_cancel", "create_token", "update_token"]
+  INTERNAL_ACTIONS = ["head", "send", "hra_buy", "hra_sell", "hra_cancel", "create_token", "update_token"]
 
   def internal_actions_list
     INTERNAL_ACTIONS.map { |action| "'#{action}'" }.uniq.join(",")

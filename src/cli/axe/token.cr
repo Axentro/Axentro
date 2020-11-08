@@ -103,7 +103,7 @@ module ::Axentro::Interface::Axe
       puts_help(HELP_AMOUNT) unless amount = G.op.__amount
       puts_help(HELP_TOKEN) unless token = G.op.__token
 
-      # raise "please specify your original token name" if token == TOKEN_DEFAULT
+      raise "please specify your original token name" if token == TOKEN_DEFAULT
 
       wallet = get_wallet(wallet_path, G.op.__wallet_password)
 
@@ -124,7 +124,7 @@ module ::Axentro::Interface::Axe
 
       kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW
 
-      add_transaction(node, "woop_token", [wallet], senders, recipients, "", token, kind)
+      add_transaction(node, "update_token", [wallet], senders, recipients, "", token, kind)
     end
 
     def lock

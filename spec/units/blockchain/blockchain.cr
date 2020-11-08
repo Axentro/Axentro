@@ -154,7 +154,7 @@ describe Blockchain do
         address_amount.size.should eq(1)
         address_amount.first.amount.should eq(0)
         address_amount.first.token.should eq(TOKEN_DEFAULT)
-        
+
         transaction = transaction_factory.make_transaction("something_stupid", 200000000_i64, "AXNT")
         block_factory.add_slow_block([transaction])
         address_amount = block_factory.database.get_address_amount(transaction_factory.recipient_wallet.address)
@@ -171,7 +171,7 @@ describe Blockchain do
         address_amount.size.should eq(1)
         address_amount.first.amount.should eq(0)
         address_amount.first.token.should eq(TOKEN_DEFAULT)
-        
+
         transaction = transaction_factory.make_transaction("something_stupid", 200000000_i64, "KINGS")
         block_factory.add_slow_block([transaction])
         address_amount = block_factory.database.get_address_amount(transaction_factory.recipient_wallet.address)
