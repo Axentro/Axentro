@@ -105,7 +105,7 @@ module ::Axentro::Core
         raise "prev_hash of coinbase transaction has to be '0'" if transaction.prev_hash != "0"
 
         served_sum = transaction.recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
-        served_sum_expected = transaction.is_slow_transaction? ? blockchain.coinbase_slow_amount(block_index, embedded_transactions) : blockchain.coinbase_fast_amount(block_index, embedded_transactions)
+        served_sum_expected = transaction.is_slow_transaction? ? (blockchain.coinbase_slow_amount(block_index, embedded_transactions) + blockchain.total_fees(embedded_transactions)) : blockchain.coinbase_fast_amount(block_index, embedded_transactions)
 
         if served_sum != served_sum_expected
           raise "invalid served amount for coinbase transaction at index: #{block_index} " +

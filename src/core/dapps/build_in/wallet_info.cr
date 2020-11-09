@@ -115,10 +115,13 @@ module ::Axentro::Core::DApps::BuildIn
       outgoing_pending_transactions = outgoing(address, "Pending", (blockchain.pending_slow_transactions + blockchain.pending_fast_transactions).select { |t| t.senders.map { |r| r.[:address] }.includes?(address) })
 
       recent_transactions = incoming_completed_transactions + outgoing_completed_transactions + incoming_pending_transactions + outgoing_pending_transactions
-
       rejected_transactions = rejections(database.find_reject_by_address(address))
 
-      WalletInfoResponse.new(address, readable, tokens, recent_transactions.sort_by(&.datetime).reverse, rejected_transactions)
+      recent_non_rejected_transactions = recent_transactions.reject{|t| rejected_transactions.map(&.transaction_id).includes?(t.transaction_id)}
+
+      # TODO = if sending to self - merge the incoming and outgoing together
+
+      WalletInfoResponse.new(address, readable, tokens, recent_non_rejected_transactions.sort_by(&.datetime).reverse, rejected_transactions)
     end
 
     private def rejections(rejects : Array(Reject)) : Array(RejectedWalletTransaction)
@@ -137,7 +140,7 @@ module ::Axentro::Core::DApps::BuildIn
 
         RecentWalletTransaction.new(
           t.id, t.kind.to_s, "", "", first_recipient(t.recipients),
-          domain_for_recipients(t.recipients), amount_for_senders(address, t.senders), t.token, category(t.action),
+          domain_for_recipients(t.recipients), amount_for_senders(address, t.senders), t.token, category(t.action, t.kind),
           Time.unix_ms(t.timestamp).to_s, fee_for_senders(address, t.senders), t.message, status, "Outgoing", confirmations.to_s
         )
       end
@@ -152,7 +155,7 @@ module ::Axentro::Core::DApps::BuildIn
 
         RecentWalletTransaction.new(
           t.id, t.kind.to_s, first_sender(t.senders), domain_for_senders(t.senders), "", "",
-          amount_for_recipients(address, t.recipients), t.token, category(t.action),
+          amount_for_recipients(address, t.recipients), t.token, category(t.action, t.kind),
           Time.unix_ms(t.timestamp).to_s, fee_for_senders(address, t.senders), t.message, status, "Incoming", confirmations.to_s
         )
       end
@@ -168,16 +171,32 @@ module ::Axentro::Core::DApps::BuildIn
       s.size > 0 ? s.first : ""
     end
 
-    private def category(action : String) : String
+    private def category(action : String, kind : TransactionKind) : String
       case action
       when "head"
-        "Mining reward"
+        if kind == TransactionKind::FAST
+          "Maintenance fund"
+        else  
+          "Mining reward"
+        end
       when "send"
         "Payment"
       when "hra_buy"
         "Payment (Human readable address)"
       when "hra_sell"
         "Payment (Human readable address)"
+      when "hra_cancel"
+        "Cancel (Human readable address)"  
+      when "create_token"
+        "Create token"
+      when "update_token"
+        "Update token"
+      when "lock_token"
+        "Lock token"
+      when "create_official_node_slow"
+        "Create slow official node"      
+      when "create_official_node_fast"
+        "Create fast official node"  
       else
         action
       end
