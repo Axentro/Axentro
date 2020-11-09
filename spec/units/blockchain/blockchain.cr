@@ -426,11 +426,25 @@ describe Blockchain do
         blockchain = block_factory.blockchain
         block_factory.add_slow_blocks(2).add_fast_blocks(4).add_slow_block([transaction_factory.make_send(200000000_i64)])
         amount = 200000000_i64
-        transaction = blockchain.create_coinbase_slow_transaction(amount, [block_factory.miner])
+        transaction = blockchain.create_coinbase_slow_transaction(amount, 0_i64, [block_factory.miner])
         transaction.action.should eq("head")
         recipient = transaction.recipients.first
         recipient[:address].should eq(block_factory.node_wallet.address)
         recipient[:amount].should eq(amount)
+      end
+    end
+
+    it "should create a slow coinbase transaction with fastnode fees" do
+      with_factory do |block_factory, transaction_factory|
+        blockchain = block_factory.blockchain
+        block_factory.add_slow_blocks(2).add_fast_blocks(4).add_slow_block([transaction_factory.make_send(200000000_i64)])
+        amount = 200000000_i64
+        fastnode_fees = 10_i64
+        transaction = blockchain.create_coinbase_slow_transaction(amount, fastnode_fees, [block_factory.miner])
+        transaction.action.should eq("head")
+        recipient = transaction.recipients.first
+        recipient[:address].should eq(block_factory.node_wallet.address)
+        recipient[:amount].should eq(amount + fastnode_fees)
       end
     end
   end

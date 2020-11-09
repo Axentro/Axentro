@@ -596,7 +596,11 @@ module ::Axentro::Core
     private def refresh_slow_pending_block(difficulty)
       the_latest_index = get_latest_index_for_slow
       coinbase_amount = coinbase_slow_amount(the_latest_index, embedded_slow_transactions)
-      coinbase_transaction = create_coinbase_slow_transaction(coinbase_amount, node.miners)
+
+      # pay the fees to the fastnode for maintenance (unless there are no more blocks to mine)
+      fee = (the_latest_index >= @block_reward_calculator.max_blocks) ? 0_i64 : total_fees(embedded_slow_transactions)
+
+      coinbase_transaction = create_coinbase_slow_transaction(coinbase_amount, fee, node.miners)
       MinerNoncePool.delete_embedded
 
       transactions = align_slow_transactions(coinbase_transaction, coinbase_amount)
@@ -639,9 +643,19 @@ module ::Axentro::Core
       end
     end
 
-    def create_coinbase_slow_transaction(coinbase_amount : Int64, miners : NodeComponents::MinersManager::Miners) : Transaction
-      # TODO - simple solution for now - but should move to it's own class for calculating rewards
+    def coinbase_recipient_for_fastnode(fee) : Array(Transaction::Recipient)
+      fastnodes = official_node.all_fast_impl
+      if fastnodes.size > 0 && fee > 0
+        return [{
+          address: fastnodes.first,
+          amount:  fee,
+        }]
+      end
+      [] of Transaction::Recipient
+    end
 
+    def create_coinbase_slow_transaction(coinbase_amount : Int64, fee : Int64, miners : NodeComponents::MinersManager::Miners) : Transaction
+      # TODO - simple solution for now - but should move to it's own class for calculating rewards
       miners_nonces = MinerNoncePool.embedded
       miners_rewards_total = (coinbase_amount * 3_i64) / 4_i64
 
@@ -650,13 +664,27 @@ module ::Axentro::Core
         {address: address, amount: amount.to_i64}
       end.to_a.flatten.reject { |m| m[:amount] == 0 }
 
-      node_recipient = {
-        address: @wallet.address,
-        amount:  coinbase_amount - miners_recipients.reduce(0_i64) { |sum, m| sum + m[:amount] },
-      }
+      recipient_list = [] of Transaction::Recipient
+      fastnode_recipient = coinbase_recipient_for_fastnode(fee)
 
+      # if I am the fastnode then should add the fee to the node_recipient if not then use this fastnode_recipient
+      node_recipient_amount = coinbase_amount - miners_recipients.reduce(0_i64) { |sum, m| sum + m[:amount] }
+      if official_node.i_am_a_fastnode?(@wallet.address)
+        recipient_list << {
+          address: @wallet.address,
+          amount:  node_recipient_amount + fee,
+        }
+      else
+        recipient_list << {
+          address: @wallet.address,
+          amount:  node_recipient_amount,
+        }
+        recipient_list += fastnode_recipient
+      end
+
+      # if there are no miners_rewards_total -
       senders = [] of Transaction::Sender # No senders
-      recipients = miners_rewards_total > 0 ? [node_recipient] + miners_recipients : [] of Transaction::Recipient
+      recipients = miners_rewards_total > 0 ? recipient_list + miners_recipients : [] of Transaction::Recipient
 
       Transaction.new(
         Transaction.create_id,
@@ -674,11 +702,10 @@ module ::Axentro::Core
 
     def coinbase_slow_amount(index : Int64, transactions) : Int64
       return total_fees(transactions) if index >= @block_reward_calculator.max_blocks
-      @block_reward_calculator.reward_for_block(index) # + total_fees(transactions)
+      @block_reward_calculator.reward_for_block(index)
     end
 
     def total_fees(transactions) : Int64
-      # return 0_i64 if transactions.size < 2
       transactions.reduce(0_i64) { |fees, transaction| fees + transaction.total_fees }
     end
 

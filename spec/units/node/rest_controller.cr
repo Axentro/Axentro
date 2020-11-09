@@ -380,7 +380,7 @@ describe RESTController do
         exec_rest_api(block_factory.rest.__v1_domain(context("/api/v1/domain/#{domain}"), {domain: domain})) do |result|
           result["status"].to_s.should eq("success")
           result["result"]["confirmation"].should eq(0_i64)
-          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"AXNT\", \"amount\" => \"35.79996241\"}")
+          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"AXNT\", \"amount\" => \"35.99996241\"}")
         end
       end
     end
@@ -403,7 +403,7 @@ describe RESTController do
         exec_rest_api(block_factory.rest.__v1_domain_token(context("/api/v1/domain/#{domain}/token/AXNT"), {domain: domain, token: "AXNT"})) do |result|
           result["status"].to_s.should eq("success")
           result["result"]["confirmation"].should eq(0_i64)
-          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"AXNT\", \"amount\" => \"35.79996241\"}")
+          result["result"]["pairs"][0].to_s.should eq("{\"token\" => \"AXNT\", \"amount\" => \"35.99996241\"}")
         end
       end
     end

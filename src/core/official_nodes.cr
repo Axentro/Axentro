@@ -33,6 +33,11 @@ module ::Axentro::Core
       @config
     end
 
+    def fastnode_address : String?
+      fn = @config["fastnodes"]
+      fn.size > 0 ? fn.first : nil
+    end
+
     def self.transactions(config : OfficialNodesConfig, coinbases : Array(Core::Transaction)) : Array(Core::Transaction)
       slow = config["slownodes"].map do |address|
         create_transaction(address, "create_official_node_slow")
