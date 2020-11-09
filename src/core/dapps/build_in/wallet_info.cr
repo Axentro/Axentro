@@ -11,14 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core::DApps::BuildIn
-  struct TokenAmount
-    include JSON::Serializable
-    property name : String
-    property amount : String
-
-    def initialize(@name : String, @amount : String); end
-  end
-
   struct RecentWalletTransaction
     include JSON::Serializable
     property transaction_id : String
@@ -55,13 +47,25 @@ module ::Axentro::Core::DApps::BuildIn
     include JSON::Serializable
     property address : String
     property readable : Array(String)
-    property tokens : Array(TokenAmount)
+    property tokens : Array(TokenData)
+    property my_tokens : Array(TokenData)
     property recent_transactions : Array(RecentWalletTransaction)
     property rejected_transactions : Array(RejectedWalletTransaction)
 
-    def initialize(@address : String, @readable : Array(String), @tokens : Array(TokenAmount),
+    def initialize(@address : String, @readable : Array(String), @tokens : Array(TokenData), @my_tokens : Array(TokenData),
                    @recent_transactions : Array(RecentWalletTransaction),
                    @rejected_transactions : Array(RejectedWalletTransaction)); end
+  end
+
+  struct TokenData
+    include JSON::Serializable
+    property token : String
+    property is_locked : Bool
+    property is_mine : Bool
+    property amount : String
+
+    def initialize(@token : String, @is_locked : Bool, @is_mine : Bool, @amount : String)
+    end
   end
 
   class WalletInfo < DApp
@@ -103,7 +107,20 @@ module ::Axentro::Core::DApps::BuildIn
 
     def wallet_info_impl(address)
       readable = database.get_domain_map_for_address(address).keys
-      tokens = database.get_address_amount(address).map { |tq| TokenAmount.new(tq.token, scale_decimal(tq.amount)) }
+
+      _tokens = database.get_address_amount(address)
+      token_info = database.token_info(_tokens.map(&.token))
+
+      tokens = _tokens.map do |tq|
+        if token_info[tq.token]?
+          ti = token_info[tq.token]
+          TokenData.new(tq.token, ti.is_locked, ti.created_by == address, scale_decimal(tq.amount))
+        else
+          TokenData.new(tq.token, false, false, scale_decimal(tq.amount))
+        end
+      end
+
+      my_tokens = tokens.select(&.is_mine)
 
       page, per_page, direction = 0, 100, 1
 
@@ -121,7 +138,7 @@ module ::Axentro::Core::DApps::BuildIn
 
       # TODO = if sending to self - merge the incoming and outgoing together
 
-      WalletInfoResponse.new(address, readable, tokens, recent_non_rejected_transactions.sort_by(&.datetime).reverse, rejected_transactions)
+      WalletInfoResponse.new(address, readable, tokens, my_tokens, recent_non_rejected_transactions.sort_by(&.datetime).reverse, rejected_transactions)
     end
 
     private def rejections(rejects : Array(Reject)) : Array(RejectedWalletTransaction)
