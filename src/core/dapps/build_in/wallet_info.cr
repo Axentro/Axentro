@@ -117,7 +117,7 @@ module ::Axentro::Core::DApps::BuildIn
       recent_transactions = incoming_completed_transactions + outgoing_completed_transactions + incoming_pending_transactions + outgoing_pending_transactions
       rejected_transactions = rejections(database.find_reject_by_address(address))
 
-      recent_non_rejected_transactions = recent_transactions.reject{|t| rejected_transactions.map(&.transaction_id).includes?(t.transaction_id)}
+      recent_non_rejected_transactions = recent_transactions.reject { |t| rejected_transactions.map(&.transaction_id).includes?(t.transaction_id) }
 
       # TODO = if sending to self - merge the incoming and outgoing together
 
@@ -171,12 +171,13 @@ module ::Axentro::Core::DApps::BuildIn
       s.size > 0 ? s.first : ""
     end
 
+    # ameba:disable Metrics/CyclomaticComplexity
     private def category(action : String, kind : TransactionKind) : String
       case action
       when "head"
         if kind == TransactionKind::FAST
           "Maintenance fund"
-        else  
+        else
           "Mining reward"
         end
       when "send"
@@ -186,7 +187,7 @@ module ::Axentro::Core::DApps::BuildIn
       when "hra_sell"
         "Payment (Human readable address)"
       when "hra_cancel"
-        "Cancel (Human readable address)"  
+        "Cancel (Human readable address)"
       when "create_token"
         "Create token"
       when "update_token"
@@ -194,9 +195,9 @@ module ::Axentro::Core::DApps::BuildIn
       when "lock_token"
         "Lock token"
       when "create_official_node_slow"
-        "Create slow official node"      
+        "Create slow official node"
       when "create_official_node_fast"
-        "Create fast official node"  
+        "Create fast official node"
       else
         action
       end
