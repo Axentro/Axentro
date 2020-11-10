@@ -39,6 +39,7 @@ module ::Axentro::Core
     getter wallet : Wallet
     getter max_miners : Int32
 
+    @network_type : String
     @blocks_to_hold : Int64
     @security_level_percentage : Int64
     @node : Node?
@@ -47,7 +48,7 @@ module ::Axentro::Core
     @max_miners : Int32
     @is_standalone : Bool
 
-    def initialize(@wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, @official_nodes : OfficialNodes?, security_level_percentage : Int64?, @max_miners : Int32, @is_standalone : Bool)
+    def initialize(@network_type : String, @wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, @official_nodes : OfficialNodes?, security_level_percentage : Int64?, @max_miners : Int32, @is_standalone : Bool)
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup
@@ -62,6 +63,10 @@ module ::Axentro::Core
 
     def database
       @database
+    end
+
+    def network_type
+      @network_type
     end
 
     def setup(@node : Node)
@@ -433,7 +438,7 @@ module ::Axentro::Core
     end
 
     private def _add_transaction(transaction : Transaction)
-      vt = Validation::Transaction.validate_common([transaction])
+      vt = Validation::Transaction.validate_common([transaction], @network_type)
 
       # TODO - could reject in bulk also
       vt.failed.each do |ft|
@@ -627,7 +632,7 @@ module ::Axentro::Core
     def align_slow_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
       transactions = [coinbase_transaction] + embedded_slow_transactions
 
-      vt = Validation::Transaction.validate_common(transactions)
+      vt = Validation::Transaction.validate_common(transactions, @network_type)
 
       skip_prev_hash_check = true
       vt << Validation::Transaction.validate_embedded(transactions, self, skip_prev_hash_check)
@@ -713,7 +718,7 @@ module ::Axentro::Core
       results = SlowTransactionPool.find_all(transactions.select(&.is_slow_transaction?))
       slow_transactions = results.found + results.not_found
 
-      vt = Validation::Transaction.validate_common(slow_transactions)
+      vt = Validation::Transaction.validate_common(slow_transactions, @network_type)
 
       vt.failed.each do |ft|
         rejects.record_reject(ft.transaction.id, Rejects.address_from_senders(ft.transaction.senders), ft.reason)

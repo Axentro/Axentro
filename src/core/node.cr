@@ -67,8 +67,8 @@ module ::Axentro::Core
         end
       end
 
-      @blockchain = Blockchain.new(@wallet, @database, @developer_fund, @official_nodes, @security_level_percentage, @max_miners, is_standalone?)
       @network_type = @is_testnet ? "testnet" : "mainnet"
+      @blockchain = Blockchain.new(@network_type, @wallet, @database, @developer_fund, @official_nodes, @security_level_percentage, @max_miners, is_standalone?)
       @validation_manager = ValidationManager.new(@blockchain, @bind_host, @bind_port, @use_ssl)
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @validation_manager, @max_private_nodes, @wallet.address, @blockchain.official_node, @exit_on_unofficial)
       @miners_manager = MinersManager.new(@blockchain)

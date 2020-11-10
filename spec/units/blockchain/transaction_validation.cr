@@ -295,7 +295,7 @@ describe Validation::Transaction do
         block_factory.add_slow_block
 
         transactions = [transaction_factory.make_send(2000_i64)]
-        result = Validation::Transaction.validate_common(transactions)
+        result = Validation::Transaction.validate_common(transactions, "testnet")
         result.passed.should eq(transactions)
         result.failed.should be_empty
       end
@@ -309,7 +309,7 @@ describe Validation::Transaction do
         transaction.id = "123"
 
         transactions = [transaction]
-        result = Validation::Transaction.validate_common(transactions)
+        result = Validation::Transaction.validate_common(transactions, "testnet")
         result.passed.should be_empty
         result.failed.size.should eq(1)
         result.failed.first.reason.should eq("length of transaction id has to be 64: 123")
@@ -324,7 +324,7 @@ describe Validation::Transaction do
         transaction.message = ("exceeds"*100)
 
         transactions = [transaction]
-        result = Validation::Transaction.validate_common(transactions)
+        result = Validation::Transaction.validate_common(transactions, "testnet")
         result.passed.should be_empty
         result.failed.size.should eq(1)
         result.failed.first.reason.should eq("message size exceeds: 700 for 512")
@@ -339,7 +339,7 @@ describe Validation::Transaction do
         transaction.token = ("exceeds"*100)
 
         transactions = [transaction]
-        result = Validation::Transaction.validate_common(transactions)
+        result = Validation::Transaction.validate_common(transactions, "testnet")
         result.passed.should be_empty
         result.failed.size.should eq(1)
         result.failed.first.reason.should eq("token size exceeds: 700 for 16")
@@ -354,7 +354,7 @@ describe Validation::Transaction do
         transaction.scaled = 0
 
         transactions = [transaction]
-        result = Validation::Transaction.validate_common(transactions)
+        result = Validation::Transaction.validate_common(transactions, "testnet")
         result.passed.should be_empty
         result.failed.size.should eq(1)
         result.failed.first.reason.should eq("unscaled transaction")
@@ -369,10 +369,36 @@ describe Validation::Transaction do
         transaction = transaction.as_unsigned
 
         transactions = [transaction]
-        result = Validation::Transaction.validate_common(transactions)
+        result = Validation::Transaction.validate_common(transactions, "testnet")
         result.passed.should be_empty
         result.failed.size.should eq(1)
         result.failed.first.reason.should match(/string size should be 128, not 1/)
+      end
+    end
+
+    it "should raise error if sender address is for wrong network" do
+      with_factory do |_, transaction_factory|
+        mainnet_sender_wallet = Wallet.from_json(Wallet.create(false).to_json)
+        transaction = transaction_factory.make_send(1000_i64, "AXNT", mainnet_sender_wallet)
+        transactions = [transaction]
+
+        result = Validation::Transaction.validate_common(transactions, "testnet")
+        result.passed.should be_empty
+        result.failed.size.should eq(1)
+        result.failed.first.reason.should eq("sender address: #{mainnet_sender_wallet.address} has wrong network type: mainnet, this node is running as: testnet")
+      end
+    end
+
+    it "should raise error if recipient address is for wrong network" do
+      with_factory do |block_factory, transaction_factory|
+        mainnet_recipient_wallet = Wallet.from_json(Wallet.create(false).to_json)
+        transaction = transaction_factory.make_send(1000_i64, "AXNT", block_factory.node_wallet, mainnet_recipient_wallet)
+        transactions = [transaction]
+
+        result = Validation::Transaction.validate_common(transactions, "testnet")
+        result.passed.should be_empty
+        result.failed.size.should eq(1)
+        result.failed.first.reason.should eq("recipient address: #{mainnet_recipient_wallet.address} has wrong network type: mainnet, this node is running as: testnet")
       end
     end
 
@@ -402,7 +428,7 @@ describe Validation::Transaction do
         )
 
         transactions = [transaction]
-        result = Validation::Transaction.validate_common(transactions)
+        result = Validation::Transaction.validate_common(transactions, "testnet")
         result.passed.should be_empty
         result.failed.size.should eq(1)
         result.failed.first.reason.should eq("invalid sender address checksum for: VDBpbnZhbGlkLXdhbGxldC1hZGRyZXNz")
@@ -433,7 +459,7 @@ describe Validation::Transaction do
         transaction = unsigned_transaction.as_signed([transaction_factory.sender_wallet])
 
         transactions = [transaction]
-        result = Validation::Transaction.validate_common(transactions)
+        result = Validation::Transaction.validate_common(transactions, "testnet")
         result.passed.should be_empty
         result.failed.size.should eq(1)
         result.failed.first.reason.should eq("invalid recipient address checksum for: VDBpbnZhbGlkLXdhbGxldC1hZGRyZXNz")

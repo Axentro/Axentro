@@ -109,7 +109,7 @@ module ::Axentro::Core::FastChain
   def align_fast_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
     transactions = [coinbase_transaction] + embedded_fast_transactions
 
-    vt = Validation::Transaction.validate_common(transactions)
+    vt = Validation::Transaction.validate_common(transactions, @network_type)
     block_index = latest_fast_block.nil? ? 0_i64 : latest_fast_block.not_nil!.index
     vt << Validation::Transaction.validate_coinbase([coinbase_transaction], embedded_fast_transactions, self, block_index)
 
@@ -163,7 +163,7 @@ module ::Axentro::Core::FastChain
     results = FastTransactionPool.find_all(transactions.select(&.is_fast_transaction?))
     fast_transactions = results.found + results.not_found
 
-    vt = Validation::Transaction.validate_common(fast_transactions)
+    vt = Validation::Transaction.validate_common(fast_transactions, @network_type)
 
     vt.failed.each do |ft|
       rejects.record_reject(ft.transaction.id, Rejects.address_from_senders(ft.transaction.senders), ft.reason)

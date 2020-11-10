@@ -109,7 +109,7 @@ module ::Axentro::Core
       result = FastTransactionPool.find_all(transactions)
       fast_transactions = result.found + result.not_found
 
-      vt = Validation::Transaction.validate_common(fast_transactions)
+      vt = Validation::Transaction.validate_common(fast_transactions, blockchain.network_type)
 
       coinbase_transactions = vt.passed.select(&.is_coinbase?)
       body_transactions = vt.passed.reject(&.is_coinbase?)

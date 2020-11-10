@@ -43,7 +43,8 @@ module ::Axentro::Core
       vt
     end
 
-    def validate_common(transactions : Array(Core::Transaction)) : ValidatedTransactions
+    # ameba:disable Metrics/CyclomaticComplexity
+    def validate_common(transactions : Array(Core::Transaction), network_type : String) : ValidatedTransactions
       vt = ValidatedTransactions.empty
       transactions.each do |transaction|
         raise "length of transaction id has to be 64: #{transaction.id}" if transaction.id.size != 64
@@ -53,6 +54,8 @@ module ::Axentro::Core
 
         transaction.senders.each do |sender|
           network = Keys::Address.from(sender[:address], "sender").network
+          raise "sender address: #{sender[:address]} has wrong network type: #{network[:name]}, this node is running as: #{network_type}" if network[:name] != network_type
+
           public_key = Keys::PublicKey.new(sender[:public_key], network)
 
           if public_key.address.as_hex != sender[:address]
@@ -80,9 +83,13 @@ module ::Axentro::Core
         end
 
         transaction.recipients.each do |recipient|
-          unless Keys::Address.from(recipient[:address], "recipient")
+          recipient_address = Keys::Address.from(recipient[:address], "recipient")
+          unless recipient_address
             raise "invalid checksum for recipient's address: #{recipient[:address]}"
           end
+
+          network = recipient_address.network
+          raise "recipient address: #{recipient[:address]} has wrong network type: #{network[:name]}, this node is running as: #{network_type}" if network[:name] != network_type
 
           valid_amount?(recipient[:amount])
         end
