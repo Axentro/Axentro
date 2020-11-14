@@ -128,7 +128,10 @@ axe:
         desc: "update your token quantity (positive number greater than 0)"  
       lock:
         title: "lock"
-        desc: "lock your token forever to prevent updates"  
+        desc: "lock your token forever to prevent updates" 
+      burn:
+        title: "burn"
+        desc: "burn an amount of your token"    
       list:
         title: "list"
         desc: "list existing tokens"
