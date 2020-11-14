@@ -26,7 +26,7 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def transaction_actions : Array(String)
-      ["create_token", "update_token", "lock_token"]
+      ["create_token", "update_token", "lock_token", "burn_token"]
     end
 
     def transaction_related?(action : String) : Bool
@@ -68,7 +68,7 @@ module ::Axentro::Core::DApps::BuildIn
 
         raise "invalid token name: #{token}" unless valid_token_name?(token)
 
-        if ["create_token", "update_token"].includes?(action)
+        if ["create_token", "update_token", "burn_token"].includes?(action)
           raise "invalid quantity: #{recipient_amount}, must be a positive number greater than 0" unless recipient_amount > 0_i64
         end
 
@@ -98,6 +98,13 @@ module ::Axentro::Core::DApps::BuildIn
           if (token_exists_in_db && token_map[token].is_locked) || !token_locked_in_transactions.nil?
             raise "the token: #{token} is locked and may no longer be updated"
           end
+        end
+
+        # rules for just burn
+        if action == "burn_token"
+          action_name = action.split("_").join(" ")
+          # token must already exist either in the db or in current transactions
+          raise "the token #{token} does not exist, you must create it before attempting to perform #{action_name}" unless (token_exists_in_db || token_exists_in_transactions)
         end
 
         # rules for update and lock token
@@ -184,6 +191,8 @@ RULE
       when "update_token"
         return scale_i64("0.0001")
       when "lock_token"
+        return scale_i64("0.0001")
+      when "burn_token"
         return scale_i64("0.0001")
       end
 

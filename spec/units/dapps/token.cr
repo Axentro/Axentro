@@ -27,7 +27,7 @@ describe Token do
   it "should perform #transaction_actions" do
     with_factory do |block_factory, _|
       token = Token.new(block_factory.add_slow_block.blockchain)
-      token.transaction_actions.should eq(["create_token", "update_token", "lock_token"])
+      token.transaction_actions.should eq(["create_token", "update_token", "lock_token", "burn_token"])
     end
   end
   describe "#transaction_related?" do
@@ -461,107 +461,93 @@ describe Token do
     end
 
     # describe "At any time any user holding the token can choose to burn some or all of it that they hold" do
-    #   it "burn token should pass when done by the token holder when create is same block" do
-    #     with_factory do |block_factory, transaction_factory|
-    #       transaction1 = transaction_factory.make_create_token("KINGS", 10_i64)
-    #       # send to another wallet and the other wallet can burn them
-    #       transaction2 = transaction_factory.make_update_token("KINGS", 20_i64)
-    #       token = Token.new(block_factory.add_slow_blocks(10).blockchain)
-    #       transactions = [transaction1, transaction2]
+    it "burn token should pass when done by the token holder when create is same block" do
+      with_factory do |block_factory, transaction_factory|
+        transaction1 = transaction_factory.make_create_token("KINGS", 10_i64)
+        transaction2 = transaction_factory.make_burn_token("KINGS", 5_i64)
+        token = Token.new(block_factory.add_slow_blocks(10).blockchain)
+        transactions = [transaction1, transaction2]
 
-    #       result = token.valid_transactions?(transactions)
-    #       result.failed.size.should eq(0)
-    #       result.passed.size.should eq(2)
-    #       result.passed.should eq(transactions)
-    #     end
-    #   end
+        result = token.valid_transactions?(transactions)
+        result.failed.size.should eq(0)
+        result.passed.size.should eq(2)
+        result.passed.should eq(transactions)
+      end
+    end
 
-    #   it "burn token should pass when done by the token holder when create is already in the db" do
-    #     with_factory do |block_factory, transaction_factory|
-    #       transaction1 = transaction_factory.make_create_token("KINGS", 10_i64)
-    #        # send to another wallet and the other wallet can burn them
-    #       transaction2 = transaction_factory.make_update_token("KINGS", 20_i64)
-    #       token = Token.new(block_factory.add_slow_blocks(10).add_slow_block([transaction1]).blockchain)
-    #       transactions = [transaction2]
+    it "burn token should reduce the amount of token held by the user" do
+      with_factory do |block_factory, transaction_factory|
+        transaction1 = transaction_factory.make_create_token("KINGS", 10_i64)
+        transaction2 = transaction_factory.make_update_token("KINGS", 10_i64)
+        transaction3 = transaction_factory.make_burn_token("KINGS", 5_i64)
+        block_factory.add_slow_blocks(10).add_slow_block([transaction1])
 
-    #       result = token.valid_transactions?(transactions)
-    #       result.failed.size.should eq(0)
-    #       result.passed.size.should eq(1)
-    #       result.passed.should eq(transactions)
-    #     end
-    #   end
+        before = block_factory.database.get_address_amount(block_factory.node_wallet.address)
+        before.select { |tq| tq.token == "KINGS" }.map(&.amount).sum.should eq(10_i64)
 
-    #   it "burn token quantity should fail if quantity is not a positive number greater than 0" do
-    #     with_factory do |block_factory, transaction_factory|
-    #       transaction1 = transaction_factory.make_create_token("KINGS", 10_i64)
+        block_factory.add_slow_block([transaction2, transaction3])
 
-    #       transaction2 = transaction_factory.make_update_token("KINGS", 0_i64)
-    #       transaction3 = transaction_factory.make_update_token("KINGS", -1_i64)
-    #       token = Token.new(block_factory.add_slow_blocks(10).blockchain)
-    #       transactions = [transaction1, transaction2, transaction3]
+        after = block_factory.database.get_address_amount(block_factory.node_wallet.address)
+        after.select { |tq| tq.token == "KINGS" }.map(&.amount).sum.should eq(15_i64)
+      end
+    end
 
-    #       result = token.valid_transactions?(transactions)
-    #       result.failed.size.should eq(2)
-    #       result.passed.size.should eq(1)
-    #       result.passed.first.should eq(transaction1)
-    #       result.failed.map(&.reason).should eq(["invalid quantity: 0, must be a positive number greater than 0", "invalid quantity: -1, must be a positive number greater than 0"])
-    #     end
-    #   end
+    it "burn token should pass when done by the token holder when create is already in the db" do
+      with_factory do |block_factory, transaction_factory|
+        transaction1 = transaction_factory.make_create_token("KINGS", 10_i64)
+        transaction2 = transaction_factory.make_burn_token("KINGS", 5_i64)
+        token = Token.new(block_factory.add_slow_blocks(10).add_slow_block([transaction1]).blockchain)
+        transactions = [transaction2]
 
-    #   it "burn token quantity should fail if user does not hold any of the token they are trying to burn in the same block" do
-    #     with_factory do |block_factory, transaction_factory|
-    #       transaction = transaction_factory.make_burn_token("KINGS", 20_i64)
-    #       token = Token.new(block_factory.add_slow_blocks(10).blockchain)
-    #       transactions = [transaction]
+        result = token.valid_transactions?(transactions)
+        result.failed.size.should eq(0)
+        result.passed.size.should eq(1)
+        result.passed.should eq(transactions)
+      end
+    end
 
-    #       result = token.valid_transactions?(transactions)
-    #       result.failed.size.should eq(1)
-    #       result.passed.size.should eq(0)
-    #       result.failed.map(&.reason).should eq(["the token KINGS does not exist, you must create it before attempting to perform update token"])
-    #     end
-    #   end
+    it "burn token quantity should fail if quantity is not a positive number greater than 0" do
+      with_factory do |block_factory, transaction_factory|
+        transaction1 = transaction_factory.make_create_token("KINGS", 10_i64)
 
-    #   it "burn token quantity should fail if user does not hold any of the token they are trying to burn in the db" do
-    #     with_factory do |block_factory, transaction_factory|
-    #       transaction = transaction_factory.make_burn_token("KINGS", 20_i64)
-    #       token = Token.new(block_factory.add_slow_blocks(10).blockchain)
-    #       transactions = [transaction]
+        transaction2 = transaction_factory.make_burn_token("KINGS", 0_i64)
+        transaction3 = transaction_factory.make_burn_token("KINGS", -1_i64)
+        token = Token.new(block_factory.add_slow_blocks(10).blockchain)
+        transactions = [transaction1, transaction2, transaction3]
 
-    #       result = token.valid_transactions?(transactions)
-    #       result.failed.size.should eq(1)
-    #       result.passed.size.should eq(0)
-    #       result.failed.map(&.reason).should eq(["the token KINGS does not exist, you must create it before attempting to perform update token"])
-    #     end
-    #   end
+        result = token.valid_transactions?(transactions)
+        result.failed.size.should eq(2)
+        result.passed.size.should eq(1)
+        result.passed.first.should eq(transaction1)
+        result.failed.map(&.reason).should eq(["invalid quantity: 0, must be a positive number greater than 0", "invalid quantity: -1, must be a positive number greater than 0"])
+      end
+    end
 
-    #   it "burn token quantity should fail if user does not have enough token to burn in same block" do
-    #     with_factory do |block_factory, transaction_factory|
-    #       transaction1 = transaction_factory.make_create_token("KINGS", 10_i64)
-    #       transaction2 = transaction_factory.make_burn_token("KINGS", 20_i64)
-    #       token = Token.new(block_factory.add_slow_blocks(10).blockchain)
-    #       transactions = [transaction1, transaction2]
+    it "burn token quantity should fail if token they are trying to burn does not exist in the same block" do
+      with_factory do |block_factory, transaction_factory|
+        transaction = transaction_factory.make_burn_token("KINGS", 20_i64)
+        token = Token.new(block_factory.add_slow_blocks(10).blockchain)
+        transactions = [transaction]
 
-    #       result = token.valid_transactions?(transactions)
-    #       result.failed.size.should eq(1)
-    #       result.passed.size.should eq(0)
-    #       result.failed.map(&.reason).should eq(["you cannot burn 20 KINGS as you only have 10 KINGS available"])
-    #     end
-    #   end
+        result = token.valid_transactions?(transactions)
+        result.failed.size.should eq(1)
+        result.passed.size.should eq(0)
+        result.failed.map(&.reason).should eq(["the token KINGS does not exist, you must create it before attempting to perform burn token"])
+      end
+    end
 
-    #   it "burn token quantity should fail if user does not have enough token to burn in current transactions" do
-    #     with_factory do |block_factory, transaction_factory|
-    #       transaction1 = transaction_factory.make_create_token("KINGS", 10_i64)
-    #       transaction2 = transaction_factory.make_burn_token("KINGS", 20_i64)
-    #       token = Token.new(block_factory.add_slow_blocks(10).add_slow_block([transaction1]).blockchain)
-    #       transactions = [transaction2]
+    it "burn token quantity should fail if token they are trying to burn does not exist in the db" do
+      with_factory do |block_factory, transaction_factory|
+        transaction = transaction_factory.make_burn_token("KINGS", 20_i64)
+        token = Token.new(block_factory.add_slow_blocks(10).blockchain)
+        transactions = [transaction]
 
-    #       result = token.valid_transactions?(transactions)
-    #       result.failed.size.should eq(1)
-    #       result.passed.size.should eq(0)
-    #       result.failed.map(&.reason).should eq(["you cannot burn 20 KINGS as you only have 10 KINGS available"])
-    #     end
-    #   end
-    # end
+        result = token.valid_transactions?(transactions)
+        result.failed.size.should eq(1)
+        result.passed.size.should eq(0)
+        result.failed.map(&.reason).should eq(["the token KINGS does not exist, you must create it before attempting to perform burn token"])
+      end
+    end
   end
 
   describe "#valid_token_name?" do

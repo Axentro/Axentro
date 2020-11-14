@@ -38,7 +38,10 @@ module ::Axentro::Core::DApps::BuildIn
         recipients_sum = transactions.select { |t| t.token == token }.flat_map(&.recipients).select { |r| r[:address] == address }.map(&.[:amount]).sum
         historic + (recipients_sum - (senders_sum + fees_sum))
       else
-        senders_sum = transactions.select { |t| t.token == token }.flat_map(&.senders).select { |s| s[:address] == address }.map(&.[:amount]).sum
+        # when tokens are created or updated the sender == recipient. This results in 0 pending amounts since the total is recipient - sender.
+        # so for these cases we discard the sender amount in the calculation.
+        exclusions = ["create_token", "update_token"]
+        senders_sum = transactions.reject{|t| exclusions.includes?(t.action)}.select { |t| t.token == token }.flat_map(&.senders).select { |s| s[:address] == address }.map(&.[:amount]).sum
         recipients_sum = transactions.select { |t| t.token == token }.flat_map(&.recipients).select { |r| r[:address] == address }.map(&.[:amount]).sum
         historic + (recipients_sum - (senders_sum))
       end
@@ -63,6 +66,7 @@ module ::Axentro::Core::DApps::BuildIn
 
       # remove coinbases as not required for validation here
       transactions.reject(&.is_coinbase?).each do |transaction|
+        # common rules
         raise "there must be 1 or less recipients" if transaction.recipients.size > 1
         raise "there must be 1 sender" if transaction.senders.size != 1
 
@@ -78,6 +82,7 @@ module ::Axentro::Core::DApps::BuildIn
         pay_token = sender[:amount]
         pay_default = (transaction.token == DEFAULT ? sender[:amount] : 0_i64) + sender[:fee]
 
+        # send rules
         total_available = amount_token + amount_token_as_recipients
         if (total_available - pay_token) < 0
           raise "Unable to send #{scale_decimal(pay_token)} #{transaction.token} to recipient because you do not have enough #{transaction.token}. You currently have: #{scale_decimal(amount_token)} #{transaction.token} and you are receiving: #{scale_decimal(amount_token_as_recipients)} #{transaction.token} from senders,  giving a total of: #{scale_decimal(total_available)} #{transaction.token}"
@@ -86,6 +91,14 @@ module ::Axentro::Core::DApps::BuildIn
         total_default_available = amount_default + amount_default_as_recipients
         if (total_default_available - pay_default) < 0
           raise "Unable to send #{scale_decimal(pay_default)} #{DEFAULT} to recipient because you do not have enough #{DEFAULT}. You currently have: #{scale_decimal(amount_default)} #{DEFAULT} and you are receiving: #{scale_decimal(amount_default_as_recipients)} #{DEFAULT} from senders,  giving a total of: #{scale_decimal(total_default_available)} #{DEFAULT}"
+        end
+
+        # burn token rules
+        if transaction.action == "burn_token"
+          total_available = amount_token
+          if (total_available - pay_token) < 0
+            raise "Unable to burn #{scale_decimal(pay_token)} #{transaction.token} because you do not have enough #{transaction.token}. You currently have: #{scale_decimal(amount_token)} #{transaction.token}"
+          end
         end
 
         vt << transaction.as_validated

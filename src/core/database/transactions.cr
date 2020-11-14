@@ -16,10 +16,11 @@ require "../dapps/dapp"
 require "../dapps/build_in/hra"
 
 module ::Axentro::Core::Data::Transactions
-  INTERNAL_ACTIONS = ["head", "send", "hra_buy", "hra_sell", "hra_cancel", "create_token", "update_token", "lock_token"]
+  INTERNAL_ACTIONS = ["head", "send", "hra_buy", "hra_sell", "hra_cancel", "create_token", "update_token", "lock_token", "burn_token"]
 
   def internal_actions_list
-    INTERNAL_ACTIONS.map { |action| "'#{action}'" }.uniq.join(",")
+    # exclude burn_token as this is used to calculate recipients sum
+    INTERNAL_ACTIONS.reject { |a| a == "burn_token" }.map { |action| "'#{action}'" }.uniq.join(",")
   end
 
   # ------- Definition -------
@@ -191,21 +192,24 @@ module ::Axentro::Core::Data::Transactions
     recipient_sum_per_address = get_recipient_sum_per_address(addresses)
     sender_sum_per_address = get_sender_sum_per_address(addresses)
     fee_sum_per_address = get_fee_sum_per_address(addresses)
+    burned_sum_per_address = get_burned_token_sum_per_address(addresses)
 
     addresses.each do |address|
       recipient_sum = recipient_sum_per_address[address]
       sender_sum = sender_sum_per_address[address]
-      unique_tokens = (recipient_sum + sender_sum).map(&.token).push("AXNT").uniq
+      burned_sum = burned_sum_per_address[address]
+      unique_tokens = (recipient_sum + sender_sum + burned_sum).map(&.token).push("AXNT").uniq
 
       unique_tokens.map do |token|
         recipient = recipient_sum.select { |r| r.token == token }.map(&.amount).sum
         sender = sender_sum.select { |s| s.token == token }.map(&.amount).sum
+        burned = burned_sum.select { |b| b.token == token }.map(&.amount).sum
         fee = fee_sum_per_address[address]
 
         if token == "AXNT"
           sender = sender + fee
         end
-        balance = recipient - sender
+        balance = recipient - (sender + burned)
 
         amounts_per_address[address] << TokenQuantity.new(token, balance)
       end
@@ -217,16 +221,19 @@ module ::Axentro::Core::Data::Transactions
   def get_address_amount(address : String) : Array(TokenQuantity)
     recipient_sum = get_recipient_sum(address)
     sender_sum = get_sender_sum(address)
-    unique_tokens = (recipient_sum + sender_sum).map(&.token).push("AXNT").uniq
+    burned_sum = get_burned_token_sum(address)
+    unique_tokens = (recipient_sum + sender_sum + burned_sum).map(&.token).push("AXNT").uniq
     fee = get_fee_sum(address)
     unique_tokens.map do |token|
       recipient = recipient_sum.select { |r| r.token == token }.map(&.amount).sum
       sender = sender_sum.select { |s| s.token == token }.map(&.amount).sum
+      burned = burned_sum.select { |b| b.token == token }.map(&.amount).sum
 
       if token == "AXNT"
         sender = sender + fee
       end
-      balance = recipient - sender
+
+      balance = recipient - (sender + burned)
 
       TokenQuantity.new(token, balance)
     end
@@ -356,6 +363,48 @@ module ::Axentro::Core::Data::Transactions
         amounts_per_address[address] = fee
       end
     end
+    amounts_per_address
+  end
+
+  private def get_burned_token_sum(address : String) : Array(TokenQuantity)
+    token_quantity = [] of TokenQuantity
+    @db.query(
+      "select t.token, sum(r.amount) " \
+      "from transactions t " \
+      "join recipients r on r.transaction_id = t.id " \
+      "where address = ? " \
+      "and t.action = 'burn_token' " \
+      "group by t.token",
+      address
+    ) do |rows|
+      rows.each do
+        token = rows.read(String)
+        amount = rows.read(Int64 | Nil) || 0_i64
+        token_quantity << TokenQuantity.new(token, amount)
+      end
+    end
+    token_quantity
+  end
+
+  private def get_burned_token_sum_per_address(addresses : Array(String)) : Hash(String, Array(TokenQuantity))
+    amounts_per_address : Hash(String, Array(TokenQuantity)) = {} of String => Array(TokenQuantity)
+    addresses.uniq.each { |a| amounts_per_address[a] = [] of TokenQuantity }
+    address_list = addresses.map { |a| "'#{a}'" }.uniq.join(",")
+    @db.query(
+      "select r.address, t.token, sum(r.amount) as 'burn' " \
+      "from transactions t " \
+      "join recipients r on r.transaction_id = t.id " \
+      "where r.address in (#{address_list}) " \
+      "and t.action = 'burn_token' " \
+      "group by t.token"
+      ) do |rows|
+        rows.each do
+          address = rows.read(String)
+          token = rows.read(String)
+          amount = rows.read(Int64 | Nil) || 0_i64
+          amounts_per_address[address] << TokenQuantity.new(token, amount)
+        end
+      end
     amounts_per_address
   end
 
