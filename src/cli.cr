@@ -200,7 +200,7 @@ module ::Axentro::Interface
         message:    message,
         token:      token,
         kind:       kind,
-        version:    TransactionVersion::V1
+        version:    TransactionVersion::V1,
       }.to_json
 
       body = rpc(node, payload)

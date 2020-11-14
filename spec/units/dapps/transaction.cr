@@ -76,7 +76,7 @@ describe TransactionCreator do
             message:    "",
             token:      TOKEN_DEFAULT,
             kind:       "SLOW",
-            version:    "V1"
+            version:    "V1",
           }.to_json
 
           json = JSON.parse(payload)

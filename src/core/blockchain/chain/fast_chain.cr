@@ -151,7 +151,7 @@ module ::Axentro::Core::FastChain
       "0",           # prev_hash
       __timestamp,   # timestamp
       1,             # scaled
-      TransactionKind::FAST, 
+      TransactionKind::FAST,
       TransactionVersion::V1
     )
   end
