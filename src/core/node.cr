@@ -387,7 +387,7 @@ module ::Axentro::Core
     end
 
     def broadcast_transaction(transaction : Transaction, from : Chord::NodeContext? = nil)
-      info "new #{transaction.kind} transaction coming: #{transaction.short_id}"
+      debug "new #{transaction.kind} transaction coming: #{transaction.short_id}"
 
       send_transaction(transaction, from)
 
@@ -403,7 +403,7 @@ module ::Axentro::Core
       miner_nonce = _m_content.nonce
       from = _m_content.from
 
-      info "new miner nonce coming: #{miner_nonce.value} from node: #{miner_nonce.node_id} for address: #{miner_nonce.address}"
+      debug "new miner nonce coming: #{miner_nonce.value} from node: #{miner_nonce.node_id} for address: #{miner_nonce.address}"
 
       send_miner_nonce(miner_nonce, from)
       @blockchain.add_miner_nonce(miner_nonce)
@@ -768,7 +768,7 @@ module ::Axentro::Core
 
       miner_nonces = _m_content.nonces
 
-      info "received #{miner_nonces.size} miner nonces"
+      debug "received #{miner_nonces.size} miner nonces"
 
       @blockchain.replace_miner_nonces(miner_nonces)
 
