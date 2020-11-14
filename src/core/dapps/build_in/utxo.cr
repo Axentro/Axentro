@@ -41,7 +41,7 @@ module ::Axentro::Core::DApps::BuildIn
         # when tokens are created or updated the sender == recipient. This results in 0 pending amounts since the total is recipient - sender.
         # so for these cases we discard the sender amount in the calculation.
         exclusions = ["create_token", "update_token"]
-        senders_sum = transactions.reject{|t| exclusions.includes?(t.action)}.select { |t| t.token == token }.flat_map(&.senders).select { |s| s[:address] == address }.map(&.[:amount]).sum
+        senders_sum = transactions.reject { |t| exclusions.includes?(t.action) }.select { |t| t.token == token }.flat_map(&.senders).select { |s| s[:address] == address }.map(&.[:amount]).sum
         recipients_sum = transactions.select { |t| t.token == token }.flat_map(&.recipients).select { |r| r[:address] == address }.map(&.[:amount]).sum
         historic + (recipients_sum - (senders_sum))
       end
@@ -55,6 +55,7 @@ module ::Axentro::Core::DApps::BuildIn
       Data::Transactions::INTERNAL_ACTIONS.includes?(action)
     end
 
+    # ameba:disable Metrics/CyclomaticComplexity
     def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
       # get amounts for all addresses into an in memory structure for all relevant tokens
       addresses = transactions.flat_map { |t| t.senders.map { |s| s[:address] } }

@@ -61,7 +61,7 @@ module ::Axentro::Interface::Axe
       when I18n.translate("axe.cli.token.lock.title")
         return lock
       when I18n.translate("axe.cli.token.burn.title")
-        return burn  
+        return burn
       when I18n.translate("axe.cli.token.list.title")
         return list
       end

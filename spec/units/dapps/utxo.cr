@@ -266,7 +266,7 @@ describe UTXO do
         with_factory do |block_factory, transaction_factory|
           transaction1 = transaction_factory.make_create_token("KINGS", 10_i64)
           transaction2 = transaction_factory.make_burn_token("KINGS", 20_i64)
-         
+
           utxo = UTXO.new(block_factory.add_slow_blocks(10).add_slow_block([transaction1]).blockchain)
           transactions = [transaction2]
 

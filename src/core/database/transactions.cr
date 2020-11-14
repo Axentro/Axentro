@@ -397,14 +397,14 @@ module ::Axentro::Core::Data::Transactions
       "where r.address in (#{address_list}) " \
       "and t.action = 'burn_token' " \
       "group by t.token"
-      ) do |rows|
-        rows.each do
-          address = rows.read(String)
-          token = rows.read(String)
-          amount = rows.read(Int64 | Nil) || 0_i64
-          amounts_per_address[address] << TokenQuantity.new(token, amount)
-        end
+    ) do |rows|
+      rows.each do
+        address = rows.read(String)
+        token = rows.read(String)
+        amount = rows.read(Int64 | Nil) || 0_i64
+        amounts_per_address[address] << TokenQuantity.new(token, amount)
       end
+    end
     amounts_per_address
   end
 
