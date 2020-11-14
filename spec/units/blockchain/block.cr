@@ -43,14 +43,14 @@ describe SlowBlock do
     it "should calculate merkle tree root when coinbase transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
       block = SlowBlock.new(2_i64, [coinbase_transaction], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS)
-      block.calculate_merkle_tree_root.should eq("e1b588d3459d6a82a2ab46eb832a713eab24d4d8")
+      block.calculate_merkle_tree_root.should eq("9632de14946bb268017a591a171c1f8a0ba640be")
     end
 
     it "should calculate merkle tree root when 2 transactions (first is coinbase)" do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = SlowBlock.new(2_i64, [coinbase_transaction, transaction1], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS)
-      block.calculate_merkle_tree_root.should eq("67212163cb1e428460cd9d3a2302b92b992eb7a5")
+      block.calculate_merkle_tree_root.should eq("4d15a9292afd5e4e53275bffe49badf3eafe6b1b")
     end
   end
 
@@ -142,7 +142,7 @@ describe SlowBlock do
         timestamp = chain[1].timestamp
         block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS)
         block.merkle_tree_root = "invalid"
-        expect_raises(Exception, "Invalid Merkle Tree Root: (expected invalid but got 56031743b6662cbbe3e7bc7f2a268967eaaa2687)") do
+        expect_raises(Exception, "Invalid Merkle Tree Root: (expected invalid but got d10753346b7c32ada2cafcad9449d08e07aa6e63)") do
           block.valid_as_latest?(block_factory.blockchain, false)
         end
       end
@@ -232,7 +232,8 @@ def a_fixed_coinbase_transaction
     "0",           # prev_hash
     0_i64,         # timestamp
     1,             # scaled
-    TransactionKind::SLOW
+    TransactionKind::SLOW,
+    TransactionVersion::V1
   )
 end
 
@@ -249,7 +250,8 @@ def a_coinbase_transaction(amount : Int64)
     "0",           # prev_hash
     0_i64,         # timestamp
     1,             # scaled
-    TransactionKind::SLOW
+    TransactionKind::SLOW,
+    TransactionVersion::V1
   )
 end
 
@@ -281,7 +283,8 @@ def a_fixed_signed_transaction
     "0",           # prev_hash
     0_i64,         # timestamp
     1,             # scaled
-    TransactionKind::SLOW
+    TransactionKind::SLOW,
+    TransactionVersion::V1
   )
 end
 

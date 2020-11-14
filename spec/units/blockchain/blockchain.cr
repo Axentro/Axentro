@@ -207,7 +207,8 @@ describe Blockchain do
         "0",    # prev_hash
         0_i64,  # timestamp
         1,      # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
       transaction = unsigned_transaction.as_signed([hacker_wallet])
 
@@ -246,7 +247,8 @@ describe Blockchain do
         "0",    # prev_hash
         0_i64,  # timestamp
         1,      # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
       transaction = unsigned_transaction.as_signed([hacker_wallet])
 

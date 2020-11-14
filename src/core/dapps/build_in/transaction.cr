@@ -51,8 +51,9 @@ module ::Axentro::Core::DApps::BuildIn
       message = json["message"].as_s
       token = json["token"].as_s
       kind = TransactionKind.parse(json["kind"].as_s)
+      version = TransactionVersion.parse(json["version"].as_s)
 
-      transaction = create_unsigned_transaction_impl(action, senders, recipients, message, token, kind)
+      transaction = create_unsigned_transaction_impl(action, senders, recipients, message, token, kind, version)
 
       context.response.print api_success(transaction)
       context
@@ -65,6 +66,7 @@ module ::Axentro::Core::DApps::BuildIn
       message : String,
       token : String,
       kind : TransactionKind,
+      version : TransactionVersion,
       id : String = Transaction.create_id
     )
       transaction = TransactionDecimal.new(
@@ -77,7 +79,8 @@ module ::Axentro::Core::DApps::BuildIn
         "0",         # prev_hash
         __timestamp, # timestamp
         0,           # scaled
-        kind
+        kind,
+        version
       ).to_transaction
 
       fee = transaction.total_fees

@@ -701,7 +701,8 @@ module ::Axentro::Core
         "0",           # prev_hash
         __timestamp,   # timestamp
         1,             # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
     end
 

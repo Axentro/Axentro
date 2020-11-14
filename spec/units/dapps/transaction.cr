@@ -76,6 +76,7 @@ describe TransactionCreator do
             message:    "",
             token:      TOKEN_DEFAULT,
             kind:       "SLOW",
+            version:    "V1"
           }.to_json
 
           json = JSON.parse(payload)
@@ -111,7 +112,8 @@ describe TransactionCreator do
               "0",           # prev_hash
               0_i64,         # timestamp
               1,             # scaled
-              TransactionKind::SLOW
+              TransactionKind::SLOW,
+              TransactionVersion::V1
             )
 
             signed_transaction = unsigned_transaction.as_signed([transaction_factory.sender_wallet])

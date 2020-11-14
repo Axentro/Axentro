@@ -20,6 +20,14 @@ module ::Axentro::Core::TransactionModels
     end
   end
 
+  enum TransactionVersion
+    V1
+
+    def to_json(builder : JSON::Builder)
+      builder.string(to_s)
+    end
+  end
+
   alias Sender = NamedTuple(
     address: String,
     public_key: String,

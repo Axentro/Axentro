@@ -137,7 +137,8 @@ describe SlowTransactionPool do
           "0",           # prev_hash
           0_i64,         # timestamp
           1,             # scaled
-          TransactionKind::SLOW
+          TransactionKind::SLOW,
+          TransactionVersion::V1
         )
       end
 
@@ -161,7 +162,8 @@ describe SlowTransactionPool do
           "0",           # prev_hash
           0_i64,         # timestamp
           1,             # scaled
-          TransactionKind::SLOW
+          TransactionKind::SLOW,
+          TransactionVersion::V1
         )
       end
 

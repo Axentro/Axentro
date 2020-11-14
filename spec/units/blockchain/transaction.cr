@@ -37,7 +37,8 @@ describe Transaction do
       "0",           # prev_hash
       0_i64,         # timestamp
       1,             # scaled
-      TransactionKind::SLOW
+      TransactionKind::SLOW,
+      TransactionVersion::V1
     )
 
     transaction.action.should eq("send")
@@ -71,7 +72,8 @@ describe Transaction do
         "0",           # prev_hash
         0_i64,         # timestamp
         1,             # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
 
       signed_transaction = unsigned_transaction.as_signed([sender_wallet])
@@ -94,7 +96,8 @@ describe Transaction do
         "0",           # prev_hash
         0_i64,         # timestamp
         1,             # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
 
       signed_transaction = unsigned_transaction.as_signed([sender_wallet])
@@ -121,7 +124,8 @@ describe Transaction do
         "0",           # prev_hash
         0_i64,         # timestamp
         1,             # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
 
       transaction.sender_total_amount.should eq(10_i64)
@@ -143,7 +147,8 @@ describe Transaction do
         "0",           # prev_hash
         0_i64,         # timestamp
         1,             # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
 
       transaction.recipient_total_amount.should eq(10_i64)
@@ -165,7 +170,8 @@ describe Transaction do
         "0",           # prev_hash
         0_i64,         # timestamp
         1,             # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
 
       transaction.total_fees.should eq(10000_i64)

@@ -86,7 +86,8 @@ module ::Axentro::Core::DApps::User
             recipient,                                                        # recipient
             "Thanks for sending me 0.0001 AXNT! I'll back you 0.00005 AXNT!", # message
             TOKEN_DEFAULT,                                                    # token
-            TransactionKind::SLOW                                             # kind
+            TransactionKind::SLOW,                                            # kind
+            TransactionVersion::V1                                            # version
           )
 
           info "created a transaction from CreateTranscation(UserDApp): #{id}" if created

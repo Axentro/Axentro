@@ -25,7 +25,7 @@ module ::Axentro::Core::Data::Transactions
 
   # ------- Definition -------
   def transaction_table_create_string
-    "id text, idx integer, block_id integer, action text, message text, token text, prev_hash text, timestamp integer, scaled integer, kind text"
+    "id text, idx integer, block_id integer, action text, message text, token text, prev_hash text, timestamp integer, scaled integer, kind text, version text"
   end
 
   def transaction_primary_key_string
@@ -33,13 +33,13 @@ module ::Axentro::Core::Data::Transactions
   end
 
   def transaction_insert_fields_string
-    "?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
+    "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
   end
 
   # ------- Insert -------
   def transaction_insert_values_array(t : Transaction, transaction_idx : Int32, block_index : Int64) : Array(DB::Any)
     ary = [] of DB::Any
-    ary << t.id << transaction_idx << block_index << t.action << t.message << t.token << t.prev_hash << t.timestamp << t.scaled << t.kind.to_s
+    ary << t.id << transaction_idx << block_index << t.action << t.message << t.token << t.prev_hash << t.timestamp << t.scaled << t.kind.to_s << t.version.to_s
   end
 
   # ------- Query -------
@@ -490,8 +490,10 @@ module ::Axentro::Core::Data::Transactions
         scaled = rows.read(Int32)
         kind_string = rows.read(String)
         kind = kind_string == "SLOW" ? TransactionKind::SLOW : TransactionKind::FAST
+        version_string = rows.read(String)
+        version = TransactionVersion.parse(version_string)
 
-        t = Transaction.new(t_id, action, [] of Transaction::Sender, [] of Transaction::Recipient, message, token, prev_hash, timestamp, scaled, kind)
+        t = Transaction.new(t_id, action, [] of Transaction::Sender, [] of Transaction::Recipient, message, token, prev_hash, timestamp, scaled, kind, version)
         transactions << t
         verbose "reading transaction #{ti} from database with short ID of #{t.short_id}" if ti < 4
         ti += 1

@@ -59,13 +59,14 @@ module ::Axentro::Core::DApps::User
           transaction_id = Transaction.create_id
 
           created = create_transaction(
-            transaction_id,       # id
-            "send",               # action
-            sender,               # sender
-            recipient,            # recipient
-            "",                   # message
-            TOKEN_DEFAULT,        # token
-            TransactionKind::FAST # kind
+            transaction_id,        # id
+            "send",                # action
+            sender,                # sender
+            recipient,             # recipient
+            "",                    # message
+            TOKEN_DEFAULT,         # token
+            TransactionKind::FAST, # kind
+            TransactionVersion::V1 # version
           )
 
           @address_time_map[address] = Time.local.day_of_year

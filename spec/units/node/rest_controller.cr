@@ -633,7 +633,8 @@ describe RESTController do
           "0",           # prev_hash
           0_i64,         # timestamp
           0,             # scaled
-          TransactionKind::SLOW
+          TransactionKind::SLOW,
+          TransactionVersion::V1
         )
         body = IO::Memory.new(unsigned_transaction.to_json)
         exec_rest_api(block_factory.rest.__v1_transaction_unsigned(context("/api/v1/node/node_id", "POST", body), no_params)) do |result|

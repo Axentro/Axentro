@@ -208,7 +208,8 @@ module ::Units::Utils::ChainGenerator
         "0",           # prev_hash
         0,             # timestamp
         0,             # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       ).to_transaction
     end
 
@@ -224,7 +225,8 @@ module ::Units::Utils::ChainGenerator
         "0",   # prev_hash
         0_i64, # timestamp
         1,     # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -241,7 +243,8 @@ module ::Units::Utils::ChainGenerator
         "0",   # prev_hash
         0_i64, # timestamp
         1,     # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -258,7 +261,8 @@ module ::Units::Utils::ChainGenerator
         "0",   # prev_hash
         0_i64, # timestamp
         1,     # scaled
-        TransactionKind::FAST
+        TransactionKind::FAST,
+        TransactionVersion::V1
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -275,7 +279,8 @@ module ::Units::Utils::ChainGenerator
         "0",   # prev_hash
         0_i64, # timestamp
         1,     # scaled
-        transaction_kind
+        transaction_kind,
+        TransactionVersion::V1
       )
       unsigned_transaction.as_signed(signer_wallets)
     end
@@ -298,7 +303,8 @@ module ::Units::Utils::ChainGenerator
         prev_hash,     # prev_hash
         0_i64,         # timestamp
         1,             # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -315,7 +321,8 @@ module ::Units::Utils::ChainGenerator
         "0",           # prev_hash
         0_i64,         # timestamp
         1,             # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -332,7 +339,8 @@ module ::Units::Utils::ChainGenerator
         "0",           # prev_hash
         0_i64,         # timestamp
         1,             # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
       unsigned_transaction.as_signed([recipient_wallet])
     end
@@ -349,7 +357,8 @@ module ::Units::Utils::ChainGenerator
         "0",           # prev_hash
         0_i64,         # timestamp
         1,             # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -366,7 +375,8 @@ module ::Units::Utils::ChainGenerator
         "0",           # prev_hash
         0_i64,         # timestamp
         1,             # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -383,7 +393,8 @@ module ::Units::Utils::ChainGenerator
         "0",           # prev_hash
         0_i64,         # timestamp
         1,             # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -400,7 +411,8 @@ module ::Units::Utils::ChainGenerator
         "0",           # prev_hash
         0_i64,         # timestamp
         1,             # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -417,7 +429,8 @@ module ::Units::Utils::ChainGenerator
         "0",           # prev_hash
         0_i64,         # timestamp
         1,             # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -434,7 +447,8 @@ module ::Units::Utils::ChainGenerator
         "0",   # prev_hash
         0_i64, # timestamp
         1,     # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -451,7 +465,8 @@ module ::Units::Utils::ChainGenerator
         "0",   # prev_hash
         0_i64, # timestamp
         1,     # scaled
-        transaction_kind
+        transaction_kind,
+        TransactionVersion::V1
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -468,7 +483,8 @@ module ::Units::Utils::ChainGenerator
         "0",   # prev_hash
         0_i64, # timestamp
         1,     # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -485,7 +501,8 @@ module ::Units::Utils::ChainGenerator
         "0",   # prev_hash
         0_i64, # timestamp
         1,     # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -502,7 +519,8 @@ module ::Units::Utils::ChainGenerator
         "0",   # prev_hash
         0_i64, # timestamp
         1,     # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -519,7 +537,8 @@ module ::Units::Utils::ChainGenerator
         "0",   # prev_hash
         0_i64, # timestamp
         1,     # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
       unsigned_transaction.as_signed([sender_wallet])
     end
@@ -536,7 +555,8 @@ module ::Units::Utils::ChainGenerator
         "0",   # prev_hash
         0_i64, # timestamp
         1,     # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
       unsigned_transaction.as_signed([sender_wallet])
     end

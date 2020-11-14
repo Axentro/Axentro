@@ -54,7 +54,8 @@ describe Validation::Transaction do
           "0",           # prev_hash
           0_i64,         # timestamp
           1,             # scaled
-          TransactionKind::SLOW
+          TransactionKind::SLOW,
+          TransactionVersion::V1
         )
         coinbase_transaction = transaction_factory.make_coinbase
         transaction = unsigned_transaction.as_signed([sender_wallet])
@@ -97,7 +98,8 @@ describe Validation::Transaction do
           "0",           # prev_hash
           0_i64,         # timestamp
           1,             # scaled
-          TransactionKind::SLOW
+          TransactionKind::SLOW,
+          TransactionVersion::V1
         )
 
         transactions = [coinbase_transaction]
@@ -121,7 +123,8 @@ describe Validation::Transaction do
           "0",           # prev_hash
           0_i64,         # timestamp
           1,             # scaled
-          TransactionKind::SLOW
+          TransactionKind::SLOW,
+          TransactionVersion::V1
         )
 
         transactions = [coinbase_transaction]
@@ -146,7 +149,8 @@ describe Validation::Transaction do
           "0",           # prev_hash
           0_i64,         # timestamp
           1,             # scaled
-          TransactionKind::SLOW
+          TransactionKind::SLOW,
+          TransactionVersion::V1
         )
 
         transactions = [coinbase_transaction]
@@ -171,7 +175,8 @@ describe Validation::Transaction do
           "0",       # prev_hash
           0_i64,     # timestamp
           1,         # scaled
-          TransactionKind::SLOW
+          TransactionKind::SLOW,
+          TransactionVersion::V1
         )
 
         transactions = [coinbase_transaction]
@@ -196,7 +201,8 @@ describe Validation::Transaction do
           "0",           # prev_hash
           0_i64,         # timestamp
           1,             # scaled
-          TransactionKind::SLOW
+          TransactionKind::SLOW,
+          TransactionVersion::V1
         )
 
         transactions = [coinbase_transaction]
@@ -221,7 +227,8 @@ describe Validation::Transaction do
           "1",           # prev_hash
           0_i64,         # timestamp
           1,             # scaled
-          TransactionKind::SLOW
+          TransactionKind::SLOW,
+          TransactionVersion::V1
         )
 
         transactions = [coinbase_transaction]
@@ -247,7 +254,8 @@ describe Validation::Transaction do
             "0",           # prev_hash
             0_i64,         # timestamp
             1,             # scaled
-            TransactionKind::SLOW
+            TransactionKind::SLOW,
+            TransactionVersion::V1
           )
 
           transactions = [coinbase_transaction]
@@ -273,7 +281,8 @@ describe Validation::Transaction do
             "0",           # prev_hash
             0_i64,         # timestamp
             1,             # scaled
-            TransactionKind::FAST
+            TransactionKind::FAST,
+            TransactionVersion::V1
           )
 
           transactions = [coinbase_transaction]
@@ -424,7 +433,8 @@ describe Validation::Transaction do
           "0",           # prev_hash
           0_i64,         # timestamp
           1,             # scaled
-          TransactionKind::SLOW
+          TransactionKind::SLOW,
+          TransactionVersion::V1
         )
 
         transactions = [transaction]
@@ -454,7 +464,8 @@ describe Validation::Transaction do
           "0",           # prev_hash
           0_i64,         # timestamp
           1,             # scaled
-          TransactionKind::SLOW
+          TransactionKind::SLOW,
+          TransactionVersion::V1
         )
         transaction = unsigned_transaction.as_signed([transaction_factory.sender_wallet])
 

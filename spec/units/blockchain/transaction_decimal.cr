@@ -33,7 +33,8 @@ describe TransactionDecimal do
       "0",           # prev_hash
       0_i64,         # timestamp
       0,             # scaled
-      TransactionKind::SLOW
+      TransactionKind::SLOW,
+      TransactionVersion::V1
     )
 
     transaction.action.should eq("send")
@@ -69,7 +70,8 @@ describe TransactionDecimal do
         "0",           # prev_hash
         0_i64,         # timestamp
         1,             # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       )
     end
   end
@@ -89,7 +91,8 @@ describe TransactionDecimal do
       "0",           # prev_hash
       0_i64,         # timestamp
       0,             # scaled
-      TransactionKind::SLOW
+      TransactionKind::SLOW,
+      TransactionVersion::V1
     )
     non_decimal = transaction.to_transaction
     typeof(non_decimal).should eq(Axentro::Core::Transaction)

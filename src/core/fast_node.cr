@@ -37,7 +37,8 @@ module ::Axentro::Core
         "0",            # prev_hash
         0,              # timestamp
         0,              # scaled
-        TransactionKind::SLOW
+        TransactionKind::SLOW,
+        TransactionVersion::V1
       ).to_transaction]
     end
   end

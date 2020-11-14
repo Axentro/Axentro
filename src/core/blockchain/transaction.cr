@@ -256,7 +256,8 @@ module ::Axentro::Core
       prev_hash: String,
       timestamp: Int64,
       scaled: Int32,
-      kind: TransactionKind
+      kind: TransactionKind,
+      version: TransactionVersion
     )
     # include JSON::Serializable
     # property id : String
@@ -269,6 +270,7 @@ module ::Axentro::Core
     # property timestamp : Int64
     # property scaled : Int32
     # property kind : TransactionKind
+    # property version : TransactionVersion
 
     setter prev_hash : String
     @common_validated : Bool = false
@@ -283,7 +285,8 @@ module ::Axentro::Core
       @prev_hash : String,
       @timestamp : Int64,
       @scaled : Int32,
-      @kind : TransactionKind
+      @kind : TransactionKind,
+      @version : TransactionVersion
     )
     end
 
@@ -351,7 +354,8 @@ module ::Axentro::Core
         "0",
         self.timestamp,
         self.scaled,
-        self.kind
+        self.kind,
+        self.version
       )
     end
 
@@ -380,7 +384,8 @@ module ::Axentro::Core
         "0",
         self.timestamp,
         self.scaled,
-        self.kind
+        self.kind,
+        self.version
       )
     end
 
@@ -422,6 +427,7 @@ module ::Axentro::Core
       return false unless @timestamp == other.timestamp
       return false unless @scaled == other.scaled
       return false unless @kind == other.kind
+      return false unless @version == other.version
 
       true
     end

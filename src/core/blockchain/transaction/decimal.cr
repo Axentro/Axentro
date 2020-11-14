@@ -23,6 +23,7 @@ module ::Axentro::Core
     property timestamp : Int64
     property scaled : Int32
     property kind : TransactionKind
+    property version : TransactionVersion
 
     def initialize(
       @id : String,
@@ -34,7 +35,8 @@ module ::Axentro::Core
       @prev_hash : String,
       @timestamp : Int64,
       @scaled : Int32,
-      @kind : TransactionKind
+      @kind : TransactionKind,
+      @version : TransactionVersion
     )
       raise "invalid decimal transaction (expected scaled: 0 but received #{@scaled})" if @scaled != 0
     end
@@ -50,7 +52,8 @@ module ::Axentro::Core
         @prev_hash,
         @timestamp,
         1,
-        @kind
+        @kind,
+        @version
       )
     end
 

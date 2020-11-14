@@ -209,7 +209,8 @@ module ::Axentro::Core::DApps::User
       recipients : RecipientsDecimal,
       message : String,
       token : String,
-      kind : TransactionKind
+      kind : TransactionKind,
+      version : TransactionVersion
     ) : Bool
       if blockchain.indices.get(id)
         info "skip creating transaction #{id}"
@@ -223,6 +224,7 @@ module ::Axentro::Core::DApps::User
         message,
         token,
         kind,
+        version,
         id,
       )
 
