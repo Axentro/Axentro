@@ -14,7 +14,7 @@ module ::Axentro::Core::DApps::User
   #
   # please add your dApps into the 'USER_DAPPS'
   #
-  USER_DAPPS = %w(TestCurrency)
+  USER_DAPPS = %w(TestCurrency PrivateSale)
 
   {% for dapp in USER_DAPPS %}
     @{{ dapp.id.underscore }} : {{ dapp.id }}?

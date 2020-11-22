@@ -34,6 +34,7 @@ require "i18n"
 require "baked_file_system"
 require "tallboy"
 require "defense"
+require "crest"
 
 require "./common"
 require "./core/modules"

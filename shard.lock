@@ -8,6 +8,10 @@ shards:
     git: https://github.com/schovi/baked_file_system.git
     version: 0.9.8
 
+  crest:
+    git: https://github.com/mamantoha/crest.git
+    version: 0.26.1
+
   crystal-argon2:
     git: https://github.com/axentro/crystal-argon2.git
     version: 0.1.1
@@ -23,6 +27,14 @@ shards:
   ed25519-hd:
     git: https://github.com/axentro/ed25519-hd.git
     version: 0.1.2
+
+  http-client-digest_auth:
+    git: https://github.com/mamantoha/http-client-digest_auth.git
+    version: 0.4.0
+
+  http_proxy:
+    git: https://github.com/mamantoha/http_proxy.git
+    version: 0.7.1
 
   humanhash:
     git: https://github.com/kingsleyh/humanhash.git

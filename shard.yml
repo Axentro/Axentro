@@ -43,6 +43,9 @@ dependencies:
     github: epoch/tallboy   
   defense:
     github: defense-cr/defense
+  crest:
+    github: mamantoha/crest
+
 
 
 development_dependencies:
