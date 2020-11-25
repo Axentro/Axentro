@@ -524,7 +524,8 @@ module ::Axentro::Core::NodeComponents
     def stabilise_finger_table
       sockets = [] of HTTP::WebSocket
       @finger_table.each do |ctx|
-        socket = HTTP::WebSocket.new(ctx[:host], "/peer", ctx[:port], @use_ssl)
+        debug "stabilize finger table: #{ctx[:host]}:#{ctx[:port]}}"
+        socket = HTTP::WebSocket.new(ctx[:host], "/peer", ctx[:port], ctx[:ssl])
         sockets << socket
         socket.ping
       rescue i : IO::Error
