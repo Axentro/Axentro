@@ -42,6 +42,17 @@ module ::Axentro::Interface::Axen
       ])
     end
 
+    private def get_connecting_port(use_ssl : Bool)
+      if connect_node = G.op.__connect_node
+        connect_uri = URI.parse(connect_node)
+        if use_ssl
+          connect_uri.port || 443
+        else
+          connect_uri.port || 80
+        end
+      end
+    end
+
     def run_impl(action_name)
       puts_help(HELP_WALLET_PATH) unless wallet_path = G.op.__wallet_path
 
@@ -62,7 +73,7 @@ module ::Axentro::Interface::Axen
       if connect_node = G.op.__connect_node
         connect_uri = URI.parse(connect_node)
         use_ssl = (connect_uri.scheme == "https")
-        has_first_connection = !connect_uri.host.nil? && !connect_uri.port.nil?
+        has_first_connection = !connect_uri.host.nil?
       end
 
       wallet = get_wallet(wallet_path, G.op.__wallet_password)
@@ -81,8 +92,10 @@ module ::Axentro::Interface::Axen
       max_miners = G.op.__max_miners
       max_nodes = G.op.__max_nodes
 
+      connection_port = get_connecting_port(use_ssl)
+
       node = if has_first_connection
-               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, connect_uri.not_nil!.host, connect_uri.not_nil!.port, wallet, database, developer_fund, official_nodes, G.op.__exit_if_unofficial, security_level_percentage, max_miners, max_nodes, use_ssl)
+               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, connect_uri.not_nil!.host, connection_port, wallet, database, developer_fund, official_nodes, G.op.__exit_if_unofficial, security_level_percentage, max_miners, max_nodes, use_ssl)
              else
                Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, nil, nil, wallet, database, developer_fund, official_nodes, G.op.__exit_if_unofficial, security_level_percentage, max_miners, max_nodes, use_ssl)
              end

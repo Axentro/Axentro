@@ -29,6 +29,14 @@ module ::Axentro::Interface::Axem
       ])
     end
 
+    private def get_connecting_port(node_uri : URI, use_ssl : Bool)
+      if use_ssl
+        node_uri.port || 443
+      else
+        node_uri.port || 80
+      end
+    end
+
     def run_impl(action_name)
       puts_help(HELP_WALLET_PATH) unless wallet_path = G.op.__wallet_path
       puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
@@ -37,7 +45,7 @@ module ::Axentro::Interface::Axem
       use_ssl = (node_uri.scheme == "https")
 
       puts_help(HELP_CONNECTING_NODE) unless host = node_uri.host
-      puts_help(HELP_CONNECTING_NODE) unless port = node_uri.port
+      puts_help(HELP_CONNECTING_NODE) unless port = get_connecting_port(node_uri, use_ssl)
 
       wallet = get_wallet(wallet_path, G.op.__wallet_password)
       wallet_is_testnet = (Core::Wallet.address_network_type(wallet.address)[:name] == "testnet")
