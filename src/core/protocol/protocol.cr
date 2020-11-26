@@ -137,14 +137,18 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     property version : Int32
     property context : Core::NodeComponents::Chord::NodeContext
+    property validation_hash : String
+    property validation_blocks : Array(Int64)
   end
 
   M_TYPE_CHORD_JOIN_PRIVATE = 0x0012
 
-  struct MContentChordJoinProvate
+  struct MContentChordJoinPrivate
     include JSON::Serializable
     property version : Int32
     property context : Core::NodeComponents::Chord::NodeContext
+    property validation_hash : String
+    property validation_blocks : Array(Int64)
   end
 
   M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED = 0x0013

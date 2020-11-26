@@ -52,8 +52,8 @@ describe Blockchain do
       with_factory do |block_factory|
         block_factory.add_slow_blocks(50).add_fast_blocks(50).chain
         blockchain = block_factory.blockchain
-        random_blocks = blockchain.get_random_block_ids(blockchain.latest_slow_block.index, blockchain.latest_fast_block_index_or_zero)
-        random_blocks.size.should eq(20)
+        random_blocks = blockchain.get_validation_block_ids(blockchain.latest_slow_block.index, blockchain.latest_fast_block_index_or_zero)
+        random_blocks.size.should eq(101)
       end
     end
   end
