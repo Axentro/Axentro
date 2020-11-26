@@ -69,8 +69,7 @@ module ::Axentro::Core
 
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @blockchain = Blockchain.new(@network_type, @wallet, @database, @developer_fund, @official_nodes, @security_level_percentage, @max_miners, is_standalone?)
-      @validation_manager = ValidationManager.new(@blockchain, @bind_host, @bind_port, @use_ssl)
-      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @validation_manager, @max_private_nodes, @wallet.address, @blockchain.official_node, @exit_on_unofficial)
+      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @max_private_nodes, @wallet.address, @blockchain.official_node, @exit_on_unofficial)
       @miners_manager = MinersManager.new(@blockchain)
       @clients_manager = ClientsManager.new(@blockchain)
 
@@ -287,16 +286,6 @@ module ::Axentro::Core
           @clients_manager.upgrade(socket, message_content)
         when M_TYPE_CLIENT_CONTENT
           @clients_manager.receive_content(message_content)
-        when M_TYPE_VALIDATION_REQUEST
-          @validation_manager.validation_requested(socket, message_content)
-        when M_TYPE_VALIDATION_CHALLENGE
-          @validation_manager.validation_challenge_received(socket, message_content)
-        when M_TYPE_VALIDATION_CHALLENGE_RESPONSE
-          @validation_manager.validation_challenge_response_received(socket, message_content)
-        when M_TYPE_VALIDATION_SUCCEEDED
-          @validation_manager.validation_challenge_result_received(self, socket, message_content, message_type)
-        when M_TYPE_VALIDATION_FAILED
-          @validation_manager.validation_challenge_result_received(self, socket, message_content, message_type)
         when M_TYPE_CHORD_JOIN
           @chord.join(self, socket, message_content)
         when M_TYPE_CHORD_JOIN_PRIVATE
@@ -814,18 +803,6 @@ module ::Axentro::Core
       end
     end
 
-    def validate_database
-      debug "Validating database ... "
-      if @connect_host && @connect_port
-        @validation_manager.send_validation_request(self, @connect_host.not_nil!, @connect_port.not_nil!, @blockchain.latest_slow_block.index, @blockchain.latest_fast_block_index_or_zero)
-      else
-        warning "no connecting node has been specified"
-        warning "so this node is standalone from other network"
-        @phase = SetupPhase::PRE_DONE
-        proceed_setup
-      end
-    end
-
     def load_blockchain_from_database
       @blockchain.setup(self)
 
@@ -848,7 +825,7 @@ module ::Axentro::Core
         unless @developer_fund.nil?
           info "Developer fund has been invoked based on this configuration: #{@developer_fund.not_nil!.get_path}"
         end
-        @phase = SetupPhase::DATABASE_VALIDATING
+        @phase = SetupPhase::CONNECTING_NODES
         proceed_setup
       end
     end
@@ -862,8 +839,6 @@ module ::Axentro::Core
         proceed_setup
       when SetupPhase::BLOCKCHAIN_LOADING
         load_blockchain_from_database
-      when SetupPhase::DATABASE_VALIDATING
-        validate_database
       when SetupPhase::CONNECTING_NODES
         setup_connectivity
       when SetupPhase::BLOCKCHAIN_SYNCING

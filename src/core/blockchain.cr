@@ -282,21 +282,22 @@ module ::Axentro::Core
       [slow_result, fast_result].includes?(true)
     end
 
-    def get_random_block_ids(max_slow_block_id : Int64, max_fast_block_id : Int64)
-      the_indexes = [] of Int64
-      number_of_slow_block_ids = ((max_slow_block_id / 2) / (100_i64 / @security_level_percentage)).to_i64
-      number_of_fast_block_ids = (((max_fast_block_id + 1) / 2) / (100_i64 / @security_level_percentage)).to_i64
-      (1_i64..number_of_slow_block_ids).step do
-        randy = Random.new.rand(0_i64..max_slow_block_id)
-        randy += 1 if (randy % 2) != 0
-        the_indexes << randy
-      end
-      (1_i64..number_of_fast_block_ids).step do
-        randy = Random.new.rand(0_i64..max_fast_block_id)
-        randy += 1 if (randy % 2) == 0
-        the_indexes << randy
-      end
-      the_indexes
+    def get_validation_block_ids(max_slow_block_id : Int64, max_fast_block_id : Int64) : Array(Int64)
+      slow_blocks = (0_i64..max_slow_block_id).to_a.reject(&.odd?)
+      first_50_slow = slow_blocks.first(50)
+      last_50_slow = slow_blocks.last(50)
+
+      fast_blocks = (0_i64..max_fast_block_id).to_a.reject(&.even?)
+      first_50_fast = fast_blocks.first(50)
+      last_50_fast = fast_blocks.last(50)
+
+      percentage_slow = (max_slow_block_id*SECURITY_LEVEL_PERCENTAGE*0.01).ceil.to_i
+      percentage_fast = (max_fast_block_id*SECURITY_LEVEL_PERCENTAGE*0.01).ceil.to_i
+
+      percent_slow = slow_blocks.shuffle.first(percentage_slow)
+      percent_fast = fast_blocks.shuffle.first(percentage_fast)
+
+      (first_50_slow + last_50_slow + first_50_fast + last_50_fast + percent_slow + percent_fast).uniq
     end
 
     def get_hash_of_block_hashes(block_ids : Array(Int64))
