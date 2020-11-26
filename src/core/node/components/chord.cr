@@ -52,7 +52,6 @@ module ::Axentro::Core::NodeComponents
       @network_type : String,
       @is_private : Bool,
       @use_ssl : Bool,
-      @validation_manager : ValidationManager,
       @max_private_nodes : Int32,
       @wallet_address : String,
       @official_node : DApps::BuildIn::OfficialNode,
@@ -91,9 +90,8 @@ module ::Axentro::Core::NodeComponents
         connect_port,
         M_TYPE_CHORD_JOIN,
         {
-          version:         Core::CORE_VERSION,
-          context:         context,
-          validation_hash: @validation_manager.calculated_validation_hash,
+          version: Core::CORE_VERSION,
+          context: context,
         })
     rescue e : Exception
       error "failed to connect #{connect_host}:#{connect_port}"
@@ -120,9 +118,8 @@ module ::Axentro::Core::NodeComponents
         socket,
         M_TYPE_CHORD_JOIN_PRIVATE,
         {
-          version:         Core::CORE_VERSION,
-          context:         context,
-          validation_hash: @validation_manager.calculated_validation_hash,
+          version: Core::CORE_VERSION,
+          context: context,
         }
       )
     rescue e : Exception
@@ -137,7 +134,6 @@ module ::Axentro::Core::NodeComponents
       _m_content = MContentChordJoin.from_json(_content)
 
       _context = _m_content.context
-      validation_hash = _m_content.validation_hash
 
       debug "#{_context[:host]}:#{_context[:port]} try to join Axentro"
 
@@ -147,18 +143,13 @@ module ::Axentro::Core::NodeComponents
         return
       end
 
-      if @validation_manager.node_passed_validation?(validation_hash)
-        search_successor(node, _context)
-      else
-        send_once(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Node has not passed database validation."})
-      end
+      search_successor(node, _context)
     end
 
     def join_private(node, socket, _content)
       _m_content = MContentChordJoinProvate.from_json(_content)
 
       _context = _m_content.context
-      validation_hash = _m_content.validation_hash
 
       debug "private node trying to join Axentro"
 
@@ -173,16 +164,11 @@ module ::Axentro::Core::NodeComponents
         return
       end
 
-      debug "connecting node submitted a validation hash of #{validation_hash}"
-      if @validation_manager.node_passed_validation?(validation_hash)
-        @private_nodes << {
-          socket:  socket,
-          context: _context,
-        }
-        send(socket, M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED, {context: context})
-      else
-        send(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Node has not passed database validation."})
-      end
+      @private_nodes << {
+        socket:  socket,
+        context: _context,
+      }
+      send(socket, M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED, {context: context})
     end
 
     def join_private_accepted(node, socket, _content)

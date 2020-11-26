@@ -137,7 +137,6 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     property version : Int32
     property context : Core::NodeComponents::Chord::NodeContext
-    property validation_hash : String
   end
 
   M_TYPE_CHORD_JOIN_PRIVATE = 0x0012
@@ -146,7 +145,6 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     property version : Int32
     property context : Core::NodeComponents::Chord::NodeContext
-    property validation_hash : String
   end
 
   M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED = 0x0013
@@ -333,7 +331,6 @@ module ::Axentro::Core::Protocol
   enum SetupPhase
     NONE
     BLOCKCHAIN_LOADING
-    DATABASE_VALIDATING
     CONNECTING_NODES
     BLOCKCHAIN_SYNCING
     TRANSACTION_SYNCING
