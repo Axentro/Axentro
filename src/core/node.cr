@@ -270,7 +270,6 @@ module ::Axentro::Core
 
     # ameba:disable Metrics/CyclomaticComplexity
     def peer(socket : HTTP::WebSocket)
-
       socket.on_ping do |message|
         debug "received ping from miner: #{message}"
         socket.pong(message)
