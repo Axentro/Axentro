@@ -35,7 +35,7 @@ module ::Axentro::Core::NodeComponents
       return unless node.phase == SetupPhase::DONE
       verbose "received heartbeat from miner"
       send(socket, M_TYPE_MINER_RECEIVE_HEARTBEAT, {
-        timestamp:    __timestamp
+        timestamp: __timestamp,
       })
     end
 

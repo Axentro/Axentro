@@ -41,7 +41,7 @@ module ::Axentro::Core
           _block_update(message_content)
         when M_TYPE_MINER_RECEIVE_HEARTBEAT
           _m_content = MContentMinerReceiveHeartbeat.from_json(message_content)
-          verbose "received hearbeat from node at: #{_m_content.timestamp}"  
+          verbose "received hearbeat from node at: #{_m_content.timestamp}"
         end
       rescue e : Exception
         warning "receive invalid message, will be ignored"
@@ -87,8 +87,8 @@ module ::Axentro::Core
     end
 
     private def start_heartbeat
-      spawn do 
-        loop do 
+      spawn do
+        loop do
           send(socket, M_TYPE_MINER_SEND_HEARTBEAT, __timestamp.to_json)
           sleep 30
         end
@@ -124,8 +124,8 @@ module ::Axentro::Core
       clean_workers
 
       error "the connection to the node has been closed"
-      error "exit the mining process with -1"
-      exit -1
+      info "attempting to reconnect"
+      run
     end
 
     def start_workers(difficulty, block)
