@@ -39,6 +39,9 @@ module ::Axentro::Core
           _handshake_miner_rejected(message_content)
         when M_TYPE_MINER_BLOCK_UPDATE
           _block_update(message_content)
+        when M_TYPE_MINER_RECEIVE_HEARTBEAT
+          _m_content = MContentMinerReceiveHeartbeat.from_json(message_content)
+          verbose "received hearbeat from node at: #{_m_content.timestamp}"  
         end
       rescue e : Exception
         warning "receive invalid message, will be ignored"
@@ -80,6 +83,16 @@ module ::Axentro::Core
       debug "set block: #{light_green(block.index)}"
 
       start_workers(difficulty, block)
+      start_heartbeat
+    end
+
+    private def start_heartbeat
+      spawn do 
+        loop do 
+          send(socket, M_TYPE_MINER_SEND_HEARTBEAT, __timestamp.to_json)
+          sleep 30
+        end
+      end
     end
 
     private def _handshake_miner_rejected(_content)

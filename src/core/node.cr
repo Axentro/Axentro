@@ -280,6 +280,8 @@ module ::Axentro::Core
           @miners_manager.handshake(socket, message_content)
         when M_TYPE_MINER_FOUND_NONCE
           @miners_manager.found_nonce(socket, message_content)
+        when M_TYPE_MINER_SEND_HEARTBEAT
+          @miners_manager.receive_heartbeat(socket, message_content)
         when M_TYPE_CLIENT_HANDSHAKE
           @clients_manager.handshake(socket, message_content)
         when M_TYPE_CLIENT_UPGRADE

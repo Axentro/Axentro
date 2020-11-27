@@ -57,6 +57,15 @@ module ::Axentro::Core::Protocol
     property difficulty : Int32
   end
 
+  M_TYPE_MINER_SEND_HEARTBEAT = 0x0006
+
+  M_TYPE_MINER_RECEIVE_HEARTBEAT = 0x0007
+
+  struct MContentMinerReceiveHeartbeat
+    include JSON::Serializable
+    property timestamp : Int64
+  end
+
   ######################################
   # CLIENT
   ######################################
