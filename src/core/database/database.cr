@@ -23,6 +23,7 @@ module ::Axentro::Core
       @db.exec "create table if not exists transactions (id text primary key,content text not null)"
       @db.exec "PRAGMA synchronous=OFF"
       @db.exec "PRAGMA cache_size=10000"
+      @db.exec "PRAGMA journal_mode=WAL"
     end
 
     # ------- Insert -------
@@ -72,6 +73,7 @@ module ::Axentro::Core
       @db.exec "create table if not exists rejects (#{rejects_table_create_string}, primary key (#{rejects_primary_key_string}))"
       @db.exec "PRAGMA synchronous=OFF"
       @db.exec "PRAGMA cache_size=10000"
+      @db.exec "PRAGMA journal_mode=WAL"
     end
 
     def self.in_memory

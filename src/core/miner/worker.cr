@@ -55,7 +55,7 @@ module ::Axentro::Core
 
       info "nonce: #{valid_nonce?(block.to_hash, block_nonce, work[:difficulty])}, required: #{work[:difficulty]}"
       info "found new nonce(#{work[:difficulty]}): #{light_green(block_nonce)}"
-      info "Found block..."
+      debug "Found block..."
       block.to_s
 
       response(miner_nonce.with_timestamp(time_now).to_json)
