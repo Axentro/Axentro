@@ -163,9 +163,6 @@ module ::Axentro::Core::NodeComponents
       client_blocks = _m_content.validation_blocks
       validation_hash = client_blocks.size > 0 ? node.blockchain.get_hash_of_block_hashes(client_blocks) : ""
 
-      puts "client_blocks: #{client_blocks.inspect}"
-      puts "validation_hash: #{validation_hash}"
-
       if _m_content.validation_hash != validation_hash
         send_once(_context, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Database validation failed: your data is not compatible with our data!"})
         return
