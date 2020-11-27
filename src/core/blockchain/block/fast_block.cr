@@ -145,7 +145,8 @@ module ::Axentro::Core
         raise "Invalid Previous Hash: for current index: #{@index} the prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
       end
 
-      next_timestamp = __timestamp
+      # Add an extra 30 seconds for latency when running fastnode on it's own node
+      next_timestamp = __timestamp + 30000
       prev_timestamp = prev_block.timestamp
 
       if prev_timestamp > @timestamp || next_timestamp < @timestamp
