@@ -270,8 +270,13 @@ module ::Axentro::Core
 
     # ameba:disable Metrics/CyclomaticComplexity
     def peer(socket : HTTP::WebSocket)
+
+      socket.on_ping do |message|
+        debug "received ping from miner: #{message}"
+        socket.pong(message)
+      end
+
       socket.on_message do |message|
-        debug message
         message_json = JSON.parse(message)
         message_type = message_json["type"].as_i
         message_content = message_json["content"].as_s
@@ -281,8 +286,6 @@ module ::Axentro::Core
           @miners_manager.handshake(socket, message_content)
         when M_TYPE_MINER_FOUND_NONCE
           @miners_manager.found_nonce(socket, message_content)
-        when M_TYPE_MINER_SEND_HEARTBEAT
-          @miners_manager.receive_heartbeat(socket, message_content)
         when M_TYPE_CLIENT_HANDSHAKE
           @clients_manager.handshake(socket, message_content)
         when M_TYPE_CLIENT_UPGRADE

@@ -31,14 +31,6 @@ module ::Axentro::Core::NodeComponents
       @most_difficult_block_so_far = @blockchain.genesis_block
     end
 
-    def receive_heartbeat(socket, _contect)
-      return unless node.phase == SetupPhase::DONE
-      verbose "received heartbeat from miner"
-       send(socket, M_TYPE_MINER_RECEIVE_HEARTBEAT, {
-        message: "ok",
-      })
-    end
-
     def handshake(socket, _content)
       return unless node.phase == SetupPhase::DONE
 

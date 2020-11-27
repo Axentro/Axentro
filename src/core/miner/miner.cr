@@ -39,9 +39,6 @@ module ::Axentro::Core
           _handshake_miner_rejected(message_content)
         when M_TYPE_MINER_BLOCK_UPDATE
           _block_update(message_content)
-        when M_TYPE_MINER_RECEIVE_HEARTBEAT
-          _m_content = MContentMinerReceiveHeartbeat.from_json(message_content)
-          verbose "received hearbeat from node with messsage: #{_m_content.message}"
         end
       rescue e : Exception
         warning "receive invalid message, will be ignored"
@@ -87,12 +84,10 @@ module ::Axentro::Core
     end
 
     private def start_heartbeat
- 
-        loop do
-          send(socket, M_TYPE_MINER_SEND_HEARTBEAT, @mid)
-          sleep 30
-        end
-    
+      loop do
+        socket.ping(@mid)
+        sleep 30
+      end
     end
 
     private def _handshake_miner_rejected(_content)
