@@ -58,7 +58,6 @@ module ::Axentro::Core
     end
 
     def insert(transaction : Transaction)
-      puts "INSERT FAST TRANSACTION"
       index = @pool.index do |t|
         transaction.total_fees > t.total_fees
       end
