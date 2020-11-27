@@ -271,6 +271,7 @@ module ::Axentro::Core
     # ameba:disable Metrics/CyclomaticComplexity
     def peer(socket : HTTP::WebSocket)
       socket.on_message do |message|
+        debug message
         message_json = JSON.parse(message)
         message_type = message_json["type"].as_i
         message_content = message_json["content"].as_s

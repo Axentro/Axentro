@@ -63,7 +63,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentMinerReceiveHeartbeat
     include JSON::Serializable
-    property timestamp : Int64
+    property message : String
   end
 
   ######################################
