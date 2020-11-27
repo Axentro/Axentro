@@ -117,6 +117,8 @@ module ::Axentro::Core::NodeComponents
 
         mined_difficulty = block.valid_nonce?(@blockchain.mining_block_difficulty)
         if mined_difficulty < @blockchain.mining_block_difficulty_miner
+          puts "mined difficulty is: #{mined_difficulty} and expected is: #{@blockchain.mining_block_difficulty_miner}"
+
           warning "received nonce is invalid, try to update latest block"
           debug "mined difficulty is: #{mined_difficulty}"
 

@@ -29,6 +29,7 @@ module ::Axentro::Core
       loop do
         time_now = __timestamp
         block = work[:block].with_nonce(block_nonce)
+        # puts "nonce: #{valid_nonce?(block.to_hash, block_nonce, work[:difficulty])}, required: #{work[:difficulty]}"
         break if valid_nonce?(block.to_hash, block_nonce, work[:difficulty]) == work[:difficulty]
 
         nonce_counter += 1
@@ -52,8 +53,9 @@ module ::Axentro::Core
         end
       end
 
-      debug "found new nonce(#{work[:difficulty]}): #{light_green(block_nonce)}"
-      debug "Found block..."
+      info "nonce: #{valid_nonce?(block.to_hash, block_nonce, work[:difficulty])}, required: #{work[:difficulty]}"
+      info "found new nonce(#{work[:difficulty]}): #{light_green(block_nonce)}"
+      info "Found block..."
       block.to_s
 
       response(miner_nonce.with_timestamp(time_now).to_json)

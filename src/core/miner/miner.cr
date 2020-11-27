@@ -80,14 +80,6 @@ module ::Axentro::Core
       debug "set block: #{light_green(block.index)}"
 
       start_workers(difficulty, block)
-      start_heartbeat
-    end
-
-    private def start_heartbeat
-      loop do
-        socket.ping(@mid)
-        sleep 30
-      end
     end
 
     private def _handshake_miner_rejected(_content)
