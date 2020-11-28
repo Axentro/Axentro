@@ -7,7 +7,7 @@ Type=simple
 User=root
 Group=root
 WorkingDirectory=/home/ubuntu/Axentro
-ExecStart=/bin/bash -lc 'bin/axen -w environment-wallet.json --testnet -u http://environment.axentro.io:80 -p 80 -d environment.sqlite3 --developer-fund=./developer_fund.yml --official-nodes=./official_nodes.yml'
+ExecStart=/bin/bash -lc 'bin/axen -w <environment>-wallet.json --<environment> -u http://<environment>.axentro.io:80 -p 80 -d environment.sqlite3 --developer-fund=./developer_fund.yml --official-nodes=./official_nodes.yml'
 TimeoutSec=60s
 RestartSec=30s
 Restart=always

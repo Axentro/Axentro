@@ -557,6 +557,8 @@ module ::Axentro::Core::NodeComponents
         @finger_table.delete(ctx)
       end
       sockets.each { |s| s.close }
+    rescue i : IO::Error
+      stabilise_finger_table
     end
 
     def ping(socket : HTTP::WebSocket)
