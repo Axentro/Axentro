@@ -60,14 +60,6 @@ module ::Units::Utils::ChainGenerator
       @node_wallet = Wallet.from_json(Wallet.create(true).to_json)
       @miner_wallet = Wallet.from_json(Wallet.create(true).to_json)
 
-      # if custom_official_nodes == "skip"
-      #   _official_nodes = nil
-      # elsif custom_official_nodes.nil?
-      #   _official_nodes = official_nodes_for_specs(@node_wallet.address)
-      # else
-      #   _official_nodes = custom_official_nodes
-      # end
-
       @official_nodes = custom_official_nodes || official_nodes_for_specs(@node_wallet.address)
       if skip_official_nodes
         @official_nodes = nil
