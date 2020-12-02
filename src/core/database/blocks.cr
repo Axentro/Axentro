@@ -162,12 +162,16 @@ module ::Axentro::Core::Data::Blocks
   end
 
   # ------- API -------
-  def get_paginated_blocks(page, per_page, direction) : Blockchain::Chain
+  def get_paginated_blocks(page, per_page, direction, sort_field) : Blockchain::Chain
     page = page * per_page
     get_blocks_via_query(
       "select * from blocks " \
       "where oid not in ( select oid from blocks " \
-      "order by idx #{direction} limit ? ) " \
-      "order by idx #{direction} limit ?", page, per_page)
+      "order by #{sort_field} #{direction} limit ? ) " \
+      "order by #{sort_field} #{direction} limit ?", page, per_page)
+  end
+
+  def latest_difficulty
+    @db.query_one("select difficulty from blocks order by idx desc limit 1", as: Int32)
   end
 end

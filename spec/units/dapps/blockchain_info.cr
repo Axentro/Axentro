@@ -96,7 +96,7 @@ describe BlockchainInfo do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            expected_headers = block_factory.database.get_paginated_blocks(0, 50, "asc").map(&.to_header)
+            expected_headers = block_factory.database.get_paginated_blocks(0, 50, "asc", "idx").map(&.to_header)
             result.should eq(expected_headers.reverse.to_json)
           end
         end

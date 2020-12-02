@@ -12,6 +12,8 @@
 
 module ::Axentro::Core::NodeComponents
   module APIParams
+    
+    # Used to specify a direction for the API
     enum Direction
       Up
       Down
@@ -26,11 +28,42 @@ module ::Axentro::Core::NodeComponents
       end
     end
 
-    def paginated(query_params, page = 0, per_page = 20, direction = Direction::Down)
+    # Used to specify a sorting field when retrieving blocks via the API 
+    enum BlockSortField
+      Id
+      Time
+
+      def to_s
+        case self
+        when Time
+          "timestamp"
+        else
+          "idx"
+        end
+      end
+    end
+
+    # Used to specify a sorting field when retrieving transactions via the API
+    enum TransactionSortField
+      Id
+      Time
+
+      def to_s
+        case self
+        when Time
+          "timestamp"
+        else
+          "block_id"
+        end
+      end
+    end
+
+    def paginated(query_params, page = 0, per_page = 20, direction = Direction::Down, sort_field = 0)
       per_page = per_page > 100 ? 100 : per_page
       [query_params["page"]?.try &.to_i || page,
        query_params["per_page"]?.try &.to_i || per_page,
        query_params["direction"]?.try { |d| d == "up" ? 0 : 1 } || direction.value,
+       query_params["sort_field"]?.try { |d| d == "time" ? 1 : 0 } || sort_field
       ]
     end
   end

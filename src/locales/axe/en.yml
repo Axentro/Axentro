@@ -45,6 +45,9 @@ axe:
           total_size: "total blocks: %{size}"
           total_slow: "total slow blocks: %{size}"
           total_fast: "total fast blocks: %{size}"
+          transactions_fast: "total fast transactions: %{size}"
+          transactions_slow: "total slow transactions: %{size}"
+          difficulty: "latest difficulty: %{size}"
           height_slow: "slow block height: %{size}"
           height_fast: "fast block height: %{size}"
       all:

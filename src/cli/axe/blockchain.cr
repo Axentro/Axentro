@@ -69,6 +69,9 @@ module ::Axentro::Interface::Axe
         puts_success(I18n.translate("axe.cli.blockchain.size.messages.total_size", {size: json["totals"]["total_size"]}))
         puts_success(I18n.translate("axe.cli.blockchain.size.messages.total_slow", {size: json["totals"]["total_slow"]}))
         puts_success(I18n.translate("axe.cli.blockchain.size.messages.total_fast", {size: json["totals"]["total_fast"]}))
+        puts_success(I18n.translate("axe.cli.blockchain.size.messages.transactions_fast", {size: json["totals"]["total_txns_fast"]}))
+        puts_success(I18n.translate("axe.cli.blockchain.size.messages.transactions_slow", {size: json["totals"]["total_txns_slow"]}))
+        puts_success(I18n.translate("axe.cli.blockchain.size.messages.difficulty", {size: json["totals"]["difficulty"]}))
         puts_success(I18n.translate("axe.cli.blockchain.size.messages.height_slow", {size: json["block_height"]["slow"]}))
         puts_success(I18n.translate("axe.cli.blockchain.size.messages.height_fast", {size: json["block_height"]["fast"]}))
       end
