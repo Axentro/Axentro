@@ -67,8 +67,8 @@ module ::Axentro::Core::FastChain
     index.odd? ? index + 2 : index + 1
   end
 
-  def subchain_fast(from : Int64) : Chain
-    @database.get_fast_blocks(from)
+  def subchain_fast(from : Int64, count : Int32) : Chain
+    @database.get_fast_blocks(from, count)
   end
 
   def valid_transactions_for_fast_block

@@ -121,18 +121,30 @@ module ::Axentro::Core::Data::Blocks
     get_blocks_via_query("select * from blocks where idx >= ?", index)
   end
 
-  def get_slow_blocks(index : Int64) : Blockchain::Chain
-    verbose "Reading blocks from the database starting at block #{index}"
+  def get_slow_blocks(index : Int64, count : Int32) : Blockchain::Chain
+    verbose "Reading blocks from the database starting at block #{index} with count #{count}"
     if index == 0
-      get_blocks_via_query("select * from blocks where idx >= ? and kind = 'SLOW'", index)
+      get_blocks_via_query("select * from blocks where idx >= ? and kind = 'SLOW' limit ?", index, count)
     else
-      get_blocks_via_query("select * from blocks where idx > ? and kind = 'SLOW'", index)
+      get_blocks_via_query("select * from blocks where idx > ? and kind = 'SLOW' limit ?", index, count)
     end
   end
 
-  def get_fast_blocks(index : Int64) : Blockchain::Chain
-    verbose "Reading blocks from the database starting at block #{index}"
-    blocks = get_blocks_via_query("select * from blocks where idx > ? and kind = 'FAST'", index)
+  def get_slow_blocks_size_for_sync(index : Int64) : Int32
+    if index == 0
+    @db.query_one("select count(*) from blocks where idx >= ? and kind = 'SLOW'", index, as: Int32)
+    else
+    @db.query_one("select count(*) from blocks where idx > ? and kind = 'SLOW'", index, as: Int32)
+    end
+  end
+
+  def get_fast_blocks_size_for_sync(index : Int64) : Int32
+    @db.query_one("select count(*) from blocks where idx > ? and kind = 'FAST'", index, as: Int32)
+  end
+
+  def get_fast_blocks(index : Int64, count : Int32) : Blockchain::Chain
+    verbose "Reading blocks from the database starting at block #{index} for count #{count}"
+    blocks = get_blocks_via_query("select * from blocks where idx > ? and kind = 'FAST' limit ?", index, count)
     blocks
   end
 

@@ -520,8 +520,16 @@ module ::Axentro::Core
       index.even? ? index + 2 : index + 1
     end
 
-    def subchain_slow(from : Int64) : Chain
-      @database.get_slow_blocks(from)
+    def subchain_slow(from : Int64, count : Int32) : Chain
+      @database.get_slow_blocks(from, count)
+    end
+
+    def subchain_slow_size(from : Int64) : Int32
+      @database.get_slow_blocks_size_for_sync(from)
+    end
+
+    def subchain_fast_size(from : Int64) : Int32
+      @database.get_fast_blocks_size_for_sync(from)
     end
 
     private def get_genesis_block_transactions

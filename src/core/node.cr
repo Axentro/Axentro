@@ -37,6 +37,14 @@ module ::Axentro::Core
     @conflicted_slow_index : Int64? = nil
     @conflicted_fast_index : Int64? = nil
 
+    # child node gets this from parent on setup
+    @total_slow_blocks_to_sync : Int32 = 0
+    @total_fast_blocks_to_sync : Int32 = 0
+
+    SLOW_CHUNK_SIZE = 500
+    FAST_CHUNK_SIZE = 5
+
+
     def initialize(
       @is_private : Bool,
       @is_testnet : Bool,
@@ -161,7 +169,13 @@ module ::Axentro::Core
         fast_sync_index = @conflicted_fast_index.nil? ? latest_fast_index : @conflicted_fast_index.not_nil!
         debug "asking to sync chain (slow) at index #{slow_sync_index}"
         debug "asking to sync chain (fast) at index #{fast_sync_index}"
-        send(_s, M_TYPE_NODE_REQUEST_CHAIN, {latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index})
+
+        puts "---------------"
+        puts "sync_chain"
+        puts "latest_slow_index: #{latest_slow_index} slow_sync_index: #{slow_sync_index}"
+        puts "---------------"
+
+        send(_s, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index})
       else
         warning "successor not found. skip synching blockchain"
 
@@ -304,6 +318,10 @@ module ::Axentro::Core
           @chord.stabilize_as_predecessor(self, socket, message_content)
         when M_TYPE_CHORD_BROADCAST_NODE_JOINED
           _broadcast_node_joined(socket, message_content)
+        when M_TYPE_NODE_REQUEST_CHAIN_SIZE
+          _request_chain_size(socket, message_content)
+        when M_TYPE_NODE_RECEIVE_CHAIN_SIZE
+          _receive_chain_size(socket, message_content)  
         when M_TYPE_NODE_REQUEST_CHAIN
           _request_chain(socket, message_content)
         when M_TYPE_NODE_RECEIVE_CHAIN
@@ -631,22 +649,64 @@ module ::Axentro::Core
       @clients_manager.receive_content(content, from)
     end
 
-    private def _request_chain(socket, _content)
-      _m_content = MContentNodeRequestChain.from_json(_content)
-
+    private def _request_chain_size(socket, _content)
+      _m_content = MContentNodeRequestChainSize.from_json(_content)
+   
       remote_slow_index = _m_content.latest_slow_index
       remote_fast_index = _m_content.latest_fast_index
 
-      info "requested new chain latest slow index: #{remote_slow_index} , latest fast index: #{remote_fast_index}"
+      info "requested new chain size with latest slow index: #{remote_slow_index} , latest fast index: #{remote_fast_index}"
 
-      local_slow_chain = @blockchain.subchain_slow(remote_slow_index)
-      local_fast_chain = @blockchain.subchain_fast(remote_fast_index)
+      local_slow_chain_size = @blockchain.subchain_slow_size(remote_slow_index)
+      local_fast_chain_size = @blockchain.subchain_fast_size(remote_fast_index)
+
+      send(socket, M_TYPE_NODE_RECEIVE_CHAIN_SIZE, {slowchain_start_index: remote_slow_index, fastchain_start_index: remote_fast_index, slowchain_size: local_slow_chain_size, fastchain_size: local_fast_chain_size})
+    end
+
+    private def _request_chain(socket, _content)
+      _m_content = MContentNodeRequestChain.from_json(_content)
+
+      remote_start_slow_index = _m_content.start_slow_index
+      remote_start_fast_index = _m_content.start_fast_index
+
+      slow_count = _m_content.slow_count
+      fast_count = _m_content.fast_count
+
+      info "requested new chain slow start index: #{remote_start_slow_index} with chunk #{slow_count} , latest fast index: #{remote_start_fast_index} with chunk #{fast_count}"
+
+      local_slow_chain = @blockchain.subchain_slow(remote_start_slow_index, slow_count)
+      local_fast_chain = @blockchain.subchain_fast(remote_start_fast_index, fast_count)
 
       send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {slowchain: local_slow_chain, fastchain: local_fast_chain})
       debug "chain sent to peer for sync"
 
-      if ((remote_slow_index > @blockchain.latest_slow_block.index) || (remote_fast_index > @blockchain.latest_fast_block_index_or_zero))
+      if ((remote_start_slow_index > @blockchain.latest_slow_block.index) || (remote_start_fast_index > @blockchain.latest_fast_block_index_or_zero))
         sync_chain(socket)
+      end
+    end
+
+    private def _receive_chain_size(socket, _content)
+      _m_content = MContentNodeReceiveChainSize.from_json(_content)
+
+      _remote_slow_start_index = _m_content.slowchain_start_index
+      _remote_fast_start_index = _m_content.fastchain_start_index
+
+      @total_slow_blocks_to_sync = _m_content.slowchain_size
+      @total_fast_blocks_to_sync = _m_content.fastchain_size
+
+      # if total_slow_blocks_to_sync <= 0 then nothing to sync and proceed to transaction sync.
+      # if total_slow_blocks_to_sync <= slow_chunk then slow_chunk = total_slow_blocks_to_sync else slow_chunk
+      if @total_slow_blocks_to_sync <= 0 && @total_fast_blocks_to_sync <= 0
+        # nothing to sync so proceed to transaction syncing
+        if @phase == SetupPhase::BLOCKCHAIN_SYNCING
+          @phase = SetupPhase::TRANSACTION_SYNCING
+          proceed_setup
+        end
+      else
+        # chunk up
+        slow_chunk = @total_slow_blocks_to_sync <= SLOW_CHUNK_SIZE ? @total_slow_blocks_to_sync : SLOW_CHUNK_SIZE
+        fast_chunk = @total_fast_blocks_to_sync <= FAST_CHUNK_SIZE ? @total_fast_blocks_to_sync : FAST_CHUNK_SIZE
+        send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_slow_index: _remote_slow_start_index, slow_count: slow_chunk, start_fast_index: _remote_fast_start_index, fast_count: fast_chunk})
       end
     end
 
@@ -681,9 +741,19 @@ module ::Axentro::Core
         @conflicted_fast_index = nil
       end
 
-      if @phase == SetupPhase::BLOCKCHAIN_SYNCING
-        @phase = SetupPhase::TRANSACTION_SYNCING
-        proceed_setup
+      # reduce total count to sync by chunk amount
+      @total_slow_blocks_to_sync = @total_slow_blocks_to_sync - SLOW_CHUNK_SIZE
+      @total_fast_blocks_to_sync = @total_fast_blocks_to_sync - FAST_CHUNK_SIZE
+
+      # if still got some total_count to sync then send request chain with new local indexes of @blockchain.latest_slow_block.index, @blockchain.latest_fast_block_index_or_zero
+      if @total_slow_blocks_to_sync > 0 || @total_fast_blocks_to_sync > 0
+        send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_slow_index: @blockchain.latest_slow_block.index, slow_count: SLOW_CHUNK_SIZE, start_fast_index: @blockchain.latest_fast_block_index_or_zero, fast_count: FAST_CHUNK_SIZE})
+      else
+      # if no more to sync then move onto phase transaction syncing
+        if @phase == SetupPhase::BLOCKCHAIN_SYNCING
+          @phase = SetupPhase::TRANSACTION_SYNCING
+          proceed_setup
+        end
       end
     end
 
