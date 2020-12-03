@@ -130,16 +130,32 @@ module ::Axentro::Core::Data::Blocks
     end
   end
 
-  def get_slow_blocks_size_for_sync(index : Int64) : Int32
-    if index == 0
-    @db.query_one("select count(*) from blocks where idx >= ? and kind = 'SLOW'", index, as: Int32)
-    else
-    @db.query_one("select count(*) from blocks where idx > ? and kind = 'SLOW'", index, as: Int32)
+  # def get_slow_blocks_size_for_sync(index : Int64) : Int32
+  #   if index == 0
+  #     @db.query_one("select count(*) from blocks where idx >= ? and kind = 'SLOW'", index, as: Int32)
+  #   else
+  #     @db.query_one("select count(*) from blocks where idx > ? and kind = 'SLOW'", index, as: Int32)
+  #   end
+  # end
+
+  # def get_fast_blocks_size_for_sync(index : Int64) : Int32
+  #   @db.query_one("select count(*) from blocks where idx > ? and kind = 'FAST'", index, as: Int32)
+  # end
+
+  def batch_from(limit : Int32, offset : Int32) : Array(Int64)
+    ids = [] of Int64
+    @db.query("select idx from blocks order by timestamp asc limit ? offset ?", limit, offset) do |rows|
+      rows.each do
+        res = rows.read(Int64 | Nil)
+        ids << res unless res.nil?
+      end
     end
+    ids
   end
 
-  def get_fast_blocks_size_for_sync(index : Int64) : Int32
-    @db.query_one("select count(*) from blocks where idx > ? and kind = 'FAST'", index, as: Int32)
+  def get_blocks_by_ids(ids : Array(Int64)) : Blockchain::Chain
+    index_list = ids.map(&.to_s).join(",")
+    get_blocks_via_query("select * from blocks where idx in (#{index_list})")
   end
 
   def get_fast_blocks(index : Int64, count : Int32) : Blockchain::Chain

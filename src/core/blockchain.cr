@@ -264,6 +264,46 @@ module ::Axentro::Core
       trim_chain_in_memory
     end
 
+    def replace_mixed_chain(subchain : Chain?) : Bool
+      dapps_clear_record
+      if subchain.nil?
+        puts "replace_mixed_chain: subchain was nil"
+      else
+      puts "replace_mixed_chain: #{subchain.not_nil!.sort_by(&.timestamp).map{|b| b.index }.inspect}"
+      end
+      result = replace_mixed_blocks(subchain)
+    
+      @chain.sort_by!(&.index)
+
+      trim_chain_in_memory
+
+      clean_slow_transactions
+      clean_fast_transactions
+
+      debug "calling refresh_mining_block in replace_chain"
+      refresh_mining_block(block_difficulty(self))
+
+      result
+    end
+
+    def replace_chain(_slow_subchain : Chain?, _fast_subchain : Chain?) : Bool
+      dapps_clear_record
+      slow_result = replace_slow_blocks(_slow_subchain)
+      fast_result = replace_fast_blocks(_fast_subchain)
+
+      @chain.sort_by!(&.index)
+
+      trim_chain_in_memory
+
+      clean_slow_transactions
+      clean_fast_transactions
+
+      debug "calling refresh_mining_block in replace_chain"
+      refresh_mining_block(block_difficulty(self))
+
+      [slow_result, fast_result].includes?(true)
+    end
+
     def replace_chain(_slow_subchain : Chain?, _fast_subchain : Chain?) : Bool
       dapps_clear_record
       slow_result = replace_slow_blocks(_slow_subchain)
@@ -356,6 +396,41 @@ module ::Axentro::Core
         (final_random_block..index_of_last_incoming_block).step(2) { |b| the_indexes << b }
       end
       the_indexes
+    end
+
+    private def replace_mixed_blocks(chain)
+      return false if chain.nil?
+      result = true
+  
+      chain.not_nil!.sort_by(&.timestamp).each do |block|
+     
+        index = block.index
+          block.valid?(self)
+      
+
+        target_index = @chain.index { |b| b.index == index }
+        target_index ? (@chain[target_index] = block) : @chain << block
+        @database.replace_block(block)
+
+        progress "block ##{index} was synced", index, chain.not_nil!.map(&.index).max
+
+        dapps_record
+      rescue e : Exception
+        error "found invalid block while syncing blocks at index #{index}.. deleting all blocks from invalid and up"
+        error "the reason:"
+        error e.message.not_nil!
+        result = false
+        if index
+          @database.delete_blocks(index)
+          @chain.each_index { |i|
+            debug "gonna delete at index #{i}"
+            @chain.delete_at(i) if @chain[i].index >= index
+          }
+          dapps_clear_record
+        end
+        break
+      end
+      result
     end
 
     private def replace_slow_blocks(slow_subchain)
@@ -524,13 +599,13 @@ module ::Axentro::Core
       @database.get_slow_blocks(from, count)
     end
 
-    def subchain_slow_size(from : Int64) : Int32
-      @database.get_slow_blocks_size_for_sync(from)
-    end
+    # def subchain_slow_size(from : Int64) : Int32
+    #   @database.get_slow_blocks_size_for_sync(from)
+    # end
 
-    def subchain_fast_size(from : Int64) : Int32
-      @database.get_fast_blocks_size_for_sync(from)
-    end
+    # def subchain_fast_size(from : Int64) : Int32
+    #   @database.get_fast_blocks_size_for_sync(from)
+    # end
 
     private def get_genesis_block_transactions
       dev_fund = @developer_fund ? DeveloperFund.transactions(@developer_fund.not_nil!.get_config) : [] of Transaction

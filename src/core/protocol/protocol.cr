@@ -236,10 +236,9 @@ module ::Axentro::Core::Protocol
 
     property slowchain_start_index : Int64
     property fastchain_start_index : Int64
-    property slowchain_size : Int32
-    property fastchain_size : Int32
+    property slow_target_index : Int64
+    property fast_target_index : Int64
   end
-
 
   M_TYPE_NODE_REQUEST_CHAIN = 0x0103
 
@@ -255,8 +254,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeReceiveChain
     include JSON::Serializable
-    property slowchain : Blockchain::Chain?
-    property fastchain : Blockchain::Chain?
+    property blocks : Blockchain::Chain?
   end
 
   M_TYPE_NODE_ASK_REQUEST_CHAIN = 0x0105
