@@ -75,26 +75,6 @@ describe Blockchain do
     end
   end
 
-  describe "subchain_fast" do
-    it "should return the fast subchain" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3).add_fast_blocks(4)
-        blockchain = block_factory.blockchain
-        indexes = blockchain.subchain_fast(0).not_nil!.map(&.index)
-        indexes.should eq([1, 3, 5, 7])
-      end
-    end
-
-    it "should return the fast subchain when supplied index in the middle of the chain" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(6).add_fast_blocks(6)
-        blockchain = block_factory.blockchain
-        indexes = blockchain.subchain_fast(5).not_nil!.map(&.index)
-        indexes.should eq([7, 9, 11])
-      end
-    end
-  end
-
   describe "valid_transactions_for_fast_block" do
     it "should the latest index and valid aligned transactions" do
       with_factory do |block_factory, transaction_factory|

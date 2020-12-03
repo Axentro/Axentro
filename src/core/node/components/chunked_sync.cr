@@ -11,18 +11,15 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core::NodeComponents
-  def subchain_algo(slow_start : Int64, fast_start : Int64, count : Int32) : Array(Int64)
-    # raise error if count is greater than db chunk
+  def subchain_algo(slow_start : Int64, fast_start : Int64, chunk_size : Int32) : Array(Int64)
     blocks = slow_start == 0_i64 ? [0_i64] : [] of Int64
-    limit = 100
+    limit = chunk_size
     offset = 0
-    while blocks.size < count 
+    while blocks.size < chunk_size
       ids = @blockchain.database.batch_from(limit, offset)
-      puts "IDS:"
-      p ids
       break if ids.empty?
       visit(slow_start, fast_start, ids, blocks)
-      offset += 100
+      offset += chunk_size
     end
     blocks
   end

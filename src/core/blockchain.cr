@@ -42,13 +42,14 @@ module ::Axentro::Core
     @network_type : String
     @blocks_to_hold : Int64
     @security_level_percentage : Int64
+    @sync_chunk_size : Int32
     @node : Node?
     @mining_block : SlowBlock?
     @block_reward_calculator = BlockRewardCalculator.init
     @max_miners : Int32
     @is_standalone : Bool
 
-    def initialize(@network_type : String, @wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, @official_nodes : OfficialNodes?, security_level_percentage : Int64?, @max_miners : Int32, @is_standalone : Bool)
+    def initialize(@network_type : String, @wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, @official_nodes : OfficialNodes?, security_level_percentage : Int64?, @sync_chunk_size : Int32, @max_miners : Int32, @is_standalone : Bool)
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup
@@ -56,6 +57,8 @@ module ::Axentro::Core
 
       @security_level_percentage = security_level_percentage || SECURITY_LEVEL_PERCENTAGE
       info "Security Level Percentage used for blockchain validation is #{@security_level_percentage}"
+
+      info "Blockchain sync chunk size is #{@sync_chunk_size}"
 
       hours_to_hold = ENV.has_key?("AXE_TESTING") ? 2 : 48
       @blocks_to_hold = (SLOW_BLOCKS_PER_HOUR * hours_to_hold).to_i64
@@ -266,13 +269,8 @@ module ::Axentro::Core
 
     def replace_mixed_chain(subchain : Chain?) : Bool
       dapps_clear_record
-      if subchain.nil?
-        puts "replace_mixed_chain: subchain was nil"
-      else
-      puts "replace_mixed_chain: #{subchain.not_nil!.sort_by(&.timestamp).map{|b| b.index }.inspect}"
-      end
       result = replace_mixed_blocks(subchain)
-    
+
       @chain.sort_by!(&.index)
 
       trim_chain_in_memory
@@ -401,12 +399,10 @@ module ::Axentro::Core
     private def replace_mixed_blocks(chain)
       return false if chain.nil?
       result = true
-  
+
       chain.not_nil!.sort_by(&.timestamp).each do |block|
-     
         index = block.index
-          block.valid?(self)
-      
+        block.valid?(self)
 
         target_index = @chain.index { |b| b.index == index }
         target_index ? (@chain[target_index] = block) : @chain << block
@@ -594,18 +590,6 @@ module ::Axentro::Core
       index = latest_slow_block.index
       index.even? ? index + 2 : index + 1
     end
-
-    def subchain_slow(from : Int64, count : Int32) : Chain
-      @database.get_slow_blocks(from, count)
-    end
-
-    # def subchain_slow_size(from : Int64) : Int32
-    #   @database.get_slow_blocks_size_for_sync(from)
-    # end
-
-    # def subchain_fast_size(from : Int64) : Int32
-    #   @database.get_fast_blocks_size_for_sync(from)
-    # end
 
     private def get_genesis_block_transactions
       dev_fund = @developer_fund ? DeveloperFund.transactions(@developer_fund.not_nil!.get_config) : [] of Transaction

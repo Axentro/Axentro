@@ -74,7 +74,7 @@ describe Blockchain do
       with_factory(nil, true) do |block_factory|
         slow_sub_chain = block_factory.add_slow_blocks(10).chain
         database = Axentro::Core::Database.in_memory
-        blockchain = Blockchain.new("testnet", block_factory.node_wallet, database, nil, nil, nil, 512, true)
+        blockchain = Blockchain.new("testnet", block_factory.node_wallet, database, nil, nil, nil, 100, 512, true)
         blockchain.setup(block_factory.node)
 
         expected = (blockchain.chain + slow_sub_chain[1..-1]).map(&.index).sort
@@ -92,7 +92,7 @@ describe Blockchain do
         slow_block_2 = chain[4].as(SlowBlock)
 
         database = Axentro::Core::Database.in_memory
-        blockchain = Blockchain.new("testnet", block_factory.node_wallet, database, nil, nil, nil, 512, true)
+        blockchain = Blockchain.new("testnet", block_factory.node_wallet, database, nil, nil, nil, 100, 512, true)
         blockchain.setup(block_factory.node)
         blockchain.push_slow_block(slow_block_1)
         blockchain.push_slow_block(slow_block_2)
@@ -111,7 +111,7 @@ describe Blockchain do
         slow_sub_chain = chain.select(&.is_slow_block?)
 
         database = Axentro::Core::Database.in_memory
-        blockchain = Blockchain.new("testnet", block_factory.node_wallet, database, nil, nil, nil, 512, true)
+        blockchain = Blockchain.new("testnet", block_factory.node_wallet, database, nil, nil, nil, 100, 512, true)
         blockchain.setup(block_factory.node)
         blockchain.push_slow_block(slow_block_1)
         expected = (blockchain.chain + slow_sub_chain[2..-1] + fast_sub_chain[0..-1]).map(&.index).sort
@@ -332,32 +332,12 @@ describe Blockchain do
     end
   end
 
-  describe "subchain_slow" do
-    it "should return the slow subchain" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3).add_fast_blocks(4)
-        blockchain = block_factory.blockchain
-        indexes = blockchain.subchain_slow(0).not_nil!.map(&.index)
-        indexes.should eq([0, 2, 4, 6])
-      end
-    end
-
-    it "should return the slow subchain with index at the middle of the chain" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(6).add_fast_blocks(4)
-        blockchain = block_factory.blockchain
-        indexes = blockchain.subchain_slow(4).not_nil!.map(&.index)
-        indexes.should eq([6, 8, 10, 12])
-      end
-    end
-  end
-
   describe "restore from database" do
     it "should load the whole chain from the database when the chain size is less than the memory allocation" do
       with_factory do |block_factory|
         block_factory.add_slow_blocks(10)
         database = block_factory.database
-        blockchain = Blockchain.new("testnet", block_factory.node_wallet, database, nil, nil, nil, 512, true)
+        blockchain = Blockchain.new("testnet", block_factory.node_wallet, database, nil, nil, nil, 100, 512, true)
         blockchain.setup(block_factory.node)
         # including genesis block total chain size should be 11
         blockchain.chain.size.should eq(11)
@@ -368,57 +348,10 @@ describe Blockchain do
         blocks_to_add = block_factory.blocks_to_hold + 8
         block_factory.add_slow_blocks(blocks_to_add)
         database = block_factory.database
-        blockchain = Blockchain.new("testnet", block_factory.node_wallet, database, nil, nil, nil, 512, true)
+        blockchain = Blockchain.new("testnet", block_factory.node_wallet, database, nil, nil, nil, 100, 512, true)
         blockchain.setup(block_factory.node)
         # including genesis block total chain size should be the number of blocks to hold + 1
         blockchain.chain.size.should eq(blockchain.blocks_to_hold + 1)
-      end
-    end
-  end
-
-  describe "in memory syncing" do
-    describe "slow chain" do
-      it "should return the whole slow chain as a subchain when the chain size is less than the in memory allocation" do
-        with_factory do |block_factory|
-          block_factory.add_slow_blocks(10)
-          blockchain = block_factory.blockchain
-          indexes = blockchain.subchain_slow(0).not_nil!.map(&.index)
-          indexes.first.should eq(0)
-          indexes.last.should eq(20)
-        end
-      end
-
-      it "should return the whole slow chain as a subchain when the chain size exceeds the in memory allocation" do
-        with_factory do |block_factory|
-          blocks_to_add = block_factory.blocks_to_hold + 8
-          block_factory.add_slow_blocks(blocks_to_add)
-          blockchain = block_factory.blockchain
-          indexes = blockchain.subchain_slow(0).not_nil!.map(&.index)
-          indexes.first.should eq(0)
-          indexes.last.should eq((blockchain.blocks_to_hold * 2) + (8 * 2))
-        end
-      end
-    end
-    describe "fast chain" do
-      it "should return the whole fast chain as a subchain when the fast chain size is less than the in memory allocation" do
-        with_factory do |block_factory|
-          block_factory.add_slow_blocks(1).add_fast_blocks(4)
-          blockchain = block_factory.blockchain
-          indexes = blockchain.subchain_fast(0).not_nil!.map(&.index)
-          indexes.first.should eq(1)
-          indexes.last.should eq(7)
-        end
-      end
-
-      it "should return the whole fast chain as a subchain when the fast chain size exceeds the in memory allocation" do
-        with_factory do |block_factory|
-          blocks_to_add = block_factory.blocks_to_hold + 8
-          block_factory.add_slow_blocks(1).add_fast_blocks(blocks_to_add)
-          blockchain = block_factory.blockchain
-          indexes = blockchain.subchain_fast(0).not_nil!.map(&.index)
-          indexes.first.should eq(1)
-          indexes.last.should eq((blockchain.blocks_to_hold * 2) + (8 * 2) - 1)
-        end
       end
     end
   end

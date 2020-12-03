@@ -41,8 +41,6 @@ module ::Axentro::Core
     @sync_slow_blocks_target_index : Int64 = 0_i64
     @sync_fast_blocks_target_index : Int64 = 0_i64
 
-    CHUNK_SIZE = 5
-
     def initialize(
       @is_private : Bool,
       @is_testnet : Bool,
@@ -59,6 +57,7 @@ module ::Axentro::Core
       @official_nodes : OfficialNodes?,
       @exit_on_unofficial : Bool,
       @security_level_percentage : Int64?,
+      @sync_chunk_size : Int32,
       @max_miners : Int32,
       @max_private_nodes : Int32,
       @use_ssl : Bool = false
@@ -74,7 +73,7 @@ module ::Axentro::Core
       end
 
       @network_type = @is_testnet ? "testnet" : "mainnet"
-      @blockchain = Blockchain.new(@network_type, @wallet, @database, @developer_fund, @official_nodes, @security_level_percentage, @max_miners, is_standalone?)
+      @blockchain = Blockchain.new(@network_type, @wallet, @database, @developer_fund, @official_nodes, @security_level_percentage, @sync_chunk_size, @max_miners, is_standalone?)
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @max_private_nodes, @wallet.address, @blockchain.official_node, @exit_on_unofficial)
       @miners_manager = MinersManager.new(@blockchain)
       @clients_manager = ClientsManager.new(@blockchain)
@@ -167,11 +166,6 @@ module ::Axentro::Core
         fast_sync_index = @conflicted_fast_index.nil? ? latest_fast_index : @conflicted_fast_index.not_nil!
         debug "asking to sync chain (slow) at index #{slow_sync_index}"
         debug "asking to sync chain (fast) at index #{fast_sync_index}"
-
-        puts "---------------"
-        puts "sync_chain"
-        puts "latest_slow_index: #{latest_slow_index} slow_sync_index: #{slow_sync_index}"
-        puts "---------------"
 
         send(_s, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index})
       else
@@ -656,15 +650,10 @@ module ::Axentro::Core
 
       info "requested new chain size with latest slow index: #{remote_slow_index} , latest fast index: #{remote_fast_index}"
 
-      # local_slow_chain_size = @blockchain.subchain_slow_size(remote_slow_index)
-      # local_fast_chain_size = @blockchain.subchain_fast_size(remote_fast_index)
+      target_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
+      target_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
 
-      target_slow_index =  @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
-      target_fast_index =  @blockchain.database.highest_index_of_kind(BlockKind::FAST)
-
-      puts "_request_chain_size: remote_slow_start: #{remote_slow_index}, local_slow_size: #{target_slow_index}"
-
-      send(socket, M_TYPE_NODE_RECEIVE_CHAIN_SIZE, {slowchain_start_index: remote_slow_index, fastchain_start_index: remote_fast_index, slow_target_index: target_slow_index, fast_target_index: target_fast_index})
+      send(socket, M_TYPE_NODE_RECEIVE_CHAIN_SIZE, {chunk_size: @sync_chunk_size, slowchain_start_index: remote_slow_index, fastchain_start_index: remote_fast_index, slow_target_index: target_slow_index, fast_target_index: target_fast_index})
     end
 
     private def _request_chain(socket, _content)
@@ -673,31 +662,21 @@ module ::Axentro::Core
       remote_start_slow_index = _m_content.start_slow_index
       remote_start_fast_index = _m_content.start_fast_index
 
-      slow_count = _m_content.slow_count
-      fast_count = _m_content.fast_count
+      chunk_size = _m_content.chunk_size
 
-      info "requested new chain slow start index: #{remote_start_slow_index} with chunk #{slow_count} , latest fast index: #{remote_start_fast_index} with chunk #{fast_count}"
+      debug "requested new chain slow start index: #{remote_start_slow_index} with chunk #{chunk_size} , latest fast index: #{remote_start_fast_index} with chunk #{chunk_size}"
 
-      # local_slow_chain = @blockchain.subchain_slow(remote_start_slow_index, slow_count)
-      # local_fast_chain = @blockchain.subchain_fast(remote_start_fast_index, fast_count)
-
-      puts "_request_chain: anout to get ids"
-      ids = subchain_algo(remote_start_slow_index, remote_start_fast_index, CHUNK_SIZE)
-      puts "_request_chain: got ids: #{ids.inspect}"
-
+      ids = subchain_algo(remote_start_slow_index, remote_start_fast_index, chunk_size)
       blocks = @blockchain.database.get_blocks_by_ids(ids)
-      puts "_request_chain: getting blocks"
-    
-      puts "sending blocks: #{blocks.size}"
 
-      send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {blocks: blocks})
+      send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {blocks: blocks, chunk_size: chunk_size})
       debug "chain sent to peer for sync"
 
-      latest_local_slow_index =  @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
-      latest_local_fast_index =  @blockchain.database.highest_index_of_kind(BlockKind::FAST)
+      latest_local_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
+      latest_local_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
 
       if ((remote_start_slow_index > latest_local_slow_index) || (remote_start_fast_index > latest_local_fast_index))
-        info "Remote indcides were higher local indices so starting chain sync."
+        info "Remote indices were higher local indices so starting chain sync."
         sync_chain(socket)
       end
     end
@@ -710,16 +689,12 @@ module ::Axentro::Core
 
       @sync_slow_blocks_target_index = _m_content.slow_target_index
       @sync_fast_blocks_target_index = _m_content.fast_target_index
-      puts "Receive Chain Size: slow target: #{@sync_slow_blocks_target_index}, fast: #{@sync_fast_blocks_target_index}"
 
-      # if total_slow_blocks_to_sync <= 0 then nothing to sync and proceed to transaction sync.
-      # if total_slow_blocks_to_sync <= slow_chunk then slow_chunk = total_slow_blocks_to_sync else slow_chunk
-      
-      # get highest fast and slow and compare with target and decide to continue sync or not
-      latest_local_slow_index =  @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
-      latest_local_fast_index =  @blockchain.database.highest_index_of_kind(BlockKind::FAST)
+      chunk_size = _m_content.chunk_size
 
-      # CHECK THIS!! maybe here if local is greater than it should sync itself instead from remote?
+      latest_local_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
+      latest_local_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
+
       if latest_local_slow_index >= @sync_slow_blocks_target_index && latest_local_fast_index >= @sync_fast_blocks_target_index
         # nothing to sync so proceed to transaction syncing
         info "no blocks to sync to moving onto transaction sync"
@@ -728,13 +703,7 @@ module ::Axentro::Core
           proceed_setup
         end
       else
-        # chunk up
-        # slow_chunk = @total_slow_blocks_to_sync <= CHUNK_SIZE ? @total_slow_blocks_to_sync : CHUNK_SIZE
-        # fast_chunk = @total_fast_blocks_to_sync <= CHUNK_SIZE ? @total_fast_blocks_to_sync : CHUNK_SIZE
-
-        puts "_send request_chain: start_slow_index: #{_remote_slow_start_index}, chunk: #{CHUNK_SIZE}"
-
-        send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_slow_index: _remote_slow_start_index, slow_count: CHUNK_SIZE, start_fast_index: _remote_fast_start_index, fast_count: CHUNK_SIZE})
+        send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_slow_index: _remote_slow_start_index, chunk_size: chunk_size, start_fast_index: _remote_fast_start_index})
       end
     end
 
@@ -742,10 +711,10 @@ module ::Axentro::Core
       _m_content = MContentNodeReceiveChain.from_json(_content)
 
       _remote_chain = _m_content.blocks
-      # _remote_slow_chain = _m_content.slowchain
+      chunk_size = _m_content.chunk_size
 
-      _remote_slow_chain = _remote_chain.nil? ? nil : _remote_chain.not_nil!.select(&.is_slow_block?) 
-      _remote_fast_chain = _remote_chain.nil? ? nil : _remote_chain.not_nil!.select(&.is_fast_block?) 
+      _remote_slow_chain = _remote_chain.nil? ? nil : _remote_chain.not_nil!.select(&.is_slow_block?)
+      _remote_fast_chain = _remote_chain.nil? ? nil : _remote_chain.not_nil!.select(&.is_fast_block?)
 
       if remote_slow_chain = _remote_slow_chain
         info "received #{remote_slow_chain.size} SLOW blocks"
@@ -759,16 +728,12 @@ module ::Axentro::Core
         info "received empty FAST chain"
       end
 
-      # previous_local_slow_index = get_latest_slow_index   
-      # previous_local_fast_index = @blockchain.latest_fast_block_index_or_zero
-
-      previous_local_slow_index =  @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
-      previous_local_fast_index =  @blockchain.database.highest_index_of_kind(BlockKind::FAST)
+      previous_local_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
+      previous_local_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
 
       if @blockchain.replace_mixed_chain(_remote_chain)
-
-        latest_local_slow_index =  @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
-        latest_local_fast_index =  @blockchain.database.highest_index_of_kind(BlockKind::FAST)
+        latest_local_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
+        latest_local_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
 
         info "slow: chain updated: #{light_green(previous_local_slow_index)} -> #{light_green(latest_local_slow_index)}"
         info "fast: chain updated: #{light_green(previous_local_fast_index)} -> #{light_green(latest_local_fast_index)}"
@@ -777,23 +742,17 @@ module ::Axentro::Core
 
         @conflicted_slow_index = nil
         @conflicted_fast_index = nil
-
       end
 
-      
+      latest_local_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
+      latest_local_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
 
-      # if still got some total_count to sync then send request chain with new local indexes of @blockchain.latest_slow_block.index, @blockchain.latest_fast_block_index_or_zero
-      
-      latest_local_slow_index =  @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
-      latest_local_fast_index =  @blockchain.database.highest_index_of_kind(BlockKind::FAST)
-
-      puts "checking if still need to sync: local_slow: #{latest_local_slow_index} target_slow: #{@sync_slow_blocks_target_index} local_fast: #{latest_local_fast_index} target_fast: #{@sync_fast_blocks_target_index}"
+      info "checking if still need to sync: slow #{light_yellow(latest_local_slow_index)}/#{light_blue(@sync_slow_blocks_target_index)} fast #{light_yellow(latest_local_fast_index)}/#{light_blue(@sync_fast_blocks_target_index)}"
       if latest_local_slow_index < @sync_slow_blocks_target_index || latest_local_fast_index < @sync_fast_blocks_target_index
-        
-        puts "SENDING request chain with slow: #{latest_local_slow_index} fast: #{latest_local_fast_index}"
-        send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_slow_index: latest_local_slow_index, slow_count: CHUNK_SIZE, start_fast_index: latest_local_fast_index, fast_count: CHUNK_SIZE})
+        info "continue syncing chain with slow: #{latest_local_slow_index} fast: #{latest_local_fast_index}"
+        send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_slow_index: latest_local_slow_index, chunk_size: chunk_size, start_fast_index: latest_local_fast_index})
       else
-        puts "MOVING ON to transaction syncing"
+        info "chain fully synced so moving ontransaction syncing"
         # if no more to sync then move onto phase transaction syncing
         if @phase == SetupPhase::BLOCKCHAIN_SYNCING
           @phase = SetupPhase::TRANSACTION_SYNCING

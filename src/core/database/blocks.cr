@@ -130,18 +130,6 @@ module ::Axentro::Core::Data::Blocks
     end
   end
 
-  # def get_slow_blocks_size_for_sync(index : Int64) : Int32
-  #   if index == 0
-  #     @db.query_one("select count(*) from blocks where idx >= ? and kind = 'SLOW'", index, as: Int32)
-  #   else
-  #     @db.query_one("select count(*) from blocks where idx > ? and kind = 'SLOW'", index, as: Int32)
-  #   end
-  # end
-
-  # def get_fast_blocks_size_for_sync(index : Int64) : Int32
-  #   @db.query_one("select count(*) from blocks where idx > ? and kind = 'FAST'", index, as: Int32)
-  # end
-
   def batch_from(limit : Int32, offset : Int32) : Array(Int64)
     ids = [] of Int64
     @db.query("select idx from blocks order by timestamp asc limit ? offset ?", limit, offset) do |rows|
