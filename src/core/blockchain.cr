@@ -42,13 +42,14 @@ module ::Axentro::Core
     @network_type : String
     @blocks_to_hold : Int64
     @security_level_percentage : Int64
+    @sync_chunk_size : Int32
     @node : Node?
     @mining_block : SlowBlock?
     @block_reward_calculator = BlockRewardCalculator.init
     @max_miners : Int32
     @is_standalone : Bool
 
-    def initialize(@network_type : String, @wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, @official_nodes : OfficialNodes?, security_level_percentage : Int64?, @max_miners : Int32, @is_standalone : Bool)
+    def initialize(@network_type : String, @wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, @official_nodes : OfficialNodes?, security_level_percentage : Int64?, @sync_chunk_size : Int32, @max_miners : Int32, @is_standalone : Bool)
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup
@@ -56,6 +57,8 @@ module ::Axentro::Core
 
       @security_level_percentage = security_level_percentage || SECURITY_LEVEL_PERCENTAGE
       info "Security Level Percentage used for blockchain validation is #{@security_level_percentage}"
+
+      info "Blockchain sync chunk size is #{@sync_chunk_size}"
 
       hours_to_hold = ENV.has_key?("AXE_TESTING") ? 2 : 48
       @blocks_to_hold = (SLOW_BLOCKS_PER_HOUR * hours_to_hold).to_i64
@@ -264,10 +267,9 @@ module ::Axentro::Core
       trim_chain_in_memory
     end
 
-    def replace_chain(_slow_subchain : Chain?, _fast_subchain : Chain?) : Bool
+    def replace_mixed_chain(subchain : Chain?) : Bool
       dapps_clear_record
-      slow_result = replace_slow_blocks(_slow_subchain)
-      fast_result = replace_fast_blocks(_fast_subchain)
+      result = replace_mixed_blocks(subchain)
 
       @chain.sort_by!(&.index)
 
@@ -279,7 +281,7 @@ module ::Axentro::Core
       debug "calling refresh_mining_block in replace_chain"
       refresh_mining_block(block_difficulty(self))
 
-      [slow_result, fast_result].includes?(true)
+      result
     end
 
     def get_validation_block_ids(max_slow_block_id : Int64, max_fast_block_id : Int64) : Array(Int64)
@@ -310,62 +312,28 @@ module ::Axentro::Core
           warning "expected block id #{id} not found in database"
         end
       end
-      debug "Size of concatednated of block prev_hashes to be hashed: #{concatenated_hashes.size}"
+      debug "Size of concatendated of block prev_hashes to be hashed: #{concatenated_hashes.size}"
       sha256(concatenated_hashes)
     end
 
-    def create_slow_indexes_to_check(incoming_chain)
-      the_indexes = [] of Int64
-      return the_indexes if @security_level_percentage == 100_i64
-      if (incoming_chain.size > STARTING_BLOCKS_TO_CHECK_ON_SYNC + FINAL_BLOCKS_TO_CHECK_ON_SYNC) && (incoming_chain.size > (@chain.size / 4))
-        (0_i64..STARTING_BLOCKS_TO_CHECK_ON_SYNC).step(2) { |b| the_indexes << b }
-        number_of_elements = (incoming_chain.size - (STARTING_BLOCKS_TO_CHECK_ON_SYNC + FINAL_BLOCKS_TO_CHECK_ON_SYNC)) / (100_i64 / @security_level_percentage)
-        index_of_last_incoming_block = incoming_chain[-1].index
-        starting_random_block = STARTING_BLOCKS_TO_CHECK_ON_SYNC * 2
-        final_random_block = index_of_last_incoming_block - (FINAL_BLOCKS_TO_CHECK_ON_SYNC * 2)
-        debug "starting random block is: #{starting_random_block}"
-        debug "final random block is: #{final_random_block}"
-        debug "number of elements is: #{number_of_elements}"
-        (0_i64..number_of_elements.to_i64).step do
-          randy = Random.new.rand(starting_random_block..final_random_block)
-          randy += 1 if (randy % 2) != 0
-          the_indexes << randy
-        end
-        (final_random_block..index_of_last_incoming_block).step(2) { |b| the_indexes << b }
-      end
-      the_indexes
+    def create_indexes_to_check(incoming_chain)
+      return [] of Int64 if @security_level_percentage == 100_i64
+      incoming_indices = incoming_chain.map(&.index)
+      max_incoming_block_id = incoming_indices.max
+      percentage_as_count = (max_incoming_block_id*@security_level_percentage*0.01).ceil.to_i
+      incoming_indices.shuffle.first(percentage_as_count)
     end
 
-    def create_fast_indexes_to_check(incoming_chain)
-      the_indexes = [] of Int64
-      return the_indexes if @security_level_percentage == 100_i64
-      if (incoming_chain.size > STARTING_BLOCKS_TO_CHECK_ON_SYNC + FINAL_BLOCKS_TO_CHECK_ON_SYNC) && (incoming_chain.size > (@chain.size / 4))
-        (1_i64..STARTING_BLOCKS_TO_CHECK_ON_SYNC).step(2) { |b| the_indexes << b }
-        number_of_elements = (incoming_chain.size - (STARTING_BLOCKS_TO_CHECK_ON_SYNC + FINAL_BLOCKS_TO_CHECK_ON_SYNC)) / (100_i64 / @security_level_percentage)
-        index_of_last_incoming_block = incoming_chain[-1].index
-        starting_random_block = (STARTING_BLOCKS_TO_CHECK_ON_SYNC * 2) + 1_i64
-        final_random_block = index_of_last_incoming_block - (FINAL_BLOCKS_TO_CHECK_ON_SYNC * 2)
-        debug "starting random block is: #{starting_random_block}"
-        debug "final random block is: #{final_random_block}"
-        debug "number of elements is: #{number_of_elements}"
-        (0_i64..number_of_elements.to_i64).step do
-          randy = Random.new.rand(starting_random_block..final_random_block)
-          randy += 1 if (randy % 2) == 0
-          the_indexes << randy
-        end
-        (final_random_block..index_of_last_incoming_block).step(2) { |b| the_indexes << b }
-      end
-      the_indexes
-    end
-
-    private def replace_slow_blocks(slow_subchain)
-      return false if slow_subchain.nil?
+    private def replace_mixed_blocks(chain)
+      return false if chain.nil?
       result = true
-      indexes_for_validity_checking = create_slow_indexes_to_check(slow_subchain)
 
-      slow_subchain.not_nil!.sort_by(&.index).each do |block|
-        # running the valid block test only on a subset of blocks for speed on sync
+      indexes_for_validity_checking = create_indexes_to_check(chain.not_nil!)
+
+      chain.not_nil!.sort_by(&.timestamp).each do |block|
         index = block.index
+
+        # running the valid block test only on a subset of blocks for speed on sync
         if (indexes_for_validity_checking.size == 0) || indexes_for_validity_checking.includes?(index)
           debug "doing valid check on block #{index}"
           block.valid?(self)
@@ -375,49 +343,11 @@ module ::Axentro::Core
         target_index ? (@chain[target_index] = block) : @chain << block
         @database.replace_block(block)
 
-        progress "slow block ##{index} was synced", index, slow_subchain.not_nil!.map(&.index).max
+        progress "block ##{index} was synced", index, chain.not_nil!.map(&.index).max
 
         dapps_record
       rescue e : Exception
-        error "found invalid slow block while syncing slow blocks at index #{index}.. deleting all blocks from invalid and up"
-        error "the reason:"
-        error e.message.not_nil!
-        result = false
-        if index
-          @database.delete_blocks(index)
-          @chain.each_index { |i|
-            debug "gonna delete at index #{i}"
-            @chain.delete_at(i) if @chain[i].index >= index
-          }
-          dapps_clear_record
-        end
-        break
-      end
-      result
-    end
-
-    private def replace_fast_blocks(fast_subchain)
-      return false if fast_subchain.nil?
-      result = true
-      indexes_for_validity_checking = create_fast_indexes_to_check(fast_subchain)
-      info "started syncing fast blocks"
-      fast_subchain.not_nil!.sort_by(&.index).each do |block|
-        # running the valid block test only on a subset of blocks for speed on sync
-        index = block.index
-        if (indexes_for_validity_checking.size == 0) || indexes_for_validity_checking.includes?(index)
-          debug "doing valid check on block #{index}"
-          block.valid?(self)
-        end
-
-        target_index = @chain.index { |b| b.index == index }
-        target_index ? (@chain[target_index] = block) : @chain << block
-        @database.replace_block(block)
-
-        progress "fast block ##{index} was synced", index, fast_subchain.not_nil!.map(&.index).max
-
-        dapps_record
-      rescue e : Exception
-        error "found invalid fast block while syncing fast blocks at index #{index}.. deleting all blocks from invalid and up"
+        error "found invalid block while syncing blocks at index #{index}.. deleting all blocks from invalid and up"
         error "the reason:"
         error e.message.not_nil!
         result = false
@@ -518,10 +448,6 @@ module ::Axentro::Core
       return 0_i64 if has_no_blocks?
       index = latest_slow_block.index
       index.even? ? index + 2 : index + 1
-    end
-
-    def subchain_slow(from : Int64) : Chain
-      @database.get_slow_blocks(from)
     end
 
     private def get_genesis_block_transactions

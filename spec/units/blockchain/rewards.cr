@@ -124,29 +124,6 @@ describe Blockchain do
       (node_reward + miner1_reward).should eq(total_reward)
     end
   end
-
-  # TODO - currently we burn fees but we should pay them to the node
-  #   it "should include fees in the rewards when there are fees in the transactions" do
-  #     with_factory do |block_factory, transaction_factory|
-  #       miner1 = {context: {address: "Miner 1", nonces: [1_u64, 2_u64] of UInt64}, socket: MockWebSocket.new, mid: "miner1"}
-  #       transactions = [transaction_factory.make_send(2000_i64), transaction_factory.make_send(9000_i64)]
-  #       total_reward = 1200019373_i64
-  #
-  #       coinbase_amount = block_factory.blockchain.coinbase_amount(1_i64, transactions)
-  #       transaction = block_factory.blockchain.create_coinbase_transaction(coinbase_amount, [miner1])
-  #
-  #       node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
-  #       miner1_reward = get_recipient_for(transaction.recipients, "Miner 1")[:amount]
-  #
-  #       node_reward.should eq(300004844_i64)
-  #       as_percentage(node_reward, total_reward).should eq(25)
-  #
-  #       miner1_reward.should eq(900014529_i64)
-  #       as_percentage(miner1_reward, total_reward).should eq(75)
-  #
-  #       (node_reward + miner1_reward).should eq(total_reward)
-  #     end
-  #   end
 end
 
 def with_miner_nonces(miner, nonce_values : Array(String), miner_address, block_factory)

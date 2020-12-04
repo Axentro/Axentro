@@ -67,10 +67,6 @@ module ::Axentro::Core::FastChain
     index.odd? ? index + 2 : index + 1
   end
 
-  def subchain_fast(from : Int64) : Chain
-    @database.get_fast_blocks(from)
-  end
-
   def valid_transactions_for_fast_block
     latest_index = get_latest_index_for_fast
     coinbase_amount = coinbase_fast_amount(latest_index, embedded_fast_transactions)

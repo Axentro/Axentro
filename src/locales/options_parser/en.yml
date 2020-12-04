@@ -39,6 +39,7 @@ cli:
     fast_transaction: "set transaction kind as fast transaction (default is slow transaction)"
     slow_transaction: "set transaction kind as slow transaction (default is slow transaction)"
     security_level_percentage: "set the percentage of blocks to validate on sync (default is 20%)"
+    sync_chunk_size: "set the chunk size for syncing the blockchain (default is 100 blocks)"
     max_miners: "set the max number of miners that can connect to the node (default is 512)"
     max_private_nodes: "set the max number of private nodes that can connect to the node (default is 512)"
     official_nodes: "configure the list of official nodes"

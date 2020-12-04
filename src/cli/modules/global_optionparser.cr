@@ -67,6 +67,7 @@ module ::Axentro::Interface
     @exit_if_unofficial : Bool = false
 
     @security_level_percentage : Int64?
+    @sync_chunk_size = 100
 
     @is_fast_transaction : Bool = false
 
@@ -114,6 +115,7 @@ module ::Axentro::Interface
       FASTNODE_ADDRESS
       OFFICIAL_NODES
       SECURITY_LEVEL_PERCENTAGE
+      SYNC_CHUNK_SIZE
       MAX_MINERS
       MAX_PRIVATE_NODES
       EXIT_IF_UNOFFICIAL
@@ -154,6 +156,7 @@ module ::Axentro::Interface
         parse_official_nodes(parser, actives)
         parse_if_unofficial_nodes(parser, actives)
         parse_security_level_percentage(parser, actives)
+        parse_sync_chunk_size(parser, actives)
         parse_slow_transaction(parser, actives)
         parse_fast_transaction(parser, actives)
         parse_max_miners(parser, actives)
@@ -391,6 +394,13 @@ module ::Axentro::Interface
       } if is_active?(actives, Options::SECURITY_LEVEL_PERCENTAGE)
     end
 
+    private def parse_sync_chunk_size(parser : OptionParser, actives : Array(Options))
+      parser.on("--sync-chunk-size=VALUE", I18n.translate("cli.options.sync_chunk_size")) { |sc|
+        raise "sync chunk size must be greater than 0" if sc.to_i <= 0
+        @sync_chunk_size = sc.to_i
+      } if is_active?(actives, Options::SYNC_CHUNK_SIZE)
+    end
+
     private def parse_slow_transaction(parser : OptionParser, actives : Array(Options))
       parser.on("--slow-transaction", I18n.translate("cli.options.slow_transaction")) {
         @is_fast_transaction = false
@@ -559,6 +569,10 @@ module ::Axentro::Interface
 
     def __security_level_percentage : Int64?
       @security_level_percentage
+    end
+
+    def __sync_chunk_size : Int32
+      @sync_chunk_size
     end
 
     def __max_miners : Int32
