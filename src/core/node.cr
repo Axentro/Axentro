@@ -167,7 +167,7 @@ module ::Axentro::Core
         debug "asking to sync chain (slow) at index #{slow_sync_index}"
         debug "asking to sync chain (fast) at index #{fast_sync_index}"
 
-        send(_s, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index})
+        send(_s, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {chunk_size: @sync_chunk_size, latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index})
       else
         warning "successor not found. skip synching blockchain"
 
@@ -647,13 +647,15 @@ module ::Axentro::Core
 
       remote_slow_index = _m_content.latest_slow_index
       remote_fast_index = _m_content.latest_fast_index
+      chunk_size = _m_content.chunk_size
 
       info "requested new chain size with latest slow index: #{remote_slow_index} , latest fast index: #{remote_fast_index}"
 
       target_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
       target_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
 
-      send(socket, M_TYPE_NODE_RECEIVE_CHAIN_SIZE, {chunk_size: @sync_chunk_size, slowchain_start_index: remote_slow_index, fastchain_start_index: remote_fast_index, slow_target_index: target_slow_index, fast_target_index: target_fast_index})
+      puts "sending with chunk size: #{@sync_chunk_size}"
+      send(socket, M_TYPE_NODE_RECEIVE_CHAIN_SIZE, {chunk_size: chunk_size, slowchain_start_index: remote_slow_index, fastchain_start_index: remote_fast_index, slow_target_index: target_slow_index, fast_target_index: target_fast_index})
     end
 
     private def _request_chain(socket, _content)
@@ -664,7 +666,7 @@ module ::Axentro::Core
 
       chunk_size = _m_content.chunk_size
 
-      debug "requested new chain slow start index: #{remote_start_slow_index} with chunk #{chunk_size} , latest fast index: #{remote_start_fast_index} with chunk #{chunk_size}"
+      info "requested new chain slow start index: #{remote_start_slow_index} with chunk #{chunk_size} , latest fast index: #{remote_start_fast_index} with chunk #{chunk_size}"
 
       ids = subchain_algo(remote_start_slow_index, remote_start_fast_index, chunk_size)
       blocks = @blockchain.database.get_blocks_by_ids(ids)

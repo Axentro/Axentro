@@ -227,6 +227,7 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     property latest_slow_index : Int64
     property latest_fast_index : Int64
+    property chunk_size : Int32
   end
 
   M_TYPE_NODE_RECEIVE_CHAIN_SIZE = 0x0114
