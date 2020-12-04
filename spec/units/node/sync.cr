@@ -115,4 +115,22 @@ describe "Chunked Sync" do
       end
     end
   end
+
+  describe "validation on sync - check the % of incoming blocks according to the configured security percentage (20% default)" do
+    it "on incoming chain" do
+      incoming_chain = [] of (SlowBlock | FastBlock)
+      with_factory do |block_factory, _|
+        block_factory.add_slow_blocks(40)
+        sleep 0.001
+        block_factory.add_fast_blocks(40)
+        sleep 0.001
+        block_factory.add_slow_blocks(20)
+        incoming_chain = block_factory.chain
+      end
+
+      with_factory do |block_factory, _|
+        block_factory.blockchain.create_indexes_to_check(incoming_chain).size.should eq(24)
+      end
+    end
+  end
 end
