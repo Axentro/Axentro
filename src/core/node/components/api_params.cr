@@ -12,7 +12,6 @@
 
 module ::Axentro::Core::NodeComponents
   module APIParams
-    
     # Used to specify a direction for the API
     enum Direction
       Up
@@ -28,7 +27,7 @@ module ::Axentro::Core::NodeComponents
       end
     end
 
-    # Used to specify a sorting field when retrieving blocks via the API 
+    # Used to specify a sorting field when retrieving blocks via the API
     enum BlockSortField
       Id
       Time
@@ -63,7 +62,7 @@ module ::Axentro::Core::NodeComponents
       [query_params["page"]?.try &.to_i || page,
        query_params["per_page"]?.try &.to_i || per_page,
        query_params["direction"]?.try { |d| d == "up" ? 0 : 1 } || direction.value,
-       query_params["sort_field"]?.try { |d| d == "time" ? 1 : 0 } || sort_field
+       query_params["sort_field"]?.try { |d| d == "time" ? 1 : 0 } || sort_field,
       ]
     end
   end

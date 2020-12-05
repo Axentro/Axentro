@@ -134,7 +134,7 @@ module ::Axentro::Core::Controllers
     def __v1_block_index_transactions(context, params)
       with_response(context) do |query_params|
         index = params["index"].to_i64
-        page, per_page, direction, sort_field = paginated(query_params)
+        page, per_page, direction, _ = paginated(query_params)
         @blockchain.blockchain_info.transactions_index_impl(index, page, per_page, direction)
       end
     end
@@ -202,7 +202,7 @@ module ::Axentro::Core::Controllers
 
     def __v1_address_transactions(context, params)
       with_response(context) do |query_params|
-        page, per_page, direction, sort_field = paginated(query_params)
+        page, per_page, direction, _ = paginated(query_params)
         actions = query_params["actions"]?.try &.split(",") || [] of String
         address = params["address"]
 
@@ -227,7 +227,7 @@ module ::Axentro::Core::Controllers
 
     def __v1_domain_transactions(context, params)
       with_response(context) do |query_params|
-        page, per_page, direction, sort_field = paginated(query_params)
+        page, per_page, direction, _ = paginated(query_params)
         actions = query_params["actions"]?.try &.split(",") || [] of String
 
         domain = params["domain"]
@@ -277,7 +277,7 @@ module ::Axentro::Core::Controllers
 
     def __v1_tokens(context, params)
       with_response(context) do |query_params|
-        page, per_page, direction, sort_field = paginated(query_params)
+        page, per_page, direction, _ = paginated(query_params)
         @blockchain.token.tokens_list_impl(page, per_page, direction)
       end
     end

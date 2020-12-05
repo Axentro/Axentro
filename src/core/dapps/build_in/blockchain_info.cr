@@ -54,15 +54,15 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def blockchain_size_impl
-      {totals:       {total_size: database.total_blocks, 
-                      total_fast: database.total(Block::BlockKind::FAST),
-                      total_slow: database.total(Block::BlockKind::SLOW),
-                      total_txns_fast: database.total_transactions(TransactionKind::FAST),
-                      total_txns_slow: database.total_transactions(TransactionKind::SLOW),
-                      difficulty: database.latest_difficulty
-                    },
-       block_height: {slow: database.highest_index_of_kind(Block::BlockKind::SLOW),
-                      fast: database.highest_index_of_kind(Block::BlockKind::FAST)}}
+      {totals: {total_size: database.total_blocks,
+                total_fast: database.total(Block::BlockKind::FAST),
+                total_slow: database.total(Block::BlockKind::SLOW),
+                total_txns_fast: database.total_transactions(TransactionKind::FAST),
+                total_txns_slow: database.total_transactions(TransactionKind::SLOW),
+                difficulty: database.latest_difficulty,
+      },
+      block_height: {slow: database.highest_index_of_kind(Block::BlockKind::SLOW),
+                     fast: database.highest_index_of_kind(Block::BlockKind::FAST)}}
     end
 
     def blockchain(json, context, params)

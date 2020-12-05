@@ -70,7 +70,7 @@ describe BlockchainInfo do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq(%{{"totals":{"total_size":11,"total_fast":0,"total_slow":11},"block_height":{"slow":20,"fast":-1}}})
+            result.should eq(%{{"totals":{"total_size":11,"total_fast":0,"total_slow":11,"total_txns_fast":0,"total_txns_slow":13,"difficulty":0},"block_height":{"slow":20,"fast":-1}}})
           end
         end
       end
@@ -84,7 +84,8 @@ describe BlockchainInfo do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            result.should eq(block_factory.blockchain.chain.reverse.to_json)
+            expected_blocks = block_factory.database.get_paginated_blocks(0, 50, "desc", "timestamp").to_json
+            result.should eq(expected_blocks)
           end
         end
       end
@@ -96,8 +97,8 @@ describe BlockchainInfo do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            expected_headers = block_factory.database.get_paginated_blocks(0, 50, "asc", "idx").map(&.to_header)
-            result.should eq(expected_headers.reverse.to_json)
+            expected_headers = block_factory.database.get_paginated_blocks(0, 50, "desc", "timestamp").map(&.to_header)
+            result.should eq(expected_headers.to_json)
           end
         end
       end

@@ -68,7 +68,7 @@ module ::Axentro::Core::Data::Transactions
       block_index, page, per_page)
   end
 
-  def get_paginated_all_transactions(page : Int32, per_page : Int32, direction : String, sort_field : String, actions : Array(String)) 
+  def get_paginated_all_transactions(page : Int32, per_page : Int32, direction : String, sort_field : String, actions : Array(String))
     page = page * per_page
     actions = actions.map { |a| "'#{a}'" }.join(",")
     transactions_by_query(

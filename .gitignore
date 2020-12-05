@@ -15,8 +15,8 @@ txns.txt
 
 *.DS_Store
 *.sqlite3
-*.-wal
-*.-shm
+*-wal
+*-shm
 my_mainnet_nodes.yml
 my_nodes.yml
 dev_fund.yml
