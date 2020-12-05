@@ -54,23 +54,29 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def blockchain_size_impl
-      {totals:       {total_size: database.total_blocks, total_fast: database.total(Block::BlockKind::FAST), total_slow: database.total(Block::BlockKind::SLOW)},
-       block_height: {slow: database.highest_index_of_kind(Block::BlockKind::SLOW),
-                      fast: database.highest_index_of_kind(Block::BlockKind::FAST)}}
+      {totals: {total_size: database.total_blocks,
+                total_fast: database.total(Block::BlockKind::FAST),
+                total_slow: database.total(Block::BlockKind::SLOW),
+                total_txns_fast: database.total_transactions(TransactionKind::FAST),
+                total_txns_slow: database.total_transactions(TransactionKind::SLOW),
+                difficulty: database.latest_difficulty,
+      },
+      block_height: {slow: database.highest_index_of_kind(Block::BlockKind::SLOW),
+                     fast: database.highest_index_of_kind(Block::BlockKind::FAST)}}
     end
 
     def blockchain(json, context, params)
-      page, per_page, direction = 0, 50, 1
+      page, per_page, direction, sort_field = 0, 50, 1, 1
 
-      context.response.print api_success(blockchain_impl(json["header"].as_bool, page, per_page, direction))
+      context.response.print api_success(blockchain_impl(json["header"].as_bool, page, per_page, direction, sort_field))
       context
     end
 
-    def blockchain_impl(header : Bool, page, per_page, direction)
+    def blockchain_impl(header : Bool, page, per_page, direction, sort_field)
       if header
-        database.get_paginated_blocks(page, per_page, Direction.new(direction).to_s).map(&.to_header)
+        database.get_paginated_blocks(page, per_page, Direction.new(direction).to_s, BlockSortField.new(sort_field).to_s).map(&.to_header)
       else
-        database.get_paginated_blocks(page, per_page, Direction.new(direction).to_s)
+        database.get_paginated_blocks(page, per_page, Direction.new(direction).to_s, BlockSortField.new(sort_field).to_s)
       end
     end
 
@@ -127,7 +133,20 @@ module ::Axentro::Core::DApps::BuildIn
 
     def transactions_index_impl(block_index : Int64, page : Int32, per_page : Int32, direction : Int32)
       confirmations = database.get_confirmations(block_index)
-      {transactions: database.get_paginated_transactions(block_index, page, per_page, Direction.new(direction).to_s), confirmations: confirmations}
+      {transactions: database.get_paginated_transactions(block_index, page, per_page, Direction.new(direction).to_s), confirmations: confirmations, block_id: block_index}
+    end
+
+    def transactions_all_impl(page : Int32, per_page : Int32, direction : Int32, sort_field : Int32, actions : Array(String) = [] of String)
+      transactions = database.get_paginated_all_transactions(page, per_page, Direction.new(direction).to_s, TransactionSortField.new(sort_field).to_s, actions)
+      transactions.map do |t|
+        confirmations = 0
+        _block_index = 0
+        if block_index = database.get_block_index_for_transaction(t.id)
+          confirmations = database.get_confirmations(block_index)
+          _block_index = block_index
+        end
+        {transaction: t, confirmations: confirmations, block_id: _block_index}
+      end
     end
 
     def transactions_address_impl(address : String, page : Int32, per_page : Int32, direction : Int32, actions : Array(String) = [] of String)

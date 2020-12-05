@@ -58,6 +58,7 @@ module ::Axentro::Core
 
       hours_to_hold = ENV.has_key?("AXE_TESTING") ? 2 : 48
       @blocks_to_hold = (SLOW_BLOCKS_PER_HOUR * hours_to_hold).to_i64
+      info "holding #{@blocks_to_hold} blocks in memory"
     end
 
     def database

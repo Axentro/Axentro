@@ -52,6 +52,11 @@ module ::Axentro::Core::Data::Transactions
   end
 
   # ------- API -------
+  def total_transactions(transaction_kind : TransactionKind) : Int32
+    kind = transaction_kind == TransactionKind::SLOW ? "SLOW" : "FAST"
+    @db.query_one("select count(*) from transactions where kind = ?", kind, as: Int32)
+  end
+
   def get_paginated_transactions(block_index : Int64, page : Int32, per_page : Int32, direction : String)
     page = page * per_page
     transactions_by_query(
@@ -61,6 +66,18 @@ module ::Axentro::Core::Data::Transactions
       "order by block_id #{direction} limit ? ) " \
       "order by block_id #{direction} limit ?",
       block_index, page, per_page)
+  end
+
+  def get_paginated_all_transactions(page : Int32, per_page : Int32, direction : String, sort_field : String, actions : Array(String))
+    page = page * per_page
+    actions = actions.map { |a| "'#{a}'" }.join(",")
+    transactions_by_query(
+      "select * from transactions " \
+      "where oid not in ( select oid from transactions " \
+      "order by #{sort_field} #{direction} limit ? ) " +
+      (actions.empty? ? "" : "and action in (#{actions}) ") +
+      "order by #{sort_field} #{direction} limit ?",
+      page, per_page)
   end
 
   def get_paginated_transactions_for_address(address : String, page : Int32, per_page : Int32, direction : String, actions : Array(String), sort_by_date : Bool = false)
