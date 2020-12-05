@@ -40,6 +40,7 @@ module ::Axentro::Core
     # child node gets this from parent on setup
     @sync_slow_blocks_target_index : Int64 = 0_i64
     @sync_fast_blocks_target_index : Int64 = 0_i64
+    @validation_hash : String = ""
 
     def initialize(
       @is_private : Bool,
@@ -56,7 +57,7 @@ module ::Axentro::Core
       @developer_fund : DeveloperFund?,
       @official_nodes : OfficialNodes?,
       @exit_on_unofficial : Bool,
-      @security_level_percentage : Int64?,
+      @security_level_percentage : Int64,
       @sync_chunk_size : Int32,
       @max_miners : Int32,
       @max_private_nodes : Int32,
@@ -147,7 +148,8 @@ module ::Axentro::Core
       node.listen
     end
 
-    private def sync_chain(socket : HTTP::WebSocket? = nil)
+    # mostly on the child unless child chain is longer than parent then it happens on parent too
+    private def sync_chain(socket : HTTP::WebSocket? = nil, do_validate : Bool = true)
       info "start synching chain"
 
       s = if _socket = socket
@@ -167,7 +169,11 @@ module ::Axentro::Core
         debug "asking to sync chain (slow) at index #{slow_sync_index}"
         debug "asking to sync chain (fast) at index #{fast_sync_index}"
 
-        send(_s, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {chunk_size: @sync_chunk_size, latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index})
+        if do_validate
+          send(_s, M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE, {latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index})
+        else
+          send(_s, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {chunk_size: @sync_chunk_size, latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index})
+        end
       else
         warning "successor not found. skip synching blockchain"
 
@@ -310,6 +316,14 @@ module ::Axentro::Core
           @chord.stabilize_as_predecessor(self, socket, message_content)
         when M_TYPE_CHORD_BROADCAST_NODE_JOINED
           _broadcast_node_joined(socket, message_content)
+        when M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE
+          _request_validation_challenge(socket, message_content)
+        when M_TYPE_NODE_RECEIVE_VALIDATION_CHALLENGE
+          _receive_validation_challenge(socket, message_content)
+        when M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE_CHECK
+          _request_validation_challenge_check(socket, message_content)
+        when M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS
+          _request_validation_success(socket, message_content)
         when M_TYPE_NODE_REQUEST_CHAIN_SIZE
           _request_chain_size(socket, message_content)
         when M_TYPE_NODE_RECEIVE_CHAIN_SIZE
@@ -514,7 +528,7 @@ module ::Axentro::Core
       elsif @blockchain.get_latest_index_for_slow < block.index
         debug "slow: currently pending slow index is the less than the index of arriving block from a peer"
         warning "slow: require new chain: #{@blockchain.latest_slow_block.index} for #{block.index}"
-        sync_chain(socket)
+        sync_chain(socket, false)
         send_block(block, from)
       else
         warning "slow: received old block, will be ignored"
@@ -543,7 +557,7 @@ module ::Axentro::Core
         if latest_fast_block.index + 2 < block.index
           debug "fast: latest local fast chain index (#{latest_fast_block.index}) is more than one block behind index of arriving block from a peer(#{block.index})"
           warning "fast: require new chain: #{latest_fast_block} for #{block.index}"
-          sync_chain(socket)
+          sync_chain(socket, false)
           send_block(block, from)
         elsif latest_fast_block.index < block.index
           debug "fast: fast block arriving from peer is a new block"
@@ -642,6 +656,77 @@ module ::Axentro::Core
       @clients_manager.receive_content(content, from)
     end
 
+    # on the parent
+    private def _request_validation_challenge(socket, _content)
+      _m_content = MContentNodeRequestValidationChallenge.from_json(_content)
+
+      remote_slow_index = _m_content.latest_slow_index
+      remote_fast_index = _m_content.latest_fast_index
+
+      info "requested validation challenge with latest slow index: #{remote_slow_index} , latest fast index: #{remote_fast_index}"
+
+      if remote_slow_index == 0_i64 && remote_fast_index == 0_i64
+        # child has no blocks so bypass validation check
+        info "validation challenge expedited as challenger has no blocks"
+        send(socket, M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS, {} of String => String)
+      else
+        # tell child about blocks to validate based on a window of blocks
+        # first 50 on parent, random percent in middle, then 50 last blocks capped at the highest child blocks
+        local_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
+        local_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
+
+        validation_slow_index = Math.min(remote_slow_index, local_slow_index)
+        validation_fast_index = Math.min(remote_fast_index, local_fast_index)
+
+        validation_blocks = @blockchain.get_validation_block_ids(validation_slow_index, validation_fast_index, @security_level_percentage)
+        @validation_hash = @blockchain.get_hash_of_block_hashes(validation_blocks)
+
+        info "validation challenge proceeding..."
+        send(socket, M_TYPE_NODE_RECEIVE_VALIDATION_CHALLENGE, {validation_blocks: validation_blocks})
+      end
+    end
+
+    # on the child
+    private def _receive_validation_challenge(socket, _content)
+      _m_content = MContentNodeReceiveValidationChallenge.from_json(_content)
+
+      validation_blocks = _m_content.validation_blocks
+
+      info "received validation challenge from remote node"
+
+      local_validation_hash = @blockchain.get_hash_of_block_hashes(validation_blocks)
+
+      send(socket, M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE_CHECK, {validation_hash: local_validation_hash})
+    end
+
+    # on the parent
+    private def _request_validation_challenge_check(socket, _content)
+      _m_content = MContentNodeRequestValidationChallengeCheck.from_json(_content)
+      validation_hash = _m_content.validation_hash
+
+      debug "checking validation challenge hash from connecting node"
+
+      if validation_hash == @validation_hash
+        info "validation hash succesfully confirmed so informing connecting node"
+        send(socket, M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS, {} of String => String)
+      else
+        warning "validation hash failed so rejecting connection ..."
+        send(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Database validation failed: your data is not compatible with our data!"})
+      end
+    end
+
+    # on the child
+    private def _request_validation_success(socket, _content)
+      info "validation hash successfuly validated - proceed to sync"
+      latest_slow_index = get_latest_slow_index
+      latest_fast_index = get_latest_fast_index
+
+      slow_sync_index = @conflicted_slow_index.nil? ? latest_slow_index : @conflicted_slow_index.not_nil!
+      fast_sync_index = @conflicted_fast_index.nil? ? latest_fast_index : @conflicted_fast_index.not_nil!
+      send(socket, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {chunk_size: @sync_chunk_size, latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index})
+    end
+
+    # on the parent
     private def _request_chain_size(socket, _content)
       _m_content = MContentNodeRequestChainSize.from_json(_content)
 
@@ -649,40 +734,21 @@ module ::Axentro::Core
       remote_fast_index = _m_content.latest_fast_index
       chunk_size = _m_content.chunk_size
 
-      info "requested new chain size with latest slow index: #{remote_slow_index} , latest fast index: #{remote_fast_index}"
+      debug "requested new chain size with latest slow index: #{remote_slow_index} , latest fast index: #{remote_fast_index}"
 
       target_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
       target_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
 
-      puts "sending with chunk size: #{@sync_chunk_size}"
+      debug "sending with chunk size: #{@sync_chunk_size}"
       send(socket, M_TYPE_NODE_RECEIVE_CHAIN_SIZE, {chunk_size: chunk_size, slowchain_start_index: remote_slow_index, fastchain_start_index: remote_fast_index, slow_target_index: target_slow_index, fast_target_index: target_fast_index})
-    end
 
-    private def _request_chain(socket, _content)
-      _m_content = MContentNodeRequestChain.from_json(_content)
-
-      remote_start_slow_index = _m_content.start_slow_index
-      remote_start_fast_index = _m_content.start_fast_index
-
-      chunk_size = _m_content.chunk_size
-
-      info "requested new chain slow start index: #{remote_start_slow_index} with chunk #{chunk_size} , latest fast index: #{remote_start_fast_index} with chunk #{chunk_size}"
-
-      ids = subchain_algo(remote_start_slow_index, remote_start_fast_index, chunk_size)
-      blocks = @blockchain.database.get_blocks_by_ids(ids)
-
-      send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {blocks: blocks, chunk_size: chunk_size})
-      debug "chain sent to peer for sync"
-
-      latest_local_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
-      latest_local_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
-
-      if ((remote_start_slow_index > latest_local_slow_index) || (remote_start_fast_index > latest_local_fast_index))
+      if ((remote_slow_index > target_slow_index) || (remote_fast_index > target_fast_index))
         info "Remote indices were higher local indices so starting chain sync."
-        sync_chain(socket)
+        sync_chain(socket, false)
       end
     end
 
+    # on the child
     private def _receive_chain_size(socket, _content)
       _m_content = MContentNodeReceiveChainSize.from_json(_content)
 
@@ -709,6 +775,33 @@ module ::Axentro::Core
       end
     end
 
+    # on the parent
+    private def _request_chain(socket, _content)
+      _m_content = MContentNodeRequestChain.from_json(_content)
+
+      remote_start_slow_index = _m_content.start_slow_index
+      remote_start_fast_index = _m_content.start_fast_index
+
+      chunk_size = _m_content.chunk_size
+
+      debug "requested new chain slow start index: #{remote_start_slow_index} with chunk #{chunk_size} , latest fast index: #{remote_start_fast_index} with chunk #{chunk_size}"
+
+      ids = subchain_algo(remote_start_slow_index, remote_start_fast_index, chunk_size)
+      blocks = @blockchain.database.get_blocks_by_ids(ids)
+
+      send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {blocks: blocks, chunk_size: chunk_size})
+      debug "chain sent to peer for sync"
+
+      latest_local_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
+      latest_local_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
+
+      if ((remote_start_slow_index > latest_local_slow_index) || (remote_start_fast_index > latest_local_fast_index))
+        info "Remote indices were higher local indices so starting chain sync."
+        sync_chain(socket, false)
+      end
+    end
+
+    # on child
     private def _receive_chain(socket, _content)
       _m_content = MContentNodeReceiveChain.from_json(_content)
 
@@ -754,7 +847,7 @@ module ::Axentro::Core
         info "continue syncing chain with slow: #{latest_local_slow_index} fast: #{latest_local_fast_index}"
         send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_slow_index: latest_local_slow_index, chunk_size: chunk_size, start_fast_index: latest_local_fast_index})
       else
-        info "chain fully synced so moving ontransaction syncing"
+        info "chain fully synced so moving on to transaction syncing"
         # if no more to sync then move onto phase transaction syncing
         if @phase == SetupPhase::BLOCKCHAIN_SYNCING
           @phase = SetupPhase::TRANSACTION_SYNCING
@@ -777,7 +870,7 @@ module ::Axentro::Core
       verbose "fast requested: #{remote_fast_index}, yours #{local_fast_index}"
 
       if ((remote_slow_index > local_slow_index) || (remote_fast_index > local_fast_index))
-        sync_chain(socket)
+        sync_chain(socket, false)
       end
     end
 

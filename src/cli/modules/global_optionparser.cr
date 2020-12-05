@@ -66,7 +66,7 @@ module ::Axentro::Interface
     @official_nodes_path : String?
     @exit_if_unofficial : Bool = false
 
-    @security_level_percentage : Int64?
+    @security_level_percentage = 20_i64
     @sync_chunk_size = 100
 
     @is_fast_transaction : Bool = false
@@ -567,7 +567,7 @@ module ::Axentro::Interface
       @exit_if_unofficial
     end
 
-    def __security_level_percentage : Int64?
+    def __security_level_percentage : Int64
       @security_level_percentage
     end
 

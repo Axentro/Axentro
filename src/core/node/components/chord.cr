@@ -86,23 +86,21 @@ module ::Axentro::Core::NodeComponents
       debug "joining network: #{connect_host}:#{connect_port}"
 
       # public node database validation on local public
-      if node.blockchain.has_no_blocks?
-        validation_blocks = [] of Int64
-        validation_hash = ""
-      else
-        validation_blocks = node.blockchain.get_validation_block_ids(node.blockchain.latest_slow_block.index, node.blockchain.latest_fast_block_index_or_zero)
-        validation_hash = node.blockchain.get_hash_of_block_hashes(validation_blocks)
-      end
+      # if node.blockchain.has_no_blocks?
+      #   validation_blocks = [] of Int64
+      #   validation_hash = ""
+      # else
+      #   validation_blocks = node.blockchain.get_validation_block_ids(node.blockchain.latest_slow_block.index, node.blockchain.latest_fast_block_index_or_zero)
+      #   validation_hash = node.blockchain.get_hash_of_block_hashes(validation_blocks)
+      # end
 
       send_once(
         connect_host,
         connect_port,
         M_TYPE_CHORD_JOIN,
         {
-          version:           Core::CORE_VERSION,
-          context:           context,
-          validation_hash:   validation_hash,
-          validation_blocks: validation_blocks,
+          version: Core::CORE_VERSION,
+          context: context,
         })
     rescue e : Exception
       error "failed to connect #{connect_host}:#{connect_port}"
@@ -116,13 +114,13 @@ module ::Axentro::Core::NodeComponents
       debug "joining network: #{connect_host}:#{connect_port} (private)"
 
       # public node database validation on local private
-      if node.blockchain.has_no_blocks?
-        validation_blocks = [] of Int64
-        validation_hash = ""
-      else
-        validation_blocks = node.blockchain.get_validation_block_ids(node.blockchain.latest_slow_block.index, node.blockchain.latest_fast_block_index_or_zero)
-        validation_hash = node.blockchain.get_hash_of_block_hashes(validation_blocks)
-      end
+      # if node.blockchain.has_no_blocks?
+      #   validation_blocks = [] of Int64
+      #   validation_hash = ""
+      # else
+      #   validation_blocks = node.blockchain.get_validation_block_ids(node.blockchain.latest_slow_block.index, node.blockchain.latest_fast_block_index_or_zero)
+      #   validation_hash = node.blockchain.get_hash_of_block_hashes(validation_blocks)
+      # end
 
       socket = HTTP::WebSocket.new(connect_host, "/peer", connect_port, @use_ssl)
 
@@ -138,10 +136,8 @@ module ::Axentro::Core::NodeComponents
         socket,
         M_TYPE_CHORD_JOIN_PRIVATE,
         {
-          version:           Core::CORE_VERSION,
-          context:           context,
-          validation_hash:   validation_hash,
-          validation_blocks: validation_blocks,
+          version: Core::CORE_VERSION,
+          context: context,
         }
       )
     rescue e : Exception
@@ -160,13 +156,13 @@ module ::Axentro::Core::NodeComponents
       debug "#{_context[:host]}:#{_context[:port]} try to join Axentro"
 
       # public node database validation on peer
-      client_blocks = _m_content.validation_blocks
-      validation_hash = client_blocks.size > 0 ? node.blockchain.get_hash_of_block_hashes(client_blocks) : ""
+      # client_blocks = _m_content.validation_blocks
+      # validation_hash = client_blocks.size > 0 ? node.blockchain.get_hash_of_block_hashes(client_blocks) : ""
 
-      if _m_content.validation_hash != validation_hash
-        send_once(_context, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Database validation failed: your data is not compatible with our data!"})
-        return
-      end
+      # if _m_content.validation_hash != validation_hash
+      #   send_once(_context, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Database validation failed: your data is not compatible with our data!"})
+      #   return
+      # end
 
       if _context[:type] != @network_type
         send_once(_context, M_TYPE_CHORD_JOIN_REJECTED, {reason: "network type mismatch. " +
@@ -184,13 +180,13 @@ module ::Axentro::Core::NodeComponents
 
       debug "private node trying to join Axentro"
 
-      client_blocks = _m_content.validation_blocks
-      validation_hash = client_blocks.size > 0 ? node.blockchain.get_hash_of_block_hashes(client_blocks) : ""
+      # client_blocks = _m_content.validation_blocks
+      # validation_hash = client_blocks.size > 0 ? node.blockchain.get_hash_of_block_hashes(client_blocks) : ""
 
-      if _m_content.validation_hash != validation_hash
-        send_once(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Database validation failed: your data is not compatible with our data!"})
-        return
-      end
+      # if _m_content.validation_hash != validation_hash
+      #   send_once(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Database validation failed: your data is not compatible with our data!"})
+      #   return
+      # end
 
       if @private_nodes.size >= @max_private_nodes
         send(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "The max private node connections of #{@max_private_nodes} for this node has been reached"})

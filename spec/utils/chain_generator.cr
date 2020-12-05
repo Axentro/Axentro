@@ -67,7 +67,7 @@ module ::Units::Utils::ChainGenerator
 
       @database = memory_kind == MemoryKind::SINGLE ? Axentro::Core::Database.in_memory : Axentro::Core::Database.in_shared_memory
       # @database = Axentro::Core::Database.new("specs.sqlite3")
-      @node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, @database, developer_fund, @official_nodes, false, nil, 100, 512, 512, false)
+      @node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, @database, developer_fund, @official_nodes, false, 20, 100, 512, 512, false)
       @blockchain = @node.blockchain
       # the node setup is run in a spawn so we have to wait until it's finished before running any tests
       while @node.@phase != Axentro::Core::Node::SetupPhase::DONE
