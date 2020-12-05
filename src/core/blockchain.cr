@@ -22,7 +22,6 @@ module ::Axentro::Core
 
     SLOW_BLOCKS_PER_HOUR = 3600_i64 / Consensus::POW_TARGET_SPACING_SECS
 
-    SECURITY_LEVEL_PERCENTAGE        = 20_i64
     STARTING_BLOCKS_TO_CHECK_ON_SYNC = 50_i64
     FINAL_BLOCKS_TO_CHECK_ON_SYNC    = 50_i64
 
@@ -41,7 +40,6 @@ module ::Axentro::Core
 
     @network_type : String
     @blocks_to_hold : Int64
-    @security_level_percentage : Int64
     @sync_chunk_size : Int32
     @node : Node?
     @mining_block : SlowBlock?
@@ -49,15 +47,13 @@ module ::Axentro::Core
     @max_miners : Int32
     @is_standalone : Bool
 
-    def initialize(@network_type : String, @wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, @official_nodes : OfficialNodes?, security_level_percentage : Int64?, @sync_chunk_size : Int32, @max_miners : Int32, @is_standalone : Bool)
+    def initialize(@network_type : String, @wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, @official_nodes : OfficialNodes?, @security_level_percentage : Int64, @sync_chunk_size : Int32, @max_miners : Int32, @is_standalone : Bool)
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup
       MinerNoncePool.setup
 
-      @security_level_percentage = security_level_percentage || SECURITY_LEVEL_PERCENTAGE
       info "Security Level Percentage used for blockchain validation is #{@security_level_percentage}"
-
       info "Blockchain sync chunk size is #{@sync_chunk_size}"
 
       hours_to_hold = ENV.has_key?("AXE_TESTING") ? 2 : 48
@@ -284,7 +280,7 @@ module ::Axentro::Core
       result
     end
 
-    def get_validation_block_ids(max_slow_block_id : Int64, max_fast_block_id : Int64) : Array(Int64)
+    def get_validation_block_ids(max_slow_block_id : Int64, max_fast_block_id : Int64, security_level_percentage : Int64) : Array(Int64)
       slow_blocks = (0_i64..max_slow_block_id).to_a.reject(&.odd?)
       first_50_slow = slow_blocks.first(50)
       last_50_slow = slow_blocks.last(50)
@@ -293,8 +289,8 @@ module ::Axentro::Core
       first_50_fast = fast_blocks.first(50)
       last_50_fast = fast_blocks.last(50)
 
-      percentage_slow = (max_slow_block_id*SECURITY_LEVEL_PERCENTAGE*0.01).ceil.to_i
-      percentage_fast = (max_fast_block_id*SECURITY_LEVEL_PERCENTAGE*0.01).ceil.to_i
+      percentage_slow = (max_slow_block_id*security_level_percentage*0.01).ceil.to_i
+      percentage_fast = (max_fast_block_id*security_level_percentage*0.01).ceil.to_i
 
       percent_slow = slow_blocks.shuffle.first(percentage_slow)
       percent_fast = fast_blocks.shuffle.first(percentage_fast)
