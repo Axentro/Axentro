@@ -684,6 +684,14 @@ module ::Axentro::Core
         info "validation challenge proceeding..."
         send(socket, M_TYPE_NODE_RECEIVE_VALIDATION_CHALLENGE, {validation_blocks: validation_blocks})
       end
+
+      target_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
+      target_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
+
+      if ((remote_slow_index > target_slow_index) || (remote_fast_index > target_fast_index))
+        info "Remote indices were higher local indices so starting chain sync."
+        sync_chain(socket, false)
+      end
     end
 
     # on the child
