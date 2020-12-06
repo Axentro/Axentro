@@ -122,9 +122,9 @@ module ::Axentro::Core::DApps::BuildIn
 
       my_tokens = tokens.select(&.is_mine)
 
-      page, per_page, direction = 0, 100, 1
+      page, per_page, direction, sort_field = 0, 100, 1, 1
 
-      all_completed_transactions = database.get_paginated_transactions_for_address(address, page, per_page, Direction.new(direction).to_s, [] of String, true)
+      all_completed_transactions = database.get_paginated_transactions_for_address(address, page, per_page, Direction.new(direction).to_s, TransactionSortField.new(sort_field).to_s, [] of String)
       incoming_completed_transactions = incoming(address, "Completed", all_completed_transactions.select { |t| t.recipients.map { |r| r[:address] }.includes?(address) })
       outgoing_completed_transactions = outgoing(address, "Completed", all_completed_transactions.select { |t| t.senders.map { |r| r[:address] }.includes?(address) })
 

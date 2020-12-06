@@ -73,10 +73,13 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def blockchain_impl(header : Bool, page, per_page, direction, sort_field)
+      total_blocks = database.total_blocks
       if header
-        database.get_paginated_blocks(page, per_page, Direction.new(direction).to_s, BlockSortField.new(sort_field).to_s).map(&.to_header)
+        selected = database.get_paginated_blocks(page, per_page, Direction.new(direction).to_s, BlockSortField.new(sort_field).to_s).map(&.to_header)
+        {data: selected, pagination: {page: page, per_page: per_page, direction: direction, sort_field: sort_field, count: selected.size, total_count: total_blocks}}
       else
-        database.get_paginated_blocks(page, per_page, Direction.new(direction).to_s, BlockSortField.new(sort_field).to_s)
+        selected = database.get_paginated_blocks(page, per_page, Direction.new(direction).to_s, BlockSortField.new(sort_field).to_s)
+        {data: selected, pagination: {page: page, per_page: per_page, direction: direction, sort_field: sort_field, count: selected.size, total_count: total_blocks}}
       end
     end
 
@@ -116,29 +119,35 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def transactions(json, context, params)
-      page, per_page, direction = 0, 50, 1
-      context.response.print api_success(transactions_impl(json["index"]?, json["address"]?, page, per_page, direction))
+      page, per_page, direction, sort_field = 0, 50, 1, 1
+      context.response.print api_success(transactions_impl(json["index"]?, json["address"]?, page, per_page, direction, sort_field))
       context
     end
 
-    def transactions_impl(_index, _address, page, per_page, direction)
+    def transactions_impl(_index, _address, page, per_page, direction, sort_field, actions = [] of String)
       if index = _index
-        transactions_index_impl(index.as_i64, page, per_page, direction)
+        transactions_index_impl(index.as_i64, page, per_page, direction, sort_field, actions)
       elsif address = _address
-        transactions_address_impl(address.as_s, page, per_page, direction)
+        transactions_address_impl(address.as_s, page, per_page, direction, sort_field, actions)
       else
         raise "please specify a block index or an address"
       end
     end
 
-    def transactions_index_impl(block_index : Int64, page : Int32, per_page : Int32, direction : Int32)
+    def transactions_index_impl(block_index : Int64, page : Int32, per_page : Int32, direction : Int32, sort_field : Int32, actions : Array(String) = [] of String)
       confirmations = database.get_confirmations(block_index)
-      {transactions: database.get_paginated_transactions(block_index, page, per_page, Direction.new(direction).to_s), confirmations: confirmations, block_id: block_index}
+      selected = database.get_paginated_transactions(block_index, page, per_page, Direction.new(direction).to_s, TransactionSortField.new(sort_field).to_s, actions)
+      total_transactions = database.total_transactions_for_block(block_index)
+      {transactions: selected,
+       confirmations: confirmations, block_id: block_index,
+       pagination: {page: page, per_page: per_page, direction: direction, sort_field: sort_field, count: selected.size, total_count: total_transactions},
+      }
     end
 
     def transactions_all_impl(page : Int32, per_page : Int32, direction : Int32, sort_field : Int32, actions : Array(String) = [] of String)
       transactions = database.get_paginated_all_transactions(page, per_page, Direction.new(direction).to_s, TransactionSortField.new(sort_field).to_s, actions)
-      transactions.map do |t|
+      total_count = database.total_transactions_size
+      selected = transactions.map do |t|
         confirmations = 0
         _block_index = 0
         if block_index = database.get_block_index_for_transaction(t.id)
@@ -147,17 +156,20 @@ module ::Axentro::Core::DApps::BuildIn
         end
         {transaction: t, confirmations: confirmations, block_id: _block_index}
       end
+      {transactions: selected, pagination: {page: page, per_page: per_page, direction: direction, sort_field: sort_field, count: selected.size, total_count: total_count}}
     end
 
-    def transactions_address_impl(address : String, page : Int32, per_page : Int32, direction : Int32, actions : Array(String) = [] of String)
-      transactions = database.get_paginated_transactions_for_address(address, page, per_page, Direction.new(direction).to_s, actions)
-      transactions.map do |t|
+    def transactions_address_impl(address : String, page : Int32, per_page : Int32, direction : Int32, sort_field : Int32, actions : Array(String) = [] of String)
+      transactions = database.get_paginated_transactions_for_address(address, page, per_page, Direction.new(direction).to_s, TransactionSortField.new(sort_field).to_s, actions)
+      total_count = database.total_transactions_for_address(address)
+      selected = transactions.map do |t|
         confirmations = 0
         if block_index = database.get_block_index_for_transaction(t.id)
           confirmations = database.get_confirmations(block_index)
         end
         {transaction: t, confirmations: confirmations}
       end
+      {transactions: selected, pagination: {page: page, per_page: per_page, direction: direction, sort_field: sort_field, count: selected.size, total_count: total_count}}
     end
 
     def on_message(action : String, from_address : String, content : String, from = nil)
