@@ -41,21 +41,21 @@ describe RESTController do
   describe "__v1_blockchain" do
     it "should return the full blockchain with pagination defaults (page:0,per_page:20,direction:desc)" do
       asset_blockchain("/api/v1/blockchain") do |result|
-        blocks = Array(SlowBlock).from_json(result.to_json)
+        blocks = Array(SlowBlock).from_json(result["data"].to_json)
         blocks.size.should eq(20)
         blocks.first.index.should eq(100)
       end
     end
     it "should return the full blockchain with pagination specified direction (page:0,per_page:20,direction:asc)" do
       asset_blockchain("/api/v1/blockchain?direction=up") do |result|
-        blocks = Array(SlowBlock).from_json(result.to_json)
+        blocks = Array(SlowBlock).from_json(result["data"].to_json)
         blocks.size.should eq(20)
         blocks.first.index.should eq(0)
       end
     end
     it "should return the full blockchain with pagination specified direction (page:2,per_page:1,direction:desc)" do
       asset_blockchain("/api/v1/blockchain?page=2&per_page=1&direction=down") do |result|
-        blocks = Array(SlowBlock).from_json(result.to_json)
+        blocks = Array(SlowBlock).from_json(result["data"].to_json)
         blocks.size.should eq(1)
         blocks.first.index.should eq(96)
       end
@@ -65,21 +65,21 @@ describe RESTController do
   describe "__v1_blockchain_header" do
     it "should return the blockchain headers with pagination defaults (page:0,per_page:20,direction:desc)" do
       asset_blockchain_header("/api/v1/blockchain/header") do |result|
-        blocks = Array(Blockchain::SlowHeader).from_json(result.to_json)
+        blocks = Array(Blockchain::SlowHeader).from_json(result["data"].to_json)
         blocks.size.should eq(20)
         blocks.first[:index].should eq(100)
       end
     end
     it "should return the blockchain headers with pagination specified direction (page:0,per_page:20,direction:asc)" do
       asset_blockchain_header("/api/v1/blockchain/header/?direction=up") do |result|
-        blocks = Array(Blockchain::SlowHeader).from_json(result.to_json)
+        blocks = Array(Blockchain::SlowHeader).from_json(result["data"].to_json)
         blocks.size.should eq(20)
         blocks.first[:index].should eq(0)
       end
     end
     it "should return the blockchain headers with pagination specified direction (page:2,per_page:1,direction:desc)" do
       asset_blockchain_header("/api/v1/blockchain/header?page=2&per_page=1&direction=down") do |result|
-        blocks = Array(Blockchain::SlowHeader).from_json(result.to_json)
+        blocks = Array(Blockchain::SlowHeader).from_json(result["data"].to_json)
         blocks.size.should eq(1)
         blocks.first[:index].should eq(96)
       end
@@ -306,8 +306,7 @@ describe RESTController do
         transaction = transaction_factory.make_send(100_i64)
         block_factory.add_slow_block([transaction]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/#{address}/transactions"), {address: address})) do |result|
-          result["status"].to_s.should eq("success")
-          data = result["result"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
           Array(Transaction).from_json(data)
         end
       end
@@ -319,7 +318,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/#{address}/transactions?actions=send"), {address: address, actions: "send"})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
           transactions = Array(Transaction).from_json(data)
           transactions.map { |txn| txn.action }.uniq.should eq(["send"])
         end
@@ -332,7 +331,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/#{address}/transactions?actions=unknown"), {address: address, actions: "unknown"})) do |result|
           result["status"].to_s.should eq("success")
-          result["result"].to_s.should eq("[]")
+          result["result"]["transactions"].to_s.should eq("[]")
         end
       end
     end
@@ -342,7 +341,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/no-address/transactions?actions=unknown"), {address: "no-address", actions: "unknown"})) do |result|
           result["status"].to_s.should eq("success")
-          result["result"].to_s.should eq("[]")
+          result["result"]["transactions"].to_s.should eq("[]")
         end
       end
     end
@@ -352,7 +351,7 @@ describe RESTController do
         block_factory.add_slow_blocks(100)
         exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/#{address}/transactions"), {address: address})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
           transactions = Array(Transaction).from_json(data)
           transactions.size.should eq(20)
         end
@@ -364,7 +363,7 @@ describe RESTController do
         block_factory.add_slow_blocks(200)
         exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/#{address}/transactions?per_page=50&page=2"), {address: address, page_size: 50, page: 1})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
           transactions = Array(Transaction).from_json(data)
           transactions.size.should eq(50)
         end
@@ -428,7 +427,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction, transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_domain_transactions(context("/api/v1/domain/#{domain}/transactions"), {domain: domain})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
           Array(Transaction).from_json(data)
         end
       end
@@ -440,7 +439,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction, transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_domain_transactions(context("/api/v1/domain/#{domain}/transactions?actions=send"), {domain: domain, actions: "send"})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
           transactions = Array(Transaction).from_json(data)
           transactions.map { |txn| txn.action }.uniq.should eq(["send"])
         end
@@ -453,7 +452,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction, transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_domain_transactions(context("/api/v1/domain/#{domain}/transactions?actions=unknown"), {domain: domain, actions: "unknown"})) do |result|
           result["status"].to_s.should eq("success")
-          result["result"].to_s.should eq("[]")
+          result["result"]["transactions"].to_s.should eq("[]")
         end
       end
     end
@@ -463,7 +462,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(100)
         exec_rest_api(block_factory.rest.__v1_domain_transactions(context("/api/v1/domain/#{domain}/transactions"), {domain: domain})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
           transactions = Array(Transaction).from_json(data)
           transactions.size.should eq(20)
         end
@@ -475,7 +474,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(200)
         exec_rest_api(block_factory.rest.__v1_domain_transactions(context("/api/v1/domain/#{domain}/transactions?per_page=50&page=2"), {domain: domain, page_size: 50, page: 1})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
           transactions = Array(Transaction).from_json(data)
           transactions.size.should eq(50)
         end
