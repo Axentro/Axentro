@@ -134,8 +134,8 @@ module ::Axentro::Core::Controllers
     def __v1_block_index_transactions(context, params)
       with_response(context) do |query_params|
         index = params["index"].to_i64
-        page, per_page, direction, _ = paginated(query_params)
-        @blockchain.blockchain_info.transactions_index_impl(index, page, per_page, direction)
+        page, per_page, direction, sort_field = paginated(query_params)
+        @blockchain.blockchain_info.transactions_index_impl(index, page, per_page, direction, sort_field)
       end
     end
 
@@ -202,11 +202,11 @@ module ::Axentro::Core::Controllers
 
     def __v1_address_transactions(context, params)
       with_response(context) do |query_params|
-        page, per_page, direction, _ = paginated(query_params)
+        page, per_page, direction, sort_field = paginated(query_params)
         actions = query_params["actions"]?.try &.split(",") || [] of String
         address = params["address"]
 
-        @blockchain.blockchain_info.transactions_address_impl(address, page, per_page, direction, actions)
+        @blockchain.blockchain_info.transactions_address_impl(address, page, per_page, direction, sort_field, actions)
       end
     end
 
@@ -227,12 +227,12 @@ module ::Axentro::Core::Controllers
 
     def __v1_domain_transactions(context, params)
       with_response(context) do |query_params|
-        page, per_page, direction, _ = paginated(query_params)
+        page, per_page, direction, sort_field = paginated(query_params)
         actions = query_params["actions"]?.try &.split(",") || [] of String
 
         domain = params["domain"]
         address = convert_domain_to_address(domain)
-        @blockchain.blockchain_info.transactions_address_impl(address, page, per_page, direction, actions)
+        @blockchain.blockchain_info.transactions_address_impl(address, page, per_page, direction, sort_field, actions)
       end
     end
 

@@ -85,7 +85,7 @@ describe BlockchainInfo do
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
             expected_blocks = block_factory.database.get_paginated_blocks(0, 50, "desc", "timestamp").to_json
-            result.should eq(expected_blocks)
+            JSON.parse(result)["data"].to_json.should eq(expected_blocks)
           end
         end
       end
@@ -98,7 +98,7 @@ describe BlockchainInfo do
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
             expected_headers = block_factory.database.get_paginated_blocks(0, 50, "desc", "timestamp").map(&.to_header)
-            result.should eq(expected_headers.to_json)
+            JSON.parse(result)["data"].to_json.should eq(expected_headers.to_json)
           end
         end
       end
@@ -129,9 +129,11 @@ describe BlockchainInfo do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            transactions_for_the_address = block_factory.chain.flat_map { |blk| blk.transactions }.select { |txn| txn.recipients.map { |r| r["address"] }.includes?(address) }.reverse
-            expected = transactions_for_the_address.map_with_index { |t, i| {transaction: t, confirmations: i} }.to_json
+            txns = block_factory.database.get_paginated_transactions_for_address(address, 0, 10, "desc", "timestamp", [] of String)
+            actual = JSON.parse(result)["transactions"]
 
+            expected = txns.to_json
+            result = actual.as_a.map(&.["transaction"]).to_json
             result.should eq(expected)
           end
         end

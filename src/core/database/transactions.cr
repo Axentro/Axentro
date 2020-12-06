@@ -57,14 +57,33 @@ module ::Axentro::Core::Data::Transactions
     @db.query_one("select count(*) from transactions where kind = ?", kind, as: Int32)
   end
 
-  def get_paginated_transactions(block_index : Int64, page : Int32, per_page : Int32, direction : String)
+  def total_transactions_for_block(block_index : Int64) : Int32
+    @db.query_one("select count(*) from transactions where block_id = ?", block_index, as: Int32)
+  end
+
+  def total_transactions_for_address(address : String) : Int32
+    @db.query_one(
+      "select count(*) from transactions " \
+      "where id in (select transaction_id from senders " \
+      "where address = ? " \
+      "union select transaction_id from recipients " \
+      "where address = ?) ", address, address, as: Int32)
+  end
+
+  def total_transactions_size : Int32
+    @db.query_one("select count(*) from transactions", as: Int32)
+  end
+
+  def get_paginated_transactions(block_index : Int64, page : Int32, per_page : Int32, direction : String, sort_field : String, actions : Array(String))
     page = page * per_page
+    actions = actions.map { |a| "'#{a}'" }.join(",")
     transactions_by_query(
       "select * from transactions " \
       "where block_id = ? " \
       "and oid not in ( select oid from transactions " \
-      "order by block_id #{direction} limit ? ) " \
-      "order by block_id #{direction} limit ?",
+      "order by #{sort_field} #{direction} limit ? ) " +
+      (actions.empty? ? "" : "and action in (#{actions}) ") +
+      "order by #{sort_field} #{direction} limit ?",
       block_index, page, per_page)
   end
 
@@ -80,10 +99,9 @@ module ::Axentro::Core::Data::Transactions
       page, per_page)
   end
 
-  def get_paginated_transactions_for_address(address : String, page : Int32, per_page : Int32, direction : String, actions : Array(String), sort_by_date : Bool = false)
+  def get_paginated_transactions_for_address(address : String, page : Int32, per_page : Int32, direction : String, sort_field : String, actions : Array(String))
     page = page * per_page
     actions = actions.map { |a| "'#{a}'" }.join(",")
-    sorting = sort_by_date ? "timestamp" : "block_id"
 
     transactions_by_query(
       "select * from transactions " \
@@ -93,8 +111,8 @@ module ::Axentro::Core::Data::Transactions
       "where address = ?) " +
       (actions.empty? ? "" : "and action in (#{actions}) ") +
       "and oid not in " \
-      "(select oid from transactions order by #{sorting} #{direction} limit ? ) " \
-      "order by #{sorting} #{direction} limit ?",
+      "(select oid from transactions order by #{sort_field} #{direction} limit ? ) " \
+      "order by #{sort_field} #{direction} limit ?",
       address, address, page, per_page)
   end
 
