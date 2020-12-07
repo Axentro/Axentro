@@ -71,7 +71,7 @@ module ::Axentro::Core::FastChain
     latest_index = get_latest_index_for_fast
     coinbase_amount = coinbase_fast_amount(latest_index, embedded_fast_transactions)
     coinbase_transaction = create_coinbase_fast_transaction(coinbase_amount)
-    {latest_index: latest_index, transactions: align_fast_transactions(coinbase_transaction, coinbase_amount)}
+    {latest_index: latest_index, transactions: align_fast_transactions(coinbase_transaction, coinbase_amount, embedded_fast_transactions)}
   end
 
   def mint_fast_block(valid_transactions)
@@ -102,12 +102,12 @@ module ::Axentro::Core::FastChain
     )
   end
 
-  def align_fast_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
+  def align_fast_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64, embedded_fast_transactions : Array(Transaction)) : Transactions
     transactions = [coinbase_transaction] + embedded_fast_transactions
 
     vt = Validation::Transaction.validate_common(transactions, @network_type)
     block_index = latest_fast_block.nil? ? 0_i64 : latest_fast_block.not_nil!.index
-    vt << Validation::Transaction.validate_coinbase([coinbase_transaction], embedded_fast_transactions, self, block_index)
+    # vt << Validation::Transaction.validate_coinbase([coinbase_transaction], embedded_fast_transactions, self, block_index)
 
     # don't validate prev hash here as we haven't assigned them yet. We assign lower down after we have all the valid transactions
     skip_prev_hash_check = true
@@ -119,8 +119,18 @@ module ::Axentro::Core::FastChain
       FastTransactionPool.delete(ft.transaction)
     end
 
+    # validate coinbase and fix it if incorrect (due to rejected transactions)
+    vtc = Validation::Transaction.validate_coinbase([coinbase_transaction], vt.passed, self, block_index)
+    aligned_transactions = if vtc.failed.size == 0
+                             vt.passed
+                           else
+                             coinbase_amount = coinbase_fast_amount(block_index, vt.passed)
+                             coinbase_transaction = create_coinbase_fast_transaction(coinbase_amount)
+                             [coinbase_transaction] + vt.passed.reject(&.is_coinbase?)
+                           end
+
     hashed_transactions = [] of Core::Transaction
-    vt.passed.each_with_index do |transaction, index|
+    aligned_transactions.each_with_index do |transaction, index|
       hashed_transactions << transaction.add_prev_hash((index == 0 ? "0" : hashed_transactions[index - 1].to_hash))
     end
 
