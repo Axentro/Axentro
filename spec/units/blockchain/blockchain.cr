@@ -353,7 +353,23 @@ describe Blockchain do
         coinbase_transaction = block_factory.chain.last.transactions.first
         coinbase_transaction.id = Transaction.create_id
 
-        blockchain.align_slow_transactions(coinbase_transaction, 1).size.should eq(2)
+        blockchain.align_slow_transactions(coinbase_transaction, 1, 8, block_factory.blockchain.embedded_slow_transactions).size.should eq(2)
+      end
+    end
+
+    it "should not include rejected transactions in the coinbase amount" do
+      with_factory do |block_factory, transaction_factory|
+        blockchain = block_factory.blockchain
+        block_factory.add_slow_blocks(2, false).add_fast_blocks(4).add_slow_block([transaction_factory.make_send(200000000_i64)], false)
+        blockchain.refresh_mining_block(8)
+
+        # this transaction is already in the db so change it's id
+        coinbase_transaction = block_factory.chain.last.transactions.first
+        coinbase_transaction.id = Transaction.create_id
+
+        # add a transaction to embedded that will be rejected (not enough funds) and coinbase amount should not add the rejected transactions fee
+        aligned = blockchain.align_slow_transactions(coinbase_transaction, 1, 8, block_factory.blockchain.embedded_slow_transactions + [transaction_factory.make_send(90000000000000_i64)])
+        aligned.first.recipients.map(&.["amount"]).sum.should eq(1200007495)
       end
     end
   end
@@ -466,7 +482,7 @@ describe Blockchain do
       coinbase_transaction = block_factory.blockchain.chain.last.transactions.first
 
       result = Benchmark.measure {
-        block_factory.blockchain.align_slow_transactions(coinbase_transaction, 1)
+        block_factory.blockchain.align_slow_transactions(coinbase_transaction, 1, 2, block_factory.blockchain.embedded_slow_transactions)
       }
 
       (result.real < 0.010).should be_true

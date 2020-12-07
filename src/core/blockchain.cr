@@ -522,17 +522,21 @@ module ::Axentro::Core
       refresh_slow_pending_block(difficulty)
     end
 
-    private def refresh_slow_pending_block(difficulty)
-      the_latest_index = get_latest_index_for_slow
-      coinbase_amount = coinbase_slow_amount(the_latest_index, embedded_slow_transactions)
-
+    private def calculate_coinbase_slow_transaction(coinbase_amount, the_latest_index, embedded_slow_transactions)
       # pay the fees to the fastnode for maintenance (unless there are no more blocks to mine)
       fee = (the_latest_index >= @block_reward_calculator.max_blocks) ? 0_i64 : total_fees(embedded_slow_transactions)
+      create_coinbase_slow_transaction(coinbase_amount, fee, node.miners)
+    end
 
-      coinbase_transaction = create_coinbase_slow_transaction(coinbase_amount, fee, node.miners)
+    private def refresh_slow_pending_block(difficulty)
+      the_latest_index = get_latest_index_for_slow
+
+      coinbase_amount = coinbase_slow_amount(the_latest_index, embedded_slow_transactions)
+      coinbase_transaction = calculate_coinbase_slow_transaction(coinbase_amount, the_latest_index, embedded_slow_transactions)
+
       MinerNoncePool.delete_embedded
 
-      transactions = align_slow_transactions(coinbase_transaction, coinbase_amount)
+      transactions = align_slow_transactions(coinbase_transaction, coinbase_amount, the_latest_index, embedded_slow_transactions)
       timestamp = __timestamp
 
       wallet = node.get_wallet
@@ -553,7 +557,7 @@ module ::Axentro::Core
       node.miners_broadcast
     end
 
-    def align_slow_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64) : Transactions
+    def align_slow_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64, the_latest_index : Int64, embedded_slow_transactions : Array(Transaction)) : Transactions
       transactions = [coinbase_transaction] + embedded_slow_transactions
 
       vt = Validation::Transaction.validate_common(transactions, @network_type)
@@ -567,7 +571,17 @@ module ::Axentro::Core
         SlowTransactionPool.delete(ft.transaction)
       end
 
-      vt.passed.map_with_index do |transaction, index|
+      # validate coinbase and fix it if incorrect (due to rejected transactions)
+      vtc = Validation::Transaction.validate_coinbase([coinbase_transaction], vt.passed, self, the_latest_index)
+      aligned_transactions = if vtc.failed.size == 0
+                               vt.passed
+                             else
+                               coinbase_amount = coinbase_slow_amount(the_latest_index, vt.passed)
+                               coinbase_transaction = calculate_coinbase_slow_transaction(coinbase_amount, the_latest_index, vt.passed)
+                               [coinbase_transaction] + vt.passed.reject(&.is_coinbase?)
+                             end
+
+      aligned_transactions.map_with_index do |transaction, index|
         transaction.add_prev_hash((index == 0 ? "0" : vt.passed[index - 1].to_hash))
       end
     end
