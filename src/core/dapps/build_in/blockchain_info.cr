@@ -167,7 +167,7 @@ module ::Axentro::Core::DApps::BuildIn
         if block_index = database.get_block_index_for_transaction(t.id)
           confirmations = database.get_confirmations(block_index)
         end
-        {transaction: t, confirmations: confirmations}
+        {transaction: t, confirmations: confirmations, block_id: block_index}
       end
       {transactions: selected, pagination: {page: page, per_page: per_page, direction: direction, sort_field: sort_field, count: selected.size, total_count: total_count}}
     end
