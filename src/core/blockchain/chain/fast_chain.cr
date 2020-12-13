@@ -107,7 +107,6 @@ module ::Axentro::Core::FastChain
 
     vt = Validation::Transaction.validate_common(transactions, @network_type)
     block_index = latest_fast_block.nil? ? 0_i64 : latest_fast_block.not_nil!.index
-    # vt << Validation::Transaction.validate_coinbase([coinbase_transaction], embedded_fast_transactions, self, block_index)
 
     # don't validate prev hash here as we haven't assigned them yet. We assign lower down after we have all the valid transactions
     skip_prev_hash_check = true
@@ -129,12 +128,10 @@ module ::Axentro::Core::FastChain
                              [coinbase_transaction] + vt.passed.reject(&.is_coinbase?)
                            end
 
-    hashed_transactions = [] of Core::Transaction
-    aligned_transactions.each_with_index do |transaction, index|
-      hashed_transactions << transaction.add_prev_hash((index == 0 ? "0" : hashed_transactions[index - 1].to_hash))
+    sorted_aligned_transactions = [coinbase_transaction] + aligned_transactions.reject(&.is_coinbase?).sort_by(&.timestamp)
+    sorted_aligned_transactions.map_with_index do |transaction, index|
+      transaction.add_prev_hash((index == 0 ? "0" : sorted_aligned_transactions[index - 1].to_hash))
     end
-
-    hashed_transactions
   end
 
   def create_coinbase_fast_transaction(coinbase_amount : Int64) : Transaction

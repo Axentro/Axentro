@@ -560,6 +560,7 @@ module ::Axentro::Core
     def align_slow_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64, the_latest_index : Int64, embedded_slow_transactions : Array(Transaction)) : Transactions
       transactions = [coinbase_transaction] + embedded_slow_transactions
 
+      # 1. first validate all the embedded transactions without the prev_hash
       vt = Validation::Transaction.validate_common(transactions, @network_type)
 
       skip_prev_hash_check = true
@@ -571,6 +572,7 @@ module ::Axentro::Core
         SlowTransactionPool.delete(ft.transaction)
       end
 
+      # 2. after any transactions have been rejected then - check coinbase and re-create if incorrect
       # validate coinbase and fix it if incorrect (due to rejected transactions)
       vtc = Validation::Transaction.validate_coinbase([coinbase_transaction], vt.passed, self, the_latest_index)
       aligned_transactions = if vtc.failed.size == 0
@@ -581,8 +583,10 @@ module ::Axentro::Core
                                [coinbase_transaction] + vt.passed.reject(&.is_coinbase?)
                              end
 
-      aligned_transactions.map_with_index do |transaction, index|
-        transaction.add_prev_hash((index == 0 ? "0" : vt.passed[index - 1].to_hash))
+      # 3. create all the prev_hashes for the transactions
+      sorted_aligned_transactions = [coinbase_transaction] + aligned_transactions.reject(&.is_coinbase?).sort_by(&.timestamp)
+      sorted_aligned_transactions.map_with_index do |transaction, index|
+        transaction.add_prev_hash((index == 0 ? "0" : sorted_aligned_transactions[index - 1].to_hash))
       end
     end
 
