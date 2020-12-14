@@ -24,6 +24,7 @@ module ::Axentro::Core
 
     STARTING_BLOCKS_TO_CHECK_ON_SYNC = 50_i64
     FINAL_BLOCKS_TO_CHECK_ON_SYNC    = 50_i64
+    FAST_TRANSACTIONS_TO_HOLD        = 10_000
 
     alias SlowHeader = NamedTuple(
       index: Int64,
@@ -58,7 +59,7 @@ module ::Axentro::Core
 
       hours_to_hold = ENV.has_key?("AXE_TESTING") ? 2 : 48
       @blocks_to_hold = (SLOW_BLOCKS_PER_HOUR * hours_to_hold).to_i64
-      info "holding #{@blocks_to_hold} blocks in memory"
+      info "holding #{@blocks_to_hold} slow blocks and 2000 fast blocks in memory"
     end
 
     def database
@@ -99,36 +100,36 @@ module ::Axentro::Core
       @chain.first
     end
 
-    private def get_starting_slow_block_index(database : Database, highest_index : Int64)
-      # starting index is backed off from last slow block index by N days worth of even-numbered blocks
-      starting_index = (highest_index - @blocks_to_hold * 2) + 2
-      starting_index = starting_index > 0 ? starting_index : 0_i64
-      debug "number of blocks to hold in memory: #{@blocks_to_hold}"
-      debug "starting index for SLOW database fetch: #{starting_index}"
-      starting_index
-    end
-
     private def restore_from_database(database : Database)
       total_blocks = database.total_blocks
-      highest_index = database.highest_index_of_kind(BlockKind::SLOW)
-      starting_index = get_starting_slow_block_index(database, highest_index)
+
       info "start loading blockchain from #{database.path}"
       info "there are #{total_blocks} blocks recorded"
-      info "starting at slow block index: #{starting_index}"
-      info "highest slow index: #{highest_index}"
 
-      import_slow_blocks(database, starting_index, highest_index)
+      # find most recent 1440 slow block ids
+      highest_slow_index = database.highest_index_of_kind(BlockKind::SLOW)
+      slow_ids = (0_i64..highest_slow_index).reverse_each.select(&.even?).first(@blocks_to_hold).to_a.reverse
 
-      highest_index = database.highest_index_of_kind(BlockKind::FAST)
-      starting_timestamp = chain.size > 1 ? chain[1].timestamp : 0_i64
-      starting_index = database.lowest_index_after_time(starting_timestamp, BlockKind::FAST)
+      if slow_ids.size > 0
+        starting_slow_index = slow_ids.first
+        info "starting at slow block index: #{starting_slow_index}"
+        info "highest slow index: #{highest_slow_index}"
+        import_slow_blocks(database, slow_ids)
+      end
 
-      info "starting at fast block index: #{starting_index}"
-      info "highest fast index: #{highest_index}"
-      import_fast_blocks(database, starting_index, highest_index)
+      # find most recent 2000 fast block ids
+      highest_fast_index = database.highest_index_of_kind(BlockKind::FAST)
+      fast_ids = (0_i64..highest_fast_index).reverse_each.select(&.odd?).first(2000).to_a.reverse
+
+      if fast_ids.size > 0
+        starting_fast_index = fast_ids.first
+        info "starting at fast block index: #{starting_fast_index}"
+        info "highest fast index: #{highest_fast_index}"
+        import_fast_blocks(database, fast_ids)
+      end
 
       if @chain.size == 0
-        push_genesis if @is_standalone && @chain.size == 0
+        push_genesis if @is_standalone
       else
         refresh_mining_block(block_difficulty(self))
       end
@@ -136,57 +137,53 @@ module ::Axentro::Core
       dapps_record
     end
 
-    def import_slow_blocks(database, starting_index, highest_index)
-      block_counter = 0
-      current_index = starting_index
-      slow_indexes = (current_index..highest_index).select(&.even?)
-      slow_indexes.unshift(0_i64) if (slow_indexes.size == 0) || (slow_indexes[0] != 0_i64)
-      slow_indexes.each do |ci|
-        current_index = ci
-        _block = database.get_block(current_index)
-        if _block
-          if block_counter > Consensus::HISTORY_LOOKBACK
-            break unless _block.valid?(self, true)
-          end
-          verbose "restoring from database: index #{_block.index} of kind #{_block.kind}"
-          @chain.push(_block)
+    def import_slow_blocks(database, indices)
+      current_index = indices.first
+      slow_blocks = database.get_blocks_by_ids(indices)
+
+      slow_blocks.each_with_index do |block, i|
+        current_index = block.index
+        if i > Consensus::HISTORY_LOOKBACK
+          break unless block.valid?(self, true)
         end
-        progress "block ##{current_index} was imported", current_index, slow_indexes.max
-        block_counter += 1
+
+        @chain.push(block)
+        progress "block ##{current_index} was imported", current_index, slow_blocks.map(&.index).max
       end
     rescue e : Exception
-      error "Error could not restore slow blocks from database"
-      error e.message.not_nil! if e.message
-      database.delete_blocks(current_index.not_nil!)
+      error "Error could not restore slow blocks from database at index: #{current_index}"
+      error e.message || "unknown error while restoring slow blocks from database"
+      database.delete_blocks_of_kind(current_index.not_nil!, Block::BlockKind::SLOW)
     ensure
       push_genesis if @is_standalone && @chain.size == 0
     end
 
-    def import_fast_blocks(database, starting_index, highest_index)
-      current_index = starting_index
-      fast_indexes = (current_index..highest_index).select(&.odd?)
+    def import_fast_blocks(database, indices)
+      current_index = indices.first
+      fast_blocks = database.get_blocks_by_ids(indices)
       fast_block_insert_location = 1
-      fast_indexes.each do |ci|
-        current_index = ci
-        _block = database.get_block(current_index)
-        if _block
-          break unless _block.valid?(self, true)
-          debug "restoring from database: index #{_block.index} of kind #{_block.kind}"
-          if fast_block_insert_location >= @chain.size
-            debug "Pushing new fast block"
-            @chain.push(_block)
-          else
-            debug "Inserting new fast block"
-            @chain.insert(fast_block_insert_location, _block)
-          end
-          fast_block_insert_location += 2
+
+      fast_blocks.each_with_index do |block, i|
+        current_index = block.index
+        if i > 0
+          break unless block.valid?(self, true)
         end
-        progress "block ##{current_index} was imported", current_index, fast_indexes.max
+
+        if fast_block_insert_location >= @chain.size
+          debug "Pushing new fast block"
+          @chain.push(block)
+        else
+          debug "Inserting new fast block"
+          @chain.insert(fast_block_insert_location, block)
+        end
+        fast_block_insert_location += 2
+
+        progress "block ##{current_index} was imported", current_index, fast_blocks.map(&.index).max
       end
     rescue e : Exception
-      error "Error could not restore fast blocks from database"
-      error e.message.not_nil! if e.message
-      database.delete_blocks(current_index.not_nil!)
+      error "Error could not restore fast blocks from database at index: #{current_index}"
+      error e.message || "unknown error while restoring fast blocks from database"
+      database.delete_blocks_of_kind(current_index.not_nil!, Block::BlockKind::FAST)
     end
 
     def valid_nonce?(block_nonce : BlockNonce) : SlowBlock?

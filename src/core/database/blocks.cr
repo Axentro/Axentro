@@ -105,6 +105,10 @@ module ::Axentro::Core::Data::Blocks
     block
   end
 
+  def get_highest_block_for_kind(kind : Block::BlockKind)
+    get_blocks_via_query("select * from blocks where idx in (select max(idx) from blocks where kind = ?)", kind.to_s)
+  end
+
   def get_block_for_transaction(transaction_id : String) : Block?
     verbose "Reading block from the database for transaction #{transaction_id}"
     block : Block? = nil
@@ -175,6 +179,28 @@ module ::Axentro::Core::Data::Blocks
     @db.exec "delete from transactions where block_id >= ?", from
     @db.exec "delete from senders where block_id >= ?", from
     @db.exec "delete from recipients where block_id >= ?", from
+  end
+
+  def delete_blocks_of_kind(from : Int64, kind : Block::BlockKind)
+    blocks = get_block_ids_from(from, kind)
+    if blocks.size > 0
+      block_ids = blocks.map { |b| "'#{b}'" }.uniq.join(",")
+      @db.exec "delete from blocks where idx in (#{block_ids})"
+      @db.exec "delete from transactions where block_id in (#{block_ids})"
+      @db.exec "delete from senders where block_id in (#{block_ids})"
+      @db.exec "delete from recipients where block_id in (#{block_ids})"
+    end
+  end
+
+  def get_block_ids_from(from : Int64, kind : Block::BlockKind)
+    ids = [] of Int64
+    @db.query("select idx from blocks where idx >= 0 and kind = ?", kind.to_s) do |rows|
+      rows.each do
+        res = rows.read(Int64 | Nil)
+        ids << res unless res.nil?
+      end
+    end
+    ids
   end
 
   # ------- API -------

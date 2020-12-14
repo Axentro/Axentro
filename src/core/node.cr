@@ -689,7 +689,9 @@ module ::Axentro::Core
       target_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
 
       if ((remote_slow_index > target_slow_index) || (remote_fast_index > target_fast_index))
-        info "Remote indices were higher local indices so starting chain sync."
+        info "(request validation challenge) Remote indices were higher local indices so starting chain sync."
+        info "Remote slow: #{remote_slow_index}, target slow: #{target_slow_index}"
+        info "Remote fast: #{remote_fast_index}, target fast: #{target_fast_index}"
         sync_chain(socket, false)
       end
     end
@@ -751,7 +753,9 @@ module ::Axentro::Core
       send(socket, M_TYPE_NODE_RECEIVE_CHAIN_SIZE, {chunk_size: chunk_size, slowchain_start_index: remote_slow_index, fastchain_start_index: remote_fast_index, slow_target_index: target_slow_index, fast_target_index: target_fast_index})
 
       if ((remote_slow_index > target_slow_index) || (remote_fast_index > target_fast_index))
-        info "Remote indices were higher local indices so starting chain sync."
+        info "(request chain size) Remote indices were higher local indices so starting chain sync."
+        info "Remote slow: #{remote_slow_index}, target slow: #{target_slow_index}"
+        info "Remote fast: #{remote_fast_index}, target fast: #{target_fast_index}"
         sync_chain(socket, false)
       end
     end
@@ -804,7 +808,9 @@ module ::Axentro::Core
       latest_local_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
 
       if ((remote_start_slow_index > latest_local_slow_index) || (remote_start_fast_index > latest_local_fast_index))
-        info "Remote indices were higher local indices so starting chain sync."
+        info "(request chain) Remote indices were higher local indices so starting chain sync."
+        info "Remote slow: #{remote_start_slow_index}, target slow: #{latest_local_slow_index}"
+        info "Remote fast: #{remote_start_fast_index}, target fast: #{latest_local_fast_index}"
         sync_chain(socket, false)
       end
     end
