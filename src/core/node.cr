@@ -775,6 +775,7 @@ module ::Axentro::Core
       latest_local_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
       latest_local_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
 
+      # if there are no blocks then set to -1 to force sync the genesis block from peer
       latest_local_slow_index = -1_i64 if latest_local_slow_index == 0_i64
       latest_local_fast_index = -1_i64 if latest_local_fast_index == 0_i64
 
