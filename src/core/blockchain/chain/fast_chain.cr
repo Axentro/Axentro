@@ -67,8 +67,13 @@ module ::Axentro::Core::FastChain
     index.odd? ? index + 2 : index + 1
   end
 
+  def get_latest_index_from_db_for_mint
+    index = database.highest_index_of_kind(BlockKind::FAST)
+    index.odd? ? index + 2 : index + 1
+  end
+
   def valid_transactions_for_fast_block
-    latest_index = get_latest_index_for_fast
+    latest_index = get_latest_index_from_db_for_mint
     coinbase_amount = coinbase_fast_amount(latest_index, embedded_fast_transactions)
     coinbase_transaction = create_coinbase_fast_transaction(coinbase_amount)
     {latest_index: latest_index, transactions: align_fast_transactions(coinbase_transaction, coinbase_amount, embedded_fast_transactions)}
@@ -78,7 +83,10 @@ module ::Axentro::Core::FastChain
     transactions = valid_transactions[:transactions]
     latest_index = valid_transactions[:latest_index]
     debug "minting fast block #{latest_index}"
-    _latest_block = latest_fast_block || get_genesis_block
+
+    latest_fasts = @database.get_highest_block_for_kind(BlockKind::FAST)
+    _latest_block = latest_fasts.size > 0 ? latest_fasts.first.as(FastBlock) : get_genesis_block
+
     timestamp = __timestamp
 
     wallet = node.get_wallet

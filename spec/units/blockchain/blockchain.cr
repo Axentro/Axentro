@@ -314,8 +314,8 @@ describe Blockchain do
         database = block_factory.database
         blockchain = Blockchain.new("testnet", block_factory.node_wallet, database, nil, nil, 20, 100, 512, true)
         blockchain.setup(block_factory.node)
-        # including genesis block total chain size should be the number of blocks to hold + 1
-        blockchain.chain.size.should eq(blockchain.blocks_to_hold + 1)
+        # including genesis block total chain size should be the number of blocks to hold
+        blockchain.chain.size.should eq(blockchain.blocks_to_hold)
       end
     end
   end

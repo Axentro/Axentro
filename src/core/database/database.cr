@@ -110,7 +110,11 @@ module ::Axentro::Core
         end
       end
 
-      idx || -1_i64
+      idx || 0_i64
+    end
+
+    def highest_fast_index_or_nil : Int64?
+      @db.query_one("select max(idx) from blocks where kind = ?", Block::BlockKind::FAST.to_s, as: Int64?)
     end
 
     def highest_index : Int64
