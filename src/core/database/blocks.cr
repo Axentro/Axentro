@@ -50,6 +50,9 @@ module ::Axentro::Core::Data::Blocks
     verbose "inserting block with #{block.transactions.size} transactions into database with index: #{block.index}"
     @db.exec "insert into blocks values (#{block_insert_fields_string})", args: block_insert_values_array(block)
     @db.exec "END TRANSACTION"
+  rescue e : Exception
+    warning "Rolling back db due to error when pushing block to database with message: #{e.message || "unknown"}"
+    @db.exec("ROLLBACK")
   end
 
   # ------- Query -------

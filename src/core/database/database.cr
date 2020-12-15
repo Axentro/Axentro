@@ -29,6 +29,8 @@ module ::Axentro::Core
     # ------- Insert -------
     def insert_transaction(transaction : Transaction)
       @db.exec("insert into transactions (id, content) values (?, ?)", transaction.id, transaction.to_json)
+    rescue e : Exception
+      warning "Handling error on insert fast transaction to database with message: #{e.message || "unknown"}"
     end
 
     # ------- Query -------
