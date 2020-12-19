@@ -39,12 +39,71 @@ This retrieves the transaction specified by the transaction id as Json
                       "token": "AXNT",
                       "prev_hash": "0",
                       "timestamp": 1527522043,
-                      "scaled": 1
+                      "scaled": 1,
+                      "kind": "SLOW",
+                      "version": "V1"
                     }
                 }
             }
 
-        
+## transactions [GET /transactions{?page}{?per_page}{?direction}{?sort_field}]
+
+This retrieves all transactions for the blockchain
+
++ Parameters
+
+    + page: 0 (number, optional) - The page
+    + per_page: 20 (number, optional) - The number of items per page
+    + direction: up (string, optional) - The direction (up = ascending, down = descending)
+    + sort_field: time (string, optional) - The sort field (id = transactionId, time = transaction timestamp)
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "status": "success",
+              "result": {
+                "transactions": [
+                  "transaction":
+                    {
+                      "id": "09b05cb672911ba03a1e3372a58348e61a0b267efdc8ee89df59978037d19523",
+                      "action": "head",
+                      "senders": [],
+                      "recipients": 
+                        [
+                          {
+                            "address": "VDBjMjI1ZmE0MmQzYTAwYWJlZGNjMTFkNzQ5YjMxZGFkNGVhYjU2N2YwNzFmYjFk",
+                            "amount": 299904068
+                          },
+                          {
+                            "address": "VDA2NjU5N2JlNDA3ZDk5Nzg4MGY2NjY5YjhhOTUwZTE2M2VmNjM5OWM2M2EyMWQz",
+                            "amount": 899712202
+                          }
+                        ],
+                      "message": "0",
+                      "token": "AXNT",
+                      "prev_hash": "0",
+                      "timestamp": 1569910322451,
+                      "scaled": 1,
+                      "kind": "SLOW",
+                      "version": "V1"
+                    },
+                    "confirmations": 1,
+                    "block_id": 2
+                ],
+                "pagination": {
+                  "page": 0,
+                  "per_page": 20,
+                  "direction": 1,
+                  "sort_field": 0,
+                  "count": 1,
+                  "total_count": 1
+                }
+              }  
+            }
+
+
 ## transaction/block [GET /transaction/{id}/block]
 
 This retrieves the block containing the specified transaction id as Json
@@ -59,8 +118,8 @@ This retrieves the block containing the specified transaction id as Json
 
             {
               "status": "success",
-              "result": 
-                {
+              "result": {
+                "block": {
                   "index": 156,
                   "transactions": 
                     [
@@ -83,16 +142,22 @@ This retrieves the block containing the specified transaction id as Json
                         "token": "AXNT",
                         "prev_hash": "0",
                         "timestamp": 1527522043,
-                        "scaled": 1
+                        "scaled": 1,
+                        "kind": "SLOW",
+                        "version": "V1"
                       }
                     ],
                   "nonce": 6558232399239314000,
                   "prev_hash": "9c6845c1e03bf3eb132b25835f8c4f2f90c09dd5221325134c50434fbe947346",
                   "merkle_tree_root": "0531d7957b9863ab1597e787b446e633fe1df1eb",
                   "timestamp": 1527522043,
-                  "difficulty": 4
-                }
-            }
+                  "difficulty": 4,
+                  "kind": "SLOW",
+                  "address": "VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj"
+                },
+                "confirmations": 1
+              }
+            } 
 
 
 ## transaction/block/header [GET /transaction/{id}/block/header]
@@ -133,11 +198,14 @@ This gets the current transaction fees as json
               "status": "success",
               "result": 
                 {
-                  "send": "0.0001",
-                  "hra_buy": "0.001",
-                  "hra_sell": "0.0001",
-                  "hra_cancel": "0.0001",
-                  "create_token": "0.1"
+                   "send": "0.0001",
+                   "hra_buy": "0.001",
+                   "hra_sell": "0.0001",
+                   "hra_cancel": "0.0001",
+                   "create_token": "10",
+                   "update_token": "0.0001",
+                   "lock_token": "0.0001",
+                   "burn_token": "0.0001"
                 }
             }
 

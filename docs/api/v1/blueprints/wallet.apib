@@ -1,0 +1,63 @@
+## Group Wallet
+
+# /wallet/{address}
+
+## GET
+
+Gets the complete wallet information including balances and recent transactions
+
++ Parameters
+
+    + address (string) - The wallet address or domain name
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "status": "success",
+              "result": {
+                "address": "VDBjMjI1ZmE0MmQzYTAwYWJlZGNjMTFkNzQ5YjMxZGFkNGVhYjU2N2YwNzFmYjFk",
+                "readable": [ 
+                  "human.ax" 
+                ],
+                "tokens": [
+                  {
+                    "token": "AXNT",
+                    "is_locked": false,
+                    "is_mine": false,
+                    "amount": "2000.8765"
+                  }
+                ],
+                "my_tokens": [
+                  {
+                    "token": "KINGS",
+                    "is_locked": true,
+                    "is_mine": true,
+                    "amount": "3000"
+                  }
+                ],
+                "recent_transactions": [
+                  {
+                    "transaction_id": "dbf1114929037fd7641aa4a54b849e2ecbe7330d66658e21d9f8f1ee71988828",
+                    "kind": "SLOW",
+                    "from": "",
+                    "from_readable": "",
+                    "to": "",
+                    "to_readable": "",
+                    "amount": "2.31840373",
+                    "token": "AXNT",
+                    "category": "Mining reward",
+                    "datetime": "2020-12-19 21:47:28 UTC",
+                    "fee": "0",
+                    "status": "Completed",
+                    "direction": "Incoming",
+                    "data": "0",
+                    "confirmations": "0"
+                  }
+                ],
+                "rejected_transactions": [
+                ] 
+              }
+               
+            }

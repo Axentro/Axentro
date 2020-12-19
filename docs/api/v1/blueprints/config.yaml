@@ -6,8 +6,8 @@ html:
     env: testnet
     environments:
       testnet:
-        url: http://testnet.axentro.io:3000/api/v1/
-      integration: 
-        url: https://integration.axentro.io/api/v1
+        url: https://testnet.axentro.io/api/v1/
+      mainnet: 
+        url: https://mainnet.axentro.io/api/v1
       local:
         url: http://localhost:3000/api/v1    

@@ -1,6 +1,6 @@
 ## Group Blockchain Info
 
-# /blockchain{?page}{?per_page}{?direction}
+# /blockchain{?page}{?per_page}{?direction}{?sort_field}
 
 ## GET
 
@@ -10,6 +10,7 @@ Retrieves the entire blockchain as Json
     + page: 0 (number, optional) - The page
     + per_page: 20 (number, optional) - The number of items per page
     + direction: up (string, optional) - The direction (up = ascending, down = descending)
+    + sort_field: time (string, optional) - The sort field (id = blockId, time = block timestamp)
 
 + Response 200 (application/json)
 
@@ -17,8 +18,9 @@ Retrieves the entire blockchain as Json
 
             {
               "status": "success",
-              "result":
-                [
+              "result": {
+                "data":
+                 [
                   {
                      "index": 0,
                      "transactions": [],
@@ -27,13 +29,22 @@ Retrieves the entire blockchain as Json
                      "merkle_tree_root": "",
                      "timestamp": 0,
                      "difficulty": 17,
-                    "kind": "SLOW",
-                    "address": "genesis"
+                     "kind": "SLOW",
+                     "address": "genesis"
                   }
-                ]
+                 ],
+                "pagination": {
+                  "page": 0,
+                  "per_page": 20,
+                  "direction": 1,
+                  "sort_field": 0,
+                  "count": 3,
+                  "total_count": 3
+                }
+              } 
             }
 
-## blockchain/header [GET /blockchain/header{?page}{?per_page}{?direction}]
+## blockchain/header [GET /blockchain/header{?page}{?per_page}{?direction}{?sort_field}]
 
 This retrieves the headers of the entire blockchain as Json
 
@@ -41,6 +52,7 @@ This retrieves the headers of the entire blockchain as Json
     + page: 0 (number, optional) - The page
     + per_page: 20 (number, optional) - The number of items per page
     + direction: up (string, optional) - The direction (up = ascending, down = descending)
+    + sort_field: time (string, optional) - The sort field (id = blockId, time = block timestamp)
 
 + Response 200 (application/json)
 
@@ -48,8 +60,8 @@ This retrieves the headers of the entire blockchain as Json
 
             {
               "status": "success",
-              "result": 
-                [
+              "result": { 
+                "data": [
                   {
                      "index": 0,
                      "nonce": 0,
@@ -64,7 +76,16 @@ This retrieves the headers of the entire blockchain as Json
                     "merkle_tree_root": "eb2aff6aba92815a4daf368873c42d45cc6de2f7",
                     "timestamp": 1569949002570
                   }
-                ]
+                ],
+                "pagination": {
+                  "page": 0,
+                  "per_page": 20,
+                  "direction": 1,
+                  "sort_field": 0,
+                  "count": 3,
+                  "total_count": 3
+                }
+              }   
             }    
 
 
@@ -79,8 +100,18 @@ This retrieves the total length of the blockchain
 
             {
               "status":"success",
-              "result":
-                {
-                  "size":1447
+              "result": {
+                "totals": {
+                  "total_size": 3,
+                  "total_fast": 0,
+                  "total_slow": 3,
+                  "total_txns_fast": 0,
+                  "total_txns_slow": 5,
+                  "difficulty": 17
+                },
+                "block_height": {
+                  "slow": 4,
+                  "fast": 0
                 }
-            }
+              }
+            }  

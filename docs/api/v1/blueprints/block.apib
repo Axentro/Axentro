@@ -16,10 +16,30 @@ This retrieves the block specified by the index as Json
 
             {
               "status": "success",
-              "result": 
-                {
-                  "index": 0,
-                  "transactions": [],
+              "result": {
+                "block": {
+                  {
+                    "index": 0,
+                  "transactions": [
+                    {
+                      "id": "d1605f5db3327d66aab2c4bcecc1862d7348181d3b0fdb1209c94c0d1a16b234",
+                      "action": "head",
+                      "senders": [],
+                      "recipients": [
+                        {
+                          "address": "VDA1NjQ3ZmJiNmIwZDZlY2Q5NDMwNTRmYTNjNDYwYmQwMjM4NjExZGZlYTYyNjhj",
+                          "amount": 1199999373
+                        }
+                      ],
+                      "message": "0",
+                      "token": "AXNT",
+                      "prev_hash": "0",
+                      "timestamp": 1608382776083,
+                      "scaled": 1,
+                      "kind": "SLOW",
+                      "version": "V1"
+                    }
+                  ],
                   "nonce": 0,
                   "prev_hash": "genesis",
                   "merkle_tree_root": "",
@@ -27,9 +47,10 @@ This retrieves the block specified by the index as Json
                   "difficulty": 17,
                   "kind": "SLOW",
                   "address": "genesis"
-                }
+                },
+                "confirmations": 1  
+              }
             }
-
         
 ## block/header [GET /block/{index}/header]
 
@@ -57,7 +78,7 @@ This retrieves the block header at the specified index as Json
             }
 
 
-## block/transactions [GET /block/{index}/transactions{?page}{?per_page}{?direction}]
+## block/transactions [GET /block/{index}/transactions{?page}{?per_page}{?direction}{?sort_field}]
 
 This retrieves the transactions for the block specified at index as Json
 
@@ -67,15 +88,16 @@ This retrieves the transactions for the block specified at index as Json
     + page: 0 (number, optional) - The page
     + per_page: 20 (number, optional) - The number of items per page
     + direction: up (string, optional) - The direction (up = ascending, down = descending)
-    
+    + sort_field: time (string, optional) - The sort field (id = transactionId, time = transaction timestamp)
+
 + Response 200 (application/json)
 
     + Body
 
             {
               "status": "success",
-              "result": 
-                [
+              "result": {
+                "transactions": [
                   {
                     "id": "09b05cb672911ba03a1e3372a58348e61a0b267efdc8ee89df59978037d19523",
                     "action": "head",
@@ -96,9 +118,21 @@ This retrieves the transactions for the block specified at index as Json
                     "prev_hash": "0",
                     "timestamp": 1569910322451,
                     "scaled": 1,
-                    "kind": "SLOW"
+                    "kind": "SLOW",
+                    "version": "V1"
                   }
-                ]
+                ],
+                "confirmations": 1,
+                "block_id": 2,
+                "pagination": {
+                  "page": 0,
+                  "per_page": 20,
+                  "direction": 1,
+                  "sort_field": 0,
+                  "count": 1,
+                  "total_count": 1
+                }
+              }  
             }
 
             
