@@ -1,0 +1,32 @@
+## Group Search
+
+# /search/{searchTerm}
+
+## GET
+
+Searches the blockchain for one of the following:
+
+  * an address (must supply a full address)
+  * domain (must supply a full human readable address)
+  * transaction (can supply full or partial transaction id)
+  * block (must supply full block id)
+
++ Parameters
+
+    + searchTerm (string) - The item to search for as described above
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "status": "success",
+              "result": {
+                "found": true,
+                "category": "block",
+                "api_urls": [
+                  "/api/v1/block/2"
+                ],
+                "term": "2"
+              }
+            }

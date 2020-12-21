@@ -93,6 +93,7 @@ module ::Axentro::Core::Controllers
       post "/api/v1/transaction/unsigned" { |context, params| __v1_transaction_unsigned(context, params) }
 
       get "/api/v1/wallet/:address" { |context, params| __v1_wallet(context, params) }
+      get "/api/v1/search/:term" { |context, params| __v1_search(context, params) }
 
       route_handler
     end
@@ -329,6 +330,48 @@ module ::Axentro::Core::Controllers
         end
         @blockchain.wallet_info.wallet_info_impl(address)
       end
+    end
+
+    def __v1_search(context, params)
+      with_response(context) do
+        term = params["term"].to_s
+        search_by_term(term)
+      end
+    end
+
+    # ameba:disable Metrics/CyclomaticComplexity
+    private def search_by_term(term : String)
+      if term.ends_with?(".ax")
+        if @blockchain.database.search_domain(term)
+          {found: true, category: "domain", api_urls: ["/api/v1/domain/#{term}"], term: term}
+        else
+          {found: false, category: "", api_urls: [] of String, term: term}
+        end
+      elsif is_address?(term)
+        if @blockchain.database.search_address(term)
+          {found: true, category: "address", api_urls: ["/api/v1/address/#{term}"], term: term}
+        else
+          {found: false, category: "", api_urls: [] of String, term: term}
+        end
+      elsif term.size > 0 && !term.scan(/\D/).empty?
+        if @blockchain.database.search_transaction(term)
+          {found: true, category: "transaction", api_urls: ["/api/v1/transaction/#{term}"], term: term}
+        else
+          {found: false, category: "", api_urls: [] of String, term: term}
+        end
+      elsif term.size > 0 && term.scan(/\D/).empty?
+        if @blockchain.database.search_block(term)
+          {found: true, category: "block", api_urls: ["/api/v1/block/#{term}"], term: term}
+        else
+          {found: false, category: "", api_urls: [] of String, term: term}
+        end
+      else
+        {found: false, category: "", api_urls: [] of String, term: term}
+      end
+    end
+
+    private def is_address?(term : String) : Bool
+      Address.is_valid?(term)
     end
 
     private def with_response(context, &block)

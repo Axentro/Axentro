@@ -155,6 +155,22 @@ module ::Axentro::Core
       idx || 0_i64
     end
 
+    def search_domain(term : String) : Bool
+      @db.query_one("select count(*) from transactions where message = ? limit 1", term, as: Int32) > 0
+    end
+
+    def search_address(term : String) : Bool
+      @db.query_one("select count(*) from recipients where address = ? limit 1", term, as: Int32) > 0
+    end
+
+    def search_transaction(term : String) : Bool
+      @db.query_one("select count(*) from transactions where id like ? || '%' limit 1", term, as: Int32) > 0
+    end
+
+    def search_block(term : String) : Bool
+      @db.query_one("select count(*) from blocks where idx = ? limit 1", term, as: Int32) > 0
+    end
+
     include Logger
     include Data::Blocks
     include Data::Rejects

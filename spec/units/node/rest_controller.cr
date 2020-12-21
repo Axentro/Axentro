@@ -572,6 +572,62 @@ describe RESTController do
     end
   end
 
+  describe "__v1_wallet" do
+    it "should return wallet info for the supplied address or domain" do
+      with_factory do |block_factory, transaction_factory|
+        address = transaction_factory.sender_wallet.address
+        exec_rest_api(block_factory.rest.__v1_wallet(context("/api/v1/wallet/#{address}"), {address: address})) do |result|
+          result["status"].to_s.should eq("success")
+          result["result"]["address"].to_s.should eq(address)
+        end
+      end
+    end
+  end
+
+  describe "__v1_search" do
+    it "should search for the supplied address" do
+      with_factory do |block_factory, transaction_factory|
+        address = transaction_factory.sender_wallet.address
+        exec_rest_api(block_factory.rest.__v1_search(context("/api/v1/search/#{address}"), {term: address})) do |result|
+          result["status"].to_s.should eq("success")
+          result["result"]["category"].to_s.should eq("address")
+        end
+      end
+    end
+
+    it "should search for the supplied domain" do
+      with_factory do |block_factory, transaction_factory|
+        domain = "axentro.ax"
+        block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
+        exec_rest_api(block_factory.rest.__v1_search(context("/api/v1/search/#{domain}"), {term: domain})) do |result|
+          result["status"].to_s.should eq("success")
+          result["result"]["category"].to_s.should eq("domain")
+        end
+      end
+    end
+
+    it "should search for the supplied transaction id" do
+      with_factory do |block_factory, transaction_factory|
+        transaction_id = block_factory.chain.last.transactions.last.id
+        exec_rest_api(block_factory.rest.__v1_search(context("/api/v1/search/#{transaction_id}"), {term: transaction_id})) do |result|
+          result["status"].to_s.should eq("success")
+          result["result"]["category"].to_s.should eq("transaction")
+        end
+      end
+    end
+
+    it "should search for the supplied block id" do
+      with_factory do |block_factory, transaction_factory|
+        block_id = block_factory.chain.last.index
+        exec_rest_api(block_factory.rest.__v1_search(context("/api/v1/search/#{block_id}"), {term: block_id})) do |result|
+          result["status"].to_s.should eq("success")
+          result["result"]["category"].to_s.should eq("block")
+        end
+      end
+    end
+
+  end
+
   describe "__v1_node" do
     it "should return info about the connecting node" do
       with_factory do |block_factory, _|

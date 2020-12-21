@@ -41,6 +41,8 @@ module ::Axentro::Core::Keys
       hashed_address = sha256(sha256(version_address))
       checksum = decoded_address[-6..-1]
       checksum == hashed_address[0..5]
+    rescue e : Exception
+      false
     end
 
     def self.get_network_from_address(hex_address) : Core::Node::Network
