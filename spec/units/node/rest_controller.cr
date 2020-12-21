@@ -607,7 +607,7 @@ describe RESTController do
     end
 
     it "should search for the supplied transaction id" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         transaction_id = block_factory.chain.last.transactions.last.id
         exec_rest_api(block_factory.rest.__v1_search(context("/api/v1/search/#{transaction_id}"), {term: transaction_id})) do |result|
           result["status"].to_s.should eq("success")
@@ -617,7 +617,7 @@ describe RESTController do
     end
 
     it "should search for the supplied block id" do
-      with_factory do |block_factory, transaction_factory|
+      with_factory do |block_factory, _|
         block_id = block_factory.chain.last.index
         exec_rest_api(block_factory.rest.__v1_search(context("/api/v1/search/#{block_id}"), {term: block_id})) do |result|
           result["status"].to_s.should eq("success")
@@ -625,7 +625,6 @@ describe RESTController do
         end
       end
     end
-
   end
 
   describe "__v1_node" do
