@@ -20,55 +20,56 @@ Axentro is an original proof of work blockchain platform that empowers developer
 
 ## Platform status
 
-The platform is still in heavy development but the [TestNet](http://testnet.axentro.io:3000) is up and running however it is currently unstable due to ongoing  development which requires frequent restarts and updates. See the roadmap for more information about the delivery schedule.
+The platform phase one is complete and now stable with a live [Mainnet](http://mainnet.axentro.io). Phase two of the development will start early 2021 with a host of features for building decentralised apps as well as a mobile wallet.
 
 |          Environment |                Url                |    Status    |
 | -------------------: | :-------------------------------: | :----------: |
-|              Testnet | http://testnet.axentro.io:3000 |   Unstable   |
+|              Mainnet | http://mainnet.axentro.io         |   Stable     |
 
 Follow the [Getting Started](https://guide.axentro.io/) documentation to explore further.
 
 ## Documentation
 
 * [Offical docs](https://guide.axentro.io/)
-* [Roadmap](https://axentro.io/#roadmap)
+* [Roadmap](https://app.milanote.com/1KNIbi1ZRRBl6O?p=zcgg4WMTcH3)
 
 ## Blockchain Specification
 
 |                 Name  |  Axentro                    |
 | --------------------: | :-------------------------- |
 |          Coin ticker  |  AXNT                       |
-|            Consensus  |  PoW                        |
-|     Max Block reward  |  8 AXNT                     |
+|            Coin name  |  AXNT                       |
+|            Consensus  |  CDPoW                      |
+|     Max Block reward  |  12 AXNT (decreasing)       |
 |         Miner reward  |  Prorated on contribution   |
 |   Slow Block spacing  |  120 seconds                |
 |   Fast Block spacing  |  2 seconds                  |
-|   Block spacing algo  |  Modified Dark Gravity Wave |
+|   Block spacing algo  |  Dark Crystal Gravity Wave  |
 |       Developer fund  |  10,000,000 AXNT            |
-|         Total Supply  |  30,000,000 AXNT            |
-|             Maturity  |  10 Blocks                  |
+|       Total mineable  |  20,000,000 AXNT            |
+|   Total non-mineable  |  15,000,000 AXNT            |
+|         Total Supply  |  45,000,000 AXNT            |
+|             Maturity  |  7 Blocks                   |
 |      Minimum txn fee  |  0.0001 AXNT                |
-|       Slow Concensus  |  Proof of Work              |
-|       Fast Concensus  |  Proof of History           |
-| PoW mining algorithm  |  Argon2d                    |
-|                 Port  |  3000                       |
-
+| PoW mining algorithm  |  Argon2id                   |
+|                 Port  |  80/443                     |
 
 
 ## Community
 
-Questions or suggestions? Join our community here on [Telegram](https://t.me/sushichainhq)
+Questions or suggestions? Join our community here on [Telegram](https://t.me/axentrohq)
 
 ## Active Team
 
 - [@kingsleyh](https://github.com/kingsleyh) Kingsley Hendrickse - founder & lead developer
-- [@jferas](https://github.com/jferas) John Feras - core developer
-- [@mamalisk](https://github.com/mamalisk) Kostas Mamalis - core developer
-- [@raymanoz](https://github.com/raymanoz) Raymond Barlow - core developer
-- [@watzon](https://github.com/watzon) Chris Watson - core developer
-- [@fenicks](https://github.com/fenicks) Christian Kakesa - contributor
+- [@aaronbronow](https://github.com/aaronbronow) Aaron Bronow - core team
+- [@fenicks](https://github.com/fenicks) Christian Kakesa - core team
 - [@bararchy](https://github.com/bararchy) Bar Hofesh - Security advisor
 
 ## Past Contributors
 
 - [@tbrand](https://github.com/tbrand) Taichiro Suzuki - original founder
+- [@jferas](https://github.com/jferas) John Feras
+- [@raymanoz](https://github.com/raymanoz) Raymond Barlow
+- [@watzon](https://github.com/watzon) Chris Watson
+- [@mamalisk](https://github.com/mamalisk) Kostas Mamalis
