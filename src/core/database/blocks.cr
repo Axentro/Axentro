@@ -169,6 +169,11 @@ module ::Axentro::Core::Data::Blocks
     @db.query_one("select count(*) from blocks", as: Int32)
   end
 
+  def do_i_have_block(index : Int64) : Bool
+    result = @db.query_one("select count(*) from blocks where idx = ? limit 1", index, as: Int64)
+    result > 0_i64
+  end
+
   # ------- Delete -------
   def delete_block(from : Int64)
     @db.exec "delete from blocks where idx = ?", from

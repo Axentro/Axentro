@@ -548,49 +548,26 @@ module ::Axentro::Core
       @blockchain.official_node.i_am_a_fastnode?(address) && KeyUtils.verify_signature(hash_salt, signature, public_key)
     end
 
-    # ameba:disable Metrics/CyclomaticComplexity
+    # There is only 1 fast node on the network in phase 1 - so use this simple logic until that changes
     private def broadcast_fast_block(socket : HTTP::WebSocket, block : FastBlock, from : Chord::NodeContext? = nil)
       if fast_block_was_signed_by_official_fast_node?(block)
-        debug "fast: fast block arriving from peer with index #{block.index}"
-        debug "fast: merkle tree root of arriving block: #{block.merkle_tree_root}"
-        latest_fast_block = @blockchain.latest_fast_block || @blockchain.get_genesis_block
-        if latest_fast_block.index + 2 < block.index
-          debug "fast: latest local fast chain index (#{latest_fast_block.index}) is more than one block behind index of arriving block from a peer(#{block.index})"
-          warning "fast: require new chain: #{latest_fast_block} for #{block.index}"
-          sync_chain(socket, false)
-          send_block(block, from)
-        elsif latest_fast_block.index < block.index
-          debug "fast: fast block arriving from peer is a new block"
-          debug "fast: sending new block on to peer"
-          send_block(block, from)
-          debug "fast: finished sending new block on to peer"
+        if @blockchain.database.do_i_have_block(block.index)
+          if i_am_a_fast_node?
+            warning "not sending on incoming fast block: #{block.index} because I am the fast node and I already have the block"
+          else
+            info "sending on incoming fast block: #{block.index} (I already have it and am not the fast node)"
+            send_block(block, from)
+          end
+        else
+          info "receiving new incoming fast block: #{block.index} - I don't already have it"
           if _block = @blockchain.valid_block?(block)
             debug "fast: about to create the new block locally"
             new_block(_block)
-            info "#{magenta("NEW FAST BLOCK broadcasted")}: #{light_green(_block.index)}"
-          end
-        elsif latest_fast_block.index == block.index
-          debug "fast: fast block arriving from peer has the same index as the latest fast block"
-          warning "fast: blockchain conflicted at #{block.index} (#{light_cyan(latest_fast_block)})"
-          @conflicted_fast_index ||= block.index
-          if latest_fast_block.timestamp < block.timestamp
-            warning "fast: local block's timestamp indicates it was minted earlier than arriving block .. not forwarding arriving block to other nodes"
-          elsif block.timestamp < latest_fast_block.timestamp
-            warning "slow: arriving block's timestamp indicates it was minted earlier than latest local block"
-            warning "current local block merkle_tree_root #{latest_fast_block.merkle_tree_root}"
-            warning "arriving block merkle_tree_root #{block.merkle_tree_root}"
             send_block(block, from)
-            if _block = @blockchain.valid_block?(block, true, true)
-              warning "arriving block passes validity checks, making the arriving block our local latest"
-              @blockchain.replace_with_block_from_peer(_block)
-            else
-              warning "arriving block failed validity check, we can't make it our local latest"
-            end
+            info "#{magenta("NEW FAST BLOCK broadcasted")}: #{light_green(_block.index)}"
+          else
+            warning "the incoming new fast block: #{block.index} was invalid so discarding it"
           end
-        else
-          warning "fast: fast block arriving from peer is an old block, will tell peer to sync"
-          send_block(block, from)
-          tell_peer_to_sync_chain(socket)
         end
       else
         warning "fast block arriving from peer was not signed by a valid fast node - ignoring this block"
