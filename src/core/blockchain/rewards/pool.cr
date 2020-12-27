@@ -125,7 +125,7 @@ module ::Axentro::Core
     end
 
     def find_by_address(address : String) : MinerNonces
-      @pool.select {|mn| mn.address == address}
+      @pool.select { |mn| mn.address == address }
     end
 
     def self.find_by_address(address : String) : MinerNonces

@@ -95,8 +95,8 @@ module ::Axentro::Core::Controllers
       get "/api/v1/wallet/:address" { |context, params| __v1_wallet(context, params) }
       get "/api/v1/search/:term" { |context, params| __v1_search(context, params) }
 
-      get "/api/v1/nonces/:address/:block_id" {|context, params| __v1_nonces(context, params) }
-      get "/api/v1/nonces/pending/:address" {|context, params| __v1_pending_nonces(context, params) }
+      get "/api/v1/nonces/:address/:block_id" { |context, params| __v1_nonces(context, params) }
+      get "/api/v1/nonces/pending/:address" { |context, params| __v1_pending_nonces(context, params) }
 
       route_handler
     end

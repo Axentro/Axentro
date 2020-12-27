@@ -555,7 +555,7 @@ module ::Axentro::Core
       # if record nonces is true then write nonces to the db
       if @record_nonces
         miners_nonces = MinerNoncePool.embedded
-        miners_nonces.group_by { |mn| mn.address }.map do |address, nonces|
+        miners_nonces.group_by { |mn| mn.address }.map do |_, nonces|
           nonces.each do |nonce|
             database.insert_nonce(Nonce.new(nonce.address, nonce.value, latest_hash, the_latest_index, difficulty, nonce.timestamp))
           end

@@ -407,7 +407,7 @@ module ::Axentro::Interface
     private def parse_record_nonces(parser : OptionParser, actives : Array(Options))
       parser.on("--record-nonces", I18n.translate("cli.options.record_nonces")) {
         @record_nonces = true
-      } if is_active?(actives, Options::RECORD_NONCES)  
+      } if is_active?(actives, Options::RECORD_NONCES)
     end
 
     private def parse_slow_transaction(parser : OptionParser, actives : Array(Options))

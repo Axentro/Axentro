@@ -85,7 +85,7 @@ module ::Axentro::Core
       info "max private nodes allowed to connect is #{light_green(@max_private_nodes)}"
       info "max miners allowed to connect is #{light_green(@max_miners)}"
       info "your log level is #{light_green(log_level_text)}"
-      info "record nonces is set to #{light_green(@record_nonces)}" 
+      info "record nonces is set to #{light_green(@record_nonces)}"
 
       debug "is_private: #{light_green(@is_private)}"
       debug "public url: #{light_green(@public_host)}:#{light_green(@public_port)}" unless @is_private
