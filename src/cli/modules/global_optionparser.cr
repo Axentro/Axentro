@@ -70,6 +70,7 @@ module ::Axentro::Interface
     @sync_chunk_size = 100
 
     @is_fast_transaction : Bool = false
+    @record_nonces : Bool = false
 
     enum Options
       # common options
@@ -119,6 +120,7 @@ module ::Axentro::Interface
       MAX_MINERS
       MAX_PRIVATE_NODES
       EXIT_IF_UNOFFICIAL
+      RECORD_NONCES
     end
 
     def create_option_parser(actives : Array(Options)) : OptionParser
@@ -163,6 +165,7 @@ module ::Axentro::Interface
         parse_max_private_nodes(parser, actives)
         parse_seed(parser, actives)
         parse_derivation(parser, actives)
+        parse_record_nonces(parser, actives)
       end
     end
 
@@ -401,6 +404,12 @@ module ::Axentro::Interface
       } if is_active?(actives, Options::SYNC_CHUNK_SIZE)
     end
 
+    private def parse_record_nonces(parser : OptionParser, actives : Array(Options))
+      parser.on("--record-nonces", I18n.translate("cli.options.record_nonces")) {
+        @record_nonces = true
+      } if is_active?(actives, Options::RECORD_NONCES)  
+    end
+
     private def parse_slow_transaction(parser : OptionParser, actives : Array(Options))
       parser.on("--slow-transaction", I18n.translate("cli.options.slow_transaction")) {
         @is_fast_transaction = false
@@ -573,6 +582,10 @@ module ::Axentro::Interface
 
     def __sync_chunk_size : Int32
       @sync_chunk_size
+    end
+
+    def __record_nonces : Bool
+      @record_nonces
     end
 
     def __max_miners : Int32

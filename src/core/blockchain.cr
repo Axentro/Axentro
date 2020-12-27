@@ -42,13 +42,14 @@ module ::Axentro::Core
     @network_type : String
     @blocks_to_hold : Int64
     @sync_chunk_size : Int32
+    @record_nonces : Bool
     @node : Node?
     @mining_block : SlowBlock?
     @block_reward_calculator = BlockRewardCalculator.init
     @max_miners : Int32
     @is_standalone : Bool
 
-    def initialize(@network_type : String, @wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, @official_nodes : OfficialNodes?, @security_level_percentage : Int64, @sync_chunk_size : Int32, @max_miners : Int32, @is_standalone : Bool)
+    def initialize(@network_type : String, @wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, @official_nodes : OfficialNodes?, @security_level_percentage : Int64, @sync_chunk_size : Int32, @record_nonces : Bool, @max_miners : Int32, @is_standalone : Bool)
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup
@@ -531,8 +532,6 @@ module ::Axentro::Core
       coinbase_amount = coinbase_slow_amount(the_latest_index, embedded_slow_transactions)
       coinbase_transaction = calculate_coinbase_slow_transaction(coinbase_amount, the_latest_index, embedded_slow_transactions)
 
-      MinerNoncePool.delete_embedded
-
       transactions = align_slow_transactions(coinbase_transaction, coinbase_amount, the_latest_index, embedded_slow_transactions)
       timestamp = __timestamp
 
@@ -550,6 +549,21 @@ module ::Axentro::Core
         difficulty,
         address
       )
+
+      latest_hash = @mining_block.not_nil!.to_hash
+
+      # if record nonces is true then write nonces to the db
+      if @record_nonces
+        miners_nonces = MinerNoncePool.embedded
+        miners_nonces.group_by { |mn| mn.address }.map do |address, nonces|
+          nonces.each do |nonce|
+            database.insert_nonce(Nonce.new(nonce.address, nonce.value, latest_hash, the_latest_index, difficulty, nonce.timestamp))
+          end
+        end
+      end
+
+      # align slow transactions may need to re-calc the rewards so only delete the pool after all calcs are finished
+      MinerNoncePool.delete_embedded
 
       node.miners_broadcast
     end
