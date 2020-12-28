@@ -660,6 +660,40 @@ describe RESTController do
     end
   end
 
+  describe "__v1_nonces" do
+    it "should return nonces for an address" do
+      with_factory do |block_factory, _|
+        address = block_factory.node_wallet.address
+        block_id = 2_i64
+        nonce = DApps::BuildIn::Nonce.new(address, "123", "lastest_hash", block_id, 17, 1609185419188_i64)
+        block_factory.blockchain.database.insert_nonce(nonce)
+        exec_rest_api(block_factory.rest.__v1_nonces(context("/api/v1/nonces/#{address}/#{block_id}"), {address: address, block_id: block_id})) do |result|
+          result["status"].to_s.should eq("success")
+          DApps::BuildIn::Nonce.from_json(result["result"][0].to_json).should eq(nonce)
+        end
+      end
+    end
+  end
+
+  describe "__v1_pending_nonces" do
+    it "should return pending nonces for an address" do
+      with_factory do |block_factory, _|
+        address = block_factory.node_wallet.address
+        miner_nonce = MinerNonce.new("123").with_address(address).with_timestamp(1609185419188_i64)
+        MinerNoncePool.add(miner_nonce)
+        exec_rest_api(block_factory.rest.__v1_pending_nonces(context("/api/v1/nonces/pending/#{address}"), {address: address})) do |result|
+          result["status"].to_s.should eq("success")
+          nonce = result["result"][0]
+          nonce["address"].should eq(address)
+          nonce["nonce"].should eq("123")
+          nonce["block_id"].should eq(2_i64)
+          nonce["difficulty"].should eq(17)
+          nonce["timestamp"].should eq(1609185419188_i64)
+        end
+      end
+    end
+  end
+
   describe "__v1_transaction" do
     it "should create a signed transaction" do
       with_factory do |block_factory, transaction_factory|
