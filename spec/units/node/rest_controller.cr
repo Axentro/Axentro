@@ -687,7 +687,6 @@ describe RESTController do
           nonce["address"].should eq(address)
           nonce["nonce"].should eq("123")
           nonce["block_id"].should eq(2_i64)
-          nonce["difficulty"].should eq(17)
           nonce["timestamp"].should eq(1609185419188_i64)
         end
       end
