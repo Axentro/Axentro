@@ -73,6 +73,7 @@ module ::Axentro::Core
       @db.exec "create table if not exists recipients (#{recipient_table_create_string}, primary key (#{recipient_primary_key_string}))"
       @db.exec "create table if not exists senders (#{sender_table_create_string}, primary key (#{sender_primary_key_string}))"
       @db.exec "create table if not exists rejects (#{rejects_table_create_string}, primary key (#{rejects_primary_key_string}))"
+      @db.exec "create table if not exists nonces (#{nonces_table_create_string}, primary key (#{nonces_primary_key_string}))"
       @db.exec "PRAGMA synchronous=OFF"
       @db.exec "PRAGMA cache_size=10000"
       @db.exec "PRAGMA journal_mode=WAL"
@@ -172,6 +173,7 @@ module ::Axentro::Core
     end
 
     include Logger
+    include Data::Nonces
     include Data::Blocks
     include Data::Rejects
     include Data::Senders

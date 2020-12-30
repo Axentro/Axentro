@@ -40,6 +40,7 @@ module ::Axentro::Interface::Axen
         Options::OFFICIAL_NODES,
         Options::EXIT_IF_UNOFFICIAL,
         Options::SYNC_CHUNK_SIZE,
+        Options::RECORD_NONCES,
       ])
     end
 
@@ -93,13 +94,14 @@ module ::Axentro::Interface::Axen
 
       max_miners = G.op.__max_miners
       max_nodes = G.op.__max_nodes
+      record_nonces = G.op.__record_nonces
 
       connection_port = get_connecting_port(use_ssl)
 
       node = if has_first_connection
-               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, connect_uri.not_nil!.host, connection_port, wallet, database, developer_fund, official_nodes, G.op.__exit_if_unofficial, security_level_percentage, sync_chunk_size, max_miners, max_nodes, use_ssl)
+               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, connect_uri.not_nil!.host, connection_port, wallet, database, developer_fund, official_nodes, G.op.__exit_if_unofficial, security_level_percentage, sync_chunk_size, record_nonces, max_miners, max_nodes, use_ssl)
              else
-               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, nil, nil, wallet, database, developer_fund, official_nodes, G.op.__exit_if_unofficial, security_level_percentage, sync_chunk_size, max_miners, max_nodes, use_ssl)
+               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, nil, nil, wallet, database, developer_fund, official_nodes, G.op.__exit_if_unofficial, security_level_percentage, sync_chunk_size, record_nonces, max_miners, max_nodes, use_ssl)
              end
       node.run!
     end

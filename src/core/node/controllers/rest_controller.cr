@@ -95,6 +95,9 @@ module ::Axentro::Core::Controllers
       get "/api/v1/wallet/:address" { |context, params| __v1_wallet(context, params) }
       get "/api/v1/search/:term" { |context, params| __v1_search(context, params) }
 
+      get "/api/v1/nonces/:address/:block_id" { |context, params| __v1_nonces(context, params) }
+      get "/api/v1/nonces/pending/:address" { |context, params| __v1_pending_nonces(context, params) }
+
       route_handler
     end
 
@@ -329,6 +332,37 @@ module ::Axentro::Core::Controllers
           end
         end
         @blockchain.wallet_info.wallet_info_impl(address)
+      end
+    end
+
+    def __v1_nonces(context, params)
+      with_response(context) do
+        block_id = params["block_id"].to_i64
+        address_or_domain = params["address"].to_s
+        address = address_or_domain
+        if address.ends_with?(".ax")
+          domain_name = address_or_domain
+          result = @blockchain.database.get_domain_map_for(domain_name)[domain_name]?
+          if result
+            address = result[:address]
+          end
+        end
+        @blockchain.nonce_info.nonces_impl(address, block_id)
+      end
+    end
+
+    def __v1_pending_nonces(context, params)
+      with_response(context) do
+        address_or_domain = params["address"].to_s
+        address = address_or_domain
+        if address.ends_with?(".ax")
+          domain_name = address_or_domain
+          result = @blockchain.database.get_domain_map_for(domain_name)[domain_name]?
+          if result
+            address = result[:address]
+          end
+        end
+        @blockchain.nonce_info.pending_nonces_impl(address)
       end
     end
 

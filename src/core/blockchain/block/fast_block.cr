@@ -83,7 +83,6 @@ module ::Axentro::Core
     end
 
     def valid?(blockchain : Blockchain, skip_transactions : Bool = false) : Bool
-      puts "In fast block valid? with index: #{@index}"
       return valid_as_latest?(blockchain, skip_transactions) unless @index == 0
       valid_as_genesis?
     end

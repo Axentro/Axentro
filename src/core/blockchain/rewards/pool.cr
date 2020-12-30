@@ -124,6 +124,14 @@ module ::Axentro::Core
       instance.find_by_mid(mid)
     end
 
+    def find_by_address(address : String) : MinerNonces
+      @pool.select { |mn| mn.address == address }
+    end
+
+    def self.find_by_address(address : String) : MinerNonces
+      instance.find_by_address(address)
+    end
+
     def self.find(miner_nonce : MinerNonce)
       instance.find(miner_nonce)
     end
