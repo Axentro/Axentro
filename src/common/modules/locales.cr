@@ -9,8 +9,10 @@
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
+require "i18n"
 
 I18n.load_path += ["#{__DIR__}/../../locales/**/"]
 I18n.init
 locale = ENV["AXENTRO_LOCALE"]? ? ENV["AXENTRO_LOCALE"] : "en"
 I18n.default_locale = locale
+I18n::Backend::Yaml.embed(["src/locales/axe", "src/locales/help", "src/locales/options_parser"])
