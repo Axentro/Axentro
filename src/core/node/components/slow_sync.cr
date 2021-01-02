@@ -20,9 +20,9 @@ module ::Axentro::Core::NodeComponents
   end
 
   enum RejectBlockReason
-    OLD       # same index but local block is younger
-    VERY_OLD  # some old index 
-    INVALID   # invalid for some reason
+    OLD      # same index but local block is younger
+    VERY_OLD # some old index
+    INVALID  # invalid for some reason
   end
 
   class SlowSync
@@ -70,7 +70,7 @@ module ::Axentro::Core::NodeComponents
         # if incoming block is not latest in sequence
         if @incoming_block.index > @latest_slow.index
           # incoming block is ahead of our latest
-          SlowSyncState::SYNC_LOCAL
+          SlowSyncState::SYNC
         else
           # incoming block is behind our latest
           SlowSyncState::REJECT_VERY_OLD

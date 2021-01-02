@@ -11,6 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 require "../blockchain/block.cr"
 require "../blockchain/rewards/models.cr"
+require "../node/components/slow_sync.cr"
 
 module ::Axentro::Core::Protocol
   ######################################
@@ -356,5 +357,6 @@ module ::Axentro::Core::Protocol
   end
 
   include Block
+  include ::Axentro::Core::NodeComponents
   include ::Axentro::Core::NonceModels
 end

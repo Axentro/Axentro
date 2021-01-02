@@ -213,20 +213,20 @@ module ::Axentro::Core
       end
     end
 
-    private def reject_block(rejected_block : SlowBlock, latest_slow : SlowBlock, reason : RejectBlockReason, socket : Http::WebCocket? = nil)
+    private def reject_block(rejected_block : SlowBlock, latest_slow : SlowBlock, reason : RejectBlockReason, socket : HTTP::WebSocket? = nil)
       if predecessor = @chord.find_predecessor?
-        warning "sending rejected block #{rejected.index} to predecessor"
+        warning "sending rejected block #{rejected_block.index} to predecessor"
         send(
           predecessor[:socket],
           M_TYPE_NODE_REJECT_BLOCK,
           {
-            reason: reason,
+            reason:   reason,
             rejected: rejected_block,
-            latest: latest_slow
+            latest:   latest_slow,
           }
         )
       else
-        warning "wanted to tell peer about rejected block #{rejected.index} but no peer found"
+        warning "wanted to tell peer about rejected block #{rejected_block.index} but no peer found"
       end
     end
 
@@ -358,7 +358,7 @@ module ::Axentro::Core
         when M_TYPE_NODE_ASK_REQUEST_CHAIN
           _ask_request_chain(socket, message_content)
         when M_TYPE_NODE_REJECT_BLOCK
-          _receive_reject_block(socket, message_content)  
+          _receive_reject_block(socket, message_content)
         when M_TYPE_NODE_REQUEST_TRANSACTIONS
           _request_transactions(socket, message_content)
         when M_TYPE_NODE_RECEIVE_TRANSACTIONS
@@ -519,7 +519,7 @@ module ::Axentro::Core
       when SlowSyncState::REJECT_OLD
         execute_reject(socket, block, latest_slow, RejectBlockReason::OLD, from)
       when SlowSyncState::REJECT_VERY_OLD
-        execute_reject(socket, block, latest_slow, RejectBlockReason::VERY_OLD, from)  
+        execute_reject(socket, block, latest_slow, RejectBlockReason::VERY_OLD, from)
       when SlowSyncState::SYNC
         execute_sync(socket, block, latest_slow, from)
       else
@@ -546,7 +546,7 @@ module ::Axentro::Core
         info "#{magenta("NEW SLOW BLOCK broadcasted")}: #{light_green(_block.index)} at difficulty: #{light_cyan(_block.difficulty)}"
       else
         warning "received block: #{block.index} from peer that I don't have in my db was invalid - so rejecting block"
-        excute_reject(socket, block, latest_slow, RejectBlockReason::INVALID, from)
+        execute_reject(socket, block, latest_slow, RejectBlockReason::INVALID, from)
       end
     end
 
@@ -564,7 +564,7 @@ module ::Axentro::Core
         @miners_manager.forget_most_difficult
       else
         warning "arriving block #{block.index} failed validity check, we can't make it our local latest - so rejecting block"
-        excute_reject(socket, block, latest_slow, RejectBlockReason::INVALID, from)
+        execute_reject(socket, block, latest_slow, RejectBlockReason::INVALID, from)
       end
     end
 
@@ -577,11 +577,11 @@ module ::Axentro::Core
         warning "rejecting very old block: #{block.index} because local latest is: #{latest_slow.index}"
         reject_block(block, latest_slow, reason, socket)
       when RejectBlockReason::INVALID
-        warning "rejecting block #{block.index} because it was invalid"  
+        warning "rejecting block #{block.index} because it was invalid"
         reject_block(block, latest_slow, reason, socket)
-      else 
+      else
         warning "unknown rejection reason #{reason} - so ignoring it"
-      end  
+      end
     end
 
     private def execute_sync(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, from : Chord::NodeContext?)

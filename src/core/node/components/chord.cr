@@ -616,9 +616,9 @@ module ::Axentro::Core::NodeComponents
     private def online_official_nodes
       list = @finger_table << context
       list = list.select { |ctx| @official_node.all_impl.includes?(ctx[:address]) }
-      list.map do |ctx| 
+      list.map do |ctx|
         transport = ctx[:ssl] ? "https://" : "http://"
-        {id: ctx[:id], address: ctx[:address], url: "#{transport}#{ctx[:host]}:#{ctx[:port]}"} 
+        {id: ctx[:id], address: ctx[:address], url: "#{transport}#{ctx[:host]}:#{ctx[:port]}"}
       end
     end
 
