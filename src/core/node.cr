@@ -35,7 +35,6 @@ module ::Axentro::Core
     @wallet_info_controller : Controllers::WalletInfoController
 
     @conflicted_slow_index : Int64? = nil
-    @conflicted_fast_index : Int64? = nil
 
     # child node gets this from parent on setup
     @sync_slow_blocks_target_index : Int64 = 0_i64
@@ -53,6 +52,7 @@ module ::Axentro::Core
       @connect_host : String?,
       @connect_port : Int32?,
       @wallet : Wallet,
+      @database_path : String,
       @database : Database,
       @developer_fund : DeveloperFund?,
       @official_nodes : OfficialNodes?,
@@ -75,7 +75,7 @@ module ::Axentro::Core
       end
 
       @network_type = @is_testnet ? "testnet" : "mainnet"
-      @blockchain = Blockchain.new(@network_type, @wallet, @database, @developer_fund, @official_nodes, @security_level_percentage, @sync_chunk_size, @record_nonces, @max_miners, is_standalone?)
+      @blockchain = Blockchain.new(@network_type, @wallet, @database_path, @database, @developer_fund, @official_nodes, @security_level_percentage, @sync_chunk_size, @record_nonces, @max_miners, is_standalone?)
       @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @max_private_nodes, @wallet.address, @blockchain.official_node, @exit_on_unofficial)
       @miners_manager = MinersManager.new(@blockchain)
       @clients_manager = ClientsManager.new(@blockchain)
@@ -167,7 +167,7 @@ module ::Axentro::Core
         latest_fast_index = get_latest_fast_index
 
         slow_sync_index = @conflicted_slow_index.nil? ? latest_slow_index : @conflicted_slow_index.not_nil!
-        fast_sync_index = @conflicted_fast_index.nil? ? latest_fast_index : @conflicted_fast_index.not_nil!
+        fast_sync_index = latest_fast_index
         debug "asking to sync chain (slow) at index #{slow_sync_index}"
         debug "asking to sync chain (fast) at index #{fast_sync_index}"
 
@@ -506,6 +506,8 @@ module ::Axentro::Core
       else
         raise "Error - unknown SlowSyncState: #{state}"
       end
+    rescue e : Exception
+      error (e.message || "broadcast_slow_block unknown error: #{e.inspect}")
     end
 
     private def get_latest_slow_from_db : SlowBlock
@@ -787,7 +789,7 @@ module ::Axentro::Core
       latest_fast_index = get_latest_fast_index
 
       slow_sync_index = @conflicted_slow_index.nil? ? latest_slow_index : @conflicted_slow_index.not_nil!
-      fast_sync_index = @conflicted_fast_index.nil? ? latest_fast_index : @conflicted_fast_index.not_nil!
+      fast_sync_index = latest_fast_index
       send(socket, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {chunk_size: @sync_chunk_size, latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index})
     end
 
@@ -909,7 +911,6 @@ module ::Axentro::Core
         @miners_manager.broadcast
 
         @conflicted_slow_index = nil
-        @conflicted_fast_index = nil
       end
 
       latest_local_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
@@ -1059,7 +1060,6 @@ module ::Axentro::Core
 
         if @database
           @conflicted_slow_index = nil
-          @conflicted_fast_index = nil
         else
           warning "no database has been specified"
         end

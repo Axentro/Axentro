@@ -75,7 +75,7 @@ describe Blockchain do
         slow_sub_chain = chain.select(&.is_slow_block?)
 
         database = Axentro::Core::Database.in_memory
-        blockchain = Blockchain.new("testnet", block_factory.node_wallet, database, nil, nil, 20, 100, false, 512, true)
+        blockchain = Blockchain.new("testnet", block_factory.node_wallet, "", database, nil, nil, 20, 100, false, 512, true)
         blockchain.setup(block_factory.node)
         blockchain.push_slow_block(slow_block_1)
         expected = (blockchain.chain + slow_sub_chain[2..-1] + fast_sub_chain[0..-1]).map(&.index).sort
@@ -301,7 +301,7 @@ describe Blockchain do
       with_factory do |block_factory|
         block_factory.add_slow_blocks(10)
         database = block_factory.database
-        blockchain = Blockchain.new("testnet", block_factory.node_wallet, database, nil, nil, 20, 100, false, 512, true)
+        blockchain = Blockchain.new("testnet", block_factory.node_wallet, "", database, nil, nil, 20, 100, false, 512, true)
         blockchain.setup(block_factory.node)
         # including genesis block total chain size should be 11
         blockchain.chain.size.should eq(11)
@@ -312,7 +312,7 @@ describe Blockchain do
         blocks_to_add = block_factory.blocks_to_hold + 8
         block_factory.add_slow_blocks(blocks_to_add)
         database = block_factory.database
-        blockchain = Blockchain.new("testnet", block_factory.node_wallet, database, nil, nil, 20, 100, false, 512, true)
+        blockchain = Blockchain.new("testnet", block_factory.node_wallet, "", database, nil, nil, 20, 100, false, 512, true)
         blockchain.setup(block_factory.node)
         # including genesis block total chain size should be the number of blocks to hold
         blockchain.chain.size.should eq(blockchain.blocks_to_hold)

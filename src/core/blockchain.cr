@@ -48,11 +48,12 @@ module ::Axentro::Core
     @block_reward_calculator = BlockRewardCalculator.init
     @max_miners : Int32
     @is_standalone : Bool
+    @database_path : String
 
-    def initialize(@network_type : String, @wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, @official_nodes : OfficialNodes?, @security_level_percentage : Int64, @sync_chunk_size : Int32, @record_nonces : Bool, @max_miners : Int32, @is_standalone : Bool)
+    def initialize(@network_type : String, @wallet : Wallet, @database_path : String, @database : Database, @developer_fund : DeveloperFund?, @official_nodes : OfficialNodes?, @security_level_percentage : Int64, @sync_chunk_size : Int32, @record_nonces : Bool, @max_miners : Int32, @is_standalone : Bool)
       initialize_dapps
       SlowTransactionPool.setup
-      FastTransactionPool.setup
+      FastTransactionPool.setup(@database_path)
       MinerNoncePool.setup
 
       info "Security Level Percentage used for blockchain validation is #{@security_level_percentage}"

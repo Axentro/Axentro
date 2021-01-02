@@ -17,8 +17,9 @@ module ::Axentro::Core
   class FastPool
     @db : DB::Database
 
-    def initialize
-      path = File.expand_path("fast_pool.sqlite3")
+    def initialize(database_path : String)
+      dir = Path[database_path].parent
+      path = File.expand_path("#{dir}/fast_pool.sqlite3")
       @db = DB.open("sqlite3://#{path}")
       @db.exec "create table if not exists transactions (id text primary key,content text not null)"
       @db.exec "PRAGMA synchronous=OFF"
