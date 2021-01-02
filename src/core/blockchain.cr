@@ -520,7 +520,7 @@ module ::Axentro::Core
       refresh_slow_pending_block(difficulty)
     end
 
-    private def calculate_coinbase_slow_transaction(coinbase_amount, the_latest_index, embedded_slow_transactions)
+    def calculate_coinbase_slow_transaction(coinbase_amount, the_latest_index, embedded_slow_transactions)
       # pay the fees to the fastnode for maintenance (unless there are no more blocks to mine)
       fee = (the_latest_index >= @block_reward_calculator.max_blocks) ? 0_i64 : total_fees(embedded_slow_transactions)
       create_coinbase_slow_transaction(coinbase_amount, fee, node.miners)

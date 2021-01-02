@@ -487,8 +487,85 @@ module ::Axentro::Core
       end
     end
 
-    # ameba:disable Metrics/CyclomaticComplexity
     private def broadcast_slow_block(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
+        latest_slow = get_latest_slow_from_db
+        slow_sync = SlowSync.new(block, @blockchain.mining_block, @blockchain.database, latest_slow)
+        state = slow_sync.process
+
+        case state
+        when SlowSyncState::CREATE
+            execute_create(socket, block, from)
+        when SlowSyncState::REPLACE
+            execute_replace(socket, block, latest_slow, from)
+        when SlowSyncState::REBROADCAST
+            execute_rebroadcast(socket, block, latest_slow, from)
+        when SlowSyncState::SYNC_LOCAL
+            execute_sync_local(socket, block, from)
+        when SlowSyncState::SYNC_PEER
+            execute_sync_peer(socket, block, from)
+        else
+          raise "Error - unknown SlowSyncState: #{state}"
+        end
+    end
+
+    private def get_latest_slow_from_db : SlowBlock
+      blocks = @blockchain.database.get_highest_block_for_kind(BlockKind::SLOW)
+      blocks.size > 0 ? blocks.first.as(SlowBlock) : raise "Node::get_latest_slow_from_db: no slow blocks found in database"   
+    end
+
+    private def execute_create(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext?)
+      info "received block: #{block.index} from peer that I don't have in my db"
+      if _block = @blockchain.valid_block?(block)
+        info "received block: #{_block.index} was valid so sending onwards and storing in my db"
+        send_block(block, from)
+        debug "slow: finished sending new block on to peer"
+        @miners_manager.forget_most_difficult
+        debug "slow: about to create the new block locally"
+        new_block(_block)
+        info "#{magenta("NEW SLOW BLOCK broadcasted")}: #{light_green(_block.index)} at difficulty: #{light_cyan(_block.difficulty)}"
+      else
+        warning "received block: #{block.index} from peer that I don't have in my db was invalid"
+      end
+    end
+
+    private def execute_replace(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, from : Chord::NodeContext?)
+      warning "slow: blockchain conflicted at incoming #{block.index} and local (#{light_cyan(latest_slow.index)})"
+      warning "slow: local timestamp: #{latest_slow.timestamp}, arriving block timestamp: #{block.timestamp}"
+      warning "slow: arriving block's timestamp indicates it was minted earlier than latest local block"
+      warning "current local block merkle_tree_root #{latest_slow.merkle_tree_root}"
+      warning "arriving block merkle_tree_root #{block.merkle_tree_root}"
+
+      if _block = @blockchain.valid_block?(block, true, true)
+        send_block(block, from)
+        warning "arriving block passes validity checks, making the arriving block our local latest"
+        @blockchain.replace_with_block_from_peer(_block)
+        @miners_manager.forget_most_difficult
+      else
+        warning "arriving block failed validity check, we can't make it our local latest"
+        # we are keeping our block here - should we re-broadcast it?
+      end
+    end
+
+    private def execute_rebroadcast(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, from : Chord::NodeContext?)
+      warning "keeping our local block: #{latest_slow.index} so re-broadcasting it"
+      send_block(latest_slow, from)
+    end
+
+    private def execute_sync_local(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext?)
+      warning "slow: require new chain: #{@blockchain.latest_slow_block.index} for #{block.index}"
+      sync_chain(socket, false)
+      send_block(block, from)
+    end
+
+    private def execute_sync_peer(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext?)
+      warning "slow: received old block, will be ignored - asking peer to sync"
+      send_block(block, from)
+      tell_peer_to_sync_chain(socket)
+    end
+
+
+    # ameba:disable Metrics/CyclomaticComplexity
+    private def broadcast_slow_block2(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
       debug "Block was received from a peer node"
       block.to_s
       most_recent_minted_block = @blockchain.latest_slow_block
