@@ -12,8 +12,6 @@
 
 require "./node_id"
 
-# require "./../../daps/official_node"
-
 module ::Axentro::Core::NodeComponents
   class Chord < HandleSocket
     SUCCESSOR_LIST_SIZE = 3
@@ -85,15 +83,6 @@ module ::Axentro::Core::NodeComponents
     def join_to(node, connect_host : String, connect_port : Int32)
       debug "joining network: #{connect_host}:#{connect_port}"
 
-      # public node database validation on local public
-      # if node.blockchain.has_no_blocks?
-      #   validation_blocks = [] of Int64
-      #   validation_hash = ""
-      # else
-      #   validation_blocks = node.blockchain.get_validation_block_ids(node.blockchain.latest_slow_block.index, node.blockchain.latest_fast_block_index_or_zero)
-      #   validation_hash = node.blockchain.get_hash_of_block_hashes(validation_blocks)
-      # end
-
       send_once(
         connect_host,
         connect_port,
@@ -112,15 +101,6 @@ module ::Axentro::Core::NodeComponents
 
     def join_to_private(node, connect_host : String, connect_port : Int32)
       debug "joining network: #{connect_host}:#{connect_port} (private)"
-
-      # public node database validation on local private
-      # if node.blockchain.has_no_blocks?
-      #   validation_blocks = [] of Int64
-      #   validation_hash = ""
-      # else
-      #   validation_blocks = node.blockchain.get_validation_block_ids(node.blockchain.latest_slow_block.index, node.blockchain.latest_fast_block_index_or_zero)
-      #   validation_hash = node.blockchain.get_hash_of_block_hashes(validation_blocks)
-      # end
 
       socket = HTTP::WebSocket.new(connect_host, "/peer", connect_port, @use_ssl)
 
@@ -155,15 +135,6 @@ module ::Axentro::Core::NodeComponents
 
       debug "#{_context[:host]}:#{_context[:port]} try to join Axentro"
 
-      # public node database validation on peer
-      # client_blocks = _m_content.validation_blocks
-      # validation_hash = client_blocks.size > 0 ? node.blockchain.get_hash_of_block_hashes(client_blocks) : ""
-
-      # if _m_content.validation_hash != validation_hash
-      #   send_once(_context, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Database validation failed: your data is not compatible with our data!"})
-      #   return
-      # end
-
       if _context[:type] != @network_type
         send_once(_context, M_TYPE_CHORD_JOIN_REJECTED, {reason: "network type mismatch. " +
                                                                  "your network: #{_context[:type]}, our network: #{@network_type}"})
@@ -179,14 +150,6 @@ module ::Axentro::Core::NodeComponents
       _context = _m_content.context
 
       debug "private node trying to join Axentro"
-
-      # client_blocks = _m_content.validation_blocks
-      # validation_hash = client_blocks.size > 0 ? node.blockchain.get_hash_of_block_hashes(client_blocks) : ""
-
-      # if _m_content.validation_hash != validation_hash
-      #   send_once(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Database validation failed: your data is not compatible with our data!"})
-      #   return
-      # end
 
       if @private_nodes.size >= @max_private_nodes
         send(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "The max private node connections of #{@max_private_nodes} for this node has been reached"})
@@ -599,7 +562,7 @@ module ::Axentro::Core::NodeComponents
         ssl:        @ssl || false,
         type:       @network_type,
         is_private: @is_private,
-        address:    @is_private ? "" : @wallet_address,
+        address:    @wallet_address,
       }
     end
 
@@ -653,7 +616,10 @@ module ::Axentro::Core::NodeComponents
     private def online_official_nodes
       list = @finger_table << context
       list = list.select { |ctx| @official_node.all_impl.includes?(ctx[:address]) }
-      list.map { |ctx| {id: ctx[:id], address: ctx[:address], url: "https://#{ctx[:host]}:#{ctx[:port]}"} }
+      list.map do |ctx| 
+        transport = ctx[:ssl] ? "https://" : "http://"
+        {id: ctx[:id], address: ctx[:address], url: "#{transport}#{ctx[:host]}:#{ctx[:port]}"} 
+      end
     end
 
     include Protocol

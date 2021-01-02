@@ -14,9 +14,15 @@ module ::Axentro::Core::NodeComponents
   enum SlowSyncState
     CREATE
     REPLACE
-    REBROADCAST
-    SYNC_LOCAL
-    SYNC_PEER
+    REJECT_OLD
+    REJECT_VERY_OLD
+    SYNC
+  end
+
+  enum RejectBlockReason
+    OLD       # same index but local block is younger
+    VERY_OLD  # some old index 
+    INVALID   # invalid for some reason
   end
 
   class SlowSync
@@ -40,10 +46,10 @@ module ::Axentro::Core::NodeComponents
         # if incoming block not next in sequence
         if @incoming_block.index > @latest_slow.index + 2
           # incoming is ahead of next in sequence
-          SlowSyncState::SYNC_LOCAL
+          SlowSyncState::SYNC
         else
           # incoming is behind next in sequence
-          SlowSyncState::SYNC_PEER
+          SlowSyncState::REJECT_VERY_OLD
         end
       end
     end
@@ -56,7 +62,7 @@ module ::Axentro::Core::NodeComponents
           SlowSyncState::REPLACE
         elsif @incoming_block.timestamp > existing_block.timestamp
           # incoming block is not as early as ours (keep ours & re-broadcast it)
-          SlowSyncState::REBROADCAST
+          SlowSyncState::REJECT_OLD
         else
           # incoming block is exactly the same timestamp - what to do here?
         end
@@ -67,7 +73,7 @@ module ::Axentro::Core::NodeComponents
           SlowSyncState::SYNC_LOCAL
         else
           # incoming block is behind our latest
-          SlowSyncState::SYNC_PEER
+          SlowSyncState::REJECT_VERY_OLD
         end
       end
     end

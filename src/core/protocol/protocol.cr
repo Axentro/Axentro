@@ -217,51 +217,6 @@ module ::Axentro::Core::Protocol
     property from : Core::NodeComponents::Chord::NodeContext
   end
 
-  M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE = 0x0115
-
-  struct MContentNodeRequestValidationChallenge
-    include JSON::Serializable
-    property latest_slow_index : Int64
-    property latest_fast_index : Int64
-  end
-
-  M_TYPE_NODE_RECEIVE_VALIDATION_CHALLENGE = 0x0116
-
-  struct MContentNodeReceiveValidationChallenge
-    include JSON::Serializable
-    property validation_blocks : Array(Int64)
-  end
-
-  M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE_CHECK = 0x0117
-
-  struct MContentNodeRequestValidationChallengeCheck
-    include JSON::Serializable
-    property validation_hash : String
-  end
-
-  M_TYPE_NODE_REQUEST_CHAIN_SIZE = 0x0113
-
-  struct MContentNodeRequestChainSize
-    include JSON::Serializable
-    property latest_slow_index : Int64
-    property latest_fast_index : Int64
-    property chunk_size : Int32
-  end
-
-  M_TYPE_NODE_RECEIVE_CHAIN_SIZE = 0x0114
-
-  struct MContentNodeReceiveChainSize
-    include JSON::Serializable
-
-    property slowchain_start_index : Int64
-    property fastchain_start_index : Int64
-    property slow_target_index : Int64
-    property fast_target_index : Int64
-    property chunk_size : Int32
-  end
-
-  M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS = 0x0118
-
   M_TYPE_NODE_REQUEST_CHAIN = 0x0103
 
   struct MContentNodeRequestChain
@@ -329,6 +284,60 @@ module ::Axentro::Core::Protocol
   struct MContentNodeReceiveMinerNonces
     include JSON::Serializable
     property nonces : Array(MinerNonce)
+  end
+
+  M_TYPE_NODE_REQUEST_CHAIN_SIZE = 0x0113
+
+  struct MContentNodeRequestChainSize
+    include JSON::Serializable
+    property latest_slow_index : Int64
+    property latest_fast_index : Int64
+    property chunk_size : Int32
+  end
+
+  M_TYPE_NODE_RECEIVE_CHAIN_SIZE = 0x0114
+
+  struct MContentNodeReceiveChainSize
+    include JSON::Serializable
+
+    property slowchain_start_index : Int64
+    property fastchain_start_index : Int64
+    property slow_target_index : Int64
+    property fast_target_index : Int64
+    property chunk_size : Int32
+  end
+
+  M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE = 0x0115
+
+  struct MContentNodeRequestValidationChallenge
+    include JSON::Serializable
+    property latest_slow_index : Int64
+    property latest_fast_index : Int64
+  end
+
+  M_TYPE_NODE_RECEIVE_VALIDATION_CHALLENGE = 0x0116
+
+  struct MContentNodeReceiveValidationChallenge
+    include JSON::Serializable
+    property validation_blocks : Array(Int64)
+  end
+
+  M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE_CHECK = 0x0117
+
+  struct MContentNodeRequestValidationChallengeCheck
+    include JSON::Serializable
+    property validation_hash : String
+  end
+
+  M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS = 0x0118
+
+  M_TYPE_NODE_REJECT_BLOCK = 0x0119
+
+  struct MContentNodeRejectBlock
+    include JSON::Serializable
+    property reason : RejectBlockReason
+    property rejected : SlowBlock
+    property latest : SlowBlock
   end
 
   ######################################

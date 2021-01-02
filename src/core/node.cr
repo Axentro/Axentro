@@ -213,6 +213,23 @@ module ::Axentro::Core
       end
     end
 
+    private def reject_block(rejected_block : SlowBlock, latest_slow : SlowBlock, reason : RejectBlockReason, socket : Http::WebCocket? = nil)
+      if predecessor = @chord.find_predecessor?
+        warning "sending rejected block #{rejected.index} to predecessor"
+        send(
+          predecessor[:socket],
+          M_TYPE_NODE_REJECT_BLOCK,
+          {
+            reason: reason,
+            rejected: rejected_block,
+            latest: latest_slow
+          }
+        )
+      else
+        warning "wanted to tell peer about rejected block #{rejected.index} but no peer found"
+      end
+    end
+
     private def sync_transactions(socket : HTTP::WebSocket? = nil)
       info "start synching transactions"
 
@@ -340,6 +357,8 @@ module ::Axentro::Core
           _broadcast_block(socket, message_content)
         when M_TYPE_NODE_ASK_REQUEST_CHAIN
           _ask_request_chain(socket, message_content)
+        when M_TYPE_NODE_REJECT_BLOCK
+          _receive_reject_block(socket, message_content)  
         when M_TYPE_NODE_REQUEST_TRANSACTIONS
           _request_transactions(socket, message_content)
         when M_TYPE_NODE_RECEIVE_TRANSACTIONS
@@ -494,15 +513,15 @@ module ::Axentro::Core
 
       case state
       when SlowSyncState::CREATE
-        execute_create(socket, block, from)
+        execute_create(socket, block, latest_slow, from)
       when SlowSyncState::REPLACE
         execute_replace(socket, block, latest_slow, from)
-      when SlowSyncState::REBROADCAST
-        execute_rebroadcast(socket, block, latest_slow, from)
-      when SlowSyncState::SYNC_LOCAL
-        execute_sync_local(socket, block, from)
-      when SlowSyncState::SYNC_PEER
-        execute_sync_peer(socket, block, from)
+      when SlowSyncState::REJECT_OLD
+        execute_reject(socket, block, latest_slow, RejectBlockReason::OLD, from)
+      when SlowSyncState::REJECT_VERY_OLD
+        execute_reject(socket, block, latest_slow, RejectBlockReason::VERY_OLD, from)  
+      when SlowSyncState::SYNC
+        execute_sync(socket, block, latest_slow, from)
       else
         raise "Error - unknown SlowSyncState: #{state}"
       end
@@ -515,7 +534,7 @@ module ::Axentro::Core
       blocks.size > 0 ? blocks.first.as(SlowBlock) : raise "Node::get_latest_slow_from_db: no slow blocks found in database"
     end
 
-    private def execute_create(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext?)
+    private def execute_create(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, from : Chord::NodeContext?)
       info "received block: #{block.index} from peer that I don't have in my db"
       if _block = @blockchain.valid_block?(block)
         info "received block: #{_block.index} was valid so sending onwards and storing in my db"
@@ -526,7 +545,8 @@ module ::Axentro::Core
         new_block(_block)
         info "#{magenta("NEW SLOW BLOCK broadcasted")}: #{light_green(_block.index)} at difficulty: #{light_cyan(_block.difficulty)}"
       else
-        warning "received block: #{block.index} from peer that I don't have in my db was invalid"
+        warning "received block: #{block.index} from peer that I don't have in my db was invalid - so rejecting block"
+        excute_reject(socket, block, latest_slow, RejectBlockReason::INVALID, from)
       end
     end
 
@@ -543,27 +563,38 @@ module ::Axentro::Core
         @blockchain.replace_with_block_from_peer(_block)
         @miners_manager.forget_most_difficult
       else
-        warning "arriving block failed validity check, we can't make it our local latest"
-        # we are keeping our block here - should we re-broadcast it?
+        warning "arriving block #{block.index} failed validity check, we can't make it our local latest - so rejecting block"
+        excute_reject(socket, block, latest_slow, RejectBlockReason::INVALID, from)
       end
     end
 
-    private def execute_rebroadcast(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, from : Chord::NodeContext?)
-      warning "keeping our local block: #{latest_slow.index} so re-broadcasting it"
-      send_block(latest_slow, from)
+    private def execute_reject(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, reason : RejectBlockReason, from : Chord::NodeContext?)
+      case reason
+      when RejectBlockReason::OLD
+        warning "keeping our local block: #{latest_slow.index} and rejecting the block: #{block.index} because local one was minted first"
+        reject_block(block, latest_slow, reason, socket)
+      when RejectBlockReason::VERY_OLD
+        warning "rejecting very old block: #{block.index} because local latest is: #{latest_slow.index}"
+        reject_block(block, latest_slow, reason, socket)
+      when RejectBlockReason::INVALID
+        warning "rejecting block #{block.index} because it was invalid"  
+        reject_block(block, latest_slow, reason, socket)
+      else 
+        warning "unknown rejection reason #{reason} - so ignoring it"
+      end  
     end
 
-    private def execute_sync_local(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext?)
-      warning "slow: require new chain: #{@blockchain.latest_slow_block.index} for #{block.index}"
+    private def execute_sync(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, from : Chord::NodeContext?)
+      warning "slow: require new chain - local: #{latest_slow.index} for incoming from peer: #{block.index}"
       sync_chain(socket, false)
       send_block(block, from)
     end
 
-    private def execute_sync_peer(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext?)
-      warning "slow: received old block, will be ignored - asking peer to sync"
-      send_block(block, from)
-      tell_peer_to_sync_chain(socket)
-    end
+    # private def execute_sync_peer(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext?)
+    #   warning "slow: received old block, will be ignored - asking peer to sync"
+    #   send_block(block, from)
+    #   tell_peer_to_sync_chain(socket)
+    # end
 
     # ameba:disable Metrics/CyclomaticComplexity
     private def broadcast_slow_block2(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
@@ -946,6 +977,12 @@ module ::Axentro::Core
       if ((remote_slow_index > local_slow_index) || (remote_fast_index > local_fast_index))
         sync_chain(socket, false)
       end
+    end
+
+    private def _receive_reject_block(socket, _content)
+      _m_content = MContentNodeRejectBlock.from_json(_content)
+
+      # based on reason decide how to proceed - probably sync chain here
     end
 
     private def _request_transactions(socket, _content)
