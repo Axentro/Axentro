@@ -235,13 +235,13 @@ module ::Axentro::Core::Protocol
     property chunk_size : Int32
   end
 
-  M_TYPE_NODE_ASK_REQUEST_CHAIN = 0x0105
+  # M_TYPE_NODE_ASK_REQUEST_CHAIN = 0x0105
 
-  struct MContentNodeAskRequestChain
-    include JSON::Serializable
-    property latest_slow_index : Int64
-    property latest_fast_index : Int64
-  end
+  # struct MContentNodeAskRequestChain
+  #   include JSON::Serializable
+  #   property latest_slow_index : Int64
+  #   property latest_fast_index : Int64
+  # end
 
   M_TYPE_NODE_REQUEST_TRANSACTIONS = 0x0106
 
