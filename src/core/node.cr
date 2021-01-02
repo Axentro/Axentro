@@ -488,29 +488,29 @@ module ::Axentro::Core
     end
 
     private def broadcast_slow_block(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
-        latest_slow = get_latest_slow_from_db
-        slow_sync = SlowSync.new(block, @blockchain.mining_block, @blockchain.database, latest_slow)
-        state = slow_sync.process
+      latest_slow = get_latest_slow_from_db
+      slow_sync = SlowSync.new(block, @blockchain.mining_block, @blockchain.database, latest_slow)
+      state = slow_sync.process
 
-        case state
-        when SlowSyncState::CREATE
-            execute_create(socket, block, from)
-        when SlowSyncState::REPLACE
-            execute_replace(socket, block, latest_slow, from)
-        when SlowSyncState::REBROADCAST
-            execute_rebroadcast(socket, block, latest_slow, from)
-        when SlowSyncState::SYNC_LOCAL
-            execute_sync_local(socket, block, from)
-        when SlowSyncState::SYNC_PEER
-            execute_sync_peer(socket, block, from)
-        else
-          raise "Error - unknown SlowSyncState: #{state}"
-        end
+      case state
+      when SlowSyncState::CREATE
+        execute_create(socket, block, from)
+      when SlowSyncState::REPLACE
+        execute_replace(socket, block, latest_slow, from)
+      when SlowSyncState::REBROADCAST
+        execute_rebroadcast(socket, block, latest_slow, from)
+      when SlowSyncState::SYNC_LOCAL
+        execute_sync_local(socket, block, from)
+      when SlowSyncState::SYNC_PEER
+        execute_sync_peer(socket, block, from)
+      else
+        raise "Error - unknown SlowSyncState: #{state}"
+      end
     end
 
     private def get_latest_slow_from_db : SlowBlock
       blocks = @blockchain.database.get_highest_block_for_kind(BlockKind::SLOW)
-      blocks.size > 0 ? blocks.first.as(SlowBlock) : raise "Node::get_latest_slow_from_db: no slow blocks found in database"   
+      blocks.size > 0 ? blocks.first.as(SlowBlock) : raise "Node::get_latest_slow_from_db: no slow blocks found in database"
     end
 
     private def execute_create(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext?)
@@ -562,7 +562,6 @@ module ::Axentro::Core
       send_block(block, from)
       tell_peer_to_sync_chain(socket)
     end
-
 
     # ameba:disable Metrics/CyclomaticComplexity
     private def broadcast_slow_block2(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
