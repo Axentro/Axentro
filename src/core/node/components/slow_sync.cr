@@ -25,10 +25,28 @@ module ::Axentro::Core::NodeComponents
     INVALID  # invalid for some reason
   end
 
+  struct RejectionSyncIndices
+    getter slow_index : Int64
+    getter fast_index : Int64
+
+    def initialize(@slow_index, @fast_index); end
+  end
+
+  class SlowSyncReject
+    def initialize(@reason : RejectBlockReason, @rejected_block : SlowBlock, @latest_remote_slow : SlowBlock, @latest_local_slow : SlowBlock, @latest_local_fast_index : Int64, @database : Database); end
+
+    def process : RejectionSyncIndices
+      # slow and fast indices have to be in sync in terms of chronological order
+      slow_index = @database.lowest_slow_index_after_slow_block(@rejected_block.index) || @latest_local_slow.index
+      fast_index = @database.lowest_fast_index_after_slow_block(slow_index) || @latest_local_fast_index
+      RejectionSyncIndices.new(slow_index, fast_index)
+    end
+  end
+
   class SlowSync
     def initialize(@incoming_block : SlowBlock, @mining_block : SlowBlock, @database : Database, @latest_slow : SlowBlock); end
 
-    def process
+    def process : SlowSyncState
       has_block = @database.get_block(@incoming_block.index)
 
       if has_block
@@ -64,6 +82,7 @@ module ::Axentro::Core::NodeComponents
           # incoming block is not as early as ours (keep ours & re-broadcast it)
           SlowSyncState::REJECT_OLD
         else
+          SlowSyncState::REJECT_OLD
           # incoming block is exactly the same timestamp - what to do here?
         end
       else

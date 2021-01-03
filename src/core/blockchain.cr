@@ -314,6 +314,7 @@ module ::Axentro::Core
 
     def create_indexes_to_check(incoming_chain)
       return [] of Int64 if @security_level_percentage == 100_i64
+      return [] of Int64 if incoming_chain.empty?
       incoming_indices = incoming_chain.map(&.index)
       max_incoming_block_id = incoming_indices.max
       percentage_as_count = (max_incoming_block_id*@security_level_percentage*0.01).ceil.to_i

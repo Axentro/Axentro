@@ -150,8 +150,18 @@ module ::Axentro::Core
       node.listen
     end
 
-    # mostly on the child unless child chain is longer than parent then it happens on parent too
+    private def sync_chain_from_point(slow_index : Int64, fast_index : Int64, socket : HTTP::WebSocket? = nil)
+      _sync_chain(slow_index, fast_index, socket, false)
+    end
+
     private def sync_chain(socket : HTTP::WebSocket? = nil, do_validate : Bool = true)
+      slow_index = get_latest_slow_index
+      fast_index = get_latest_fast_index
+      _sync_chain(slow_index, fast_index, socket, do_validate)
+    end
+
+    # mostly on the child unless child chain is longer than parent then it happens on parent too
+    private def _sync_chain(slow_index : Int64, fast_index : Int64, socket : HTTP::WebSocket? = nil, do_validate : Bool = true)
       info "start synching chain"
 
       s = if _socket = socket
@@ -163,13 +173,9 @@ module ::Axentro::Core
           end
 
       if _s = s
-        latest_slow_index = get_latest_slow_index
-        latest_fast_index = get_latest_fast_index
-
-        slow_sync_index = @conflicted_slow_index.nil? ? latest_slow_index : @conflicted_slow_index.not_nil!
-        fast_sync_index = latest_fast_index
-        debug "asking to sync chain (slow) at index #{slow_sync_index}"
-        debug "asking to sync chain (fast) at index #{fast_sync_index}"
+        slow_sync_index = slow_index
+        fast_sync_index = fast_index
+        info "asking to sync chain at indices slow: #{slow_sync_index}, fast: #{fast_sync_index}"
 
         if do_validate
           send(_s, M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE, {latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index})
@@ -186,12 +192,12 @@ module ::Axentro::Core
       end
     end
 
-    private def get_latest_slow_index
-      @blockchain.has_no_blocks? ? 0 : @blockchain.latest_slow_block.index
+    private def get_latest_slow_index : Int64
+      @blockchain.has_no_blocks? ? 0_i64 : @blockchain.latest_slow_block.index
     end
 
-    private def get_latest_fast_index
-      @blockchain.has_no_blocks? ? 0 : (@blockchain.latest_fast_block || @blockchain.get_genesis_block).index
+    private def get_latest_fast_index : Int64
+      @blockchain.has_no_blocks? ? 0_i64 : (@blockchain.latest_fast_block || @blockchain.get_genesis_block).index
     end
 
     # private def tell_peer_to_sync_chain(socket : HTTP::WebSocket? = nil)
@@ -542,10 +548,12 @@ module ::Axentro::Core
         debug "slow: about to create the new block locally"
         new_block(_block)
         info "#{magenta("NEW SLOW BLOCK broadcasted")}: #{light_green(_block.index)} at difficulty: #{light_cyan(_block.difficulty)}"
-      else
-        warning "received block: #{block.index} from peer that I don't have in my db was invalid - so rejecting block"
-        execute_reject(socket, block, latest_slow, RejectBlockReason::INVALID, from)
       end
+
+    rescue e : Exception
+        warning "received block: #{block.index} from peer that I don't have in my db was invalid - so rejecting block"
+        warning "error was: #{e.message || "unknown error"}"
+        execute_reject(socket, block, latest_slow, RejectBlockReason::INVALID, from)
     end
 
     private def execute_replace(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, from : Chord::NodeContext?)
@@ -560,10 +568,12 @@ module ::Axentro::Core
         warning "arriving block passes validity checks, making the arriving block our local latest"
         @blockchain.replace_with_block_from_peer(_block)
         @miners_manager.forget_most_difficult
-      else
-        warning "arriving block #{block.index} failed validity check, we can't make it our local latest - so rejecting block"
-        execute_reject(socket, block, latest_slow, RejectBlockReason::INVALID, from)
       end
+
+    rescue e : Exception
+        warning "arriving block #{block.index} failed validity check, we can't make it our local latest - so rejecting block"
+        warning "error was: #{e.message || "unknown error"}"
+        execute_reject(socket, block, latest_slow, RejectBlockReason::INVALID, from)
     end
 
     private def execute_reject(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, reason : RejectBlockReason, from : Chord::NodeContext?)
@@ -979,7 +989,16 @@ module ::Axentro::Core
     private def _receive_reject_block(socket, _content)
       _m_content = MContentNodeRejectBlock.from_json(_content)
 
-      # based on reason decide how to proceed - probably sync chain here
+      reason = _m_content.reason
+      rejected_block = _m_content.rejected
+      latest_remote_slow = _m_content.latest
+      latest_local_slow = @blockchain.latest_slow_block
+      latest_local_fast_index = database.highest_index_of_kind(BlockKind::FAST)
+
+      slow_sync_reject = SlowSyncReject.new(reason, rejected_block, latest_remote_slow, latest_local_slow, latest_local_fast_index, @blockchain.database)
+      indices = slow_sync_reject.process
+
+      sync_chain_from_point(indices.slow_index, indices.fast_index, socket)
     end
 
     private def _request_transactions(socket, _content)

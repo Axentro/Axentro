@@ -117,34 +117,46 @@ module ::Axentro::Core
       idx || 0_i64
     end
 
-    def highest_fast_index_or_nil : Int64?
-      @db.query_one("select max(idx) from blocks where kind = ?", Block::BlockKind::FAST.to_s, as: Int64?)
+    # def highest_fast_index_or_nil : Int64?
+    #   @db.query_one("select max(idx) from blocks where kind = ?", Block::BlockKind::FAST.to_s, as: Int64?)
+    # end
+
+    # def highest_index : Int64
+    #   idx : Int64? = nil
+
+    #   @db.query "select max(idx) from blocks" do |rows|
+    #     rows.each do
+    #       idx = rows.read(Int64 | Nil)
+    #     end
+    #   end
+
+    #   idx || -1_i64
+    # end
+
+    # def lowest_index_after_time(given_time : Int64, kind : Block::BlockKind)
+    #   idx : Int64? = nil
+
+    #   the_query = "select min(idx) from blocks where timestamp >= #{given_time} and kind = '#{kind}'"
+    #   debug "query in lowest_index_after_time: #{the_query}"
+    #   @db.query the_query do |rows|
+    #     rows.each do
+    #       idx = rows.read(Int64 | Nil)
+    #     end
+    #   end
+
+    #   idx || 0_i64
+    # end
+
+    # this could return null if there are no fast blocks found after the slow block timestamp
+    # this could also return null if the slowblock is not found
+    def lowest_fast_index_after_slow_block(index : Int64) : Int64?
+      @db.query_one("select min(idx) from blocks where kind = 'FAST' and timestamp >= (select timestamp from blocks where idx = ?)", index, as: Int64?)
     end
 
-    def highest_index : Int64
-      idx : Int64? = nil
-
-      @db.query "select max(idx) from blocks" do |rows|
-        rows.each do
-          idx = rows.read(Int64 | Nil)
-        end
-      end
-
-      idx || -1_i64
-    end
-
-    def lowest_index_after_time(given_time : Int64, kind : Block::BlockKind)
-      idx : Int64? = nil
-
-      the_query = "select min(idx) from blocks where timestamp >= #{given_time} and kind = '#{kind}'"
-      debug "query in lowest_index_after_time: #{the_query}"
-      @db.query the_query do |rows|
-        rows.each do
-          idx = rows.read(Int64 | Nil)
-        end
-      end
-
-      idx || 0_i64
+    # this could return null if the slowblock is not found
+    # this could return null if the index given was 0
+    def lowest_slow_index_after_slow_block(index : Int64) : Int64?
+      @db.query_one("select max(idx) from blocks where kind = 'SLOW' and timestamp < (select timestamp from blocks where idx = ?)", index, as: Int64?)
     end
 
     def total(kind : Block::BlockKind)

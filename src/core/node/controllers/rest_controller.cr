@@ -98,7 +98,18 @@ module ::Axentro::Core::Controllers
       get "/api/v1/nonces/:address/:block_id" { |context, params| __v1_nonces(context, params) }
       get "/api/v1/nonces/pending/:address" { |context, params| __v1_pending_nonces(context, params) }
 
+      post "/api/v1/block" {|context, params| __v1_post_block(context, params)}
+
       route_handler
+    end
+
+    def __v1_post_block(context, params)
+      with_response(context) do
+        r = parse_body(context)
+        block = SlowBlock.from_json(r["block"].to_json)
+        @blockchain.node.send_block(block)
+        {"block" => block}
+      end
     end
 
     def __v1_blockchain(context, params)
