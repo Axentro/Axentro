@@ -547,7 +547,8 @@ module ::Axentro::Core
       warning "arriving block merkle_tree_root #{block.merkle_tree_root}"
 
       # don't check transactions here as will fail since they already exist in the existing block
-      if _block = @blockchain.valid_block?(block, true)
+      # also don't check as lastest block here as we are doing a replace
+      if _block = @blockchain.valid_block?(block, true, false)
         send_block(block, from)
         warning "arriving block #{_block.index} passes validity checks, making the arriving block our local latest - and sending block onwards"
         # replace here does check the transactions lower down

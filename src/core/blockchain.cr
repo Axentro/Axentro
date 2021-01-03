@@ -224,6 +224,7 @@ module ::Axentro::Core
         @chain[target_index] = block
         # validate during replace block
         @database.delete_block(block.index)
+        # check block is valid here - we are in replace to don't validate as latest
         block.valid?(self, false, false)
         @database.push_block(block)
       else
@@ -338,13 +339,11 @@ module ::Axentro::Core
 
         @database.delete_block(block.index)
         # running the valid block test only on a subset of blocks for speed on sync
-        # if (indexes_for_validity_checking.size == 0) || indexes_for_validity_checking.includes?(index)
-        #   debug "doing valid check on block #{index}"
-        #   block.valid?(self, false, true)
-        # end
-
-        # this valid check is historic and not as latest block
-        block.valid?(self, true, false)
+        if (indexes_for_validity_checking.size == 0) || indexes_for_validity_checking.includes?(index)
+          debug "doing valid check on block #{index}"
+          # this valid check is historic and not as latest block
+          block.valid?(self, true, false)
+        end
 
         @database.push_block(block)
 

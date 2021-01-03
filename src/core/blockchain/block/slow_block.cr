@@ -86,11 +86,6 @@ module ::Axentro::Core
       ripemd160(current_hashes[0])
     end
 
-    # def valid?(blockchain : Blockchain, skip_transactions : Bool = false) : Bool
-    #   return valid_as_latest?(blockchain, skip_transactions) unless @index == 0
-    #   valid_as_genesis?
-    # end
-
     def is_slow_block?
       @kind == BlockKind::SLOW
     end
@@ -111,11 +106,6 @@ module ::Axentro::Core
       valid_nonce?(self.to_hash, @nonce, difficulty)
     end
 
-    # def valid?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool
-    #   return valid_as_latest?(blockchain, skip_transactions, doing_replace) unless @index == 0
-    #   valid_as_genesis?
-    # end
-
     private def validate_transactions(transactions : Array(Transaction), blockchain : Blockchain) : ValidatedTransactions
       result = SlowTransactionPool.find_all(transactions)
       slow_transactions = result.found + result.not_found
@@ -130,14 +120,12 @@ module ::Axentro::Core
       vt
     end
 
-    # the only difference is latest index check, and difficulty check 
-    # maybe can check if the index is latest and apply those 2 checks and just have a single valid_as_latest?
     def valid?(blockchain : Blockchain, skip_transactions : Bool = false, as_latest : Bool = true) : Bool
       prev_block_index = @index - 2
       _prev_block = blockchain.database.get_block(prev_block_index)
 
       return valid_as_genesis? if @index == 0_i64
-      raise "error finding previous block: #{prev_block_index} for current block: #{@index}" if _prev_block.nil? 
+      raise "(slow_block::valid?) error finding previous slow block: #{prev_block_index} for current block: #{@index}" if _prev_block.nil? 
       prev_block = _prev_block.not_nil!.as(SlowBlock)
        
       raise "Invalid Previous Slow Block Hash: for current index: #{@index} the slow block prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
@@ -168,8 +156,7 @@ module ::Axentro::Core
         raise "Index Mismatch: the current block index: #{@index} should match the lastest slow block index: #{latest_slow_index}" if @index != latest_slow_index
 
         difficulty_for_block = block_difficulty(blockchain)
-        # difficulty_for_block = prev_block.index == 0 ? @difficulty : difficulty_for_block
-
+ 
       if @difficulty > 0
         if @difficulty != difficulty_for_block
           raise "Invalid difficulty: " + "(expected #{difficulty_for_block} but got #{@difficulty})"
