@@ -193,12 +193,12 @@ module ::Axentro::Core
       nil
     end
 
-    def valid_block?(block : SlowBlock | FastBlock, skip_transactions : Bool = false) : SlowBlock? | FastBlock?
+    def valid_block?(block : SlowBlock | FastBlock, skip_transactions : Bool = false, as_latest : Bool = true) : SlowBlock? | FastBlock?
       case block
       when SlowBlock
-        return block if block.valid?(self, skip_transactions)
+        return block if block.valid?(self, skip_transactions, as_latest)
       when FastBlock
-        return block if block.valid?(self, skip_transactions)
+        return block if block.valid?(self, skip_transactions, as_latest)
       end
       nil
     end

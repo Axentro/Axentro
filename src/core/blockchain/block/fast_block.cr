@@ -183,8 +183,6 @@ module ::Axentro::Core
               "(timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
       end
  
-      raise "Fast Invalid Nonce: #{@nonce} for difficulty #{@difficulty}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
-      
       merkle_tree_root = calculate_merkle_tree_root
 
       if merkle_tree_root != @merkle_tree_root
@@ -192,7 +190,7 @@ module ::Axentro::Core
       end
 
       if as_latest
-        latest_slow_index = blockchain.get_latest_index_for_fast
+        latest_fast_index = blockchain.get_latest_index_for_fast
         raise "Fast Index Mismatch: the current block index: #{@index} should match the lastest fast block index: #{latest_fast_index}" if @index != latest_fast_index
       end
 

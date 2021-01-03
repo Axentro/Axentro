@@ -201,10 +201,18 @@ module ::Axentro::Core
     end
 
     private def reject_block(rejected_block : SlowBlock, latest_slow : SlowBlock, same : SlowBlock, reason : RejectBlockReason, socket : HTTP::WebSocket? = nil)
-      if predecessor = @chord.find_predecessor?
-        warning "sending rejected block #{rejected_block.index} to predecessor"
+      s = if _socket = socket
+        _socket
+      elsif predecessor = @chord.find_predecessor?
+        predecessor[:socket]
+      elsif successor = @chord.find_successor?
+        successor[:socket]
+      end
+      
+      if _s = s
+        warning "sending rejected block #{rejected_block.index} to successor"
         send(
-          predecessor[:socket],
+          _s,
           M_TYPE_NODE_REJECT_BLOCK,
           {
             reason:   reason,
@@ -217,6 +225,24 @@ module ::Axentro::Core
         warning "wanted to tell peer about rejected block #{rejected_block.index} but no peer found"
       end
     end
+
+    # private def reject_block(rejected_block : SlowBlock, latest_slow : SlowBlock, same : SlowBlock, reason : RejectBlockReason, socket : HTTP::WebSocket? = nil)
+    #   if predecessor = @chord.find_predecessor?
+    #     warning "sending rejected block #{rejected_block.index} to predecessor"
+    #     send(
+    #       predecessor[:socket],
+    #       M_TYPE_NODE_REJECT_BLOCK,
+    #       {
+    #         reason:   reason,
+    #         rejected: rejected_block,
+    #         latest:   latest_slow,
+    #         same: same # this is the local copy of the block that was rejected for double checking
+    #       }
+    #     )
+    #   else
+    #     warning "wanted to tell peer about rejected block #{rejected_block.index} but no peer found"
+    #   end
+    # end
 
     private def sync_transactions(socket : HTTP::WebSocket? = nil)
       info "start synching transactions"
@@ -524,6 +550,10 @@ module ::Axentro::Core
 
     private def execute_create(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, same : SlowBlock, from : Chord::NodeContext?)
       info "received block: #{block.index} from peer that I don't have in my db"
+      random_secs = Random.rand(30)
+      warning "++++++++++++ sleeping #{random_secs} seconds before sending to try to cause chaos....."
+      sleep(Time::Span.new(seconds: random_secs))
+      warning "++++++++++++ finished sleeping"
       if _block = @blockchain.valid_block?(block)
         info "received block: #{_block.index} was valid so sending onwards and storing in my db"
         send_block(block, from)
@@ -865,7 +895,8 @@ module ::Axentro::Core
       previous_local_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
       previous_local_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
 
-      if @blockchain.replace_mixed_chain(_remote_chain)
+      has_replaced = @blockchain.replace_mixed_chain(_remote_chain)
+      if has_replaced
         latest_local_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
         latest_local_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
 
@@ -883,6 +914,13 @@ module ::Axentro::Core
       info "checking if still need to sync: slow #{light_yellow(latest_local_slow_index)}/#{light_blue(@sync_slow_blocks_target_index)} fast #{light_yellow(latest_local_fast_index)}/#{light_blue(@sync_fast_blocks_target_index)}"
       if latest_local_slow_index < @sync_slow_blocks_target_index || latest_local_fast_index < @sync_fast_blocks_target_index
         info "continue syncing chain with slow: #{latest_local_slow_index} fast: #{latest_local_fast_index}"
+
+        # if the replace mixed chain failed - the most common is invalid prev hash so to cover this case go back an extra slow block
+        if !has_replaced
+          warning "failed to replace mixed chain at: #{latest_local_slow_index} so dropping back an extra slow block to #{latest_local_slow_index-2} and trying again"
+          latest_local_slow_index = latest_local_slow_index - 2
+        end
+
         send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_slow_index: latest_local_slow_index, chunk_size: chunk_size, start_fast_index: latest_local_fast_index})
       else
         info "chain fully synced so moving on to transaction syncing"
@@ -919,7 +957,8 @@ module ::Axentro::Core
 
     private def reject_old(socket, rejected_block, latest_local_slow, latest_local_fast_index)
       # slow and fast indices have to be in sync in terms of chronological order
-      slow_index = @blockchain.database.lowest_slow_index_after_slow_block(rejected_block.index) || latest_local_slow.index
+      # the most common issue is invalid prev hash so we drop back an extra slow block for syncing to cover this issue
+      slow_index = @blockchain.database.lowest_slow_index_after_slow_block(rejected_block.index - 2) || latest_local_slow.index
       fast_index = @blockchain.database.lowest_fast_index_after_slow_block(slow_index) || latest_local_fast_index
       sync_chain_from_point(slow_index, fast_index, socket)
     end
@@ -930,8 +969,8 @@ module ::Axentro::Core
       if local_same_block
         _local_same = local_same_block.not_nil!
         if _local_same.index == remote_same_block.index
-          if _local_same == remote_same_block
-            info "the rejected block I have locally is the same as the one returned by the peer - so all is well - false rejection - doing nothing"
+          if _local_same.to_hash == remote_same_block.to_hash
+            info "the rejected block #{rejected_block.index} I have locally is the same as the one returned by the peer - so all is well - false rejection - doing nothing"
           else
             warning "the rejected block #{rejected_block.index} in my local is different to the one returned by the peer so syncing"
             reject_old(socket, rejected_block, latest_local_slow, latest_local_fast_index)
