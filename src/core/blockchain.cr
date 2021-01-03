@@ -222,7 +222,10 @@ module ::Axentro::Core
       target_index = @chain.index { |b| b.index == block.index }
       if target_index
         @chain[target_index] = block
-        @database.replace_block(block)
+        # validate during replace block
+        @database.delete_block(block.index)
+        block.valid?(self)
+        @database.push_block(block)
       else
         warning "replacement block location not found in local chain"
       end
@@ -330,15 +333,17 @@ module ::Axentro::Core
       chain.not_nil!.sort_by(&.timestamp).each do |block|
         index = block.index
 
+        target_index = @chain.index { |b| b.index == index }
+        target_index ? (@chain[target_index] = block) : @chain << block
+
+        @database.delete_block(block.index)
         # running the valid block test only on a subset of blocks for speed on sync
         if (indexes_for_validity_checking.size == 0) || indexes_for_validity_checking.includes?(index)
           debug "doing valid check on block #{index}"
-          block.valid?(self)
+          block.valid?(self, false, true)
         end
 
-        target_index = @chain.index { |b| b.index == index }
-        target_index ? (@chain[target_index] = block) : @chain << block
-        @database.replace_block(block)
+        @database.push_block(block)
 
         progress "block ##{index} was synced", index, chain.not_nil!.map(&.index).max
 

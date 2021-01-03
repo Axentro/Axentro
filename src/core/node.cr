@@ -200,25 +200,6 @@ module ::Axentro::Core
       @blockchain.has_no_blocks? ? 0_i64 : (@blockchain.latest_fast_block || @blockchain.get_genesis_block).index
     end
 
-    # private def tell_peer_to_sync_chain(socket : HTTP::WebSocket? = nil)
-    #   if predecessor = @chord.find_predecessor?
-    #     latest_slow_index = get_latest_slow_index
-    #     latest_fast_index = get_latest_fast_index
-    #     warning "telling peer to sync chain (slow) at index #{latest_slow_index}"
-    #     warning "telling peer to sync chain (fast) at index #{latest_fast_index}"
-    #     send(
-    #       predecessor[:socket],
-    #       M_TYPE_NODE_ASK_REQUEST_CHAIN,
-    #       {
-    #         latest_slow_index: latest_slow_index,
-    #         latest_fast_index: latest_fast_index,
-    #       }
-    #     )
-    #   else
-    #     warning "wanted to tell peer to sync chain but no peer found"
-    #   end
-    # end
-
     private def reject_block(rejected_block : SlowBlock, latest_slow : SlowBlock, reason : RejectBlockReason, socket : HTTP::WebSocket? = nil)
       if predecessor = @chord.find_predecessor?
         warning "sending rejected block #{rejected_block.index} to predecessor"
@@ -549,11 +530,10 @@ module ::Axentro::Core
         new_block(_block)
         info "#{magenta("NEW SLOW BLOCK broadcasted")}: #{light_green(_block.index)} at difficulty: #{light_cyan(_block.difficulty)}"
       end
-
     rescue e : Exception
-        warning "received block: #{block.index} from peer that I don't have in my db was invalid - so rejecting block"
-        warning "error was: #{e.message || "unknown error"}"
-        execute_reject(socket, block, latest_slow, RejectBlockReason::INVALID, from)
+      warning "received block: #{block.index} from peer that I don't have in my db was invalid - so rejecting block"
+      warning "error was: #{e.message || "unknown error"}"
+      execute_reject(socket, block, latest_slow, RejectBlockReason::INVALID, from)
     end
 
     private def execute_replace(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, from : Chord::NodeContext?)
@@ -563,17 +543,18 @@ module ::Axentro::Core
       warning "current local block merkle_tree_root #{latest_slow.merkle_tree_root}"
       warning "arriving block merkle_tree_root #{block.merkle_tree_root}"
 
+      # don't check transactions here as will fail since they already exist in the existing block
       if _block = @blockchain.valid_block?(block, true, true)
         send_block(block, from)
-        warning "arriving block passes validity checks, making the arriving block our local latest"
+        warning "arriving block #{_block.index} passes validity checks, making the arriving block our local latest - and sending block onwards"
+        # replace here does check the transactions lower down
         @blockchain.replace_with_block_from_peer(_block)
         @miners_manager.forget_most_difficult
       end
-
     rescue e : Exception
-        warning "arriving block #{block.index} failed validity check, we can't make it our local latest - so rejecting block"
-        warning "error was: #{e.message || "unknown error"}"
-        execute_reject(socket, block, latest_slow, RejectBlockReason::INVALID, from)
+      warning "arriving block #{block.index} failed validity check, we can't make it our local latest - so rejecting block"
+      warning "error was: #{e.message || "unknown error"}"
+      execute_reject(socket, block, latest_slow, RejectBlockReason::INVALID, from)
     end
 
     private def execute_reject(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, reason : RejectBlockReason, from : Chord::NodeContext?)
@@ -597,65 +578,6 @@ module ::Axentro::Core
       sync_chain(socket, false)
       send_block(block, from)
     end
-
-    # private def execute_sync_peer(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext?)
-    #   warning "slow: received old block, will be ignored - asking peer to sync"
-    #   send_block(block, from)
-    #   tell_peer_to_sync_chain(socket)
-    # end
-
-    # private def broadcast_slow_block2(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
-    #   debug "Block was received from a peer node"
-    #   block.to_s
-    #   most_recent_minted_block = @blockchain.latest_slow_block
-    #   if @blockchain.get_latest_index_for_slow == block.index
-    #     debug "slow: currently pending slow index is the same as the arriving block from a peer"
-    #     debug "slow: sending new block on to peer"
-    #     send_block(block, from)
-    #     debug "slow: finished sending new block on to peer"
-    #     if _block = @blockchain.valid_block?(block)
-    #       @miners_manager.forget_most_difficult if block.is_slow_block?
-    #       debug "slow: about to create the new block locally"
-    #       new_block(_block)
-    #       info "#{magenta("NEW SLOW BLOCK broadcasted")}: #{light_green(_block.index)} at difficulty: #{light_cyan(_block.difficulty)}"
-    #     end
-    #   elsif most_recent_minted_block.index == block.index
-    #     debug "slow: latest slow block index is the same as the arriving block from a peer"
-    #     warning "slow: blockchain conflicted at #{block.index} (#{light_cyan(most_recent_minted_block.index)})"
-    #     warning "slow: current local block timestamp: #{most_recent_minted_block.timestamp}"
-    #     warning "slow: arriving block timestamp: #{block.timestamp}"
-    #     @conflicted_slow_index ||= block.index
-    #     if most_recent_minted_block.timestamp == block.timestamp
-    #       warning "conflicting blocks were minted in the exact same millisecond.. we'll need to figure out a resolution for this"
-    #       warning " .. right now we'll not be forwarding the arriving block and hold the local block as valid"
-    #     elsif most_recent_minted_block.timestamp < block.timestamp
-    #       warning "slow: local block's timestamp indicates it was minted earlier than arriving block .. not forwarding arriving block to other nodes"
-    #     elsif block.timestamp < most_recent_minted_block.timestamp
-    #       warning "slow: arriving block's timestamp indicates it was minted earlier than latest local block"
-    #       warning "current local block merkle_tree_root #{most_recent_minted_block.merkle_tree_root}"
-    #       warning "arriving block merkle_tree_root #{block.merkle_tree_root}"
-    #       send_block(block, from)
-    #       if _block = @blockchain.valid_block?(block, true, true)
-    #         warning "arriving block passes validity checks, making the arriving block our local latest"
-    #         @blockchain.replace_with_block_from_peer(_block)
-    #         @miners_manager.forget_most_difficult
-    #       else
-    #         warning "arriving block failed validity check, we can't make it our local latest"
-    #       end
-    #     end
-    #   elsif @blockchain.get_latest_index_for_slow < block.index
-    #     debug "slow: currently pending slow index is the less than the index of arriving block from a peer"
-    #     warning "slow: require new chain: #{@blockchain.latest_slow_block.index} for #{block.index}"
-    #     sync_chain(socket, false)
-    #     send_block(block, from)
-    #   else
-    #     warning "slow: received old block, will be ignored"
-    #     send_block(block, from)
-    #     tell_peer_to_sync_chain(socket)
-    #   end
-    # rescue e : Exception
-    #   error e.message.not_nil!
-    # end
 
     def fast_block_was_signed_by_official_fast_node?(block : FastBlock) : Bool
       debug "verifying fast block was signed by official fast node"
@@ -967,24 +889,6 @@ module ::Axentro::Core
         end
       end
     end
-
-    # private def _ask_request_chain(socket, _content)
-    #   _m_content = MContentNodeAskRequestChain.from_json(_content)
-
-    #   remote_slow_index = _m_content.latest_slow_index
-    #   remote_fast_index = _m_content.latest_fast_index
-
-    #   local_slow_index = @blockchain.latest_slow_block.index
-    #   local_fast_index = @blockchain.latest_fast_block_index_or_zero
-
-    #   verbose "requested new chain"
-    #   verbose "slow requested: #{remote_slow_index}, yours #{local_slow_index}"
-    #   verbose "fast requested: #{remote_fast_index}, yours #{local_fast_index}"
-
-    #   if ((remote_slow_index > local_slow_index) || (remote_fast_index > local_fast_index))
-    #     sync_chain(socket, false)
-    #   end
-    # end
 
     private def _receive_reject_block(socket, _content)
       _m_content = MContentNodeRejectBlock.from_json(_content)
