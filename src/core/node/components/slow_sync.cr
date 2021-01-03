@@ -32,6 +32,7 @@ module ::Axentro::Core::NodeComponents
     def initialize(@slow_index, @fast_index); end
   end
 
+
   class SlowSyncReject
     def initialize(@reason : RejectBlockReason, @rejected_block : SlowBlock, @latest_remote_slow : SlowBlock, @latest_local_slow : SlowBlock, @latest_local_fast_index : Int64, @database : Database); end
 
@@ -44,13 +45,11 @@ module ::Axentro::Core::NodeComponents
   end
 
   class SlowSync
-    def initialize(@incoming_block : SlowBlock, @mining_block : SlowBlock, @database : Database, @latest_slow : SlowBlock); end
+    def initialize(@incoming_block : SlowBlock, @mining_block : SlowBlock, @has_block : SlowBlock?, @latest_slow : SlowBlock); end
 
     def process : SlowSyncState
-      has_block = @database.get_block(@incoming_block.index)
-
-      if has_block
-        already_in_db(has_block.not_nil!.as(SlowBlock))
+      if @has_block
+        already_in_db(@has_block.not_nil!.as(SlowBlock))
       else
         not_in_db
       end

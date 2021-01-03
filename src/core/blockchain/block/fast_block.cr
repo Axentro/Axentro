@@ -118,6 +118,10 @@ module ::Axentro::Core
       vt
     end
 
+    def valid_as_historic?(blockchain : Blockchain) : Bool
+      true
+    end
+
     # ameba:disable Metrics/CyclomaticComplexity
     def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool, doing_replace : Bool) : Bool
       valid_signature = KeyUtils.verify_signature(@hash, @signature, @public_key)

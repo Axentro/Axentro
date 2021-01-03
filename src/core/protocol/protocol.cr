@@ -339,6 +339,7 @@ module ::Axentro::Core::Protocol
     property reason : RejectBlockReason
     property rejected : SlowBlock
     property latest : SlowBlock
+    property same : SlowBlock
   end
 
   ######################################

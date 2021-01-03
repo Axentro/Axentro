@@ -193,12 +193,12 @@ module ::Axentro::Core
       nil
     end
 
-    def valid_block?(block : SlowBlock | FastBlock, skip_transactions : Bool = false, doing_replace : Bool = false) : SlowBlock? | FastBlock?
+    def valid_block?(block : SlowBlock | FastBlock, skip_transactions : Bool = false) : SlowBlock? | FastBlock?
       case block
       when SlowBlock
-        return block if block.valid?(self, skip_transactions, doing_replace)
+        return block if block.valid?(self, skip_transactions)
       when FastBlock
-        return block if block.valid?(self, skip_transactions, doing_replace)
+        return block if block.valid?(self, skip_transactions)
       end
       nil
     end
@@ -224,7 +224,7 @@ module ::Axentro::Core
         @chain[target_index] = block
         # validate during replace block
         @database.delete_block(block.index)
-        block.valid?(self)
+        block.valid?(self, false, false)
         @database.push_block(block)
       else
         warning "replacement block location not found in local chain"
@@ -338,10 +338,13 @@ module ::Axentro::Core
 
         @database.delete_block(block.index)
         # running the valid block test only on a subset of blocks for speed on sync
-        if (indexes_for_validity_checking.size == 0) || indexes_for_validity_checking.includes?(index)
-          debug "doing valid check on block #{index}"
-          block.valid?(self, false, true)
-        end
+        # if (indexes_for_validity_checking.size == 0) || indexes_for_validity_checking.includes?(index)
+        #   debug "doing valid check on block #{index}"
+        #   block.valid?(self, false, true)
+        # end
+
+        # this valid check is historic and not as latest block
+        block.valid?(self, true, false)
 
         @database.push_block(block)
 

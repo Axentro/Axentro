@@ -200,7 +200,7 @@ module ::Axentro::Core
       @blockchain.has_no_blocks? ? 0_i64 : (@blockchain.latest_fast_block || @blockchain.get_genesis_block).index
     end
 
-    private def reject_block(rejected_block : SlowBlock, latest_slow : SlowBlock, reason : RejectBlockReason, socket : HTTP::WebSocket? = nil)
+    private def reject_block(rejected_block : SlowBlock, latest_slow : SlowBlock, same : SlowBlock, reason : RejectBlockReason, socket : HTTP::WebSocket? = nil)
       if predecessor = @chord.find_predecessor?
         warning "sending rejected block #{rejected_block.index} to predecessor"
         send(
@@ -210,6 +210,7 @@ module ::Axentro::Core
             reason:   reason,
             rejected: rejected_block,
             latest:   latest_slow,
+            same: same # this is the local copy of the block that was rejected for double checking
           }
         )
       else
@@ -493,18 +494,20 @@ module ::Axentro::Core
 
     private def broadcast_slow_block(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
       latest_slow = get_latest_slow_from_db
-      slow_sync = SlowSync.new(block, @blockchain.mining_block, @blockchain.database, latest_slow)
+      has_block = @blockchain.database.get_block(block.index)
+      same = (has_block || latest_slow).as(SlowBlock)
+      slow_sync = SlowSync.new(block, @blockchain.mining_block, (has_block.nil? ? nil : has_block.not_nil!.as(SlowBlock)), latest_slow)
       state = slow_sync.process
 
       case state
       when SlowSyncState::CREATE
-        execute_create(socket, block, latest_slow, from)
+        execute_create(socket, block, latest_slow, same, from)
       when SlowSyncState::REPLACE
-        execute_replace(socket, block, latest_slow, from)
+        execute_replace(socket, block, latest_slow, same, from)
       when SlowSyncState::REJECT_OLD
-        execute_reject(socket, block, latest_slow, RejectBlockReason::OLD, from)
+        execute_reject(socket, block, latest_slow, same, RejectBlockReason::OLD, from)
       when SlowSyncState::REJECT_VERY_OLD
-        execute_reject(socket, block, latest_slow, RejectBlockReason::VERY_OLD, from)
+        execute_reject(socket, block, latest_slow, same, RejectBlockReason::VERY_OLD, from)
       when SlowSyncState::SYNC
         execute_sync(socket, block, latest_slow, from)
       else
@@ -519,7 +522,7 @@ module ::Axentro::Core
       blocks.size > 0 ? blocks.first.as(SlowBlock) : raise "Node::get_latest_slow_from_db: no slow blocks found in database"
     end
 
-    private def execute_create(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, from : Chord::NodeContext?)
+    private def execute_create(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, same : SlowBlock, from : Chord::NodeContext?)
       info "received block: #{block.index} from peer that I don't have in my db"
       if _block = @blockchain.valid_block?(block)
         info "received block: #{_block.index} was valid so sending onwards and storing in my db"
@@ -533,10 +536,10 @@ module ::Axentro::Core
     rescue e : Exception
       warning "received block: #{block.index} from peer that I don't have in my db was invalid - so rejecting block"
       warning "error was: #{e.message || "unknown error"}"
-      execute_reject(socket, block, latest_slow, RejectBlockReason::INVALID, from)
+      execute_reject(socket, block, latest_slow, same, RejectBlockReason::INVALID, from)
     end
 
-    private def execute_replace(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, from : Chord::NodeContext?)
+    private def execute_replace(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, same : SlowBlock, from : Chord::NodeContext?)
       warning "slow: blockchain conflicted at incoming #{block.index} and local (#{light_cyan(latest_slow.index)})"
       warning "slow: local timestamp: #{latest_slow.timestamp}, arriving block timestamp: #{block.timestamp}"
       warning "slow: arriving block's timestamp indicates it was minted earlier than latest local block"
@@ -544,7 +547,7 @@ module ::Axentro::Core
       warning "arriving block merkle_tree_root #{block.merkle_tree_root}"
 
       # don't check transactions here as will fail since they already exist in the existing block
-      if _block = @blockchain.valid_block?(block, true, true)
+      if _block = @blockchain.valid_block?(block, true)
         send_block(block, from)
         warning "arriving block #{_block.index} passes validity checks, making the arriving block our local latest - and sending block onwards"
         # replace here does check the transactions lower down
@@ -554,20 +557,20 @@ module ::Axentro::Core
     rescue e : Exception
       warning "arriving block #{block.index} failed validity check, we can't make it our local latest - so rejecting block"
       warning "error was: #{e.message || "unknown error"}"
-      execute_reject(socket, block, latest_slow, RejectBlockReason::INVALID, from)
+      execute_reject(socket, block, latest_slow, same, RejectBlockReason::INVALID, from)
     end
 
-    private def execute_reject(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, reason : RejectBlockReason, from : Chord::NodeContext?)
+    private def execute_reject(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, same : SlowBlock, reason : RejectBlockReason, from : Chord::NodeContext?)
       case reason
       when RejectBlockReason::OLD
         warning "keeping our local block: #{latest_slow.index} and rejecting the block: #{block.index} because local one was minted first"
-        reject_block(block, latest_slow, reason, socket)
+        reject_block(block, latest_slow, same, reason, socket)
       when RejectBlockReason::VERY_OLD
         warning "rejecting very old block: #{block.index} because local latest is: #{latest_slow.index}"
-        reject_block(block, latest_slow, reason, socket)
+        reject_block(block, latest_slow, same, reason, socket)
       when RejectBlockReason::INVALID
         warning "rejecting block #{block.index} because it was invalid"
-        reject_block(block, latest_slow, reason, socket)
+        reject_block(block, latest_slow, same, reason, socket)
       else
         warning "unknown rejection reason #{reason} - so ignoring it"
       end
@@ -896,15 +899,53 @@ module ::Axentro::Core
       reason = _m_content.reason
       rejected_block = _m_content.rejected
       latest_remote_slow = _m_content.latest
+      remote_same_block = _m_content.same
       latest_local_slow = @blockchain.latest_slow_block
       latest_local_fast_index = database.highest_index_of_kind(BlockKind::FAST)
 
-      slow_sync_reject = SlowSyncReject.new(reason, rejected_block, latest_remote_slow, latest_local_slow, latest_local_fast_index, @blockchain.database)
-      indices = slow_sync_reject.process
+      case reason
+      when RejectBlockReason::OLD
+        reject_old(socket, rejected_block, latest_local_slow, latest_local_fast_index)
+      when RejectBlockReason::VERY_OLD
+        reject_check_and_sync(socket, rejected_block, remote_same_block, latest_local_slow, latest_local_fast_index)
+      when RejectBlockReason::INVALID
+        reject_check_and_sync(socket, rejected_block, remote_same_block, latest_local_slow, latest_local_fast_index)
+      else
+        warning "unknown reason in _receive_reject_block: #{reason} - ignoring"
+      end  
 
-      sync_chain_from_point(indices.slow_index, indices.fast_index, socket)
     end
 
+    private def reject_old(socket, rejected_block, latest_local_slow, latest_local_fast_index)
+      # slow and fast indices have to be in sync in terms of chronological order
+      slow_index = @blockchain.database.lowest_slow_index_after_slow_block(rejected_block.index) || latest_local_slow.index
+      fast_index = @blockchain.database.lowest_fast_index_after_slow_block(slow_index) || latest_local_fast_index
+      sync_chain_from_point(slow_index, fast_index, socket)
+    end
+
+    private def reject_check_and_sync(socket, rejected_block, remote_same_block, latest_local_slow, latest_local_fast_index)
+      local_same_block = @blockchain.database.get_block(rejected_block.index)
+      # if we have the rejected block locally - double check it against the one sent in the rejection 
+      if local_same_block
+        _local_same = local_same_block.not_nil!
+        if _local_same.index == remote_same_block.index
+          if _local_same == remote_same_block
+            info "the rejected block I have locally is the same as the one returned by the peer - so all is well - false rejection - doing nothing"
+          else
+            warning "the rejected block #{rejected_block.index} in my local is different to the one returned by the peer so syncing"
+            reject_old(socket, rejected_block, latest_local_slow, latest_local_fast_index)
+          end
+        else
+          warning "the rejected block #{rejected_block.index} was not found at the peer - instead they sent us: #{remote_same_block.index} - syncing"
+          reject_old(socket, rejected_block, latest_local_slow, latest_local_fast_index)
+        end
+      else
+        warning "very old block #{rejected_block.index} received from peer was not in our local db - syncing"
+        reject_old(socket, rejected_block, latest_local_slow, latest_local_fast_index)
+      end
+    end
+
+ 
     private def _request_transactions(socket, _content)
       MContentNodeRequestTransactions.from_json(_content)
 

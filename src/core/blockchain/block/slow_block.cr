@@ -86,10 +86,10 @@ module ::Axentro::Core
       ripemd160(current_hashes[0])
     end
 
-    def valid?(blockchain : Blockchain, skip_transactions : Bool = false) : Bool
-      return valid_as_latest?(blockchain, skip_transactions) unless @index == 0
-      valid_as_genesis?
-    end
+    # def valid?(blockchain : Blockchain, skip_transactions : Bool = false) : Bool
+    #   return valid_as_latest?(blockchain, skip_transactions) unless @index == 0
+    #   valid_as_genesis?
+    # end
 
     def is_slow_block?
       @kind == BlockKind::SLOW
@@ -111,10 +111,10 @@ module ::Axentro::Core
       valid_nonce?(self.to_hash, @nonce, difficulty)
     end
 
-    def valid?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool
-      return valid_as_latest?(blockchain, skip_transactions, doing_replace) unless @index == 0
-      valid_as_genesis?
-    end
+    # def valid?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool
+    #   return valid_as_latest?(blockchain, skip_transactions, doing_replace) unless @index == 0
+    #   valid_as_genesis?
+    # end
 
     private def validate_transactions(transactions : Array(Transaction), blockchain : Blockchain) : ValidatedTransactions
       result = SlowTransactionPool.find_all(transactions)
@@ -130,8 +130,61 @@ module ::Axentro::Core
       vt
     end
 
+    # the only difference is latest index check, and difficulty check 
+    # maybe can check if the index is latest and apply those 2 checks and just have a single valid_as_latest?
+    def valid?(blockchain : Blockchain, skip_transactions : Bool = false, as_latest : Bool = true) : Bool
+      prev_block_index = @index - 2
+      _prev_block = blockchain.database.get_block(prev_block_index)
+
+      return valid_as_genesis? if @index == 0_i64
+      raise "error finding previous block: #{prev_block_index} for current block: #{@index}" if _prev_block.nil? 
+      prev_block = _prev_block.not_nil!.as(SlowBlock)
+       
+      raise "Invalid Previous Slow Block Hash: for current index: #{@index} the slow block prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
+
+      unless skip_transactions
+        vt = validate_transactions(transactions, blockchain)
+        raise vt.failed.first.reason if vt.failed.size != 0
+      end  
+
+      next_timestamp = __timestamp
+      prev_timestamp = prev_block.timestamp
+
+      if prev_timestamp > @timestamp || next_timestamp < @timestamp
+        raise "Invalid Timestamp: #{@timestamp} " +
+              "(timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
+      end
+ 
+      raise "Invalid Nonce: #{@nonce} for difficulty #{@difficulty}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
+      
+      merkle_tree_root = calculate_merkle_tree_root
+
+      if merkle_tree_root != @merkle_tree_root
+        raise "Invalid Merkle Tree Root: (expected #{@merkle_tree_root} but got #{merkle_tree_root})"
+      end
+
+      if as_latest
+        latest_slow_index = blockchain.get_latest_index_for_slow
+        raise "Index Mismatch: the current block index: #{@index} should match the lastest slow block index: #{latest_slow_index}" if @index != latest_slow_index
+
+        difficulty_for_block = block_difficulty(blockchain)
+        # difficulty_for_block = prev_block.index == 0 ? @difficulty : difficulty_for_block
+
+      if @difficulty > 0
+        if @difficulty != difficulty_for_block
+          raise "Invalid difficulty: " + "(expected #{difficulty_for_block} but got #{@difficulty})"
+        end
+      end
+      end
+
+      true
+    end
+
     # ameba:disable Metrics/CyclomaticComplexity
-    def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool
+    def valid_as_latest2?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool
+
+      puts "DOING_REPLACE: #{doing_replace}"
+
       if doing_replace
         prev_block = blockchain.latest_slow_block_when_replacing
         latest_slow_index = blockchain.get_latest_index_for_slow - 2
@@ -139,6 +192,8 @@ module ::Axentro::Core
         prev_block = blockchain.latest_slow_block
         latest_slow_index = blockchain.get_latest_index_for_slow
       end
+
+      puts "this: #{self.index}, prev_block: #{prev_block.index}, latest: #{latest_slow_index}"
 
       unless skip_transactions
         vt = validate_transactions(transactions, blockchain)
