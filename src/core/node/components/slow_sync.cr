@@ -25,24 +25,32 @@ module ::Axentro::Core::NodeComponents
     INVALID  # invalid for some reason
   end
 
-  struct RejectionSyncIndices
-    getter slow_index : Int64
-    getter fast_index : Int64
-
-    def initialize(@slow_index, @fast_index); end
+  struct RejectBlock
+    include JSON::Serializable
+    property reason : RejectBlockReason
+    property rejected : SlowBlock
+    property latest : SlowBlock
+    property same : SlowBlock
+    def initialize(@reason, @rejected, @latest, @same); end
   end
+#   struct RejectionSyncIndices
+#     getter slow_index : Int64
+#     getter fast_index : Int64
+
+#     def initialize(@slow_index, @fast_index); end
+#   end
 
 
-  class SlowSyncReject
-    def initialize(@reason : RejectBlockReason, @rejected_block : SlowBlock, @latest_remote_slow : SlowBlock, @latest_local_slow : SlowBlock, @latest_local_fast_index : Int64, @database : Database); end
+#   class SlowSyncReject
+#     def initialize(@reason : RejectBlockReason, @rejected_block : SlowBlock, @latest_remote_slow : SlowBlock, @latest_local_slow : SlowBlock, @latest_local_fast_index : Int64, @database : Database); end
 
-    def process : RejectionSyncIndices
-      # slow and fast indices have to be in sync in terms of chronological order
-      slow_index = @database.lowest_slow_index_after_slow_block(@rejected_block.index) || @latest_local_slow.index
-      fast_index = @database.lowest_fast_index_after_slow_block(slow_index) || @latest_local_fast_index
-      RejectionSyncIndices.new(slow_index, fast_index)
-    end
-  end
+#     def process : RejectionSyncIndices
+#       # slow and fast indices have to be in sync in terms of chronological order
+#       slow_index = @database.lowest_slow_index_after_slow_block(@rejected_block.index) || @latest_local_slow.index
+#       fast_index = @database.lowest_fast_index_after_slow_block(slow_index) || @latest_local_fast_index
+#       RejectionSyncIndices.new(slow_index, fast_index)
+#     end
+#   end
 
   class SlowSync
     def initialize(@incoming_block : SlowBlock, @mining_block : SlowBlock, @has_block : SlowBlock?, @latest_slow : SlowBlock); end

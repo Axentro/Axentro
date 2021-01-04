@@ -165,7 +165,7 @@ module ::Axentro::Core
 
       return valid_as_genesis? if @index == 0_i64
       raise "(fast_block::valid?) error finding fast previous block: #{prev_block_index} for current block: #{@index}" if _prev_block.nil? 
-      prev_block = _prev_block.not_nil!.as(SlowBlock)
+      prev_block = _prev_block.not_nil!.as(FastBlock)
        
       raise "Invalid Previous Fast Block Hash: for current index: #{@index} the fast block prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
 

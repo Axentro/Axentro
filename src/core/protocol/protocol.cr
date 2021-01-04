@@ -332,14 +332,22 @@ module ::Axentro::Core::Protocol
 
   M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS = 0x0118
 
-  M_TYPE_NODE_REJECT_BLOCK = 0x0119
+  # M_TYPE_NODE_RECEIVE_REJECT_BLOCK = 0x0119
 
-  struct MContentNodeRejectBlock
+  # struct MContentNodeReceiveRejectBlock
+  #   include JSON::Serializable
+  #   property reason : RejectBlockReason
+  #   property rejected : SlowBlock
+  #   property latest : SlowBlock
+  #   property same : SlowBlock
+  # end
+
+  M_TYPE_NODE_BROADCAST_REJECT_BLOCK = 0x0119
+
+  struct MContentNodeBroadcastRejectBlock
     include JSON::Serializable
-    property reason : RejectBlockReason
-    property rejected : SlowBlock
-    property latest : SlowBlock
-    property same : SlowBlock
+    property reject_block : RejectBlock
+    property from : Core::NodeComponents::Chord::NodeContext
   end
 
   ######################################
