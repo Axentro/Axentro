@@ -17,6 +17,13 @@ require "./blockchain/rewards/*"
 require "./dapps"
 
 module ::Axentro::Core
+
+  struct ReplaceBlocksResult
+    property index : Int64
+    property success : Bool
+    def initialize(@index, @success); end
+  end 
+
   class Blockchain
     TOKEN_DEFAULT = Core::DApps::BuildIn::UTXO::DEFAULT
 
@@ -193,12 +200,12 @@ module ::Axentro::Core
       nil
     end
 
-    def valid_block?(block : SlowBlock | FastBlock, skip_transactions : Bool = false, as_latest : Bool = true) : SlowBlock? | FastBlock?
+    def valid_block?(block : SlowBlock | FastBlock, skip_transactions : Bool = false, doing_replace : Bool = false) : SlowBlock? | FastBlock?
       case block
       when SlowBlock
-        return block if block.valid?(self, skip_transactions, as_latest)
+        return block if block.valid?(self, skip_transactions, doing_replace)
       when FastBlock
-        return block if block.valid?(self, skip_transactions, as_latest)
+        return block if block.valid?(self, skip_transactions, doing_replace)
       end
       nil
     end
@@ -225,7 +232,7 @@ module ::Axentro::Core
         # validate during replace block
         @database.delete_block(block.index)
         # check block is valid here - we are in replace to don't validate as latest
-        block.valid?(self, false, false)
+        block.valid?(self, false)
         @database.push_block(block)
       else
         warning "replacement block location not found in local chain"
@@ -267,7 +274,7 @@ module ::Axentro::Core
       trim_chain_in_memory
     end
 
-    def replace_mixed_chain(subchain : Chain?) : Bool
+    def replace_mixed_chain(subchain : Chain?) : ReplaceBlocksResult
       dapps_clear_record
       result = replace_mixed_blocks(subchain)
 
@@ -325,14 +332,19 @@ module ::Axentro::Core
       incoming_indices.shuffle.first(percentage_as_count)
     end
 
-    private def replace_mixed_blocks(chain)
-      return false if chain.nil?
-      result = true
-
+    private def replace_mixed_blocks(chain) : ReplaceBlocksResult
+      result = ReplaceBlocksResult.new(0_i64, true)
+      
+      if chain.nil?
+        result.success = false
+        return result
+      end
+      
       indexes_for_validity_checking = create_indexes_to_check(chain.not_nil!)
 
       chain.not_nil!.sort_by(&.timestamp).each do |block|
         index = block.index
+        result.index = index
 
         target_index = @chain.index { |b| b.index == index }
         target_index ? (@chain[target_index] = block) : @chain << block
@@ -342,7 +354,7 @@ module ::Axentro::Core
         if (indexes_for_validity_checking.size == 0) || indexes_for_validity_checking.includes?(index)
           debug "doing valid check on block #{index}"
           # this valid check is historic and not as latest block
-          block.valid?(self, true, false)
+          block.valid?(self, false, true)
         end
 
         @database.push_block(block)
@@ -354,7 +366,7 @@ module ::Axentro::Core
         error "found invalid block while syncing blocks at index #{index}.. deleting all blocks from invalid and up"
         error "the reason:"
         error e.message.not_nil!
-        result = false
+        result.success = false
         if index
           @database.delete_blocks(index)
           @chain.each_index { |i|
