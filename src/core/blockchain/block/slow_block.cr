@@ -145,10 +145,10 @@ module ::Axentro::Core
  
       raise "Invalid Nonce: #{@nonce} for difficulty #{@difficulty}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
       
-      difficulty_gap = (@difficulty - prev_block.difficulty).abs
-      unless difficulty_gap <= 2
-        raise "Invalid difficulty gap between previous block #{prev_block.index} and this block #{@index}, expected gap of no more than 2 but gap was: #{difficulty_gap}"
-      end
+      # difficulty_gap = (@difficulty - prev_block.difficulty).abs
+      # unless difficulty_gap <= 2
+      #   raise "Invalid difficulty gap between previous block #{prev_block.index} and this block #{@index}, expected gap of no more than 2 but gap was: #{difficulty_gap}"
+      # end
 
       merkle_tree_root = calculate_merkle_tree_root
 
