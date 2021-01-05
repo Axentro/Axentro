@@ -159,9 +159,9 @@ module ::Axentro::Core
       latest_slow_index = blockchain.get_latest_index_for_slow
       if doing_replace
         latest_slow_index = blockchain.get_latest_index_for_slow - 2
+      else
+        raise "Index Mismatch: the current block index: #{@index} should match the latest slow block index: #{latest_slow_index}" if @index != latest_slow_index
       end
-      raise "Index Mismatch: the current block index: #{@index} should match the latest slow block index: #{latest_slow_index}" if @index != latest_slow_index
-
       # if as_latest
       #   latest_slow_index = blockchain.get_latest_index_for_slow
       #   raise "Index Mismatch: the current block index: #{@index} should match the lastest slow block index: #{latest_slow_index}" if @index != latest_slow_index

@@ -358,6 +358,14 @@ module ::Axentro::Core
       end
     end
 
+    # def send_on_chord(message_type, content, from : Chord::NodeContext? = nil)
+    #   _all_nodes = @chord.find_all_nodes
+
+    #   _all_nodes.each do |context|
+    #     @chord.send_once(context[:host], context[:port], message_type, content)
+    #   end
+    # end
+
     def send_on_chord(message_type, content, from : Chord::NodeContext? = nil)
       _nodes = @chord.find_nodes
 
@@ -378,6 +386,27 @@ module ::Axentro::Core
         end
       end
     end
+
+    # def send_on_chord(message_type, content, from : Chord::NodeContext? = nil)
+    #   _nodes = @chord.find_nodes
+
+    #   if @is_private
+    #     if successor = _nodes[:successor]
+    #       prevent_self_connecting_case(message_type, content, from, successor)
+    #     end
+    #   else
+    #     _nodes[:private_nodes].each do |private_node|
+    #       next if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
+    #       send(private_node[:socket], message_type, content)
+    #     end
+
+    #     if successor = _nodes[:successor]
+    #       if successor[:context][:id] != content[:from][:id]
+    #         send(successor[:socket], message_type, content)
+    #       end
+    #     end
+    #   end
+    # end
 
     def send_transaction(transaction : Transaction, from : Chord::NodeContext? = nil)
       content = if from.nil? || (!from.nil? && from[:is_private])
@@ -579,6 +608,9 @@ module ::Axentro::Core
       end
     rescue e : Exception
       error (e.message || "broadcast_slow_block unknown error: #{e.inspect}")
+    ensure   
+      info "broadcast_slow_block sending block onwards"
+      send_block(block, from)
     end
 
     private def get_latest_slow_from_db : SlowBlock
@@ -592,9 +624,8 @@ module ::Axentro::Core
       warning "++++++++++++ sleeping #{random_secs} seconds before sending to try to cause chaos....."
       sleep(Time::Span.new(seconds: random_secs))
       warning "++++++++++++ finished sleeping"
-      if _block = @blockchain.valid_block?(block, false)
-        info "received block: #{_block.index} was valid so sending onwards and storing in my db"
-        send_block(block, from)
+      if _block = @blockchain.valid_block?(block, false, true)
+        info "received block: #{_block.index} was valid so storing in my db"
         debug "slow: finished sending new block on to peer"
         @miners_manager.forget_most_difficult
         debug "slow: about to create the new block locally"
@@ -604,7 +635,7 @@ module ::Axentro::Core
     rescue e : Exception
       warning "received block: #{block.index} from peer that I don't have in my db was invalid - so rejecting block"
       warning "error was: #{e.message || "unknown error"}"
-      execute_reject(socket, block, latest_slow, same, RejectBlockReason::INVALID, from)
+      execute_reject(socket, block, latest_slow, same, RejectBlockReason::INVALID, from)  
     end
 
     private def execute_replace(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, same : SlowBlock, from : Chord::NodeContext?)
@@ -617,8 +648,7 @@ module ::Axentro::Core
       # don't check transactions here as will fail since they already exist in the existing block
       # also don't check as lastest block here as we are doing a replace
       if _block = @blockchain.valid_block?(block, true, true)
-        send_block(block, from)
-        warning "arriving block #{_block.index} passes validity checks, making the arriving block our local latest - and sending block onwards"
+        warning "arriving block #{_block.index} passes validity checks, making the arriving block our local latest"
         # replace here does check the transactions lower down
         @blockchain.replace_with_block_from_peer(_block)
         @miners_manager.forget_most_difficult

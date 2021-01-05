@@ -418,6 +418,10 @@ module ::Axentro::Core::NodeComponents
       }
     end
 
+    def find_all_nodes : Set(NodeContext)
+      (@finger_table + @private_nodes.map(&.[:context]).to_set).reject{|ctx| ctx[:id] == context[:id] }
+    end
+
     def connect_to_successor(node, _context : NodeContext)
       if _context[:is_private]
         error "the connecting node is private"

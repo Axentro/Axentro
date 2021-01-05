@@ -232,7 +232,7 @@ module ::Axentro::Core
         # validate during replace block
         @database.delete_block(block.index)
         # check block is valid here - we are in replace to don't validate as latest
-        block.valid?(self, false)
+        block.valid?(self, false, true)
         @database.push_block(block)
       else
         warning "replacement block location not found in local chain"
