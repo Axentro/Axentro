@@ -17,12 +17,12 @@ require "./blockchain/rewards/*"
 require "./dapps"
 
 module ::Axentro::Core
-
   struct ReplaceBlocksResult
     property index : Int64
     property success : Bool
+
     def initialize(@index, @success); end
-  end 
+  end
 
   class Blockchain
     TOKEN_DEFAULT = Core::DApps::BuildIn::UTXO::DEFAULT
@@ -231,7 +231,7 @@ module ::Axentro::Core
         @chain[target_index] = block
         # validate during replace block
         @database.delete_block(block.index)
-        # check block is valid here - we are in replace to don't validate as latest
+        # check block is valid here - we are in replace
         block.valid?(self, false, true)
         @database.push_block(block)
       else
@@ -334,12 +334,12 @@ module ::Axentro::Core
 
     private def replace_mixed_blocks(chain) : ReplaceBlocksResult
       result = ReplaceBlocksResult.new(0_i64, true)
-      
+
       if chain.nil?
         result.success = false
         return result
       end
-      
+
       indexes_for_validity_checking = create_indexes_to_check(chain.not_nil!)
 
       chain.not_nil!.sort_by(&.timestamp).each do |block|

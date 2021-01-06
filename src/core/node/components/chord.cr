@@ -418,8 +418,18 @@ module ::Axentro::Core::NodeComponents
       }
     end
 
-    def find_all_nodes : Set(NodeContext)
-      (@finger_table + @private_nodes.map(&.[:context]).to_set).reject{|ctx| ctx[:id] == context[:id] }
+    def find_all_nodes : NamedTuple(private_nodes: Nodes, public_nodes: Set(NodeContext))
+      {
+        private_nodes: @private_nodes,
+        public_nodes:  @finger_table.reject { |ctx| ctx[:id] == context[:id] }.to_set,
+      }
+      # (@finger_table.to_a + @private_nodes.map(&.[:context])).reject{|ctx| ctx[:id] == context[:id] }.to_set.to_a
+
+      # remove myself from public nodes
+      # public = @finger_table.to_a.reject{|ctx| ctx[:id] == context[:id]}.to_set.to_a
+
+      # remove myself from
+
     end
 
     def connect_to_successor(node, _context : NodeContext)

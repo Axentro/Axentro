@@ -22,7 +22,6 @@ module ::Axentro::Core::NodeComponents
   enum RejectBlockReason
     OLD      # same index but local block is younger
     VERY_OLD # some old index
-    INVALID  # invalid for some reason
   end
 
   struct RejectBlock
@@ -31,6 +30,7 @@ module ::Axentro::Core::NodeComponents
     property rejected : SlowBlock | FastBlock
     property latest : SlowBlock
     property same : SlowBlock? | FastBlock?
+
     def initialize(@reason, @rejected, @latest, @same); end
   end
 
@@ -55,7 +55,7 @@ module ::Axentro::Core::NodeComponents
           # incoming is ahead of next in sequence
           SlowSyncState::SYNC
         else
-          # incoming is behind next in sequence
+          # incoming is behind next in sequence (can ignore this block)
           SlowSyncState::REJECT_VERY_OLD
         end
       end
@@ -68,11 +68,11 @@ module ::Axentro::Core::NodeComponents
           # incoming block is earlier then ours (take theirs)
           SlowSyncState::REPLACE
         elsif @incoming_block.timestamp > existing_block.timestamp
-          # incoming block is not as early as ours (keep ours & re-broadcast it)
+          # incoming block is not as early as ours (keep ours & ignore)
           SlowSyncState::REJECT_OLD
         else
+          # incoming block is exactly the same timestamp - take theirs
           SlowSyncState::REJECT_OLD
-          # incoming block is exactly the same timestamp - what to do here?
         end
       else
         # if incoming block is not latest in sequence
@@ -80,7 +80,7 @@ module ::Axentro::Core::NodeComponents
           # incoming block is ahead of our latest
           SlowSyncState::SYNC
         else
-          # incoming block is behind our latest
+          # incoming block is behind our latest (can ignore this block)
           SlowSyncState::REJECT_VERY_OLD
         end
       end

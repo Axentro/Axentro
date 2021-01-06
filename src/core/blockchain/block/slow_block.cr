@@ -125,15 +125,15 @@ module ::Axentro::Core
       _prev_block = blockchain.database.get_block(prev_block_index)
 
       return valid_as_genesis? if @index == 0_i64
-      raise "(slow_block::valid?) error finding previous slow block: #{prev_block_index} for current block: #{@index}" if _prev_block.nil? 
+      raise "(slow_block::valid?) error finding previous slow block: #{prev_block_index} for current block: #{@index}" if _prev_block.nil?
       prev_block = _prev_block.not_nil!.as(SlowBlock)
-       
+
       raise "Invalid Previous Slow Block Hash: for current index: #{@index} the slow block prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
 
       unless skip_transactions
         vt = validate_transactions(transactions, blockchain)
         raise vt.failed.first.reason if vt.failed.size != 0
-      end  
+      end
 
       next_timestamp = __timestamp
       prev_timestamp = prev_block.timestamp
@@ -142,9 +142,9 @@ module ::Axentro::Core
         raise "Invalid Timestamp: #{@timestamp} " +
               "(timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
       end
- 
+
       raise "Invalid Nonce: #{@nonce} for difficulty #{@difficulty}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
-      
+
       # difficulty_gap = (@difficulty - prev_block.difficulty).abs
       # unless difficulty_gap <= 2
       #   raise "Invalid difficulty gap between previous block #{prev_block.index} and this block #{@index}, expected gap of no more than 2 but gap was: #{difficulty_gap}"
@@ -167,14 +167,13 @@ module ::Axentro::Core
       #   raise "Index Mismatch: the current block index: #{@index} should match the lastest slow block index: #{latest_slow_index}" if @index != latest_slow_index
 
       #   difficulty_for_block = block_difficulty(blockchain)
- 
+
       # if @difficulty > 0
       #   if @difficulty != difficulty_for_block
       #     raise "Invalid difficulty: " + "(expected #{difficulty_for_block} but got #{@difficulty})"
       #   end
       # end
       # end
-     
 
       true
     end

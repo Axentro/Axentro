@@ -159,20 +159,20 @@ module ::Axentro::Core
     def valid?(blockchain : Blockchain, skip_transactions : Bool = false, as_latest : Bool = true) : Bool
       valid_signature = KeyUtils.verify_signature(@hash, @signature, @public_key)
       raise "Invalid Block Signature: the current block index: #{@index} has an invalid signature" unless valid_signature
-      
+
       prev_block_index = @index - 2
       _prev_block = blockchain.database.get_block(prev_block_index)
 
       return valid_as_genesis? if @index == 0_i64
-      raise "(fast_block::valid?) error finding fast previous block: #{prev_block_index} for current block: #{@index}" if _prev_block.nil? 
+      raise "(fast_block::valid?) error finding fast previous block: #{prev_block_index} for current block: #{@index}" if _prev_block.nil?
       prev_block = _prev_block.not_nil!.as(FastBlock)
-       
+
       raise "Invalid Previous Fast Block Hash: for current index: #{@index} the fast block prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
 
       unless skip_transactions
         vt = validate_transactions(transactions, blockchain)
         raise vt.failed.first.reason if vt.failed.size != 0
-      end  
+      end
 
       # Add an extra 30 seconds for latency when running fastnode on it's own node
       next_timestamp = __timestamp + 30000
@@ -182,7 +182,7 @@ module ::Axentro::Core
         raise "Fast Invalid Timestamp: #{@timestamp} " +
               "(timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
       end
- 
+
       merkle_tree_root = calculate_merkle_tree_root
 
       if merkle_tree_root != @merkle_tree_root
