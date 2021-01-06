@@ -360,24 +360,24 @@ module ::Axentro::Core
       end
     end
 
+    # def send_on_chord(message_type, content, from : Chord::NodeContext? = nil)
+    #   _all_nodes = @chord.find_all_nodes
+
+    #   # info "SEND ON CHORD: private: #{message_type} #{_all_nodes[:private_nodes].size}, public: #{_all_nodes[:public_nodes].size}"
+
+    #   _all_nodes[:private_nodes].each do |private_node|
+    #     next if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
+    #     # info "SEND on chord PRIVATE: #{private_node[:context][:host]}:#{private_node[:context][:port]}"
+    #     send(private_node[:socket], message_type, content)
+    #   end
+
+    #   _all_nodes[:public_nodes].each do |context|
+    #     # info "SEND on chord PUBLIC: #{context[:host]}:#{context[:port]}"
+    #     @chord.send_once(context[:host], context[:port], message_type, content)
+    #   end
+    # end
+
     def send_on_chord(message_type, content, from : Chord::NodeContext? = nil)
-      _all_nodes = @chord.find_all_nodes
-
-      # info "SEND ON CHORD: private: #{message_type} #{_all_nodes[:private_nodes].size}, public: #{_all_nodes[:public_nodes].size}"
-
-      _all_nodes[:private_nodes].each do |private_node|
-        next if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
-        # info "SEND on chord PRIVATE: #{private_node[:context][:host]}:#{private_node[:context][:port]}"
-        send(private_node[:socket], message_type, content)
-      end
-
-      _all_nodes[:public_nodes].each do |context|
-        # info "SEND on chord PUBLIC: #{context[:host]}:#{context[:port]}"
-        @chord.send_once(context[:host], context[:port], message_type, content)
-      end
-    end
-
-    def send_on_chord_to_successor(message_type, content, from : Chord::NodeContext? = nil)
       _nodes = @chord.find_nodes
 
       if @is_private
@@ -448,27 +448,27 @@ module ::Axentro::Core
 
       debug "new miner nonce coming: #{miner_nonce.value} from node: #{miner_nonce.node_id} for address: #{miner_nonce.address}"
 
-      # send_miner_nonce(miner_nonce, from)
-      send_miner_nonces_to_privates(miner_nonce, from)
+      send_miner_nonce(miner_nonce, from)
+      # send_miner_nonces_to_privates(miner_nonce, from)
       @blockchain.add_miner_nonce(miner_nonce)
     end
 
-    def send_miner_nonces_to_privates(miner_nonce : MinerNonce, from : Chord::NodeContext? = nil)
-      _all_nodes = @chord.find_all_nodes
-      message_type = M_TYPE_NODE_BROADCAST_MINER_NONCE
-      content = if from.nil? || (!from.nil? && from[:is_private])
-                  {nonce: miner_nonce, from: @chord.context}
-                else
-                  {nonce: miner_nonce, from: from}
-                end
+    # def send_miner_nonces_to_privates(miner_nonce : MinerNonce, from : Chord::NodeContext? = nil)
+    #   _all_nodes = @chord.find_all_nodes
+    #   message_type = M_TYPE_NODE_BROADCAST_MINER_NONCE
+    #   content = if from.nil? || (!from.nil? && from[:is_private])
+    #               {nonce: miner_nonce, from: @chord.context}
+    #             else
+    #               {nonce: miner_nonce, from: from}
+    #             end
 
-      # info "SEND ON CHORD: #{message_type}, private: #{_all_nodes[:private_nodes].size}}"
+    #   # info "SEND ON CHORD: #{message_type}, private: #{_all_nodes[:private_nodes].size}}"
 
-      _all_nodes[:private_nodes].each do |private_node|
-        # info "SEND miner nonce on chord PRIVATE: #{private_node[:context][:host]}:#{private_node[:context][:port]}"
-        send(private_node[:socket], message_type, content)
-      end
-    end
+    #   _all_nodes[:private_nodes].each do |private_node|
+    #     # info "SEND miner nonce on chord PRIVATE: #{private_node[:context][:host]}:#{private_node[:context][:port]}"
+    #     send(private_node[:socket], message_type, content)
+    #   end
+    # end
 
     def send_miner_nonce(miner_nonce : MinerNonce, from : Chord::NodeContext? = nil)
       content = if from.nil? || (!from.nil? && from[:is_private])
@@ -578,7 +578,7 @@ module ::Axentro::Core
                   {nodes: joined_nodes, from: from}
                 end
 
-      send_on_chord_to_successor(M_TYPE_CHORD_BROADCAST_NODE_JOINED, content, from)
+      send_on_chord(M_TYPE_CHORD_BROADCAST_NODE_JOINED, content, from)
     end
 
     # ----- blocks -----
@@ -596,18 +596,18 @@ module ::Axentro::Core
       debug "after send_on_chord.. exiting send_block"
     end
 
-    def send_block_to_privates(block : SlowBlock | FastBlock, from : Chord::NodeContext? = nil)
-      _all_nodes = @chord.find_all_nodes
-      message_type = M_TYPE_NODE_BROADCAST_BLOCK
-      content = if from.nil? || (!from.nil? && from[:is_private])
-                  {block: block, from: @chord.context}
-                else
-                  {block: block, from: from}
-                end
-      _all_nodes[:private_nodes].each do |private_node|
-        send(private_node[:socket], message_type, content)
-      end
-    end
+    # def send_block_to_privates(block : SlowBlock | FastBlock, from : Chord::NodeContext? = nil)
+    #   _all_nodes = @chord.find_all_nodes
+    #   message_type = M_TYPE_NODE_BROADCAST_BLOCK
+    #   content = if from.nil? || (!from.nil? && from[:is_private])
+    #               {block: block, from: @chord.context}
+    #             else
+    #               {block: block, from: from}
+    #             end
+    #   _all_nodes[:private_nodes].each do |private_node|
+    #     send(private_node[:socket], message_type, content)
+    #   end
+    # end
 
     def send_client_content(content : String, from : Chord::NodeContext? = nil)
       _content = if from.nil? || (!from.nil? && from[:is_private])
@@ -652,7 +652,8 @@ module ::Axentro::Core
       error (e.message || "broadcast_slow_block unknown error: #{e.inspect}")
     ensure 
        # send to any private nodes connected to my node
-       send_block_to_privates(block)
+      #  send_block_to_privates(block)
+      send_block(block, from)
     end
 
     private def get_latest_slow_from_db : SlowBlock
@@ -678,12 +679,7 @@ module ::Axentro::Core
 
     private def execute_create(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, latest_local_fast_index : Int64, from : Chord::NodeContext?)
       info "received block: #{block.index} from peer that I don't have in my db"
-  
-      # random_secs = Random.rand(30)
-      # warning "++++++++++++ sleeping #{random_secs} seconds before sending to try to cause chaos....."
-      # sleep(Time::Span.new(seconds: random_secs))
-      # warning "++++++++++++ finished sleeping"
-  
+
       if _block = @blockchain.valid_block?(block, false, true)
         info "received block: #{_block.index} was valid so storing in my db"
         debug "slow: finished sending new block on to peer"
