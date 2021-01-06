@@ -37,8 +37,6 @@ module ::Axentro::Core
     MAX_SYNC_RETRY = 20
     @sync_retry_count : Int32 = 0
 
-    @conflicted : Int64? = nil
-
     # child node gets this from parent on setup
     @sync_slow_blocks_target_index : Int64 = 0_i64
     @sync_fast_blocks_target_index : Int64 = 0_i64
@@ -195,11 +193,11 @@ module ::Axentro::Core
       end
     end
 
-    private def get_latest_slow_index : Int64
+    def get_latest_slow_index : Int64
       @blockchain.has_no_blocks? ? 0_i64 : @blockchain.latest_slow_block.index
     end
 
-    private def get_latest_fast_index : Int64
+    def get_latest_fast_index : Int64
       @blockchain.has_no_blocks? ? 0_i64 : (@blockchain.latest_fast_block || @blockchain.get_genesis_block).index
     end
 
@@ -328,8 +326,6 @@ module ::Axentro::Core
           _broadcast_transaction(socket, message_content)
         when M_TYPE_NODE_BROADCAST_BLOCK
           _broadcast_block(socket, message_content)
-          # when M_TYPE_NODE_BROADCAST_REJECT_BLOCK
-          #   _broadcast_reject_block(socket, message_content)
         when M_TYPE_NODE_REQUEST_TRANSACTIONS
           _request_transactions(socket, message_content)
         when M_TYPE_NODE_RECEIVE_TRANSACTIONS
@@ -360,23 +356,6 @@ module ::Axentro::Core
       end
     end
 
-    # def send_on_chord(message_type, content, from : Chord::NodeContext? = nil)
-    #   _all_nodes = @chord.find_all_nodes
-
-    #   # info "SEND ON CHORD: private: #{message_type} #{_all_nodes[:private_nodes].size}, public: #{_all_nodes[:public_nodes].size}"
-
-    #   _all_nodes[:private_nodes].each do |private_node|
-    #     next if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
-    #     # info "SEND on chord PRIVATE: #{private_node[:context][:host]}:#{private_node[:context][:port]}"
-    #     send(private_node[:socket], message_type, content)
-    #   end
-
-    #   _all_nodes[:public_nodes].each do |context|
-    #     # info "SEND on chord PUBLIC: #{context[:host]}:#{context[:port]}"
-    #     @chord.send_once(context[:host], context[:port], message_type, content)
-    #   end
-    # end
-
     def send_on_chord(message_type, content, from : Chord::NodeContext? = nil)
       _nodes = @chord.find_nodes
 
@@ -397,27 +376,6 @@ module ::Axentro::Core
         end
       end
     end
-
-    # def send_on_chord(message_type, content, from : Chord::NodeContext? = nil)
-    #   _nodes = @chord.find_nodes
-
-    #   if @is_private
-    #     if successor = _nodes[:successor]
-    #       prevent_self_connecting_case(message_type, content, from, successor)
-    #     end
-    #   else
-    #     _nodes[:private_nodes].each do |private_node|
-    #       next if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
-    #       send(private_node[:socket], message_type, content)
-    #     end
-
-    #     if successor = _nodes[:successor]
-    #       if successor[:context][:id] != content[:from][:id]
-    #         send(successor[:socket], message_type, content)
-    #       end
-    #     end
-    #   end
-    # end
 
     def send_transaction(transaction : Transaction, from : Chord::NodeContext? = nil)
       content = if from.nil? || (!from.nil? && from[:is_private])
@@ -449,26 +407,8 @@ module ::Axentro::Core
       debug "new miner nonce coming: #{miner_nonce.value} from node: #{miner_nonce.node_id} for address: #{miner_nonce.address}"
 
       send_miner_nonce(miner_nonce, from)
-      # send_miner_nonces_to_privates(miner_nonce, from)
       @blockchain.add_miner_nonce(miner_nonce)
     end
-
-    # def send_miner_nonces_to_privates(miner_nonce : MinerNonce, from : Chord::NodeContext? = nil)
-    #   _all_nodes = @chord.find_all_nodes
-    #   message_type = M_TYPE_NODE_BROADCAST_MINER_NONCE
-    #   content = if from.nil? || (!from.nil? && from[:is_private])
-    #               {nonce: miner_nonce, from: @chord.context}
-    #             else
-    #               {nonce: miner_nonce, from: from}
-    #             end
-
-    #   # info "SEND ON CHORD: #{message_type}, private: #{_all_nodes[:private_nodes].size}}"
-
-    #   _all_nodes[:private_nodes].each do |private_node|
-    #     # info "SEND miner nonce on chord PRIVATE: #{private_node[:context][:host]}:#{private_node[:context][:port]}"
-    #     send(private_node[:socket], message_type, content)
-    #   end
-    # end
 
     def send_miner_nonce(miner_nonce : MinerNonce, from : Chord::NodeContext? = nil)
       content = if from.nil? || (!from.nil? && from[:is_private])
@@ -479,87 +419,6 @@ module ::Axentro::Core
 
       send_on_chord(M_TYPE_NODE_BROADCAST_MINER_NONCE, content, from)
     end
-
-    # ----- reject block -----
-    # private def _broadcast_reject_block(socket, _content)
-    #   return unless @phase == SetupPhase::DONE
-
-    #   _m_content = MContentNodeBroadcastRejectBlock.from_json(_content)
-
-    #   reject_block = _m_content.reject_block
-    #   from = _m_content.from
-
-    #   reason = reject_block.reason
-    #   rejected_block = reject_block.rejected
-    #   latest_remote_slow = reject_block.latest
-    #   remote_same_block = reject_block.same
-    #   latest_local_slow = @blockchain.latest_slow_block
-    #   latest_local_fast_index = database.highest_index_of_kind(BlockKind::FAST)
-
-    #   case reason
-    #   when RejectBlockReason::OLD
-    #     reject_old(socket, rejected_block, latest_local_slow, latest_local_fast_index)
-    #   when RejectBlockReason::VERY_OLD
-    #     reject_check_and_sync(socket, rejected_block, remote_same_block, latest_local_slow, latest_local_fast_index)
-    #   when RejectBlockReason::INVALID
-    #     reject_check_and_sync(socket, rejected_block, remote_same_block, latest_local_slow, latest_local_fast_index)
-    #   else
-    #     warning "unknown reason in _broadcast_reject_block: #{reason} - ignoring"
-    #   end
-
-    #   reject_block(reject_block, from)
-    # end
-
-    # def reject_block(block_reject : RejectBlock, from : Chord::NodeContext? = nil)
-    #   content = if from.nil? || (!from.nil? && from[:is_private])
-    #     {reject_block: block_reject, from: @chord.context}
-    #   else
-    #     {reject_block: block_reject, from: from}
-    #   end
-
-    #   send_on_chord(M_TYPE_NODE_BROADCAST_REJECT_BLOCK, content, from)
-    # end
-
-    # private def reject_old(socket, rejected_block, latest_local_slow, latest_local_fast_index)
-    #   # slow and fast indices have to be in sync in terms of chronological order
-    #   if rejected_block.index.even?
-    #     slow_index = @blockchain.database.lowest_slow_index_after_slow_block(rejected_block.index) || latest_local_slow.index
-    #     fast_index = @blockchain.database.lowest_fast_index_after_slow_block(slow_index) || latest_local_fast_index
-    #   else
-    #     fast_index = @blockchain.database.lowest_fast_index_after_fast_block(latest_local_fast_index) || latest_local_fast_index
-    #     slow_index = @blockchain.database.lowest_slow_index_after_fast_block(fast_index) || latest_local_slow.index
-    #   end
-    #   sync_chain_from_point(slow_index, fast_index, socket)
-    # end
-
-    # private def reject_because_peer_is_behind_us()
-    #   reject_block(reject_block, from)
-    # end
-
-    # private def reject_check_and_sync(socket, rejected_block, remote_same_block, latest_local_slow, latest_local_fast_index)
-    #   local_same_block = @blockchain.database.get_block(rejected_block.index)
-    #   # if we have the rejected block locally - double check it against the one sent in the rejection
-    #   if local_same_block && remote_same_block
-    #     _local_same = local_same_block.not_nil!
-    #     _remote_same = remote_same_block.not_nil!
-    #     if _local_same.index == _remote_same.index
-    #       if _local_same.to_hash == _remote_same.to_hash
-    #         info "the rejected block #{rejected_block.index} I have locally is the same as the one returned by the peer - so all is well - false rejection - doing nothing"
-    #       else
-    #         # if they are ahead we can sync, if we are ahead we don't really need to sync but no harm doing it
-    #         warning "the rejected block #{rejected_block.index} in my local is different to the one returned by the peer so syncing"
-    #         reject_old(socket, rejected_block, latest_local_slow, latest_local_fast_index)
-    #       end
-    #     else
-    #       # if they are ahead we can sync, if we are ahead we don't really need to sync but no harm doing it
-    #       warning "the rejected block #{rejected_block.index} was not found at the peer - instead they sent us: #{remote_same_block.index} - syncing"
-    #       reject_old(socket, rejected_block, latest_local_slow, latest_local_fast_index)
-    #     end
-    #   else
-    #     warning "very old block #{rejected_block.index} received from peer was not in our local db - syncing"
-    #     reject_old(socket, rejected_block, latest_local_slow, latest_local_fast_index)
-    #   end
-    # end
 
     # ----- chord finger table -----
     private def _broadcast_node_joined(socket, _content)
@@ -596,19 +455,6 @@ module ::Axentro::Core
       debug "after send_on_chord.. exiting send_block"
     end
 
-    # def send_block_to_privates(block : SlowBlock | FastBlock, from : Chord::NodeContext? = nil)
-    #   _all_nodes = @chord.find_all_nodes
-    #   message_type = M_TYPE_NODE_BROADCAST_BLOCK
-    #   content = if from.nil? || (!from.nil? && from[:is_private])
-    #               {block: block, from: @chord.context}
-    #             else
-    #               {block: block, from: from}
-    #             end
-    #   _all_nodes[:private_nodes].each do |private_node|
-    #     send(private_node[:socket], message_type, content)
-    #   end
-    # end
-
     def send_client_content(content : String, from : Chord::NodeContext? = nil)
       _content = if from.nil? || (!from.nil? && from[:is_private])
                    {content: content, from: @chord.context}
@@ -628,6 +474,11 @@ module ::Axentro::Core
     end
 
     private def broadcast_slow_block(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
+      random_secs = Random.rand(30)
+      warning "++++++++++++ sleeping #{random_secs} seconds before sending to try to cause chaos....."
+      sleep(Time::Span.new(seconds: random_secs))
+      warning "++++++++++++ finished sleeping"
+
       latest_slow = get_latest_slow_from_db
       has_block = @blockchain.database.get_block(block.index)
       latest_local_fast_index = get_latest_fast_index
@@ -650,9 +501,7 @@ module ::Axentro::Core
       end
     rescue e : Exception
       error (e.message || "broadcast_slow_block unknown error: #{e.inspect}")
-    ensure 
-       # send to any private nodes connected to my node
-      #  send_block_to_privates(block)
+    ensure
       send_block(block, from)
     end
 
@@ -1191,9 +1040,7 @@ module ::Axentro::Core
         info "highest slow block index: #{light_cyan(@blockchain.latest_slow_block.index)}"
         info "highest fast block index: #{light_cyan(@blockchain.latest_fast_block_index_or_zero)}"
 
-        if @database
-          @conflicted = nil
-        else
+        if !@database
           warning "no database has been specified"
         end
 

@@ -32,9 +32,12 @@ describe SlowSync do
         latest_slow = get_latest_slow(database)
         incoming_block = make_incoming_next_in_sequence(latest_slow, blockchain)
 
-        puts "latest: #{latest_slow.index}, mining: #{mining_block.index}, incoming: #{incoming_block.index}"
+        has_block = database.get_block(incoming_block.index)
+        latest_local_fast_index = block_factory.node.get_latest_fast_index
 
-        slow_sync = SlowSync.new(incoming_block, mining_block, database, latest_slow)
+        # puts "latest: #{latest_slow.index}, mining: #{mining_block.index}, incoming: #{incoming_block.index}"
+
+        slow_sync = SlowSync.new(incoming_block, mining_block, (has_block.nil? ? nil : has_block.not_nil!.as(SlowBlock)), latest_slow)
         slow_sync.process.should eq(SlowSyncState::CREATE)
       end
     end

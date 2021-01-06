@@ -423,13 +423,6 @@ module ::Axentro::Core::NodeComponents
         private_nodes: @private_nodes,
         public_nodes:  @finger_table.reject { |ctx| ctx[:id] == context[:id] }.to_set,
       }
-      # (@finger_table.to_a + @private_nodes.map(&.[:context])).reject{|ctx| ctx[:id] == context[:id] }.to_set.to_a
-
-      # remove myself from public nodes
-      # public = @finger_table.to_a.reject{|ctx| ctx[:id] == context[:id]}.to_set.to_a
-
-      # remove myself from
-
     end
 
     def connect_to_successor(node, _context : NodeContext)
