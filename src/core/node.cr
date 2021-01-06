@@ -474,10 +474,10 @@ module ::Axentro::Core
     end
 
     private def broadcast_slow_block(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
-      random_secs = Random.rand(30)
-      warning "++++++++++++ sleeping #{random_secs} seconds before sending to try to cause chaos....."
-      sleep(Time::Span.new(seconds: random_secs))
-      warning "++++++++++++ finished sleeping"
+      # random_secs = Random.rand(30)
+      # warning "++++++++++++ sleeping #{random_secs} seconds before sending to try to cause chaos....."
+      # sleep(Time::Span.new(seconds: random_secs))
+      # warning "++++++++++++ finished sleeping"
 
       latest_slow = get_latest_slow_from_db
       has_block = @blockchain.database.get_block(block.index)
