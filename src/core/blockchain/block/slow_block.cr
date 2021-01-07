@@ -143,7 +143,9 @@ module ::Axentro::Core
               "(timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
       end
 
-      raise "Invalid Nonce: #{@nonce} for difficulty #{@difficulty}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
+      if @difficulty > 0
+        raise "Invalid Nonce: #{@nonce} for difficulty #{@difficulty}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
+      end
 
       merkle_tree_root = calculate_merkle_tree_root
 
@@ -151,82 +153,13 @@ module ::Axentro::Core
         raise "Invalid Merkle Tree Root: (expected #{@merkle_tree_root} but got #{merkle_tree_root})"
       end
 
-      latest_slow_index = blockchain.get_latest_index_for_slow
-      if doing_replace
-        latest_slow_index = blockchain.get_latest_index_for_slow - 2
-      else
+      unless doing_replace
+        latest_slow_index = blockchain.get_latest_index_for_slow
         raise "Index Mismatch: the current block index: #{@index} should match the latest slow block index: #{latest_slow_index}" if @index != latest_slow_index
       end
-      # if as_latest
-      #   latest_slow_index = blockchain.get_latest_index_for_slow
-      #   raise "Index Mismatch: the current block index: #{@index} should match the lastest slow block index: #{latest_slow_index}" if @index != latest_slow_index
-
-      #   difficulty_for_block = block_difficulty(blockchain)
-
-      # if @difficulty > 0
-      #   if @difficulty != difficulty_for_block
-      #     raise "Invalid difficulty: " + "(expected #{difficulty_for_block} but got #{@difficulty})"
-      #   end
-      # end
-      # end
 
       true
     end
-
-    # ameba:disable Metrics/CyclomaticComplexity
-    # def valid_as_latest2?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool
-
-    #   puts "DOING_REPLACE: #{doing_replace}"
-
-    #   if doing_replace
-    #     prev_block = blockchain.latest_slow_block_when_replacing
-    #     latest_slow_index = blockchain.get_latest_index_for_slow - 2
-    #   else
-    #     prev_block = blockchain.latest_slow_block
-    #     latest_slow_index = blockchain.get_latest_index_for_slow
-    #   end
-
-    #   puts "this: #{self.index}, prev_block: #{prev_block.index}, latest: #{latest_slow_index}"
-
-    #   unless skip_transactions
-    #     vt = validate_transactions(transactions, blockchain)
-    #     raise vt.failed.first.reason if vt.failed.size != 0
-    #   end
-
-    #   raise "Index Mismatch: the current block index: #{@index} should match the lastest slow block index: #{latest_slow_index}" if @index != latest_slow_index
-    #   raise "Invalid Previous Slow Block Hash: for current index: #{@index} the slow block prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
-
-    #   next_timestamp = __timestamp
-    #   prev_timestamp = prev_block.timestamp
-
-    #   if prev_timestamp > @timestamp || next_timestamp < @timestamp
-    #     raise "Invalid Timestamp: #{@timestamp} " +
-    #           "(timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
-    #   end
-
-    #   if doing_replace
-    #     difficulty_for_block = blockchain.latest_slow_block.difficulty
-    #   else
-    #     difficulty_for_block = block_difficulty(blockchain)
-    #   end
-    #   verbose "Calculated a difficulty of #{difficulty_for_block} for block #{@index} in validity check"
-    #   difficulty_for_block = prev_block.index == 0 ? @difficulty : difficulty_for_block
-
-    #   if @difficulty > 0
-    #     if @difficulty != difficulty_for_block
-    #       raise "Invalid difficulty: " + "(expected #{difficulty_for_block} but got #{@difficulty})"
-    #     end
-    #     raise "Invalid Nonce: #{@nonce} for difficulty #{@difficulty}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
-    #   end
-
-    #   merkle_tree_root = calculate_merkle_tree_root
-
-    #   if merkle_tree_root != @merkle_tree_root
-    #     raise "Invalid Merkle Tree Root: (expected #{@merkle_tree_root} but got #{merkle_tree_root})"
-    #   end
-
-    #   true
-    # end
 
     def valid_as_genesis? : Bool
       raise "Invalid Genesis Index: index has to be '0' for genesis block: #{@index}" if @index != 0

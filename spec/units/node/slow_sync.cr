@@ -33,7 +33,7 @@ describe SlowSync do
         incoming_block = make_incoming_next_in_sequence(latest_slow, blockchain)
 
         has_block = database.get_block(incoming_block.index)
-        latest_local_fast_index = block_factory.node.get_latest_fast_index
+        # latest_local_fast_index = block_factory.node.get_latest_fast_index
 
         # puts "latest: #{latest_slow.index}, mining: #{mining_block.index}, incoming: #{incoming_block.index}"
 

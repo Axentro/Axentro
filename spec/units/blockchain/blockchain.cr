@@ -62,7 +62,8 @@ describe Blockchain do
     it "should return false if no subchains and do nothing" do
       with_factory do |block_factory|
         before = block_factory.chain
-        block_factory.blockchain.replace_mixed_chain(nil).should eq(false)
+        expected_result = ReplaceBlocksResult.new(0_i64, false)
+        block_factory.blockchain.replace_mixed_chain(nil).should eq(expected_result)
         before.should eq(block_factory.chain)
       end
     end
@@ -79,7 +80,8 @@ describe Blockchain do
         blockchain.setup(block_factory.node)
         blockchain.push_slow_block(slow_block_1)
         expected = (blockchain.chain + slow_sub_chain[2..-1] + fast_sub_chain[0..-1]).map(&.index).sort
-        blockchain.replace_mixed_chain(slow_sub_chain[2..-1] + fast_sub_chain[0..-1]).should eq(true)
+        expected_result = ReplaceBlocksResult.new(19_i64, true)
+        blockchain.replace_mixed_chain(slow_sub_chain[2..-1] + fast_sub_chain[0..-1]).should eq(expected_result)
         blockchain.chain.map(&.index).sort.should eq(expected)
       end
     end

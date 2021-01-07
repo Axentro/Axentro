@@ -73,14 +73,12 @@ module ::Axentro::Core::NodeComponents
         else
           # incoming block is exactly the same timestamp - check the hashes
           if @incoming_block.to_hash == existing_block.to_hash
-            # keep ours as it's identical 
+            # keep ours as it's identical
             SlowSyncState::REJECT_OLD
           else
             # take theirs (more stable)
             SlowSyncState::REPLACE
           end
-          
-          
         end
       else
         # if incoming block is not latest in sequence

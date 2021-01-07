@@ -735,7 +735,7 @@ module ::Axentro::Core
     # on the parent
     private def _request_validation_challenge_check(socket, _content)
       _m_content = MContentNodeRequestValidationChallengeCheck.from_json(_content)
-      validation_hash = _m_content.validation_hash
+      # validation_hash = _m_content.validation_hash
 
       debug "checking validation challenge hash from connecting node"
 
@@ -843,6 +843,7 @@ module ::Axentro::Core
     end
 
     # on child
+    # ameba:disable Metrics/CyclomaticComplexity
     private def _receive_chain(socket, _content)
       _m_content = MContentNodeReceiveChain.from_json(_content)
 

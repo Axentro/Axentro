@@ -108,52 +108,8 @@ module ::Axentro::Core
       vt
     end
 
-    # ameba:disable Metrics/CyclomaticComplexity
-    # def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool, doing_replace : Bool) : Bool
-    #   valid_signature = KeyUtils.verify_signature(@hash, @signature, @public_key)
-    #   raise "Invalid Block Signature: the current block index: #{@index} has an invalid signature" unless valid_signature
-
-    #   debug "checking validity of fast block while doing replace" if doing_replace
-
-    #   if doing_replace
-    #     prev_block = blockchain.latest_fast_block_when_replacing
-    #     latest_fast_index = blockchain.get_latest_index_for_fast - 2
-    #     debug "doing fast replace.. latest fast index is: #{latest_fast_index}"
-    #   else
-    #     prev_block = blockchain.latest_fast_block || blockchain.get_genesis_block
-    #     latest_fast_index = blockchain.get_latest_index_for_fast
-    #   end
-
-    #   unless skip_transactions
-    #     vt = validate_transactions(transactions, blockchain)
-    #     raise vt.failed.first.reason if vt.failed.size != 0
-    #   end
-
-    #   if latest_fast_index > 1
-    #     raise "Index Mismatch: the current block index: #{@index} should match the lastest fast block index: #{latest_fast_index}" if @index != latest_fast_index
-    #     raise "Invalid Previous Hash: for current index: #{@index} the prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
-    #   end
-
-    #   # Add an extra 30 seconds for latency when running fastnode on it's own node
-    #   next_timestamp = __timestamp + 30000
-    #   prev_timestamp = prev_block.timestamp
-
-    #   if prev_timestamp > @timestamp || next_timestamp < @timestamp
-    #     raise "Invalid Timestamp: #{@timestamp} " +
-    #           "(timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
-    #   end
-
-    #   merkle_tree_root = calculate_merkle_tree_root
-
-    #   if merkle_tree_root != @merkle_tree_root
-    #     raise "Invalid Merkle Tree Root: (expected #{@merkle_tree_root} but got #{merkle_tree_root})"
-    #   end
-
-    #   true
-    # end
-
-    def valid?(blockchain : Blockchain, skip_transactions : Bool = false, as_latest : Bool = true) : Bool
-      return valid_as_genesis? if @index <= 1_i64
+    def valid?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = true) : Bool
+      return true if @index <= 1_i64
 
       valid_signature = KeyUtils.verify_signature(@hash, @signature, @public_key)
       raise "Invalid Block Signature: the current block index: #{@index} has an invalid signature" unless valid_signature
@@ -186,7 +142,7 @@ module ::Axentro::Core
         raise "Fast Invalid Merkle Tree Root: (expected #{@merkle_tree_root} but got #{merkle_tree_root})"
       end
 
-      if as_latest
+      unless doing_replace
         latest_fast_index = blockchain.get_latest_index_for_fast
         raise "Fast Index Mismatch: the current block index: #{@index} should match the lastest fast block index: #{latest_fast_index}" if @index != latest_fast_index
       end
