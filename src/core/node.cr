@@ -548,7 +548,7 @@ module ::Axentro::Core
     private def execute_replace(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, latest_local_fast_index : Int64, from : Chord::NodeContext?)
       warning "slow: blockchain conflicted at incoming #{block.index} and local (#{light_cyan(latest_slow.index)})"
       warning "slow: local timestamp: #{latest_slow.timestamp}, arriving block timestamp: #{block.timestamp}"
-      warning "slow: arriving block's timestamp indicates it was minted earlier than latest local block"
+      warning "slow: arriving block's timestamp indicates it was minted earlier than latest local block (or at the same time but has different hash)"
 
       # don't check transactions here as will fail since they already exist in the existing block
       # also don't check as lastest block here as we are doing a replace
@@ -570,7 +570,7 @@ module ::Axentro::Core
       when RejectBlockReason::OLD
         warning "slow: blockchain conflicted at incoming #{block.index} and local (#{light_cyan(latest_slow.index)})"
         warning "slow: local timestamp: #{latest_slow.timestamp}, arriving block timestamp: #{block.timestamp}"
-        warning "keeping our local block: #{latest_slow.index} and ignoring the block: #{block.index} because local one was minted first or at the same time"
+        warning "keeping our local block: #{latest_slow.index} and ignoring the block: #{block.index} because local one was minted first or (at the same time but with identical hash)"
       when RejectBlockReason::VERY_OLD
         warning "ignore very old block: #{block.index} because local latest is: #{latest_slow.index}"
       else
