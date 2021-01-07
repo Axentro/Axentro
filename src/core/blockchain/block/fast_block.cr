@@ -108,10 +108,6 @@ module ::Axentro::Core
       vt
     end
 
-    def valid_as_historic?(blockchain : Blockchain) : Bool
-      true
-    end
-
     # ameba:disable Metrics/CyclomaticComplexity
     # def valid_as_latest?(blockchain : Blockchain, skip_transactions : Bool, doing_replace : Bool) : Bool
     #   valid_signature = KeyUtils.verify_signature(@hash, @signature, @public_key)
@@ -157,13 +153,14 @@ module ::Axentro::Core
     # end
 
     def valid?(blockchain : Blockchain, skip_transactions : Bool = false, as_latest : Bool = true) : Bool
+      return valid_as_genesis? if @index <= 1_i64
+
       valid_signature = KeyUtils.verify_signature(@hash, @signature, @public_key)
       raise "Invalid Block Signature: the current block index: #{@index} has an invalid signature" unless valid_signature
 
       prev_block_index = @index - 2
       _prev_block = blockchain.database.get_block(prev_block_index)
 
-      return valid_as_genesis? if @index == 0_i64
       raise "(fast_block::valid?) error finding fast previous block: #{prev_block_index} for current block: #{@index}" if _prev_block.nil?
       prev_block = _prev_block.not_nil!.as(FastBlock)
 
