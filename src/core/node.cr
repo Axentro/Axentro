@@ -476,7 +476,9 @@ module ::Axentro::Core
     private def broadcast_slow_block(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
       # random_secs = Random.rand(30)
       # warning "++++++++++++ sleeping #{random_secs} seconds before sending to try to cause chaos....."
+      # warning "++++++++++++ sleeping 2 minutes before sending to try to cause chaos....."
       # sleep(Time::Span.new(seconds: random_secs))
+      # sleep(120)
       # warning "++++++++++++ finished sleeping"
 
       latest_slow = get_latest_slow_from_db
