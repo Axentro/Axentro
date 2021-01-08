@@ -152,17 +152,23 @@ module ::Axentro::Core
 
       slow_blocks.each_with_index do |block, i|
         current_index = block.index
+
         if i > Consensus::HISTORY_LOOKBACK
-          break unless block.valid?(self, true)
+          block.valid?(self, true)
         end
 
         @chain.push(block)
         progress "block ##{current_index} was imported", current_index, slow_blocks.map(&.index).max
       end
     rescue e : Exception
-      error "Error could not restore slow blocks from database at index: #{current_index}"
-      error e.message || "unknown error while restoring slow blocks from database"
-      database.delete_blocks_of_kind(current_index.not_nil!, Block::BlockKind::SLOW)
+      if current_index
+        error "Error could not restore slow blocks from database at index: #{current_index}"
+        error e.message || "unknown error while restoring slow blocks from database"
+        warning "archiving slow blocks from index #{current_index} and up"
+        database.archive_blocks_of_kind(current_index, "restore", Block::BlockKind::SLOW)
+        warning "deleting slow blocks from index #{current_index} and up"
+        database.delete_blocks_of_kind(current_index, Block::BlockKind::SLOW)
+      end
     ensure
       push_genesis if @is_standalone && @chain.size == 0
     end
@@ -190,9 +196,14 @@ module ::Axentro::Core
         progress "block ##{current_index} was imported", current_index, fast_blocks.map(&.index).max
       end
     rescue e : Exception
-      error "Error could not restore fast blocks from database at index: #{current_index}"
-      error e.message || "unknown error while restoring fast blocks from database"
-      database.delete_blocks_of_kind(current_index.not_nil!, Block::BlockKind::FAST)
+      if current_index
+        error "Error could not restore fast blocks from database at index: #{current_index}"
+        error e.message || "unknown error while restoring fast blocks from database"
+        warning "archiving fast blocks from index #{current_index} and up"
+        database.archive_blocks_of_kind(current_index, "restore", Block::BlockKind::FAST)
+        warning "deleting fast blocks from index #{current_index} and up"
+        database.delete_blocks_of_kind(current_index.not_nil!, Block::BlockKind::FAST)
+      end
     end
 
     def valid_nonce?(block_nonce : BlockNonce) : SlowBlock?
@@ -368,6 +379,7 @@ module ::Axentro::Core
         error e.message.not_nil!
         result.success = false
         if index
+          @database.archive_blocks(index, "sync")
           @database.delete_blocks(index)
           @chain.each_index { |i|
             debug "gonna delete at index #{i}"

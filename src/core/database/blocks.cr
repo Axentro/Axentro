@@ -22,6 +22,10 @@ module ::Axentro::Core::Data::Blocks
     "?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
   end
 
+  def archived_block_table_create_string : String
+    "block_hash string, archive_timestamp integer, reason text, idx integer, nonce text, prev_hash text, timestamp integer, difficulty integer, address text, kind text, public_key text, signature text, hash text"
+  end
+
   # ------- Insert -------
   def block_insert_values_array(block : SlowBlock | FastBlock) : Array(DB::Any)
     ary = [] of DB::Any
@@ -174,6 +178,56 @@ module ::Axentro::Core::Data::Blocks
     result > 0_i64
   end
 
+  # ------- Archive ------
+  def archive_block(index : Int64, block_hash : String, reason : String) # reason: restore or sync
+    now = __timestamp
+    @db.exec "BEGIN TRANSACTION"
+    @db.exec "insert or replace into archived_blocks select ?, ?, ?, * from blocks where idx = ?", args: [block_hash, now, reason, index]
+    @db.exec "insert or replace into archived_transactions select ?, ?, ?, * from transactions where block_id = ?", args: [block_hash, now, reason, index]
+    @db.exec "insert or replace into archived_recipients select ?, ?, ?, * from recipients where block_id = ?", args: [block_hash, now, reason, index]
+    @db.exec "insert or repalce into archived_senders select ?, ?, ?, * from senders where block_id = ?", args: [block_hash, now, reason, index]
+    @db.exec "END TRANSACTION"
+  rescue e : Exception
+    warning "Rolling back db due to error when archiving block with message: #{e.message || "unknown"}"
+    @db.exec("ROLLBACK")
+  end
+
+  def archive_blocks(from : Int64, reason : String) # reason: restore or sync
+    now = __timestamp
+    @db.exec "BEGIN TRANSACTION"
+    blocks = get_blocks_via_query("select * from blocks where idx >= ?", from)
+    blocks.each do |block|
+      block_hash = block.to_hash
+      index = block.index
+      @db.exec "insert or replace into archived_blocks select ?, ?, ?, * from blocks where idx = ?", args: [block_hash, now, reason, index]
+      @db.exec "insert or replace into archived_transactions select ?, ?, ?, * from transactions where block_id = ?", args: [block_hash, now, reason, index]
+      @db.exec "insert or replace into archived_recipients select ?, ?, ?, * from recipients where block_id = ?", args: [block_hash, now, reason, index]
+      @db.exec "insert or replace into archived_senders select ?, ?, ?, * from senders where block_id = ?", args: [block_hash, now, reason, index]
+    end
+    @db.exec "END TRANSACTION"
+  rescue e : Exception
+    warning "Rolling back db due to error when archiving blocks with message: #{e.message || "unknown"}"
+    @db.exec("ROLLBACK")
+  end
+
+  def archive_blocks_of_kind(from : Int64, reason : String, kind : Block::BlockKind) # reason: restore or sync
+    now = __timestamp
+    @db.exec "BEGIN TRANSACTION"
+    blocks = get_blocks_via_query("select * from blocks where idx >= ? and kind = ?", from, kind.to_s)
+    blocks.each do |block|
+      block_hash = block.to_hash
+      index = block.index
+      @db.exec "insert or replace into archived_blocks select ?, ?, ?, * from blocks where idx = ?", args: [block_hash, now, reason, index]
+      @db.exec "insert or replace into archived_transactions select ?, ?, ?, * from transactions where block_id = ?", args: [block_hash, now, reason, index]
+      @db.exec "insert or replace into archived_recipients select ?, ?, ?, * from recipients where block_id = ?", args: [block_hash, now, reason, index]
+      @db.exec "insert or replace into archived_senders select ?, ?, ?, * from senders where block_id = ?", args: [block_hash, now, reason, index]
+    end
+    @db.exec "END TRANSACTION"
+  rescue e : Exception
+    warning "Rolling back db due to error when archiving blocks with message: #{e.message || "unknown"}"
+    @db.exec("ROLLBACK")
+  end
+
   # ------- Delete -------
   def delete_block(from : Int64)
     @db.exec "delete from blocks where idx = ?", from
@@ -202,7 +256,7 @@ module ::Axentro::Core::Data::Blocks
 
   def get_block_ids_from(from : Int64, kind : Block::BlockKind)
     ids = [] of Int64
-    @db.query("select idx from blocks where idx >= 0 and kind = ?", kind.to_s) do |rows|
+    @db.query("select idx from blocks where idx >= ? and kind = ?", from, kind.to_s) do |rows|
       rows.each do
         res = rows.read(Int64 | Nil)
         ids << res unless res.nil?

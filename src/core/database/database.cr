@@ -75,6 +75,13 @@ module ::Axentro::Core
       @db.exec "create table if not exists senders (#{sender_table_create_string}, primary key (#{sender_primary_key_string}))"
       @db.exec "create table if not exists rejects (#{rejects_table_create_string}, primary key (#{rejects_primary_key_string}))"
       @db.exec "create table if not exists nonces (#{nonces_table_create_string}, primary key (#{nonces_primary_key_string}))"
+
+      # archive tables
+      @db.exec "create table if not exists archived_blocks (#{archived_block_table_create_string}, primary key (block_hash, idx))"
+      @db.exec "create table if not exists archived_transactions (#{archived_transaction_table_create_string}, primary key (block_hash, idx, block_id))"
+      @db.exec "create table if not exists archived_recipients (#{archived_recipient_table_create_string}, primary key (block_hash, idx, block_id))"
+      @db.exec "create table if not exists archived_senders (#{archived_sender_table_create_string}, primary key (block_hash, idx, block_id))"
+
       @db.exec "PRAGMA synchronous=OFF"
       @db.exec "PRAGMA cache_size=10000"
       @db.exec "PRAGMA journal_mode=WAL"
@@ -97,13 +104,13 @@ module ::Axentro::Core
       push_block(block)
     end
 
-    def replace_chain(chain : Blockchain::Chain)
-      delete_blocks(chain[0].index)
+    # def replace_chain(chain : Blockchain::Chain)
+    #   delete_blocks(chain[0].index)
 
-      chain.each do |block|
-        push_block(block)
-      end
-    end
+    #   chain.each do |block|
+    #     push_block(block)
+    #   end
+    # end
 
     def highest_index_of_kind(kind : Block::BlockKind) : Int64
       idx : Int64? = nil

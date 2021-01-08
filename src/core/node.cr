@@ -899,15 +899,15 @@ module ::Axentro::Core
           send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_slow_index: latest_local_slow_index, chunk_size: chunk_size, start_fast_index: latest_local_fast_index})
         elsif !replace_result.success && @sync_retry_1_count < MAX_SYNC_RETRY
           @sync_retry_1_count += 2
-          warning "failed to replace mixed chain at: #{replace_result.index} so starting a decremental retry at (#{@sync_retry_1_count}/#{MAX_SYNC_RETRY})"
+          warning "(strategy 1) failed to replace mixed chain at: #{replace_result.index} so starting a decremental retry at (#{@sync_retry_1_count}/#{MAX_SYNC_RETRY})"
           sync_chain_on_error(replace_result.index, latest_local_slow_index, latest_local_fast_index, @sync_retry_1_count, socket)
         elsif !replace_result.success && @sync_retry_2_count < MAX_SYNC_RETRY
           warning "can't recover giving up"
-          @giving_up = true
-          # @sync_retry_2_count += 2
-          # warning "failed to re-sync mixed chain from at: #{replace_result.index} so starting retry with another peer at (#{@sync_retry_1_count}/#{MAX_SYNC_RETRY})"
-          # # get a socket
-          # sync_chain_on_error(replace_result.index, latest_local_slow_index, latest_local_fast_index, @sync_retry_1_count, socket)
+          @sync_retry_2_count += 2
+          sleep_seconds = 10 * @sync_retry_2_count
+          warning "(strategy 2) failed to replace mixed chain at: #{replace_result.index} so starting a decremental retry with sleep #{sleep_seconds} seconds at (#{@sync_retry_2_count}/#{MAX_SYNC_RETRY})"
+          sync_chain_on_error(replace_result.index, latest_local_slow_index, latest_local_fast_index, @sync_retry_1_count, socket)
+          sleep(sleep_seconds)
         else
           warning "can't recover giving up"
           @giving_up = true

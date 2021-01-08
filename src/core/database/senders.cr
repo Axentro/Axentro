@@ -26,6 +26,10 @@ module ::Axentro::Core::Data::Senders
     "?, ?, ?, ?, ?, ?, ?, ?"
   end
 
+  def archived_sender_table_create_string
+    "block_hash string, archive_timestamp integer, reason text, transaction_id text, block_id integer, idx integer, address text, public_key text, amount integer, fee integer, signature text"
+  end
+
   # ------- Insert -------
   def sender_insert_values_array(b : Block, t : Transaction, sender_index : Int32) : Array(DB::Any)
     ary = [] of DB::Any

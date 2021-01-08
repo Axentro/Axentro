@@ -36,6 +36,10 @@ module ::Axentro::Core::Data::Transactions
     "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
   end
 
+  def archived_transaction_table_create_string
+    "block_hash string, archive_timestamp integer, reason text, id text, idx integer, block_id integer, action text, message text, token text, prev_hash text, timestamp integer, scaled integer, kind text, version text"
+  end
+
   # ------- Insert -------
   def transaction_insert_values_array(t : Transaction, transaction_idx : Int32, block_index : Int64) : Array(DB::Any)
     ary = [] of DB::Any
