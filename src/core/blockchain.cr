@@ -153,9 +153,16 @@ module ::Axentro::Core
       slow_blocks.each_with_index do |block, i|
         current_index = block.index
 
-        if i > Consensus::HISTORY_LOOKBACK
+        # if i > Consensus::HISTORY_LOOKBACK
+        #   block.valid?(self, true)
+        # end
+
+        # skip transaction checking because it will fail as transaction already in db
+        # check after index 2 only as need latest index to be 2 or more
+        if i >= 2
           block.valid?(self, true)
         end
+
 
         @chain.push(block)
         progress "block ##{current_index} was imported", current_index, slow_blocks.map(&.index).max
