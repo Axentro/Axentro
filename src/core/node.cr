@@ -533,10 +533,10 @@ module ::Axentro::Core
     private def execute_create(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, latest_local_fast_index : Int64, from : Chord::NodeContext?)
       info "received block: #{block.index} from peer that I don't have in my db"
 
-      random_secs = Random.rand(30)
-      warning "++++++++++++ sleeping #{random_secs} seconds before sending to try to cause chaos....."
-      sleep(Time::Span.new(seconds: random_secs))
-      warning "++++++++++++ finished sleeping"
+      # random_secs = Random.rand(30)
+      # warning "++++++++++++ sleeping #{random_secs} seconds before sending to try to cause chaos....."
+      # sleep(Time::Span.new(seconds: random_secs))
+      # warning "++++++++++++ finished sleeping"
 
       if _block = @blockchain.valid_block?(block, false, true)
         info "received block: #{_block.index} was valid so storing in my db"
@@ -938,7 +938,6 @@ module ::Axentro::Core
       end
     end
 
-    
     private def _request_transactions(socket, _content)
       MContentNodeRequestTransactions.from_json(_content)
 
