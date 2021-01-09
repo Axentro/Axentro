@@ -89,6 +89,7 @@ module ::Axentro::Core
 
       error "handshake failed because:"
       error reason
+      exit -1
     end
 
     private def _block_update(_content)
