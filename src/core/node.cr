@@ -538,6 +538,7 @@ module ::Axentro::Core
       # sleep(Time::Span.new(seconds: random_secs))
       # warning "++++++++++++ finished sleeping"
 
+      # we check the transactions that are incoming in valid_block here.
       if _block = @blockchain.valid_block?(block, false, true)
         info "received block: #{_block.index} was valid so storing in my db"
         debug "slow: finished sending new block on to peer"
@@ -701,14 +702,15 @@ module ::Axentro::Core
         send(socket, M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS, {} of String => String)
       else
         # tell child about blocks to validate based on a window of blocks
-        # first 50 on parent, random percent in middle, then 50 last blocks capped at the highest child blocks
+        # genesis block + (specified percentage of (max slow block - 10 latest slow)) + (specified percentage of (max fast block - 10 latest fast))
         local_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
         local_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
 
         validation_slow_index = Math.min(remote_slow_index, local_slow_index)
         validation_fast_index = Math.min(remote_fast_index, local_fast_index)
 
-        validation_blocks = @blockchain.get_validation_block_ids(validation_slow_index, validation_fast_index, @security_level_percentage)
+        chain_integrity = ChainIntegrity.new(validation_slow_index, validation_fast_index, @security_level_percentage)
+        validation_blocks = chain_integrity.get_validation_block_ids
         @validation_hash = @blockchain.get_hash_of_block_hashes(validation_blocks)
 
         info "validation challenge proceeding..."

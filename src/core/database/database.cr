@@ -99,10 +99,10 @@ module ::Axentro::Core
       value.starts_with?(MEMORY) ? value : File.expand_path(value)
     end
 
-    def replace_block(block : SlowBlock | FastBlock)
-      delete_block(block.index)
-      push_block(block)
-    end
+    # def replace_block(block : SlowBlock | FastBlock)
+    #   delete_block(block.index)
+    #   push_block(block)
+    # end
 
     # def replace_chain(chain : Blockchain::Chain)
     #   delete_blocks(chain[0].index)

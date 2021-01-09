@@ -163,7 +163,6 @@ module ::Axentro::Core
           block.valid?(self, true)
         end
 
-
         @chain.push(block)
         progress "block ##{current_index} was imported", current_index, slow_blocks.map(&.index).max
       end
@@ -249,7 +248,7 @@ module ::Axentro::Core
         @chain[target_index] = block
         # validate during replace block
         @database.delete_block(block.index)
-        # check block is valid here - we are in replace
+        # check block is valid here (including checking transactions) - we are in replace
         block.valid?(self, false, true)
         @database.push_block(block)
       else
@@ -307,24 +306,6 @@ module ::Axentro::Core
       refresh_mining_block(block_difficulty(self))
 
       result
-    end
-
-    def get_validation_block_ids(max_slow_block_id : Int64, max_fast_block_id : Int64, security_level_percentage : Int64) : Array(Int64)
-      slow_blocks = (0_i64..max_slow_block_id).to_a.reject(&.odd?)
-      first_50_slow = slow_blocks.first(50)
-      last_50_slow = slow_blocks.last(50)
-
-      fast_blocks = (0_i64..max_fast_block_id).to_a.reject(&.even?)
-      first_50_fast = fast_blocks.first(50)
-      last_50_fast = fast_blocks.last(50)
-
-      percentage_slow = (max_slow_block_id*security_level_percentage*0.01).ceil.to_i
-      percentage_fast = (max_fast_block_id*security_level_percentage*0.01).ceil.to_i
-
-      percent_slow = slow_blocks.shuffle.first(percentage_slow)
-      percent_fast = fast_blocks.shuffle.first(percentage_fast)
-
-      (first_50_slow + last_50_slow + first_50_fast + last_50_fast + percent_slow + percent_fast).uniq
     end
 
     def get_hash_of_block_hashes(block_ids : Array(Int64))
