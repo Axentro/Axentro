@@ -25,7 +25,7 @@ module ::Axentro::Core::NodeComponents
 
     getter miners : Miners = Miners.new
 
-    def initialize(@blockchain : Blockchain)
+    def initialize(@blockchain : Blockchain, @is_private_node : Bool)
       @highest_difficulty_mined_so_far = 0
       @block_start_time = __timestamp
       @most_difficult_block_so_far = @blockchain.genesis_block
@@ -56,6 +56,14 @@ module ::Axentro::Core::NodeComponents
           M_TYPE_MINER_HANDSHAKE_REJECTED,
           {
             reason: "The max number of miners allowed to connect to this node has been reached (#{@blockchain.max_miners})",
+          })
+      end
+
+      if @is_private_node
+        return send(socket,
+          M_TYPE_MINER_HANDSHAKE_REJECTED,
+          {
+            reason: "Mining against private nodes is not supported",
           })
       end
 
