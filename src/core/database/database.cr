@@ -17,8 +17,9 @@ module ::Axentro::Core
   class FastPool
     @db : DB::Database
 
-    def initialize
-      path = File.expand_path("fast_pool.sqlite3")
+    def initialize(database_path : String)
+      dir = Path[database_path].parent
+      path = File.expand_path("#{dir}/fast_pool.sqlite3")
       @db = DB.open("sqlite3://#{path}")
       @db.exec "create table if not exists transactions (id text primary key,content text not null)"
       @db.exec "PRAGMA synchronous=OFF"
@@ -74,6 +75,13 @@ module ::Axentro::Core
       @db.exec "create table if not exists senders (#{sender_table_create_string}, primary key (#{sender_primary_key_string}))"
       @db.exec "create table if not exists rejects (#{rejects_table_create_string}, primary key (#{rejects_primary_key_string}))"
       @db.exec "create table if not exists nonces (#{nonces_table_create_string}, primary key (#{nonces_primary_key_string}))"
+
+      # archive tables
+      @db.exec "create table if not exists archived_blocks (#{archived_block_table_create_string}, primary key (block_hash, idx))"
+      @db.exec "create table if not exists archived_transactions (#{archived_transaction_table_create_string}, primary key (block_hash, idx, block_id))"
+      @db.exec "create table if not exists archived_recipients (#{archived_recipient_table_create_string}, primary key (block_hash, idx, block_id))"
+      @db.exec "create table if not exists archived_senders (#{archived_sender_table_create_string}, primary key (block_hash, idx, block_id))"
+
       @db.exec "PRAGMA synchronous=OFF"
       @db.exec "PRAGMA cache_size=10000"
       @db.exec "PRAGMA journal_mode=WAL"
@@ -91,18 +99,18 @@ module ::Axentro::Core
       value.starts_with?(MEMORY) ? value : File.expand_path(value)
     end
 
-    def replace_block(block : SlowBlock | FastBlock)
-      delete_block(block.index)
-      push_block(block)
-    end
+    # def replace_block(block : SlowBlock | FastBlock)
+    #   delete_block(block.index)
+    #   push_block(block)
+    # end
 
-    def replace_chain(chain : Blockchain::Chain)
-      delete_blocks(chain[0].index)
+    # def replace_chain(chain : Blockchain::Chain)
+    #   delete_blocks(chain[0].index)
 
-      chain.each do |block|
-        push_block(block)
-      end
-    end
+    #   chain.each do |block|
+    #     push_block(block)
+    #   end
+    # end
 
     def highest_index_of_kind(kind : Block::BlockKind) : Int64
       idx : Int64? = nil
@@ -116,34 +124,27 @@ module ::Axentro::Core
       idx || 0_i64
     end
 
-    def highest_fast_index_or_nil : Int64?
-      @db.query_one("select max(idx) from blocks where kind = ?", Block::BlockKind::FAST.to_s, as: Int64?)
+    # this could return null if there are no fast blocks found after the slow block timestamp
+    # this could also return null if the slow block is not found
+    def lowest_fast_index_after_slow_block(index : Int64) : Int64?
+      @db.query_one("select min(idx) from blocks where kind = 'FAST' and timestamp >= (select timestamp from blocks where idx = ?)", index, as: Int64?)
     end
 
-    def highest_index : Int64
-      idx : Int64? = nil
-
-      @db.query "select max(idx) from blocks" do |rows|
-        rows.each do
-          idx = rows.read(Int64 | Nil)
-        end
-      end
-
-      idx || -1_i64
+    # this could return null if the slow block is not found
+    # this could return null if the index given was 0
+    def lowest_slow_index_after_slow_block(index : Int64) : Int64?
+      @db.query_one("select max(idx) from blocks where kind = 'SLOW' and timestamp < (select timestamp from blocks where idx = ?)", index, as: Int64?)
     end
 
-    def lowest_index_after_time(given_time : Int64, kind : Block::BlockKind)
-      idx : Int64? = nil
+    # this could return null if there are no slow blocks found after the fast block timestamp
+    # this could also return null if the fast block is not found
+    def lowest_fast_index_after_fast_block(index : Int64) : Int64?
+      @db.query_one("select max(idx) from blocks where kind = 'FAST' and timestamp < (select timestamp from blocks where idx = ?)", index, as: Int64?)
+    end
 
-      the_query = "select min(idx) from blocks where timestamp >= #{given_time} and kind = '#{kind}'"
-      debug "query in lowest_index_after_time: #{the_query}"
-      @db.query the_query do |rows|
-        rows.each do
-          idx = rows.read(Int64 | Nil)
-        end
-      end
-
-      idx || 0_i64
+    # this could return null if fast block is not found
+    def lowest_slow_index_after_fast_block(index : Int64) : Int64?
+      @db.query_one("select min(idx) from blocks where kind = 'SLOW' and timestamp >= (select timestamp from blocks where idx = ?)", index, as: Int64?)
     end
 
     def total(kind : Block::BlockKind)

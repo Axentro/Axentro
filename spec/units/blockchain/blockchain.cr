@@ -47,22 +47,12 @@ describe Blockchain do
     end
   end
 
-  describe "random block IDs for validation" do
-    it "should return 20 random blocks from a 100 block chain by default" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(50).add_fast_blocks(50).chain
-        blockchain = block_factory.blockchain
-        random_blocks = blockchain.get_validation_block_ids(blockchain.latest_slow_block.index, blockchain.latest_fast_block_index_or_zero, 20_i64)
-        random_blocks.size.should eq(101)
-      end
-    end
-  end
-
   describe "replace_mixed_chain" do
     it "should return false if no subchains and do nothing" do
       with_factory do |block_factory|
         before = block_factory.chain
-        block_factory.blockchain.replace_mixed_chain(nil).should eq(false)
+        expected_result = ReplaceBlocksResult.new(0_i64, false)
+        block_factory.blockchain.replace_mixed_chain(nil).should eq(expected_result)
         before.should eq(block_factory.chain)
       end
     end
@@ -75,11 +65,12 @@ describe Blockchain do
         slow_sub_chain = chain.select(&.is_slow_block?)
 
         database = Axentro::Core::Database.in_memory
-        blockchain = Blockchain.new("testnet", block_factory.node_wallet, database, nil, nil, 20, 100, false, 512, true)
+        blockchain = Blockchain.new("testnet", block_factory.node_wallet, "", database, nil, nil, 20, 100, false, 512, true)
         blockchain.setup(block_factory.node)
         blockchain.push_slow_block(slow_block_1)
         expected = (blockchain.chain + slow_sub_chain[2..-1] + fast_sub_chain[0..-1]).map(&.index).sort
-        blockchain.replace_mixed_chain(slow_sub_chain[2..-1] + fast_sub_chain[0..-1]).should eq(true)
+        expected_result = ReplaceBlocksResult.new(19_i64, true)
+        blockchain.replace_mixed_chain(slow_sub_chain[2..-1] + fast_sub_chain[0..-1]).should eq(expected_result)
         blockchain.chain.map(&.index).sort.should eq(expected)
       end
     end
@@ -301,7 +292,7 @@ describe Blockchain do
       with_factory do |block_factory|
         block_factory.add_slow_blocks(10)
         database = block_factory.database
-        blockchain = Blockchain.new("testnet", block_factory.node_wallet, database, nil, nil, 20, 100, false, 512, true)
+        blockchain = Blockchain.new("testnet", block_factory.node_wallet, "", database, nil, nil, 20, 100, false, 512, true)
         blockchain.setup(block_factory.node)
         # including genesis block total chain size should be 11
         blockchain.chain.size.should eq(11)
@@ -312,7 +303,7 @@ describe Blockchain do
         blocks_to_add = block_factory.blocks_to_hold + 8
         block_factory.add_slow_blocks(blocks_to_add)
         database = block_factory.database
-        blockchain = Blockchain.new("testnet", block_factory.node_wallet, database, nil, nil, 20, 100, false, 512, true)
+        blockchain = Blockchain.new("testnet", block_factory.node_wallet, "", database, nil, nil, 20, 100, false, 512, true)
         blockchain.setup(block_factory.node)
         # including genesis block total chain size should be the number of blocks to hold
         blockchain.chain.size.should eq(blockchain.blocks_to_hold)

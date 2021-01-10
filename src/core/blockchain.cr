@@ -17,6 +17,13 @@ require "./blockchain/rewards/*"
 require "./dapps"
 
 module ::Axentro::Core
+  struct ReplaceBlocksResult
+    property index : Int64
+    property success : Bool
+
+    def initialize(@index, @success); end
+  end
+
   class Blockchain
     TOKEN_DEFAULT = Core::DApps::BuildIn::UTXO::DEFAULT
 
@@ -48,17 +55,18 @@ module ::Axentro::Core
     @block_reward_calculator = BlockRewardCalculator.init
     @max_miners : Int32
     @is_standalone : Bool
+    @database_path : String
 
-    def initialize(@network_type : String, @wallet : Wallet, @database : Database, @developer_fund : DeveloperFund?, @official_nodes : OfficialNodes?, @security_level_percentage : Int64, @sync_chunk_size : Int32, @record_nonces : Bool, @max_miners : Int32, @is_standalone : Bool)
+    def initialize(@network_type : String, @wallet : Wallet, @database_path : String, @database : Database, @developer_fund : DeveloperFund?, @official_nodes : OfficialNodes?, @security_level_percentage : Int64, @sync_chunk_size : Int32, @record_nonces : Bool, @max_miners : Int32, @is_standalone : Bool)
       initialize_dapps
       SlowTransactionPool.setup
-      FastTransactionPool.setup
+      FastTransactionPool.setup(@database_path)
       MinerNoncePool.setup
 
       info "Security Level Percentage used for blockchain validation is #{@security_level_percentage}"
       info "Blockchain sync chunk size is #{@sync_chunk_size}"
 
-      hours_to_hold = ENV.has_key?("AXE_TESTING") ? 2 : 48
+      hours_to_hold = ENV.has_key?("AXE_TESTING") ? 2 : 8
       @blocks_to_hold = (SLOW_BLOCKS_PER_HOUR * hours_to_hold).to_i64
       info "holding #{@blocks_to_hold} slow blocks and 2000 fast blocks in memory"
     end
@@ -76,8 +84,36 @@ module ::Axentro::Core
 
       restore_from_database(@database)
 
+      spawn mining_block_tracker
+
       unless node.is_private_node?
         spawn process_fast_transactions
+      end
+    end
+
+    # check if the mining is on track
+    def mining_block_tracker
+      loop do
+        spawn do
+          slow_block_mining_check
+        end
+        sleep(2) # check every 2 seconds
+      end
+    end
+
+    private def slow_block_mining_check
+      # if no slow block was mined after 3 mins and there are miners connected then lower the difficulty dynamically
+      if node.miners_manager.miners.size > 0
+        current_block_timestamp = mining_block.timestamp
+        now = __timestamp
+        three_minutes_in_ms = 180000
+
+        if (now - current_block_timestamp) > three_minutes_in_ms
+          unless mining_block.difficulty <= Consensus::DEFAULT_DIFFICULTY_TARGET
+            warning "No block mined within 3 minutes so auto dropping difficulty"
+            refresh_slow_pending_block(Consensus::DEFAULT_DIFFICULTY_TARGET)
+          end
+        end
       end
     end
 
@@ -144,17 +180,29 @@ module ::Axentro::Core
 
       slow_blocks.each_with_index do |block, i|
         current_index = block.index
-        if i > Consensus::HISTORY_LOOKBACK
-          break unless block.valid?(self, true)
+
+        # if i > Consensus::HISTORY_LOOKBACK
+        #   block.valid?(self, true)
+        # end
+
+        # skip transaction checking because it will fail as transaction already in db
+        # check after index 2 only as need latest index to be 2 or more
+        if i >= 2
+          block.valid?(self, true)
         end
 
         @chain.push(block)
         progress "block ##{current_index} was imported", current_index, slow_blocks.map(&.index).max
       end
     rescue e : Exception
-      error "Error could not restore slow blocks from database at index: #{current_index}"
-      error e.message || "unknown error while restoring slow blocks from database"
-      database.delete_blocks_of_kind(current_index.not_nil!, Block::BlockKind::SLOW)
+      if current_index
+        error "Error could not restore slow blocks from database at index: #{current_index}"
+        error e.message || "unknown error while restoring slow blocks from database"
+        warning "archiving slow blocks from index #{current_index} and up"
+        database.archive_blocks_of_kind(current_index, "restore", Block::BlockKind::SLOW)
+        warning "deleting slow blocks from index #{current_index} and up"
+        database.delete_blocks_of_kind(current_index, Block::BlockKind::SLOW)
+      end
     ensure
       push_genesis if @is_standalone && @chain.size == 0
     end
@@ -182,9 +230,14 @@ module ::Axentro::Core
         progress "block ##{current_index} was imported", current_index, fast_blocks.map(&.index).max
       end
     rescue e : Exception
-      error "Error could not restore fast blocks from database at index: #{current_index}"
-      error e.message || "unknown error while restoring fast blocks from database"
-      database.delete_blocks_of_kind(current_index.not_nil!, Block::BlockKind::FAST)
+      if current_index
+        error "Error could not restore fast blocks from database at index: #{current_index}"
+        error e.message || "unknown error while restoring fast blocks from database"
+        warning "archiving fast blocks from index #{current_index} and up"
+        database.archive_blocks_of_kind(current_index, "restore", Block::BlockKind::FAST)
+        warning "deleting fast blocks from index #{current_index} and up"
+        database.delete_blocks_of_kind(current_index.not_nil!, Block::BlockKind::FAST)
+      end
     end
 
     def valid_nonce?(block_nonce : BlockNonce) : SlowBlock?
@@ -221,7 +274,11 @@ module ::Axentro::Core
       target_index = @chain.index { |b| b.index == block.index }
       if target_index
         @chain[target_index] = block
-        @database.replace_block(block)
+        # validate during replace block
+        @database.delete_block(block.index)
+        # check block is valid here (including checking transactions) - we are in replace
+        block.valid?(self, false, true)
+        @database.push_block(block)
       else
         warning "replacement block location not found in local chain"
       end
@@ -262,7 +319,7 @@ module ::Axentro::Core
       trim_chain_in_memory
     end
 
-    def replace_mixed_chain(subchain : Chain?) : Bool
+    def replace_mixed_chain(subchain : Chain?) : ReplaceBlocksResult
       dapps_clear_record
       result = replace_mixed_blocks(subchain)
 
@@ -277,24 +334,6 @@ module ::Axentro::Core
       refresh_mining_block(block_difficulty(self))
 
       result
-    end
-
-    def get_validation_block_ids(max_slow_block_id : Int64, max_fast_block_id : Int64, security_level_percentage : Int64) : Array(Int64)
-      slow_blocks = (0_i64..max_slow_block_id).to_a.reject(&.odd?)
-      first_50_slow = slow_blocks.first(50)
-      last_50_slow = slow_blocks.last(50)
-
-      fast_blocks = (0_i64..max_fast_block_id).to_a.reject(&.even?)
-      first_50_fast = fast_blocks.first(50)
-      last_50_fast = fast_blocks.last(50)
-
-      percentage_slow = (max_slow_block_id*security_level_percentage*0.01).ceil.to_i
-      percentage_fast = (max_fast_block_id*security_level_percentage*0.01).ceil.to_i
-
-      percent_slow = slow_blocks.shuffle.first(percentage_slow)
-      percent_fast = fast_blocks.shuffle.first(percentage_fast)
-
-      (first_50_slow + last_50_slow + first_50_fast + last_50_fast + percent_slow + percent_fast).uniq
     end
 
     def get_hash_of_block_hashes(block_ids : Array(Int64))
@@ -313,30 +352,39 @@ module ::Axentro::Core
 
     def create_indexes_to_check(incoming_chain)
       return [] of Int64 if @security_level_percentage == 100_i64
+      return [] of Int64 if incoming_chain.empty?
       incoming_indices = incoming_chain.map(&.index)
       max_incoming_block_id = incoming_indices.max
       percentage_as_count = (max_incoming_block_id*@security_level_percentage*0.01).ceil.to_i
       incoming_indices.shuffle.first(percentage_as_count)
     end
 
-    private def replace_mixed_blocks(chain)
-      return false if chain.nil?
-      result = true
+    private def replace_mixed_blocks(chain) : ReplaceBlocksResult
+      result = ReplaceBlocksResult.new(0_i64, true)
+
+      if chain.nil?
+        result.success = false
+        return result
+      end
 
       indexes_for_validity_checking = create_indexes_to_check(chain.not_nil!)
 
       chain.not_nil!.sort_by(&.timestamp).each do |block|
         index = block.index
-
-        # running the valid block test only on a subset of blocks for speed on sync
-        if (indexes_for_validity_checking.size == 0) || indexes_for_validity_checking.includes?(index)
-          debug "doing valid check on block #{index}"
-          block.valid?(self)
-        end
+        result.index = index
 
         target_index = @chain.index { |b| b.index == index }
         target_index ? (@chain[target_index] = block) : @chain << block
-        @database.replace_block(block)
+
+        @database.delete_block(block.index)
+        # running the valid block test only on a subset of blocks for speed on sync
+        if (indexes_for_validity_checking.size == 0) || indexes_for_validity_checking.includes?(index)
+          debug "doing valid check on block #{index}"
+          # this valid check is historic and not as latest block
+          block.valid?(self, false, true)
+        end
+
+        @database.push_block(block)
 
         progress "block ##{index} was synced", index, chain.not_nil!.map(&.index).max
 
@@ -345,8 +393,9 @@ module ::Axentro::Core
         error "found invalid block while syncing blocks at index #{index}.. deleting all blocks from invalid and up"
         error "the reason:"
         error e.message.not_nil!
-        result = false
+        result.success = false
         if index
+          @database.archive_blocks(index, "sync")
           @database.delete_blocks(index)
           @chain.each_index { |i|
             debug "gonna delete at index #{i}"
@@ -520,13 +569,20 @@ module ::Axentro::Core
       refresh_slow_pending_block(difficulty)
     end
 
-    private def calculate_coinbase_slow_transaction(coinbase_amount, the_latest_index, embedded_slow_transactions)
+    def calculate_coinbase_slow_transaction(coinbase_amount, the_latest_index, embedded_slow_transactions)
       # pay the fees to the fastnode for maintenance (unless there are no more blocks to mine)
       fee = (the_latest_index >= @block_reward_calculator.max_blocks) ? 0_i64 : total_fees(embedded_slow_transactions)
       create_coinbase_slow_transaction(coinbase_amount, fee, node.miners)
     end
 
     private def refresh_slow_pending_block(difficulty)
+      # we don't want to delete any of the miner nonces unless this refresh is for the next block
+      # otherwise we loose the nonces for the rewards
+      previous_mining_block_index = latest_slow_block.index
+      if _prev_mining_block = @mining_block
+        previous_mining_block_index = _prev_mining_block.index
+      end
+
       the_latest_index = get_latest_index_for_slow
 
       coinbase_amount = coinbase_slow_amount(the_latest_index, embedded_slow_transactions)
@@ -563,7 +619,8 @@ module ::Axentro::Core
       end
 
       # align slow transactions may need to re-calc the rewards so only delete the pool after all calcs are finished
-      MinerNoncePool.delete_embedded
+      # only delete the nonces if this refresh is for the next block (otherwise we loose the nonces for the rewards)
+      MinerNoncePool.delete_embedded if the_latest_index > previous_mining_block_index
 
       node.miners_broadcast
     end

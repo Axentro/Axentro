@@ -81,8 +81,9 @@ describe NodeInfo do
         json = JSON.parse(payload)
 
         node_id = block_factory.node.chord.context[:id]
+        wallet_address = block_factory.node.chord.context[:address]
         with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-          result.should eq("{\"id\":\"#{node_id}\",\"host\":\"\",\"port\":-1,\"ssl\":false,\"type\":\"testnet\",\"is_private\":true,\"address\":\"\"}")
+          result.should eq("{\"id\":\"#{node_id}\",\"host\":\"\",\"port\":-1,\"ssl\":false,\"type\":\"testnet\",\"is_private\":true,\"address\":\"#{wallet_address}\"}")
         end
       end
     end
@@ -96,8 +97,9 @@ describe NodeInfo do
         json = JSON.parse(payload)
 
         node_id = block_factory.node.chord.context[:id]
+        wallet_address = block_factory.node.chord.context[:address]
         with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-          result.should eq("{\"id\":\"#{node_id}\",\"host\":\"\",\"port\":-1,\"ssl\":false,\"type\":\"testnet\",\"is_private\":true,\"address\":\"\"}")
+          result.should eq("{\"id\":\"#{node_id}\",\"host\":\"\",\"port\":-1,\"ssl\":false,\"type\":\"testnet\",\"is_private\":true,\"address\":\"#{wallet_address}\"}")
         end
       end
     end
@@ -107,12 +109,13 @@ describe NodeInfo do
     it "should return the node on the network" do
       with_factory do |block_factory, _|
         node_id = block_factory.node.chord.context[:id]
-        payload = {call: "node_address", address: ""}.to_json
+        wallet_address = block_factory.node.chord.context[:address]
+        payload = {call: "node_address", address: wallet_address}.to_json
         json = JSON.parse(payload)
 
         node_id = block_factory.node.chord.context[:id]
         with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-          result.should eq("[{\"id\":\"#{node_id}\",\"host\":\"\",\"port\":-1,\"ssl\":false,\"type\":\"testnet\",\"is_private\":true,\"address\":\"\"}]")
+          result.should eq("[{\"id\":\"#{node_id}\",\"host\":\"\",\"port\":-1,\"ssl\":false,\"type\":\"testnet\",\"is_private\":true,\"address\":\"#{wallet_address}\"}]")
         end
       end
     end
@@ -124,8 +127,11 @@ describe NodeInfo do
         payload = {call: "official_nodes"}.to_json
         json = JSON.parse(payload)
 
+        node_id = block_factory.node.chord.context[:id]
+        wallet_address = block_factory.node.chord.context[:address]
+
         with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-          result.should eq("{\"all\":[\"#{block_factory.node_wallet.address}\"],\"online\":[]}")
+          result.should eq("{\"all\":[\"#{wallet_address}\"],\"online\":[{\"id\":\"#{node_id}\",\"address\":\"#{wallet_address}\",\"url\":\"http://:-1\"}]}")
         end
       end
     end

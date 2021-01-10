@@ -26,6 +26,10 @@ module ::Axentro::Core::Data::Recipients
     "?, ?, ?, ?, ?"
   end
 
+  def archived_recipient_table_create_string
+    "block_hash string, archive_timestamp integer, reason text, transaction_id text, block_id integer, idx integer, address text, amount integer"
+  end
+
   # ------- Insert -------
   def recipient_insert_values_array(b : Block, t : Transaction, recipient_index : Int32) : Array(DB::Any)
     ary = [] of DB::Any

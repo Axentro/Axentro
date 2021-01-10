@@ -23,13 +23,13 @@ module ::Axentro::Core
 
     alias TxPoolWork = NamedTuple(call: Int32, content: String)
 
-    def self.setup
-      @@instance ||= FastTransactionPool.new
+    def self.setup(database_path : String)
+      @@instance ||= FastTransactionPool.new(database_path)
       setup_from_database
     end
 
-    def initialize
-      @db = FastPool.new
+    def initialize(@database_path : String)
+      @db = FastPool.new(@database_path)
     end
 
     def self.setup_from_database
