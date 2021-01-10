@@ -105,7 +105,7 @@ module ::Axentro::Core::Controllers
 
     def __v1_pending_block(context, params)
       with_response(context) do
-       @blockchain.mining_block
+        @blockchain.mining_block
       end
     end
 
