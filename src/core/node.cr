@@ -25,6 +25,7 @@ module ::Axentro::Core
     getter network_type : String
     getter chord : Chord
     getter database : Database
+    getter miners_manager : MinersManager
 
     @miners_manager : MinersManager
     @clients_manager : ClientsManager

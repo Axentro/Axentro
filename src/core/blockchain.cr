@@ -66,7 +66,7 @@ module ::Axentro::Core
       info "Security Level Percentage used for blockchain validation is #{@security_level_percentage}"
       info "Blockchain sync chunk size is #{@sync_chunk_size}"
 
-      hours_to_hold = ENV.has_key?("AXE_TESTING") ? 2 : 48
+      hours_to_hold = ENV.has_key?("AXE_TESTING") ? 2 : 8
       @blocks_to_hold = (SLOW_BLOCKS_PER_HOUR * hours_to_hold).to_i64
       info "holding #{@blocks_to_hold} slow blocks and 2000 fast blocks in memory"
     end
@@ -84,8 +84,34 @@ module ::Axentro::Core
 
       restore_from_database(@database)
 
+      spawn mining_block_tracker
+
       unless node.is_private_node?
         spawn process_fast_transactions
+      end
+    end
+
+    # check if the mining is on track
+    def mining_block_tracker
+      loop do
+        spawn do
+          slow_block_mining_check
+        end
+        sleep(2) # check every 2 seconds
+      end
+    end
+
+    private def slow_block_mining_check
+      # if no slow block was mined after 3 mins and there are miners connected then lower the difficulty dynamically
+      if node.miners_manager.miners.size > 0
+        current_block_timestamp = mining_block.timestamp
+        now = __timestamp
+        three_minutes_in_ms = 180000
+
+        if (now - current_block_timestamp) > three_minutes_in_ms
+          warning "No block mined within 3 minutes so auto dropping difficulty"
+          refresh_slow_pending_block(Consensus::DEFAULT_DIFFICULTY_TARGET) unless mining_block.difficulty <= Consensus::DEFAULT_DIFFICULTY_TARGET
+        end
       end
     end
 
