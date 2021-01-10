@@ -393,7 +393,7 @@ module ::Axentro::Interface
 
     private def parse_security_level_percentage(parser : OptionParser, actives : Array(Options))
       parser.on("--security-level-percentage=PERCENT_VALUE", I18n.translate("cli.options.security_level_percentage")) { |slp|
-        @security_level_percentage = slp.to_i64
+        @security_level_percentage = Math.max(slp.to_i64, 2_i64)
       } if is_active?(actives, Options::SECURITY_LEVEL_PERCENTAGE)
     end
 
