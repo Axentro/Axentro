@@ -99,8 +99,23 @@ module ::Axentro::Core::Controllers
       get "/api/v1/nonces/pending/:address" { |context, params| __v1_pending_nonces(context, params) }
 
       post "/api/v1/block" { |context, params| __v1_post_block(context, params) }
+      get "/api/v1/refresh" { |context, params| __v1_refresh(context, params) }
+      get "/api/v1/current" { |context, params| __v1_current(context, params) }
 
       route_handler
+    end
+
+    def __v1_refresh(context, params)
+      with_response(context) do
+        @blockchain.refresh_mining_block(@blockchain.mining_block.difficulty)
+        {"response" => @blockchain.mining_block}
+      end
+    end
+
+    def __v1_current(context, params)
+      with_response(context) do
+        {"response" => @blockchain.mining_block}
+      end
     end
 
     def __v1_post_block(context, params)

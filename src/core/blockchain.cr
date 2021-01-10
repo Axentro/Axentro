@@ -109,8 +109,10 @@ module ::Axentro::Core
         three_minutes_in_ms = 180000
 
         if (now - current_block_timestamp) > three_minutes_in_ms
-          warning "No block mined within 3 minutes so auto dropping difficulty"
-          refresh_slow_pending_block(Consensus::DEFAULT_DIFFICULTY_TARGET) unless mining_block.difficulty <= Consensus::DEFAULT_DIFFICULTY_TARGET
+          unless mining_block.difficulty <= Consensus::DEFAULT_DIFFICULTY_TARGET
+            warning "No block mined within 3 minutes so auto dropping difficulty"
+            refresh_slow_pending_block(Consensus::DEFAULT_DIFFICULTY_TARGET)
+          end
         end
       end
     end
@@ -574,6 +576,13 @@ module ::Axentro::Core
     end
 
     private def refresh_slow_pending_block(difficulty)
+      # we don't want to delete any of the miner nonces unless this refresh is for the next block
+      # otherwise we loose the nonces for the rewards
+      previous_mining_block_index = latest_slow_block.index
+      if _prev_mining_block = @mining_block
+        previous_mining_block_index = _prev_mining_block.index
+      end
+
       the_latest_index = get_latest_index_for_slow
 
       coinbase_amount = coinbase_slow_amount(the_latest_index, embedded_slow_transactions)
@@ -610,7 +619,8 @@ module ::Axentro::Core
       end
 
       # align slow transactions may need to re-calc the rewards so only delete the pool after all calcs are finished
-      MinerNoncePool.delete_embedded
+      # only delete the nonces if this refresh is for the next block (otherwise we loose the nonces for the rewards)
+      MinerNoncePool.delete_embedded if the_latest_index > previous_mining_block_index
 
       node.miners_broadcast
     end
