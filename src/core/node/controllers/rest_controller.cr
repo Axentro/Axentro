@@ -92,6 +92,9 @@ module ::Axentro::Core::Controllers
       post "/api/v1/transaction" { |context, params| __v1_transaction(context, params) }
       post "/api/v1/transaction/unsigned" { |context, params| __v1_transaction_unsigned(context, params) }
 
+      # post "/api/v1/transaction/send_token" { |context, params| __v1_transaction_send_token(context, params) }
+      post "/api/v1/transaction/send_token/unsigned" { |context, params| __v1_transaction_send_token_unsigned(context, params) }
+
       get "/api/v1/wallet/:address" { |context, params| __v1_wallet(context, params) }
       get "/api/v1/search/:term" { |context, params| __v1_search(context, params) }
 
@@ -209,6 +212,26 @@ module ::Axentro::Core::Controllers
           TransactionKind.parse(json["kind"].as_s),
           TransactionVersion.parse(json["version"].as_s)
         )
+      end
+    end
+
+    def __v1_transaction_send_token_unsigned(context, params)
+      with_response(context) do
+        json = parse_body(context)
+        to_address = json["to_address"].as_s
+        from_address = json["from_address"].as_s
+        amount = json["amount"].as_s
+        fee = json["fee"].as_s
+        kind = TransactionKind.parse(json["kind"].as_s)
+        public_key = json["public_key"].as_s
+
+        @blockchain.transaction_creator.create_unsigned_send_token_impl(
+          to_address,
+          from_address,
+          amount,
+          fee,
+          kind,
+          public_key)
       end
     end
 

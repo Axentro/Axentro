@@ -213,6 +213,7 @@ This gets the current transaction fees as json
 ## transaction/unsigned [POST /transaction/unsigned]
 
 Creates an unsigned transaction with the supplied data (which can be used to make a signed transaction) - The transaction is returned in the response with a generated Id which can then be signed and used with the create (signed) transaction API call.
+See this page for help with signing [Signing & Sending Transactions](https://guide.axentro.io/using-the-api/signing-and-sending-transactions)
 
 ### Post Body
 
@@ -224,6 +225,7 @@ The post body is made up of the following mandatory fields:
 * message
 * token
 * kind
+* version
 
 #### Action
 
@@ -236,6 +238,7 @@ action is the type of action to perform - e.g send - is when you want to send so
 #### Senders
 
 This is information about where a payment or action originates - e.g. the address from which to send tokens from. It's made up of an address, amount, fee and public key. It's a list of senders but generally there is only one
+The amount in the senders should be the same amount as put into the recipients for sending tokens
 
 ```json
 {
@@ -246,8 +249,7 @@ This is information about where a payment or action originates - e.g. the addres
       "amount": "1000", 
       "fee":"1",
       "public_key":"the-public-key",
-      "sign_r":"0",
-      "sign_s":"0"
+      "signature":"0",
     }
   ] 
   ...
@@ -257,6 +259,7 @@ This is information about where a payment or action originates - e.g. the addres
 #### Recipients
 
 This is information about when a payment of action is going - e.g. the destination address when sending tokens. It's made up of an address and amount. It's a list of recipients but generally there is only one
+The amount in the recipients should be the same as the amount put into the senders for sending tokens
 
 ```json
 {
@@ -295,6 +298,14 @@ This is the transaction speed either FAST or SLOW
 {"kind": "FAST" ...}
 ```
 
+#### Version
+
+This is the version of the transaction - currently we only have V1
+
+```json
+{"version": "V1" ...}
+```
+
 #### A complete request body
 
 ```json
@@ -307,8 +318,7 @@ This is the transaction speed either FAST or SLOW
         "public_key": "48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242",
         "amount": "5000",
         "fee": "1",
-        "sign_r":"0",
-        "sign_s":"0"
+        "signature":"0"
       }
     ],
   "recipients": 
@@ -320,13 +330,14 @@ This is the transaction speed either FAST or SLOW
     ],
   "message": "",
   "token": "SUPERCOOL",
-  "kind": "FAST"
+  "kind": "FAST",
+  "version": "V1"
 }
 ```
 
 + Request - Create an unsigned transaction (text/plain)
 
-        {"action": "send","senders": [{"address": "VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj","public_key": "48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242","amount": "5000","fee": "1","sign_r":"0","sign_s":"0"}],"recipients": [{"address":"VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx","amount": "5000"}],"message": "","token": "SUPERCOOL", "kind": "FAST"}
+        {"action": "send","senders": [{"address": "VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj","public_key": "48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242","amount": "5000","fee": "1","signature":"0"}],"recipients": [{"address":"VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx","amount": "5000"}],"message": "","token": "SUPERCOOL", "kind": "FAST", "version": "V1"}
 
 + Response 200 (application/json)
 
@@ -345,8 +356,7 @@ This is the transaction speed either FAST or SLOW
                         "public_key": "48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242",
                         "amount": 500000000000,
                         "fee": 100000000,
-                        "sign_r": "0",
-                        "sign_s": "0"
+                        "signature": "0"
                       }
                     ],
                   "recipients": 
@@ -361,7 +371,8 @@ This is the transaction speed either FAST or SLOW
                   "prev_hash": "0",
                   "timestamp": 1529781499,
                   "scaled": 1,
-                  "kind": "FAST"
+                  "kind": "FAST",
+                  "version": "V1"
                 }
             }
 
@@ -370,6 +381,8 @@ This is the transaction speed either FAST or SLOW
 Creates a signed transaction with the supplied data (use after creating an unsigned transaction). The first step is to create an unsigned transaction using the 
 unsigned transaction API. The response from the unsigned call is then used as the payload for this signed API call to send a transaction. The response from the unsigned call
 will return a transactionId as well as the timestamp and the scaled value.
+
+See this page for help with signing [Signing & Sending Transactions](https://guide.axentro.io/using-the-api/signing-and-sending-transactions)
 
 ### Post Body
 
@@ -381,6 +394,7 @@ The post body is made up of the following mandatory fields:
 * message
 * token
 * kind
+* version
 * prev_hash (populated by the unsigned call)
 * timestamp (populated by the unsigned call)
 * scaled    (populated by the unsigned call)
@@ -407,8 +421,7 @@ This is information about where a payment or action originates - e.g. the addres
       "amount": "1000", 
       "fee":"1",
       "public_key":"the-public-key",
-      "sign_r":"0",
-      "sign_s":"0"
+      "signature":"0"
     }
   ] 
   ...
@@ -455,6 +468,15 @@ This is the transaction speed either FAST or SLOW
 ```json
 {"kind": "FAST" ...}
 ```
+
+#### Version
+
+This is the version of the transaction - currently we only have V1
+
+```json
+{"version": "V1" ...}
+```
+
 #### Prev Hash
 
 The response from the unsigned call will contain the prev hash field which is the hash of the previous transaction. It is required to prove the authenticity of the transaction. 
@@ -485,7 +507,7 @@ The amount field is either an Int or a Decimal - this flag sets the type of valu
 To create a transaction that will be accepted by the node you have to sign it with your private key (signing happens inside Senders). A typical usage pattern is to first create an unsigned transaction using the API which will return the original transaction but with an Id and prev hash and then use this to create a signed transaction and send it via this API call. See the help with signing page on the wiki.
 
 ```json
-{"sign_r": "some-signing-r", "sign_s":"some-signing-s" ...}
+{"signature": "some-signature", ...}
 ```
 
 #### A complete request body
@@ -503,8 +525,7 @@ To create a transaction that will be accepted by the node you have to sign it wi
             "public_key": "48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242",
             "amount": 500000000000,
             "fee": 100000000,
-            "sign_r": "0",
-            "sign_s": "0"
+            "signature": "0"
           }
         ],
       "recipients": 
@@ -519,14 +540,15 @@ To create a transaction that will be accepted by the node you have to sign it wi
       "prev_hash": "0",
       "timestamp": 1529781499,
       "scaled": 1,
-      "kind": "FAST"
+      "kind": "FAST",
+      "version": "V1"
     }
 }
 ```
 
 + Request - Create an signed transaction (text/plain)
 
-        {"transaction": {"id":"9581ab8ae3c121cdec9d57613006bae9014a28fb87de2c8c6348adac485d2d4e","action":"send","senders":[{"address":"VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj","public_key":"48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242","amount":5000,"fee":1,"sign_r":"0","sign_s":"0"}],"recipients":[{"address":"VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx","amount":5000}],"message":"","token":"WOOP","prev_hash":"0","timestamp":1529781499,"scaled":1, "kind":"FAST"}}
+        {"transaction": {"id":"9581ab8ae3c121cdec9d57613006bae9014a28fb87de2c8c6348adac485d2d4e","action":"send","senders":[{"address":"VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj","public_key":"48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242","amount":5000,"fee":1,"signature":"0"}],"recipients":[{"address":"VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx","amount":5000}],"message":"","token":"WOOP","prev_hash":"0","timestamp":1529781499,"scaled":1, "kind":"FAST", "version": "V1"}}
 
 + Response 200 (application/json)
 
@@ -545,8 +567,7 @@ To create a transaction that will be accepted by the node you have to sign it wi
                         "public_key": "48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242",
                         "amount": 500000000000,
                         "fee": 100000000,
-                        "sign_r": "0",
-                        "sign_s": "0"
+                        "signature": "0"
                       }
                     ],
                   "recipients": 
@@ -561,7 +582,64 @@ To create a transaction that will be accepted by the node you have to sign it wi
                   "prev_hash": "0",
                   "timestamp": 1529781499,
                   "scaled": 1,
-                  "kind": "FAST"
+                  "kind": "FAST",
+                  "version": "V1"
                 }
             }
             
+## transaction/send_token/unsigned [POST /transaction/send_token/unsigned]
+
+Generates a transaction from the supplied data to be used in the transaction api call.
+
+The post body is made up of the following mandatory fields:
+
+* from_address
+* public_key (for the from_address)
+* amount to send (a string e.g. '50' or '0.1')
+* fee (should be string '0.0001' for sending tokens)
+* to_address
+* kind - the transaction kind - should be FAST 
+
+Use the json payload that is returned to POST in the transaction endpoint to create a transaction (after signing the transaction)
+See this page for help with signing [Signing & Sending Transactions](https://guide.axentro.io/using-the-api/signing-and-sending-transactions)
+
++ Request - Create an unsigned transaction (text/plain)
+
+        {"from_address": "VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj","public_key": "48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242","amount": "5000","fee": "1", "to_address": "VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx", "kind": "FAST"}
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "status": "success",
+              "result": 
+                {
+                  "id": "8069e6049f7175229f8e05e5cf4cd5dacbc82cad08bfbd251408b6e980d90b04",
+                  "action": "send",
+                  "senders": 
+                    [
+                      {
+                        "address": "VDBkYWQxZjZlZjllOTAzYzNiODQ0NmZkZTI4NDBhYmMzYjUxYThjM2E1ZjNkODlj",
+                        "public_key": "48c45b7e45cd415187216452fa22523e002ca042c2bd7205484f29201c3d5806f90e7aeebad37e3fbe01286c25d4027d3f3fec7b5647eff33c07ebd287b57242",
+                        "amount": 500000000000,
+                        "fee": 100000000,
+                        "signature": "0"
+                      }
+                    ],
+                  "recipients": 
+                    [
+                      {
+                        "address": "VDBlY2I4ZjA5MTUxOWE0MTIwNTRmZjlhYTM1YjYxMjcwNjM1YzcxYjlkMDZhZDUx",
+                        "amount": 500000000000
+                      }
+                    ],
+                  "message": "",
+                  "token": "AXNT",
+                  "prev_hash": "0",
+                  "timestamp": 1529781499,
+                  "scaled": 1,
+                  "kind": "FAST",
+                  "version": "V1"
+                }
+            }
