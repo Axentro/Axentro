@@ -84,23 +84,13 @@ module ::Axentro::Core
 
       restore_from_database(@database)
 
-      spawn mining_block_tracker
-
       unless node.is_private_node?
         spawn process_fast_transactions
       end
     end
 
-    # check if the mining is on track
-    def mining_block_tracker
-      loop do
-        spawn do
-          slow_block_mining_check
-        end
-        sleep(2) # check every 2 seconds
-      end
-    end
-
+    # This is in the fast chain file - in the processor - so that we only need to have one loop and spawn
+    # having two of them might have caused some network issue
     private def slow_block_mining_check
       # if no slow block was mined after 3 mins and there are miners connected then lower the difficulty dynamically
       if node.miners_manager.miners.size > 0

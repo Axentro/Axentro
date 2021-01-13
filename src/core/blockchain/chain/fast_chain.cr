@@ -24,6 +24,8 @@ module ::Axentro::Core::FastChain
   def process_fast_transactions
     loop do
       spawn do
+        # check to see if blocks are on track within 3 minutes window
+        slow_block_mining_check
         if node.i_am_a_fast_node?
           begin
             debug "********** process fast transactions ***********"
