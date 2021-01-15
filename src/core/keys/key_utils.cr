@@ -18,6 +18,8 @@ module ::Axentro::Core::Keys
       public_key = Crypto::Ed25519PublicSigningKey.new(hex_public_key)
       signature = Crypto::Ed25519Signature.new(signature_hex)
       signature.check(message, public: public_key)
+    rescue e : Exception
+      raise AxentroException.new("Verify fail: #{e.message}")
     end
 
     def self.sign(hex_private_key, message) : String
