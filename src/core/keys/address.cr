@@ -18,7 +18,7 @@ module ::Axentro::Core::Keys
 
     def initialize(hex_address : String, @network : Core::Node::Network = MAINNET, name : String = "generic")
       @hex = hex_address
-      raise AxentroException.new("invalid #{name} address checksum for: #{@hex}") unless is_valid?
+      raise Axentro::Common::AxentroException.new("invalid #{name} address checksum for: #{@hex}") unless is_valid?
     end
 
     def as_hex : String
@@ -49,7 +49,7 @@ module ::Axentro::Core::Keys
       begin
         decoded_address = Base64.decode_string(hex_address)
       rescue Base64::Error
-        raise AxentroException.new("invalid address")
+        raise Axentro::Common::AxentroException.new("invalid address")
       end
 
       case decoded_address[0..1]
@@ -58,7 +58,7 @@ module ::Axentro::Core::Keys
       when TESTNET[:prefix]
         TESTNET
       else
-        raise AxentroException.new("invalid network: #{decoded_address[0..1]} for address: #{hex_address}")
+        raise Axentro::Common::AxentroException.new("invalid network: #{decoded_address[0..1]} for address: #{hex_address}")
       end
     end
 

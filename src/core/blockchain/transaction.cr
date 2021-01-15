@@ -47,19 +47,19 @@ module ::Axentro::Core
     def validate_common(transactions : Array(Core::Transaction), network_type : String) : ValidatedTransactions
       vt = ValidatedTransactions.empty
       transactions.each do |transaction|
-        raise AxentroException.new("length of transaction id has to be 64: #{transaction.id}") if transaction.id.size != 64
-        raise AxentroException.new("message size exceeds: #{transaction.message.bytesize} for #{MESSAGE_SIZE_LIMIT}") if transaction.message.bytesize > MESSAGE_SIZE_LIMIT
-        raise AxentroException.new("token size exceeds: #{transaction.token.bytesize} for #{TOKEN_SIZE_LIMIT}") if transaction.token.bytesize > TOKEN_SIZE_LIMIT
-        raise AxentroException.new("unscaled transaction") if transaction.scaled != 1
+        raise Axentro::Common::AxentroException.new("length of transaction id has to be 64: #{transaction.id}") if transaction.id.size != 64
+        raise Axentro::Common::AxentroException.new("message size exceeds: #{transaction.message.bytesize} for #{MESSAGE_SIZE_LIMIT}") if transaction.message.bytesize > MESSAGE_SIZE_LIMIT
+        raise Axentro::Common::AxentroException.new("token size exceeds: #{transaction.token.bytesize} for #{TOKEN_SIZE_LIMIT}") if transaction.token.bytesize > TOKEN_SIZE_LIMIT
+        raise Axentro::Common::AxentroException.new("unscaled transaction") if transaction.scaled != 1
 
         transaction.senders.each do |sender|
           network = Keys::Address.from(sender[:address], "sender").network
-          raise AxentroException.new("sender address: #{sender[:address]} has wrong network type: #{network[:name]}, this node is running as: #{network_type}") if network[:name] != network_type
+          raise Axentro::Common::AxentroException.new("sender address: #{sender[:address]} has wrong network type: #{network[:name]}, this node is running as: #{network_type}") if network[:name] != network_type
 
           public_key = Keys::PublicKey.new(sender[:public_key], network)
 
           if public_key.address.as_hex != sender[:address]
-            raise AxentroException.new("sender public key mismatch - sender public key: #{public_key.as_hex} is not for sender address: #{sender[:address]}")
+            raise Axentro::Common::AxentroException.new("sender public key mismatch - sender public key: #{public_key.as_hex} is not for sender address: #{sender[:address]}")
           end
 
           verbose "unsigned_json: #{transaction.as_unsigned.to_json}"
@@ -72,11 +72,11 @@ module ::Axentro::Core
           verbose "verify signature result: #{verify_result}"
 
           if !verify_result
-            raise AxentroException.new("invalid signing for sender: #{sender[:address]}")
+            raise Axentro::Common::AxentroException.new("invalid signing for sender: #{sender[:address]}")
           end
 
           unless Keys::Address.from(sender[:address], "sender")
-            raise AxentroException.new("invalid checksum for sender's address: #{sender[:address]}")
+            raise Axentro::Common::AxentroException.new("invalid checksum for sender's address: #{sender[:address]}")
           end
 
           valid_amount?(sender[:amount])
@@ -85,18 +85,18 @@ module ::Axentro::Core
         transaction.recipients.each do |recipient|
           recipient_address = Keys::Address.from(recipient[:address], "recipient")
           unless recipient_address
-            raise AxentroException.new("invalid checksum for recipient's address: #{recipient[:address]}")
+            raise Axentro::Common::AxentroException.new("invalid checksum for recipient's address: #{recipient[:address]}")
           end
 
           network = recipient_address.network
-          raise AxentroException.new("recipient address: #{recipient[:address]} has wrong network type: #{network[:name]}, this node is running as: #{network_type}") if network[:name] != network_type
+          raise Axentro::Common::AxentroException.new("recipient address: #{recipient[:address]} has wrong network type: #{network[:name]}, this node is running as: #{network_type}") if network[:name] != network_type
 
           valid_amount?(recipient[:amount])
         end
 
         transaction = transaction.set_common_validated
         vt << transaction.as_validated
-      rescue e : AxentroException
+      rescue e : Axentro::Common::AxentroException
         vt << FailedTransaction.new(transaction, e.message || "unknown error", "validate_common").as_validated
       rescue e : Exception
         vt << FailedTransaction.new(transaction, "unepected error", "validate_common").as_validated

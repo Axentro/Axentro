@@ -10,7 +10,7 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Axentro::Core
+module ::Axentro::Common
   class AxentroException < Exception
   end
 end

@@ -9,5 +9,5 @@
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
-
+require "./axentro_exception"
 require "./modules/*"
