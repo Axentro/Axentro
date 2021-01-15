@@ -47,7 +47,8 @@ module ::Axentro::Core
     getter max_miners : Int32
 
     @network_type : String
-    @blocks_to_hold : Int64
+    @slow_blocks_to_hold : Int64
+    @fast_blocks_to_hold : Int64
     @sync_chunk_size : Int32
     @record_nonces : Bool
     @node : Node?
@@ -67,8 +68,9 @@ module ::Axentro::Core
       info "Blockchain sync chunk size is #{@sync_chunk_size}"
 
       hours_to_hold = ENV.has_key?("AXE_TESTING") ? 2 : 8
-      @blocks_to_hold = (SLOW_BLOCKS_PER_HOUR * hours_to_hold).to_i64
-      info "holding #{@blocks_to_hold} slow blocks and 2000 fast blocks in memory"
+      @slow_blocks_to_hold = (SLOW_BLOCKS_PER_HOUR * hours_to_hold).to_i64
+      @fast_blocks_to_hold = @slow_blocks_to_hold
+      info "holding #{@slow_blocks_to_hold} slow blocks and #{@fast_blocks_to_hold} fast blocks in memory"
     end
 
     def database
@@ -111,8 +113,12 @@ module ::Axentro::Core
       @database
     end
 
-    def blocks_to_hold
-      @blocks_to_hold
+    def slow_blocks_to_hold
+      @slow_blocks_to_hold
+    end
+
+    def fast_blocks_to_hold
+      @fast_blocks_to_hold
     end
 
     def node
@@ -133,9 +139,9 @@ module ::Axentro::Core
       info "start loading blockchain from #{database.path}"
       info "there are #{total_blocks} blocks recorded"
 
-      # find most recent 1440 slow block ids
+      # find most recent @slow_blocks_to_hold slow block ids
       highest_slow_index = database.highest_index_of_kind(BlockKind::SLOW)
-      slow_ids = (0_i64..highest_slow_index).reverse_each.select(&.even?).first(@blocks_to_hold).to_a.reverse
+      slow_ids = (0_i64..highest_slow_index).reverse_each.select(&.even?).first(@slow_blocks_to_hold).to_a.reverse
 
       if slow_ids.size > 0
         starting_slow_index = slow_ids.first
@@ -144,9 +150,9 @@ module ::Axentro::Core
         import_slow_blocks(database, slow_ids)
       end
 
-      # find most recent 2000 fast block ids
+      # find most recent @fast_blocks_to_hold fast block ids
       highest_fast_index = database.highest_index_of_kind(BlockKind::FAST)
-      fast_ids = (0_i64..highest_fast_index).reverse_each.select(&.odd?).first(2000).to_a.reverse
+      fast_ids = (0_i64..highest_fast_index).reverse_each.select(&.odd?).first(@fast_blocks_to_hold).to_a.reverse
 
       if fast_ids.size > 0
         starting_fast_index = fast_ids.first
@@ -284,19 +290,45 @@ module ::Axentro::Core
     end
 
     def trim_chain_in_memory
-      slow_blocks = @chain.select(&.is_slow_block?).last(@blocks_to_hold)
+      _trim_chain_in_memory_slow
+      _trim_chain_in_memory_fast
+    end
+
+    private def _trim_chain_in_memory_slow
+      slow_blocks = @chain.select(&.is_slow_block?).last(@slow_blocks_to_hold)
       debug "trim chain, slow block count: #{slow_blocks.size}"
       cutoff_timestamp = slow_blocks[0].timestamp
-      debug "trim chain, 1st block index to hold: #{slow_blocks[0].index} cutoff timestamp is: #{cutoff_timestamp}"
+      debug "trim chain, 1st slow block index to hold: #{slow_blocks[0].index} cutoff timestamp is: #{cutoff_timestamp}"
       if cutoff_timestamp != 0
-        debug "chain size before deletions: #{@chain.size}"
-        @chain.reverse.each { |blk|
+        debug "chain size before slow block deletions: #{@chain.size}"
+        @chain.select(&.is_slow_block?).reverse.each { |blk|
           if (blk.timestamp != 0) && (blk.timestamp < cutoff_timestamp)
-            debug "Deleting block index: #{blk.index} with timestamp: #{blk.timestamp}"
+            debug "Deleting slow block index: #{blk.index} with timestamp: #{blk.timestamp}"
             @chain.delete(blk)
           end
         }
-        debug "chain size after deletions: #{@chain.size}"
+        debug "chain size after slow block deletions: #{@chain.size}"
+      end
+    end
+
+    private def _trim_chain_in_memory_fast
+      fast_blocks = @chain.select(&.is_fast_block?).last(@fast_blocks_to_hold)
+      if fast_blocks.size > 0
+        debug "trim chain, fast block count: #{fast_blocks.size}"
+        cutoff_timestamp = fast_blocks[0].timestamp
+        debug "trim chain, 1st fast block index to hold: #{fast_blocks[0].index} cutoff timestamp is: #{cutoff_timestamp}"
+        if cutoff_timestamp != 0
+          debug "chain size before fast block deletions: #{@chain.size}"
+          @chain.select(&.is_fast_block?).reverse.each { |blk|
+            if (blk.timestamp != 0) && (blk.timestamp < cutoff_timestamp)
+              debug "Deleting fast block index: #{blk.index} with timestamp: #{blk.timestamp}"
+              @chain.delete(blk)
+            end
+          }
+          debug "chain size after fast block deletions: #{@chain.size}"
+        end
+      else
+        debug "there are no fast blocks to trim"
       end
     end
 
