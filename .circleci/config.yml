@@ -4,7 +4,6 @@ jobs:
   tests:
     docker:
       - image: crystallang/crystal:0.35.1
-    resource_class: xlarge
     steps:
       - checkout
       - run: |
@@ -19,8 +18,7 @@ jobs:
 
   e2e-tests-all-public:
     docker:
-      - image: crystallang/crystal:0.35.1
-    resource_class: xlarge  
+      - image: crystallang/crystal:0.35.1 
     steps:
       - checkout
       - run: |
@@ -32,8 +30,7 @@ jobs:
 
   e2e-tests-all-private:
     docker:
-      - image: crystallang/crystal:0.35.1
-    resource_class: xlarge  
+      - image: crystallang/crystal:0.35.1 
     steps:
       - checkout
       - run: |
@@ -45,8 +42,7 @@ jobs:
 
   e2e-tests-one-private:
     docker:
-      - image: crystallang/crystal:0.35.1
-    resource_class: xlarge  
+      - image: crystallang/crystal:0.35.1 
     steps:
       - checkout
       - run: |
