@@ -16,7 +16,7 @@ axe:
         desc:       "verify a wallet file"
         messages:
           verify:   "%{wallet_path} is perfect!"
-          address: "address: %{wallet.address}"
+          address: "address: %{wallet_address}"
           network: "network (%{network_prefix}): %{network_name}"
       encrypt:
         title:      "encrypt"
