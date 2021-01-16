@@ -33,7 +33,7 @@ module ::Axentro::Interface::Axen
         Options::DATABASE_PATH,
         Options::CONFIG_NAME,
         Options::DEVELOPER_FUND,
-        Options::FASTNODE_ADDRESS,
+        Options::FASTNODE,
         Options::SECURITY_LEVEL_PERCENTAGE,
         Options::MAX_MINERS,
         Options::MAX_PRIVATE_NODES,
@@ -57,8 +57,6 @@ module ::Axentro::Interface::Axen
     end
 
     def run_impl(action_name)
-      puts_help(HELP_WALLET_PATH) unless wallet_path = G.op.__wallet_path
-
       unless G.op.__is_private
         puts_help(HELP_PUBLIC_URL) unless public_url = G.op.__public_url
 
@@ -79,7 +77,25 @@ module ::Axentro::Interface::Axen
         has_first_connection = !connect_uri.host.nil?
       end
 
-      wallet = get_wallet(wallet_path, G.op.__wallet_password)
+      wallet = nil
+      wallet_address = nil
+      if G.op.__fastnode
+        puts_help(HELP_WALLET_PATH) unless wallet_path = G.op.__wallet_path
+        wallet = get_wallet(wallet_path, G.op.__wallet_password)
+        wallet_address = wallet.address
+      else
+        if wallet_path = G.op.__wallet_path
+          wallet = get_wallet(wallet_path, G.op.__wallet_password)
+          wallet_address = wallet.address
+        else  
+        puts_help(HELP_NODE_ADDRESS) if G.op.__address.nil?
+
+        wallet_address = G.op.__address.not_nil!
+        
+        
+        
+        end
+      end
 
       database = if database_path = G.op.__database_path
                    Core::Database.new(database_path)
@@ -100,9 +116,9 @@ module ::Axentro::Interface::Axen
       connection_port = get_connecting_port(use_ssl)
 
       node = if has_first_connection
-               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, connect_uri.not_nil!.host, connection_port, wallet, database_path, database, developer_fund, official_nodes, G.op.__exit_if_unofficial, security_level_percentage, sync_chunk_size, record_nonces, max_miners, max_nodes, use_ssl)
+               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, connect_uri.not_nil!.host, connection_port, wallet, wallet_address, database_path, database, developer_fund, official_nodes, G.op.__exit_if_unofficial, security_level_percentage, sync_chunk_size, record_nonces, max_miners, max_nodes, use_ssl)
              else
-               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, nil, nil, wallet, database_path, database, developer_fund, official_nodes, G.op.__exit_if_unofficial, security_level_percentage, sync_chunk_size, record_nonces, max_miners, max_nodes, use_ssl)
+               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, nil, nil, wallet, wallet_address, database_path, database, developer_fund, official_nodes, G.op.__exit_if_unofficial, security_level_percentage, sync_chunk_size, record_nonces, max_miners, max_nodes, use_ssl)
              end
       node.run!
     end

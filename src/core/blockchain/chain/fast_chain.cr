@@ -146,7 +146,7 @@ module ::Axentro::Core::FastChain
 
   def create_coinbase_fast_transaction(coinbase_amount : Int64) : Transaction
     node_reccipient = {
-      address: @wallet.address,
+      address: @wallet_address,
       amount:  coinbase_amount,
     }
 
