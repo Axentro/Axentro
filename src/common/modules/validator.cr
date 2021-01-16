@@ -12,10 +12,7 @@
 
 module ::Axentro::Common::Validator
   def valid_amount?(amount : Int64) : Bool
-    if Int64::MAX < amount || 0 > amount
-      raise AxentroException.new("the amount is out of range")
-    end
-
+    raise InvalidAmount.new if amount < 0
     true
   end
 

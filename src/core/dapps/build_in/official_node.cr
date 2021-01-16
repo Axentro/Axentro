@@ -26,8 +26,8 @@ module ::Axentro::Core::DApps::BuildIn
     def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
       ValidatedTransactions.with(
         transactions.select { |t| transaction_actions.includes?(t.action) },
-        "Creation of official nodes is not currently permitted. Future changes will enable this.", "official_node",
-        transactions.reject { |t| transaction_actions.includes?(t.action) },
+        "Creation of official nodes is not currently permitted. Future changes will enable this.",
+        transactions.reject { |t| transaction_actions.includes?(t.action) }
       )
     end
 

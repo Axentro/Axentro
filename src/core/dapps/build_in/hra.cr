@@ -56,10 +56,10 @@ module ::Axentro::Core::DApps::BuildIn
         when "hra_cancel"
           valid_cancel?(transaction, processed_transactions)
         end
-        vt << transaction.as_validated
+        vt << transaction
         processed_transactions << transaction
       rescue e : Exception
-        vt << FailedTransaction.new(transaction, e.message || "unknown error", "hra").as_validated
+        vt << FailedTransaction.new(transaction, e.message || "unknown error")
       end
       vt
     end

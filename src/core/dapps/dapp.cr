@@ -42,11 +42,11 @@ module ::Axentro::Core::DApps
       transactions.each do |transaction|
         vt << rule_not_enough_fee(transaction) unless transaction.is_coinbase?
       end
-      vt << valid_transactions?(transactions)
+      vt.concat(valid_transactions?(transactions))
     end
 
-    private def rule_not_enough_fee(transaction : Transaction) : ValidatedTransactions
-      transaction.total_fees < self.class.fee(transaction.action) ? FailedTransaction.new(transaction, "not enough fee, should be #{scale_decimal(transaction.total_fees)} >= #{scale_decimal(self.class.fee(transaction.action))}", "not_enough_fee").as_validated : transaction.as_validated
+    private def rule_not_enough_fee(transaction : Transaction)
+      transaction.total_fees < self.class.fee(transaction.action) ? FailedTransaction.new(transaction, "not enough fee, should be #{scale_decimal(transaction.total_fees)} >= #{scale_decimal(self.class.fee(transaction.action))}") : transaction
     end
 
     #

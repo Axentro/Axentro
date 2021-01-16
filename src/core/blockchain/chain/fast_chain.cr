@@ -123,7 +123,7 @@ module ::Axentro::Core::FastChain
 
     # don't validate prev hash here as we haven't assigned them yet. We assign lower down after we have all the valid transactions
     skip_prev_hash_check = true
-    vt << Validation::Transaction.validate_embedded(transactions, self, skip_prev_hash_check)
+    vt.concat(Validation::Transaction.validate_embedded(transactions, self, skip_prev_hash_check))
 
     vt.failed.each do |ft|
       rejects.record_reject(ft.transaction.id, Rejects.address_from_senders(ft.transaction.senders), ft.reason)
