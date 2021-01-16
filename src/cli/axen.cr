@@ -41,6 +41,7 @@ module ::Axentro::Interface::Axen
         Options::EXIT_IF_UNOFFICIAL,
         Options::SYNC_CHUNK_SIZE,
         Options::RECORD_NONCES,
+        Options::ADDRESS,
       ])
     end
 

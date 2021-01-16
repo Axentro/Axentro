@@ -90,7 +90,7 @@ describe Blockchain do
       with_factory do |block_factory|
         # trim_chain_in_memory - should always keep both @slow_blocks_to_hold and @fast_blocks_to_hold in the memory chain
         block_factory.add_fast_blocks(block_factory.fast_blocks_to_hold + 10).add_slow_blocks(block_factory.slow_blocks_to_hold + 10)
-        block_factory.chain.count(&.is_fast_block?).should eq(60)
+        block_factory.chain.count(&.is_fast_block?).should be >= 60
         block_factory.chain.count(&.is_slow_block?).should be >= 60
       end
     end
