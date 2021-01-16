@@ -4,13 +4,14 @@ jobs:
   tests:
     docker:
       - image: crystallang/crystal:0.35.1
+    resource_class: xlarge
     steps:
       - checkout
       - run: |
           apt-get update
           apt-get install curl libsqlite3-dev -y
       - run: |
-          shards build --release
+          shards build --release --no-debug
           crystal spec
           bin/ameba
       - store_artifacts:
@@ -19,37 +20,40 @@ jobs:
   e2e-tests-all-public:
     docker:
       - image: crystallang/crystal:0.35.1
+    resource_class: xlarge  
     steps:
       - checkout
       - run: |
           apt-get update
           apt-get install curl libsqlite3-dev -y
       - run: |
-          shards build --release
+          shards build --release --no-debug
           bin/e2e --mode=all_public --num_tps=10 --num_nodes=3 --num_miners=3 --time=900
 
   e2e-tests-all-private:
     docker:
       - image: crystallang/crystal:0.35.1
+    resource_class: xlarge  
     steps:
       - checkout
       - run: |
           apt-get update
           apt-get install curl libsqlite3-dev -y
       - run: |
-          shards build --release
+          shards build --release --no-debug
           bin/e2e --mode=all_private --num_tps=10 --num_nodes=3 --num_miners=3 --time=900
 
   e2e-tests-one-private:
     docker:
       - image: crystallang/crystal:0.35.1
+    resource_class: xlarge  
     steps:
       - checkout
       - run: |
           apt-get update
           apt-get install curl libsqlite3-dev -y
       - run: |
-          shards build --release
+          shards build --release --no-debug
           bin/e2e --mode=one_private --num_tps=10 --num_nodes=3 --num_miners=3 --time=900
 
   docker-build:
@@ -70,14 +74,6 @@ jobs:
           docker push axentro/axentro
           docker build -t axentro/axen .
           docker push axentro/axen
-
-  publish-bintray:
-    machine: true
-    steps:
-      - checkout
-      - run: |
-          publish/build_version.sh > version.txt
-          publish/bintray.sh
 
 workflows:
   version: 2
