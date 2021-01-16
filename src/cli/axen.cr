@@ -87,13 +87,10 @@ module ::Axentro::Interface::Axen
         if wallet_path = G.op.__wallet_path
           wallet = get_wallet(wallet_path, G.op.__wallet_password)
           wallet_address = wallet.address
-        else  
-        puts_help(HELP_NODE_ADDRESS) if G.op.__address.nil?
+        else
+          puts_help(HELP_NODE_ADDRESS) if G.op.__address.nil?
 
-        wallet_address = G.op.__address.not_nil!
-        
-        
-        
+          wallet_address = G.op.__address.not_nil!
         end
       end
 

@@ -44,6 +44,7 @@ module ::Axentro::Core
 
     getter chain : Chain = [] of (SlowBlock | FastBlock)
     # getter wallet : Wallet
+    getter wallet_address : String
     getter max_miners : Int32
 
     @network_type : String

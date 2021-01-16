@@ -170,7 +170,7 @@ module ::Axentro::Core::DApps::User
     def create_sender(amount : String) : SendersDecimal
       senders = SendersDecimal.new
       senders.push({
-        address:    blockchain.wallet.address,
+        address:    blockchain.wallet_address,
         public_key: blockchain.wallet.public_key,
         amount:     amount,
         fee:        "0.0001",
@@ -257,8 +257,8 @@ module ::Axentro::Core::DApps::User
     # !!!!!!!!!!!!!!!!!!!!!!!!!
     #
     def setup
-      if !valid_addresses.empty? && !valid_addresses.includes?(blockchain.wallet.address)
-        raise "#{self.class} cannot activate with #{blockchain.wallet.address}. available: #{valid_addresses}"
+      if !valid_addresses.empty? && !valid_addresses.includes?(blockchain.wallet_address)
+        raise "#{self.class} cannot activate with #{blockchain.wallet_address}. available: #{valid_addresses}"
       end
 
       unless valid_networks.includes?(node.network_type)
