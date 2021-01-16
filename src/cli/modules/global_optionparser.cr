@@ -386,7 +386,7 @@ module ::Axentro::Interface
     end
 
     private def parse_fast_node(parser : OptionParser, actives : Array(Options))
-      parser.on("--fastnode", I18n.translate("cli.options.fastnode")) { |fastnode|
+      parser.on("--fastnode", I18n.translate("cli.options.fastnode")) {
         @fastnode = true
       } if is_active?(actives, Options::FASTNODE)
     end

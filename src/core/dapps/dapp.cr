@@ -78,4 +78,3 @@ module ::Axentro::Core::DApps
 end
 
 require "./build_in"
-require "../../../dapps/dapps"
