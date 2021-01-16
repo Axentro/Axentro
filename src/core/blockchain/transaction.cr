@@ -99,7 +99,7 @@ module ::Axentro::Core
       rescue e : Axentro::Common::AxentroException
         vt << FailedTransaction.new(transaction, e.message || "unknown error", "validate_common").as_validated
       rescue e : Exception
-        vt << FailedTransaction.new(transaction, "unepected error", "validate_common").as_validated
+        vt << FailedTransaction.new(transaction, "unexpected error", "validate_common").as_validated
         error("#{e.class}: #{e.message || "unknown error"}\n#{e.backtrace.join("\n")}")
       end
       vt
