@@ -9,5 +9,8 @@
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
-require "./axentro_exception"
-require "./modules/*"
+
+module ::Axentro::Common
+  class AxentroException < Exception
+  end
+end
