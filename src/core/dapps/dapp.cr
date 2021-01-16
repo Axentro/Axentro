@@ -46,7 +46,7 @@ module ::Axentro::Core::DApps
     end
 
     private def rule_not_enough_fee(transaction : Transaction)
-      transaction.total_fees < self.class.fee(transaction.action) ? FailedTransaction.new(transaction, "not enough fee, should be #{scale_decimal(transaction.total_fees)} >= #{scale_decimal(self.class.fee(transaction.action))}", "not_enough_fee") : transaction
+      transaction.total_fees < self.class.fee(transaction.action) ? FailedTransaction.new(transaction, "not enough fee, should be #{scale_decimal(transaction.total_fees)} >= #{scale_decimal(self.class.fee(transaction.action))}") : transaction
     end
 
     #

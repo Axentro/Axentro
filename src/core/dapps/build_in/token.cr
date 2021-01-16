@@ -136,7 +136,7 @@ module ::Axentro::Core::DApps::BuildIn
         vt << transaction
         processed_transactions << transaction
       rescue e : Exception
-        vt << FailedTransaction.new(transaction, e.message || "unknown error", "token")
+        vt << FailedTransaction.new(transaction, e.message || "unknown error")
       end
       vt
     end

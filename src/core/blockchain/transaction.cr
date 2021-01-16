@@ -97,9 +97,9 @@ module ::Axentro::Core
         transaction = transaction.set_common_validated
         vt << transaction
       rescue e : Axentro::Common::AxentroException
-        vt << FailedTransaction.new(transaction, e.message || "unknown error", "validate_common")
+        vt << FailedTransaction.new(transaction, e.message || "unknown error")
       rescue e : Exception
-        vt << FailedTransaction.new(transaction, "unexpected error", "validate_common")
+        vt << FailedTransaction.new(transaction, "unexpected error")
         error("#{e.class}: #{e.message || "unknown error"}\n#{e.backtrace.join("\n")}")
       end
       vt
@@ -123,9 +123,9 @@ module ::Axentro::Core
         end
         vt << transaction
       rescue e : Axentro::Common::AxentroException
-        vt << FailedTransaction.new(transaction, e.message || "unknown error", "validate_coinbase")
+        vt << FailedTransaction.new(transaction, e.message || "unknown error")
       rescue e : Exception
-        vt << FailedTransaction.new(transaction, "unexpected error", "validate_coinbase")
+        vt << FailedTransaction.new(transaction, "unexpected error")
         error("#{e.class}: #{e.message || "unknown error"}\n#{e.backtrace.join("\n")}")
       end
       vt
@@ -138,7 +138,7 @@ module ::Axentro::Core
         extend self
 
         def rule_sender_mismatch(transaction : Core::Transaction)
-          transaction.sender_total_amount != transaction.recipient_total_amount ? FailedTransaction.new(transaction, "amount mismatch for senders (#{scale_decimal(transaction.sender_total_amount)}) and recipients (#{scale_decimal(transaction.recipient_total_amount)})", "sender_mismatch") : transaction
+          transaction.sender_total_amount != transaction.recipient_total_amount ? FailedTransaction.new(transaction, "amount mismatch for senders (#{scale_decimal(transaction.sender_total_amount)}) and recipients (#{scale_decimal(transaction.recipient_total_amount)})") : transaction
         end
 
         def rule_sender_mismatches(transactions : Array(Core::Transaction)) : ValidatedTransactions
@@ -154,11 +154,11 @@ module ::Axentro::Core
         extend self
 
         def rule_coinbase_prev_hash(coinbase_transaction : Core::Transaction)
-          coinbase_transaction.prev_hash != "0" ? FailedTransaction.new(coinbase_transaction, "invalid prev_hash: expected 0 but got #{coinbase_transaction.prev_hash}", "prev_hash") : coinbase_transaction
+          coinbase_transaction.prev_hash != "0" ? FailedTransaction.new(coinbase_transaction, "invalid prev_hash: expected 0 but got #{coinbase_transaction.prev_hash}") : coinbase_transaction
         end
 
         def rule_prev_hash(transaction : Core::Transaction, prev_transaction : Core::Transaction)
-          transaction.prev_hash != prev_transaction.to_hash ? FailedTransaction.new(transaction, "invalid prev_hash: expected #{prev_transaction.to_hash} but got #{transaction.prev_hash}", "prev_hash") : transaction
+          transaction.prev_hash != prev_transaction.to_hash ? FailedTransaction.new(transaction, "invalid prev_hash: expected #{prev_transaction.to_hash} but got #{transaction.prev_hash}") : transaction
         end
 
         def rule_prev_hashes(transactions : Array(Core::Transaction))
@@ -185,12 +185,12 @@ module ::Axentro::Core
       ValidatedTransactions.new(Array(FailedTransaction).new,Array(Core::Transaction).new)
     end
 
-    def self.passed(transactions : Array(Core::Transaction))
-      ValidatedTransactions.new([] of FailedTransaction, transactions)
+    def self.with(failed_transactions : Array(Core::Transaction), reason : String, passed_transactions : Array(Core::Transaction))
+      ValidatedTransactions.new(failed_transactions.map { |t| FailedTransaction.new(t, reason) }, passed_transactions)
     end
 
-    def self.with(failed_transactions : Array(Core::Transaction), reason : String, location : String, passed_transactions : Array(Core::Transaction))
-      ValidatedTransactions.new(failed_transactions.map { |t| FailedTransaction.new(t, reason, location) }, passed_transactions)
+    def self.passed(transactions : Array(Core::Transaction))
+      ValidatedTransactions.new([] of FailedTransaction, transactions)
     end
 
     def <<(failed_tx : FailedTransaction)
@@ -239,7 +239,7 @@ module ::Axentro::Core
     getter transaction : Core::Transaction
     getter reason : String
 
-    def initialize(@transaction : Core::Transaction, @reason : String, @location : String)
+    def initialize(@transaction : Core::Transaction, @reason : String)
     end
   end
 

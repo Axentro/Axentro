@@ -35,11 +35,11 @@ module ::Axentro::Core::DApps::User
     end
 
     private def validated_transaction(transaction : Transaction)
-      return FailedTransaction.new(transaction, "the token must be #{TOKEN_DEFAULT}", "create_transaction") unless transaction.token == TOKEN_DEFAULT
-      return FailedTransaction.new(transaction, "the number of senders must be 1", "create_transaction") unless transaction.senders.size == 1
-      return FailedTransaction.new(transaction, "the number of recipients must be 1", "create_transaction") unless transaction.recipients.size == 1
-      return FailedTransaction.new(transaction, "the recipient address must be #{VALID_ADDRESS}", "create_transaction") unless transaction.recipients[0][:address] == VALID_ADDRESS
-      return FailedTransaction.new(transaction, "the sending amount must be 0.0001", "create_transaction") unless transaction.senders[0][:amount] == scale_i64("0.0001")
+      return FailedTransaction.new(transaction, "the token must be #{TOKEN_DEFAULT}") unless transaction.token == TOKEN_DEFAULT
+      return FailedTransaction.new(transaction, "the number of senders must be 1") unless transaction.senders.size == 1
+      return FailedTransaction.new(transaction, "the number of recipients must be 1") unless transaction.recipients.size == 1
+      return FailedTransaction.new(transaction, "the recipient address must be #{VALID_ADDRESS}") unless transaction.recipients[0][:address] == VALID_ADDRESS
+      return FailedTransaction.new(transaction, "the sending amount must be 0.0001") unless transaction.senders[0][:amount] == scale_i64("0.0001")
       transaction
     end
 
@@ -48,7 +48,7 @@ module ::Axentro::Core::DApps::User
       transactions.each do |transaction|
         vt << validated_transaction(transaction)
       rescue e : Exception
-        vt << FailedTransaction.new(transaction, e.message || "unknown error", "create_transaction")
+        vt << FailedTransaction.new(transaction, e.message || "unknown error")
       end
       vt
     end
