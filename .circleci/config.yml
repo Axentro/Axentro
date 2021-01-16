@@ -96,9 +96,3 @@ workflows:
           filters:
             branches:
               only: master
-      - publish-bintray:
-          requires:
-            - tests
-            - e2e-tests-all-public
-            - e2e-tests-all-private
-            - e2e-tests-one-private
