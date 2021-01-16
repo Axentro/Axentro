@@ -96,21 +96,15 @@ module ::Axentro::Core
     end
 
     private def memory_or_disk(value : String) : String
-      value.starts_with?(MEMORY) ? value : File.expand_path(value)
+      # value.starts_with?(MEMORY) ? value : File.expand_path(value)
+      if value.starts_with?(MEMORY)
+        value
+      else
+        dir = Path[value].parent.to_s
+        FileUtils.mkdir_p(dir) unless File.exists?(dir)
+        File.expand_path(value)
+      end
     end
-
-    # def replace_block(block : SlowBlock | FastBlock)
-    #   delete_block(block.index)
-    #   push_block(block)
-    # end
-
-    # def replace_chain(chain : Blockchain::Chain)
-    #   delete_blocks(chain[0].index)
-
-    #   chain.each do |block|
-    #     push_block(block)
-    #   end
-    # end
 
     def highest_index_of_kind(kind : Block::BlockKind) : Int64
       idx : Int64? = nil
