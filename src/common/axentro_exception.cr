@@ -13,4 +13,10 @@
 module ::Axentro::Common
   class AxentroException < Exception
   end
+
+  class InvalidAmount < AxentroException
+    def initialize
+      super("the amount is out of range")
+    end
+  end
 end

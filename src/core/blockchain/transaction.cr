@@ -43,55 +43,70 @@ module ::Axentro::Core
       vt
     end
 
+    def validate_senders(transaction : Axentro::Core::Transaction, network_type : String)
+      transaction.senders.each do |sender|
+        network = Keys::Address.from(sender[:address], "sender").network
+        return FailedTransaction.new(transaction, "sender address: #{sender[:address]} has wrong network type: #{network[:name]}, this node is running as: #{network_type}") if network[:name] != network_type
+
+        public_key = Keys::PublicKey.new(sender[:public_key], network)
+
+        if public_key.address.as_hex != sender[:address]
+          return FailedTransaction.new(transaction, "sender public key mismatch - sender public key: #{public_key.as_hex} is not for sender address: #{sender[:address]}")
+        end
+
+        verbose "unsigned_json: #{transaction.as_unsigned.to_json}"
+        verbose "unsigned_json_hash: #{transaction.as_unsigned.to_hash}"
+        verbose "public key: #{public_key.as_hex}"
+        verbose "signature: #{sender[:signature]}"
+
+        verify_result = KeyUtils.verify_signature(transaction.as_unsigned.to_hash, sender[:signature], public_key.as_hex)
+
+        verbose "verify signature result: #{verify_result}"
+
+        if !verify_result
+          return FailedTransaction.new(transaction, "invalid signing for sender: #{sender[:address]}")
+        end
+
+        unless Keys::Address.from(sender[:address], "sender")
+          return FailedTransaction.new(transaction, "invalid checksum for sender's address: #{sender[:address]}")
+        end
+
+        valid_amount?(sender[:amount])
+        nil
+      end
+    end
+
+    def validate_recipients(transaction : Core::Transaction, network_type : String)
+      transaction.recipients.each do |recipient|
+        recipient_address = Keys::Address.from(recipient[:address], "recipient")
+        unless recipient_address
+          return FailedTransaction.new(transaction, "invalid checksum for recipient's address: #{recipient[:address]}")
+        end
+
+        network = recipient_address.network
+        return FailedTransaction.new(transaction, "recipient address: #{recipient[:address]} has wrong network type: #{network[:name]}, this node is running as: #{network_type}") if network[:name] != network_type
+
+        valid_amount?(recipient[:amount])
+      end
+    end
+
     # ameba:disable Metrics/CyclomaticComplexity
     def validate_common(transactions : Array(Core::Transaction), network_type : String) : ValidatedTransactions
       vt = ValidatedTransactions.empty
       transactions.each do |transaction|
-        raise Axentro::Common::AxentroException.new("length of transaction id has to be 64: #{transaction.id}") if transaction.id.size != 64
-        raise Axentro::Common::AxentroException.new("message size exceeds: #{transaction.message.bytesize} for #{MESSAGE_SIZE_LIMIT}") if transaction.message.bytesize > MESSAGE_SIZE_LIMIT
-        raise Axentro::Common::AxentroException.new("token size exceeds: #{transaction.token.bytesize} for #{TOKEN_SIZE_LIMIT}") if transaction.token.bytesize > TOKEN_SIZE_LIMIT
-        raise Axentro::Common::AxentroException.new("unscaled transaction") if transaction.scaled != 1
+        vt << FailedTransaction.new(transaction, "length of transaction id has to be 64: #{transaction.id}") && next if transaction.id.size != 64
+        vt << FailedTransaction.new(transaction, "message size exceeds: #{transaction.message.bytesize} for #{MESSAGE_SIZE_LIMIT}") && next if transaction.message.bytesize > MESSAGE_SIZE_LIMIT
+        vt << FailedTransaction.new(transaction, "token size exceeds: #{transaction.token.bytesize} for #{TOKEN_SIZE_LIMIT}") && next if transaction.token.bytesize > TOKEN_SIZE_LIMIT
+        vt << FailedTransaction.new(transaction, "unscaled transaction") && next if transaction.scaled != 1
 
-        transaction.senders.each do |sender|
-          network = Keys::Address.from(sender[:address], "sender").network
-          raise Axentro::Common::AxentroException.new("sender address: #{sender[:address]} has wrong network type: #{network[:name]}, this node is running as: #{network_type}") if network[:name] != network_type
-
-          public_key = Keys::PublicKey.new(sender[:public_key], network)
-
-          if public_key.address.as_hex != sender[:address]
-            raise Axentro::Common::AxentroException.new("sender public key mismatch - sender public key: #{public_key.as_hex} is not for sender address: #{sender[:address]}")
-          end
-
-          verbose "unsigned_json: #{transaction.as_unsigned.to_json}"
-          verbose "unsigned_json_hash: #{transaction.as_unsigned.to_hash}"
-          verbose "public key: #{public_key.as_hex}"
-          verbose "signature: #{sender[:signature]}"
-
-          verify_result = KeyUtils.verify_signature(transaction.as_unsigned.to_hash, sender[:signature], public_key.as_hex)
-
-          verbose "verify signature result: #{verify_result}"
-
-          if !verify_result
-            raise Axentro::Common::AxentroException.new("invalid signing for sender: #{sender[:address]}")
-          end
-
-          unless Keys::Address.from(sender[:address], "sender")
-            raise Axentro::Common::AxentroException.new("invalid checksum for sender's address: #{sender[:address]}")
-          end
-
-          valid_amount?(sender[:amount])
+        if failed_transaction = validate_senders(transaction, network_type)
+          vt << failed_transaction
+          next
         end
 
-        transaction.recipients.each do |recipient|
-          recipient_address = Keys::Address.from(recipient[:address], "recipient")
-          unless recipient_address
-            raise Axentro::Common::AxentroException.new("invalid checksum for recipient's address: #{recipient[:address]}")
-          end
-
-          network = recipient_address.network
-          raise Axentro::Common::AxentroException.new("recipient address: #{recipient[:address]} has wrong network type: #{network[:name]}, this node is running as: #{network_type}") if network[:name] != network_type
-
-          valid_amount?(recipient[:amount])
+        if failed_transaction = validate_recipients(transaction, network_type)
+          vt << failed_transaction
+          next
         end
 
         transaction = transaction.set_common_validated
@@ -108,18 +123,19 @@ module ::Axentro::Core
     def validate_coinbase(coinbase_transactions : Array(Core::Transaction), embedded_transactions : Array(Core::Transaction), blockchain : Blockchain, block_index : Int64) : ValidatedTransactions
       vt = ValidatedTransactions.empty
       coinbase_transactions.each do |transaction|
-        raise Axentro::Common::AxentroException.new("actions has to be 'head' for coinbase transaction") if transaction.action != "head"
-        raise Axentro::Common::AxentroException.new("message has to be '0' for coinbase transaction") if transaction.message != "0"
-        raise Axentro::Common::AxentroException.new("token has to be #{TOKEN_DEFAULT} for coinbase transaction") if transaction.token != TOKEN_DEFAULT
-        raise Axentro::Common::AxentroException.new("there should be no Sender for a coinbase transaction") if transaction.senders.size != 0
-        raise Axentro::Common::AxentroException.new("prev_hash of coinbase transaction has to be '0'") if transaction.prev_hash != "0"
+        vt << FailedTransaction.new(transaction, "actions has to be 'head' for coinbase transaction") && next if transaction.action != "head"
+        vt << FailedTransaction.new(transaction, "message has to be '0' for coinbase transaction") && next if transaction.message != "0"
+        vt << FailedTransaction.new(transaction, "token has to be #{TOKEN_DEFAULT} for coinbase transaction") && next if transaction.token != TOKEN_DEFAULT
+        vt << FailedTransaction.new(transaction, "there should be no Sender for a coinbase transaction") && next if transaction.senders.size != 0
+        vt << FailedTransaction.new(transaction, "prev_hash of coinbase transaction has to be '0'") && next if transaction.prev_hash != "0"
 
         served_sum = transaction.recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
         served_sum_expected = transaction.is_slow_transaction? ? (blockchain.coinbase_slow_amount(block_index, embedded_transactions) + blockchain.total_fees(embedded_transactions)) : blockchain.coinbase_fast_amount(block_index, embedded_transactions)
 
         if served_sum != served_sum_expected
-          raise Axentro::Common::AxentroException.new("invalid served amount for coinbase transaction at index: #{block_index} " +
+          vt << FailedTransaction.new(transaction, "invalid served amount for coinbase transaction at index: #{block_index} " +
                 "expected #{scale_decimal(served_sum_expected)} but got #{scale_decimal(served_sum)}")
+          next
         end
         vt << transaction
       rescue e : Axentro::Common::AxentroException
@@ -212,25 +228,25 @@ module ::Axentro::Core
       self
     end
 
-    def add_passed_unless_dup(other : ValidatedTransactions)
+    private def add_passed_unless_dup(other : ValidatedTransactions)
       # add the new transactions unless already exists or it was already failed
       other.passed.each do |transaction|
-        self.passed << transaction unless self.passed.map(&.id).includes?(transaction.id) || self.failed.map(&.transaction.id).includes?(transaction.id)
+        passed << transaction unless passed.map(&.id).includes?(transaction.id) || failed.map(&.transaction.id).includes?(transaction.id)
       end
 
       # if any of the new transactions are common validated and already stored in passed - updated the stored ones
       # and set them as common validated
       other.passed.select { |t| t.is_common_validated? }.each do |transaction|
-        self.passed.each do |validated_transaction|
+        passed.each do |validated_transaction|
           validated_transaction.set_common_validated if transaction.is_common_validated?
         end
       end
     end
 
-    def add_failed_unless_dup(other : ValidatedTransactions)
+    private def add_failed_unless_dup(other : ValidatedTransactions)
       # add the new transactions unless already exists
       other.failed.each do |ft|
-        self.failed << ft unless self.failed.map(&.transaction.id).includes?(ft.transaction.id)
+        failed << ft unless failed.map(&.transaction.id).includes?(ft.transaction.id)
       end
     end
   end
@@ -239,7 +255,7 @@ module ::Axentro::Core
     getter transaction : Core::Transaction
     getter reason : String
 
-    def initialize(@transaction : Core::Transaction, @reason : String)
+    def initialize(@transaction, @reason : String)
     end
   end
 
@@ -247,7 +263,7 @@ module ::Axentro::Core
     getter transaction : Core::Transaction
     getter block : Int64
 
-    def initialize(@transaction : Core::Transaction, @block : Int64)
+    def initialize(@transaction, @block)
     end
   end
 
