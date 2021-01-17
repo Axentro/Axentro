@@ -18,6 +18,7 @@ module ::Axentro::Interface
     HELP_WALLET_PASSWORD                  = I18n.translate("help.wallet.password")
     HELP_WALLET_MUST_BE_ENCRYPTED         = I18n.translate("help.wallet.encrypted")
     HELP_ADDRESS_DOMAIN_RECIPIENT         = I18n.translate("help.address")
+    HELP_NODE_ADDRESS                     = I18n.translate("help.node.address")
     HELP_AMOUNT                           = I18n.translate("help.amount")
     HELP_CONNECTING_NODE                  = I18n.translate("help.node.connecting")
     HELP_BLOCK_INDEX_OR_ADDRESS           = I18n.translate("help.block.address")

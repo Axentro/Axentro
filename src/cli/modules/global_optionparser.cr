@@ -62,7 +62,7 @@ module ::Axentro::Interface
     @node_id : String?
 
     @developer_fund_path : String?
-    @fastnode_address : String?
+    @fastnode : Bool = false
     @official_nodes_path : String?
     @exit_if_unofficial : Bool = false
 
@@ -113,7 +113,7 @@ module ::Axentro::Interface
       # for node
       NODE_ID
       DEVELOPER_FUND
-      FASTNODE_ADDRESS
+      FASTNODE
       OFFICIAL_NODES
       SECURITY_LEVEL_PERCENTAGE
       SYNC_CHUNK_SIZE
@@ -154,7 +154,7 @@ module ::Axentro::Interface
         parse_config_name(parser, actives)
         parse_node_id(parser, actives)
         parse_developer_fund(parser, actives)
-        parse_fast_node_address(parser, actives)
+        parse_fast_node(parser, actives)
         parse_official_nodes(parser, actives)
         parse_if_unofficial_nodes(parser, actives)
         parse_security_level_percentage(parser, actives)
@@ -385,10 +385,10 @@ module ::Axentro::Interface
       } if is_active?(actives, Options::OFFICIAL_NODES)
     end
 
-    private def parse_fast_node_address(parser : OptionParser, actives : Array(Options))
-      parser.on("--fastnode-address=FASTNODE_ADDRESS", I18n.translate("cli.options.fastnode_address")) { |fastnode_address|
-        @fastnode_address = fastnode_address
-      } if is_active?(actives, Options::FASTNODE_ADDRESS)
+    private def parse_fast_node(parser : OptionParser, actives : Array(Options))
+      parser.on("--fastnode", I18n.translate("cli.options.fastnode")) {
+        @fastnode = true
+      } if is_active?(actives, Options::FASTNODE)
     end
 
     private def parse_security_level_percentage(parser : OptionParser, actives : Array(Options))
@@ -568,8 +568,8 @@ module ::Axentro::Interface
       Core::OfficialNodes.validate(@official_nodes_path)
     end
 
-    def __fastnode_address : String?
-      Core::FastNode.validate(@fastnode_address)
+    def __fastnode : Bool
+      @fastnode
     end
 
     def __exit_if_unofficial : Bool

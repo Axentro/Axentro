@@ -43,7 +43,8 @@ module ::Axentro::Core
     )
 
     getter chain : Chain = [] of (SlowBlock | FastBlock)
-    getter wallet : Wallet
+    # getter wallet : Wallet
+    getter wallet_address : String
     getter max_miners : Int32
 
     @network_type : String
@@ -58,7 +59,7 @@ module ::Axentro::Core
     @is_standalone : Bool
     @database_path : String
 
-    def initialize(@network_type : String, @wallet : Wallet, @database_path : String, @database : Database, @developer_fund : DeveloperFund?, @official_nodes : OfficialNodes?, @security_level_percentage : Int64, @sync_chunk_size : Int32, @record_nonces : Bool, @max_miners : Int32, @is_standalone : Bool)
+    def initialize(@network_type : String, @wallet : Wallet?, @wallet_address : String, @database_path : String, @database : Database, @developer_fund : DeveloperFund?, @official_nodes : OfficialNodes?, @security_level_percentage : Int64, @sync_chunk_size : Int32, @record_nonces : Bool, @max_miners : Int32, @is_standalone : Bool)
       initialize_dapps
       SlowTransactionPool.setup
       FastTransactionPool.setup(@database_path)
@@ -613,9 +614,6 @@ module ::Axentro::Core
       transactions = align_slow_transactions(coinbase_transaction, coinbase_amount, the_latest_index, embedded_slow_transactions)
       timestamp = __timestamp
 
-      wallet = node.get_wallet
-      address = wallet.address
-
       debug "We are in refresh_mining_block, the next block will have a difficulty of #{difficulty}"
 
       @mining_block = SlowBlock.new(
@@ -625,7 +623,7 @@ module ::Axentro::Core
         latest_slow_block.to_hash,
         timestamp,
         difficulty,
-        address
+        @wallet_address
       )
 
       latest_hash = @mining_block.not_nil!.to_hash
@@ -706,14 +704,14 @@ module ::Axentro::Core
 
       # if I am the fastnode then should add the fee to the node_recipient if not then use this fastnode_recipient
       node_recipient_amount = coinbase_amount - miners_recipients.reduce(0_i64) { |sum, m| sum + m[:amount] }
-      if official_node.i_am_a_fastnode?(@wallet.address)
+      if official_node.i_am_a_fastnode?(@wallet_address)
         recipient_list << {
-          address: @wallet.address,
+          address: @wallet_address,
           amount:  node_recipient_amount + fee,
         }
       else
         recipient_list << {
-          address: @wallet.address,
+          address: @wallet_address,
           amount:  node_recipient_amount,
         }
         recipient_list += fastnode_recipient

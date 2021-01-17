@@ -10,6 +10,7 @@ help:
   node:
     connecting: "please specify a connecting node: -n http://[host]:[port]"
     id: "please specify a node id: --node_id=[node_id]"
+    address: "please specify the nodes address: --address=[node_address] or -a node_address"
   block:
     address: "please specify a block index or an address: -i [block index] or -a [address]"
     transaction: "please specify a block index or transaction id: -i [block index] or -t [transaction id]"

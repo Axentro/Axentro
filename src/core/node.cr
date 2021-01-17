@@ -55,7 +55,8 @@ module ::Axentro::Core
       @ssl : Bool?,
       @connect_host : String?,
       @connect_port : Int32?,
-      @wallet : Wallet,
+      @wallet : Wallet?,
+      @wallet_address : String,
       @database_path : String,
       @database : Database,
       @developer_fund : DeveloperFund?,
@@ -79,8 +80,8 @@ module ::Axentro::Core
       end
 
       @network_type = @is_testnet ? "testnet" : "mainnet"
-      @blockchain = Blockchain.new(@network_type, @wallet, @database_path, @database, @developer_fund, @official_nodes, @security_level_percentage, @sync_chunk_size, @record_nonces, @max_miners, is_standalone?)
-      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @max_private_nodes, @wallet.address, @blockchain.official_node, @exit_on_unofficial)
+      @blockchain = Blockchain.new(@network_type, @wallet, @wallet_address, @database_path, @database, @developer_fund, @official_nodes, @security_level_percentage, @sync_chunk_size, @record_nonces, @max_miners, is_standalone?)
+      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @max_private_nodes, @wallet_address, @blockchain.official_node, @exit_on_unofficial)
       @miners_manager = MinersManager.new(@blockchain, @is_private)
       @clients_manager = ClientsManager.new(@blockchain)
 
@@ -101,7 +102,7 @@ module ::Axentro::Core
       @pubsub_controller = Controllers::PubsubController.new(@blockchain)
       @wallet_info_controller = Controllers::WalletInfoController.new(@blockchain)
 
-      wallet_network = Wallet.address_network_type(@wallet.address)
+      wallet_network = Wallet.address_network_type(@wallet_address)
 
       unless wallet_network[:name] == @network_type
         error "wallet type mismatch"
@@ -118,7 +119,7 @@ module ::Axentro::Core
     end
 
     def i_am_a_fast_node?
-      @blockchain.official_node.i_am_a_fastnode?(@wallet.address)
+      @blockchain.official_node.i_am_a_fastnode?(@wallet_address)
     end
 
     def fastnode_is_online?

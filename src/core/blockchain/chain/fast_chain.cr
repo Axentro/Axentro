@@ -91,25 +91,28 @@ module ::Axentro::Core::FastChain
 
     timestamp = __timestamp
 
-    wallet = node.get_wallet
-    address = wallet.address
-    public_key = wallet.public_key
-    latest_block_hash = _latest_block.to_hash
+    if wallet = node.get_wallet
+      address = wallet.address
+      public_key = wallet.public_key
+      latest_block_hash = _latest_block.to_hash
 
-    hash = FastBlock.to_hash(latest_index, transactions, latest_block_hash, address, public_key)
-    private_key = Wif.new(wallet.wif).private_key.as_hex
-    signature = KeyUtils.sign(private_key, hash)
+      hash = FastBlock.to_hash(latest_index, transactions, latest_block_hash, address, public_key)
+      private_key = Wif.new(wallet.wif).private_key.as_hex
+      signature = KeyUtils.sign(private_key, hash)
 
-    FastBlock.new(
-      latest_index,
-      transactions,
-      latest_block_hash,
-      timestamp,
-      address,
-      public_key,
-      signature,
-      hash
-    )
+      FastBlock.new(
+        latest_index,
+        transactions,
+        latest_block_hash,
+        timestamp,
+        address,
+        public_key,
+        signature,
+        hash
+      )
+    else
+      raise Axentro::Common::AxentroException.new("error could not mint fast block as wallet was nil")
+    end
   end
 
   def align_fast_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64, embedded_fast_transactions : Array(Transaction)) : Transactions
@@ -146,7 +149,7 @@ module ::Axentro::Core::FastChain
 
   def create_coinbase_fast_transaction(coinbase_amount : Int64) : Transaction
     node_reccipient = {
-      address: @wallet.address,
+      address: @wallet_address,
       amount:  coinbase_amount,
     }
 
