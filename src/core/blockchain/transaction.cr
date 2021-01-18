@@ -135,7 +135,7 @@ module ::Axentro::Core
 
         if served_sum != served_sum_expected
           vt << FailedTransaction.new(transaction, "invalid served amount for coinbase transaction at index: #{block_index} " +
-                "expected #{scale_decimal(served_sum_expected)} but got #{scale_decimal(served_sum)}")
+                                                   "expected #{scale_decimal(served_sum_expected)} but got #{scale_decimal(served_sum)}")
           next
         end
         vt << transaction
@@ -199,7 +199,7 @@ module ::Axentro::Core
     end
 
     def self.empty
-      ValidatedTransactions.new(Array(FailedTransaction).new,Array(Core::Transaction).new)
+      ValidatedTransactions.new(Array(FailedTransaction).new, Array(Core::Transaction).new)
     end
 
     def self.with(failed_transactions : Array(Core::Transaction), reason : String, passed_transactions : Array(Core::Transaction))
