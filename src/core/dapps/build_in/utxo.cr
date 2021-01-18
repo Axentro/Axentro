@@ -102,10 +102,10 @@ module ::Axentro::Core::DApps::BuildIn
           end
         end
 
-        vt << transaction.as_validated
+        vt << transaction
         processed_transactions << transaction
       rescue e : Exception
-        vt << FailedTransaction.new(transaction, e.message || "unknown error", "utxo").as_validated
+        vt << FailedTransaction.new(transaction, e.message || "unknown error")
       end
 
       vt

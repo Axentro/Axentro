@@ -115,8 +115,8 @@ module ::Axentro::Core
       coinbase_transactions = vt.passed.select(&.is_coinbase?)
       body_transactions = vt.passed.reject(&.is_coinbase?)
 
-      vt << Validation::Transaction.validate_coinbase(coinbase_transactions, body_transactions, blockchain, @index)
-      vt << Validation::Transaction.validate_embedded(coinbase_transactions + body_transactions, blockchain)
+      vt.concat(Validation::Transaction.validate_coinbase(coinbase_transactions, body_transactions, blockchain, @index))
+      vt.concat(Validation::Transaction.validate_embedded(coinbase_transactions + body_transactions, blockchain))
       vt
     end
 

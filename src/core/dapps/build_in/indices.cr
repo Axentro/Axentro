@@ -35,13 +35,13 @@ module ::Axentro::Core::DApps::BuildIn
       transactions.each do |transaction|
         existing_transactions.each do |existing_transaction|
           if existing_transaction.transaction.id == transaction.id
-            failed << FailedTransaction.new(transaction, "the transaction #{transaction.id} already exists in block: #{existing_transaction.block}", "indices")
+            failed << FailedTransaction.new(transaction, "the transaction #{transaction.id} already exists in block: #{existing_transaction.block}")
           end
         end
       end
 
       transactions.map(&.id).tally.select { |_, v| v > 1 }.keys.each do |transaction_id|
-        failed << FailedTransaction.new(transactions.find { |t| t.id == transaction_id }.not_nil!, "the transaction #{transaction_id} already exists in the same block", "indices")
+        failed << FailedTransaction.new(transactions.find { |t| t.id == transaction_id }.not_nil!, "the transaction #{transaction_id} already exists in the same block")
       end
 
       passed = transactions.reject { |t| failed.map(&.transaction.id).includes?(t.id) }
