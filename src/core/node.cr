@@ -746,17 +746,17 @@ module ::Axentro::Core
     # on the parent
     private def _request_validation_challenge_check(socket, _content)
       _m_content = MContentNodeRequestValidationChallengeCheck.from_json(_content)
-      # validation_hash = _m_content.validation_hash
+      validation_hash = _m_content.validation_hash
 
       debug "checking validation challenge hash from connecting node"
 
-      # if validation_hash == @validation_hash
-      info "validation hash succesfully confirmed so informing connecting node"
-      send(socket, M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS, {} of String => String)
-      # else
-      #   warning "validation hash failed so rejecting connection ..."
-      #   send(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Database validation failed: your data is not compatible with our data!"})
-      # end
+      if validation_hash == @validation_hash
+        info "validation hash succesfully confirmed so informing connecting node"
+        send(socket, M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS, {} of String => String)
+      else
+        warning "validation hash failed so rejecting connection ..."
+        send(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Database validation failed: your data is not compatible with our data!"})
+      end
     end
 
     # on the child

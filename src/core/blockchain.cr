@@ -360,17 +360,7 @@ module ::Axentro::Core
     end
 
     def get_hash_of_block_hashes(block_ids : Array(Int64))
-      concatenated_hashes = ""
-      block_ids.each do |id|
-        _block = database.get_block(id)
-        if _block
-          concatenated_hashes += _block.prev_hash
-        else
-          warning "expected block id #{id} not found in database"
-        end
-      end
-      debug "Size of concatendated of block prev_hashes to be hashed: #{concatenated_hashes.size}"
-      sha256(concatenated_hashes)
+      @database.make_validation_hash_from(block_ids)
     end
 
     def create_indexes_to_check(incoming_chain)

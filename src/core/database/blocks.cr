@@ -265,6 +265,19 @@ module ::Axentro::Core::Data::Blocks
     ids
   end
 
+  def make_validation_hash_from(block_ids : Array(Int64)) : String
+    hashes = [] of String
+    ids = block_ids.map { |b| "'#{b}'" }.uniq.join(",")
+    @db.query("select prev_hash from blocks where idx in (#{ids})") do |rows|
+      rows.each do
+        res = rows.read(String)
+        hashes << res
+      end
+    end
+    concatenated_hashes = hashes.join("")
+    sha256(concatenated_hashes)
+  end
+
   # ------- API -------
   def get_paginated_blocks(page, per_page, direction, sort_field) : Blockchain::Chain
     page = page * per_page
