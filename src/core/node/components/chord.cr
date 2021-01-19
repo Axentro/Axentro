@@ -53,7 +53,9 @@ module ::Axentro::Core::NodeComponents
       @max_private_nodes : Int32,
       @wallet_address : String,
       @official_node : DApps::BuildIn::OfficialNode,
-      @exit_if_unofficial : Bool
+      @exit_if_unofficial : Bool,
+      @whitelist : Array(String),
+      @whitelist_message : String
     )
       @node_id = NodeID.new
 
@@ -138,6 +140,13 @@ module ::Axentro::Core::NodeComponents
       if _context[:type] != @network_type
         send_once(_context, M_TYPE_CHORD_JOIN_REJECTED, {reason: "network type mismatch. " +
                                                                  "your network: #{_context[:type]}, our network: #{@network_type}"})
+        return
+      end
+
+      info "checking if host is in whitelist: host is: #{_context[:host]}:#{_context[:port]} and whitelist is: #{@whitelist.inspect}"
+      if !@whitelist.includes?(_context[:host])
+        warning "node was rejected as not in the whitelist: #{_context[:host]}:#{_context[:port]}"
+        send_once(_context, M_TYPE_CHORD_JOIN_REJECTED, {reason: "node connections are disabled for this node: " + @whitelist_message})
         return
       end
 

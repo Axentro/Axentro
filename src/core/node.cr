@@ -67,6 +67,8 @@ module ::Axentro::Core
       @record_nonces : Bool,
       @max_miners : Int32,
       @max_private_nodes : Int32,
+      @whitelist : Array(String),
+      @whitelist_message : String,
       @use_ssl : Bool = false
     )
       welcome
@@ -81,7 +83,7 @@ module ::Axentro::Core
 
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @blockchain = Blockchain.new(@network_type, @wallet, @wallet_address, @database_path, @database, @developer_fund, @official_nodes, @security_level_percentage, @sync_chunk_size, @record_nonces, @max_miners, is_standalone?)
-      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @max_private_nodes, @wallet_address, @blockchain.official_node, @exit_on_unofficial)
+      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @max_private_nodes, @wallet_address, @blockchain.official_node, @exit_on_unofficial, @whitelist, @whitelist_message)
       @miners_manager = MinersManager.new(@blockchain, @is_private)
       @clients_manager = ClientsManager.new(@blockchain)
 
@@ -91,6 +93,11 @@ module ::Axentro::Core
       info "max miners allowed to connect is #{light_green(@max_miners)}"
       info "your log level is #{light_green(log_level_text)}"
       info "record nonces is set to #{light_green(@record_nonces)}"
+
+      if @whitelist.size > 0
+        info "whitelist enabled: #{@whitelist.inspect}"
+        info "whitelist message: #{@whitelist_message}"
+      end
 
       debug "is_private: #{light_green(@is_private)}"
       debug "public url: #{light_green(@public_host)}:#{light_green(@public_port)}" unless @is_private

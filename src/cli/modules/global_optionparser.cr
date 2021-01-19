@@ -72,6 +72,9 @@ module ::Axentro::Interface
     @is_fast_transaction : Bool = false
     @record_nonces : Bool = false
 
+    @whitelist : Array(String) = [] of String
+    @whitelist_message : String = ""
+
     enum Options
       # common options
       CONNECT_NODE
@@ -121,6 +124,8 @@ module ::Axentro::Interface
       MAX_PRIVATE_NODES
       EXIT_IF_UNOFFICIAL
       RECORD_NONCES
+      WHITELIST
+      WHITELIST_MESSAGE
     end
 
     def create_option_parser(actives : Array(Options)) : OptionParser
@@ -166,6 +171,8 @@ module ::Axentro::Interface
         parse_seed(parser, actives)
         parse_derivation(parser, actives)
         parse_record_nonces(parser, actives)
+        parse_whitelist(parser, actives)
+        parse_whitelist_message(parser, actives)
       end
     end
 
@@ -430,6 +437,18 @@ module ::Axentro::Interface
       } if is_active?(actives, Options::MAX_MINERS)
     end
 
+    private def parse_whitelist(parser : OptionParser, actives : Array(Options))
+      parser.on("--whitelist=VALUE", I18n.translate("cli.options.whitelist")) { |v|
+        @whitelist = v.split(",").uniq
+      } if is_active?(actives, Options::WHITELIST)
+    end
+
+    private def parse_whitelist_message(parser : OptionParser, actives : Array(Options))
+      parser.on("--whitelist-message=VALUE", I18n.translate("cli.options.whitelist_message")) { |v|
+        @whitelist_message = v
+      } if is_active?(actives, Options::WHITELIST_MESSAGE)
+    end
+
     private def parse_max_private_nodes(parser : OptionParser, actives : Array(Options))
       parser.on("--max-private-nodes=VALUE", I18n.translate("cli.options.max_private_nodes")) { |v|
         @max_nodes = v.to_i
@@ -490,6 +509,14 @@ module ::Axentro::Interface
 
     def __address : String?
       with_string_config("address", @address)
+    end
+
+    def __whitelist : Array(String)
+      @whitelist
+    end
+
+    def __whitelist_message : String
+      @whitelist_message
     end
 
     def __amount : String?

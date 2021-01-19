@@ -18,7 +18,9 @@ describe Blockchain do
   it "should create a genesis block with no transactions when no developer fund is provided" do
     node_wallet = Wallet.from_json(Wallet.create(true).to_json)
     database = Axentro::Core::Database.in_memory
-    node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, node_wallet, node_wallet.address, "", database, nil, nil, false, 20, 100, false, 512, 512, false)
+    whitelist = [] of String
+    whitelist_message = ""
+    node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, node_wallet, node_wallet.address, "", database, nil, nil, false, 20, 100, false, 512, 512, whitelist, whitelist_message, false)
     blockchain = node.blockchain
     blockchain.setup(node)
 
@@ -31,7 +33,9 @@ describe Blockchain do
     node_wallet = Wallet.from_json(Wallet.create(true).to_json)
     database = Axentro::Core::Database.in_memory
     developer_fund = DeveloperFund.validate("#{__DIR__}/../../utils/data/developer_fund.yml")
-    node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, node_wallet, node_wallet.address, "", database, developer_fund, nil, false, 20, 100, false, 512, 512, false)
+    whitelist = [] of String
+    whitelist_message = ""
+    node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, node_wallet, node_wallet.address, "", database, developer_fund, nil, false, 20, 100, false, 512, 512, whitelist, whitelist_message, false)
     blockchain = node.blockchain
     blockchain.setup(node)
 

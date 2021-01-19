@@ -45,5 +45,8 @@ cli:
     max_private_nodes: "set the max number of private nodes that can connect to the node (default is 512)"
     official_nodes: "configure the list of official nodes"
     unofficial: "terminate the node when not connected to an official network"
+    whitelist: "specify a comma separated list of nodes to whitelist"
+    whitelist_message: "specify a message for rejected nodes"
+    fastnode: "indicate this node is a fastnode"
   errors:
     decimal: "please supply valid decimal number: %{value}"

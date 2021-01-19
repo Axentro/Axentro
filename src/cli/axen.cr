@@ -42,6 +42,8 @@ module ::Axentro::Interface::Axen
         Options::SYNC_CHUNK_SIZE,
         Options::RECORD_NONCES,
         Options::ADDRESS,
+        Options::WHITELIST,
+        Options::WHITELIST_MESSAGE,
       ])
     end
 
@@ -110,12 +112,15 @@ module ::Axentro::Interface::Axen
       max_nodes = G.op.__max_nodes
       record_nonces = G.op.__record_nonces
 
+      whitelist = G.op.__whitelist
+      whitelist_message = G.op.__whitelist_message
+
       connection_port = get_connecting_port(use_ssl)
 
       node = if has_first_connection
-               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, connect_uri.not_nil!.host, connection_port, wallet, wallet_address, database_path, database, developer_fund, official_nodes, G.op.__exit_if_unofficial, security_level_percentage, sync_chunk_size, record_nonces, max_miners, max_nodes, use_ssl)
+               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, connect_uri.not_nil!.host, connection_port, wallet, wallet_address, database_path, database, developer_fund, official_nodes, G.op.__exit_if_unofficial, security_level_percentage, sync_chunk_size, record_nonces, max_miners, max_nodes, whitelist, whitelist_message, use_ssl)
              else
-               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, nil, nil, wallet, wallet_address, database_path, database, developer_fund, official_nodes, G.op.__exit_if_unofficial, security_level_percentage, sync_chunk_size, record_nonces, max_miners, max_nodes, use_ssl)
+               Core::Node.new(G.op.__is_private, G.op.__is_testnet, G.op.__bind_host, G.op.__bind_port, public_host, public_port, ssl, nil, nil, wallet, wallet_address, database_path, database, developer_fund, official_nodes, G.op.__exit_if_unofficial, security_level_percentage, sync_chunk_size, record_nonces, max_miners, max_nodes, whitelist, whitelist_message, use_ssl)
              end
       node.run!
     end
