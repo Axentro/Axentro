@@ -143,11 +143,13 @@ module ::Axentro::Core::NodeComponents
         return
       end
 
-      info "checking if host is in whitelist: host is: #{_context[:host]}:#{_context[:port]} and whitelist is: #{@whitelist.inspect}"
-      if !@whitelist.includes?(_context[:host])
-        warning "node was rejected as not in the whitelist: #{_context[:host]}:#{_context[:port]}"
-        send_once(_context, M_TYPE_CHORD_JOIN_REJECTED, {reason: "node connections are disabled for this node: " + @whitelist_message})
-        return
+      if @whitelist.size > 0
+        info "checking if host is in whitelist: host is: #{_context[:host]}:#{_context[:port]} and whitelist is: #{@whitelist.inspect}"
+        if !@whitelist.includes?(_context[:host])
+          warning "node was rejected as not in the whitelist: #{_context[:host]}:#{_context[:port]}"
+          send_once(_context, M_TYPE_CHORD_JOIN_REJECTED, {reason: "node connections are disabled for this node: " + @whitelist_message})
+          return
+        end
       end
 
       search_successor(node, _context)
