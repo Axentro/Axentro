@@ -422,9 +422,9 @@ module ::Axentro::Core::NodeComponents
       @predecessor
     end
 
-    def find_nodes : NamedTuple(successor: Node?, private_nodes: Nodes)
+    def find_nodes : NamedTuple(successors: Nodes, private_nodes: Nodes)
       {
-        successor:     @successor_list.size > 0 ? @successor_list[0] : nil,
+        successors:     @successor_list,
         private_nodes: @private_nodes,
       }
     end

@@ -367,12 +367,37 @@ module ::Axentro::Core
       end
     end
 
+    # def send_on_chord(message_type, content, from : Chord::NodeContext? = nil)
+    #   _nodes = @chord.find_nodes
+
+    #   if @is_private
+    #     if successor = _nodes[:successor]
+    #       prevent_self_connecting_case(message_type, content, from, successor)
+    #     end
+    #   else
+    #     _nodes[:private_nodes].each do |private_node|
+    #       next if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
+    #       send(private_node[:socket], message_type, content)
+    #     end
+
+    #     if successor = _nodes[:successor]
+    #       if successor[:context][:id] != content[:from][:id]
+    #         send(successor[:socket], message_type, content)
+    #       end
+    #     end
+    #   end
+    # end
+
+
     def send_on_chord(message_type, content, from : Chord::NodeContext? = nil)
       _nodes = @chord.find_nodes
 
       if @is_private
-        if successor = _nodes[:successor]
-          prevent_self_connecting_case(message_type, content, from, successor)
+        # if successor = _nodes[:successor]
+        #   prevent_self_connecting_case(message_type, content, from, successor)
+        # end
+        _nodes[:successors].each do |node|
+          prevent_self_connecting_case(message_type, content, from, node)
         end
       else
         _nodes[:private_nodes].each do |private_node|
@@ -380,11 +405,18 @@ module ::Axentro::Core
           send(private_node[:socket], message_type, content)
         end
 
-        if successor = _nodes[:successor]
-          if successor[:context][:id] != content[:from][:id]
-            send(successor[:socket], message_type, content)
-          end
+        # if successor = _nodes[:successor]
+        #   if successor[:context][:id] != content[:from][:id]
+        #     send(successor[:socket], message_type, content)
+        #   end
+        # end
+
+        # remove a successor if the send is coming from that successor in the first place
+        _nodes[:successors].each.reject{|n| n[:context][:id] == content[:from][:id]}.each do |successor|
+          send(successor[:socket], message_type, content)
         end
+          
+        
       end
     end
 
