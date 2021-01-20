@@ -31,7 +31,7 @@ module ::Axentro::Core::NodeComponents
       @most_difficult_block_so_far = @blockchain.genesis_block
     end
 
-    def handshake(socket, _content)
+    def handshake(socket, context, _content)
       return unless node.phase == SetupPhase::DONE
 
       verbose "requested handshake from a miner"
@@ -81,8 +81,9 @@ module ::Axentro::Core::NodeComponents
 
       @miners << miner
 
+      remote_address = context.try(&.request.remote_address.to_s) || "unknown"
       miner_name = HumanHash.humanize(mid)
-      info "new miner: #{light_green(miner_name)} (#{@miners.size})"
+      info "new miner (#{remote_address}) : #{light_green(miner_name)} (#{@miners.size})"
 
       send(socket, M_TYPE_MINER_HANDSHAKE_ACCEPTED, {
         version:    Core::CORE_VERSION,

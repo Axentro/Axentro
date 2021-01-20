@@ -274,7 +274,9 @@ module ::Axentro::Core
     end
 
     private def peer_handler : WebSocketHandler
-      WebSocketHandler.new("/peer") { |socket, _| peer(socket) }
+      WebSocketHandler.new("/peer") { |socket, context|
+        peer(socket, context)
+      }
     end
 
     private def v1_api_documentation_handler : ApiDocumentationHandler
@@ -282,7 +284,7 @@ module ::Axentro::Core
     end
 
     # ameba:disable Metrics/CyclomaticComplexity
-    def peer(socket : HTTP::WebSocket)
+    def peer(socket : HTTP::WebSocket, context : HTTP::Server::Context? = nil)
       socket.on_message do |message|
         message_json = JSON.parse(message)
         message_type = message_json["type"].as_i
@@ -290,7 +292,7 @@ module ::Axentro::Core
 
         case message_type
         when M_TYPE_MINER_HANDSHAKE
-          @miners_manager.handshake(socket, message_content)
+          @miners_manager.handshake(socket, context, message_content)
         when M_TYPE_MINER_FOUND_NONCE
           @miners_manager.found_nonce(socket, message_content)
         when M_TYPE_CLIENT_HANDSHAKE
