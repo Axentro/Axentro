@@ -235,14 +235,17 @@ module ::Axentro::Core::NodeComponents
            )
           info "found new predecessor: #{_context[:host]}:#{_context[:port]}"
           @predecessor = {socket: socket, context: _context}
+          node.send_nodes_joined(all_node_contexts)
         elsif @node_id > predecessor_node_id &&
               @node_id > _context[:id] &&
               predecessor_node_id < _context[:id]
           info "found new predecessor: #{_context[:host]}:#{_context[:port]}"
           @predecessor = {socket: socket, context: _context}
+          node.send_nodes_joined(all_node_contexts)
         end
       else
         info "found new predecessor: #{_context[:host]}:#{_context[:port]}"
+        node.send_nodes_joined(all_node_contexts)
         @predecessor = {socket: socket, context: _context}
       end
 
@@ -274,13 +277,15 @@ module ::Axentro::Core::NodeComponents
              successor_node_id > _context[:id]
            )
           connect_to_successor(node, _context)
+          node.send_nodes_joined(all_node_contexts)
         elsif @node_id < successor_node_id &&
               @node_id < _context[:id] &&
               successor_node_id > _context[:id]
+              puts "STA_2"
           connect_to_successor(node, _context)
+          node.send_nodes_joined(all_node_contexts)
         end
       end
-      node.send_nodes_joined(all_node_contexts)
     end
 
     def table_line(col0 : String, col1 : String, delimiter = "|")
@@ -432,7 +437,8 @@ module ::Axentro::Core::NodeComponents
     def find_all_nodes : NamedTuple(private_nodes: Nodes, public_nodes: Set(NodeContext))
       {
         private_nodes: @private_nodes,
-        public_nodes:  @finger_table.reject { |ctx| ctx[:id] == context[:id] }.to_set,
+        public_nodes:  @finger_table.group_by{|ctx| [ctx[:host], ctx[:port]] }.flat_map(&.last)
+                       .reject { |ctx| ctx[:id] == context[:id] }.to_set
       }
     end
 
