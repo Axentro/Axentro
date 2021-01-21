@@ -369,6 +369,35 @@ module ::Axentro::Core
       end
     end
 
+
+    # def broadcast_on_chord(message_type, content, from : Chord::NodeContext? = nil)
+    #   _nodes = @chord.find_nodes
+    #   _all_public_nodes = @chord.find_all_nodes[:public_nodes]
+
+    #   if @is_private
+    #     if successor = _nodes[:successor]
+    #       prevent_self_connecting_case(message_type, content, from, successor)
+    #     end
+    #   else
+    #     _nodes[:private_nodes].each do |private_node|
+    #       next if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
+    #       send(private_node[:socket], message_type, content)
+    #     end
+
+    #     if successor = _nodes[:successor]
+    #       if successor[:context][:id] != content[:from][:id]
+    #         warning "sending to successor: #{successor[:context][:port]}, #{message_type}"
+    #         send(successor[:socket], message_type, content)
+    #       end
+
+    #       _all_public_nodes.reject{|n| n[:host] == successor[:context][:host] && n[:port] == successor[:context][:port]}.each do |n|
+    #         info "sending to node: #{n[:host]}:#{n[:port]}"
+    #         end
+    #     end
+
+    #   end
+    # end
+
     def send_on_chord(message_type, content, from : Chord::NodeContext? = nil)
       _nodes = @chord.find_nodes
 
@@ -384,6 +413,7 @@ module ::Axentro::Core
 
         if successor = _nodes[:successor]
           if successor[:context][:id] != content[:from][:id]
+            warning "sending to successor: #{message_type}"
             send(successor[:socket], message_type, content)
           end
         end
