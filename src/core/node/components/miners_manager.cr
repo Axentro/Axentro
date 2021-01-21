@@ -19,6 +19,12 @@ module ::Axentro::Core::NodeComponents
     def initialize(@socket, @mid, @difficulty); end
   end
 
+  class NonceMeta
+    property difficulty : Int32
+    property deviance : Int64
+    def initialize(@difficulty, @deviance); end
+  end
+
   class MinersManager < HandleSocket
     include NonceModels
 
@@ -26,7 +32,7 @@ module ::Axentro::Core::NodeComponents
 
     @most_difficult_block_so_far : SlowBlock
     @block_start_time : Int64
-    @miner_difficulty_map : Hash(String,Array(Int32)) = {} of String => Array(Int32)
+    @nonce_meta_map : Hash(String,Array(NonceMeta)) = {} of String => Array(NonceMeta)
 
     getter miners : Miners = Miners.new
 
@@ -86,6 +92,8 @@ module ::Axentro::Core::NodeComponents
 
       @miners << miner
 
+      @nonce_meta_map[miner.mid] = [] of NonceMeta
+
       remote_address = context.try(&.request.remote_address.to_s) || "unknown"
       miner_name = HumanHash.humanize(mid)
       info "new miner (#{remote_address}) : #{light_green(miner_name)} (#{@miners.size})"
@@ -98,35 +106,39 @@ module ::Axentro::Core::NodeComponents
 
       spawn do
       loop do
-         sleep 10
+         sleep 20
         puts "MINER CHECK"
         @miners.each do |miner|
           puts "In miner"
           existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
           if existing_miner_nonces.size > 0
-            last_miner_nonce = existing_miner_nonces.sort_by{|mn| mn.timestamp }.reverse
-            time_difference = __timestamp - last_miner_nonce.first.timestamp
-            if time_difference > 10
-              # if the last nonce the miner sent was more than 10 seconds ago since last nonce - decrease difficulty - resend block
-              miner.difficulty = Math.max(1, miner.difficulty - 1)
-              decreased = miner.difficulty
-              info "(check) decrease difficulty to #{decreased} for deviance: #{time_difference}"
-              send_updated_block(miner.socket, decreased)
-            else
-               # if the last nonce the miner sent was less than 10 seconds ago since last nonce - increase difficulty - resend block
-               miner.difficulty = Math.max(1, miner.difficulty + 1)
-               increased = miner.difficulty
-              info "(check) increased difficulty to #{increased} for deviance: #{time_difference}"
-              send_updated_block(miner.socket, increased)
-            end       
+            
+            # nonce_meta = @nonce_meta_map[miner.mid]
+            # average_deviance = (nonce_meta.map(&.deviance).sum / nonce_meta.size).to_i
+            # average_difficulty = (nonce_meta.map(&.difficulty).sum / nonce_meta.size).to_i
+
+            # if average_deviance > 10000
+            #   # if the last nonce the miner sent was more than 10 seconds ago since last nonce - decrease difficulty - resend block
+            #   last_difficulty = miner.difficulty
+            #   miner.difficulty = Math.max(1, average_difficulty - 1)
+            #   if last_difficulty != miner.difficulty
+            #     info "(check) decrease difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
+            #     send_updated_block(miner.socket, miner.difficulty)
+            #   end
+            # else
+            #   # if the last nonce the miner sent was less than 10 seconds ago since last nonce - increase difficulty - resend block
+            #   last_difficulty = miner.difficulty
+            #   miner.difficulty = Math.max(1, average_difficulty + 1)
+            #   if last_difficulty != miner.difficulty
+            #     info "(check) increased difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
+            #     send_updated_block(miner.socket, miner.difficulty)
+            #   end
+            # end
           else
             #no nonces found within 10 secs so decrease difficulty
-            puts "miner.difficulty = #{miner.difficulty}"
             miner.difficulty = Math.max(1, miner.difficulty - 1)
-            puts "miner.difficulty = #{miner.difficulty}"
-            decreased = miner.difficulty
-            info "(check) decrease difficulty to #{decreased} as no nonce found within 10 seconds"
-            send_updated_block(miner.socket, decreased)
+            info "(check) decrease difficulty to #{miner.difficulty} as no nonces found within 10 seconds"
+            send_updated_block(miner.socket, miner.difficulty)
           end
       end
       end
@@ -174,51 +186,74 @@ module ::Axentro::Core::NodeComponents
           miner_nonce = miner_nonce.with_node_id(node.get_node_id).with_mid(miner.mid)
           @blockchain.add_miner_nonce(miner_nonce)
 
-          # add the nonce to the historic tracking
-          @miner_difficulty_map[miner.mid] << miner.difficulty
-
           miner_name = HumanHash.humanize(miner.mid)
           nonces_size = @blockchain.miner_nonce_pool.find_by_mid(miner.mid).size
           info "miner #{miner_name} found nonce at timestamp #{mined_timestamp}.. (nonces: #{nonces_size}) mined with difficulty #{mined_difficulty} "
-
           
           # find last nonce the miner sent
           existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
           if existing_miner_nonces.size > 0
             last_miner_nonce = existing_miner_nonces.sort_by{|mn| mn.timestamp }.reverse
             time_difference = mined_timestamp - last_miner_nonce.first.timestamp
-            if time_difference > 1000
+            
+            # add the nonce to the historic tracking
+            @nonce_meta_map[miner.mid] << NonceMeta.new(miner.difficulty, time_difference)
+            
+            nonce_meta = @nonce_meta_map[miner.mid]
+            average_deviance = (nonce_meta.map(&.deviance).sum / nonce_meta.size).to_i
+            average_difficulty = (nonce_meta.map(&.difficulty).sum / nonce_meta.size).to_i
+
+            if average_deviance > 10000
               # if the last nonce the miner sent was more than 10 seconds ago since last nonce - decrease difficulty - resend block
-              miner.difficulty = Math.max(1, miner.difficulty - 1)
-              decreased = miner.difficulty
-              info "(found_nonce) decrease difficulty to #{decreased} for deviance: #{time_difference}"
-              send_updated_block(miner.socket, decreased)
+              last_difficulty = miner.difficulty
+              miner.difficulty = Math.max(1, average_difficulty - 1)
+              if last_difficulty != miner.difficulty
+                info "(found_nonce) decrease difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
+                send_updated_block(miner.socket, miner.difficulty)
+              end
             else
-               # if the last nonce the miner sent was less than 10 seconds ago since last nonce - increase difficulty - resend block
-               miner.difficulty = Math.max(1, miner.difficulty + 2)
-               increased = miner.difficulty
-              info "(found_nonce) increased difficulty to #{increased} for deviance: #{time_difference}"
-              send_updated_block(mi@miner_difficulty_map[miner.mid] ner.socket, increased)
-            end       
+              # if the last nonce the miner sent was less than 10 seconds ago since last nonce - increase difficulty - resend block
+              last_difficulty = miner.difficulty
+              miner.difficulty = Math.max(1, average_difficulty + 1)
+              if last_difficulty != miner.difficulty
+                info "(found_nonce) increased difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
+                send_updated_block(miner.socket, miner.difficulty) unless last_difficulty == miner.difficulty
+              end
+            end
+
+
+            # if time_difference > 1000
+            #   # if the last nonce the miner sent was more than 10 seconds ago since last nonce - decrease difficulty - resend block
+            #   miner.difficulty = Math.max(1, miner.difficulty - 1)
+            #   decreased = miner.difficulty
+            #   info "(found_nonce) decrease difficulty to #{decreased} for deviance: #{time_difference}"
+            #   send_updated_block(miner.socket, decreased)
+            # else
+            #    # if the last nonce the miner sent was less than 10 seconds ago since last nonce - increase difficulty - resend block
+            #    miner.difficulty = Math.max(1, miner.difficulty + 2)
+            #    increased = miner.difficulty
+            #   info "(found_nonce) increased difficulty to #{increased} for deviance: #{time_difference}"
+            #   send_updated_block(mi@miner_difficulty_map[miner.mid] ner.socket, increased)
+            # end       
             # if the last nonce the miner sent was exactly 10 seconds ago since last nonce - same difficulty - nothing to do  
           end
 
-          info "found nonce of #{block.nonce} that doesn't satisfy block difficulty, checking if it is the best so far"
+          debug "found nonce of #{block.nonce} that doesn't satisfy block difficulty, checking if it is the best so far"
           current_miner_difficulty = block_difficulty_to_miner_difficulty(@blockchain.mining_block_difficulty)
           if (mined_difficulty > current_miner_difficulty) && (mined_difficulty > @highest_difficulty_mined_so_far)
-            info "This block is now the most difficult recorded"
+            debug "This block is now the most difficult recorded"
             @most_difficult_block_so_far = block.dup
             @highest_difficulty_mined_so_far = mined_difficulty
           else
-            info "This block was not the most difficult recorded, miner still gets credit for sending the nonce"
+            debug "This block was not the most difficult recorded, miner still gets credit for sending the nonce"
           end
           if mined_timestamp > @block_start_time + (Consensus::POW_TARGET_SPACING * 0.90).to_i32
             if @highest_difficulty_mined_so_far > 0
-              info "Time has expired for block #{block.index} ... the block with the most difficult nonce recorded so far will be minted: #{@highest_difficulty_mined_so_far}"
+              debug "Time has expired for block #{block.index} ... the block with the most difficult nonce recorded so far will be minted: #{@highest_difficulty_mined_so_far}"
               @most_difficult_block_so_far.to_s
               mint_block(@most_difficult_block_so_far)
             else
-              info "Time has expired for block #{block.index} ... but no nonce with a difficulty larger than miner difficulty (#{current_miner_difficulty}) has been received.. keep waiting"
+              debug "Time has expired for block #{block.index} ... but no nonce with a difficulty larger than miner difficulty (#{current_miner_difficulty}) has been received.. keep waiting"
             end
           end
 
