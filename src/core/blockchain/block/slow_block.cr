@@ -98,12 +98,21 @@ module ::Axentro::Core
       is_slow_block? ? "SLOW" : "FAST"
     end
 
+    # This uses the @ shortcut to set the nonce onto the block
     def with_nonce(@nonce : BlockNonce) : SlowBlock
+      self
+    end
+
+    def with_difficulty(@difficulty : Int32) : SlowBlock
       self
     end
 
     def valid_nonce?(difficulty : Int32)
       valid_nonce?(self.to_hash, @nonce, difficulty)
+    end
+
+    def valid_nonce_for_difficulty(block_hash : String, nonce : String, difficulty : Int32) : Int32
+      valid_nonce?(block_hash, nonce, difficulty)
     end
 
     private def validate_transactions(transactions : Array(Transaction), blockchain : Blockchain) : ValidatedTransactions

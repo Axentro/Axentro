@@ -98,7 +98,10 @@ module ::Axentro::Core
       block = _m_content.block
       difficulty = _m_content.difficulty
 
-      info "#{magenta("PREPARING NEXT SLOW BLOCK")}: #{light_green(block.index)} at approximate difficulty: #{light_cyan(block.difficulty)}"
+      puts "MINER: #{block.to_hash}"
+      # pp block
+
+      info "#{magenta("PREPARING NEXT SLOW BLOCK")}: #{light_green(block.index)} at approximate difficulty: #{light_cyan(difficulty)}"
 
       debug "set difficulty: #{light_cyan(difficulty)}"
       debug "set block: #{light_green(block.index)}"

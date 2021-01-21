@@ -11,17 +11,22 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core::NodeComponents
+
+  class Miner
+    property socket : HTTP::WebSocket
+    property mid : String
+    property difficulty : Int32
+    def initialize(@socket, @mid, @difficulty); end
+  end
+
   class MinersManager < HandleSocket
     include NonceModels
-
-    alias Miner = NamedTuple(
-      socket: HTTP::WebSocket,
-      mid: String)
 
     alias Miners = Array(Miner)
 
     @most_difficult_block_so_far : SlowBlock
     @block_start_time : Int64
+    @miner_difficulty_map : Hash(String,Array(Int32)) = {} of String => Array(Int32)
 
     getter miners : Miners = Miners.new
 
@@ -46,7 +51,7 @@ module ::Axentro::Core::NodeComponents
         return send(socket,
           M_TYPE_MINER_HANDSHAKE_REJECTED,
           {
-            reason: "your axem is out of date, please update it" +
+            reason: "your miner is out of date, please update it" +
                     "(node version: #{Core::CORE_VERSION}, miner version: #{version})",
           })
       end
@@ -77,7 +82,7 @@ module ::Axentro::Core::NodeComponents
         })
       end
 
-      miner = {socket: socket, mid: mid}
+      miner = Miner.new(socket, mid, @blockchain.mining_block_difficulty_miner)
 
       @miners << miner
 
@@ -90,82 +95,219 @@ module ::Axentro::Core::NodeComponents
         block:      @blockchain.mining_block,
         difficulty: @blockchain.mining_block_difficulty_miner,
       })
+
+      spawn do
+      loop do
+         sleep 10
+        puts "MINER CHECK"
+        @miners.each do |miner|
+          puts "In miner"
+          existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
+          if existing_miner_nonces.size > 0
+            last_miner_nonce = existing_miner_nonces.sort_by{|mn| mn.timestamp }.reverse
+            time_difference = __timestamp - last_miner_nonce.first.timestamp
+            if time_difference > 10
+              # if the last nonce the miner sent was more than 10 seconds ago since last nonce - decrease difficulty - resend block
+              miner.difficulty = Math.max(1, miner.difficulty - 1)
+              decreased = miner.difficulty
+              info "(check) decrease difficulty to #{decreased} for deviance: #{time_difference}"
+              send_updated_block(miner.socket, decreased)
+            else
+               # if the last nonce the miner sent was less than 10 seconds ago since last nonce - increase difficulty - resend block
+               miner.difficulty = Math.max(1, miner.difficulty + 1)
+               increased = miner.difficulty
+              info "(check) increased difficulty to #{increased} for deviance: #{time_difference}"
+              send_updated_block(miner.socket, increased)
+            end       
+          else
+            #no nonces found within 10 secs so decrease difficulty
+            puts "miner.difficulty = #{miner.difficulty}"
+            miner.difficulty = Math.max(1, miner.difficulty - 1)
+            puts "miner.difficulty = #{miner.difficulty}"
+            decreased = miner.difficulty
+            info "(check) decrease difficulty to #{decreased} as no nonce found within 10 seconds"
+            send_updated_block(miner.socket, decreased)
+          end
+      end
+      end
+    end
     end
 
     def found_nonce(socket, _content)
+      # 1. should return a message to the miner to say the node was not ready to accept nonces yet
       return unless node.phase == SetupPhase::DONE
 
-      verbose "miner sent a new nonce"
+      # 2. when we receive a nonce from a miner it should have a mid, nonce, valid timestamp, valid addres
+      # so we should validate those here and return a message to the miner if nonce rejected because of invalid data
+      # we should validate here if already found nonce and if timestamp falls within correct parameters
+    
+      # getter mid : String = "0"
+      # getter value : BlockNonce
+      # getter timestamp : Int64 = 0_i64
+      # getter address : String = "0"
+      # getter node_id : String = "0"
 
+      # 3. process nonce data from miner
       _m_content = MContentMinerFoundNonce.from_json(_content)
 
       miner_nonce = _m_content.nonce
       mined_timestamp = miner_nonce.timestamp
-      debug "received a nonce of #{miner_nonce.value} from a miner at timestamp #{mined_timestamp}"
-
+      info "received a nonce of #{miner_nonce.value} from a miner at timestamp #{mined_timestamp}"
+      
+      # 4. find miner socket 
       if miner = find?(socket)
-        block = @blockchain.mining_block.with_nonce(miner_nonce.value)
+        # 5. update mining block with nonce from miner
+        block = @blockchain.mining_block.with_nonce(miner_nonce.value).with_difficulty(miner.difficulty)
 
-        if ENV.has_key?("AX_SET_DIFFICULTY")
-          mint_block(block)
-          return
-        end
-
-        debug "Received a freshly mined block..."
-        block.to_s
-
-        if @blockchain.miner_nonce_pool.find(miner_nonce)
-          warning "nonce #{miner_nonce.value} has already been discovered"
-          return
-        end
-
-        if mined_timestamp < @blockchain.mining_block.timestamp
-          warning "received nonce was mined before current mining block was created, ignore"
-          return
-        end
-
-        mined_difficulty = block.valid_nonce?(@blockchain.mining_block_difficulty)
+        # 6. check difficulty is valid
+        puts "HASH: #{block.to_hash} , nonce: #{miner_nonce.value}, difficulty: #{miner.difficulty}"
+        # pp block
+        mined_difficulty = block.valid_nonce_for_difficulty(block.to_hash, miner_nonce.value, miner.difficulty)
         if mined_difficulty < @blockchain.mining_block_difficulty_miner
-          info "mined difficulty is: #{mined_difficulty} and expected is: #{@blockchain.mining_block_difficulty_miner}"
-
-          warning "received nonce is invalid, try to update latest block"
-          debug "mined difficulty is: #{mined_difficulty}"
-
-          send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
-            block:      @blockchain.mining_block,
-            difficulty: @blockchain.mining_block_difficulty_miner,
-          })
+          # if not valid - resend latest mining block
+          error "mined difficulty is: #{mined_difficulty} and expected is: #{miner.difficulty}"
+          # error "received nonce is invalid, try to update latest block"
+          send_updated_block(miner.socket, miner.difficulty)
         else
-          miner_name = HumanHash.humanize(miner[:mid])
-          nonces_size = @blockchain.miner_nonce_pool.find_by_mid(miner[:mid]).size
-          debug "miner #{miner_name} found nonce at timestamp #{mined_timestamp}.. (nonces: #{nonces_size}) mined with difficulty #{mined_difficulty} "
-
-          # add nonce to pool - maybe batch instead of sending one nonce at a time?
-          miner_nonce = miner_nonce.with_node_id(node.get_node_id).with_mid(miner[:mid])
+          # if valid - continue processing
+          # add nonce to pool         
+          miner_nonce = miner_nonce.with_node_id(node.get_node_id).with_mid(miner.mid)
           @blockchain.add_miner_nonce(miner_nonce)
-          node.send_miner_nonce(miner_nonce)
 
-          debug "found nonce of #{block.nonce} that doesn't satisfy block difficulty, checking if it is the best so far"
+          # add the nonce to the historic tracking
+          @miner_difficulty_map[miner.mid] << miner.difficulty
+
+          miner_name = HumanHash.humanize(miner.mid)
+          nonces_size = @blockchain.miner_nonce_pool.find_by_mid(miner.mid).size
+          info "miner #{miner_name} found nonce at timestamp #{mined_timestamp}.. (nonces: #{nonces_size}) mined with difficulty #{mined_difficulty} "
+
+          
+          # find last nonce the miner sent
+          existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
+          if existing_miner_nonces.size > 0
+            last_miner_nonce = existing_miner_nonces.sort_by{|mn| mn.timestamp }.reverse
+            time_difference = mined_timestamp - last_miner_nonce.first.timestamp
+            if time_difference > 1000
+              # if the last nonce the miner sent was more than 10 seconds ago since last nonce - decrease difficulty - resend block
+              miner.difficulty = Math.max(1, miner.difficulty - 1)
+              decreased = miner.difficulty
+              info "(found_nonce) decrease difficulty to #{decreased} for deviance: #{time_difference}"
+              send_updated_block(miner.socket, decreased)
+            else
+               # if the last nonce the miner sent was less than 10 seconds ago since last nonce - increase difficulty - resend block
+               miner.difficulty = Math.max(1, miner.difficulty + 2)
+               increased = miner.difficulty
+              info "(found_nonce) increased difficulty to #{increased} for deviance: #{time_difference}"
+              send_updated_block(mi@miner_difficulty_map[miner.mid] ner.socket, increased)
+            end       
+            # if the last nonce the miner sent was exactly 10 seconds ago since last nonce - same difficulty - nothing to do  
+          end
+
+          info "found nonce of #{block.nonce} that doesn't satisfy block difficulty, checking if it is the best so far"
           current_miner_difficulty = block_difficulty_to_miner_difficulty(@blockchain.mining_block_difficulty)
           if (mined_difficulty > current_miner_difficulty) && (mined_difficulty > @highest_difficulty_mined_so_far)
-            debug "This block is now the most difficult recorded"
+            info "This block is now the most difficult recorded"
             @most_difficult_block_so_far = block.dup
             @highest_difficulty_mined_so_far = mined_difficulty
           else
-            debug "This block was not the most difficult recorded, miner still gets credit for sending the nonce"
+            info "This block was not the most difficult recorded, miner still gets credit for sending the nonce"
           end
           if mined_timestamp > @block_start_time + (Consensus::POW_TARGET_SPACING * 0.90).to_i32
             if @highest_difficulty_mined_so_far > 0
-              debug "Time has expired for block #{block.index} ... the block with the most difficult nonce recorded so far will be minted: #{@highest_difficulty_mined_so_far}"
+              info "Time has expired for block #{block.index} ... the block with the most difficult nonce recorded so far will be minted: #{@highest_difficulty_mined_so_far}"
               @most_difficult_block_so_far.to_s
               mint_block(@most_difficult_block_so_far)
             else
-              debug "Time has expired for block #{block.index} ... but no nonce with a difficulty larger than miner difficulty (#{current_miner_difficulty}) has been received.. keep waiting"
+              info "Time has expired for block #{block.index} ... but no nonce with a difficulty larger than miner difficulty (#{current_miner_difficulty}) has been received.. keep waiting"
             end
           end
+
         end
       end
+
     end
+
+    def send_updated_block(socket, difficulty : Int32)
+      send(socket, M_TYPE_MINER_BLOCK_UPDATE, {
+        block:      @blockchain.mining_block,
+        difficulty: difficulty,
+      })
+    end
+
+    # def found_nonce2(socket, _content)
+    #   return unless node.phase == SetupPhase::DONE
+
+    #   verbose "miner sent a new nonce"
+
+    #   _m_content = MContentMinerFoundNonce.from_json(_content)
+
+    #   miner_nonce = _m_content.nonce
+    #   mined_timestamp = miner_nonce.timestamp
+    #   debug "received a nonce of #{miner_nonce.value} from a miner at timestamp #{mined_timestamp}"
+
+    #   if miner = find?(socket)
+    #     block = @blockchain.mining_block.with_nonce(miner_nonce.value)
+
+    #     if ENV.has_key?("AX_SET_DIFFICULTY")
+    #       mint_block(block)
+    #       return
+    #     end
+
+    #     debug "Received a freshly mined block..."
+    #     block.to_s
+
+    #     if @blockchain.miner_nonce_pool.find(miner_nonce)
+    #       warning "nonce #{miner_nonce.value} has already been discovered"
+    #       return
+    #     end
+
+    #     if mined_timestamp < @blockchain.mining_block.timestamp
+    #       warning "received nonce was mined before current mining block was created, ignore"
+    #       return
+    #     end
+
+    #     mined_difficulty = block.valid_nonce?(@blockchain.mining_block_difficulty)
+    #     if mined_difficulty < @blockchain.mining_block_difficulty_miner
+    #       info "mined difficulty is: #{mined_difficulty} and expected is: #{@blockchain.mining_block_difficulty_miner}"
+
+    #       warning "received nonce is invalid, try to update latest block"
+    #       debug "mined difficulty is: #{mined_difficulty}"
+
+    #       send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
+    #         block:      @blockchain.mining_block,
+    #         difficulty: @blockchain.mining_block_difficulty_miner,
+    #       })
+    #     else
+    #       miner_name = HumanHash.humanize(miner[:mid])
+    #       nonces_size = @blockchain.miner_nonce_pool.find_by_mid(miner[:mid]).size
+    #       debug "miner #{miner_name} found nonce at timestamp #{mined_timestamp}.. (nonces: #{nonces_size}) mined with difficulty #{mined_difficulty} "
+
+    #       # add nonce to pool - maybe batch instead of sending one nonce at a time?
+    #       miner_nonce = miner_nonce.with_node_id(node.get_node_id).with_mid(miner[:mid])
+    #       @blockchain.add_miner_nonce(miner_nonce)
+    #       node.send_miner_nonce(miner_nonce)
+
+    #       debug "found nonce of #{block.nonce} that doesn't satisfy block difficulty, checking if it is the best so far"
+    #       current_miner_difficulty = block_difficulty_to_miner_difficulty(@blockchain.mining_block_difficulty)
+    #       if (mined_difficulty > current_miner_difficulty) && (mined_difficulty > @highest_difficulty_mined_so_far)
+    #         debug "This block is now the most difficult recorded"
+    #         @most_difficult_block_so_far = block.dup
+    #         @highest_difficulty_mined_so_far = mined_difficulty
+    #       else
+    #         debug "This block was not the most difficult recorded, miner still gets credit for sending the nonce"
+    #       end
+    #       if mined_timestamp > @block_start_time + (Consensus::POW_TARGET_SPACING * 0.90).to_i32
+    #         if @highest_difficulty_mined_so_far > 0
+    #           debug "Time has expired for block #{block.index} ... the block with the most difficult nonce recorded so far will be minted: #{@highest_difficulty_mined_so_far}"
+    #           @most_difficult_block_so_far.to_s
+    #           mint_block(@most_difficult_block_so_far)
+    #         else
+    #           debug "Time has expired for block #{block.index} ... but no nonce with a difficulty larger than miner difficulty (#{current_miner_difficulty}) has been received.. keep waiting"
+    #         end
+    #       end
+    #     end
+    #   end
+    # end
 
     def mint_block(block : SlowBlock)
       @highest_difficulty_mined_so_far = 0
@@ -186,7 +328,7 @@ module ::Axentro::Core::NodeComponents
             "mining difficulty: #{@blockchain.mining_block_difficulty_miner}"
 
       @miners.each do |miner|
-        send(miner[:socket], M_TYPE_MINER_BLOCK_UPDATE, {
+        send(miner.socket, M_TYPE_MINER_BLOCK_UPDATE, {
           block:      @blockchain.mining_block,
           difficulty: @blockchain.mining_block_difficulty_miner,
         })
@@ -194,12 +336,12 @@ module ::Axentro::Core::NodeComponents
     end
 
     def find?(socket : HTTP::WebSocket) : Miner?
-      @miners.find { |m| m[:socket] == socket }
+      @miners.find { |m| m.socket == socket }
     end
 
     def clean_connection(socket)
       current_size = @miners.size
-      @miners.reject! { |miner| miner[:socket] == socket }
+      @miners.reject! { |miner| miner.socket == socket }
 
       info "a miner has been removed. (#{current_size} -> #{@miners.size})" if current_size > @miners.size
     end

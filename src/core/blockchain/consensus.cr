@@ -28,7 +28,8 @@ module ::Axentro::Core::Consensus
     leading_bits.split("1")[0].size
   end
 
-  def valid_nonce?(block_hash : String, block_nonce : BlockNonce, difficulty : Int32)
+  # returns the difficulty found for the hash and nonce given the target difficulty
+  def valid_nonce?(block_hash : String, block_nonce : BlockNonce, difficulty : Int32) : Int32
     difficulty = ENV["AX_SET_DIFFICULTY"].to_i if ENV.has_key?("AX_SET_DIFFICULTY") # for unit test
     valid_pow?(block_hash, block_nonce, difficulty)
   end
