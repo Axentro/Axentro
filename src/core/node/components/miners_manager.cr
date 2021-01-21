@@ -92,7 +92,7 @@ module ::Axentro::Core::NodeComponents
 
       @miners << miner
 
-      @nonce_meta_map[miner.mid] = [] of NonceMeta
+      @nonce_meta_map[miner.mid] = [NonceMeta.new(17, 0_i64)]
 
       remote_address = context.try(&.request.remote_address.to_s) || "unknown"
       miner_name = HumanHash.humanize(mid)
@@ -106,7 +106,7 @@ module ::Axentro::Core::NodeComponents
 
       spawn do
       loop do
-         sleep 20
+         sleep 10
         puts "MINER CHECK"
         @miners.each do |miner|
           puts "In miner"
@@ -116,6 +116,7 @@ module ::Axentro::Core::NodeComponents
             nonce_meta = @nonce_meta_map[miner.mid]
             last_difficulty = miner.difficulty
             deviance = __timestamp - existing_miner_nonces.last.timestamp
+            # deviance = nonce_meta.last.deviance
 
             if deviance > 10000
               last_difficulty = miner.difficulty
@@ -133,6 +134,10 @@ module ::Axentro::Core::NodeComponents
               end
             end
 
+            # nonce_meta = @nonce_meta_map[miner.mid]
+            # average_deviance = (nonce_meta.map(&.deviance).sum / nonce_meta.size).to_i
+            # average_difficulty = (nonce_meta.map(&.difficulty).sum / nonce_meta.size).to_i
+
             # if average_deviance > 10000
             #   # if the last nonce the miner sent was more than 10 seconds ago since last nonce - decrease difficulty - resend block
             #   last_difficulty = miner.difficulty
@@ -144,7 +149,7 @@ module ::Axentro::Core::NodeComponents
             # else
             #   # if the last nonce the miner sent was less than 10 seconds ago since last nonce - increase difficulty - resend block
             #   last_difficulty = miner.difficulty
-            #   miner.difficulty = Math.max(1, average_difficulty + 1)
+            #   miner.difficulty = Math.max(1, average_difficulty + 2)
             #   if last_difficulty != miner.difficulty
             #     info "(check) increased difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
             #     send_updated_block(miner.socket, miner.difficulty)
@@ -188,7 +193,7 @@ module ::Axentro::Core::NodeComponents
         block = @blockchain.mining_block.with_nonce(miner_nonce.value).with_difficulty(miner.difficulty)
 
         # 6. check difficulty is valid
-        puts "HASH: #{block.to_hash} , nonce: #{miner_nonce.value}, difficulty: #{miner.difficulty}"
+        # puts "HASH: #{block.to_hash} , nonce: #{miner_nonce.value}, difficulty: #{miner.difficulty}"
         # pp block
         mined_difficulty = block.valid_nonce_for_difficulty(block.to_hash, miner_nonce.value, miner.difficulty)
         if mined_difficulty < @blockchain.mining_block_difficulty_miner
@@ -204,7 +209,7 @@ module ::Axentro::Core::NodeComponents
 
           miner_name = HumanHash.humanize(miner.mid)
           nonces_size = @blockchain.miner_nonce_pool.find_by_mid(miner.mid).size
-          info "miner #{miner_name} found nonce at timestamp #{mined_timestamp}.. (nonces: #{nonces_size}) mined with difficulty #{mined_difficulty} "
+          debug "miner #{miner_name} found nonce at timestamp #{mined_timestamp}.. (nonces: #{nonces_size}) mined with difficulty #{mined_difficulty} "
           
           # find last nonce the miner sent
           existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
@@ -233,7 +238,7 @@ module ::Axentro::Core::NodeComponents
               miner.difficulty = Math.max(1, average_difficulty + 1)
               if last_difficulty != miner.difficulty
                 info "(found_nonce) increased difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
-                send_updated_block(miner.socket, miner.difficulty) unless last_difficulty == miner.difficulty
+                send_updated_block(miner.socket, miner.difficulty) 
               end
             end
 
