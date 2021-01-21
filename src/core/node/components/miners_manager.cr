@@ -106,7 +106,7 @@ module ::Axentro::Core::NodeComponents
 
       spawn do
       loop do
-         sleep 10
+         sleep 20
         puts "MINER CHECK"
         @miners.each do |miner|
           puts "In miner"
@@ -127,7 +127,7 @@ module ::Axentro::Core::NodeComponents
               end
             else
               last_difficulty = miner.difficulty
-              miner.difficulty = Math.max(1, miner.difficulty + 2)
+              miner.difficulty = Math.max(1, miner.difficulty + 1)
               if last_difficulty != miner.difficulty
                 info "(check) increased difficulty to #{miner.difficulty} for deviance: #{deviance}"
                 send_updated_block(miner.socket, miner.difficulty)
