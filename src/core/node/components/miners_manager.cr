@@ -113,9 +113,25 @@ module ::Axentro::Core::NodeComponents
           existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
           if existing_miner_nonces.size > 0
             
-            # nonce_meta = @nonce_meta_map[miner.mid]
-            # average_deviance = (nonce_meta.map(&.deviance).sum / nonce_meta.size).to_i
-            # average_difficulty = (nonce_meta.map(&.difficulty).sum / nonce_meta.size).to_i
+            nonce_meta = @nonce_meta_map[miner.mid]
+            last_difficulty = miner.difficulty
+            deviance = __timestamp - existing_miner_nonces.last.timestamp
+
+            if deviance > 10000
+              last_difficulty = miner.difficulty
+              miner.difficulty = Math.max(1, miner.difficulty - 1)
+              if last_difficulty != miner.difficulty
+                info "(check) decreased difficulty to #{miner.difficulty} for deviance: #{deviance}"
+                send_updated_block(miner.socket, miner.difficulty)
+              end
+            else
+              last_difficulty = miner.difficulty
+              miner.difficulty = Math.max(1, miner.difficulty + 2)
+              if last_difficulty != miner.difficulty
+                info "(check) increased difficulty to #{miner.difficulty} for deviance: #{deviance}"
+                send_updated_block(miner.socket, miner.difficulty)
+              end
+            end
 
             # if average_deviance > 10000
             #   # if the last nonce the miner sent was more than 10 seconds ago since last nonce - decrease difficulty - resend block
