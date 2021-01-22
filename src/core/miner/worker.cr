@@ -58,7 +58,7 @@ module ::Axentro::Core
       debug "Found block..."
       block.to_s
 
-      response(miner_nonce.with_timestamp(time_now).to_json)
+      response(miner_nonce.with_timestamp(time_now).with_difficulty(work[:difficulty]).to_json)
     rescue e : Exception
       error e.message.not_nil!
       error e.backtrace.join("\n")

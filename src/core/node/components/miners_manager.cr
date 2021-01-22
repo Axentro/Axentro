@@ -162,22 +162,32 @@ module ::Axentro::Core::NodeComponents
 
       miner_nonce = _m_content.nonce
       mined_timestamp = miner_nonce.timestamp
-      info "received a nonce of #{miner_nonce.value} from a miner at timestamp #{mined_timestamp}"
+      miner_difficulty = miner_nonce.difficulty
+
+      arriving_block = @blockchain.mining_block.with_nonce(miner_nonce.value)
+      arriving_block_hash = arriving_block.to_hash
+      mined_difficulty = arriving_block.valid_nonce_for_difficulty(arriving_block_hash, miner_nonce.value, miner_difficulty)
+
+      info "received a nonce of #{miner_nonce.value}, difficulty #{miner_difficulty}, result: #{mined_difficulty}, timestamp #{mined_timestamp}, hash: #{arriving_block_hash}"
+  
+    
       
       # 4. find miner socket 
       if miner = find?(socket)
         # 5. update mining block with nonce from miner
-        block = @blockchain.mining_block.with_nonce(miner_nonce.value).with_difficulty(miner.difficulty)
+        # arriving_block = @blockchain.mining_block.with_nonce(miner_nonce.value)
+        # mined_difficulty = arriving_block.valid_nonce_for_difficulty(arriving_block.to_hash, miner_nonce.value, miner.difficulty)
+        block = arriving_block.with_difficulty(miner.difficulty)
 
         # 6. check difficulty is valid
         # puts "HASH: #{block.to_hash} , nonce: #{miner_nonce.value}, difficulty: #{miner.difficulty}"
         # pp block
-        mined_difficulty = block.valid_nonce_for_difficulty(block.to_hash, miner_nonce.value, miner.difficulty)
+        
         if mined_difficulty < @blockchain.mining_block_difficulty_miner
           # if not valid - resend latest mining block
-          error "mined difficulty is: #{mined_difficulty} and expected is: #{miner.difficulty}"
+          error "mined difficulty for nonce: #{miner_nonce.value} is: #{mined_difficulty} and expected is: #{@blockchain.mining_block_difficulty_miner}"
           # error "received nonce is invalid, try to update latest block"
-          send_updated_block(miner.socket, miner.difficulty)
+          # send_updated_block(miner.socket, miner.difficulty)
         else
           # if valid - continue processing
           # add nonce to pool         

@@ -19,6 +19,7 @@ module ::Axentro::Core::NonceModels
     getter timestamp : Int64 = 0_i64
     getter address : String = "0"
     getter node_id : String = "0"
+    getter difficulty : Int32 = 0
 
     def initialize(@value : BlockNonce); end
 
@@ -47,6 +48,10 @@ module ::Axentro::Core::NonceModels
     end
 
     def with_node_id(@node_id : String) : MinerNonce
+      self
+    end
+
+    def with_difficulty(@difficulty : Int32) : MinerNonce
       self
     end
   end
