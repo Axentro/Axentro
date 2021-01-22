@@ -67,7 +67,7 @@ module ::Axentro::Core::NodeComponents
 
       @miners << miner
 
-      block_hash = @blockchain.mining_block.to_hash
+      block_hash = @blockchain.mining_block.with_difficulty(Consensus::MINER_DIFFICULTY_TARGET).to_hash
       @nonce_meta_map[miner.mid] = [NonceMeta.new(Consensus::MINER_DIFFICULTY_TARGET, 0_i64, block_hash)]
 
       remote_address = context.try(&.request.remote_address.to_s) || "unknown"
@@ -105,7 +105,12 @@ module ::Axentro::Core::NodeComponents
             if mined_difficulty < meta.difficulty
               error "difficulty for nonce: #{miner_nonce.value} was #{mined_difficulty} and expected #{meta.difficulty} for block hash: #{block_hash}"
             else  
-              info "Nonce #{miner_nonce} at difficulty: #{miner_difficulty} was found for block hash: #{block_hash}"
+              info "Nonce #{miner_nonce.value} at difficulty: #{miner_difficulty} was found for block hash: #{block_hash}"
+
+              # throttle nonce difficulty target
+              
+              # track the highest nonce within 2 minutes and mint the block after 2 mins approx
+
             end
           else
             # hash not tracked in meta so nonce is invalid
