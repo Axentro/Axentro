@@ -32,7 +32,8 @@ module ::Axentro::Core::Protocol
   struct MContentMinerHandshakeAccepted
     include JSON::Serializable
     property version : Int32
-    property block : SlowBlock
+    property block_index : Int64
+    property block_hash : String
     property difficulty : Int32
   end
 
@@ -54,7 +55,8 @@ module ::Axentro::Core::Protocol
 
   struct MContentMinerBlockUpdate
     include JSON::Serializable
-    property block : SlowBlock
+    property block_index : Int64
+    property block_hash : String
     property difficulty : Int32
   end
 

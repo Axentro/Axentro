@@ -71,15 +71,17 @@ module ::Axentro::Core
     private def _handshake_miner_accepted(_content)
       _m_content = MContentMinerHandshakeAccepted.from_json(_content)
 
-      block = _m_content.block
+      block_index = _m_content.block_index
+      block_hash = _m_content.block_hash
       difficulty = _m_content.difficulty
 
       info "handshake has been accepted"
 
       debug "set difficulty: #{light_cyan(difficulty)}"
-      debug "set block: #{light_green(block.index)}"
+      debug "set block index: #{light_green(block_index)}"
+      debug "set block hash: #{light_green(block_hash)}"
 
-      start_workers(difficulty, block)
+      start_workers(difficulty, block_index, block_hash)
     end
 
     private def _handshake_miner_rejected(_content)
@@ -95,20 +97,22 @@ module ::Axentro::Core
     private def _block_update(_content)
       _m_content = MContentMinerBlockUpdate.from_json(_content)
 
-      block = _m_content.block
+      block_index = _m_content.block_index
+      block_hash = _m_content.block_hash
       difficulty = _m_content.difficulty
 
-      puts "MINER: #{block.to_hash}"
+      puts "MINER: #{block_hash}"
       # pp block
 
-      info "#{magenta("PREPARING NEXT SLOW BLOCK")}: #{light_green(block.index)} at approximate difficulty: #{light_cyan(difficulty)}"
+      info "#{magenta("PREPARING NEXT SLOW BLOCK")}: #{light_green(block_index)} at difficulty: #{light_cyan(difficulty)}, hash: #{block_hash}"
 
       debug "set difficulty: #{light_cyan(difficulty)}"
-      debug "set block: #{light_green(block.index)}"
+      debug "set block index: #{light_green(block_index)}"
+      debug "set block hash: #{light_green(block_hash)}"
 
       clean_workers
 
-      start_workers(difficulty, block)
+      start_workers(difficulty, block_index, block_hash)
     end
 
     def clean_connection(socket)
@@ -119,7 +123,7 @@ module ::Axentro::Core
       run
     end
 
-    def start_workers(difficulty, block)
+    def start_workers(difficulty, block_index, block_hash)
       @workers = MinerWorker.create(@num_processes)
       @workers.each do |w|
         spawn do
@@ -129,30 +133,30 @@ module ::Axentro::Core
             debug "received nonce #{nonce_found_message} from worker"
 
             unless nonce_found_message == "error"
-              nonce_with_address_json = {nonce: MinerNonce.from_json(nonce_found_message).with_address(@wallet.address)}.to_json
+              nonce_with_address_json = {nonce: MinerNonce.from_json(nonce_found_message).with_address(@wallet.address).with_block_hash(block_hash)}.to_json
               send(socket, M_TYPE_MINER_FOUND_NONCE, MContentMinerFoundNonce.from_json(nonce_with_address_json))
             end
 
-            update(w, difficulty, block)
+            update(w, difficulty, block_index, block_hash)
           rescue ioe : IO::EOFError
             warning "received invalid message. will be ignored"
           end
         end
       end
 
-      update(difficulty, block)
+      update(difficulty, block_index, block_hash)
     end
 
-    def update(difficulty, block)
+    def update(difficulty, block_index, block_hash)
       debug "update new workers"
 
       @workers.each do |w|
-        update(w, difficulty, block)
+        update(w, difficulty, block_index, block_hash)
       end
     end
 
-    def update(worker, difficulty, block)
-      worker.exec({start_nonce: Random.rand(UInt64::MAX).to_s, difficulty: difficulty, block: block}.to_json)
+    def update(worker, difficulty, block_index, block_hash)
+      worker.exec({start_nonce: Random.rand(UInt64::MAX).to_s, difficulty: difficulty, block_index: block_index, block_hash: block_hash}.to_json)
     end
 
     def clean_workers

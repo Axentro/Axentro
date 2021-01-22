@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core
-  alias MinerWork = NamedTuple(start_nonce: BlockNonce, difficulty: Int32, block: SlowBlock)
+  alias MinerWork = NamedTuple(start_nonce: BlockNonce, difficulty: Int32, block_index: Int64, block_hash: String)
 
   class MinerWorker < Tokoroten::Worker
     def task(message : String)
@@ -24,13 +24,15 @@ module ::Axentro::Core
       latest_nonce_counter = nonce_counter
       time_now = __timestamp
       latest_time = time_now
-      block = work[:block].with_nonce(block_nonce)
+      # block = work[:block].with_nonce(block_nonce).with_difficulty(work[:difficulty])
+      block_index = work[:block_index]
+      block_hash = work[:block_hash]
 
       loop do
         time_now = __timestamp
-        block = work[:block].with_nonce(block_nonce)
+        # block = work[:block].with_nonce(block_nonce).with_difficulty(work[:difficulty])
         # puts "nonce: #{valid_nonce?(block.to_hash, block_nonce, work[:difficulty])}, required: #{work[:difficulty]}"
-        break if valid_nonce?(block.to_hash, block_nonce, work[:difficulty]) == work[:difficulty]
+        break if valid_nonce?(block_hash, block_nonce, work[:difficulty]) == work[:difficulty]
 
         nonce_counter += 1
         block_nonce = (block_nonce.to_u64 + 1).to_s
@@ -53,10 +55,9 @@ module ::Axentro::Core
         end
       end
 
-      info "nonce: #{valid_nonce?(block.to_hash, block_nonce, work[:difficulty])}, required: #{work[:difficulty]}, nonce: #{block_nonce}, hash: #{block.to_hash}"
+      info "nonce: #{valid_nonce?(block_hash, block_nonce, work[:difficulty])}, required: #{work[:difficulty]}, nonce: #{block_nonce}, hash: #{block_hash}"
       info "found new nonce(#{work[:difficulty]}): #{light_green(block_nonce)}"
       debug "Found block..."
-      block.to_s
 
       response(miner_nonce.with_timestamp(time_now).with_difficulty(work[:difficulty]).to_json)
     rescue e : Exception

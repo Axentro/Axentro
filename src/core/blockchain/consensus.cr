@@ -49,6 +49,8 @@ module ::Axentro::Core::Consensus
   # Difficulty value to be used when there is absolutely no history reference
   DEFAULT_DIFFICULTY_TARGET = 17_i32
 
+  MINER_DIFFICULTY_TARGET = 12
+
   # Dark Gravity Wave based difficulty adjustment calculation (Original algorithm created by Evan Duffield)
 
   def block_difficulty(blockchain : Blockchain) : Int32
