@@ -79,7 +79,7 @@ module ::Axentro::Core::NodeComponents
 
       spawn do
         loop do
-          sleep 20
+          sleep 10
           @miners.each do |miner|
             existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
             if spacing = @nonce_spacing.compute(miner, true)
@@ -212,7 +212,7 @@ module ::Axentro::Core::NodeComponents
 
     def broadcast
       info "#{magenta("PREPARING NEXT SLOW BLOCK")}: #{light_green(@blockchain.mining_block.index)} at difficulty: #{light_cyan(@blockchain.mining_block.difficulty)}"
-x
+
       @miners.each do |miner|
         send(miner.socket, M_TYPE_MINER_BLOCK_UPDATE, {
           block:      @blockchain.mining_block,

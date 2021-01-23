@@ -45,12 +45,12 @@ module ::Axentro::Core::NodeComponents
         #   return if (__timestamp - nonce_meta.last.last_change) < 10000
         # end
 
-        moving_average = nonce_meta.size < 50 ? nonce_meta : nonce_meta.last(50)
+        moving_average = nonce_meta.size < 10 ? nonce_meta : nonce_meta.last(10)
         average_deviance = (moving_average.map(&.deviance).sum / moving_average.size).to_i
         average_difficulty = (moving_average.map(&.difficulty).sum / moving_average.size).to_i
 
         if average_deviance > 10000
-          #   puts "AVG DIFF: #{average_difficulty}"
+            puts "AVG DIFF: #{average_difficulty}"
           puts "AVG DEV: #{average_deviance}"
           last_difficulty = miner.difficulty
           miner.difficulty = Math.max(1, average_difficulty - 1)
@@ -59,7 +59,7 @@ module ::Axentro::Core::NodeComponents
             NonceSpacingResult.new(miner.difficulty, "dynamically decreasing difficulty from #{last_difficulty} to #{miner.difficulty}")
           end
         else
-          #   puts "AVG DIFF: #{average_difficulty}"
+            puts "AVG DIFF: #{average_difficulty}"
           puts "AVG DEV: #{average_deviance}"
           last_difficulty = miner.difficulty
           miner.difficulty = Math.max(1, average_difficulty + 2)

@@ -64,20 +64,30 @@ module ::Axentro::Core::NodeComponents
     private def already_in_db(existing_block : SlowBlock)
       # if incoming block latest in sequence
       if @incoming_block.index == @latest_slow.index
-        if @incoming_block.timestamp < existing_block.timestamp
-          # incoming block is earlier then ours (take theirs)
+        if @incoming_block.difficulty > existing_block.difficulty
+          # incoming block has higher difficulty than our (take theirs)
           SlowSyncState::REPLACE
-        elsif @incoming_block.timestamp > existing_block.timestamp
-          # incoming block is not as early as ours (keep ours & ignore)
+        elsif @incoming_block.difficulty < existing_block.difficulty
+          # our block has higher difficulty than incoming one (keep ours & ignore)
           SlowSyncState::REJECT_OLD
         else
-          # incoming block is exactly the same timestamp - check the hashes
-          if @incoming_block.to_hash == existing_block.to_hash
-            # keep ours as it's identical
+          @incoming_block.difficulty == existing_block.difficulty
+          # incoming block and our block are the same difficulty - choose by earliest timestamp
+          if @incoming_block.timestamp < existing_block.timestamp
+            # incoming block is earlier then ours (take theirs)
+            SlowSyncState::REPLACE
+          elsif @incoming_block.timestamp > existing_block.timestamp
+            # incoming block is not as early as ours (keep ours & ignore)
             SlowSyncState::REJECT_OLD
           else
-            # take theirs (more stable)
-            SlowSyncState::REPLACE
+            # incoming block is exactly the same timestamp - check the hashes
+            if @incoming_block.to_hash == existing_block.to_hash
+              # keep ours as it's identical
+              SlowSyncState::REJECT_OLD
+            else
+              # take theirs (more stable)
+              SlowSyncState::REPLACE
+            end
           end
         end
       else
