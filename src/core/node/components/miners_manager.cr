@@ -71,7 +71,7 @@ module ::Axentro::Core::NodeComponents
 
       @miners << miner
 
-      @nonce_meta_map[miner.mid] = [NonceMeta.new(2, 0_i64)]
+      @nonce_meta_map[miner.mid] = [NonceMeta.new(@blockchain.mining_block.difficulty, 0_i64)]
 
       remote_address = context.try(&.request.remote_address.to_s) || "unknown"
       miner_name = HumanHash.humanize(mid)
@@ -80,7 +80,7 @@ module ::Axentro::Core::NodeComponents
       send(socket, M_TYPE_MINER_HANDSHAKE_ACCEPTED, {
         version:    Core::CORE_VERSION,
         block:      @blockchain.mining_block,
-        difficulty: 2,
+        difficulty: @blockchain.mining_block.difficulty,
       })
 
       # spawn do

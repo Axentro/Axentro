@@ -615,7 +615,7 @@ module ::Axentro::Core
         "0",
         latest_slow_block.to_hash,
         timestamp,
-        Consensus::DEFAULT_DIFFICULTY_TARGET,
+        latest_slow_block.difficulty,
         @wallet_address
       )
 
