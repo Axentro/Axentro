@@ -446,7 +446,7 @@ module ::Axentro::Core
       miner_nonce = _m_content.nonce
       from = _m_content.from
 
-      debug "new miner nonce coming: #{miner_nonce.value} from node: #{miner_nonce.node_id} for address: #{miner_nonce.address}"
+    info "NONCE NONCE new miner nonce coming: #{miner_nonce.value} from node: #{miner_nonce.node_id} for address: #{miner_nonce.address}"
 
       send_miner_nonce(miner_nonce, from)
       @blockchain.add_miner_nonce(miner_nonce)
