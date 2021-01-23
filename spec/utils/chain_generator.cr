@@ -75,7 +75,7 @@ module ::Units::Utils::ChainGenerator
       while @node.@phase != Axentro::Core::Node::SetupPhase::DONE
         sleep 0.000001
       end
-      @miner = {socket: MockWebSocket.new, mid: "535061bddb0549f691c8b9c012a55ee2"}
+      @miner = Axentro::Core::NodeComponents::Miner.new(MockWebSocket.new, "535061bddb0549f691c8b9c012a55ee2", @blockchain.mining_block.difficulty)
       @transaction_factory = TransactionFactory.new(@node_wallet)
       @rpc = RPCController.new(@blockchain)
       @rest = RESTController.new(@blockchain)
@@ -154,7 +154,7 @@ module ::Units::Utils::ChainGenerator
 
     private def add_valid_slow_block(with_refresh : Bool)
       enable_difficulty("0")
-      @blockchain.refresh_mining_block(0) if with_refresh
+      @blockchain.refresh_mining_block if with_refresh
       block = @blockchain.mining_block
       block.nonce = "11719215035155661212"
       block.difficulty = 0 # difficulty will be set to 0 for most unit tests

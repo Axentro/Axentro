@@ -80,17 +80,18 @@ module ::Axentro::Core::NodeComponents
       spawn do
         loop do
           sleep 10
-          @miners.each do |miner|
-            existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
-            if spacing = @nonce_spacing.compute(miner, true)
-              send_adjust_block_difficulty(miner.socket, spacing.difficulty, spacing.reason)
-              @nonce_spacing.add_nonce_meta(miner.mid, spacing.difficulty, existing_miner_nonces, __timestamp)
+          @miners.each do |_miner|
+            existing_miner_nonces = MinerNoncePool.find_by_mid(_miner.mid)
+            if spacing = @nonce_spacing.compute(_miner, true)
+              send_adjust_block_difficulty(_miner.socket, spacing.difficulty, spacing.reason)
+              @nonce_spacing.add_nonce_meta(_miner.mid, spacing.difficulty, existing_miner_nonces, __timestamp)
             end
           end
         end
       end
     end
 
+    # ameba:disable Metrics/CyclomaticComplexity
     def found_nonce(socket, _content)
       return unless node.phase == SetupPhase::DONE
 
@@ -195,7 +196,7 @@ module ::Axentro::Core::NodeComponents
     end
 
     def reject_miner_connection(socket : HTTP::WebSocket, reason : String)
-      return send(socket, M_TYPE_MINER_HANDSHAKE_REJECTED, {reason: reason})
+      send(socket, M_TYPE_MINER_HANDSHAKE_REJECTED, {reason: reason})
     end
 
     def mint_block(block : SlowBlock)

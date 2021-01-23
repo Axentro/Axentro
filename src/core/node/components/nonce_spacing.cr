@@ -39,7 +39,6 @@ module ::Axentro::Core::NodeComponents
     def compute(miner : Miner, check : Bool = false) : NonceSpacingResult?
       prefix = check ? "(check)" : "(nonce)"
       if nonce_meta = @nonce_meta_map[miner.mid]?
-
         moving_average = nonce_meta.size < 10 ? nonce_meta : nonce_meta.last(10)
         average_deviance = (moving_average.map(&.deviance).sum / moving_average.size).to_i
         average_difficulty = (moving_average.map(&.difficulty).sum / moving_average.size).to_i
