@@ -19,12 +19,12 @@ module ::Axentro::Core::NodeComponents
     def initialize(@socket, @mid, @difficulty); end
   end
 
-  class NonceMeta
-    property difficulty : Int32
-    property deviance : Int64
+  # class NonceMeta
+  #   property difficulty : Int32
+  #   property deviance : Int64
 
-    def initialize(@difficulty, @deviance); end
-  end
+  #   def initialize(@difficulty, @deviance); end
+  # end
 
   class MinersManager < HandleSocket
     alias Miners = Array(Miner)
@@ -32,7 +32,8 @@ module ::Axentro::Core::NodeComponents
 
     @most_difficult_block_so_far : SlowBlock
     @block_start_time : Int64
-    @nonce_meta_map : Hash(String, Array(NonceMeta)) = {} of String => Array(NonceMeta)
+    @nonce_spacing : NonceSpacing = NonceSpacing.new
+    # @nonce_meta_map : Hash(String, Array(NonceMeta)) = {} of String => Array(NonceMeta)
 
     def initialize(@blockchain : Blockchain, @is_private_node : Bool)
       @highest_difficulty_mined_so_far = 0
@@ -67,11 +68,13 @@ module ::Axentro::Core::NodeComponents
       public_node_check = MinerValidation.is_public_node?(@is_private_node)
       reject_miner_connection(socket, public_node_check.reason) if public_node_check.invalid?
 
-      miner = Miner.new(socket, mid, @blockchain.mining_block_difficulty_miner)
+      miner = Miner.new(socket, mid, @blockchain.mining_block.difficulty)
 
       @miners << miner
 
-      @nonce_meta_map[miner.mid] = [NonceMeta.new(@blockchain.mining_block.difficulty, 0_i64)]
+      # @nonce_meta_map[miner.mid] = [NonceMeta.new(@blockchain.mining_block.difficulty, 0_i64)]
+      existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
+      @nonce_spacing.add_nonce_meta(miner.mid, @blockchain.mining_block.difficulty, existing_miner_nonces, __timestamp)
 
       remote_address = context.try(&.request.remote_address.to_s) || "unknown"
       miner_name = HumanHash.humanize(mid)
@@ -82,6 +85,23 @@ module ::Axentro::Core::NodeComponents
         block:      @blockchain.mining_block,
         difficulty: @blockchain.mining_block.difficulty,
       })
+
+      spawn do
+        loop do
+          sleep 30
+          @miners.each do |miner|
+            existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
+
+            if spacing = @nonce_spacing.compute(miner)
+              send_adjust_block_difficulty(miner.socket, spacing.difficulty, spacing.reason)
+            
+
+            # add the nonce to the historic tracking
+            @nonce_spacing.add_nonce_meta(miner.mid, spacing.difficulty, existing_miner_nonces, __timestamp)
+            end
+          end
+        end
+      end
 
       # spawn do
       #   loop do
@@ -137,7 +157,7 @@ module ::Axentro::Core::NodeComponents
       mined_difficulty = mined_nonce.difficulty
 
       if miner = find?(socket)
-        if nonce_meta = @nonce_meta_map[miner.mid]?
+        if nonce_meta = @nonce_spacing.get_meta_map(miner.mid)
           block = @blockchain.mining_block.with_nonce(mined_nonce.value).with_timestamp(mined_timestamp).with_difficulty(mined_difficulty)
           block_hash = block.to_hash
 
@@ -170,81 +190,14 @@ module ::Axentro::Core::NodeComponents
             @blockchain.add_miner_nonce(mined_nonce)
 
             # throttle nonce difficulty target
-
-            # find last nonce the miner sent
             existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
             if existing_miner_nonces.size > 0
-              last_miner_nonce = existing_miner_nonces.sort_by { |mn| mn.timestamp }.reverse
-              time_difference = mined_timestamp - last_miner_nonce.first.timestamp
-
-              nonce_meta = @nonce_meta_map[miner.mid]
-              average_deviance = (nonce_meta.map(&.deviance).sum / nonce_meta.size).to_i
-              average_difficulty = (nonce_meta.map(&.difficulty).sum / nonce_meta.size).to_i
-
-              puts "DEVIANCE: #{average_deviance}"
-              if average_deviance > 10000
-                # if the last nonce the miner sent was more than 10 seconds ago since last nonce - decrease difficulty - resend block
-                last_difficulty = miner.difficulty
-                miner.difficulty = Math.max(1, average_difficulty - 1)
-                if last_difficulty != miner.difficulty
-                  error "(found_nonce) decrease difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
-                  send_adjust_block_difficulty(miner.socket, miner.difficulty, "dynamically decreasing difficulty from #{last_difficulty} to #{miner.difficulty}")
-                end
-              else
-                puts "AVG DIFF: #{average_difficulty}"
-                last_difficulty = miner.difficulty
-                miner.difficulty = Math.max(1, average_difficulty + 2)
-                if last_difficulty != miner.difficulty
-                  error "(found_nonce) increased difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
-                  send_adjust_block_difficulty(miner.socket, miner.difficulty, "dynamically increasing difficulty from #{last_difficulty} to #{miner.difficulty}")
-                end
-
-                # if average_deviance < 1000
-                #   # if the last nonce the miner sent was less than 10 seconds ago since last nonce - increase difficulty - resend block
-                #   puts "AVG DIFF: #{average_difficulty}"
-                #   last_difficulty = miner.difficulty
-                #   miner.difficulty = Math.max(1, average_difficulty + 8)
-                #   if last_difficulty != miner.difficulty
-                #     error "(found_nonce) increased difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
-                #     send_adjust_block_difficulty(miner.socket, miner.difficulty)
-                #   end
-                # elsif average_deviance < 3000
-                #   puts "AVG DIFF: #{average_difficulty}"
-                #   last_difficulty = miner.difficulty
-                #   miner.difficulty = Math.max(1, average_difficulty + 7)
-                #   if last_difficulty != miner.difficulty
-                #     error "(found_nonce) increased difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
-                #     send_adjust_block_difficulty(miner.socket, miner.difficulty)
-                #   end
-                # elsif average_deviance < 5000
-                #   puts "AVG DIFF: #{average_difficulty}"
-                #   last_difficulty = miner.difficulty
-                #   miner.difficulty = Math.max(1, average_difficulty + 6)
-                #   if last_difficulty != miner.difficulty
-                #     error "(found_nonce) increased difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
-                #     send_adjust_block_difficulty(miner.socket, miner.difficulty)
-                #   end
-                # elsif average_deviance < 8000
-                #   puts "AVG DIFF: #{average_difficulty}"
-                #   last_difficulty = miner.difficulty
-                #   miner.difficulty = Math.max(1, average_difficulty + 5)
-                #   if last_difficulty != miner.difficulty
-                #     error "(found_nonce) increased difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
-                #     send_adjust_block_difficulty(miner.socket, miner.difficulty)
-                #   end
-                # else
-                #   puts "AVG DIFF: #{average_difficulty}"
-                #   last_difficulty = miner.difficulty
-                #   miner.difficulty = Math.max(1, average_difficulty + 4)
-                #   if last_difficulty != miner.difficulty
-                #     error "(found_nonce) increased difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
-                #     send_adjust_block_difficulty(miner.socket, miner.difficulty)
-                #   end
-                # end
+              if spacing = @nonce_spacing.compute(miner)
+                send_adjust_block_difficulty(miner.socket, spacing.difficulty, spacing.reason)
               end
 
               # add the nonce to the historic tracking
-              @nonce_meta_map[miner.mid] << NonceMeta.new(miner.difficulty, time_difference)
+              @nonce_spacing.add_nonce_meta(miner.mid, miner.difficulty, existing_miner_nonces, mined_timestamp)
             end
 
             # track the highest nonce within 2 minutes and mint the block after 2 mins approx
@@ -317,7 +270,7 @@ module ::Axentro::Core::NodeComponents
     end
 
     def broadcast
-      info "#{magenta("PREPARING NEXT SLOW BLOCK")}: #{light_green(@blockchain.mining_block.index)} at difficulty: #{light_cyan(@blockchain.mining_block_difficulty)}"
+      info "#{magenta("PREPARING NEXT SLOW BLOCK")}: #{light_green(@blockchain.mining_block.index)} at difficulty: #{light_cyan(@blockchain.mining_block.index)}"
       debug "new block difficulty: #{@blockchain.mining_block_difficulty}, " +
             "mining difficulty: #{@blockchain.mining_block_difficulty_miner}"
 
