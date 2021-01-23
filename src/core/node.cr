@@ -582,7 +582,7 @@ module ::Axentro::Core
       if _block = @blockchain.valid_block?(block, false, true)
         info "received block: #{_block.index} was valid so storing in my db"
         debug "slow: finished sending new block on to peer"
-        # @miners_manager.forget_most_difficult
+        @miners_manager.forget_most_difficult
         debug "slow: about to create the new block locally"
         new_block(_block)
 
@@ -606,7 +606,7 @@ module ::Axentro::Core
         warning "arriving block #{_block.index} passes validity checks, making the arriving block our local latest"
         # replace here does check the transactions lower down
         @blockchain.replace_with_block_from_peer(_block)
-        # @miners_manager.forget_most_difficult
+        @miners_manager.forget_most_difficult
       end
     rescue e : Exception
       warning "arriving block #{block.index} failed validity check, we can't make it our local latest - so keeping my local and re-syncing"
