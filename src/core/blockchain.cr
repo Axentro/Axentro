@@ -622,14 +622,14 @@ module ::Axentro::Core
       latest_hash = @mining_block.not_nil!.to_hash
 
       # if record nonces is true then write nonces to the db
-      # if @record_nonces
-      #   miners_nonces = MinerNoncePool.embedded
-      #   miners_nonces.group_by { |mn| mn.address }.map do |_, nonces|
-      #     nonces.each do |nonce|
-      #       database.insert_nonce(Nonce.new(nonce.address, nonce.value, latest_hash, the_latest_index, difficulty, nonce.timestamp))
-      #     end
-      #   end
-      # end
+      if @record_nonces
+        miners_nonces = MinerNoncePool.embedded
+        miners_nonces.group_by { |mn| mn.address }.map do |_, nonces|
+          nonces.each do |nonce|
+            database.insert_nonce(Nonce.new(nonce.address, nonce.value, latest_hash, the_latest_index, nonce.difficulty, nonce.timestamp))
+          end
+        end
+      end
 
       # align slow transactions may need to re-calc the rewards so only delete the pool after all calcs are finished
       # only delete the nonces if this refresh is for the next block (otherwise we loose the nonces for the rewards)

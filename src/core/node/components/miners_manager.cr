@@ -129,6 +129,7 @@ module ::Axentro::Core::NodeComponents
             # add nonce to pool
             mined_nonce = mined_nonce.with_node_id(node.get_node_id).with_mid(miner.mid)
             @blockchain.add_miner_nonce(mined_nonce)
+            node.send_miner_nonce(mined_nonce)
 
             # throttle nonce difficulty target
             existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)

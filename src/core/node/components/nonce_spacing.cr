@@ -50,8 +50,8 @@ module ::Axentro::Core::NodeComponents
         average_difficulty = (moving_average.map(&.difficulty).sum / moving_average.size).to_i
 
         if average_deviance > 10000
-        #     puts "AVG DIFF: #{average_difficulty}"
-        #   puts "AVG DEV: #{average_deviance}"
+          #     puts "AVG DIFF: #{average_difficulty}"
+          #   puts "AVG DEV: #{average_deviance}"
           last_difficulty = miner.difficulty
           miner.difficulty = Math.max(1, average_difficulty - 1)
           if last_difficulty != miner.difficulty
@@ -59,8 +59,8 @@ module ::Axentro::Core::NodeComponents
             NonceSpacingResult.new(miner.difficulty, "dynamically decreasing difficulty from #{last_difficulty} to #{miner.difficulty}")
           end
         else
-        #     puts "AVG DIFF: #{average_difficulty}"
-        #   puts "AVG DEV: #{average_deviance}"
+          #     puts "AVG DIFF: #{average_difficulty}"
+          #   puts "AVG DEV: #{average_deviance}"
           last_difficulty = miner.difficulty
           miner.difficulty = Math.max(1, average_difficulty + 2)
           if last_difficulty != miner.difficulty
