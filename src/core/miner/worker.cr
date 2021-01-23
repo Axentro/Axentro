@@ -62,7 +62,7 @@ module ::Axentro::Core
         end
       end
 
-      info "nonce: #{valid_nonce?(block_hash, block_nonce, work[:difficulty])}, required: #{work[:difficulty]}, nonce: #{block_nonce}, hash: #{block_hash}"
+      debug "nonce: #{valid_nonce?(block_hash, block_nonce, work[:difficulty])}, required: #{work[:difficulty]}, nonce: #{block_nonce}, hash: #{block_hash}"
       info "found new nonce(#{work[:difficulty]}): #{light_green(block_nonce)}"
       debug "Found block..."
 

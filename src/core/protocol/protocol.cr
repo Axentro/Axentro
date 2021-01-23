@@ -58,6 +58,24 @@ module ::Axentro::Core::Protocol
     property difficulty : Int32
   end
 
+  M_TYPE_MINER_BLOCK_DIFFICULTY_ADJUST = 0x0006
+
+  struct MContentMinerBlockDifficultyAdjust
+    include JSON::Serializable
+    property block : SlowBlock
+    property difficulty : Int32
+    property reason : String
+  end
+
+  M_TYPE_MINER_BLOCK_INVALID = 0x0007
+
+  struct MContentMinerBlockInvalid
+    include JSON::Serializable
+    property block : SlowBlock
+    property difficulty : Int32
+    property reason : String
+  end
+
   ######################################
   # CLIENT
   ######################################

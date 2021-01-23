@@ -39,6 +39,10 @@ module ::Axentro::Core
           _handshake_miner_rejected(message_content)
         when M_TYPE_MINER_BLOCK_UPDATE
           _block_update(message_content)
+        when M_TYPE_MINER_BLOCK_DIFFICULTY_ADJUST
+          _block_update_adjust(message_content)
+        when M_TYPE_MINER_BLOCK_INVALID
+          _block_update_invalid(message_content)
         end
       rescue e : Exception
         warning "receive invalid message, will be ignored"
@@ -100,6 +104,34 @@ module ::Axentro::Core
 
       info "#{magenta("PREPARING NEXT SLOW BLOCK")}: #{light_green(block.index)} at difficulty: #{light_cyan(difficulty)}"
 
+      exec_workers(difficulty, block)
+    end
+
+    private def _block_update_adjust(_content)
+      _m_content = MContentMinerBlockDifficultyAdjust.from_json(_content)
+
+      block = _m_content.block
+      difficulty = _m_content.difficulty
+      reason = _m_content.reason
+
+      info reason
+
+      exec_workers(difficulty, block)
+    end
+
+    private def _block_update_invalid(_content)
+      _m_content = MContentMinerBlockInvalid.from_json(_content)
+
+      block = _m_content.block
+      difficulty = _m_content.difficulty
+      reason = _m_content.reason
+
+      info reason
+
+      exec_workers(difficulty, block)
+    end
+
+    private def exec_workers(difficulty, block)
       debug "set difficulty: #{light_cyan(difficulty)}"
       debug "set block index: #{light_green(block.index)}"
 
