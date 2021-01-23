@@ -61,8 +61,9 @@ module ::Axentro::Core
     end
 
     def to_hash : String
-      string = SlowBlockNoTimestamp.from_slow_block(self).to_json
-      sha256(string)
+      # string = SlowBlockNoTimestamp.from_slow_block(self).to_json
+      json = self.to_json
+      sha256(json)
     end
 
     def calculate_merkle_tree_root : String
@@ -104,6 +105,10 @@ module ::Axentro::Core
     end
 
     def with_difficulty(@difficulty : Int32) : SlowBlock
+      self
+    end
+
+    def with_timestamp(@timestamp : Int64) : SlowBlock
       self
     end
 

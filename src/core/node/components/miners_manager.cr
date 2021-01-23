@@ -22,9 +22,8 @@ module ::Axentro::Core::NodeComponents
   class NonceMeta
     property difficulty : Int32
     property deviance : Int64
-    property block_hash : String
 
-    def initialize(@difficulty, @deviance, @block_hash); end
+    def initialize(@difficulty, @deviance); end
   end
 
   class MinersManager < HandleSocket
@@ -33,7 +32,7 @@ module ::Axentro::Core::NodeComponents
 
     @nonce_meta_map : Hash(String, Array(NonceMeta)) = {} of String => Array(NonceMeta)
 
-    def initialize(@blockchain : Blockchain, @is_private_node : Bool) 
+    def initialize(@blockchain : Blockchain, @is_private_node : Bool)
     end
 
     private def node
@@ -67,18 +66,16 @@ module ::Axentro::Core::NodeComponents
 
       @miners << miner
 
-      block_hash = @blockchain.mining_block.with_difficulty(Consensus::MINER_DIFFICULTY_TARGET).to_hash
-      @nonce_meta_map[miner.mid] = [NonceMeta.new(Consensus::MINER_DIFFICULTY_TARGET, 0_i64, block_hash)]
+      @nonce_meta_map[miner.mid] = [NonceMeta.new(8, 0_i64)]
 
       remote_address = context.try(&.request.remote_address.to_s) || "unknown"
       miner_name = HumanHash.humanize(mid)
       info "new miner (#{remote_address}) : #{light_green(miner_name)} (#{@miners.size})"
 
       send(socket, M_TYPE_MINER_HANDSHAKE_ACCEPTED, {
-        version:     Core::CORE_VERSION,
-        block_index: @blockchain.mining_block.index,
-        block_hash:  block_hash,
-        difficulty:  Consensus::MINER_DIFFICULTY_TARGET,
+        version:    Core::CORE_VERSION,
+        block:      @blockchain.mining_block,
+        difficulty: 8,
       })
     end
 
@@ -87,35 +84,30 @@ module ::Axentro::Core::NodeComponents
 
       _m_content = MContentMinerFoundNonce.from_json(_content)
 
-      miner_nonce = _m_content.nonce
-      mined_timestamp = miner_nonce.timestamp
-      miner_difficulty = miner_nonce.difficulty
-      block_hash = miner_nonce.block_hash
+      mined_nonce = _m_content.nonce
+      mined_timestamp = mined_nonce.timestamp
+      mined_difficulty = mined_nonce.difficulty
 
       if miner = find?(socket)
         if nonce_meta = @nonce_meta_map[miner.mid]?
-         
-          meta_for_hash = nonce_meta.select{|nm| nm.block_hash == block_hash }
-          if meta_for_hash.size > 0
-            meta = meta_for_hash.last
- 
-            # validate incoming nonce timestamp - should not be too far out from current time in utc
-                      
-            mined_difficulty = valid_pow?(block_hash, miner_nonce.value, miner_difficulty)
-            if mined_difficulty < meta.difficulty
-              error "difficulty for nonce: #{miner_nonce.value} was #{mined_difficulty} and expected #{meta.difficulty} for block hash: #{block_hash}"
-            else  
-              info "Nonce #{miner_nonce.value} at difficulty: #{miner_difficulty} was found for block hash: #{block_hash}"
+          block = @blockchain.mining_block.with_nonce(mined_nonce.value).with_timestamp(mined_timestamp).with_difficulty(mined_difficulty)
+          block_hash = block.to_hash
 
-              # throttle nonce difficulty target
-              
-              # track the highest nonce within 2 minutes and mint the block after 2 mins approx
+          meta = nonce_meta.last
 
-            end
+          # validate incoming nonce timestamp - should not be too far out from current time in utc
+
+          mined_difficulty = valid_pow?(block_hash, mined_nonce.value, mined_difficulty)
+          if mined_difficulty < meta.difficulty
+            error "difficulty for nonce: #{mined_nonce.value} was #{mined_difficulty} and expected #{meta.difficulty} for block hash: #{block_hash}"
           else
-            # hash not tracked in meta so nonce is invalid
+            info "Nonce #{mined_nonce.value} at difficulty: #{mined_difficulty} was found for block hash: #{block_hash}"
+
+            # throttle nonce difficulty target
+
+            # track the highest nonce within 2 minutes and mint the block after 2 mins approx
+
           end
-        
         end
       end
     end

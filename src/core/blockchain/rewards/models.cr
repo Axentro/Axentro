@@ -20,7 +20,6 @@ module ::Axentro::Core::NonceModels
     getter address : String = "0"
     getter node_id : String = "0"
     getter difficulty : Int32 = 0
-    getter block_hash : String = ""
 
     def initialize(@value : BlockNonce); end
 
@@ -53,10 +52,6 @@ module ::Axentro::Core::NonceModels
     end
 
     def with_difficulty(@difficulty : Int32) : MinerNonce
-      self
-    end
-
-    def with_block_hash(@block_hash : String) : MinerNonce
       self
     end
   end
