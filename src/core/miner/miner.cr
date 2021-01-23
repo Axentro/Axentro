@@ -45,7 +45,8 @@ module ::Axentro::Core
           _block_update_invalid(message_content)
         end
       rescue e : Exception
-        warning "receive invalid message, will be ignored"
+        warning "receive invalid message, will be ignored: #{e}"
+        clean_connection(socket)
       end
 
       socket.on_close do |_|
