@@ -39,37 +39,29 @@ module ::Axentro::Core::NodeComponents
     def compute(miner : Miner, check : Bool = false) : NonceSpacingResult?
       prefix = check ? "(check)" : "(nonce)"
       if nonce_meta = @nonce_meta_map[miner.mid]?
-        # if checking don't make any changes if the last change was within the last 10 seconds
-        # if check
-        #   puts "check last: #{__timestamp - nonce_meta.last.last_change}"
-        #   return if (__timestamp - nonce_meta.last.last_change) < 10000
-        # end
 
         moving_average = nonce_meta.size < 10 ? nonce_meta : nonce_meta.last(10)
         average_deviance = (moving_average.map(&.deviance).sum / moving_average.size).to_i
         average_difficulty = (moving_average.map(&.difficulty).sum / moving_average.size).to_i
 
         if average_deviance > 10000
-          #     puts "AVG DIFF: #{average_difficulty}"
-          #   puts "AVG DEV: #{average_deviance}"
+          debug "average difficulty: #{average_difficulty}, average deviance: #{average_deviance}"
           last_difficulty = miner.difficulty
           miner.difficulty = Math.max(1, average_difficulty - 1)
           if last_difficulty != miner.difficulty
-            warning "#{prefix} decrease difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
+            debug "#{prefix} decrease difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
             NonceSpacingResult.new(miner.difficulty, "dynamically decreasing difficulty from #{last_difficulty} to #{miner.difficulty}")
           end
         else
-          #     puts "AVG DIFF: #{average_difficulty}"
-          #   puts "AVG DEV: #{average_deviance}"
           last_difficulty = miner.difficulty
           miner.difficulty = Math.max(1, average_difficulty + 2)
           if last_difficulty != miner.difficulty
-            warning "#{prefix} increased difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
+            debug "#{prefix} increased difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
             NonceSpacingResult.new(miner.difficulty, "dynamically increasing difficulty from #{last_difficulty} to #{miner.difficulty}")
           end
         end
       else
-        warning "#{prefix} no nonces found yet so decrease difficulty to #{miner.difficulty}"
+        debug "#{prefix} no nonces found yet so decrease difficulty to #{miner.difficulty}"
         last_difficulty = miner.difficulty
         miner.difficulty -= 1
         NonceSpacingResult.new(miner.difficulty, "dynamically decreasing difficulty from #{last_difficulty} to #{miner.difficulty}")
@@ -82,7 +74,7 @@ module ::Axentro::Core::NodeComponents
         time_difference = mined_timestamp - last_miner_nonce.first.timestamp
       else
         prefix = check ? "(check)" : "(nonce)"
-        warning "#{prefix} no nonces yet and difficulty is #{difficulty}"
+        debug "#{prefix} no nonces yet and difficulty is #{difficulty}"
         time_difference = 10001_i64
       end
       @nonce_meta_map[mid] ||= [] of NonceMeta
