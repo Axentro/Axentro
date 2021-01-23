@@ -66,7 +66,7 @@ module ::Axentro::Core::NodeComponents
 
       @miners << miner
 
-      @nonce_meta_map[miner.mid] = [NonceMeta.new(8, 0_i64)]
+      @nonce_meta_map[miner.mid] = [NonceMeta.new(2, 0_i64)]
 
       remote_address = context.try(&.request.remote_address.to_s) || "unknown"
       miner_name = HumanHash.humanize(mid)
@@ -75,7 +75,7 @@ module ::Axentro::Core::NodeComponents
       send(socket, M_TYPE_MINER_HANDSHAKE_ACCEPTED, {
         version:    Core::CORE_VERSION,
         block:      @blockchain.mining_block,
-        difficulty: 8,
+        difficulty: 2,
       })
     end
 
@@ -93,6 +93,8 @@ module ::Axentro::Core::NodeComponents
           block = @blockchain.mining_block.with_nonce(mined_nonce.value).with_timestamp(mined_timestamp).with_difficulty(mined_difficulty)
           block_hash = block.to_hash
 
+          # puts block.to_json
+
           meta = nonce_meta.last
 
           # validate incoming nonce timestamp - should not be too far out from current time in utc
@@ -103,13 +105,102 @@ module ::Axentro::Core::NodeComponents
           else
             info "Nonce #{mined_nonce.value} at difficulty: #{mined_difficulty} was found for block hash: #{block_hash}"
 
+            # add nonce to pool
+            mined_nonce = mined_nonce.with_node_id(node.get_node_id).with_mid(miner.mid)
+            @blockchain.add_miner_nonce(mined_nonce)
+
             # throttle nonce difficulty target
+
+            # find last nonce the miner sent
+            existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
+            if existing_miner_nonces.size > 0
+              last_miner_nonce = existing_miner_nonces.sort_by { |mn| mn.timestamp }.reverse
+              time_difference = mined_timestamp - last_miner_nonce.first.timestamp
+
+              nonce_meta = @nonce_meta_map[miner.mid]
+              average_deviance = (nonce_meta.map(&.deviance).sum / nonce_meta.size).to_i
+              average_difficulty = (nonce_meta.map(&.difficulty).sum / nonce_meta.size).to_i
+
+              puts "DEVIANCE: #{average_deviance}"
+              if average_deviance > 10000
+                # if the last nonce the miner sent was more than 10 seconds ago since last nonce - decrease difficulty - resend block
+                last_difficulty = miner.difficulty
+                miner.difficulty = Math.max(1, average_difficulty - 1)
+                if last_difficulty != miner.difficulty
+                  error "(found_nonce) decrease difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
+                  send_adjust_block_difficulty(miner.socket, miner.difficulty)
+                end
+              else
+
+                if average_deviance < 1000
+                # if the last nonce the miner sent was less than 10 seconds ago since last nonce - increase difficulty - resend block
+                puts "AVG DIFF: #{average_difficulty}"
+                last_difficulty = miner.difficulty
+                miner.difficulty = Math.max(1, average_difficulty + 8)
+                if last_difficulty != miner.difficulty
+                  error "(found_nonce) increased difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
+                  send_adjust_block_difficulty(miner.socket, miner.difficulty)
+                end
+              elsif average_deviance < 3000
+                puts "AVG DIFF: #{average_difficulty}"
+                last_difficulty = miner.difficulty
+                miner.difficulty = Math.max(1, average_difficulty + 7)
+                if last_difficulty != miner.difficulty
+                  error "(found_nonce) increased difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
+                  send_adjust_block_difficulty(miner.socket, miner.difficulty)
+                end
+              elsif average_deviance < 5000
+                puts "AVG DIFF: #{average_difficulty}"
+                last_difficulty = miner.difficulty
+                miner.difficulty = Math.max(1, average_difficulty + 6)
+                if last_difficulty != miner.difficulty
+                  error "(found_nonce) increased difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
+                  send_adjust_block_difficulty(miner.socket, miner.difficulty)
+                end
+              elsif average_deviance < 8000
+                puts "AVG DIFF: #{average_difficulty}"
+                last_difficulty = miner.difficulty
+                miner.difficulty = Math.max(1, average_difficulty + 5)
+                if last_difficulty != miner.difficulty
+                  error "(found_nonce) increased difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
+                  send_adjust_block_difficulty(miner.socket, miner.difficulty)
+                end
+              else
+                puts "AVG DIFF: #{average_difficulty}"
+                last_difficulty = miner.difficulty
+                miner.difficulty = Math.max(1, average_difficulty + 4)
+                if last_difficulty != miner.difficulty
+                  error "(found_nonce) increased difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
+                  send_adjust_block_difficulty(miner.socket, miner.difficulty)
+                end
+              end      
+              
+              end
+
+               # add the nonce to the historic tracking
+               @nonce_meta_map[miner.mid] << NonceMeta.new(miner.difficulty, time_difference)
+
+            end
 
             # track the highest nonce within 2 minutes and mint the block after 2 mins approx
 
           end
         end
       end
+    end
+
+    def send_adjust_block_difficulty(socket, difficulty : Int32)
+      send(socket, M_TYPE_MINER_BLOCK_UPDATE, {
+        block:      @blockchain.mining_block,
+        difficulty: difficulty,
+      })
+    end
+
+    def send_updated_block(socket, difficulty : Int32)
+      send(socket, M_TYPE_MINER_BLOCK_UPDATE, {
+        block:      @blockchain.mining_block,
+        difficulty: difficulty,
+      })
     end
 
     def find?(socket : HTTP::WebSocket) : Miner?
