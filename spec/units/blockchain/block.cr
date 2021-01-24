@@ -179,17 +179,6 @@ describe SlowBlock do
         end
       end
     end
-
-    it "should raise error if difficulty is not 3" do
-      with_factory do |block_factory|
-        chain = block_factory.blockchain.chain
-        block = chain.first.as(SlowBlock)
-        block.difficulty = 99
-        expect_raises(Exception, "difficulty has to be '17' for genesis block: 99") do
-          block.valid?(block_factory.blockchain, false)
-        end
-      end
-    end
   end
 
   describe "#find_transaction" do

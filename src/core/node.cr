@@ -412,7 +412,7 @@ module ::Axentro::Core
 
         if successor = _nodes[:successor]
           if successor[:context][:id] != content[:from][:id]
-            warning "sending to successor: #{message_type}"
+            debug "sending to successor: #{message_type}"
             send(successor[:socket], message_type, content)
           end
         end

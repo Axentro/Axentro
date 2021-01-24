@@ -524,7 +524,7 @@ module ::Axentro::Core
       genesis_nonce = "0"
       genesis_prev_hash = "genesis"
       genesis_timestamp = 0_i64
-      genesis_difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
+      genesis_difficulty = Consensus::MINER_DIFFICULTY_TARGET
       address = "genesis"
 
       SlowBlock.new(
@@ -683,36 +683,15 @@ module ::Axentro::Core
     end
 
     def create_coinbase_slow_transaction(coinbase_amount : Int64, fee : Int64, miners : NodeComponents::MinersManager::Miners) : Transaction
-      # TODO - simple solution for now - but should move to it's own class for calculating rewards
-      miners_nonces = MinerNoncePool.embedded
-      miners_rewards_total = (coinbase_amount * 3_i64) / 4_i64
-
-      miners_recipients = miners_nonces.group_by { |mn| mn.address }.map do |address, nonces|
-        amount = (miners_rewards_total * nonces.size) / miners_nonces.size
-        {address: address, amount: amount.to_i64}
-      end.to_a.flatten.reject { |m| m[:amount] == 0 }
-
-      recipient_list = [] of Transaction::Recipient
       fastnode_recipient = coinbase_recipient_for_fastnode(fee)
+      is_fastnode = official_node.i_am_a_fastnode?(@wallet_address)
+      reward_calculator = MinerRewardCalculator.new(MinerNoncePool.embedded, coinbase_amount, fastnode_recipient, is_fastnode, @wallet_address, fee)
 
-      # if I am the fastnode then should add the fee to the node_recipient if not then use this fastnode_recipient
-      node_recipient_amount = coinbase_amount - miners_recipients.reduce(0_i64) { |sum, m| sum + m[:amount] }
-      if official_node.i_am_a_fastnode?(@wallet_address)
-        recipient_list << {
-          address: @wallet_address,
-          amount:  node_recipient_amount + fee,
-        }
-      else
-        recipient_list << {
-          address: @wallet_address,
-          amount:  node_recipient_amount,
-        }
-        recipient_list += fastnode_recipient
-      end
+      miner_recipients = reward_calculator.miner_rewards_as_recipients
+      node_recipient = reward_calculator.node_rewards_as_recipients(miner_recipients)
 
-      # if there are no miners_rewards_total -
       senders = [] of Transaction::Sender # No senders
-      recipients = miners_rewards_total > 0 ? recipient_list + miners_recipients : [] of Transaction::Recipient
+      recipients = reward_calculator.miner_rewards_total > 0 ? node_recipient + miner_recipients : [] of Transaction::Recipient
 
       Transaction.new(
         Transaction.create_id,
