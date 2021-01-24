@@ -156,13 +156,14 @@ module ::Axentro::Core::NodeComponents
             time_boundary = (Consensus::POW_TARGET_SPACING * 0.90).to_i64
             start_with_boundary = @block_start_time + time_boundary
             has_expired = mined_timestamp > start_with_boundary
+            duration = (mined_timestamp - start_with_boundary) / 1000
             if has_expired
               if @highest_difficulty_mined_so_far > 0
-                warning "Time has expired for block #{block.index} ... (block_start: #{Time.unix_ms(@block_start_time)}, pow_spacing: #{(time_boundary / 1000)}, total: #{Time.unix_ms(start_with_boundary)}) the block with the most difficult nonce recorded so far will be minted: #{@highest_difficulty_mined_so_far}"
+                warning "Time has expired for block #{block.index} ... (duration: #{duration}, block_start: #{Time.unix_ms(@block_start_time)}, pow_spacing: #{(time_boundary / 1000)}, total: #{Time.unix_ms(start_with_boundary)}) the block with the most difficult nonce recorded so far will be minted: #{@highest_difficulty_mined_so_far}"
                 mint_block(@most_difficult_block_so_far)
               else
                 # if we get here - then the slow block check will keep reducing the difficulty until a nonce is found - so we should not stay here for long
-                warning "Time has expired for block #{block.index} ... (block_start: #{Time.unix_ms(@block_start_time)}, pow_spacing: #{time_boundary / 1000}, total: #{Time.unix_ms(start_with_boundary)}) but no nonce with a difficulty larger than miner difficulty (#{current_miner_difficulty}) has been received.. keep waiting"
+                warning "Time has expired for block #{block.index} ... (duration: #{duration}, block_start: #{Time.unix_ms(@block_start_time)}, pow_spacing: #{time_boundary / 1000}, total: #{Time.unix_ms(start_with_boundary)}) but no nonce with a difficulty larger than miner difficulty (#{current_miner_difficulty}) has been received.. keep waiting"
               end
             end
           end
