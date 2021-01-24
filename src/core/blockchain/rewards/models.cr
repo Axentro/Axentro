@@ -19,7 +19,7 @@ module ::Axentro::Core::NonceModels
     getter timestamp : Int64 = 0_i64
     getter address : String = "0"
     getter node_id : String = "0"
-    getter difficulty : Int32 = 0
+    getter difficulty : Int32 = 1
 
     def initialize(@value : BlockNonce); end
 
