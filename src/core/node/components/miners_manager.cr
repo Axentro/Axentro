@@ -87,10 +87,9 @@ module ::Axentro::Core::NodeComponents
             send_adjust_block_difficulty(miner.socket, spacing.difficulty, spacing.reason)
             @nonce_spacing.add_nonce_meta(miner.mid, spacing.difficulty, existing_miner_nonces)
           end
-          check_if_block_has_expired  
+          check_if_block_has_expired
         end
       end
-
     end
 
     def found_nonce(socket, _content)
