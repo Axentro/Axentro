@@ -11,6 +11,13 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core::NodeComponents
+
+  DEVIANCE_BOUNDARY_1 = 8000
+  DEVIANCE_BOUNDARY_2 = 12000
+  NO_NONCE_BOUNDARY = 10000
+  NO_NONCE_DEVIANCE = 8001_i64
+  MOVING_AVERAGE_SIZE = 20
+
   class NonceMeta
     property difficulty : Int32
     property deviance : Int64
@@ -36,48 +43,110 @@ module ::Axentro::Core::NodeComponents
       @nonce_meta_map[mid]?
     end
 
-    def compute(miner : Miner, check : Bool = false) : NonceSpacingResult?
+    # build an average first - the first 20 nonces can go up and down
+    # after 20 nonces - take the last 20 to calculate averages
+    def compute(block_start_time : Int64, miner : Miner, existing_nonces : Array(MinerNonce), check : Bool = false) : NonceSpacingResult?
       prefix = check ? "(check)" : "(nonce)"
+      # The miner should be tracked in nonce_meta to apply throttling
       if nonce_meta = @nonce_meta_map[miner.mid]?
-        moving_average = nonce_meta.size < 10 ? nonce_meta : nonce_meta.last(10)
-        average_deviance = (moving_average.map(&.deviance).sum / moving_average.size).to_i
-        average_difficulty = (moving_average.map(&.difficulty).sum / moving_average.size).to_i
+        # Are there any existing nonces yet?
+        if existing_nonces.size > 0
+          # should we use averages or last nonce strategy?
+          if nonce_meta.size > MOVING_AVERAGE_SIZE
+            # use averages from last 20
+            # if avg deviance > 10 secs - increase/decrease - do nothing boundary between 8-12 secs
+            moving_average = nonce_meta.size < MOVING_AVERAGE_SIZE ? nonce_meta : nonce_meta.last(MOVING_AVERAGE_SIZE)
+            average_deviance = (moving_average.map(&.deviance).sum.to_i / moving_average.size).to_i
+            average_difficulty = (moving_average.map(&.difficulty).sum.to_i / moving_average.size).to_i
 
-        if average_deviance > 10000
-          debug "average difficulty: #{average_difficulty}, average deviance: #{average_deviance}"
-          last_difficulty = miner.difficulty
-          miner.difficulty = Math.max(1, average_difficulty - 1)
-          if last_difficulty != miner.difficulty
-            debug "#{prefix} decrease difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
-            NonceSpacingResult.new(miner.difficulty, "dynamically decreasing difficulty from #{last_difficulty} to #{miner.difficulty}")
+            if average_deviance < DEVIANCE_BOUNDARY_1
+              increase_difficulty_by_average(miner, average_difficulty, average_deviance, prefix)
+            elsif average_deviance < DEVIANCE_BOUNDARY_2
+              # do nothing
+            else
+              decrease_difficulty_by_average(miner, average_difficulty, average_deviance, prefix)
+            end
+          else
+            # use last nonce strategy
+            # how long ago was the last nonce found?
+            # less than 8 seconds? increase difficulty
+            # between 8 -> 12 seconds? do nothing
+            # more than 12 seconds? decrease difficulty
+            last_nonce_found = nonce_meta.last.last_change
+            deviation = __timestamp - last_nonce_found
+            if deviation < DEVIANCE_BOUNDARY_1
+              increase_difficulty_by_last(miner, deviation, prefix)
+            elsif deviation < DEVIANCE_BOUNDARY_2
+              # do nothing
+            else
+              decrease_difficulty_by_last(miner, deviation, prefix)
+            end
           end
         else
-          last_difficulty = miner.difficulty
-          miner.difficulty = Math.max(1, average_difficulty + 2)
-          if last_difficulty != miner.difficulty
-            debug "#{prefix} increased difficulty to #{miner.difficulty} for deviance: #{average_deviance}"
-            NonceSpacingResult.new(miner.difficulty, "dynamically increasing difficulty from #{last_difficulty} to #{miner.difficulty}")
+          # If no nonces found yet - ignoring nonce_meta.size
+          # decrease difficulty if more than 10 seconds since block start
+          deviation = __timestamp - block_start_time
+          if deviation > NO_NONCE_BOUNDARY
+            decrease_difficulty_by_last(miner, deviation, prefix)
           end
         end
-      else
-        debug "#{prefix} no nonces found yet so decrease difficulty to #{miner.difficulty}"
-        last_difficulty = miner.difficulty
-        miner.difficulty -= 1
-        NonceSpacingResult.new(miner.difficulty, "dynamically decreasing difficulty from #{last_difficulty} to #{miner.difficulty}")
       end
     end
 
-    def add_nonce_meta(mid : String, difficulty : Int32, existing_nonces : Array(MinerNonce), mined_timestamp : Int64, check : Bool = false)
-      if existing_nonces.size > 0
-        last_miner_nonce = existing_nonces.sort_by { |mn| mn.timestamp }.reverse
-        time_difference = mined_timestamp - last_miner_nonce.first.timestamp
-      else
-        prefix = check ? "(check)" : "(nonce)"
-        debug "#{prefix} no nonces yet and difficulty is #{difficulty}"
-        time_difference = 10001_i64
+    def decrease_difficulty_by_last(miner, last_deviance, prefix)
+      last_difficulty = miner.difficulty
+      miner.difficulty = Math.max(1, last_difficulty - 1)
+      if last_difficulty != miner.difficulty
+        info "(#{miner.mid}) #{prefix} (last nonce) decrease difficulty to #{miner.difficulty} for last deviance: #{last_deviance}"
+        return NonceSpacingResult.new(miner.difficulty, "dynamically decreasing difficulty from #{last_difficulty} to #{miner.difficulty}")
       end
-      @nonce_meta_map[mid] ||= [] of NonceMeta
-      @nonce_meta_map[mid] << NonceMeta.new(difficulty, time_difference, __timestamp)
+    end
+
+    def decrease_difficulty_by_average(miner, average_difficulty, average_deviance, prefix)
+      last_difficulty = miner.difficulty
+      miner.difficulty = Math.max(1, average_difficulty - 1)
+      if last_difficulty != miner.difficulty
+        info "(#{miner.mid}) #{prefix} (average) decrease difficulty to #{miner.difficulty} for average deviance: #{average_deviance}"
+        return NonceSpacingResult.new(miner.difficulty, "dynamically decreasing difficulty from #{last_difficulty} to #{miner.difficulty}")
+      end
+    end
+
+    def increase_difficulty_by_last(miner, last_deviance, prefix)
+      last_difficulty = miner.difficulty
+      miner.difficulty = Math.max(1, last_difficulty + 1)
+      if last_difficulty != miner.difficulty
+        info "(#{miner.mid}) #{prefix} (last nonce) increase difficulty to #{miner.difficulty} for last deviance: #{last_deviance}"
+        return NonceSpacingResult.new(miner.difficulty, "dynamically increasing difficulty from #{last_difficulty} to #{miner.difficulty}")
+      end
+    end
+
+    def increase_difficulty_by_average(miner, average_difficulty, average_deviance, prefix)
+      last_difficulty = miner.difficulty
+      miner.difficulty = Math.max(1, average_difficulty + 1)
+      if last_difficulty != miner.difficulty
+        info "(#{miner.mid}) #{prefix} (average) increase difficulty to #{miner.difficulty} for average deviance: #{average_deviance}"
+        return NonceSpacingResult.new(miner.difficulty, "dynamically increasing difficulty from #{last_difficulty} to #{miner.difficulty}")
+      end
+    end
+
+    def add_nonce_meta(mid : String, difficulty : Int32, existing_nonces : Array(MinerNonce), check : Bool = false)
+      now = __timestamp
+      if nonce_meta = @nonce_meta_map[mid]?
+        if existing_nonces.size > 0
+          last_nonce_found = nonce_meta.last.last_change
+          deviance = now - last_nonce_found
+          @nonce_meta_map[mid] << NonceMeta.new(difficulty, deviance, now)
+        else
+          # no nonces yet so same as not tracked condition
+          deviance = NO_NONCE_DEVIANCE
+          @nonce_meta_map[mid] << NonceMeta.new(difficulty, deviance, now)
+        end
+      else
+        # not tracked miner yet - so set deviance greater than cut off so it will decrease from the start
+        deviance = NO_NONCE_DEVIANCE
+        @nonce_meta_map[mid] ||= [] of NonceMeta
+        @nonce_meta_map[mid] << NonceMeta.new(difficulty, deviance, now)
+      end
     end
 
     include Logger

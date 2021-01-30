@@ -65,7 +65,7 @@ module ::Axentro::Core::NodeComponents
       @miners << miner
 
       existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
-      @nonce_spacing.add_nonce_meta(miner.mid, @blockchain.mining_block.difficulty, existing_miner_nonces, __timestamp)
+      @nonce_spacing.add_nonce_meta(miner.mid, @blockchain.mining_block.difficulty, existing_miner_nonces)
 
       remote_address = context.try(&.request.remote_address.to_s) || "unknown"
       miner_name = HumanHash.humanize(mid)
@@ -80,18 +80,20 @@ module ::Axentro::Core::NodeComponents
       spawn do
         loop do
           sleep 10
+          info "in check loop"
           @miners.each do |_miner|
             existing_miner_nonces = MinerNoncePool.find_by_mid(_miner.mid)
-            if spacing = @nonce_spacing.compute(_miner, true)
+            if spacing = @nonce_spacing.compute(@block_start_time, _miner, existing_miner_nonces, true)
+              info "check was computed"
               send_adjust_block_difficulty(_miner.socket, spacing.difficulty, spacing.reason)
-              @nonce_spacing.add_nonce_meta(_miner.mid, spacing.difficulty, existing_miner_nonces, __timestamp)
+              @nonce_spacing.add_nonce_meta(_miner.mid, spacing.difficulty, existing_miner_nonces)
             end
           end
+          check_if_block_has_expired
         end
       end
     end
 
-    # ameba:disable Metrics/CyclomaticComplexity
     def found_nonce(socket, _content)
       return unless node.phase == SetupPhase::DONE
 
@@ -135,38 +137,37 @@ module ::Axentro::Core::NodeComponents
             # throttle nonce difficulty target
             existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
             if existing_miner_nonces.size > 0
-              if spacing = @nonce_spacing.compute(miner)
+              if spacing = @nonce_spacing.compute(@block_start_time, miner, existing_miner_nonces)
                 send_adjust_block_difficulty(miner.socket, spacing.difficulty, spacing.reason)
               end
 
               # add the nonce to the historic tracking
-              @nonce_spacing.add_nonce_meta(miner.mid, miner.difficulty, existing_miner_nonces, mined_timestamp)
+              @nonce_spacing.add_nonce_meta(miner.mid, miner.difficulty, existing_miner_nonces)
             end
 
-            # track the highest nonce within 2 minutes and mint the block after 2 mins approx
-            debug "found nonce of #{block.nonce} that doesn't satisfy block difficulty, checking if it is the best so far"
-            current_miner_difficulty = block_difficulty_to_miner_difficulty(@blockchain.mining_block_difficulty)
-            if (mined_difficulty > current_miner_difficulty) && (mined_difficulty > @highest_difficulty_mined_so_far)
+            # make block the most difficult recorded if it's difficulty exceeds the current most difficult
+            if mined_difficulty > @highest_difficulty_mined_so_far
               debug "This block is now the most difficult recorded"
               @most_difficult_block_so_far = block.dup
               @highest_difficulty_mined_so_far = mined_difficulty
-            else
-              debug "This block was not the most difficult recorded, miner still gets credit for sending the nonce"
             end
-            time_boundary = (Consensus::POW_TARGET_SPACING * 0.90).to_i32
-            start_with_boundary = @block_start_time + time_boundary
-            has_expired = mined_timestamp > start_with_boundary
-            duration = (mined_timestamp - @block_start_time) / 1000
-            if has_expired
-              if @highest_difficulty_mined_so_far > 0
-                warning "Time has expired for block #{block.index} ... (duration: #{duration}, block_start: #{Time.unix_ms(@block_start_time)}, pow_spacing: #{(time_boundary / 1000)}, total: #{Time.unix_ms(start_with_boundary)}) the block with the most difficult nonce recorded so far will be minted: #{@highest_difficulty_mined_so_far}"
-                mint_block(@most_difficult_block_so_far)
-              else
-                # if we get here - then the slow block check will keep reducing the difficulty until a nonce is found - so we should not stay here for long
-                warning "Time has expired for block #{block.index} ... (duration: #{duration}, block_start: #{Time.unix_ms(@block_start_time)}, pow_spacing: #{time_boundary / 1000}, total: #{Time.unix_ms(start_with_boundary)}) but no nonce with a difficulty larger than miner difficulty (#{current_miner_difficulty}) has been received.. keep waiting"
-              end
-            end
+
+            check_if_block_has_expired
           end
+        end
+      end
+    end
+
+    def check_if_block_has_expired
+      # allow some random time to reduce the chance of blocks minted with identical timestamps on different nodes
+      time_boundary = (Consensus::POW_TARGET_SPACING * 0.90).to_i32 + rand(20000)
+      start_with_boundary = @block_start_time + time_boundary
+      duration = __timestamp - @block_start_time
+      debug "has expired? started: #{Time.unix_ms(@block_start_time)} ending: #{Time.unix_ms(start_with_boundary)}, duration: #{duration / 1000}"
+      if __timestamp > start_with_boundary
+        if @highest_difficulty_mined_so_far > 0
+          debug "minting the highest difficulty block so far"
+          mint_block(@most_difficult_block_so_far)
         end
       end
     end
