@@ -11,12 +11,11 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core::NodeComponents
-
-  DEVIANCE_BOUNDARY_1 = 8000
-  DEVIANCE_BOUNDARY_2 = 12000
-  NO_NONCE_BOUNDARY = 10000
-  NO_NONCE_DEVIANCE = 8001_i64
-  MOVING_AVERAGE_SIZE = 20
+  DEVIANCE_BOUNDARY_1 =     8000
+  DEVIANCE_BOUNDARY_2 =    12000
+  NO_NONCE_BOUNDARY   =    10000
+  NO_NONCE_DEVIANCE   = 8001_i64
+  MOVING_AVERAGE_SIZE =       20
 
   class NonceMeta
     property difficulty : Int32
@@ -45,6 +44,7 @@ module ::Axentro::Core::NodeComponents
 
     # build an average first - the first 20 nonces can go up and down
     # after 20 nonces - take the last 20 to calculate averages
+    # ameba:disable Metrics/CyclomaticComplexity
     def compute(block_start_time : Int64, miner : Miner, existing_nonces : Array(MinerNonce), check : Bool = false) : NonceSpacingResult?
       prefix = check ? "(check)" : "(nonce)"
       # The miner should be tracked in nonce_meta to apply throttling
@@ -73,7 +73,12 @@ module ::Axentro::Core::NodeComponents
             # between 8 -> 12 seconds? do nothing
             # more than 12 seconds? decrease difficulty
             last_nonce_found = nonce_meta.last.last_change
-            deviation = __timestamp - last_nonce_found
+            if nonce_meta.size >= 2
+              deviation = last_nonce_found - nonce_meta.last(2).first.last_change
+            else
+              deviation = __timestamp - last_nonce_found
+            end
+
             if deviation < DEVIANCE_BOUNDARY_1
               increase_difficulty_by_last(miner, deviation, prefix)
             elsif deviation < DEVIANCE_BOUNDARY_2

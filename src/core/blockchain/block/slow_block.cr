@@ -179,6 +179,7 @@ module ::Axentro::Core
       raise "Invalid Genesis Index: index has to be '0' for genesis block: #{@index}" if @index != 0
       raise "Invalid Genesis Nonce: nonce has to be '0' for genesis block: #{@nonce}" if @nonce != "0"
       raise "Invalid Genesis Previous Hash: prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
+      raise "Invalid Genesis Difficulty: difficulty has to be '#{Consensus::MINER_DIFFICULTY_TARGET}' for genesis block: #{@difficulty}" if @difficulty != Consensus::MINER_DIFFICULTY_TARGET
       raise "Invalid Genesis Address: address has to be 'genesis' for genesis block" if @address != "genesis"
       true
     end

@@ -80,18 +80,17 @@ module ::Axentro::Core::NodeComponents
       spawn do
         loop do
           sleep 10
-          info "in check loop"
-          @miners.each do |_miner|
-            existing_miner_nonces = MinerNoncePool.find_by_mid(_miner.mid)
-            if spacing = @nonce_spacing.compute(@block_start_time, _miner, existing_miner_nonces, true)
-              info "check was computed"
-              send_adjust_block_difficulty(_miner.socket, spacing.difficulty, spacing.reason)
-              @nonce_spacing.add_nonce_meta(_miner.mid, spacing.difficulty, existing_miner_nonces)
-            end
+          verbose "in check loop"
+          existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
+          if spacing = @nonce_spacing.compute(@block_start_time, miner, existing_miner_nonces, true)
+            info "check was computed for #{miner.mid}"
+            send_adjust_block_difficulty(miner.socket, spacing.difficulty, spacing.reason)
+            @nonce_spacing.add_nonce_meta(miner.mid, spacing.difficulty, existing_miner_nonces)
           end
-          check_if_block_has_expired
+          check_if_block_has_expired  
         end
       end
+
     end
 
     def found_nonce(socket, _content)

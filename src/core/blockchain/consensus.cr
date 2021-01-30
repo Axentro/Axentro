@@ -43,7 +43,7 @@ module ::Axentro::Core::Consensus
   POW_TARGET_SPACING      = 120000_f64
   POW_TARGET_SPACING_SECS =    120_i64
 
-  MINER_DIFFICULTY_TARGET = 12
+  MINER_DIFFICULTY_TARGET = 17
 
   include Hashes
 end
