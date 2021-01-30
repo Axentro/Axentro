@@ -103,7 +103,7 @@ module ::Axentro::Core::NodeComponents
 
       if miner = find?(socket)
         if nonce_meta = @nonce_spacing.get_meta_map(miner.mid)
-          block = @blockchain.mining_block.with_nonce(mined_nonce.value).with_timestamp(mined_timestamp).with_difficulty(mined_difficulty)
+          block = @blockchain.mining_block.with_nonce(mined_nonce.value).with_difficulty(mined_difficulty)
           block_hash = block.to_hash
 
           meta = nonce_meta.last
