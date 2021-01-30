@@ -39,7 +39,6 @@ module ::Axentro::Core
 
         if valid_nonce?(block_hash, block_nonce, work[:difficulty]) == work[:difficulty]
           miner_nonce = MinerNonce.from(block_nonce).with_difficulty(work[:difficulty]).with_timestamp(time_now)
-          # puts block.to_json
           break
         end
 
