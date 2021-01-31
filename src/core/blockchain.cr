@@ -237,9 +237,8 @@ module ::Axentro::Core
       end
     end
 
-    def valid_nonce?(block_nonce : BlockNonce) : SlowBlock?
-      return mining_block.with_nonce(block_nonce) if mining_block.with_nonce(block_nonce).valid_nonce?(mining_block_difficulty)
-      nil
+    def valid_nonce?(block_nonce : BlockNonce) : Bool
+      mining_block.with_nonce(block_nonce).valid_block_nonce?(mining_block_difficulty)
     end
 
     def valid_block?(block : SlowBlock | FastBlock, skip_transactions : Bool = false, doing_replace : Bool = false) : SlowBlock? | FastBlock?

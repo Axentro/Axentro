@@ -19,21 +19,12 @@ include Axentro::Interface::Logger
 include Units::Utils
 
 describe Consensus do
-  describe "#valid?, #valid_pow?" do
+  describe "calculate_pow_difficulty" do
     # TODO: this test is probably erroneously passing since the change to the 'valid' methods
     it "should return a valid difficulty value" do
       ENV.delete("AX_SET_DIFFICULTY")
       nonce = "2978736204850283095"
-      valid_nonce?("block_hash", nonce, 2).should be < 3
-      valid_pow?("block_hash", nonce, 2).should be < 3
-    end
-
-    # TODO: this test is probably erroneously passing since the change to the 'valid' methods
-    it "should return an invalid difficulty value" do
-      ENV.delete("AX_SET_DIFFICULTY")
-      nonce = "2978736204850283095"
-      valid_nonce?("block_hash", nonce, 20).should be < 3
-      valid_pow?("block_hash", nonce, 20).should be < 3
+      calculate_pow_difficulty("block_hash", nonce, 2).should be < 3
     end
   end
 end

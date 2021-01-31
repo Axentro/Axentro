@@ -120,7 +120,7 @@ module ::Axentro::Core::NodeComponents
             send_invalid_block_update(socket, meta.difficulty, message)
           end
 
-          mined_difficulty = valid_pow?(block_hash, mined_nonce.value, mined_difficulty)
+          mined_difficulty = calculate_pow_difficulty(block_hash, mined_nonce.value, mined_difficulty)
           if mined_difficulty < meta.difficulty
             warning "difficulty for nonce: #{mined_nonce.value} was #{mined_difficulty} and expected #{meta.difficulty} for block hash: #{block_hash}"
             send_invalid_block_update(socket, meta.difficulty, "updated block because your nonce: #{mined_nonce.value} was invalid, actual difficulty: #{mined_difficulty} did not match expected: #{meta.difficulty}")

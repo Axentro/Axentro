@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core::Consensus
-  def valid_pow?(block_hash : String, block_nonce : BlockNonce, difficulty : Int32) : Int32
+  def calculate_pow_difficulty(block_hash : String, block_nonce : BlockNonce, difficulty : Int32) : Int32
     nonce_salt = block_nonce.to_u64.to_s(16)
     nonce_salt = "0" + nonce_salt if nonce_salt.bytesize % 2 != 0
 
@@ -29,9 +29,9 @@ module ::Axentro::Core::Consensus
   end
 
   # returns the difficulty found for the hash and nonce given the target difficulty
-  def valid_nonce?(block_hash : String, block_nonce : BlockNonce, difficulty : Int32) : Int32
+  def is_nonce_valid?(block_hash : String, block_nonce : BlockNonce, difficulty : Int32) : Bool
     difficulty = ENV["AX_SET_DIFFICULTY"].to_i if ENV.has_key?("AX_SET_DIFFICULTY") # for unit test
-    valid_pow?(block_hash, block_nonce, difficulty)
+    calculate_pow_difficulty(block_hash, block_nonce, difficulty) == difficulty
   end
 
   def block_difficulty_to_miner_difficulty(diff : Int32)

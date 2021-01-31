@@ -111,12 +111,8 @@ module ::Axentro::Core
       self
     end
 
-    def valid_nonce?(difficulty : Int32)
-      valid_nonce?(self.to_hash, @nonce, difficulty)
-    end
-
-    def valid_nonce_for_difficulty(block_hash : String, nonce : String, difficulty : Int32) : Int32
-      valid_nonce?(block_hash, nonce, difficulty)
+    def valid_block_nonce?(difficulty : Int32) : Bool
+      is_nonce_valid?(to_hash, @nonce, difficulty)
     end
 
     private def validate_transactions(transactions : Array(Transaction), blockchain : Blockchain) : ValidatedTransactions
@@ -157,7 +153,7 @@ module ::Axentro::Core
       end
 
       if @difficulty > 0
-        raise "Invalid Nonce: #{@nonce} for difficulty #{@difficulty}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
+        raise "Invalid Nonce: #{@nonce} for difficulty #{@difficulty}" unless calculate_pow_difficulty(to_hash, @nonce, @difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
       end
 
       merkle_tree_root = calculate_merkle_tree_root

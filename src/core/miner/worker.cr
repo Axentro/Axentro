@@ -37,7 +37,7 @@ module ::Axentro::Core
         block = block.with_nonce(block_nonce).with_difficulty(work[:difficulty])
         block_hash = block.to_hash
 
-        if valid_nonce?(block_hash, block_nonce, work[:difficulty]) == work[:difficulty]
+        if calculate_pow_difficulty(block_hash, block_nonce, work[:difficulty]) == work[:difficulty]
           miner_nonce = MinerNonce.from(block_nonce).with_difficulty(work[:difficulty]).with_timestamp(time_now)
           break
         end
