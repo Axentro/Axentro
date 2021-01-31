@@ -54,100 +54,102 @@ describe SlowBlock do
     end
   end
 
-  # describe "#valid_nonce?" do
-  #   it "should return true when valid" do
-  #     with_factory do |block_factory|
-  #       block = block_factory.add_slow_block.chain.first.as(SlowBlock)
-  #       block.nonce = a_nonce
-  #       block.valid_nonce?(0).should eq(0)
-  #     end
-  #   end
+  describe "#valid_block_nonce?" do
+    it "should return true when valid" do
+      with_factory do |block_factory|
+        ENV.delete("AX_SET_DIFFICULTY")
+        block = block_factory.add_slow_block.chain.first.as(SlowBlock)
+        block.nonce = a_nonce
+        block.valid_block_nonce?(0).should eq(true)
+      end
+    end
 
-  #   it "should less that 3 when invalid" do
-  #     with_factory do |block_factory|
-  #       block = block_factory.add_slow_block.chain.first.as(SlowBlock)
-  #       block.nonce = a_nonce
-  #       block.valid_nonce?(2).should be < 3
-  #     end
-  #   end
-  # end
+    it "should less that 3 when invalid" do
+      with_factory do |block_factory|
+        ENV.delete("AX_SET_DIFFICULTY")
+        block = block_factory.add_slow_block.chain.first.as(SlowBlock)
+        block.nonce = a_nonce
+        block.valid_block_nonce?(50).should eq(false)
+      end
+    end
+  end
 
-  # describe "#valid?" do
-  #   it "should return true when valid" do
-  #     with_factory do |block_factory|
-  #       chain = block_factory.add_slow_blocks(1).chain
-  #       prev_hash = chain[1].to_hash
-  #       timestamp = chain[1].timestamp
-  #       block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS)
-  #       block.valid?(block_factory.blockchain, false).should be_true
-  #     end
-  #   end
+  describe "#valid?" do
+    it "should return true when valid" do
+      with_factory do |block_factory|
+        chain = block_factory.add_slow_blocks(1).chain
+        prev_hash = chain[1].to_hash
+        timestamp = chain[1].timestamp
+        block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS)
+        block.valid?(block_factory.blockchain, false).should be_true
+      end
+    end
 
-  # it "should raise invalid mismatch if there is an index mismatch with the prev block" do
-  #   with_factory do |block_factory|
-  #     chain = block_factory.add_slow_blocks(1).chain
-  #     prev_hash = chain[1].to_hash
-  #     timestamp = chain[1].timestamp
-  #     block = SlowBlock.new(98_i64, [a_coinbase_transaction(1199969322_i64)], a_nonce, prev_hash, timestamp, 1_i32, NODE_ADDRESS)
+    it "should raise invalid mismatch if there is an index mismatch with the prev block" do
+      with_factory do |block_factory|
+        chain = block_factory.add_slow_blocks(1).chain
+        prev_hash = chain[1].to_hash
+        timestamp = chain[1].timestamp
+        block = SlowBlock.new(98_i64, [a_coinbase_transaction(1199969322_i64)], a_nonce, prev_hash, timestamp, 1_i32, NODE_ADDRESS)
 
-  #     expect_raises(Exception, "Index Mismatch: the current block index: 98 should match the lastest slow block index: 4") do
-  #       block.valid_as_latest?(block_factory.blockchain, false)
-  #     end
-  #   end
-  # end
+        expect_raises(Exception, "Index Mismatch: the current block index: 98 should match the latest slow block index: 4") do
+          block.valid?(block_factory.blockchain, false)
+        end
+      end
+    end
 
-  # it "should raise error if prev hash is invalid" do
-  #   with_factory do |block_factory|
-  #     chain = block_factory.add_slow_blocks(1).chain
-  #     prev_hash = "invalid"
-  #     timestamp = chain[1].timestamp
-  #     block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS)
+    it "should raise error if prev hash is invalid" do
+      with_factory do |block_factory|
+        chain = block_factory.add_slow_blocks(1).chain
+        prev_hash = "invalid"
+        timestamp = chain[1].timestamp
+        block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS)
 
-  #     expect_raises(Exception, /prev_hash is invalid:/) do
-  #       block.valid_as_latest?(block_factory.blockchain, false)
-  #     end
-  #   end
-  # end
+        expect_raises(Exception, /prev_hash is invalid:/) do
+          block.valid?(block_factory.blockchain, false)
+        end
+      end
+    end
 
-  # it "should raise error if timestamp is invalid because is smaller than prev timestamp" do
-  #   with_factory do |block_factory|
-  #     chain = block_factory.add_slow_blocks(1).chain
-  #     prev_hash = chain[1].to_hash
-  #     timestamp = chain[1].timestamp - 10000000
-  #     block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS)
+    it "should raise error if timestamp is invalid because is smaller than prev timestamp" do
+      with_factory do |block_factory|
+        chain = block_factory.add_slow_blocks(1).chain
+        prev_hash = chain[1].to_hash
+        timestamp = chain[1].timestamp - 10000000
+        block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS)
 
-  #     expect_raises(Exception, /Invalid Timestamp:/) do
-  #       block.valid_as_latest?(block_factory.blockchain, false)
-  #     end
-  #   end
-  # end
+        expect_raises(Exception, /Invalid Timestamp:/) do
+          block.valid?(block_factory.blockchain, false)
+        end
+      end
+    end
 
-  # it "should raise error if timestamp is invalid because is bigger than next timestamp" do
-  #   with_factory do |block_factory|
-  #     chain = block_factory.add_slow_blocks(1).chain
-  #     prev_hash = chain[1].to_hash
-  #     timestamp = chain[1].timestamp + 10000000
-  #     block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS)
+    it "should raise error if timestamp is invalid because is bigger than next timestamp" do
+      with_factory do |block_factory|
+        chain = block_factory.add_slow_blocks(1).chain
+        prev_hash = chain[1].to_hash
+        timestamp = chain[1].timestamp + 10000000
+        block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS)
 
-  #     expect_raises(Exception, /Invalid Timestamp:/) do
-  #       block.valid_as_latest?(block_factory.blockchain, false)
-  #     end
-  #   end
-  # end
+        expect_raises(Exception, /Invalid Timestamp:/) do
+          block.valid?(block_factory.blockchain, false)
+        end
+      end
+    end
 
-  # it "should raise error if merkle tree root is invalid" do
-  #   with_factory do |block_factory|
-  #     chain = block_factory.add_slow_blocks(1).chain
-  #     prev_hash = chain[1].to_hash
-  #     timestamp = chain[1].timestamp
-  #     block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS)
-  #     block.merkle_tree_root = "invalid"
-  #     expect_raises(Exception, "Invalid Merkle Tree Root: (expected invalid but got d10753346b7c32ada2cafcad9449d08e07aa6e63)") do
-  #       block.valid_as_latest?(block_factory.blockchain, false)
-  #     end
-  #   end
-  # end
-  # end
+    it "should raise error if merkle tree root is invalid" do
+      with_factory do |block_factory|
+        chain = block_factory.add_slow_blocks(1).chain
+        prev_hash = chain[1].to_hash
+        timestamp = chain[1].timestamp
+        block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS)
+        block.merkle_tree_root = "invalid"
+        expect_raises(Exception, "Invalid Merkle Tree Root: (expected invalid but got d10753346b7c32ada2cafcad9449d08e07aa6e63)") do
+          block.valid?(block_factory.blockchain, false)
+        end
+      end
+    end
+  end
 
   describe "#valid_as_genesis?" do
     it "should return true when valid" do

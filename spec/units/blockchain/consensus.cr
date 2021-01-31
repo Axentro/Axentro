@@ -20,11 +20,26 @@ include Units::Utils
 
 describe Consensus do
   describe "calculate_pow_difficulty" do
-    # TODO: this test is probably erroneously passing since the change to the 'valid' methods
     it "should return a valid difficulty value" do
       ENV.delete("AX_SET_DIFFICULTY")
-      nonce = "2978736204850283095"
-      calculate_pow_difficulty("block_hash", nonce, 2).should be < 3
+      hash = "e33598878258c85c60c5c29a41ad756cb69ecd315154695970c375a792eb8f4e"
+      nonce = "17186779519462547558"
+      calculate_pow_difficulty(hash, nonce, 13).should eq(13)
+    end
+  end
+
+  describe "is_nonce_valid?" do
+    it "when valid" do
+      ENV.delete("AX_SET_DIFFICULTY")
+      hash = "e33598878258c85c60c5c29a41ad756cb69ecd315154695970c375a792eb8f4e"
+      nonce = "17186779519462547558"
+      is_nonce_valid?(hash, nonce, 13).should eq(true)
+    end
+    it "when invalid" do
+      ENV.delete("AX_SET_DIFFICULTY")
+      hash = "e33598878258c85c60c5c29a41ad756cb69ecd315154695970c375a792eb8f4e"
+      nonce = "17186779519462547559"
+      is_nonce_valid?(hash, nonce, 13).should eq(false)
     end
   end
 end
