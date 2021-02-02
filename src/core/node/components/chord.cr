@@ -345,63 +345,69 @@ module ::Axentro::Core::NodeComponents
       @this_node = node
     end
 
-    private def reconnect_private
-    end
-
     private def attempt_reconnect_to_connecting_node
       if @connect_host && @connect_port
         host = @connect_host.not_nil!
         port = @connect_port.not_nil!
 
         if @is_private
-          node_list = @successor_list
-          if _predecessor = @predecessor
-            node_list << _predecessor
-          end
-          is_connected = node_list.find { |s| s[:context][:host] == host && s[:context][:port] == port }
-          if is_connected.nil?
-            info "private node - attempt to reconnect to connecting node on #{host}:#{port}"
-
-            socket = HTTP::WebSocket.new(host, "/peer", port, @use_ssl)
-
-            @this_node.not_nil!.peer(socket)
-
-            spawn do
-              socket.run
-            rescue e : Exception
-              handle_exception(socket, e)
-            end
-
-            send(
-              socket,
-              M_TYPE_CHORD_JOIN_PRIVATE,
-              {
-                version: Core::CORE_VERSION,
-                context: context,
-              }
-            )
-          end
+          reconnect_private(host, port)
         else
-          # if the connect host and node is not in finger table then try to connect
-          is_finger = @finger_table.find { |s| s[:host] == host && s[:port] == port }
-
-          verbose " finger: #{is_finger.nil?}"
-
-          if is_finger.nil?
-            info "public node - attempt to reconnect to connecting node on #{host}:#{port}"
-            send_once(
-              host,
-              port,
-              M_TYPE_CHORD_JOIN,
-              {
-                version: Core::CORE_VERSION,
-                context: context,
-              })
-          end
+          reconnect_public(host, port)
         end
       end
     rescue e : Exception
       warning "could not reconnect to connecting node on #{host}:#{port}"
+    end
+
+    private def reconnect_public(host, port)
+      # if the connect host and node is not in finger table then try to connect
+      is_finger = @finger_table.find { |s| s[:host] == host && s[:port] == port }
+
+      verbose " finger: #{is_finger.nil?}"
+
+      if is_finger.nil?
+        info "public node - attempt to reconnect to connecting node on #{host}:#{port}"
+        send_once(
+          host,
+          port,
+          M_TYPE_CHORD_JOIN,
+          {
+            version: Core::CORE_VERSION,
+            context: context,
+          })
+      end
+    end
+
+    private def reconnect_private(host, port)
+      # if the host and port is not in either the successor or predecessor list then try to reconnect
+      node_list = @successor_list
+      if _predecessor = @predecessor
+        node_list << _predecessor
+      end
+      is_connected = node_list.find { |s| s[:context][:host] == host && s[:context][:port] == port }
+      if is_connected.nil?
+        info "private node - attempt to reconnect to connecting node on #{host}:#{port}"
+
+        socket = HTTP::WebSocket.new(host, "/peer", port, @use_ssl)
+
+        @this_node.not_nil!.peer(socket)
+
+        spawn do
+          socket.run
+        rescue e : Exception
+          handle_exception(socket, e)
+        end
+
+        send(
+          socket,
+          M_TYPE_CHORD_JOIN_PRIVATE,
+          {
+            version: Core::CORE_VERSION,
+            context: context,
+          }
+        )
+      end
     end
 
     private def check_for_official_nodes
