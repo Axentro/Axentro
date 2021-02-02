@@ -115,7 +115,7 @@ module ::Axentro::Core::NodeComponents
           end
 
           if mined_timestamp < @blockchain.mining_block.timestamp
-            message = "received nonce was mined before current mining block was created, ignore"
+            message = "invalid timestamp for received nonce: #{mined_nonce.value} nonce mined at: #{Time.unix_ms(mined_timestamp)} before current mining block was created at: #{Time.unix_ms(@blockchain.mining_block.timestamp)}"
             warning message
             send_invalid_block_update(socket, meta.difficulty, message)
           end
