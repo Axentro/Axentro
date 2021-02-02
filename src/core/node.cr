@@ -80,14 +80,13 @@ module ::Axentro::Core
           "request"
         end
       end
+      @phase = SetupPhase::NONE
 
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @blockchain = Blockchain.new(@network_type, @wallet, @wallet_address, @database_path, @database, @developer_fund, @official_nodes, @security_level_percentage, @sync_chunk_size, @record_nonces, @max_miners, is_standalone?)
-      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @max_private_nodes, @wallet_address, @blockchain.official_node, @exit_on_unofficial, @whitelist, @whitelist_message)
+      @chord = Chord.new(@connect_host, @connect_port, @public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @max_private_nodes, @wallet_address, @blockchain.official_node, @exit_on_unofficial, @whitelist, @whitelist_message)
       @miners_manager = MinersManager.new(@blockchain, @is_private)
       @clients_manager = ClientsManager.new(@blockchain)
-
-      @phase = SetupPhase::NONE
 
       info "max private nodes allowed to connect is #{light_green(@max_private_nodes)}"
       info "max miners allowed to connect is #{light_green(@max_miners)}"
@@ -118,6 +117,7 @@ module ::Axentro::Core
         exit -1
       end
 
+      @chord.set_node(self)
       spawn proceed_setup
     end
 
