@@ -218,9 +218,6 @@ module ::Axentro::Core::NodeComponents
       _context = _m_content.context
 
       connect_to_successor(node, _context)
-
-      node.phase = SetupPhase::BLOCKCHAIN_SYNCING
-      node.proceed_setup
     end
 
     def stabilize_as_successor(node, socket, _content : String)
@@ -261,6 +258,7 @@ module ::Axentro::Core::NodeComponents
       )
 
       if @successor_list.size == 0
+        node.send_nodes_joined(all_node_contexts)
         connect_to_successor(node, @predecessor.not_nil![:context])
       end
     end
@@ -333,6 +331,7 @@ module ::Axentro::Core::NodeComponents
           stabilise_finger_table
 
           if (Time.local - now) >= 8.seconds
+            @this_node.not_nil!.send_nodes_joined(all_node_contexts)
             check_for_official_nodes
             attempt_reconnect_to_connecting_node
             now = Time.local
@@ -364,10 +363,11 @@ module ::Axentro::Core::NodeComponents
       # if the connect host and node is not in finger table then try to connect
       is_finger = @finger_table.find { |s| s[:host] == host && s[:port] == port }
 
-      verbose " finger: #{is_finger.nil?}"
+      verbose "public finger: #{is_finger.nil?}"
 
       if is_finger.nil?
         info "public node - attempt to reconnect to connecting node on #{host}:#{port}"
+
         send_once(
           host,
           port,
@@ -376,6 +376,7 @@ module ::Axentro::Core::NodeComponents
             version: Core::CORE_VERSION,
             context: context,
           })
+        @this_node.not_nil!.send_nodes_joined(all_node_contexts)
       end
     end
 
@@ -407,6 +408,7 @@ module ::Axentro::Core::NodeComponents
             context: context,
           }
         )
+        @this_node.not_nil!.send_nodes_joined(all_node_contexts)
       end
     end
 
@@ -540,6 +542,9 @@ module ::Axentro::Core::NodeComponents
       else
         @successor_list.push({socket: socket, context: _context})
       end
+
+      node.phase = SetupPhase::BLOCKCHAIN_SYNCING
+      node.proceed_setup
     end
 
     def align_successors

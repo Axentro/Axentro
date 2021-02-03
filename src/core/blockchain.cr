@@ -631,10 +631,11 @@ module ::Axentro::Core
       end
 
       # align slow transactions may need to re-calc the rewards so only delete the pool after all calcs are finished
-      # only delete the nonces if this refresh is for the next block (otherwise we loose the nonces for the rewards)
-      MinerNoncePool.delete_embedded if the_latest_index > previous_mining_block_index
-
-      node.miners_broadcast
+      # only delete the nonces if this refresh is for the next block (otherwise we lose the nonces for the rewards)
+      if the_latest_index > previous_mining_block_index
+        MinerNoncePool.delete_embedded
+        node.miners_broadcast
+      end
     end
 
     def align_slow_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64, the_latest_index : Int64, embedded_slow_transactions : Array(Transaction)) : Transactions
