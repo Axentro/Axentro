@@ -83,7 +83,7 @@ module ::Axentro::Core::NodeComponents
           verbose "in check loop"
           existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
           if spacing = @nonce_spacing.compute(@block_start_time, miner, existing_miner_nonces, true)
-            info "check was computed for #{miner.mid}"
+            verbose "check was computed for #{miner.mid}"
             send_adjust_block_difficulty(miner.socket, spacing.difficulty, spacing.reason)
             @nonce_spacing.add_nonce_meta(miner.mid, spacing.difficulty, existing_miner_nonces)
           end
