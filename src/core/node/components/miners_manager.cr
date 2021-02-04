@@ -43,7 +43,7 @@ module ::Axentro::Core::NodeComponents
       verbose "requested handshake from a miner"
 
       _m_content = MContentMinerHandshake.from_json(_content)
-      
+
       version = _m_content.version
       address = _m_content.address
       mid = _m_content.mid
@@ -53,7 +53,7 @@ module ::Axentro::Core::NodeComponents
 
       version_check = MinerValidation.has_valid_version?(version)
       reject_miner_connection(socket, version_check.reason) if version_check.invalid?
- 
+
       max_miners_check = MinerValidation.can_add_miners?(miners.size, @blockchain.max_miners)
       reject_miner_connection(socket, max_miners_check.reason) if max_miners_check.invalid?
 
@@ -93,7 +93,7 @@ module ::Axentro::Core::NodeComponents
     rescue
       # short term message until all miners have upgraded to sem ver approach
       reason = "your miner is out of date, please update it (node version: #{Core::CORE_VERSION})"
-      reject_miner_connection(socket, reason)  
+      reject_miner_connection(socket, reason)
     end
 
     def found_nonce(socket, _content)
