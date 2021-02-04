@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core
-  CORE_VERSION = 1
+  CORE_VERSION = "2.0.0"
 end
 
 require "big"

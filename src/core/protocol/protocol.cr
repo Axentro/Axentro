@@ -22,7 +22,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentMinerHandshake
     include JSON::Serializable
-    property version : Int32
+    property version : String
     property address : String
     property mid : String
   end
@@ -31,7 +31,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentMinerHandshakeAccepted
     include JSON::Serializable
-    property version : Int32
+    property version : String
     property block : SlowBlock
     property difficulty : Int32
   end
