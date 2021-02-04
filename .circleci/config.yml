@@ -28,30 +28,6 @@ jobs:
           shards build --release --no-debug
           bin/e2e --mode=all_public --num_tps=10 --num_nodes=3 --num_miners=3 --time=900
 
-  e2e-tests-all-private:
-    docker:
-      - image: crystallang/crystal:0.35.1 
-    steps:
-      - checkout
-      - run: |
-          apt-get update
-          apt-get install curl libsqlite3-dev -y
-      - run: |
-          shards build --release --no-debug
-          bin/e2e --mode=all_private --num_tps=10 --num_nodes=3 --num_miners=3 --time=900
-
-  e2e-tests-one-private:
-    docker:
-      - image: crystallang/crystal:0.35.1 
-    steps:
-      - checkout
-      - run: |
-          apt-get update
-          apt-get install curl libsqlite3-dev -y
-      - run: |
-          shards build --release --no-debug
-          bin/e2e --mode=one_private --num_tps=10 --num_nodes=3 --num_miners=3 --time=900
-
   docker-build:
     machine: true
     steps:
@@ -79,15 +55,11 @@ workflows:
     jobs:
       - tests
       - e2e-tests-all-public
-      - e2e-tests-all-private
-      - e2e-tests-one-private
       - docker-build
       - docker-deploy:
           requires:
             - tests
             - e2e-tests-all-public
-            - e2e-tests-all-private
-            - e2e-tests-one-private
             - docker-build
           filters:
             branches:
