@@ -302,9 +302,13 @@ module ::Axentro::Core
         when M_TYPE_CLIENT_CONTENT
           @clients_manager.receive_content(message_content)
         when M_TYPE_CHORD_JOIN
-          @chord.join(self, socket, message_content)
+          @chord.join(self, socket, message_content, false)
+        when M_TYPE_CHORD_RECONNECT
+          @chord.join(self, socket, message_content, true)
         when M_TYPE_CHORD_JOIN_PRIVATE
-          @chord.join_private(self, socket, message_content)
+          @chord.join_private(self, socket, message_content, false)
+        when M_TYPE_CHORD_RECONNECT_PRIVATE
+          @chord.join_private(self, socket, message_content, true)
         when M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED
           @chord.join_private_accepted(self, socket, message_content)
         when M_TYPE_CHORD_JOIN_REJECTED

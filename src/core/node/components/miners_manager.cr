@@ -38,6 +38,9 @@ module ::Axentro::Core::NodeComponents
     end
 
     def handshake(socket, context, _content)
+      puts "-------------------"
+      puts node.phase
+      puts "-------------------"
       return unless node.phase == SetupPhase::DONE
 
       verbose "requested handshake from a miner"

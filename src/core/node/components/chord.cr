@@ -133,7 +133,7 @@ module ::Axentro::Core::NodeComponents
       node.proceed_setup
     end
 
-    def join(node, socket, _content)
+    def join(node, socket, _content, is_reconnect)
       _m_content = MContentChordJoin.from_json(_content)
 
       _context = _m_content.context
@@ -155,10 +155,12 @@ module ::Axentro::Core::NodeComponents
         end
       end
 
-      search_successor(node, _context)
+      search_successor(node, _context, is_reconnect)
+    rescue e : Exception
+      error("Unexpected error when public node trying to join: #{e.message || "unknown error"}")
     end
 
-    def join_private(node, socket, _content)
+    def join_private(node, socket, _content, is_reconnect)
       _m_content = MContentChordJoinPrivate.from_json(_content)
 
       _context = _m_content.context
@@ -180,13 +182,16 @@ module ::Axentro::Core::NodeComponents
         socket:  socket,
         context: _context,
       }
-      send(socket, M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED, {context: context})
+      send(socket, M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED, {context: context, is_reconnect: is_reconnect})
+    rescue e : Exception
+      send(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Unexpected error - are you running the lastest node version: #{e.message || "unknown error"}"})
     end
 
     def join_private_accepted(node, socket, _content)
       _m_content = MContentChordJoinPrivateAccepted.from_json(_content)
 
       _context = _m_content.context
+      is_reconnect = _m_content.is_reconnect
 
       debug "successfully joined the network"
 
@@ -197,8 +202,14 @@ module ::Axentro::Core::NodeComponents
 
       @predecessor = {socket: socket, context: _context}
 
-      node.phase = SetupPhase::BLOCKCHAIN_SYNCING
-      node.proceed_setup
+      if is_reconnect
+        info "private node - successfully reconnected"
+        node.phase = SetupPhase::DONE
+        node.proceed_setup
+      else
+        node.phase = SetupPhase::BLOCKCHAIN_SYNCING
+        node.proceed_setup
+      end
     end
 
     def join_rejected(node, socket, _content)
@@ -216,8 +227,18 @@ module ::Axentro::Core::NodeComponents
     def found_successor(node, _content : String)
       _m_content = MContentChordFoundSuccessor.from_json(_content)
       _context = _m_content.context
+      is_reconnect = _m_content.is_reconnect
 
       connect_to_successor(node, _context)
+
+      if is_reconnect
+        info "public node - successfully reconnected"
+        node.phase = SetupPhase::DONE
+        node.proceed_setup
+      else
+        node.phase = SetupPhase::BLOCKCHAIN_SYNCING
+        node.proceed_setup
+      end
     end
 
     def stabilize_as_successor(node, socket, _content : String)
@@ -371,7 +392,7 @@ module ::Axentro::Core::NodeComponents
         send_once(
           host,
           port,
-          M_TYPE_CHORD_JOIN,
+          M_TYPE_CHORD_RECONNECT,
           {
             version: Core::CORE_VERSION,
             context: context,
@@ -402,7 +423,7 @@ module ::Axentro::Core::NodeComponents
 
         send(
           socket,
-          M_TYPE_CHORD_JOIN_PRIVATE,
+          M_TYPE_CHORD_RECONNECT_PRIVATE,
           {
             version: Core::CORE_VERSION,
             context: context,
@@ -434,11 +455,12 @@ module ::Axentro::Core::NodeComponents
 
     def search_successor(node, _content : String)
       _m_content = MContentChordSearchSuccessor.from_json(_content)
+      is_reconnect = _m_content.is_reconnect
 
-      search_successor(node, _m_content.context)
+      search_successor(node, _m_content.context, is_reconnect)
     end
 
-    def search_successor(node, _context : NodeContext)
+    def search_successor(node, _context : NodeContext, is_reconnect : Bool)
       if @successor_list.size > 0
         successor = @successor_list[0]
         successor_node_id = NodeID.create_from(successor[:context][:id])
@@ -452,7 +474,8 @@ module ::Axentro::Core::NodeComponents
             _context,
             M_TYPE_CHORD_FOUND_SUCCESSOR,
             {
-              context: successor[:context],
+              context:      successor[:context],
+              is_reconnect: is_reconnect,
             }
           )
 
@@ -464,7 +487,8 @@ module ::Axentro::Core::NodeComponents
             _context,
             M_TYPE_CHORD_FOUND_SUCCESSOR,
             {
-              context: successor[:context],
+              context:      successor[:context],
+              is_reconnect: is_reconnect,
             }
           )
 
@@ -474,7 +498,8 @@ module ::Axentro::Core::NodeComponents
             successor[:socket],
             M_TYPE_CHORD_SEARCH_SUCCESSOR,
             {
-              context: _context,
+              context:      _context,
+              is_reconnect: is_reconnect,
             }
           )
         end
@@ -483,7 +508,8 @@ module ::Axentro::Core::NodeComponents
           _context,
           M_TYPE_CHORD_FOUND_SUCCESSOR,
           {
-            context: context,
+            context:      context,
+            is_reconnect: is_reconnect,
           }
         )
 
@@ -542,9 +568,6 @@ module ::Axentro::Core::NodeComponents
       else
         @successor_list.push({socket: socket, context: _context})
       end
-
-      node.phase = SetupPhase::BLOCKCHAIN_SYNCING
-      node.proceed_setup
     end
 
     def align_successors

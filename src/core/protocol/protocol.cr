@@ -154,7 +154,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentChordJoin
     include JSON::Serializable
-    property version : Int32
+    property version : String
     property context : Core::NodeComponents::Chord::NodeContext
   end
 
@@ -162,7 +162,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentChordJoinPrivate
     include JSON::Serializable
-    property version : Int32
+    property version : String
     property context : Core::NodeComponents::Chord::NodeContext
   end
 
@@ -171,6 +171,7 @@ module ::Axentro::Core::Protocol
   struct MContentChordJoinPrivateAccepted
     include JSON::Serializable
     property context : Core::NodeComponents::Chord::NodeContext
+    property is_reconnect : Bool
   end
 
   M_TYPE_CHORD_FOUND_SUCCESSOR = 0x0014
@@ -178,6 +179,7 @@ module ::Axentro::Core::Protocol
   struct MContentChordFoundSuccessor
     include JSON::Serializable
     property context : Core::NodeComponents::Chord::NodeContext
+    property is_reconnect : Bool
   end
 
   M_TYPE_CHORD_SEARCH_SUCCESSOR = 0x0015
@@ -185,6 +187,7 @@ module ::Axentro::Core::Protocol
   struct MContentChordSearchSuccessor
     include JSON::Serializable
     property context : Core::NodeComponents::Chord::NodeContext
+    property is_reconnect : Bool
   end
 
   M_TYPE_CHORD_STABILIZE_AS_SUCCESSOR = 0x0016
@@ -215,6 +218,10 @@ module ::Axentro::Core::Protocol
     property nodes : Array(Core::NodeComponents::Chord::NodeContext)
     property from : Core::NodeComponents::Chord::NodeContext
   end
+
+  M_TYPE_CHORD_RECONNECT = 0x0020
+
+  M_TYPE_CHORD_RECONNECT_PRIVATE = 0x0021
 
   ######################################
   # NODE

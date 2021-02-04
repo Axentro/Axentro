@@ -92,24 +92,6 @@ module ::Axentro::Core
       end
     end
 
-    # This is in the fast chain file - in the processor - so that we only need to have one loop and spawn
-    # having two of them might have caused some network issue
-    # private def slow_block_mining_check
-    #   # if no slow block was mined after 3 mins and there are miners connected then lower the difficulty dynamically
-    #   if node.miners_manager.miners.size > 0
-    #     current_block_timestamp = mining_block.timestamp
-    #     now = __timestamp
-    #     three_minutes_in_ms = 180000
-
-    #     if (now - current_block_timestamp) > three_minutes_in_ms
-    #       unless mining_block.difficulty <= Consensus::DEFAULT_DIFFICULTY_TARGET
-    #         warning "No block mined within 3 minutes so auto dropping difficulty"
-    #         refresh_slow_pending_block(Consensus::DEFAULT_DIFFICULTY_TARGET)
-    #       end
-    #     end
-    #   end
-    # end
-
     def database
       @database
     end
@@ -596,8 +578,10 @@ module ::Axentro::Core
       # we don't want to delete any of the miner nonces unless this refresh is for the next block
       # otherwise we loose the nonces for the rewards
       previous_mining_block_index = latest_slow_block.index
+      previous_mining_block_hash = latest_slow_block.to_hash
       if _prev_mining_block = @mining_block
         previous_mining_block_index = _prev_mining_block.index
+        previous_mining_block_hash = _prev_mining_block.to_hash
       end
 
       the_latest_index = get_latest_index_for_slow
@@ -634,6 +618,10 @@ module ::Axentro::Core
       # only delete the nonces if this refresh is for the next block (otherwise we lose the nonces for the rewards)
       if the_latest_index > previous_mining_block_index
         MinerNoncePool.delete_embedded
+      end
+
+      # we only want to broadcast the updated block if the hash has changed.
+      if latest_hash != previous_mining_block_hash
         node.miners_broadcast
       end
     end
