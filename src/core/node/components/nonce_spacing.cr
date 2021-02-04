@@ -102,7 +102,7 @@ module ::Axentro::Core::NodeComponents
       last_difficulty = miner.difficulty
       miner.difficulty = Math.max(1, last_difficulty - 1)
       if last_difficulty != miner.difficulty
-        info "(#{miner.mid}) #{prefix} (last nonce) decrease difficulty to #{miner.difficulty} for last deviance: #{last_deviance}"
+        verbose "(#{miner.mid}) #{prefix} (last nonce) decrease difficulty to #{miner.difficulty} for last deviance: #{last_deviance}"
         return NonceSpacingResult.new(miner.difficulty, "dynamically decreasing difficulty from #{last_difficulty} to #{miner.difficulty}")
       end
     end
@@ -111,7 +111,7 @@ module ::Axentro::Core::NodeComponents
       last_difficulty = miner.difficulty
       miner.difficulty = Math.max(1, average_difficulty - 1)
       if last_difficulty != miner.difficulty
-        info "(#{miner.mid}) #{prefix} (average) decrease difficulty to #{miner.difficulty} for average deviance: #{average_deviance}"
+        verbose "(#{miner.mid}) #{prefix} (average) decrease difficulty to #{miner.difficulty} for average deviance: #{average_deviance}"
         return NonceSpacingResult.new(miner.difficulty, "dynamically decreasing difficulty from #{last_difficulty} to #{miner.difficulty}")
       end
     end
@@ -121,7 +121,7 @@ module ::Axentro::Core::NodeComponents
       miner.difficulty = Math.max(1, last_difficulty + 1)
       if last_difficulty != miner.difficulty
         action = (last_difficulty > miner.difficulty) ? "decreasing" : "increasing"
-        info "(#{miner.mid}) #{prefix} (last nonce) #{action} difficulty to #{miner.difficulty} for last deviance: #{last_deviance}"
+        verbose "(#{miner.mid}) #{prefix} (last nonce) #{action} difficulty to #{miner.difficulty} for last deviance: #{last_deviance}"
         return NonceSpacingResult.new(miner.difficulty, "dynamically #{action} difficulty from #{last_difficulty} to #{miner.difficulty}")
       end
     end
@@ -131,7 +131,7 @@ module ::Axentro::Core::NodeComponents
       miner.difficulty = Math.max(1, average_difficulty + 1)
       if last_difficulty != miner.difficulty
         action = (last_difficulty > miner.difficulty) ? "decreasing" : "increasing"
-        info "(#{miner.mid}) #{prefix} (average) #{action} difficulty to #{miner.difficulty} for average deviance: #{average_deviance}"
+        verbose "(#{miner.mid}) #{prefix} (average) #{action} difficulty to #{miner.difficulty} for average deviance: #{average_deviance}"
         return NonceSpacingResult.new(miner.difficulty, "dynamically #{action} difficulty from #{last_difficulty} to #{miner.difficulty}")
       end
     end
