@@ -42,8 +42,11 @@ module ::Axentro::Core::NodeComponents
     @finger_table : Set(NodeContext) = Set.new([] of NodeContext)
 
     @show_network = 0
+    @this_node : Axentro::Core::Node?
 
     def initialize(
+      @connect_host : String?,
+      @connect_port : Int32?,
       @public_host : String?,
       @public_port : Int32?,
       @ssl : Bool?,
@@ -130,7 +133,7 @@ module ::Axentro::Core::NodeComponents
       node.proceed_setup
     end
 
-    def join(node, socket, _content)
+    def join(node, socket, _content, is_reconnect)
       _m_content = MContentChordJoin.from_json(_content)
 
       _context = _m_content.context
@@ -152,10 +155,12 @@ module ::Axentro::Core::NodeComponents
         end
       end
 
-      search_successor(node, _context)
+      search_successor(node, _context, is_reconnect)
+    rescue e : Exception
+      error("Unexpected error when public node trying to join: #{e.message || "unknown error"}")
     end
 
-    def join_private(node, socket, _content)
+    def join_private(node, socket, _content, is_reconnect)
       _m_content = MContentChordJoinPrivate.from_json(_content)
 
       _context = _m_content.context
@@ -177,13 +182,16 @@ module ::Axentro::Core::NodeComponents
         socket:  socket,
         context: _context,
       }
-      send(socket, M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED, {context: context})
+      send(socket, M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED, {context: context, is_reconnect: is_reconnect})
+    rescue e : Exception
+      send(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Unexpected error - are you running the lastest node version: #{e.message || "unknown error"}"})
     end
 
     def join_private_accepted(node, socket, _content)
       _m_content = MContentChordJoinPrivateAccepted.from_json(_content)
 
       _context = _m_content.context
+      is_reconnect = _m_content.is_reconnect
 
       debug "successfully joined the network"
 
@@ -194,8 +202,14 @@ module ::Axentro::Core::NodeComponents
 
       @predecessor = {socket: socket, context: _context}
 
-      node.phase = SetupPhase::BLOCKCHAIN_SYNCING
-      node.proceed_setup
+      if is_reconnect
+        info "private node - successfully reconnected"
+        node.phase = SetupPhase::DONE
+        node.proceed_setup
+      else
+        node.phase = SetupPhase::BLOCKCHAIN_SYNCING
+        node.proceed_setup
+      end
     end
 
     def join_rejected(node, socket, _content)
@@ -213,11 +227,18 @@ module ::Axentro::Core::NodeComponents
     def found_successor(node, _content : String)
       _m_content = MContentChordFoundSuccessor.from_json(_content)
       _context = _m_content.context
+      is_reconnect = _m_content.is_reconnect
 
       connect_to_successor(node, _context)
 
-      node.phase = SetupPhase::BLOCKCHAIN_SYNCING
-      node.proceed_setup
+      if is_reconnect
+        info "public node - successfully reconnected"
+        node.phase = SetupPhase::DONE
+        node.proceed_setup
+      else
+        node.phase = SetupPhase::BLOCKCHAIN_SYNCING
+        node.proceed_setup
+      end
     end
 
     def stabilize_as_successor(node, socket, _content : String)
@@ -258,6 +279,7 @@ module ::Axentro::Core::NodeComponents
       )
 
       if @successor_list.size == 0
+        node.send_nodes_joined(all_node_contexts)
         connect_to_successor(node, @predecessor.not_nil![:context])
       end
     end
@@ -281,7 +303,6 @@ module ::Axentro::Core::NodeComponents
         elsif @node_id < successor_node_id &&
               @node_id < _context[:id] &&
               successor_node_id > _context[:id]
-              puts "STA_2"
           connect_to_successor(node, _context)
           node.send_nodes_joined(all_node_contexts)
         end
@@ -331,10 +352,84 @@ module ::Axentro::Core::NodeComponents
           stabilise_finger_table
 
           if (Time.local - now) >= 8.seconds
+            @this_node.not_nil!.send_nodes_joined(all_node_contexts)
             check_for_official_nodes
+            attempt_reconnect_to_connecting_node
             now = Time.local
           end
         end
+      end
+    end
+
+    def set_node(node : Axentro::Core::Node)
+      @this_node = node
+    end
+
+    private def attempt_reconnect_to_connecting_node
+      if @connect_host && @connect_port
+        host = @connect_host.not_nil!
+        port = @connect_port.not_nil!
+
+        if @is_private
+          reconnect_private(host, port)
+        else
+          reconnect_public(host, port)
+        end
+      end
+    rescue e : Exception
+      warning "could not reconnect to connecting node on #{host}:#{port}"
+    end
+
+    private def reconnect_public(host, port)
+      # if the connect host and node is not in finger table then try to connect
+      is_finger = @finger_table.find { |s| s[:host] == host && s[:port] == port }
+
+      verbose "public finger: #{is_finger.nil?}"
+
+      if is_finger.nil?
+        info "public node - attempt to reconnect to connecting node on #{host}:#{port}"
+
+        send_once(
+          host,
+          port,
+          M_TYPE_CHORD_RECONNECT,
+          {
+            version: Core::CORE_VERSION,
+            context: context,
+          })
+        @this_node.not_nil!.send_nodes_joined(all_node_contexts)
+      end
+    end
+
+    private def reconnect_private(host, port)
+      # if the host and port is not in either the successor or predecessor list then try to reconnect
+      node_list = @successor_list
+      if _predecessor = @predecessor
+        node_list << _predecessor
+      end
+      is_connected = node_list.find { |s| s[:context][:host] == host && s[:context][:port] == port }
+      if is_connected.nil?
+        info "private node - attempt to reconnect to connecting node on #{host}:#{port}"
+
+        socket = HTTP::WebSocket.new(host, "/peer", port, @use_ssl)
+
+        @this_node.not_nil!.peer(socket)
+
+        spawn do
+          socket.run
+        rescue e : Exception
+          handle_exception(socket, e)
+        end
+
+        send(
+          socket,
+          M_TYPE_CHORD_RECONNECT_PRIVATE,
+          {
+            version: Core::CORE_VERSION,
+            context: context,
+          }
+        )
+        @this_node.not_nil!.send_nodes_joined(all_node_contexts)
       end
     end
 
@@ -360,11 +455,12 @@ module ::Axentro::Core::NodeComponents
 
     def search_successor(node, _content : String)
       _m_content = MContentChordSearchSuccessor.from_json(_content)
+      is_reconnect = _m_content.is_reconnect
 
-      search_successor(node, _m_content.context)
+      search_successor(node, _m_content.context, is_reconnect)
     end
 
-    def search_successor(node, _context : NodeContext)
+    def search_successor(node, _context : NodeContext, is_reconnect : Bool)
       if @successor_list.size > 0
         successor = @successor_list[0]
         successor_node_id = NodeID.create_from(successor[:context][:id])
@@ -378,7 +474,8 @@ module ::Axentro::Core::NodeComponents
             _context,
             M_TYPE_CHORD_FOUND_SUCCESSOR,
             {
-              context: successor[:context],
+              context:      successor[:context],
+              is_reconnect: is_reconnect,
             }
           )
 
@@ -390,7 +487,8 @@ module ::Axentro::Core::NodeComponents
             _context,
             M_TYPE_CHORD_FOUND_SUCCESSOR,
             {
-              context: successor[:context],
+              context:      successor[:context],
+              is_reconnect: is_reconnect,
             }
           )
 
@@ -400,7 +498,8 @@ module ::Axentro::Core::NodeComponents
             successor[:socket],
             M_TYPE_CHORD_SEARCH_SUCCESSOR,
             {
-              context: _context,
+              context:      _context,
+              is_reconnect: is_reconnect,
             }
           )
         end
@@ -409,7 +508,8 @@ module ::Axentro::Core::NodeComponents
           _context,
           M_TYPE_CHORD_FOUND_SUCCESSOR,
           {
-            context: context,
+            context:      context,
+            is_reconnect: is_reconnect,
           }
         )
 
@@ -437,8 +537,8 @@ module ::Axentro::Core::NodeComponents
     def find_all_nodes : NamedTuple(private_nodes: Nodes, public_nodes: Set(NodeContext))
       {
         private_nodes: @private_nodes,
-        public_nodes:  @finger_table.group_by{|ctx| [ctx[:host], ctx[:port]] }.flat_map(&.last)
-                       .reject { |ctx| ctx[:id] == context[:id] }.to_set
+        public_nodes:  @finger_table.group_by { |ctx| [ctx[:host], ctx[:port]] }.flat_map(&.last)
+          .reject { |ctx| ctx[:id] == context[:id] }.to_set,
       }
     end
 

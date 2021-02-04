@@ -80,14 +80,13 @@ module ::Axentro::Core
           "request"
         end
       end
+      @phase = SetupPhase::NONE
 
       @network_type = @is_testnet ? "testnet" : "mainnet"
       @blockchain = Blockchain.new(@network_type, @wallet, @wallet_address, @database_path, @database, @developer_fund, @official_nodes, @security_level_percentage, @sync_chunk_size, @record_nonces, @max_miners, is_standalone?)
-      @chord = Chord.new(@public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @max_private_nodes, @wallet_address, @blockchain.official_node, @exit_on_unofficial, @whitelist, @whitelist_message)
+      @chord = Chord.new(@connect_host, @connect_port, @public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @max_private_nodes, @wallet_address, @blockchain.official_node, @exit_on_unofficial, @whitelist, @whitelist_message)
       @miners_manager = MinersManager.new(@blockchain, @is_private)
       @clients_manager = ClientsManager.new(@blockchain)
-
-      @phase = SetupPhase::NONE
 
       info "max private nodes allowed to connect is #{light_green(@max_private_nodes)}"
       info "max miners allowed to connect is #{light_green(@max_miners)}"
@@ -118,6 +117,7 @@ module ::Axentro::Core
         exit -1
       end
 
+      @chord.set_node(self)
       spawn proceed_setup
     end
 
@@ -302,9 +302,13 @@ module ::Axentro::Core
         when M_TYPE_CLIENT_CONTENT
           @clients_manager.receive_content(message_content)
         when M_TYPE_CHORD_JOIN
-          @chord.join(self, socket, message_content)
+          @chord.join(self, socket, message_content, false)
+        when M_TYPE_CHORD_RECONNECT
+          @chord.join(self, socket, message_content, true)
         when M_TYPE_CHORD_JOIN_PRIVATE
-          @chord.join_private(self, socket, message_content)
+          @chord.join_private(self, socket, message_content, false)
+        when M_TYPE_CHORD_RECONNECT_PRIVATE
+          @chord.join_private(self, socket, message_content, true)
         when M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED
           @chord.join_private_accepted(self, socket, message_content)
         when M_TYPE_CHORD_JOIN_REJECTED
@@ -369,7 +373,6 @@ module ::Axentro::Core
       end
     end
 
-
     # def broadcast_on_chord(message_type, content, from : Chord::NodeContext? = nil)
     #   _nodes = @chord.find_nodes
     #   _all_public_nodes = @chord.find_all_nodes[:public_nodes]
@@ -413,7 +416,7 @@ module ::Axentro::Core
 
         if successor = _nodes[:successor]
           if successor[:context][:id] != content[:from][:id]
-            warning "sending to successor: #{message_type}"
+            debug "sending to successor: #{message_type}"
             send(successor[:socket], message_type, content)
           end
         end
@@ -447,7 +450,7 @@ module ::Axentro::Core
       miner_nonce = _m_content.nonce
       from = _m_content.from
 
-      debug "new miner nonce coming: #{miner_nonce.value} from node: #{miner_nonce.node_id} for address: #{miner_nonce.address}"
+      debug "NONCE NONCE new miner nonce coming: #{miner_nonce.value} from node: #{miner_nonce.node_id} for address: #{miner_nonce.address}"
 
       send_miner_nonce(miner_nonce, from)
       @blockchain.add_miner_nonce(miner_nonce)

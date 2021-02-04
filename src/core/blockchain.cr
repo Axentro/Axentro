@@ -92,24 +92,6 @@ module ::Axentro::Core
       end
     end
 
-    # This is in the fast chain file - in the processor - so that we only need to have one loop and spawn
-    # having two of them might have caused some network issue
-    private def slow_block_mining_check
-      # if no slow block was mined after 3 mins and there are miners connected then lower the difficulty dynamically
-      if node.miners_manager.miners.size > 0
-        current_block_timestamp = mining_block.timestamp
-        now = __timestamp
-        three_minutes_in_ms = 180000
-
-        if (now - current_block_timestamp) > three_minutes_in_ms
-          unless mining_block.difficulty <= Consensus::DEFAULT_DIFFICULTY_TARGET
-            warning "No block mined within 3 minutes so auto dropping difficulty"
-            refresh_slow_pending_block(Consensus::DEFAULT_DIFFICULTY_TARGET)
-          end
-        end
-      end
-    end
-
     def database
       @database
     end
@@ -165,7 +147,7 @@ module ::Axentro::Core
       if @chain.size == 0
         push_genesis if @is_standalone
       else
-        refresh_mining_block(block_difficulty(self))
+        refresh_mining_block
       end
 
       dapps_record
@@ -237,9 +219,8 @@ module ::Axentro::Core
       end
     end
 
-    def valid_nonce?(block_nonce : BlockNonce) : SlowBlock?
-      return mining_block.with_nonce(block_nonce) if mining_block.with_nonce(block_nonce).valid_nonce?(mining_block_difficulty)
-      nil
+    def valid_nonce?(block_nonce : BlockNonce) : Bool
+      mining_block.with_nonce(block_nonce).valid_block_nonce?(mining_block_difficulty)
     end
 
     def valid_block?(block : SlowBlock | FastBlock, skip_transactions : Bool = false, doing_replace : Bool = false) : SlowBlock? | FastBlock?
@@ -267,6 +248,11 @@ module ::Axentro::Core
       block_difficulty_to_miner_difficulty(mining_block_difficulty)
     end
 
+    def mining_block_difficulty_for_miner(difficulty : Int32) : Int32
+      return ENV["AX_SET_DIFFICULTY"].to_i if ENV.has_key?("AX_SET_DIFFICULTY")
+      block_difficulty_to_miner_difficulty(difficulty)
+    end
+
     def replace_block(block : SlowBlock | FastBlock)
       target_index = @chain.index { |b| b.index == block.index }
       if target_index
@@ -286,7 +272,7 @@ module ::Axentro::Core
       clean_slow_transactions
 
       debug "after clean_transactions, now calling refresh_mining_block in push_block"
-      refresh_mining_block(block_difficulty(self))
+      refresh_mining_block
       block
     end
 
@@ -354,7 +340,7 @@ module ::Axentro::Core
       clean_fast_transactions
 
       debug "calling refresh_mining_block in replace_chain"
-      refresh_mining_block(block_difficulty(self))
+      refresh_mining_block
 
       result
     end
@@ -519,7 +505,7 @@ module ::Axentro::Core
       genesis_nonce = "0"
       genesis_prev_hash = "genesis"
       genesis_timestamp = 0_i64
-      genesis_difficulty = Consensus::DEFAULT_DIFFICULTY_TARGET
+      genesis_difficulty = Consensus::MINER_DIFFICULTY_TARGET
       address = "genesis"
 
       SlowBlock.new(
@@ -569,17 +555,17 @@ module ::Axentro::Core
         clean_fast_transactions_used_in_block(block)
       end
       debug "refreshing mining block after accepting new block from peer"
-      refresh_mining_block(block_difficulty(self)) if block.kind == "SLOW"
+      refresh_mining_block if block.kind == "SLOW"
     end
 
     def mining_block : SlowBlock
       debug "calling refresh_mining_block in mining_block" unless @mining_block
-      refresh_mining_block(Consensus::DEFAULT_DIFFICULTY_TARGET) unless @mining_block
+      refresh_mining_block unless @mining_block
       @mining_block.not_nil!
     end
 
-    def refresh_mining_block(difficulty)
-      refresh_slow_pending_block(difficulty)
+    def refresh_mining_block
+      refresh_slow_pending_block
     end
 
     def calculate_coinbase_slow_transaction(coinbase_amount, the_latest_index, embedded_slow_transactions)
@@ -588,12 +574,14 @@ module ::Axentro::Core
       create_coinbase_slow_transaction(coinbase_amount, fee, node.miners)
     end
 
-    private def refresh_slow_pending_block(difficulty)
+    private def refresh_slow_pending_block
       # we don't want to delete any of the miner nonces unless this refresh is for the next block
       # otherwise we loose the nonces for the rewards
       previous_mining_block_index = latest_slow_block.index
+      previous_mining_block_hash = latest_slow_block.to_hash
       if _prev_mining_block = @mining_block
         previous_mining_block_index = _prev_mining_block.index
+        previous_mining_block_hash = _prev_mining_block.to_hash
       end
 
       the_latest_index = get_latest_index_for_slow
@@ -604,15 +592,13 @@ module ::Axentro::Core
       transactions = align_slow_transactions(coinbase_transaction, coinbase_amount, the_latest_index, embedded_slow_transactions)
       timestamp = __timestamp
 
-      debug "We are in refresh_mining_block, the next block will have a difficulty of #{difficulty}"
-
       @mining_block = SlowBlock.new(
         the_latest_index,
         transactions,
         "0",
         latest_slow_block.to_hash,
         timestamp,
-        difficulty,
+        latest_slow_block.difficulty,
         @wallet_address
       )
 
@@ -623,16 +609,21 @@ module ::Axentro::Core
         miners_nonces = MinerNoncePool.embedded
         miners_nonces.group_by { |mn| mn.address }.map do |_, nonces|
           nonces.each do |nonce|
-            database.insert_nonce(Nonce.new(nonce.address, nonce.value, latest_hash, the_latest_index, difficulty, nonce.timestamp))
+            database.insert_nonce(Nonce.new(nonce.address, nonce.value, latest_hash, the_latest_index, nonce.difficulty, nonce.timestamp))
           end
         end
       end
 
       # align slow transactions may need to re-calc the rewards so only delete the pool after all calcs are finished
-      # only delete the nonces if this refresh is for the next block (otherwise we loose the nonces for the rewards)
-      MinerNoncePool.delete_embedded if the_latest_index > previous_mining_block_index
+      # only delete the nonces if this refresh is for the next block (otherwise we lose the nonces for the rewards)
+      if the_latest_index > previous_mining_block_index
+        MinerNoncePool.delete_embedded
+      end
 
-      node.miners_broadcast
+      # we only want to broadcast the updated block if the hash has changed.
+      if latest_hash != previous_mining_block_hash
+        node.miners_broadcast
+      end
     end
 
     def align_slow_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64, the_latest_index : Int64, embedded_slow_transactions : Array(Transaction)) : Transactions
@@ -680,36 +671,15 @@ module ::Axentro::Core
     end
 
     def create_coinbase_slow_transaction(coinbase_amount : Int64, fee : Int64, miners : NodeComponents::MinersManager::Miners) : Transaction
-      # TODO - simple solution for now - but should move to it's own class for calculating rewards
-      miners_nonces = MinerNoncePool.embedded
-      miners_rewards_total = (coinbase_amount * 3_i64) / 4_i64
-
-      miners_recipients = miners_nonces.group_by { |mn| mn.address }.map do |address, nonces|
-        amount = (miners_rewards_total * nonces.size) / miners_nonces.size
-        {address: address, amount: amount.to_i64}
-      end.to_a.flatten.reject { |m| m[:amount] == 0 }
-
-      recipient_list = [] of Transaction::Recipient
       fastnode_recipient = coinbase_recipient_for_fastnode(fee)
+      is_fastnode = official_node.i_am_a_fastnode?(@wallet_address)
+      reward_calculator = MinerRewardCalculator.new(MinerNoncePool.embedded, coinbase_amount, fastnode_recipient, is_fastnode, @wallet_address, fee)
 
-      # if I am the fastnode then should add the fee to the node_recipient if not then use this fastnode_recipient
-      node_recipient_amount = coinbase_amount - miners_recipients.reduce(0_i64) { |sum, m| sum + m[:amount] }
-      if official_node.i_am_a_fastnode?(@wallet_address)
-        recipient_list << {
-          address: @wallet_address,
-          amount:  node_recipient_amount + fee,
-        }
-      else
-        recipient_list << {
-          address: @wallet_address,
-          amount:  node_recipient_amount,
-        }
-        recipient_list += fastnode_recipient
-      end
+      miner_recipients = reward_calculator.miner_rewards_as_recipients
+      node_recipient = reward_calculator.node_rewards_as_recipients(miner_recipients)
 
-      # if there are no miners_rewards_total -
       senders = [] of Transaction::Sender # No senders
-      recipients = miners_rewards_total > 0 ? recipient_list + miners_recipients : [] of Transaction::Recipient
+      recipients = reward_calculator.miner_rewards_total > 0 ? node_recipient + miner_recipients : [] of Transaction::Recipient
 
       Transaction.new(
         Transaction.create_id,

@@ -98,12 +98,21 @@ module ::Axentro::Core
       is_slow_block? ? "SLOW" : "FAST"
     end
 
+    # This uses the @ shortcut to set the nonce onto the block
     def with_nonce(@nonce : BlockNonce) : SlowBlock
       self
     end
 
-    def valid_nonce?(difficulty : Int32)
-      valid_nonce?(self.to_hash, @nonce, difficulty)
+    def with_difficulty(@difficulty : Int32) : SlowBlock
+      self
+    end
+
+    def with_timestamp(@timestamp : Int64) : SlowBlock
+      self
+    end
+
+    def valid_block_nonce?(difficulty : Int32) : Bool
+      is_nonce_valid?(to_hash, @nonce, difficulty)
     end
 
     private def validate_transactions(transactions : Array(Transaction), blockchain : Blockchain) : ValidatedTransactions
@@ -122,11 +131,16 @@ module ::Axentro::Core
 
     def valid?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool
       prev_block_index = @index - 2
-      _prev_block = blockchain.database.get_block(prev_block_index)
+      _prev_block = blockchain.database.get_previous_slow_from(prev_block_index)
 
       return valid_as_genesis? if @index == 0_i64
       raise "(slow_block::valid?) error finding previous slow block: #{prev_block_index} for current block: #{@index}" if _prev_block.nil?
       prev_block = _prev_block.not_nil!.as(SlowBlock)
+
+      unless doing_replace
+        latest_slow_index = blockchain.get_latest_index_for_slow
+        raise "Index Mismatch: the current block index: #{@index} should match the latest slow block index: #{latest_slow_index}" if @index != latest_slow_index
+      end
 
       raise "Invalid Previous Slow Block Hash: for current index: #{@index} the slow block prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
 
@@ -144,18 +158,13 @@ module ::Axentro::Core
       end
 
       if @difficulty > 0
-        raise "Invalid Nonce: #{@nonce} for difficulty #{@difficulty}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
+        raise "Invalid Nonce: #{@nonce} for difficulty #{@difficulty}" unless calculate_pow_difficulty(to_hash, @nonce, @difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
       end
 
       merkle_tree_root = calculate_merkle_tree_root
 
       if merkle_tree_root != @merkle_tree_root
         raise "Invalid Merkle Tree Root: (expected #{@merkle_tree_root} but got #{merkle_tree_root})"
-      end
-
-      unless doing_replace
-        latest_slow_index = blockchain.get_latest_index_for_slow
-        raise "Index Mismatch: the current block index: #{@index} should match the latest slow block index: #{latest_slow_index}" if @index != latest_slow_index
       end
 
       true
@@ -165,7 +174,7 @@ module ::Axentro::Core
       raise "Invalid Genesis Index: index has to be '0' for genesis block: #{@index}" if @index != 0
       raise "Invalid Genesis Nonce: nonce has to be '0' for genesis block: #{@nonce}" if @nonce != "0"
       raise "Invalid Genesis Previous Hash: prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
-      raise "Invalid Genesis Difficulty: difficulty has to be '#{Consensus::DEFAULT_DIFFICULTY_TARGET}' for genesis block: #{@difficulty}" if @difficulty != Consensus::DEFAULT_DIFFICULTY_TARGET
+      raise "Invalid Genesis Difficulty: difficulty has to be '#{Consensus::MINER_DIFFICULTY_TARGET}' for genesis block: #{@difficulty}" if @difficulty != Consensus::MINER_DIFFICULTY_TARGET
       raise "Invalid Genesis Address: address has to be 'genesis' for genesis block" if @address != "genesis"
       true
     end

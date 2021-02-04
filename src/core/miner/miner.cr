@@ -39,9 +39,14 @@ module ::Axentro::Core
           _handshake_miner_rejected(message_content)
         when M_TYPE_MINER_BLOCK_UPDATE
           _block_update(message_content)
+        when M_TYPE_MINER_BLOCK_DIFFICULTY_ADJUST
+          _block_update_adjust(message_content)
+        when M_TYPE_MINER_BLOCK_INVALID
+          _block_update_invalid(message_content)
         end
       rescue e : Exception
-        warning "receive invalid message, will be ignored"
+        warning "receive invalid message, will be ignored: #{e}"
+        clean_connection(socket)
       end
 
       socket.on_close do |_|
@@ -77,7 +82,7 @@ module ::Axentro::Core
       info "handshake has been accepted"
 
       debug "set difficulty: #{light_cyan(difficulty)}"
-      debug "set block: #{light_green(block.index)}"
+      debug "set block index: #{light_green(block.index)}"
 
       start_workers(difficulty, block)
     end
@@ -98,10 +103,38 @@ module ::Axentro::Core
       block = _m_content.block
       difficulty = _m_content.difficulty
 
-      info "#{magenta("PREPARING NEXT SLOW BLOCK")}: #{light_green(block.index)} at approximate difficulty: #{light_cyan(block.difficulty)}"
+      info "#{magenta("PREPARING NEXT SLOW BLOCK")}: #{light_green(block.index)} at difficulty: #{light_cyan(difficulty)}"
 
+      exec_workers(difficulty, block)
+    end
+
+    private def _block_update_adjust(_content)
+      _m_content = MContentMinerBlockDifficultyAdjust.from_json(_content)
+
+      block = _m_content.block
+      difficulty = _m_content.difficulty
+      reason = _m_content.reason
+
+      info reason
+
+      exec_workers(difficulty, block)
+    end
+
+    private def _block_update_invalid(_content)
+      _m_content = MContentMinerBlockInvalid.from_json(_content)
+
+      block = _m_content.block
+      difficulty = _m_content.difficulty
+      reason = _m_content.reason
+
+      info reason
+
+      exec_workers(difficulty, block)
+    end
+
+    private def exec_workers(difficulty, block)
       debug "set difficulty: #{light_cyan(difficulty)}"
-      debug "set block: #{light_green(block.index)}"
+      debug "set block index: #{light_green(block.index)}"
 
       clean_workers
 

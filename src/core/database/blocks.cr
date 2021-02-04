@@ -112,6 +112,13 @@ module ::Axentro::Core::Data::Blocks
     block
   end
 
+  def get_previous_slow_from(index : Int64) : SlowBlock?
+    block : SlowBlock? = nil
+    blocks = get_blocks_via_query("select * from blocks where idx <= ? and kind = 'SLOW' order by idx desc limit 1", index)
+    block = blocks[0].as(SlowBlock) if blocks.size > 0
+    block
+  end
+
   def get_highest_block_for_kind(kind : Block::BlockKind)
     get_blocks_via_query("select * from blocks where idx in (select max(idx) from blocks where kind = ?)", kind.to_s)
   end
