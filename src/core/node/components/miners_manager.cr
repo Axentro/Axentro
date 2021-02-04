@@ -79,7 +79,7 @@ module ::Axentro::Core::NodeComponents
 
       spawn do
         loop do
-          sleep 10
+          sleep rand(15..30)
           verbose "in check loop"
           existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
           if spacing = @nonce_spacing.compute(@block_start_time, miner, existing_miner_nonces, true)
