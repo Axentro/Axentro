@@ -12,7 +12,7 @@
 
 module ::Axentro::Core::NodeComponents
   DEVIANCE_BOUNDARY_1 =     8000
-  DEVIANCE_BOUNDARY_2 =    12000
+  DEVIANCE_BOUNDARY_2 =    30000
   NO_NONCE_BOUNDARY   =    10000
   NO_NONCE_DEVIANCE   = 8001_i64
   MOVING_AVERAGE_SIZE =       20
@@ -53,8 +53,7 @@ module ::Axentro::Core::NodeComponents
         if existing_nonces.size > 0
           # should we use averages or last nonce strategy?
           if nonce_meta.size > MOVING_AVERAGE_SIZE
-            # use averages from last 20
-            # if avg deviance > 10 secs - increase/decrease - do nothing boundary between 8-12 secs
+            # use averages from moving average size
             moving_average = nonce_meta.size < MOVING_AVERAGE_SIZE ? nonce_meta : nonce_meta.last(MOVING_AVERAGE_SIZE)
             average_deviance = (moving_average.map(&.deviance).sum.to_i / moving_average.size).to_i
             average_difficulty = (moving_average.map(&.difficulty).sum.to_i / moving_average.size).to_i
@@ -69,10 +68,11 @@ module ::Axentro::Core::NodeComponents
           else
             # use last nonce strategy
             # how long ago was the last nonce found?
-            # less than 8 seconds? increase difficulty
-            # between 8 -> 12 seconds? do nothing
-            # more than 12 seconds? decrease difficulty
+            # less than first boundary? increase difficulty
+            # between first boundary -> second boundary do nothing
+            # more than second boundry? decrease difficulty
             last_nonce_found = nonce_meta.last.last_change
+            # if more than 2 tracked nonces use the deviation between the last 2 nonces
             if nonce_meta.size >= 2
               deviation = last_nonce_found - nonce_meta.last(2).first.last_change
             else
@@ -89,7 +89,7 @@ module ::Axentro::Core::NodeComponents
           end
         else
           # If no nonces found yet - ignoring nonce_meta.size
-          # decrease difficulty if more than 10 seconds since block start
+          # decrease difficulty if more than no nonce boundary since block start
           deviation = __timestamp - block_start_time
           if deviation > NO_NONCE_BOUNDARY
             decrease_difficulty_by_last(miner, deviation, prefix)
