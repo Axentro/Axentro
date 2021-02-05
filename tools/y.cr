@@ -15,7 +15,7 @@ require "file_utils"
 FileUtils.rm_rf("miners")
 FileUtils.mkdir("miners")
 
-AMOUNT = 20
+AMOUNT = 40
 
 (0..AMOUNT).to_a.each do |n|
   puts `axe wallet create -w miners/wallet_#{n}.json --testnet`

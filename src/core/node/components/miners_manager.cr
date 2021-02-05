@@ -118,18 +118,21 @@ module ::Axentro::Core::NodeComponents
             send_invalid_block_update(socket, meta.difficulty, message)
           end
 
-          if mined_timestamp < @blockchain.mining_block.timestamp
-            message = "invalid timestamp for received nonce: #{mined_nonce.value} nonce mined at: #{Time.unix_ms(mined_timestamp)} before current mining block was created at: #{Time.unix_ms(@blockchain.mining_block.timestamp)}"
+          # allow a bit of extra time for latency for nonces
+          mining_block_with_buffer = @blockchain.mining_block.timestamp - 120000
+          if mined_timestamp < mining_block_with_buffer
+            message = "invalid timestamp for received nonce: #{mined_nonce.value} nonce mined at: #{Time.unix_ms(mined_timestamp)} before current mining block was created at: #{Time.unix_ms(mining_block_with_buffer)} (#{Time.unix_ms(@blockchain.mining_block.timestamp)})"
             warning message
             send_invalid_block_update(socket, meta.difficulty, message)
           end
 
-          mined_difficulty = calculate_pow_difficulty(block_hash, mined_nonce.value, mined_difficulty)
-          if mined_difficulty < meta.difficulty
-            warning "difficulty for nonce: #{mined_nonce.value} was #{mined_difficulty} and expected #{meta.difficulty} for block hash: #{block_hash}"
-            send_invalid_block_update(socket, meta.difficulty, "updated block because your nonce: #{mined_nonce.value} was invalid, actual difficulty: #{mined_difficulty} did not match expected: #{meta.difficulty}")
+          actual_difficulty = calculate_pow_difficulty(block_hash, mined_nonce.value, meta.difficulty)
+          info "incoming nonce: #{mined_nonce.value} (actual: #{actual_difficulty}, expected: #{meta.difficulty})"
+          if actual_difficulty < meta.difficulty
+            warning "difficulty for nonce: #{mined_nonce.value} was #{actual_difficulty} and expected #{meta.difficulty} for block hash: #{block_hash}"
+            send_invalid_block_update(socket, meta.difficulty, "updated block because your nonce: #{mined_nonce.value} was invalid, actual difficulty: #{actual_difficulty} did not match expected: #{meta.difficulty}")
           else
-            debug "Nonce #{mined_nonce.value} at difficulty: #{mined_difficulty} was found"
+            debug "Nonce #{mined_nonce.value} at difficulty: #{actual_difficulty} was found"
 
             # add nonce to pool
             mined_nonce = mined_nonce.with_node_id(node.get_node_id).with_mid(miner.mid)

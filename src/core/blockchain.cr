@@ -444,10 +444,11 @@ module ::Axentro::Core
     end
 
     private def _add_miner_nonce(miner_nonce : MinerNonce)
-      if valid_nonce?(miner_nonce.value)
-        debug "adding miner nonce to pool: #{miner_nonce.value}"
-        MinerNoncePool.add(miner_nonce) if MinerNoncePool.find(miner_nonce).nil?
-      end
+      # if valid_nonce?(miner_nonce.value)
+      debug "adding miner nonce to pool: #{miner_nonce.value}"
+      MinerNoncePool.add(miner_nonce) if MinerNoncePool.find(miner_nonce).nil?
+      # end
+
     rescue e : Exception
       warning "nonce was not added to pool due to: #{e}"
     end
