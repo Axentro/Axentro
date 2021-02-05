@@ -11,9 +11,9 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core::NodeComponents
-  DEVIANCE_BOUNDARY_1 = 20000
-  DEVIANCE_BOUNDARY_2 = 30000
-  NO_NONCE_BOUNDARY   = 10000
+  DEVIANCE_BOUNDARY_1 = 30000
+  DEVIANCE_BOUNDARY_2 = 40000
+  NO_NONCE_BOUNDARY   = 20000
   NO_NONCE_DEVIANCE   = (NO_NONCE_BOUNDARY + 1).to_i64
   MOVING_AVERAGE_SIZE = 20
 
