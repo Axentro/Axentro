@@ -41,12 +41,13 @@ module ::Axentro::Core::NodeComponents
 
     def ensure_block_mined
       # if no nonces found within 1 minute 30 secs of block start then reduce difficulty to ensure block is mined
-      nonces_for_block = MinerNoncePool.all
+      nonces_for_block = MinerNoncePool.embedded
       no_nonces = nonces_for_block.size == 0
       now = __timestamp
       deviation = now - @block_start_time
       boundary = 90_000 # 1 min 30 secs
       last_ensured_deviation = now - @last_ensured
+      verbose "checking ensure: #{deviation > boundary}, no nonces: #{no_nonces}, last: #{last_ensured_deviation > 10_000}"
       if deviation > boundary && no_nonces && last_ensured_deviation > 10_000
         warning "no nonces found for block within 1 min 30 secs - attempting to ensure 2 min block time"
         if leading_miner = @nonce_spacing.leading_miner(@miners)
@@ -154,16 +155,16 @@ module ::Axentro::Core::NodeComponents
 
           # add nonce to pool
           mined_nonce = mined_nonce.with_node_id(node.get_node_id).with_mid(miner.mid)
-          @blockchain.add_miner_nonce(mined_nonce)
+          @blockchain.add_miner_nonce(mined_nonce, false)
           node.send_miner_nonce(mined_nonce)
 
           # add incoming nonce data to the historic tracking
           @nonce_spacing.track_miner_difficulty(miner.mid, miner.difficulty)
 
           # throttle nonce difficulty target
-          if spacing = @nonce_spacing.compute(miner)
-            send_adjust_block_difficulty(miner.socket, spacing.difficulty, spacing.reason)
-          end
+            if spacing = @nonce_spacing.compute(miner)
+              send_adjust_block_difficulty(miner.socket, spacing.difficulty, spacing.reason)
+            end
 
           # make block the most difficult recorded if it's difficulty exceeds the current most difficult
           if mined_difficulty > @highest_difficulty_mined_so_far
