@@ -46,7 +46,6 @@ module ::Axentro::Core::NodeComponents
       grouped[grouped.keys.sort.last].first
     end
 
-    # ameba:disable Metrics/CyclomaticComplexity
     def compute(miner : Miner, in_check : Bool = false) : NonceSpacingResult?
       # The miner should be tracked in nonce_meta to apply throttling
       if nonce_meta = @nonce_meta_map[miner.mid]?

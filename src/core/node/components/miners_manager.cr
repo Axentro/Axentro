@@ -59,7 +59,6 @@ module ::Axentro::Core::NodeComponents
       end
     end
 
-  
     def handshake(socket, context, _content)
       return unless node.phase == SetupPhase::DONE
 
@@ -87,7 +86,6 @@ module ::Axentro::Core::NodeComponents
 
       @miners << miner
 
-      existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
       @nonce_spacing.track_miner_difficulty(miner.mid, @blockchain.mining_block.difficulty)
 
       remote_address = context.try(&.request.remote_address.to_s) || "unknown"
@@ -129,56 +127,52 @@ module ::Axentro::Core::NodeComponents
       mined_difficulty = mined_nonce.difficulty
 
       if miner = find?(socket)
-        if nonce_meta = @nonce_spacing.get_meta_map(miner.mid)
-          block = @blockchain.mining_block.with_nonce(mined_nonce.value).with_difficulty(mined_difficulty)
-          block_hash = block.to_hash
+        block = @blockchain.mining_block.with_nonce(mined_nonce.value).with_difficulty(mined_difficulty)
+        block_hash = block.to_hash
 
-          meta = nonce_meta.last
+        if @blockchain.miner_nonce_pool.find(mined_nonce)
+          message = "nonce #{mined_nonce.value} has already been discovered"
+          warning message
+          send_invalid_block_update(socket, mined_difficulty, message)
+        end
 
-          if @blockchain.miner_nonce_pool.find(mined_nonce)
-            message = "nonce #{mined_nonce.value} has already been discovered"
-            warning message
-            send_invalid_block_update(socket, mined_difficulty, message)
+        # allow a bit of extra time for latency for nonces
+        mining_block_with_buffer = @blockchain.mining_block.timestamp - 120000
+        if mined_timestamp < mining_block_with_buffer
+          message = "invalid timestamp for received nonce: #{mined_nonce.value} nonce mined at: #{Time.unix_ms(mined_timestamp)} before current mining block was created at: #{Time.unix_ms(mining_block_with_buffer)} (#{Time.unix_ms(@blockchain.mining_block.timestamp)})"
+          warning message
+          send_invalid_block_update(socket, mined_difficulty, message)
+        end
+
+        actual_difficulty = calculate_pow_difficulty(block_hash, mined_nonce.value, mined_difficulty)
+        info "(#{miner.mid}) incoming nonce: #{mined_nonce.value} (actual: #{actual_difficulty}, expected: #{mined_difficulty})"
+        if actual_difficulty < mined_difficulty
+          warning "difficulty for nonce: #{mined_nonce.value} was #{actual_difficulty} and expected #{mined_difficulty} for block hash: #{block_hash}"
+          send_invalid_block_update(socket, mined_difficulty, "updated block because your nonce: #{mined_nonce.value} was invalid, actual difficulty: #{actual_difficulty} did not match expected: #{mined_difficulty}")
+        else
+          debug "Nonce #{mined_nonce.value} at difficulty: #{actual_difficulty} was found"
+
+          # add nonce to pool
+          mined_nonce = mined_nonce.with_node_id(node.get_node_id).with_mid(miner.mid)
+          @blockchain.add_miner_nonce(mined_nonce)
+          node.send_miner_nonce(mined_nonce)
+
+          # add incoming nonce data to the historic tracking
+          @nonce_spacing.track_miner_difficulty(miner.mid, miner.difficulty)
+
+          # throttle nonce difficulty target
+          if spacing = @nonce_spacing.compute(miner)
+            send_adjust_block_difficulty(miner.socket, spacing.difficulty, spacing.reason)
           end
 
-          # allow a bit of extra time for latency for nonces
-          mining_block_with_buffer = @blockchain.mining_block.timestamp - 120000
-          if mined_timestamp < mining_block_with_buffer
-            message = "invalid timestamp for received nonce: #{mined_nonce.value} nonce mined at: #{Time.unix_ms(mined_timestamp)} before current mining block was created at: #{Time.unix_ms(mining_block_with_buffer)} (#{Time.unix_ms(@blockchain.mining_block.timestamp)})"
-            warning message
-            send_invalid_block_update(socket, mined_difficulty, message)
+          # make block the most difficult recorded if it's difficulty exceeds the current most difficult
+          if mined_difficulty > @highest_difficulty_mined_so_far
+            debug "This block is now the most difficult recorded"
+            @most_difficult_block_so_far = block.dup
+            @highest_difficulty_mined_so_far = mined_difficulty
           end
 
-          actual_difficulty = calculate_pow_difficulty(block_hash, mined_nonce.value, mined_difficulty)
-          info "(#{miner.mid}) incoming nonce: #{mined_nonce.value} (actual: #{actual_difficulty}, expected: #{mined_difficulty})"
-          if actual_difficulty < mined_difficulty
-            warning "difficulty for nonce: #{mined_nonce.value} was #{actual_difficulty} and expected #{mined_difficulty} for block hash: #{block_hash}"
-            send_invalid_block_update(socket, mined_difficulty, "updated block because your nonce: #{mined_nonce.value} was invalid, actual difficulty: #{actual_difficulty} did not match expected: #{mined_difficulty}")
-          else
-            debug "Nonce #{mined_nonce.value} at difficulty: #{actual_difficulty} was found"
-
-            # add nonce to pool
-            mined_nonce = mined_nonce.with_node_id(node.get_node_id).with_mid(miner.mid)
-            @blockchain.add_miner_nonce(mined_nonce)
-            node.send_miner_nonce(mined_nonce)
-
-            # add incoming nonce data to the historic tracking
-            @nonce_spacing.track_miner_difficulty(miner.mid, miner.difficulty)
-
-             # throttle nonce difficulty target
-            if spacing = @nonce_spacing.compute(miner)
-              send_adjust_block_difficulty(miner.socket, spacing.difficulty, spacing.reason)
-            end
-
-            # make block the most difficult recorded if it's difficulty exceeds the current most difficult
-            if mined_difficulty > @highest_difficulty_mined_so_far
-              debug "This block is now the most difficult recorded"
-              @most_difficult_block_so_far = block.dup
-              @highest_difficulty_mined_so_far = mined_difficulty
-            end
-
-            check_if_block_has_expired
-          end
+          check_if_block_has_expired
         end
       end
     end
