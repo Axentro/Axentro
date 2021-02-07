@@ -27,12 +27,6 @@ module ::Axentro::Core
   class Blockchain
     TOKEN_DEFAULT = Core::DApps::BuildIn::UTXO::DEFAULT
 
-    SLOW_BLOCKS_PER_HOUR = 3600_i64 / Consensus::POW_TARGET_SPACING_SECS
-
-    STARTING_BLOCKS_TO_CHECK_ON_SYNC = 50_i64
-    FINAL_BLOCKS_TO_CHECK_ON_SYNC    = 50_i64
-    FAST_TRANSACTIONS_TO_HOLD        = 10_000
-
     alias SlowHeader = NamedTuple(
       index: Int64,
       nonce: BlockNonce,
@@ -68,8 +62,7 @@ module ::Axentro::Core
       info "Security Level Percentage used for blockchain validation is #{@security_level_percentage}"
       info "Blockchain sync chunk size is #{@sync_chunk_size}"
 
-      hours_to_hold = ENV.has_key?("AXE_TESTING") ? 2 : 8
-      @slow_blocks_to_hold = (SLOW_BLOCKS_PER_HOUR * hours_to_hold).to_i64
+      @slow_blocks_to_hold = ENV.has_key?("AXE_TESTING") ? 60_i64 : 240_i64
       @fast_blocks_to_hold = @slow_blocks_to_hold
       info "holding #{@slow_blocks_to_hold} slow blocks and #{@fast_blocks_to_hold} fast blocks in memory"
     end

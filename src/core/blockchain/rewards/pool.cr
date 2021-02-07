@@ -12,7 +12,7 @@
 
 module ::Axentro::Core
   class MinerNoncePool
-    LIMIT = 8000000
+    LIMIT = 800_0000
 
     @@instance : MinerNoncePool? = nil
 

@@ -26,17 +26,40 @@ module ::Axentro::Core::NodeComponents
     @most_difficult_block_so_far : SlowBlock
     @block_start_time : Int64
     @nonce_spacing : NonceSpacing = NonceSpacing.new
+    @last_ensured : Int64
 
     def initialize(@blockchain : Blockchain, @is_private_node : Bool)
       @highest_difficulty_mined_so_far = 0
       @block_start_time = __timestamp
       @most_difficult_block_so_far = @blockchain.genesis_block
+      @last_ensured = @block_start_time
     end
 
     private def node
       @blockchain.node
     end
 
+    def ensure_block_mined
+      # if no nonces found within 1 minute 30 secs of block start then reduce difficulty to ensure block is mined
+      nonces_for_block = MinerNoncePool.all
+      no_nonces = nonces_for_block.size == 0
+      now = __timestamp
+      deviation = now - @block_start_time
+      boundary = 90_000 # 1 min 30 secs
+      last_ensured_deviation = now - @last_ensured
+      if deviation > boundary && no_nonces && last_ensured_deviation > 10_000
+        warning "no nonces found for block within 1 min 30 secs - attempting to ensure 2 min block time"
+        if leading_miner = @nonce_spacing.leading_miner(@miners)
+          info "reduce difficulty to ensure block mined within 2 mins"
+          current_difficulty = leading_miner.difficulty
+          leading_miner.difficulty = current_difficulty - 1
+          send_adjust_block_difficulty(leading_miner.socket, leading_miner.difficulty - 1, "reducing difficulty from #{current_difficulty} to #{leading_miner.difficulty} to ensure block time")
+          @last_ensured = __timestamp
+        end
+      end
+    end
+
+  
     def handshake(socket, context, _content)
       return unless node.phase == SetupPhase::DONE
 
@@ -65,7 +88,7 @@ module ::Axentro::Core::NodeComponents
       @miners << miner
 
       existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
-      @nonce_spacing.add_nonce_meta(miner.mid, @blockchain.mining_block.difficulty, existing_miner_nonces)
+      @nonce_spacing.track_miner_difficulty(miner.mid, @blockchain.mining_block.difficulty)
 
       remote_address = context.try(&.request.remote_address.to_s) || "unknown"
       miner_name = HumanHash.humanize(mid)
@@ -81,11 +104,11 @@ module ::Axentro::Core::NodeComponents
         loop do
           sleep rand(10..20)
           verbose "in check loop"
-          existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
-          if spacing = @nonce_spacing.compute(@block_start_time, miner, existing_miner_nonces, true)
+          if spacing = @nonce_spacing.compute(miner, true)
             verbose "check was computed for #{miner.mid}"
+            # if miner was removed break out of loop
+            break unless @miners.map(&.mid).includes?(miner.mid)
             send_adjust_block_difficulty(miner.socket, spacing.difficulty, spacing.reason)
-            @nonce_spacing.add_nonce_meta(miner.mid, spacing.difficulty, existing_miner_nonces)
           end
           check_if_block_has_expired
         end
@@ -115,7 +138,7 @@ module ::Axentro::Core::NodeComponents
           if @blockchain.miner_nonce_pool.find(mined_nonce)
             message = "nonce #{mined_nonce.value} has already been discovered"
             warning message
-            send_invalid_block_update(socket, meta.difficulty, message)
+            send_invalid_block_update(socket, mined_difficulty, message)
           end
 
           # allow a bit of extra time for latency for nonces
@@ -123,14 +146,14 @@ module ::Axentro::Core::NodeComponents
           if mined_timestamp < mining_block_with_buffer
             message = "invalid timestamp for received nonce: #{mined_nonce.value} nonce mined at: #{Time.unix_ms(mined_timestamp)} before current mining block was created at: #{Time.unix_ms(mining_block_with_buffer)} (#{Time.unix_ms(@blockchain.mining_block.timestamp)})"
             warning message
-            send_invalid_block_update(socket, meta.difficulty, message)
+            send_invalid_block_update(socket, mined_difficulty, message)
           end
 
-          actual_difficulty = calculate_pow_difficulty(block_hash, mined_nonce.value, meta.difficulty)
-          info "incoming nonce: #{mined_nonce.value} (actual: #{actual_difficulty}, expected: #{meta.difficulty})"
-          if actual_difficulty < meta.difficulty
-            warning "difficulty for nonce: #{mined_nonce.value} was #{actual_difficulty} and expected #{meta.difficulty} for block hash: #{block_hash}"
-            send_invalid_block_update(socket, meta.difficulty, "updated block because your nonce: #{mined_nonce.value} was invalid, actual difficulty: #{actual_difficulty} did not match expected: #{meta.difficulty}")
+          actual_difficulty = calculate_pow_difficulty(block_hash, mined_nonce.value, mined_difficulty)
+          info "(#{miner.mid}) incoming nonce: #{mined_nonce.value} (actual: #{actual_difficulty}, expected: #{mined_difficulty})"
+          if actual_difficulty < mined_difficulty
+            warning "difficulty for nonce: #{mined_nonce.value} was #{actual_difficulty} and expected #{mined_difficulty} for block hash: #{block_hash}"
+            send_invalid_block_update(socket, mined_difficulty, "updated block because your nonce: #{mined_nonce.value} was invalid, actual difficulty: #{actual_difficulty} did not match expected: #{mined_difficulty}")
           else
             debug "Nonce #{mined_nonce.value} at difficulty: #{actual_difficulty} was found"
 
@@ -139,15 +162,12 @@ module ::Axentro::Core::NodeComponents
             @blockchain.add_miner_nonce(mined_nonce)
             node.send_miner_nonce(mined_nonce)
 
-            # throttle nonce difficulty target
-            existing_miner_nonces = MinerNoncePool.find_by_mid(miner.mid)
-            if existing_miner_nonces.size > 0
-              if spacing = @nonce_spacing.compute(@block_start_time, miner, existing_miner_nonces)
-                send_adjust_block_difficulty(miner.socket, spacing.difficulty, spacing.reason)
-              end
+            # add incoming nonce data to the historic tracking
+            @nonce_spacing.track_miner_difficulty(miner.mid, miner.difficulty)
 
-              # add the nonce to the historic tracking
-              @nonce_spacing.add_nonce_meta(miner.mid, miner.difficulty, existing_miner_nonces)
+             # throttle nonce difficulty target
+            if spacing = @nonce_spacing.compute(miner)
+              send_adjust_block_difficulty(miner.socket, spacing.difficulty, spacing.reason)
             end
 
             # make block the most difficult recorded if it's difficulty exceeds the current most difficult
@@ -165,7 +185,7 @@ module ::Axentro::Core::NodeComponents
 
     def check_if_block_has_expired
       # allow some random time to reduce the chance of blocks minted with identical timestamps on different nodes
-      time_boundary = (Consensus::POW_TARGET_SPACING * 0.90).to_i32 + rand(20000)
+      time_boundary = BLOCK_BOUNDARY + rand(20000)
       start_with_boundary = @block_start_time + time_boundary
       duration = __timestamp - @block_start_time
       debug "has expired? started: #{Time.unix_ms(@block_start_time)} ending: #{Time.unix_ms(start_with_boundary)}, duration: #{duration / 1000}"
@@ -227,7 +247,7 @@ module ::Axentro::Core::NodeComponents
       @miners.each do |miner|
         send(miner.socket, M_TYPE_MINER_BLOCK_UPDATE, {
           block:      @blockchain.mining_block,
-          difficulty: @blockchain.mining_block.difficulty,
+          difficulty: miner.difficulty,
         })
       end
     end

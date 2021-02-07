@@ -694,6 +694,10 @@ module ::Axentro::Core
       @miners_manager.miners
     end
 
+    def miners_manager
+      @miners_manager
+    end
+
     def miners_broadcast
       @miners_manager.broadcast
     end
