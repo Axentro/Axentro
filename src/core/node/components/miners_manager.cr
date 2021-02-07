@@ -162,9 +162,9 @@ module ::Axentro::Core::NodeComponents
           @nonce_spacing.track_miner_difficulty(miner.mid, miner.difficulty)
 
           # throttle nonce difficulty target
-            if spacing = @nonce_spacing.compute(miner)
-              send_adjust_block_difficulty(miner.socket, spacing.difficulty, spacing.reason)
-            end
+          if spacing = @nonce_spacing.compute(miner)
+            send_adjust_block_difficulty(miner.socket, spacing.difficulty, spacing.reason)
+          end
 
           # make block the most difficult recorded if it's difficulty exceeds the current most difficult
           if mined_difficulty > @highest_difficulty_mined_so_far

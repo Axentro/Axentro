@@ -583,7 +583,6 @@ module ::Axentro::Core
 
       verbose "previous mining block index: #{previous_mining_block_index}, latest index: #{the_latest_index}"
 
-
       coinbase_amount = coinbase_slow_amount(the_latest_index, embedded_slow_transactions)
       coinbase_transaction = calculate_coinbase_slow_transaction(coinbase_amount, the_latest_index, embedded_slow_transactions)
 
