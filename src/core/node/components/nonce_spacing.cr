@@ -109,7 +109,7 @@ module ::Axentro::Core::NodeComponents
 
     def increase_difficulty_by_last(miner, last_deviance)
       last_difficulty = miner.difficulty
-      miner.difficulty = Math.max(1, last_difficulty + 2)
+      miner.difficulty = Math.max(1, last_difficulty + 4)
       if last_difficulty != miner.difficulty
         action = (last_difficulty > miner.difficulty) ? "decreasing" : "increasing"
         verbose "(#{miner.mid}) (last nonce) #{action} difficulty to #{miner.difficulty} for last deviance: #{last_deviance}"
@@ -119,7 +119,7 @@ module ::Axentro::Core::NodeComponents
 
     def increase_difficulty_by_average(miner, average_difficulty, average_deviance)
       last_difficulty = miner.difficulty
-      miner.difficulty = Math.max(1, average_difficulty + 1)
+      miner.difficulty = Math.max(1, average_difficulty + 4)
       if last_difficulty != miner.difficulty
         action = (last_difficulty > miner.difficulty) ? "decreasing" : "increasing"
         verbose "(#{miner.mid}) (average) #{action} difficulty to #{miner.difficulty} for average deviance: #{average_deviance}"
