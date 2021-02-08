@@ -27,6 +27,7 @@ module ::Axentro::Core::NodeComponents
     @block_start_time : Int64
     @nonce_spacing : NonceSpacing = NonceSpacing.new
     @last_ensured : Int64
+    @leading_miner : Miner?
 
     def initialize(@blockchain : Blockchain, @is_private_node : Bool)
       @highest_difficulty_mined_so_far = 0
@@ -51,12 +52,15 @@ module ::Axentro::Core::NodeComponents
         verbose "checking ensure: #{deviation > boundary}, no nonces: #{no_nonces}, last: #{last_ensured_deviation > 10_000}"
         if deviation > boundary && no_nonces && last_ensured_deviation > 10_000
           warning "no nonces found for block within 1 min 30 secs - attempting to ensure 2 min block time"
-          if leading_miner = @nonce_spacing.leading_miner(@miners)
+
+          if leading_miner = @leading_miner
             info "reduce difficulty to ensure block mined within 2 mins"
             current_difficulty = leading_miner.difficulty
             leading_miner.difficulty = current_difficulty - 1
             send_adjust_block_difficulty(leading_miner.socket, leading_miner.difficulty - 1, "reducing difficulty from #{current_difficulty} to #{leading_miner.difficulty} to ensure block time")
             @last_ensured = __timestamp
+          else
+            @leading_miner = @nonce_spacing.leading_miner(@miners)
           end
         end
       end
@@ -226,6 +230,7 @@ module ::Axentro::Core::NodeComponents
     end
 
     def mint_block(block : SlowBlock)
+      @leading_miner = nil
       @highest_difficulty_mined_so_far = 0
       @block_start_time = __timestamp
       node.new_block(block)

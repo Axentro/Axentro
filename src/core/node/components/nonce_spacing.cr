@@ -50,7 +50,7 @@ module ::Axentro::Core::NodeComponents
       # The miner should be tracked in nonce_meta to apply throttling
       if nonce_meta = @nonce_meta_map[miner.mid]?
         # did miner find any nonces yet?
-        found_nonces = nonce_meta.reject(&.deviance.nil?)
+        found_nonces = nonce_meta
         # info "did miner find nonces yet?"
         if found_nonces.size > 0
           # yes miner found nonces
@@ -74,18 +74,26 @@ module ::Axentro::Core::NodeComponents
             if deviation < MINER_BOUNDARY
               return if in_check
               verbose "found nonce within 10 mins so increase difficulty"
-              increase_difficulty_by_last(miner, deviation)
+              difficulty_amount = calculate_difficulty_amount(deviation)
+              increase_difficulty_by_last(miner, difficulty_amount, deviation)
             else
               # else decrease difficulty
               verbose "found nonce later than 10 mins so decrease difficulty"
               decrease_difficulty_by_last(miner)
             end
           end
-        else
-          # no miner did not find any nonces yet
-          verbose "no nonces found yet so decrease difficulty"
-          decrease_difficulty_by_last(miner)
         end
+      end
+    end
+
+    def calculate_difficulty_amount(deviation) : Int32
+      case deviation
+      when .< 60_000
+        6
+      when .< 180_000
+        5
+      else
+        4
       end
     end
 
@@ -107,7 +115,7 @@ module ::Axentro::Core::NodeComponents
       end
     end
 
-    def increase_difficulty_by_last(miner, last_deviance)
+    def increase_difficulty_by_last(miner, difficulty_amount, last_deviance)
       last_difficulty = miner.difficulty
       miner.difficulty = Math.max(1, last_difficulty + 4)
       if last_difficulty != miner.difficulty
