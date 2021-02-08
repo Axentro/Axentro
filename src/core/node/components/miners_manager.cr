@@ -40,22 +40,24 @@ module ::Axentro::Core::NodeComponents
     end
 
     def ensure_block_mined
-      # if no nonces found within 1 minute 30 secs of block start then reduce difficulty to ensure block is mined
-      nonces_for_block = MinerNoncePool.embedded
-      no_nonces = nonces_for_block.size == 0
-      now = __timestamp
-      deviation = now - @block_start_time
-      boundary = 90_000 # 1 min 30 secs
-      last_ensured_deviation = now - @last_ensured
-      verbose "checking ensure: #{deviation > boundary}, no nonces: #{no_nonces}, last: #{last_ensured_deviation > 10_000}"
-      if deviation > boundary && no_nonces && last_ensured_deviation > 10_000
-        warning "no nonces found for block within 1 min 30 secs - attempting to ensure 2 min block time"
-        if leading_miner = @nonce_spacing.leading_miner(@miners)
-          info "reduce difficulty to ensure block mined within 2 mins"
-          current_difficulty = leading_miner.difficulty
-          leading_miner.difficulty = current_difficulty - 1
-          send_adjust_block_difficulty(leading_miner.socket, leading_miner.difficulty - 1, "reducing difficulty from #{current_difficulty} to #{leading_miner.difficulty} to ensure block time")
-          @last_ensured = __timestamp
+      if @miners.size > 0
+        # if no nonces found within 1 minute 30 secs of block start then reduce difficulty to ensure block is mined
+        nonces_for_block = MinerNoncePool.embedded
+        no_nonces = nonces_for_block.size == 0
+        now = __timestamp
+        deviation = now - @block_start_time
+        boundary = 90_000 # 1 min 30 secs
+        last_ensured_deviation = now - @last_ensured
+        verbose "checking ensure: #{deviation > boundary}, no nonces: #{no_nonces}, last: #{last_ensured_deviation > 10_000}"
+        if deviation > boundary && no_nonces && last_ensured_deviation > 10_000
+          warning "no nonces found for block within 1 min 30 secs - attempting to ensure 2 min block time"
+          if leading_miner = @nonce_spacing.leading_miner(@miners)
+            info "reduce difficulty to ensure block mined within 2 mins"
+            current_difficulty = leading_miner.difficulty
+            leading_miner.difficulty = current_difficulty - 1
+            send_adjust_block_difficulty(leading_miner.socket, leading_miner.difficulty - 1, "reducing difficulty from #{current_difficulty} to #{leading_miner.difficulty} to ensure block time")
+            @last_ensured = __timestamp
+          end
         end
       end
     end
