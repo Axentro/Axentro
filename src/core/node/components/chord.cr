@@ -78,7 +78,7 @@ module ::Axentro::Core::NodeComponents
     end
 
     def add_to_finger_table(joined_nodes)
-      joined_nodes.each { |n| @finger_table.add(n) unless n[:is_private]}
+      joined_nodes.each { |n| @finger_table.add(n) unless n[:is_private] }
     end
 
     def clean_finger_table
