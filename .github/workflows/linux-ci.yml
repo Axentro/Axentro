@@ -1,0 +1,61 @@
+name: Linux CI
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - '*'
+
+  pull_request:
+    branches:
+      - master
+
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  specs:
+    name: Specs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Crystal
+        uses: oprypin/install-crystal@v1
+
+      - name: Checkout source code
+        uses: actions/checkout@v2
+
+      - name: Install shards
+        run: shards install
+
+      - name: Run specs
+        run: crystal spec --error-on-warnings --error-trace
+
+  check-format:
+    name: Check format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Crystal
+        uses: oprypin/install-crystal@v1
+
+      - name: Checkout source code
+        uses: actions/checkout@v2
+
+      - name: Check sources format
+        run: crystal tool format --check
+
+  ameba:
+    name: Ameba linter
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Crystal
+        uses: oprypin/install-crystal@v1
+
+      - name: Checkout source code
+        uses: actions/checkout@v2
+
+      - name: Install shards
+        run: shards install
+
+      - name: Run ameba
+        run: bin/ameba
