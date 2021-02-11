@@ -1,4 +1,4 @@
-FROM crystallang/crystal:0.35.1
+FROM crystallang/crystal:0.36.1
 
 RUN mkdir -p /usr/local/Axentro
 RUN mkdir -p /usr/local/bin
