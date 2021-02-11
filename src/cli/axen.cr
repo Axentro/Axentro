@@ -16,7 +16,7 @@ require "../core/official_nodes"
 
 module ::Axentro::Interface::Axen
   class Root < CLI
-    def sub_actions
+    def sub_actions : Array(AxeAction)
       [] of AxeAction
     end
 
@@ -58,7 +58,7 @@ module ::Axentro::Interface::Axen
       end
     end
 
-    def run_impl(action_name)
+    def run_impl(action_name) : OptionParser?
       unless G.op.__is_private
         puts_help(HELP_PUBLIC_URL) unless public_url = G.op.__public_url
 

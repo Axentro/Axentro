@@ -58,5 +58,4 @@ iters = 20000
 X.transaction("../../perf-test.json", "VDBjMjZkNzgwOWE2NWEzMzZmNjA2MmI0Njc2YzZkMWZjNWY3ODQwYjVmYWM3NmUx", iters)
 
 # vegeta attack -targets="txns.txt" -format=json -rate=100 | vegeta encode
-
 # https://github.com/tsenart/vegeta

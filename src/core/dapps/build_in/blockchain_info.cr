@@ -172,7 +172,7 @@ module ::Axentro::Core::DApps::BuildIn
       {transactions: selected, pagination: {page: page, per_page: per_page, direction: direction, sort_field: sort_field, count: selected.size, total_count: total_count}}
     end
 
-    def on_message(action : String, from_address : String, content : String, from = nil)
+    def on_message(action : String, from_address : String, content : String, from = nil) : Bool
       false
     end
   end

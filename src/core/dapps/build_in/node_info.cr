@@ -99,7 +99,7 @@ module ::Axentro::Core::DApps::BuildIn
       node.chord.official_nodes_list
     end
 
-    def on_message(action : String, from_address : String, content : String, from = nil)
+    def on_message(action : String, from_address : String, content : String, from = nil) : Bool
       false
     end
   end

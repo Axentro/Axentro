@@ -648,7 +648,7 @@ module ::Axentro::Core::NodeComponents
       clean_connection(socket)
     end
 
-    def clean_connection(socket : HTTP::WebSocket)
+    def clean_connection(socket)
       @successor_list.each do |successor|
         if successor[:socket] == socket
           current_successors = @successor_list.size

@@ -52,7 +52,7 @@ module ::Axentro::Interface::Axe
       command
     end
 
-    def sub_actions
+    def sub_actions : Array(AxeAction)
       [
         {
           name: "connect",
@@ -61,7 +61,7 @@ module ::Axentro::Interface::Axe
       ]
     end
 
-    def option_parser
+    def option_parser : OptionParser?
       G.op.create_option_parser([
         Options::CONNECT_NODE,
         Options::CONFIG_NAME,
@@ -74,7 +74,7 @@ module ::Axentro::Interface::Axe
       @client.not_nil!
     end
 
-    def run_impl(action_name)
+    def run_impl(action_name) : OptionParser?
       case action_name
       when "connect"
         return connect

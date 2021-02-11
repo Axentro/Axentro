@@ -442,7 +442,6 @@ module ::Axentro::Core
       MinerNoncePool.add(miner_nonce) if MinerNoncePool.find(miner_nonce).nil?
       # end
 
-
     rescue e : Exception
       warning "nonce was not added to pool due to: #{e}"
     end

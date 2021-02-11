@@ -9,6 +9,7 @@
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
+require "yaml"
 
 module ::Axentro::Interface
   class ConfigManager
@@ -37,9 +38,10 @@ module ::Axentro::Interface
     def get_config(override_name : String | Nil = nil) : ConfigItem?
       return nil unless File.exists?(config_path)
       @config = Config.from_yaml(File.read(config_path))
-      return nil unless config = @config
-      current_config = (@override && !override_name.nil?) ? config.configs[override_name] : config.configs[config.current_config]
-      ConfigItem.new(config.current_config, config.config_status, current_config)
+      if config = @config
+        current_config = (@override && !override_name.nil?) ? config.configs[override_name] : config.configs[config.current_config]
+        ConfigItem.new(config.current_config, config.config_status, current_config)
+      end
     end
 
     def get_configs : Hash(String, Hash(String, ConfigManager::Configurable))
@@ -145,8 +147,12 @@ struct ConfigItem
 end
 
 class Config
-  YAML.mapping(current_config: String, config_status: ConfigStatus, configs: Hash(String, Hash(String, ConfigManager::Configurable)))
+  include YAML::Serializable
 
-  def initialize(@current_config : String, @config_status : ConfigStatus, @configs : Hash(String, Hash(String, ConfigManager::Configurable)))
+  property current_config : String
+  property configs : Hash(String, Hash(String, ConfigManager::Configurable))
+  property config_status : ConfigStatus
+
+  def initialize(@current_config, @config_status, @configs)
   end
 end

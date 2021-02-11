@@ -684,7 +684,7 @@ module ::Axentro::Core
       @wallet_info_controller.update_wallet_information(block.transactions)
     end
 
-    def clean_connection(socket : HTTP::WebSocket)
+    def clean_connection(socket)
       @chord.clean_connection(socket)
       @miners_manager.clean_connection(socket)
       @clients_manager.clean_connection(socket)

@@ -12,7 +12,7 @@
 
 module ::Axentro::Interface::Axe
   class Pubsub < CLI
-    def sub_actions
+    def sub_actions : Array(AxeAction)
       [
         {
           name: "listen",
@@ -21,7 +21,7 @@ module ::Axentro::Interface::Axe
       ]
     end
 
-    def option_parser
+    def option_parser : OptionParser?
       G.op.create_option_parser([
         Options::CONNECT_NODE,
         Options::JSON,
@@ -37,7 +37,7 @@ module ::Axentro::Interface::Axe
       puts "| %20s | %64s |" % [name, value]
     end
 
-    def run_impl(action_name)
+    def run_impl(action_name) : OptionParser?
       case action_name
       when "listen"
         return listen
