@@ -81,6 +81,7 @@ jobs:
         run: |
           mkdir build
           crystal build src/cli/axen.cr -o build/axen-${GITHUB_REF_SLUG}-osx --release --no-debug
+          crystal build src/cli/axe.cr -o build/axe-${GITHUB_REF_SLUG}-osx --release --no-debug
 
       - name: Upload to S3
         uses: shallwefootball/upload-s3-action@v1.1.2
