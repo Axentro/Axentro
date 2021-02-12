@@ -354,7 +354,7 @@ module ::Axentro::Core::NodeComponents
           if (Time.local - now) >= 8.seconds
             @this_node.not_nil!.send_nodes_joined(all_node_contexts, context)
             check_for_official_nodes
-            attempt_reconnect_to_connecting_node
+            # attempt_reconnect_to_connecting_node
             now = Time.local
           end
         end
