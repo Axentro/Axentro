@@ -90,4 +90,14 @@ jobs:
           aws_bucket: ${{ secrets.AWS_BUCKET_FOR_CI_S3 }}
           aws_key_id: ${{ secrets.AWS_KEY_FOR_CI_S3 }}
           source_dir: build
-          destination_dir: ""           
+          destination_dir: ""
+
+      - name: Upload to GitHub Releases
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
+          file: build/*
+          overwrite: true
+          file_glob: true               
