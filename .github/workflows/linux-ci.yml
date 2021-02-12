@@ -80,4 +80,14 @@ jobs:
       - name: Build axen binary
         run: |
           mkdir build
-          crystal build src/cli/axen.cr -o build/axen-${GITHUB_REF_SLUG}-linux --release --no-debug --static     
+          crystal build src/cli/axen.cr -o build/axen-${GITHUB_REF_SLUG}-linux --release --no-debug --static  
+
+      - name: Upload to S3
+        uses: shallwefootball/upload-s3-action@v1.1.2
+        if: github.ref == 'refs/heads/master'
+        with:
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_FOR_CI_S3 }}
+          aws_bucket: ${{ secrets.AWS_BUCKET_FOR_CI_S3 }}
+          aws_key_id: ${{ secrets.AWS_KEY_FOR_CI_S3 }}
+          source_dir: build
+          destination_dir: ""           
