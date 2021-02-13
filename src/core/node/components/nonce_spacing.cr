@@ -11,7 +11,8 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core::NodeComponents
-  MINER_BOUNDARY      = 600_000 # 10 mins
+  # MINER_BOUNDARY      = 600_000 # 10 mins
+  MINER_BOUNDARY      = 1800000 # 30 mins
   BLOCK_BOUNDARY      = 120_000 # 2 mins
   MOVING_AVERAGE_SIZE =      20
 
@@ -89,11 +90,11 @@ module ::Axentro::Core::NodeComponents
     def calculate_difficulty_amount(deviation) : Int32
       case deviation
       when .< 60_000
-        6
+        12
       when .< 180_000
-        5
+        10
       else
-        4
+        8
       end
     end
 
