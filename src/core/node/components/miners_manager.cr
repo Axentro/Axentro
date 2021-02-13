@@ -226,6 +226,7 @@ module ::Axentro::Core::NodeComponents
     end
 
     def reject_miner_connection(socket : HTTP::WebSocket, reason : String)
+      sleep 10 + rand(5)
       send(socket, M_TYPE_MINER_HANDSHAKE_REJECTED, {reason: reason})
     end
 
