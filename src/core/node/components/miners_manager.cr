@@ -152,7 +152,7 @@ module ::Axentro::Core::NodeComponents
         end
 
         actual_difficulty = calculate_pow_difficulty(block_hash, mined_nonce.value, mined_difficulty)
-        debug "(#{miner.mid}) incoming nonce: #{mined_nonce.value} (actual: #{actual_difficulty}, expected: #{mined_difficulty})"
+        info "(#{miner.mid}) incoming nonce: #{mined_nonce.value} (actual: #{actual_difficulty}, expected: #{mined_difficulty})"
         if actual_difficulty < mined_difficulty
           warning "difficulty for nonce: #{mined_nonce.value} was #{actual_difficulty} and expected #{mined_difficulty} for block hash: #{block_hash}"
           send_invalid_block_update(socket, mined_difficulty, "updated block because your nonce: #{mined_nonce.value} was invalid, actual difficulty: #{actual_difficulty} did not match expected: #{mined_difficulty}")
