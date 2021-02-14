@@ -12,7 +12,7 @@
 
 module ::Axentro::Interface::Axe
   class Config < CLI
-    def sub_actions
+    def sub_actions : Array(AxeAction)
       [
         {
           name: I18n.translate("axe.cli.config.save.title"),
@@ -45,7 +45,7 @@ module ::Axentro::Interface::Axe
       ]
     end
 
-    def option_parser
+    def option_parser : OptionParser?
       G.op.create_option_parser([
         Options::CONNECT_NODE,
         Options::WALLET_PATH,
@@ -70,7 +70,7 @@ module ::Axentro::Interface::Axe
       ])
     end
 
-    def run_impl(action_name)
+    def run_impl(action_name) : OptionParser?
       case action_name
       when I18n.translate("axe.cli.config.save.title")
         return save

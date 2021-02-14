@@ -59,7 +59,7 @@ module ::Axentro::Core::DApps::BuildIn
       fees
     end
 
-    def on_message(action : String, from_address : String, content : String, from = nil)
+    def on_message(action : String, from_address : String, content : String, from = nil) : Bool
       return false unless action == "fee"
 
       node.send_content_to_client(from_address, from_address, fees_impl.to_json, from)

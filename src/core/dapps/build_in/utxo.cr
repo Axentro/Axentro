@@ -158,7 +158,7 @@ module ::Axentro::Core::DApps::BuildIn
       scale_i64("0.0001")
     end
 
-    def on_message(action : String, from_address : String, content : String, from = nil)
+    def on_message(action : String, from_address : String, content : String, from = nil) : Bool
       return false unless action == "amount"
 
       _m_content = MContentClientAmount.from_json(content)

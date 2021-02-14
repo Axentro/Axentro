@@ -237,9 +237,13 @@ module ::Axentro::Core
       end
     end
 
-    def valid_nonce?(block_nonce : BlockNonce) : SlowBlock?
-      return mining_block.with_nonce(block_nonce) if mining_block.with_nonce(block_nonce).valid_nonce?(mining_block_difficulty)
-      nil
+    # def valid_nonce?(block_nonce : BlockNonce) : SlowBlock?
+    #   return mining_block.with_nonce(block_nonce) if mining_block.with_nonce(block_nonce).valid_nonce?(mining_block_difficulty)
+    #   nil
+    # end
+
+    def valid_nonce?(block_nonce : BlockNonce) : Bool
+      mining_block.with_nonce(block_nonce).valid_block_nonce?(mining_block_difficulty)
     end
 
     def valid_block?(block : SlowBlock | FastBlock, skip_transactions : Bool = false, doing_replace : Bool = false) : SlowBlock? | FastBlock?
@@ -604,7 +608,7 @@ module ::Axentro::Core
       transactions = align_slow_transactions(coinbase_transaction, coinbase_amount, the_latest_index, embedded_slow_transactions)
       timestamp = __timestamp
 
-      debug "We are in refresh_mining_block, the next block will have a difficulty of #{difficulty}"
+      info "We are in refresh_mining_block, the next block will have a difficulty of #{difficulty}"
 
       @mining_block = SlowBlock.new(
         the_latest_index,

@@ -281,7 +281,7 @@ module ::Axentro::Core::NodeComponents
         elsif @node_id < successor_node_id &&
               @node_id < _context[:id] &&
               successor_node_id > _context[:id]
-              puts "STA_2"
+          puts "STA_2"
           connect_to_successor(node, _context)
           node.send_nodes_joined(all_node_contexts)
         end
@@ -437,8 +437,8 @@ module ::Axentro::Core::NodeComponents
     def find_all_nodes : NamedTuple(private_nodes: Nodes, public_nodes: Set(NodeContext))
       {
         private_nodes: @private_nodes,
-        public_nodes:  @finger_table.group_by{|ctx| [ctx[:host], ctx[:port]] }.flat_map(&.last)
-                       .reject { |ctx| ctx[:id] == context[:id] }.to_set
+        public_nodes:  @finger_table.group_by { |ctx| [ctx[:host], ctx[:port]] }.flat_map(&.last)
+          .reject { |ctx| ctx[:id] == context[:id] }.to_set,
       }
     end
 
@@ -550,7 +550,7 @@ module ::Axentro::Core::NodeComponents
       clean_connection(socket)
     end
 
-    def clean_connection(socket : HTTP::WebSocket)
+    def clean_connection(socket)
       @successor_list.each do |successor|
         if successor[:socket] == socket
           current_successors = @successor_list.size

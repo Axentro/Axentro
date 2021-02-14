@@ -199,7 +199,7 @@ RULE
       raise "got unknown action #{action} while getting a fee for token"
     end
 
-    def on_message(action : String, from_address : String, content : String, from = nil)
+    def on_message(action : String, from_address : String, content : String, from = nil) : Bool
       false
     end
   end

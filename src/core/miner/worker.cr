@@ -18,23 +18,34 @@ module ::Axentro::Core
       work = MinerWork.from_json(message)
 
       block_nonce = work[:start_nonce]
-      miner_nonce = MinerNonce.from(block_nonce)
       nonce_counter = 0
 
       latest_nonce_counter = nonce_counter
       time_now = __timestamp
       latest_time = time_now
-      block = work[:block].with_nonce(block_nonce)
+
+      miner_nonce = MinerNonce.from(block_nonce)
+
+      # just initialized so we can re-define it inside the loop each time
+      block = work[:block]
+      block_hash = ""
+
+      verbose "block diff: #{block.difficulty}, miner diff: #{work[:difficulty]}"
 
       loop do
         time_now = __timestamp
-        block = work[:block].with_nonce(block_nonce)
-        # puts "nonce: #{valid_nonce?(block.to_hash, block_nonce, work[:difficulty])}, required: #{work[:difficulty]}"
-        break if valid_nonce?(block.to_hash, block_nonce, work[:difficulty]) == work[:difficulty]
+
+        # update with latest nonce and difficulty
+        block = block.with_nonce(block_nonce).with_difficulty(work[:difficulty])
+        block_hash = block.to_hash
+
+        if calculate_pow_difficulty(block_hash, block_nonce, work[:difficulty]) == work[:difficulty]
+          miner_nonce = MinerNonce.from(block_nonce).with_difficulty(work[:difficulty]).with_timestamp(time_now)
+          break
+        end
 
         nonce_counter += 1
         block_nonce = (block_nonce.to_u64 + 1).to_s
-        miner_nonce.with_value(block_nonce)
 
         if nonce_counter % 100 == 0
           time_diff = time_now - latest_time
@@ -42,7 +53,6 @@ module ::Axentro::Core
           break if time_diff == 0
 
           block_nonce = Random.rand(UInt64::MAX).to_s
-          miner_nonce = MinerNonce.from(block_nonce)
 
           work_rate = (nonce_counter - latest_nonce_counter) / (time_diff / 1000)
 
@@ -53,12 +63,10 @@ module ::Axentro::Core
         end
       end
 
-      info "nonce: #{valid_nonce?(block.to_hash, block_nonce, work[:difficulty])}, required: #{work[:difficulty]}"
+      debug "nonce: #{calculate_pow_difficulty(block_hash, block_nonce, work[:difficulty])}, required: #{work[:difficulty]}, nonce: #{block_nonce}, hash: #{block_hash}"
       info "found new nonce(#{work[:difficulty]}): #{light_green(block_nonce)}"
-      debug "Found block..."
-      block.to_s
 
-      response(miner_nonce.with_timestamp(time_now).to_json)
+      response(miner_nonce.to_json)
     rescue e : Exception
       error e.message.not_nil!
       error e.backtrace.join("\n")

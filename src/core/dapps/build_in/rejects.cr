@@ -71,7 +71,7 @@ module ::Axentro::Core::DApps::BuildIn
       database.find_reject_by_address(address, limit)
     end
 
-    def on_message(action : String, from_address : String, content : String, from = nil)
+    def on_message(action : String, from_address : String, content : String, from = nil) : Bool
       false
     end
   end

@@ -14,11 +14,11 @@ require "../cli"
 
 module ::Axentro::Interface::Axem
   class Root < CLI
-    def sub_actions
+    def sub_actions : Array(AxeAction)
       [] of AxeAction
     end
 
-    def option_parser
+    def option_parser : OptionParser?
       G.op.create_option_parser([
         Options::CONNECT_NODE,
         Options::WALLET_PATH,
@@ -37,7 +37,7 @@ module ::Axentro::Interface::Axem
       end
     end
 
-    def run_impl(action_name)
+    def run_impl(action_name) : OptionParser?
       puts_help(HELP_WALLET_PATH) unless wallet_path = G.op.__wallet_path
       puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
 

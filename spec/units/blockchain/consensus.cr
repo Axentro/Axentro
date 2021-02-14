@@ -19,21 +19,27 @@ include Axentro::Interface::Logger
 include Units::Utils
 
 describe Consensus do
-  describe "#valid?, #valid_pow?" do
-    # TODO: this test is probably erroneously passing since the change to the 'valid' methods
+  describe "calculate_pow_difficulty" do
     it "should return a valid difficulty value" do
       ENV.delete("AX_SET_DIFFICULTY")
-      nonce = "2978736204850283095"
-      valid_nonce?("block_hash", nonce, 2).should be < 3
-      valid_pow?("block_hash", nonce, 2).should be < 3
+      hash = "e33598878258c85c60c5c29a41ad756cb69ecd315154695970c375a792eb8f4e"
+      nonce = "17186779519462547558"
+      calculate_pow_difficulty(hash, nonce, 13).should eq(13)
     end
+  end
 
-    # TODO: this test is probably erroneously passing since the change to the 'valid' methods
-    it "should return an invalid difficulty value" do
+  describe "is_nonce_valid?" do
+    it "when valid" do
       ENV.delete("AX_SET_DIFFICULTY")
-      nonce = "2978736204850283095"
-      valid_nonce?("block_hash", nonce, 20).should be < 3
-      valid_pow?("block_hash", nonce, 20).should be < 3
+      hash = "e33598878258c85c60c5c29a41ad756cb69ecd315154695970c375a792eb8f4e"
+      nonce = "17186779519462547558"
+      is_nonce_valid?(hash, nonce, 13).should eq(true)
+    end
+    it "when invalid" do
+      ENV.delete("AX_SET_DIFFICULTY")
+      hash = "e33598878258c85c60c5c29a41ad756cb69ecd315154695970c375a792eb8f4e"
+      nonce = "17186779519462547559"
+      is_nonce_valid?(hash, nonce, 13).should eq(false)
     end
   end
 

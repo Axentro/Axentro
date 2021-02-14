@@ -16,11 +16,11 @@ require "../core/official_nodes"
 
 module ::Axentro::Interface::Axen
   class Root < CLI
-    def sub_actions
+    def sub_actions : Array(AxeAction)
       [] of AxeAction
     end
 
-    def option_parser : OptionParser | Nil
+    def option_parser : OptionParser?
       G.op.create_option_parser([
         Options::CONNECT_NODE,
         Options::WALLET_PATH,
@@ -58,7 +58,7 @@ module ::Axentro::Interface::Axen
       end
     end
 
-    def run_impl(action_name)
+    def run_impl(action_name) : OptionParser?
       unless G.op.__is_private
         puts_help(HELP_PUBLIC_URL) unless public_url = G.op.__public_url
 

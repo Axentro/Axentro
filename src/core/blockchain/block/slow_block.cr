@@ -98,12 +98,21 @@ module ::Axentro::Core
       is_slow_block? ? "SLOW" : "FAST"
     end
 
+    # This uses the @ shortcut to set the nonce onto the block
     def with_nonce(@nonce : BlockNonce) : SlowBlock
       self
     end
 
-    def valid_nonce?(difficulty : Int32)
-      valid_nonce?(self.to_hash, @nonce, difficulty)
+    def with_difficulty(@difficulty : Int32) : SlowBlock
+      self
+    end
+
+    def with_timestamp(@timestamp : Int64) : SlowBlock
+      self
+    end
+
+    def valid_block_nonce?(difficulty : Int32) : Bool
+      is_nonce_valid?(to_hash, @nonce, difficulty)
     end
 
     private def validate_transactions(transactions : Array(Transaction), blockchain : Blockchain) : ValidatedTransactions
@@ -144,7 +153,7 @@ module ::Axentro::Core
       end
 
       if @difficulty > 0
-        raise "Invalid Nonce: #{@nonce} for difficulty #{@difficulty}" unless self.valid_nonce?(@difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
+        raise "Invalid Nonce: #{@nonce} for difficulty #{@difficulty}" unless calculate_pow_difficulty(to_hash, @nonce, @difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
       end
 
       merkle_tree_root = calculate_merkle_tree_root

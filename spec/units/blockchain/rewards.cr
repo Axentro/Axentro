@@ -31,7 +31,7 @@ describe Blockchain do
 
   it "should calculate the block rewards for a single miner" do
     with_factory do |block_factory, _|
-      miner1 = {socket: MockWebSocket.new, mid: "miner1"}
+      miner1 = Miner.new(MockWebSocket.new, "miner1", block_factory.blockchain.mining_block.difficulty)
       coinbase_amount = block_factory.blockchain.coinbase_slow_amount(0, [] of Transaction)
       with_miner_nonces(miner1, ["1", "2"], "Miner 1", block_factory)
       transaction = block_factory.blockchain.create_coinbase_slow_transaction(coinbase_amount, 0_i64, [miner1])
@@ -51,9 +51,9 @@ describe Blockchain do
 
   it "should calculate the block rewards for multiple miners" do
     with_factory do |block_factory, _|
-      miner1 = {socket: MockWebSocket.new, mid: "miner1"}
-      miner2 = {socket: MockWebSocket.new, mid: "miner2"}
-      miner3 = {socket: MockWebSocket.new, mid: "miner3"}
+      miner1 = Miner.new(MockWebSocket.new, "miner1", block_factory.blockchain.mining_block.difficulty)
+      miner2 = Miner.new(MockWebSocket.new, "miner2", block_factory.blockchain.mining_block.difficulty)
+      miner3 = Miner.new(MockWebSocket.new, "miner3", block_factory.blockchain.mining_block.difficulty)
       coinbase_amount = block_factory.blockchain.coinbase_slow_amount(0, [] of Transaction)
       with_miner_nonces(miner1, ["1", "2"], "Miner 1", block_factory)
       with_miner_nonces(miner2, ["1", "2"], "Miner 2", block_factory)
@@ -94,7 +94,7 @@ describe Blockchain do
 
   it "should not allocate rewards if the total supply has been reached and there are no senders in the transactions" do
     with_factory do |block_factory, _|
-      miner1 = {socket: MockWebSocket.new, mid: "miner1"}
+      miner1 = Miner.new(MockWebSocket.new, "miner1", block_factory.blockchain.mining_block.difficulty)
       with_miner_nonces(miner1, ["1", "2"], "Miner 1", block_factory)
       coinbase_amount = block_factory.blockchain.coinbase_slow_amount(TOTAL_BLOCK_LIMIT, [] of Transaction)
       transaction = block_factory.blockchain.create_coinbase_slow_transaction(coinbase_amount, 0_i64, [miner1])
@@ -104,7 +104,7 @@ describe Blockchain do
 
   it "should allocate rewards from fees if the total supply has been reached and there are senders in the transactions" do
     with_factory do |block_factory, transaction_factory|
-      miner1 = {socket: MockWebSocket.new, mid: "miner1"}
+      miner1 = Miner.new(MockWebSocket.new, "miner1", block_factory.blockchain.mining_block.difficulty)
       transactions = [transaction_factory.make_send(2000_i64), transaction_factory.make_send(9000_i64)]
       total_reward = transactions.flat_map(&.senders).map(&.["fee"]).reduce(0) { |total, fee| total + fee }
       with_miner_nonces(miner1, ["1", "2"], "Miner 1", block_factory)
@@ -128,15 +128,15 @@ end
 
 def with_miner_nonces(miner, nonce_values : Array(String), miner_address, block_factory)
   miner_nonces = nonce_values.map do |nv|
-    MinerNonce.from(nv).with_mid(miner[:mid]).with_address(miner_address)
+    MinerNonce.from(nv).with_mid(miner.mid).with_address(miner_address)
   end
   miner_nonces.each { |mn| block_factory.blockchain.miner_nonce_pool.add(mn) }
 end
 
 def assert_reward_distribution(nonces1, nonces2, expected_percent_1, expected_percent_2)
   with_factory do |block_factory, _|
-    miner1 = {socket: MockWebSocket.new, mid: "miner1"}
-    miner2 = {socket: MockWebSocket.new, mid: "miner2"}
+    miner1 = Miner.new(MockWebSocket.new, "miner1", block_factory.blockchain.mining_block.difficulty)
+    miner2 = Miner.new(MockWebSocket.new, "miner2", block_factory.blockchain.mining_block.difficulty)
     coinbase_amount = block_factory.blockchain.coinbase_slow_amount(0, [] of Transaction)
 
     with_miner_nonces(miner1, (1..nonces1).map(&.to_s), "Miner 1", block_factory)

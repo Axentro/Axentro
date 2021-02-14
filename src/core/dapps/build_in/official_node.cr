@@ -69,7 +69,7 @@ module ::Axentro::Core::DApps::BuildIn
       dapps.reject { |dapp| dapp.class.to_s == "Axentro::Core::DApps::BuildIn::OfficialNode" }
     end
 
-    def on_message(action : String, from_address : String, content : String, from = nil)
+    def on_message(action : String, from_address : String, content : String, from = nil) : Bool
       false
     end
   end

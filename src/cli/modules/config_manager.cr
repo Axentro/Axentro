@@ -9,6 +9,7 @@
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
+require "yaml"
 
 module ::Axentro::Interface
   class ConfigManager
@@ -145,7 +146,10 @@ struct ConfigItem
 end
 
 class Config
-  YAML.mapping(current_config: String, config_status: ConfigStatus, configs: Hash(String, Hash(String, ConfigManager::Configurable)))
+  include YAML::Serializable
+  property current_config : String
+  property config_status : ConfigStatus
+  property configs : Hash(String, Hash(String, ConfigManager::Configurable))
 
   def initialize(@current_config : String, @config_status : ConfigStatus, @configs : Hash(String, Hash(String, ConfigManager::Configurable)))
   end
