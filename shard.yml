@@ -55,6 +55,6 @@ development_dependencies:
     github: veelenga/ameba
 
 
-crystal: 0.35.1
+crystal: 0.36.1
 
 license: MIT
