@@ -25,7 +25,7 @@ module ::Axentro::Core
     end
 
     def run
-      @socket = HTTP::WebSocket.new(@host, "/peer", @port, @use_ssl)
+      @socket = HTTP::WebSocket.new(@host, "/peer?miner", @port, @use_ssl)
 
       socket.on_message do |message|
         message_json = JSON.parse(message)

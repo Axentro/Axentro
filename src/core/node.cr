@@ -80,6 +80,21 @@ module ::Axentro::Core
           "request"
         end
       end
+
+      Defense.throttle("throttle requests per second for general API", limit: 10, period: 1) do |request|
+        remote_connection = NetworkUtil.get_remote_connection(request)
+        if request.resource.starts_with?("/api")
+          remote_connection.ip
+        end
+      end
+
+      # Defense.throttle("throttle requests", limit: 1, period: 30) do |request|
+      #   remote_connection = NetworkUtil.get_remote_connection(request)
+      #   if !(request.resource.starts_with?("/peer?node") || request.resource.starts_with?("/peer?client"))
+      #     puts "MINER?"
+      #     remote_connection.ip
+      #   end
+      # end
       @phase = SetupPhase::NONE
 
       @network_type = @is_testnet ? "testnet" : "mainnet"
@@ -1052,8 +1067,8 @@ module ::Axentro::Core
 
     private def handlers
       [
-        peer_handler,
         Defense::Handler.new,
+        peer_handler,
         @rpc_controller.get_handler,
         @rest_controller.get_handler,
         @pubsub_controller.get_handler,

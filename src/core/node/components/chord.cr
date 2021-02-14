@@ -106,7 +106,7 @@ module ::Axentro::Core::NodeComponents
     def join_to_private(node, connect_host : String, connect_port : Int32)
       debug "joining network: #{connect_host}:#{connect_port} (private)"
 
-      socket = HTTP::WebSocket.new(connect_host, "/peer", connect_port, @use_ssl)
+      socket = HTTP::WebSocket.new(connect_host, "/peer?node", connect_port, @use_ssl)
 
       node.peer(socket)
 
@@ -457,7 +457,7 @@ module ::Axentro::Core::NodeComponents
 
       info "found new successor: #{_context[:host]}:#{_context[:port]}"
 
-      socket = HTTP::WebSocket.new(_context[:host], "/peer", _context[:port], @use_ssl)
+      socket = HTTP::WebSocket.new(_context[:host], "/peer?node", _context[:port], @use_ssl)
 
       node.peer(socket)
 
@@ -507,7 +507,7 @@ module ::Axentro::Core::NodeComponents
     end
 
     def send_once(connect_host : String, connect_port : Int32, t : Int32, content)
-      socket = HTTP::WebSocket.new(connect_host, "/peer", connect_port, @use_ssl)
+      socket = HTTP::WebSocket.new(connect_host, "/peer?node", connect_port, @use_ssl)
 
       send_once(socket, t, content)
     end
@@ -538,7 +538,7 @@ module ::Axentro::Core::NodeComponents
       sockets = [] of HTTP::WebSocket
       @finger_table.each do |ctx|
         debug "stabilize finger table: #{ctx[:host]}:#{ctx[:port]}}"
-        socket = HTTP::WebSocket.new(ctx[:host], "/peer", ctx[:port], ctx[:ssl])
+        socket = HTTP::WebSocket.new(ctx[:host], "/peer?node", ctx[:port], ctx[:ssl])
         sockets << socket
         socket.ping
       rescue i : IO::Error

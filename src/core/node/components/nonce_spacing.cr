@@ -75,6 +75,8 @@ module ::Axentro::Core::NodeComponents
             if deviation < MINER_BOUNDARY
               return if in_check
               verbose "found nonce within 10 mins so increase difficulty"
+              # if this occurs immediately after this miner finds a block deviation will be 0
+              # but if found at another time then this will choose a difficulty
               difficulty_amount = calculate_difficulty_amount(deviation)
               increase_difficulty_by_last(miner, difficulty_amount, deviation)
             else
@@ -88,13 +90,14 @@ module ::Axentro::Core::NodeComponents
     end
 
     def calculate_difficulty_amount(deviation) : Int32
+      debug "deviation was: #{deviation}"
       case deviation
       when .< 60_000
-        12
-      when .< 180_000
-        10
-      else
         8
+      when .< 180_000
+        6
+      else
+        4
       end
     end
 
@@ -118,7 +121,7 @@ module ::Axentro::Core::NodeComponents
 
     def increase_difficulty_by_last(miner, difficulty_amount, last_deviance)
       last_difficulty = miner.difficulty
-      miner.difficulty = Math.max(1, last_difficulty + 4)
+      miner.difficulty = Math.max(1, last_difficulty + difficulty_amount)
       if last_difficulty != miner.difficulty
         action = (last_difficulty > miner.difficulty) ? "decreasing" : "increasing"
         verbose "(#{miner.mid}) (last nonce) #{action} difficulty to #{miner.difficulty} for last deviance: #{last_deviance}"
