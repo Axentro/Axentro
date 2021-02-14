@@ -75,7 +75,7 @@ module ::Units::Utils::ChainGenerator
       while @node.@phase != Axentro::Core::Node::SetupPhase::DONE
         sleep 0.000001
       end
-      @miner = Axentro::Core::NodeComponents::Miner.new(MockWebSocket.new, "535061bddb0549f691c8b9c012a55ee2", @blockchain.mining_block.difficulty)
+      @miner = Axentro::Core::NodeComponents::Miner.new(MockWebSocket.new, "535061bddb0549f691c8b9c012a55ee2", @blockchain.mining_block.difficulty, "127.0.0.1", 0, "name")
       @transaction_factory = TransactionFactory.new(@node_wallet)
       @rpc = RPCController.new(@blockchain)
       @rest = RESTController.new(@blockchain)

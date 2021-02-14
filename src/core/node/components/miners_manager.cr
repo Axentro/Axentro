@@ -15,8 +15,11 @@ module ::Axentro::Core::NodeComponents
     property socket : HTTP::WebSocket
     property mid : String
     property difficulty : Int32
+    property ip : String
+    property port : Int32
+    property name : String
 
-    def initialize(@socket, @mid, @difficulty); end
+    def initialize(@socket, @mid, @difficulty, @ip, @port, @name); end
   end
 
   class MinersManager < HandleSocket
@@ -89,15 +92,18 @@ module ::Axentro::Core::NodeComponents
       public_node_check = MinerValidation.is_public_node?(@is_private_node)
       reject_miner_connection(socket, public_node_check.reason) if public_node_check.invalid?
 
-      miner = Miner.new(socket, mid, @blockchain.mining_block.difficulty)
+      remote_connection = context.try { |c| NetworkUtil.get_remote_connection(c.request) }
+      remote_ip = remote_connection.try(&.ip) || "unknown"
+      remote_port = remote_connection.try(&.port) || 0
+      miner_name = HumanHash.humanize(mid)
+
+      miner = Miner.new(socket, mid, @blockchain.mining_block.difficulty, remote_ip, remote_port, miner_name)
 
       @miners << miner
 
       @nonce_spacing.track_miner_difficulty(miner.mid, @blockchain.mining_block.difficulty)
 
-      remote_address = context.try(&.request.remote_address.to_s) || "unknown"
-      miner_name = HumanHash.humanize(mid)
-      info "new miner (#{remote_address}) : #{light_green(miner_name)} (#{@miners.size})"
+      info "joined miner (#{miner.ip}:#{miner.port}) : #{light_green(miner.name)} (#{miner.mid}) (#{@miners.size})"
 
       send(socket, M_TYPE_MINER_HANDSHAKE_ACCEPTED, {
         version:    Core::CORE_VERSION,
@@ -257,9 +263,13 @@ module ::Axentro::Core::NodeComponents
 
     def clean_connection(socket)
       current_size = @miners.size
+      message = ""
+      if mnr = @miners.find { |miner| miner.socket == socket }
+        message = "(#{mnr.ip}:#{mnr.port}) : #{light_green(mnr.name)} (#{mnr.mid})"
+      end
       @miners.reject! { |miner| miner.socket == socket }
 
-      info "a miner has been removed. (#{current_size} -> #{@miners.size})" if current_size > @miners.size
+      info "remove miner #{message} (#{current_size} -> #{@miners.size})" if current_size > @miners.size
     end
 
     include Protocol
