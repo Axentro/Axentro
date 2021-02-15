@@ -105,8 +105,8 @@ module ::Axentro::Core
       push_slow_block(genesis_block)
     end
 
-    def get_genesis_block
-      @chain.first
+    def get_genesis_block : SlowBlock
+      @database.get_block(0).not_nil!.as(SlowBlock)
     end
 
     private def restore_from_database(database : Database)
