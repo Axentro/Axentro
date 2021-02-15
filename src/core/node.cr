@@ -88,13 +88,6 @@ module ::Axentro::Core
         end
       end
 
-      # Defense.throttle("throttle requests", limit: 1, period: 30) do |request|
-      #   remote_connection = NetworkUtil.get_remote_connection(request)
-      #   if !(request.resource.starts_with?("/peer?node") || request.resource.starts_with?("/peer?client"))
-      #     puts "MINER?"
-      #     remote_connection.ip
-      #   end
-      # end
       @phase = SetupPhase::NONE
 
       @network_type = @is_testnet ? "testnet" : "mainnet"
@@ -102,6 +95,11 @@ module ::Axentro::Core
       @chord = Chord.new(@connect_host, @connect_port, @public_host, @public_port, @ssl, @network_type, @is_private, @use_ssl, @max_private_nodes, @wallet_address, @blockchain.official_node, @exit_on_unofficial, @whitelist, @whitelist_message)
       @miners_manager = MinersManager.new(@blockchain, @is_private)
       @clients_manager = ClientsManager.new(@blockchain)
+
+      Defense.blocklist("ban noisy miners") do |request|
+        remote_connection = NetworkUtil.get_remote_connection(request)
+        @miners_manager.ban_list.includes?(remote_connection.ip)
+      end
 
       info "max private nodes allowed to connect is #{light_green(@max_private_nodes)}"
       info "max miners allowed to connect is #{light_green(@max_miners)}"

@@ -22,6 +22,14 @@ module ::Axentro::Core::NodeComponents
     def initialize(@socket, @mid, @difficulty, @ip, @port, @name); end
   end
 
+  struct MinerMortality
+    property ip : String
+    property action : String
+    property timestamp : Int64
+
+    def initialize(@ip, @action, @timestamp); end
+  end
+
   class MinersManager < HandleSocket
     alias Miners = Array(Miner)
     getter miners : Miners = Miners.new
@@ -31,12 +39,45 @@ module ::Axentro::Core::NodeComponents
     @nonce_spacing : NonceSpacing = NonceSpacing.new
     @last_ensured : Int64
     @leading_miner : Miner?
+    getter miner_mortality : Array(MinerMortality) = [] of MinerMortality
 
     def initialize(@blockchain : Blockchain, @is_private_node : Bool)
       @highest_difficulty_mined_so_far = 0
       @block_start_time = __timestamp
       @most_difficult_block_so_far = @blockchain.genesis_block
       @last_ensured = @block_start_time
+    end
+
+    def ban_list
+      _deviance = 10_000
+      _ban_duration = 3600_000 # 1 hour
+      _ban_tolerance = 10
+
+      bans = [] of String
+      now = __timestamp
+      @miner_mortality.group_by(&.ip).each do |ip, history|
+        rate = 0
+        history.in_groups_of(2).each do |grp|
+          joined = grp.compact.find { |m| m.action == "joined" }
+          remove = grp.compact.find { |m| m.action == "remove" }
+          if joined && remove
+            joined_time = joined.not_nil!.timestamp
+            removed_time = remove.not_nil!.timestamp
+            deviance = removed_time - joined_time
+            if deviance < _deviance
+              rate += 1
+            end
+          end
+        end
+        last_action = history.map(&.timestamp).max
+        if (now - last_action > _ban_duration)
+          @miner_mortality.reject! { |m| m.ip == ip }
+        end
+        if rate > _ban_tolerance
+          bans << ip
+        end
+      end
+      bans
     end
 
     private def node
@@ -100,6 +141,7 @@ module ::Axentro::Core::NodeComponents
       miner = Miner.new(socket, mid, @blockchain.mining_block.difficulty, remote_ip, remote_port, miner_name)
 
       @miners << miner
+      @miner_mortality << MinerMortality.new(miner.ip, "joined", __timestamp)
 
       @nonce_spacing.track_miner_difficulty(miner.mid, @blockchain.mining_block.difficulty)
 
@@ -266,6 +308,7 @@ module ::Axentro::Core::NodeComponents
       message = ""
       if mnr = @miners.find { |miner| miner.socket == socket }
         message = "(#{mnr.ip}:#{mnr.port}) : #{light_green(mnr.name)} (#{mnr.mid})"
+        @miner_mortality << MinerMortality.new(mnr.ip, "remove", __timestamp)
       end
       @miners.reject! { |miner| miner.socket == socket }
 
