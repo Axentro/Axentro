@@ -103,7 +103,7 @@ module ::Axentro::Core::NodeComponents
             info "reduce difficulty to ensure block mined within 2 mins"
             current_difficulty = leading_miner.difficulty
             leading_miner.difficulty = current_difficulty - 1
-            send_adjust_block_difficulty(leading_miner.socket, leading_miner.difficulty - 1, "reducing difficulty from #{current_difficulty} to #{leading_miner.difficulty} to ensure block time")
+            send_adjust_block_difficulty(leading_miner.socket, leading_miner.difficulty, "reducing difficulty from #{current_difficulty} to #{leading_miner.difficulty} to ensure block time")
             @last_ensured = __timestamp
           else
             @leading_miner = @nonce_spacing.leading_miner(@miners)
@@ -194,7 +194,7 @@ module ::Axentro::Core::NodeComponents
         end
 
         # allow a bit of extra time for latency for nonces
-        mining_block_with_buffer = @blockchain.mining_block.timestamp - 120000
+        mining_block_with_buffer = @blockchain.mining_block.timestamp # - 120000
         if mined_timestamp < mining_block_with_buffer
           message = "invalid timestamp for received nonce: #{mined_nonce.value} nonce mined at: #{Time.unix_ms(mined_timestamp)} before current mining block was created at: #{Time.unix_ms(mining_block_with_buffer)} (#{Time.unix_ms(@blockchain.mining_block.timestamp)})"
           warning message
@@ -214,7 +214,7 @@ module ::Axentro::Core::NodeComponents
           @blockchain.add_miner_nonce(mined_nonce, false)
           node.send_miner_nonce(mined_nonce)
 
-          # add incoming nonce data to the historic tracking
+          # found a nonce so track it in the history
           @nonce_spacing.track_miner_difficulty(miner.mid, miner.difficulty)
 
           # throttle nonce difficulty target
@@ -298,10 +298,7 @@ module ::Axentro::Core::NodeComponents
       info "#{magenta("PREPARING NEXT SLOW BLOCK")}: #{light_green(@blockchain.mining_block.index)} at difficulty: #{light_cyan(@blockchain.mining_block.difficulty)}"
 
       @miners.each do |miner|
-        send(miner.socket, M_TYPE_MINER_BLOCK_UPDATE, {
-          block:      @blockchain.mining_block,
-          difficulty: miner.difficulty,
-        })
+        send_updated_block(miner.socket, miner.difficulty)
       end
     end
 
