@@ -96,10 +96,10 @@ module ::Axentro::Core
       @miners_manager = MinersManager.new(@blockchain, @is_private)
       @clients_manager = ClientsManager.new(@blockchain)
 
-      Defense.blocklist("ban noisy miners") do |request|
-        remote_connection = NetworkUtil.get_remote_connection(request)
-        @miners_manager.ban_list.includes?(remote_connection.ip)
-      end
+      # Defense.blocklist("ban noisy miners") do |request|
+      #   remote_connection = NetworkUtil.get_remote_connection(request)
+      #   @miners_manager.ban_list.includes?(remote_connection.ip)
+      # end
 
       info "max private nodes allowed to connect is #{light_green(@max_private_nodes)}"
       info "max miners allowed to connect is #{light_green(@max_miners)}"

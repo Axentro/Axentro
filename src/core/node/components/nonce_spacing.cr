@@ -11,8 +11,8 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core::NodeComponents
-  MINER_BOUNDARY = 600_000 # 10 mins
-  # MINER_BOUNDARY      = 1800000 # 30 mins
+  # MINER_BOUNDARY = 600_000 # 10 mins
+  MINER_BOUNDARY      = 1800000 # 30 mins
   BLOCK_BOUNDARY      = 120_000 # 2 mins
   MOVING_AVERAGE_SIZE =      20
 
