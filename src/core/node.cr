@@ -73,21 +73,6 @@ module ::Axentro::Core
     )
       welcome
 
-      # Configure HTTP throttle
-      Defense.store = Defense::MemoryStore.new
-      Defense.throttle("throttle requests per second for creating transactions via API", limit: 500, period: 1) do |request|
-        if request.resource == "/api/v1/transaction" && request.method == "POST"
-          "request"
-        end
-      end
-
-      Defense.throttle("throttle requests per second for general API", limit: 10, period: 1) do |request|
-        remote_connection = NetworkUtil.get_remote_connection(request)
-        if request.resource.starts_with?("/api")
-          remote_connection.ip
-        end
-      end
-
       @phase = SetupPhase::NONE
 
       @network_type = @is_testnet ? "testnet" : "mainnet"
@@ -96,10 +81,33 @@ module ::Axentro::Core
       @miners_manager = MinersManager.new(@blockchain, @is_private)
       @clients_manager = ClientsManager.new(@blockchain)
 
-      # Defense.blocklist("ban noisy miners") do |request|
-      #   remote_connection = NetworkUtil.get_remote_connection(request)
-      #   @miners_manager.ban_list.includes?(remote_connection.ip)
-      # end
+      # Configure HTTP throttle
+      Defense.store = Defense::MemoryStore.new
+      Defense.throttle("throttle requests per second for creating transactions via API", limit: 500, period: 1) do |request|
+        if @phase == SetupPhase::DONE
+          if request.resource == "/api/v1/transaction" && request.method == "POST"
+            "request"
+          end
+        end
+      end
+
+      Defense.throttle("throttle requests per second for general API", limit: 10, period: 1) do |request|
+        if @phase == SetupPhase::DONE
+          remote_connection = NetworkUtil.get_remote_connection(request)
+          if request.resource.starts_with?("/api")
+            remote_connection.ip
+          end
+        end
+      end
+
+      Defense.blocklist("ban noisy miners") do |request|
+        if @phase == SetupPhase::DONE
+          remote_connection = NetworkUtil.get_remote_connection(request)
+          @miners_manager.ban_list.includes?(remote_connection.ip)
+        else
+          false
+        end
+      end
 
       info "max private nodes allowed to connect is #{light_green(@max_private_nodes)}"
       info "max miners allowed to connect is #{light_green(@max_miners)}"
