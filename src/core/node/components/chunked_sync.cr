@@ -11,30 +11,19 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core::NodeComponents
-  def subchain_algo(slow_start : Int64, fast_start : Int64, chunk_size : Int32) : Array(Int64)
-    blocks = slow_start == 0_i64 ? [0_i64] : [] of Int64
-    limit = chunk_size
-    offset = 0
-    while blocks.size < chunk_size
-      ids = @blockchain.database.batch_from(limit, offset)
-      break if ids.empty?
-      visit(slow_start, fast_start, ids, blocks)
-      offset += chunk_size
-    end
-    blocks
-  end
+  def subchain_algo(slow_start : Int64, fast_start : Int64, chunk_size : Int32) : Blockchain::Chain
+    highest_index = Math.max(slow_start, fast_start).to_i32
+    lowest_index = Math.min(slow_start, fast_start).to_i32
 
-  def visit(slow_start, fast_start, ids, blocks)
-    ids.each do |id|
-      if id.even?
-        if id > slow_start
-          blocks << id
-        end
-      else
-        if id > fast_start
-          blocks << id
-        end
-      end
-    end
+    start = lowest_index
+    finish = highest_index + chunk_size * 3
+
+    ids = @blockchain.database.batch_by_time(start, finish)
+    slow = ids.select { |b| b.index.even? && (slow_start == 0_i64 ? (b.index >= slow_start) : (b.index > slow_start)) }
+    fast = ids.select { |b| b.index.odd? && b.index > fast_start }
+
+    blocks = (slow + fast).sort_by(&.timestamp)
+
+    blocks.first(chunk_size)
   end
 end

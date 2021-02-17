@@ -1,0 +1,41 @@
+def subchain_algo(slow_start : Int64, fast_start : Int64, chunk_size : Int32) : Array(Int64)
+    puts "slow_start: #{slow_start}, fast_start: #{fast_start}, chunk: #{chunk_size}"
+
+    highest_index = Math.max(slow_start, fast_start).to_i32
+    lowest_index = Math.min(slow_start, fast_start).to_i32
+
+    start = lowest_index
+    finish = highest_index + chunk_size * 3
+    
+    ids = @blockchain.database.batch_with_time2(start, finish)
+
+    y = ids.select{|b| b.index.even? && b.index > slow_start }
+
+    z = ids.select{|b| b.index.odd? && b.index > fast_start }
+
+
+    x = (y + z).sort_by(&.timestamp).uniq.map(&.index)
+    
+    if slow_start.to_i32 == 0
+      x = [0_i64] + x
+    end
+
+    r = x.first(chunk_size)
+    p r
+    r
+  end
+
+
+
+  def subchain_algo(slow_start : Int64, fast_start : Int64, chunk_size : Int32) : Array(Block)
+    highest_index = Math.max(slow_start, fast_start).to_i32
+    lowest_index = Math.min(slow_start, fast_start).to_i32
+    
+    blocks = @blockchain.database.batch_by_time2(lowest_index, highest_index + chunk_size * 3)
+    .select{|b| (b.index.even? && (slow_start == 0_i64 ? (b.index >= slow_start) : (b.index > slow_start))) || (b.index.odd? && b.index > fast_start)}
+    .sort_by(&.timestamp).uniq
+
+    r = blocks.first(chunk_size)
+    p r
+    r
+  end

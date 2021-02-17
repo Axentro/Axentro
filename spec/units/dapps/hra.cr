@@ -33,14 +33,12 @@ describe Hra do
       with_factory do |block_factory, transaction_factory|
         domains = ["domain1.ax", "domain2.ax"]
         chain = block_factory.add_slow_blocks(10).add_slow_block(
-          [transaction_factory.make_buy_domain_from_platform(domains[0], 0_i64),
-           transaction_factory.make_buy_domain_from_platform(domains[1], 0_i64)]).add_slow_blocks(10).chain
+          [transaction_factory.make_buy_domain_from_platform(domains[0], 0_i64)]).add_slow_blocks(10).chain
         hra = Hra.new(block_factory.blockchain)
         hra.record(chain)
 
         on_success(hra.lookup_for(transaction_factory.sender_wallet.address)) do |result|
           result.first["domain_name"].should eq(domains[0])
-          result[1]["domain_name"].should eq(domains[1])
         end
       end
     end

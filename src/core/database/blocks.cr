@@ -159,6 +159,10 @@ module ::Axentro::Core::Data::Blocks
     ids
   end
 
+  def batch_by_time(start : Int32, finish : Int32) : Blockchain::Chain
+    get_blocks_via_query("select * from blocks where idx between ? and ? order by timestamp asc", start, finish)
+  end
+
   def get_blocks_by_ids(ids : Array(Int64)) : Blockchain::Chain
     index_list = ids.map(&.to_s).join(",")
     get_blocks_via_query("select * from blocks where idx in (#{index_list})")

@@ -25,7 +25,7 @@ describe "Chunked Sync" do
         slow_index = 0_i64
         fast_index = 0_i64
         count = 5
-        node.subchain_algo(slow_index, fast_index, count).should eq([0])
+        node.subchain_algo(slow_index, fast_index, count).map(&.index).should eq([0])
       end
     end
 
@@ -36,7 +36,7 @@ describe "Chunked Sync" do
         slow_index = 0_i64
         fast_index = 0_i64
         count = 5
-        node.subchain_algo(slow_index, fast_index, count).should eq([0, 2, 4, 6, 8])
+        node.subchain_algo(slow_index, fast_index, count).map(&.index).should eq([0, 2, 4, 6, 8])
       end
     end
 
@@ -47,7 +47,7 @@ describe "Chunked Sync" do
         slow_index = 0_i64
         fast_index = 0_i64
         count = 5
-        node.subchain_algo(slow_index, fast_index, count).should eq([0, 1, 3, 5, 7])
+        node.subchain_algo(slow_index, fast_index, count).map(&.index).should eq([0, 1, 3, 5, 7])
       end
     end
 
@@ -60,7 +60,7 @@ describe "Chunked Sync" do
         slow_index = 0_i64
         fast_index = 0_i64
         count = 5
-        node.subchain_algo(slow_index, fast_index, count).should eq([0, 2, 4, 6, 8])
+        node.subchain_algo(slow_index, fast_index, count).map(&.index).should eq([0, 2, 4, 6, 8])
       end
     end
 
@@ -77,7 +77,7 @@ describe "Chunked Sync" do
         slow_index = 0_i64
         fast_index = 0_i64
         count = 5
-        node.subchain_algo(slow_index, fast_index, count).should eq([0, 2, 4, 1, 3])
+        node.subchain_algo(slow_index, fast_index, count).map(&.index).should eq([0, 2, 4, 1, 3])
       end
     end
 
@@ -94,7 +94,7 @@ describe "Chunked Sync" do
         slow_index = 4_i64
         fast_index = 0_i64
         count = 5
-        node.subchain_algo(slow_index, fast_index, count).should eq([1, 3, 6, 8, 5, 7])
+        node.subchain_algo(slow_index, fast_index, count).map(&.index).should eq([1, 3, 6, 8, 5])
       end
     end
 
@@ -111,7 +111,24 @@ describe "Chunked Sync" do
         slow_index = 4_i64
         fast_index = 1_i64
         count = 5
-        node.subchain_algo(slow_index, fast_index, count).should eq([3, 6, 8, 5, 7])
+        node.subchain_algo(slow_index, fast_index, count).map(&.index).should eq([3, 6, 8, 5, 7])
+      end
+    end
+
+    it "when mixed slow blocks and fast and indexes 2,5" do
+      with_factory do |block_factory, _|
+        block_factory.add_slow_blocks(2)
+        sleep 0.001
+        block_factory.add_fast_blocks(2)
+        sleep 0.001
+        block_factory.add_slow_blocks(2)
+        sleep 0.001
+        block_factory.add_fast_blocks(2)
+        node = block_factory.node
+        slow_index = 2_i64
+        fast_index = 5_i64
+        count = 5
+        node.subchain_algo(slow_index, fast_index, count).map(&.index).should eq([4, 6, 8, 7])
       end
     end
   end

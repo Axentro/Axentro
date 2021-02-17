@@ -85,6 +85,12 @@ module ::Axentro::Core
       @db.exec "PRAGMA synchronous=OFF"
       @db.exec "PRAGMA cache_size=10000"
       @db.exec "PRAGMA journal_mode=WAL"
+
+      # indexes
+      @db.exec "create index if not exists idx_recipients on recipients (transaction_id)"
+      @db.exec "create index if not exists idx_senders on senders (transaction_id)"
+      @db.exec "create index if not exists idx_blocks on blocks (timestamp)"
+      @db.exec "create index if not exists idx_transactions on transactions (block_id)"
     end
 
     def self.in_memory

@@ -525,14 +525,12 @@ describe RESTController do
       with_factory do |block_factory, transaction_factory|
         domains = ["domain1.ax", "domain2.ax"]
         block_factory.add_slow_blocks(2).add_slow_block(
-          [transaction_factory.make_buy_domain_from_platform(domains[0], 0_i64),
-           transaction_factory.make_buy_domain_from_platform(domains[1], 0_i64)]).add_slow_blocks(2)
+          [transaction_factory.make_buy_domain_from_platform(domains[0], 0_i64)]).add_slow_blocks(2)
         address = transaction_factory.sender_wallet.address
         exec_rest_api(block_factory.rest.__v1_hra_lookup(context("/api/v1/hra/lookup/#{address}"), {address: address})) do |result|
           result["status"].to_s.should eq("success")
           result_domains = Array(DomainResult).from_json(result["result"]["domains"].to_json)
           result_domains.first.domain_name.should eq(domains[0])
-          result_domains[1].domain_name.should eq(domains[1])
         end
       end
     end

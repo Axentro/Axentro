@@ -903,8 +903,7 @@ module ::Axentro::Core
 
       debug "requested new chain slow start index: #{remote_start_slow_index} with chunk #{chunk_size} , latest fast index: #{remote_start_fast_index} with chunk #{chunk_size}"
 
-      ids = subchain_algo(remote_start_slow_index, remote_start_fast_index, chunk_size)
-      blocks = @blockchain.database.get_blocks_by_ids(ids)
+      blocks = subchain_algo(remote_start_slow_index, remote_start_fast_index, chunk_size)
 
       send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {blocks: blocks, chunk_size: chunk_size})
       debug "chain sent to peer for sync"
