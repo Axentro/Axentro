@@ -129,6 +129,7 @@ module ::Axentro::Core
       vt
     end
 
+    # ameba:disable Metrics/CyclomaticComplexity
     def valid?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool
       prev_block_index = @index - 2
       _prev_block = blockchain.database.get_previous_slow_from(prev_block_index)
@@ -149,7 +150,7 @@ module ::Axentro::Core
         _prev_hash = "2ad3af4b045fde25b584ec98ff65392231b252d9fd4e263c4945c9ae7582f9b4"
       end
       raise "Invalid Previous Slow Block Hash: for current index: #{@index} the slow block prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{_prev_hash}" if prev_block.to_hash != _prev_hash
-     
+
       unless skip_transactions
         vt = validate_transactions(transactions, blockchain)
         raise vt.failed.first.reason if vt.failed.size != 0
