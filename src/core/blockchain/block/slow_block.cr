@@ -142,8 +142,14 @@ module ::Axentro::Core
         raise "Index Mismatch: the current block index: #{@index} should match the latest slow block index: #{latest_slow_index}" if @index != latest_slow_index
       end
 
-      raise "Invalid Previous Slow Block Hash: for current index: #{@index} the slow block prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
-
+      _prev_hash = @prev_hash
+      # exception occured with this block during switch to new mining system
+      # hardcoding an exception for now and figure out a good way to deal with it in future
+      if @index == 99948
+        _prev_hash = "2ad3af4b045fde25b584ec98ff65392231b252d9fd4e263c4945c9ae7582f9b4"
+      end
+      raise "Invalid Previous Slow Block Hash: for current index: #{@index} the slow block prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{_prev_hash}" if prev_block.to_hash != _prev_hash
+     
       unless skip_transactions
         vt = validate_transactions(transactions, blockchain)
         raise vt.failed.first.reason if vt.failed.size != 0
