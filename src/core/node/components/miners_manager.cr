@@ -149,10 +149,9 @@ module ::Axentro::Core::NodeComponents
       info "joined miner (#{miner.ip}:#{miner.port}) : #{light_green(miner.name)} (#{miner.mid}) (#{@miners.size})"
 
       send(socket, M_TYPE_MINER_HANDSHAKE_ACCEPTED, {
-        version: Core::CORE_VERSION,
-        block:   @blockchain.mining_block,
-        # difficulty: @blockchain.mining_block.difficulty,
-        difficulty: 1,
+        version:    Core::CORE_VERSION,
+        block:      @blockchain.mining_block,
+        difficulty: @blockchain.mining_block.difficulty,
       })
 
       spawn do
@@ -194,7 +193,7 @@ module ::Axentro::Core::NodeComponents
         end
 
         # allow a bit of extra time for latency for nonces
-        mining_block_with_buffer = @blockchain.mining_block.timestamp - 120000
+        mining_block_with_buffer = @blockchain.mining_block.timestamp - 10_000
         if mined_timestamp < mining_block_with_buffer
           message = "invalid timestamp for received nonce: #{mined_nonce.value} nonce mined at: #{Time.unix_ms(mined_timestamp)} before current mining block was created at: #{Time.unix_ms(mining_block_with_buffer)} (#{Time.unix_ms(@blockchain.mining_block.timestamp)})"
           warning message
