@@ -45,7 +45,8 @@ dependencies:
     github: defense-cr/defense
   crest:
     github: mamantoha/crest
-
+  rate_limiter:
+    github: z64/rate_limiter
 
 
 development_dependencies:

@@ -82,6 +82,9 @@ module ::Axentro::Core
       @miners_manager = MinersManager.new(@blockchain, @is_private)
       @clients_manager = ClientsManager.new(@blockchain)
 
+      @limiter = RateLimiter(String).new
+      @limiter.bucket(:incoming_nonces, 1_u32, 30.seconds)
+
       # Configure HTTP throttle
       Defense.store = Defense::MemoryStore.new
       Defense.throttle("throttle requests per second for creating transactions via API", limit: 500, period: 1) do |request|
@@ -323,6 +326,18 @@ module ::Axentro::Core
         when M_TYPE_MINER_HANDSHAKE
           @miners_manager.handshake(socket, context, message_content)
         when M_TYPE_MINER_FOUND_NONCE
+          if _context = context
+            if miner = @miners_manager.find?(socket)
+              if @limiter.rate_limited?(:incoming_nonces, miner.mid)
+                remaining_duration = @limiter.rate_limited?(:incoming_nonces, miner.mid)
+                duration = remaining_duration.is_a?(Time::Span) ? remaining_duration.seconds : 0
+                warning "rate limiting miner (#{miner.ip}:#{miner.port}) : #{light_green(miner.name)} (#{miner.mid}) retry in #{duration} seconds"
+                @miners_manager.send_warning(socket, "nonce was rejected due to exceeded rate limit - retry in #{duration} seconds", duration)
+                next
+              end
+            end
+          end
+
           @miners_manager.found_nonce(socket, message_content)
         when M_TYPE_CLIENT_HANDSHAKE
           @clients_manager.handshake(socket, message_content)

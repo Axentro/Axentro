@@ -43,6 +43,8 @@ module ::Axentro::Core
           _block_update_adjust(message_content)
         when M_TYPE_MINER_BLOCK_INVALID
           _block_update_invalid(message_content)
+        when M_TYPE_MINER_EXCEED_RATE
+          _miner_exceed_rate_warning(message_content)
         end
       rescue e : Exception
         warning "receive invalid message, will be ignored: #{e}"
@@ -71,6 +73,12 @@ module ::Axentro::Core
 
     private def socket
       @socket.not_nil!
+    end
+
+    def _miner_exceed_rate_warning(_content)
+      _m_content = MContentMinerExceedRate.from_json(_content)
+
+      info _m_content.reason
     end
 
     private def _handshake_miner_accepted(_content)

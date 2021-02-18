@@ -35,6 +35,7 @@ require "baked_file_system"
 require "tallboy"
 require "defense"
 require "crest"
+require "rate_limiter"
 
 require "./common"
 require "./core/modules"

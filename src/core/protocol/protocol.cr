@@ -76,6 +76,14 @@ module ::Axentro::Core::Protocol
     property reason : String
   end
 
+  M_TYPE_MINER_EXCEED_RATE = 0x0008
+
+  struct MContentMinerExceedRate
+    include JSON::Serializable
+    property reason : String
+    property remaining_duration : Int32
+  end
+
   ######################################
   # CLIENT
   ######################################

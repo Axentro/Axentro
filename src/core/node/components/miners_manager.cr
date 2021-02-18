@@ -51,7 +51,6 @@ module ::Axentro::Core::NodeComponents
 
     def ban_list
       _deviance = 10_000
-      # _ban_duration = 3600_000 # 1 hour
       _ban_duration = 600_000 # 10 mins
       _ban_tolerance = 10
 
@@ -150,9 +149,10 @@ module ::Axentro::Core::NodeComponents
       info "joined miner (#{miner.ip}:#{miner.port}) : #{light_green(miner.name)} (#{miner.mid}) (#{@miners.size})"
 
       send(socket, M_TYPE_MINER_HANDSHAKE_ACCEPTED, {
-        version:    Core::CORE_VERSION,
-        block:      @blockchain.mining_block,
-        difficulty: @blockchain.mining_block.difficulty,
+        version: Core::CORE_VERSION,
+        block:   @blockchain.mining_block,
+        # difficulty: @blockchain.mining_block.difficulty,
+        difficulty: 1,
       })
 
       spawn do
@@ -194,7 +194,7 @@ module ::Axentro::Core::NodeComponents
         end
 
         # allow a bit of extra time for latency for nonces
-        mining_block_with_buffer = @blockchain.mining_block.timestamp # - 120000
+        mining_block_with_buffer = @blockchain.mining_block.timestamp - 120000
         if mined_timestamp < mining_block_with_buffer
           message = "invalid timestamp for received nonce: #{mined_nonce.value} nonce mined at: #{Time.unix_ms(mined_timestamp)} before current mining block was created at: #{Time.unix_ms(mining_block_with_buffer)} (#{Time.unix_ms(@blockchain.mining_block.timestamp)})"
           warning message
@@ -268,6 +268,13 @@ module ::Axentro::Core::NodeComponents
       send(socket, M_TYPE_MINER_BLOCK_UPDATE, {
         block:      @blockchain.mining_block,
         difficulty: difficulty,
+      })
+    end
+
+    def send_warning(socket, reason : String, remaining_duration : Int32)
+      send(socket, M_TYPE_MINER_EXCEED_RATE, {
+        reason:             reason,
+        remaining_duration: remaining_duration,
       })
     end
 

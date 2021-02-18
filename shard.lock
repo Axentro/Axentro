@@ -64,6 +64,10 @@ shards:
     git: https://github.com/luislavena/radix.git
     version: 0.4.0
 
+  rate_limiter:
+    git: https://github.com/z64/rate_limiter.git
+    version: 0.1.0+git.commit.e63f0b1d8e17105d7dc8bb875462693caf221499
+
   redis:
     git: https://github.com/stefanwille/crystal-redis.git
     version: 2.6.0
