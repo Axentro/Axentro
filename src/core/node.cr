@@ -45,6 +45,7 @@ module ::Axentro::Core
     @sync_fast_blocks_target_index : Int64 = 0_i64
     @validation_hash : String = ""
 
+    # ameba:disable Metrics/CyclomaticComplexity
     def initialize(
       @is_private : Bool,
       @is_testnet : Bool,
@@ -136,6 +137,13 @@ module ::Axentro::Core
         error "node's   network: #{@network_type}"
         error "wallet's network: #{wallet_network[:name]}"
         exit -1
+      end
+
+      if chain_network = @blockchain.database.chain_network_kind
+        if chain_network != (@network_type == "mainnet" ? MAINNET : TESTNET)
+          error "The database is of network type: #{chain_network[:name]} but you tried to start it as network type: #{@network_type}"
+          exit -1
+        end
       end
 
       @chord.set_node(self)

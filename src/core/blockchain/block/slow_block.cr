@@ -131,10 +131,18 @@ module ::Axentro::Core
 
     # ameba:disable Metrics/CyclomaticComplexity
     def valid?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool
+      return valid_as_genesis? if @index == 0_i64
+
+      chain_network = blockchain.database.chain_network_kind
+      block_network = Address.get_network_from_address(@address)
+
+      if chain_network && block_network != chain_network
+        raise "Invalid slow block network type: incoming block is of type: #{block_network[:name]} but chain is of type: #{chain_network.not_nil![:name]}"
+      end
+
       prev_block_index = @index - 2
       _prev_block = blockchain.database.get_previous_slow_from(prev_block_index)
 
-      return valid_as_genesis? if @index == 0_i64
       raise "(slow_block::valid?) error finding previous slow block: #{prev_block_index} for current block: #{@index}" if _prev_block.nil?
       prev_block = _prev_block.not_nil!.as(SlowBlock)
 

@@ -147,6 +147,19 @@ module ::Axentro::Core
       @db.query_one("select min(idx) from blocks where kind = 'SLOW' and timestamp >= (select timestamp from blocks where idx = ?)", index, as: Int64?)
     end
 
+    def chain_network_kind : Core::Node::Network?
+      address = nil
+      @db.query("select address from blocks where address != 'genesis' limit 1") do |rows|
+        rows.each do
+          address = rows.read(String)
+        end
+      end
+
+      if address
+        Core::Keys::Address.get_network_from_address(address)
+      end
+    end
+
     def total(kind : Block::BlockKind)
       idx : Int64? = nil
       @db.query("select count(*) from blocks where kind = ?", kind.to_s) do |rows|

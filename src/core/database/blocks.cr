@@ -148,17 +148,6 @@ module ::Axentro::Core::Data::Blocks
     end
   end
 
-  def batch_from(limit : Int32, offset : Int32) : Array(Int64)
-    ids = [] of Int64
-    @db.query("select idx from blocks order by timestamp asc limit ? offset ?", limit, offset) do |rows|
-      rows.each do
-        res = rows.read(Int64 | Nil)
-        ids << res unless res.nil?
-      end
-    end
-    ids
-  end
-
   def batch_by_time(start : Int32, finish : Int32) : Blockchain::Chain
     get_blocks_via_query("select * from blocks where idx between ? and ? order by timestamp asc", start, finish)
   end

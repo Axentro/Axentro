@@ -108,8 +108,16 @@ module ::Axentro::Core
       vt
     end
 
+    # ameba:disable Metrics/CyclomaticComplexity
     def valid?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = true) : Bool
       return true if @index <= 1_i64
+
+      chain_network = blockchain.database.chain_network_kind
+      block_network = Address.get_network_from_address(@address)
+
+      if chain_network && block_network != chain_network
+        raise "Invalid fast block network type: incoming block is of type: #{block_network[:name]} but chain is of type: #{chain_network.not_nil![:name]}"
+      end
 
       valid_signature = KeyUtils.verify_signature(@hash, @signature, @public_key)
       raise "Invalid Block Signature: the current block index: #{@index} has an invalid signature" unless valid_signature

@@ -149,6 +149,86 @@ describe SlowBlock do
         end
       end
     end
+
+    it "should invalidate an incoming block that is of the wrong network type for the chain" do
+      with_factory do |block_factory|
+        chain = block_factory.add_slow_blocks(1).chain
+        prev_hash = chain[1].to_hash
+        timestamp = chain[1].timestamp
+
+        mainnet_address = "TTBjYTcxZmNhNjAxZTJkNTAyNGI4MGExMWYzODA1MjdjZjlkNjI3NDEzMDc3NGFj"
+        block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, mainnet_address)
+
+        expect_raises(Exception, "Invalid slow block network type: incoming block is of type: mainnet but chain is of type: testnet") do
+          block.valid?(block_factory.blockchain, false)
+        end
+      end
+    end
+
+    it "should accept an incoming block that is of the correct network type for the chain" do
+      with_factory do |block_factory|
+        chain = block_factory.add_slow_blocks(1).chain
+        prev_hash = chain[1].to_hash
+        timestamp = chain[1].timestamp
+
+        testnet_address = "VDAxMWQ4YjY1MTlhNTI2ZDNlMDYxMjk3OTdmYjY5YmRjODcwNzViYjA1YjFjNjBl"
+        block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, testnet_address)
+
+        block.valid?(block_factory.blockchain, false).should be_true
+      end
+    end
+
+    it "should skip network type check and accept incoming block when chain has no blocks yet" do
+      with_factory do |block_factory|
+        blockchain = block_factory.blockchain
+        mainnet_address = "TTBjYTcxZmNhNjAxZTJkNTAyNGI4MGExMWYzODA1MjdjZjlkNjI3NDEzMDc3NGFj"
+        block = blockchain.mining_block
+        block.address = mainnet_address
+        block.nonce = "11719215035155661212"
+        block.difficulty = 0
+
+        chain = blockchain.chain
+        prev_hash = chain[0].to_hash
+        timestamp = chain[0].timestamp
+
+        block = SlowBlock.new(2_i64, [a_coinbase_transaction(1199999373_i64)], a_nonce, prev_hash, timestamp, 0_i32, mainnet_address)
+
+        block.valid?(block_factory.blockchain, false).should be_true
+      end
+    end
+
+    # Fast blocks
+    it "should invalidate an incoming fast block that is of the wrong network type for the chain" do
+      with_factory do |block_factory|
+        block_factory.add_slow_blocks(1).add_fast_block
+
+        mainnet_address = "TTBjYTcxZmNhNjAxZTJkNTAyNGI4MGExMWYzODA1MjdjZjlkNjI3NDEzMDc3NGFj"
+
+        blockchain = block_factory.blockchain
+        valid_transactions = blockchain.valid_transactions_for_fast_block
+        block = blockchain.mint_fast_block(valid_transactions)
+        block.address = mainnet_address
+
+        expect_raises(Exception, "Invalid fast block network type: incoming block is of type: mainnet but chain is of type: testnet") do
+          block.valid?(block_factory.blockchain, false)
+        end
+      end
+    end
+
+    it "should accept an incoming fast block that is of the correct network type for the chain" do
+      with_factory do |block_factory|
+        block_factory.add_slow_blocks(1).add_fast_block
+
+        testnet_address = "VDAxMWQ4YjY1MTlhNTI2ZDNlMDYxMjk3OTdmYjY5YmRjODcwNzViYjA1YjFjNjBl"
+
+        blockchain = block_factory.blockchain
+        valid_transactions = blockchain.valid_transactions_for_fast_block
+        block = blockchain.mint_fast_block(valid_transactions)
+        block.address = testnet_address
+
+        block.valid?(block_factory.blockchain, false).should be_true
+      end
+    end
   end
 
   describe "#valid_as_genesis?" do
