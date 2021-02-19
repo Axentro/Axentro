@@ -193,10 +193,8 @@ module ::Axentro::Core::Data::Transactions
     domain_maps.reduce(domain_map) { |acc, dm| acc.merge(dm) }.select { |_, d| d[:address] == address }
   end
 
-  def get_confirmations(block_index : Int64) : Int64
-    kind = block_index.odd? ? Block::BlockKind::FAST : Block::BlockKind::SLOW
-    current_index = highest_index_of_kind(kind)
-    ((current_index - block_index) / 2).to_i64
+  def get_confirmations(block_index : Int64) : Int32
+    get_amount_blocks_ontop_of(block_index)
   end
 
   def get_domains_for_sale : Array(Domain)
@@ -278,7 +276,7 @@ module ::Axentro::Core::Data::Transactions
     end
   end
 
-  def get_amount_confirmation(address : String) : Int64
+  def get_amount_confirmation(address : String) : Int32
     block = nil
     @db.query("select max(block_id) from recipients where address = ?", address) do |rows|
       rows.each do
@@ -288,7 +286,7 @@ module ::Axentro::Core::Data::Transactions
     if block
       get_confirmations(block.not_nil!)
     else
-      0_i64
+      0
     end
   end
 

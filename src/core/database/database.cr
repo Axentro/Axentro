@@ -124,6 +124,10 @@ module ::Axentro::Core
       idx || 0_i64
     end
 
+    def get_amount_blocks_ontop_of(index : Int64) : Int32
+      @db.query_one("select count(*) from blocks where timestamp > (select timestamp from blocks where idx = ?)", index, as: Int32)
+    end
+
     # this could return null if there are no fast blocks found after the slow block timestamp
     # this could also return null if the slow block is not found
     def lowest_fast_index_after_slow_block(index : Int64) : Int64?
