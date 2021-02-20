@@ -1099,7 +1099,7 @@ module ::Axentro::Core
 
     private def handlers
       metrics_handler = Crometheus.default_registry.get_handler
-      Crometheus.default_registry.path = "/metrics"
+      # Crometheus.default_registry.path = "/metrics"
       [
         Defense::Handler.new,
         peer_handler,
@@ -1107,8 +1107,7 @@ module ::Axentro::Core
         @rest_controller.get_handler,
         @pubsub_controller.get_handler,
         @wallet_info_controller.get_handler,
-        Crometheus::Middleware::HttpCollector.new,
-        metrics_handler,
+        # metrics_handler,
         HTTP::StaticFileHandler.new("api/v1/dist", true, false),
         v1_api_documentation_handler,
       ]
