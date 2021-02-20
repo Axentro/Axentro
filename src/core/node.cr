@@ -11,7 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "./node/*"
-require "http/server/handlers/compress_handler"
 
 module ::Axentro::Core
   class Node < HandleSocket
@@ -1103,7 +1102,6 @@ module ::Axentro::Core
       Crometheus.default_registry.path = "/metrics"
       [
         Defense::Handler.new,
-        HTTP::CompressHandler.new,
         peer_handler,
         @rpc_controller.get_handler,
         @rest_controller.get_handler,
