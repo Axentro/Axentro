@@ -146,6 +146,7 @@ module ::Axentro::Core::NodeComponents
       @miners << miner
       @miner_mortality << MinerMortality.new(miner.ip, "joined", __timestamp)
 
+      METRICS_MINERS_COUNTER[kind: "joined"].inc
       METRICS_CONNECTED_GAUGE[kind: "miners"].set @miners.size
 
       @nonce_spacing.track_miner_difficulty(miner.mid, @blockchain.mining_block.difficulty)

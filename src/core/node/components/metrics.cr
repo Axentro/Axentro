@@ -21,6 +21,9 @@ module ::Axentro::Core::NodeComponents::Metrics
   Crometheus.alias MinerConnectionCounter = Crometheus::Counter[:kind]
   METRICS_MINERS_COUNTER = MinerConnectionCounter.new(:axnt_miner_connections, "Miner connections (joined, removed, banned, rate_limited, increase_difficulty, decrease_difficulty)")
 
+  Crometheus.alias MinersBannedGauge = Crometheus::Gauge[:kind]
+  METRICS_MINERS_BANNED_GAUGE = MinersBannedGauge.new(:axnt_miners_banned, "Currently banned")
+
   # Nonces
   # valid, invalid
   Crometheus.alias NoncesCounter = Crometheus::Counter[:kind]

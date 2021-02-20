@@ -108,7 +108,10 @@ module ::Axentro::Core
         if @phase == SetupPhase::DONE
           remote_connection = NetworkUtil.get_remote_connection(request)
           result = @miners_manager.ban_list.includes?(remote_connection.ip)
-          METRICS_MINERS_COUNTER[kind: "banned"].inc if result
+          METRICS_MINERS_BANNED_GAUGE[kind: "banned"].set @miners_manager.ban_list.size
+          if result
+            METRICS_MINERS_COUNTER[kind: "banned"].inc
+          end
           result
         else
           false
@@ -326,7 +329,7 @@ module ::Axentro::Core
 
         case message_type
         when M_TYPE_MINER_HANDSHAKE
-          METRICS_MINERS_COUNTER[kind: "joined"].inc
+          METRICS_MINERS_COUNTER[kind: "attempted_join"].inc
           @miners_manager.handshake(socket, context, message_content)
         when M_TYPE_MINER_FOUND_NONCE
           if _context = context
