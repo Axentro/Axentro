@@ -180,8 +180,6 @@ module ::Axentro::Core::NodeComponents
         socket:  socket,
         context: _context,
       }
-      METRICS_NODES_COUNTER[kind: "private_node_joined"].inc
-      METRICS_CONNECTED_GAUGE[kind: "private_nodes"].set @private_nodes.size
       send(socket, M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED, {context: context})
     end
 
@@ -476,9 +474,6 @@ module ::Axentro::Core::NodeComponents
       else
         @successor_list.push({socket: socket, context: _context})
       end
-
-      METRICS_NODES_COUNTER[kind: "public_node_joined"].inc
-      METRICS_CONNECTED_GAUGE[kind: "public_nodes"].set (@successor_list.size + (@predecessor.nil? ? 0 : 1))
     end
 
     def align_successors
@@ -569,7 +564,6 @@ module ::Axentro::Core::NodeComponents
           @successor_list.delete(successor)
           debug "successor has been removed from successor list."
           debug "#{current_successors} => #{@successor_list.size}"
-          METRICS_NODES_COUNTER[kind: "public_node_removed"].inc
 
           break
         end
@@ -583,15 +577,11 @@ module ::Axentro::Core::NodeComponents
         end
       end
 
-      METRICS_CONNECTED_GAUGE[kind: "public_nodes"].set (@successor_list.size + (@predecessor.nil? ? 0 : 1))
-
       @private_nodes.each do |private_node|
         if private_node[:socket] == socket
           @private_nodes.delete(private_node)
-          METRICS_NODES_COUNTER[kind: "private_node_removed"].inc
         end
       end
-      METRICS_CONNECTED_GAUGE[kind: "private_nodes"].set @private_nodes.size
     end
 
     def context

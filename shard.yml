@@ -47,8 +47,6 @@ dependencies:
     github: mamantoha/crest
   rate_limiter:
     github: z64/rate_limiter
-  crometheus:
-    github: darwinnn/crometheus
 
 development_dependencies:
   spinach:

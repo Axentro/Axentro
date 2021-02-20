@@ -36,7 +36,6 @@ require "tallboy"
 require "defense"
 require "crest"
 require "rate_limiter"
-require "crometheus"
 
 require "./common"
 require "./core/modules"

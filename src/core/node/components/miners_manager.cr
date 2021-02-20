@@ -103,7 +103,6 @@ module ::Axentro::Core::NodeComponents
             info "reduce difficulty to ensure block mined within 2 mins"
             current_difficulty = leading_miner.difficulty
             leading_miner.difficulty = current_difficulty - 1
-            METRICS_MINERS_COUNTER[kind: "decrease_difficulty_ensure_block"].inc
             send_adjust_block_difficulty(leading_miner.socket, leading_miner.difficulty, "reducing difficulty from #{current_difficulty} to #{leading_miner.difficulty} to ensure block time")
             @last_ensured = __timestamp
           else
@@ -145,8 +144,6 @@ module ::Axentro::Core::NodeComponents
 
       @miners << miner
       @miner_mortality << MinerMortality.new(miner.ip, "joined", __timestamp)
-
-      METRICS_CONNECTED_GAUGE[kind: "miners"].set @miners.size
 
       @nonce_spacing.track_miner_difficulty(miner.mid, @blockchain.mining_block.difficulty)
 
@@ -207,11 +204,9 @@ module ::Axentro::Core::NodeComponents
         actual_difficulty = calculate_pow_difficulty(block_hash, mined_nonce.value, mined_difficulty)
         info "(#{miner.mid}) incoming nonce: #{mined_nonce.value} (actual: #{actual_difficulty}, expected: #{mined_difficulty})"
         if actual_difficulty < mined_difficulty
-          METRICS_NONCES_COUNTER[kind: "invalid"].inc
           warning "difficulty for nonce: #{mined_nonce.value} was #{actual_difficulty} and expected #{mined_difficulty} for block hash: #{block_hash}"
           send_invalid_block_update(socket, mined_difficulty, "updated block because your nonce: #{mined_nonce.value} was invalid, actual difficulty: #{actual_difficulty} did not match expected: #{mined_difficulty}")
         else
-          METRICS_NONCES_COUNTER[kind: "valid"].inc
           debug "Nonce #{mined_nonce.value} at difficulty: #{actual_difficulty} was found"
 
           # add nonce to pool
@@ -293,7 +288,6 @@ module ::Axentro::Core::NodeComponents
     end
 
     def mint_block(block : SlowBlock)
-      METRICS_BLOCKS_COUNTER[kind: "slow"].inc
       @leading_miner = nil
       @highest_difficulty_mined_so_far = 0
       @block_start_time = __timestamp
@@ -324,11 +318,9 @@ module ::Axentro::Core::NodeComponents
       end
       @miners.reject! do |miner|
         r = miner.socket == socket
-        METRICS_MINERS_COUNTER[kind: "removed"].inc if r
         r
       end
 
-      METRICS_CONNECTED_GAUGE[kind: "miners"].set @miners.size
       info "remove miner #{message} (#{current_size} -> #{@miners.size})" if current_size > @miners.size
     end
 

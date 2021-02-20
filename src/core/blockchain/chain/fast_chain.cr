@@ -82,7 +82,6 @@ module ::Axentro::Core::FastChain
   end
 
   def mint_fast_block(valid_transactions)
-    METRICS_BLOCKS_COUNTER[kind: "fast"].inc
     transactions = valid_transactions[:transactions]
     latest_index = valid_transactions[:latest_index]
     debug "minting fast block #{latest_index}"
