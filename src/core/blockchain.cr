@@ -15,6 +15,7 @@ require "./blockchain/block/*"
 require "./blockchain/chain/*"
 require "./blockchain/rewards/*"
 require "./dapps"
+require "./node/components/metrics"
 
 module ::Axentro::Core
   struct ReplaceBlocksResult
@@ -409,6 +410,7 @@ module ::Axentro::Core
 
       # TODO - could reject in bulk also
       vt.failed.each do |ft|
+        METRICS_TRANSACTIONS_COUNTER[kind: "rejected"].inc
         rejects.record_reject(ft.transaction.id, Rejects.address_from_senders(ft.transaction.senders), ft.reason)
         node.wallet_info_controller.update_wallet_information([ft.transaction])
       end
@@ -418,14 +420,17 @@ module ::Axentro::Core
           if node.fastnode_is_online?
             if node.i_am_a_fast_node?
               debug "adding fast transaction to pool (I am a fast node): #{_transaction.id}"
+              METRICS_TRANSACTIONS_COUNTER[kind: "fast"].inc
               FastTransactionPool.add(_transaction)
             end
           else
             debug "chain is not mature enough for FAST transactions so adding to slow transaction pool: #{_transaction.id}"
             _transaction.kind = TransactionKind::SLOW
+            METRICS_TRANSACTIONS_COUNTER[kind: "slow"].inc
             SlowTransactionPool.add(_transaction)
           end
         else
+          METRICS_TRANSACTIONS_COUNTER[kind: "slow"].inc
           SlowTransactionPool.add(_transaction)
         end
         node.wallet_info_controller.update_wallet_information([_transaction])
@@ -767,5 +772,6 @@ module ::Axentro::Core
     include TransactionModels
     include NonceModels
     include Common::Timestamp
+    include NodeComponents::Metrics
   end
 end

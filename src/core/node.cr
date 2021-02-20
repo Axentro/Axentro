@@ -11,6 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "./node/*"
+require "http/server/handlers/compress_handler"
 
 module ::Axentro::Core
   class Node < HandleSocket
@@ -107,7 +108,9 @@ module ::Axentro::Core
       Defense.blocklist("ban noisy miners") do |request|
         if @phase == SetupPhase::DONE
           remote_connection = NetworkUtil.get_remote_connection(request)
-          @miners_manager.ban_list.includes?(remote_connection.ip)
+          result = @miners_manager.ban_list.includes?(remote_connection.ip)
+          METRICS_MINERS_COUNTER[kind: "banned"].inc if result
+          result
         else
           false
         end
@@ -324,11 +327,13 @@ module ::Axentro::Core
 
         case message_type
         when M_TYPE_MINER_HANDSHAKE
+          METRICS_MINERS_COUNTER[kind: "joined"].inc
           @miners_manager.handshake(socket, context, message_content)
         when M_TYPE_MINER_FOUND_NONCE
           if _context = context
             if miner = @miners_manager.find?(socket)
               if @limiter.rate_limited?(:incoming_nonces, miner.mid)
+                METRICS_MINERS_COUNTER[kind: "rate_limit"].inc
                 remaining_duration = @limiter.rate_limited?(:incoming_nonces, miner.mid)
                 duration = remaining_duration.is_a?(Time::Span) ? remaining_duration.seconds : 0
                 warning "rate limiting miner (#{miner.ip}:#{miner.port}) : #{light_green(miner.name)} (#{miner.mid}) retry in #{duration} seconds"
@@ -337,7 +342,6 @@ module ::Axentro::Core
               end
             end
           end
-
           @miners_manager.found_nonce(socket, message_content)
         when M_TYPE_CLIENT_HANDSHAKE
           @clients_manager.handshake(socket, message_content)
@@ -928,6 +932,7 @@ module ::Axentro::Core
 
       blocks = subchain_algo(remote_start_slow_index, remote_start_fast_index, chunk_size)
 
+      METRICS_NODES_COUNTER[kind: "sync_requested"].inc
       send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {blocks: blocks, chunk_size: chunk_size})
       debug "chain sent to peer for sync"
 
@@ -1094,13 +1099,18 @@ module ::Axentro::Core
     end
 
     private def handlers
+      metrics_handler = Crometheus.default_registry.get_handler
+      Crometheus.default_registry.path = "/metrics"
       [
         Defense::Handler.new,
+        HTTP::CompressHandler.new,
         peer_handler,
         @rpc_controller.get_handler,
         @rest_controller.get_handler,
         @pubsub_controller.get_handler,
         @wallet_info_controller.get_handler,
+        Crometheus::Middleware::HttpCollector.new,
+        metrics_handler,
         HTTP::StaticFileHandler.new("api/v1/dist", true, false),
         v1_api_documentation_handler,
       ]
@@ -1183,5 +1193,6 @@ module ::Axentro::Core
     include Protocol
     include Common::Color
     include NodeComponents
+    include Metrics
   end
 end

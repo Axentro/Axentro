@@ -12,6 +12,10 @@ shards:
     git: https://github.com/mamantoha/crest.git
     version: 0.26.7
 
+  crometheus:
+    git: https://github.com/darwinnn/crometheus.git
+    version: 0.3.0+git.commit.8a748b734db4b80d5fd73d3c404cb2510eba3597
+
   crystal-argon2:
     git: https://github.com/axentro/crystal-argon2.git
     version: 0.1.2

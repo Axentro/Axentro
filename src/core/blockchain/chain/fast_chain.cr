@@ -82,6 +82,7 @@ module ::Axentro::Core::FastChain
   end
 
   def mint_fast_block(valid_transactions)
+    METRICS_BLOCKS_COUNTER[kind: "fast"].inc
     transactions = valid_transactions[:transactions]
     latest_index = valid_transactions[:latest_index]
     debug "minting fast block #{latest_index}"
@@ -99,6 +100,8 @@ module ::Axentro::Core::FastChain
       hash = FastBlock.to_hash(latest_index, transactions, latest_block_hash, address, public_key)
       private_key = Wif.new(wallet.wif).private_key.as_hex
       signature = KeyUtils.sign(private_key, hash)
+
+      info "#{magenta("MINTING FAST BLOCK")}: #{light_green(latest_index)}"
 
       FastBlock.new(
         latest_index,
@@ -216,4 +219,5 @@ module ::Axentro::Core::FastChain
 
   include Block
   include ::Axentro::Core::DApps::BuildIn
+  include NodeComponents::Metrics
 end
