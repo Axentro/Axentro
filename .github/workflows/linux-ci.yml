@@ -76,12 +76,12 @@ jobs:
 
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v3.x
-
+  
       - name: Build axen binary
         run: |
           mkdir build
-          crystal build src/cli/axen.cr -o build/axen-${GITHUB_REF_SLUG}-linux --release --no-debug --static  
-          crystal build src/cli/axe.cr -o build/axe-${GITHUB_REF_SLUG}-linux --release --no-debug --static  
+          docker-compose run --rm app crystal build src/cli/axen.cr -o build/axen-${GITHUB_REF_SLUG}-linux --release --no-debug --static  
+          docker-compose run --rm app crystal build src/cli/axe.cr -o build/axe-${GITHUB_REF_SLUG}-linux --release --no-debug --static   
 
       - name: Upload to S3
         uses: shallwefootball/upload-s3-action@v1.1.2
