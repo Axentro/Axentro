@@ -79,7 +79,7 @@ module ::Axentro::Core::NodeComponents
           bans << ip
         end
       end
-      bans
+      bans.uniq
     end
 
     private def node
