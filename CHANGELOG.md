@@ -10,6 +10,14 @@
 
 **Closed issues:**
 
+- Add crometheus for metrics reporting [\#396](https://github.com/Axentro/Axentro/issues/396)
+- Fix confirmations to be consistent across all block types [\#395](https://github.com/Axentro/Axentro/issues/395)
+- Implement rate limiting for incoming nonces [\#394](https://github.com/Axentro/Axentro/issues/394)
+- Check network type for db chain when starting up node and error if incorrect [\#393](https://github.com/Axentro/Axentro/issues/393)
+- Workaround for a prev\_hash that was was found to be incorrect [\#392](https://github.com/Axentro/Axentro/issues/392)
+- Improve performance of chunked syncing [\#391](https://github.com/Axentro/Axentro/issues/391)
+- Refactor mining algo [\#390](https://github.com/Axentro/Axentro/issues/390)
+- Share "official" nodes to connect to mainnet [\#389](https://github.com/Axentro/Axentro/issues/389)
 - Restrict noisy miners [\#387](https://github.com/Axentro/Axentro/issues/387)
 - Unhandled exception: BakedFileSystem empty: no files in src/core/node/virtual\_file\_system/api/v1 [\#384](https://github.com/Axentro/Axentro/issues/384)
 
@@ -62,7 +70,6 @@
 
 **Merged pull requests:**
 
-- fix bug with coinbase amount and rejected transactions [\#365](https://github.com/Axentro/Axentro/pull/365) ([kingsleyh](https://github.com/kingsleyh))
 - api improvements [\#364](https://github.com/Axentro/Axentro/pull/364) ([kingsleyh](https://github.com/kingsleyh))
 - node api changes [\#363](https://github.com/Axentro/Axentro/pull/363) ([kingsleyh](https://github.com/kingsleyh))
 
@@ -267,6 +274,7 @@
 
 **Merged pull requests:**
 
+- fix bug with coinbase amount and rejected transactions [\#365](https://github.com/Axentro/Axentro/pull/365) ([kingsleyh](https://github.com/kingsleyh))
 - Chunked sync [\#361](https://github.com/Axentro/Axentro/pull/361) ([kingsleyh](https://github.com/kingsleyh))
 - Refactor db validation [\#360](https://github.com/Axentro/Axentro/pull/360) ([kingsleyh](https://github.com/kingsleyh))
 - Improve performance of block processing [\#358](https://github.com/Axentro/Axentro/pull/358) ([kingsleyh](https://github.com/kingsleyh))
