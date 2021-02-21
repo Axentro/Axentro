@@ -26,6 +26,7 @@ module ::Axentro::Core::NodeComponents
 
   struct RejectBlock
     include JSON::Serializable
+    include MessagePack::Serializable
     property reason : RejectBlockReason
     property rejected : SlowBlock | FastBlock
     property latest : SlowBlock

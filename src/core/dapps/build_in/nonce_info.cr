@@ -12,7 +12,6 @@
 
 module ::Axentro::Core::DApps::BuildIn
   struct Nonce
-    include JSON::Serializable
     property address : String
     property nonce : String
     property latest_hash : String

@@ -14,7 +14,7 @@ require "./logger"
 
 module ::Axentro::Core
   abstract class HandleSocket
-    def send(socket, t, content)
+    def send(socket, transport : Transport)
       json_content = content.to_json
       m = {type: t, content: json_content}.to_json
       debug "sending message of type #{t} and size #{m.size}" if (t != 257) && (t != 22) && (t != 23)

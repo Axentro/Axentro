@@ -15,6 +15,7 @@ module ::Axentro::Core
     extend Hashes
 
     include JSON::Serializable
+    include MessagePack::Serializable
     property index : Int64
     property transactions : Array(Transaction)
     property nonce : BlockNonce

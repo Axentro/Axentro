@@ -13,6 +13,7 @@
 module ::Axentro::Core
   class TransactionDecimal
     include JSON::Serializable
+    include MessagePack::Serializable
     property id : String
     property action : String
     property senders : SendersDecimal

@@ -15,6 +15,63 @@ require "../node/components/slow_sync.cr"
 
 module ::Axentro::Core::Protocol
   ######################################
+  # TRANSPORT
+  ######################################
+
+  struct Transport(T)
+    include JSON::Serializable
+    include MessagePack::Serializable
+    property type : TransportType
+    property message : T
+    def initialize(@type, @message); end
+  end
+
+  enum TransportType
+    M_TYPE_MINER_HANDSHAKE                         = 0x0001
+    M_TYPE_MINER_HANDSHAKE_ACCEPTED                = 0x0002
+    M_TYPE_MINER_HANDSHAKE_REJECTED                = 0x0003
+    M_TYPE_MINER_FOUND_NONCE                       = 0x0004
+    M_TYPE_MINER_BLOCK_UPDATE                      = 0x0005
+    M_TYPE_MINER_BLOCK_DIFFICULTY_ADJUST           = 0x0006
+    M_TYPE_MINER_BLOCK_INVALID                     = 0x0007
+    M_TYPE_MINER_EXCEED_RATE                       = 0x0008
+    M_TYPE_CLIENT_HANDSHAKE                        = 0x1001
+    M_TYPE_CLIENT_SALT                             = 0x1005
+    M_TYPE_CLIENT_UPGRADE                          = 0x1006
+    M_TYPE_CLIENT_HANDSHAKE_ACCEPTED               = 0x1002
+    M_TYPE_CLIENT_CONTENT                          = 0x1003
+    M_TYPE_CLIENT_RECEIVE                          = 0x1004
+    M_TYPE_CHORD_JOIN                              = 0x0011
+    M_TYPE_CHORD_JOIN_PRIVATE                      = 0x0012
+    M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED             = 0x0013
+    M_TYPE_CHORD_FOUND_SUCCESSOR                   = 0x0014
+    M_TYPE_CHORD_SEARCH_SUCCESSOR                  = 0x0015
+    M_TYPE_CHORD_STABILIZE_AS_SUCCESSOR            = 0x0016
+    M_TYPE_CHORD_STABILIZE_AS_PREDECESSOR          = 0x0017
+    M_TYPE_CHORD_JOIN_REJECTED                     = 0x0018
+    M_TYPE_CHORD_BROADCAST_NODE_JOINED             = 0x0019
+    M_TYPE_CHORD_RECONNECT                         = 0x0020
+    M_TYPE_CHORD_RECONNECT_PRIVATE                 = 0x0021
+    M_TYPE_NODE_BROADCAST_TRANSACTION              = 0x0101
+    M_TYPE_NODE_BROADCAST_BLOCK                    = 0x0102
+    M_TYPE_NODE_REQUEST_CHAIN                      = 0x0103
+    M_TYPE_NODE_RECEIVE_CHAIN                      = 0x0104
+    M_TYPE_NODE_REQUEST_TRANSACTIONS               = 0x0106
+    M_TYPE_NODE_RECEIVE_TRANSACTIONS               = 0x0107
+    M_TYPE_NODE_SEND_CLIENT_CONTENT                = 0x0108
+    M_TYPE_NODE_BROADCAST_MINER_NONCE              = 0x0110
+    M_TYPE_NODE_REQUEST_MINER_NONCES               = 0x0111
+    M_TYPE_NODE_RECEIVE_MINER_NONCES               = 0x0112
+    M_TYPE_NODE_REQUEST_CHAIN_SIZE                 = 0x0113
+    M_TYPE_NODE_RECEIVE_CHAIN_SIZE                 = 0x0114
+    M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE       = 0x0115
+    M_TYPE_NODE_RECEIVE_VALIDATION_CHALLENGE       = 0x0116
+    M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE_CHECK = 0x0117
+    M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS         = 0x0118
+    M_TYPE_NODE_BROADCAST_REJECT_BLOCK             = 0x0119
+  end
+
+  ######################################
   # MINER
   ######################################
 
@@ -22,6 +79,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentMinerHandshake
     include JSON::Serializable
+    include MessagePack::Serializable
     property version : String
     property address : String
     property mid : String
@@ -31,6 +89,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentMinerHandshakeAccepted
     include JSON::Serializable
+    include MessagePack::Serializable
     property version : String
     property block : SlowBlock
     property difficulty : Int32
@@ -40,6 +99,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentMinerHandshakeRejected
     include JSON::Serializable
+    include MessagePack::Serializable
     property reason : String
   end
 
@@ -47,6 +107,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentMinerFoundNonce
     include JSON::Serializable
+    include MessagePack::Serializable
     property nonce : MinerNonce
   end
 
@@ -54,6 +115,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentMinerBlockUpdate
     include JSON::Serializable
+    include MessagePack::Serializable
     property block : SlowBlock
     property difficulty : Int32
   end
@@ -62,6 +124,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentMinerBlockDifficultyAdjust
     include JSON::Serializable
+    include MessagePack::Serializable
     property block : SlowBlock
     property difficulty : Int32
     property reason : String
@@ -71,6 +134,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentMinerBlockInvalid
     include JSON::Serializable
+    include MessagePack::Serializable
     property block : SlowBlock
     property difficulty : Int32
     property reason : String
@@ -80,6 +144,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentMinerExceedRate
     include JSON::Serializable
+    include MessagePack::Serializable
     property reason : String
     property remaining_duration : Int32
   end
@@ -92,6 +157,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentClientHandshake
     include JSON::Serializable
+    include MessagePack::Serializable
     property public_key : String
   end
 
@@ -99,6 +165,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentClientSalt
     include JSON::Serializable
+    include MessagePack::Serializable
     property salt : String
   end
 
@@ -106,6 +173,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentClientUpgrade
     include JSON::Serializable
+    include MessagePack::Serializable
     property address : String
     property public_key : String
     property signature : String
@@ -115,6 +183,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentClientHandshakeAccepted
     include JSON::Serializable
+    include MessagePack::Serializable
     property address : String
   end
 
@@ -122,6 +191,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentClientContent
     include JSON::Serializable
+    include MessagePack::Serializable
     property action : String
     property from : String
     property content : String
@@ -132,12 +202,14 @@ module ::Axentro::Core::Protocol
   #
   struct MContentClientMessage
     include JSON::Serializable
+    include MessagePack::Serializable
     property to : String
     property message : String
   end
 
   struct MContentClientAmount
     include JSON::Serializable
+    include MessagePack::Serializable
     property token : String
     property confirmation : Int32
   end
@@ -149,6 +221,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentClientReceive
     include JSON::Serializable
+    include MessagePack::Serializable
     property from : String
     property to : String
     property content : String
@@ -162,6 +235,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentChordJoin
     include JSON::Serializable
+    include MessagePack::Serializable
     property version : String
     property context : Core::NodeComponents::Chord::NodeContext
   end
@@ -170,6 +244,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentChordJoinPrivate
     include JSON::Serializable
+    include MessagePack::Serializable
     property version : String
     property context : Core::NodeComponents::Chord::NodeContext
   end
@@ -178,6 +253,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentChordJoinPrivateAccepted
     include JSON::Serializable
+    include MessagePack::Serializable
     property context : Core::NodeComponents::Chord::NodeContext
     # property is_reconnect : Bool
   end
@@ -186,6 +262,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentChordFoundSuccessor
     include JSON::Serializable
+    include MessagePack::Serializable
     property context : Core::NodeComponents::Chord::NodeContext
     # property is_reconnect : Bool
   end
@@ -194,6 +271,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentChordSearchSuccessor
     include JSON::Serializable
+    include MessagePack::Serializable
     property context : Core::NodeComponents::Chord::NodeContext
     # property is_reconnect : Bool
   end
@@ -202,6 +280,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentChordStabilizeAsSuccessor
     include JSON::Serializable
+    include MessagePack::Serializable
     property predecessor_context : Core::NodeComponents::Chord::NodeContext
   end
 
@@ -209,6 +288,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentChordStabilizeAsPredecessor
     include JSON::Serializable
+    include MessagePack::Serializable
     property successor_context : Core::NodeComponents::Chord::NodeContext
   end
 
@@ -216,6 +296,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentChordJoinRejected
     include JSON::Serializable
+    include MessagePack::Serializable
     property reason : String
   end
 
@@ -223,6 +304,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentChordBroadcastNodeJoined
     include JSON::Serializable
+    include MessagePack::Serializable
     property nodes : Array(Core::NodeComponents::Chord::NodeContext)
     property from : Core::NodeComponents::Chord::NodeContext
   end
@@ -239,6 +321,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeBroadcastTransaction
     include JSON::Serializable
+    include MessagePack::Serializable
     property transaction : Transaction
     property from : Core::NodeComponents::Chord::NodeContext
   end
@@ -247,6 +330,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeBroadcastBlock
     include JSON::Serializable
+    include MessagePack::Serializable
     property block : SlowBlock | FastBlock
     property from : Core::NodeComponents::Chord::NodeContext
   end
@@ -255,6 +339,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeRequestChain
     include JSON::Serializable
+    include MessagePack::Serializable
     property start_slow_index : Int64
     property start_fast_index : Int64
     property chunk_size : Int32
@@ -264,22 +349,16 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeReceiveChain
     include JSON::Serializable
+    include MessagePack::Serializable
     property blocks : Blockchain::Chain?
     property chunk_size : Int32
   end
-
-  # M_TYPE_NODE_ASK_REQUEST_CHAIN = 0x0105
-
-  # struct MContentNodeAskRequestChain
-  #   include JSON::Serializable
-  #   property latest_slow_index : Int64
-  #   property latest_fast_index : Int64
-  # end
 
   M_TYPE_NODE_REQUEST_TRANSACTIONS = 0x0106
 
   struct MContentNodeRequestTransactions
     include JSON::Serializable
+    include MessagePack::Serializable
     property transactions : Array(Transaction)
   end
 
@@ -287,6 +366,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeReceiveTransactions
     include JSON::Serializable
+    include MessagePack::Serializable
     property transactions : Array(Transaction)
   end
 
@@ -294,6 +374,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeSendClientContent
     include JSON::Serializable
+    include MessagePack::Serializable
     property content : String
     property from : Core::NodeComponents::Chord::NodeContext
   end
@@ -302,6 +383,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeBroadcastMinerNonce
     include JSON::Serializable
+    include MessagePack::Serializable
     property nonce : MinerNonce
     property from : Core::NodeComponents::Chord::NodeContext
   end
@@ -310,6 +392,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeRequestMinerNonces
     include JSON::Serializable
+    include MessagePack::Serializable
     property nonces : Array(MinerNonce)
   end
 
@@ -317,6 +400,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeReceiveMinerNonces
     include JSON::Serializable
+    include MessagePack::Serializable
     property nonces : Array(MinerNonce)
   end
 
@@ -324,6 +408,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeRequestChainSize
     include JSON::Serializable
+    include MessagePack::Serializable
     property latest_slow_index : Int64
     property latest_fast_index : Int64
     property chunk_size : Int32
@@ -333,6 +418,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeReceiveChainSize
     include JSON::Serializable
+    include MessagePack::Serializable
 
     property slowchain_start_index : Int64
     property fastchain_start_index : Int64
@@ -345,6 +431,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeRequestValidationChallenge
     include JSON::Serializable
+    include MessagePack::Serializable
     property latest_slow_index : Int64
     property latest_fast_index : Int64
   end
@@ -353,6 +440,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeReceiveValidationChallenge
     include JSON::Serializable
+    include MessagePack::Serializable
     property validation_blocks : Array(Int64)
   end
 
@@ -360,6 +448,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeRequestValidationChallengeCheck
     include JSON::Serializable
+    include MessagePack::Serializable
     property validation_hash : String
   end
 
@@ -369,6 +458,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeBroadcastRejectBlock
     include JSON::Serializable
+    include MessagePack::Serializable
     property reject_block : RejectBlock
     property from : Core::NodeComponents::Chord::NodeContext
   end

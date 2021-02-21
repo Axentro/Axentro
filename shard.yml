@@ -49,6 +49,8 @@ dependencies:
     github: z64/rate_limiter
   crometheus:
     github: darwinnn/crometheus
+  msgpack:
+    github: crystal-community/msgpack-crystal   
 
 development_dependencies:
   spinach:

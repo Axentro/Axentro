@@ -13,6 +13,7 @@
 module ::Axentro::Core::NonceModels
   struct MinerNonce
     include JSON::Serializable
+    include MessagePack::Serializable
 
     getter mid : String = "0"
     getter value : BlockNonce
