@@ -159,6 +159,11 @@ module ::Axentro::Core::NodeComponents
         difficulty: @blockchain.mining_block.difficulty,
       })
 
+      send(socket, Transport(MContentMinerHandshakeAccepted).new(
+        TransportType::,
+        MContentMinerHandshakeAccepted.new()
+      ))
+
       spawn do
         loop do
           sleep rand(10..20)
@@ -255,33 +260,30 @@ module ::Axentro::Core::NodeComponents
     end
 
     def send_adjust_block_difficulty(socket, difficulty : Int32, reason : String)
-      send(socket, M_TYPE_MINER_BLOCK_DIFFICULTY_ADJUST, {
-        block:      @blockchain.mining_block,
-        difficulty: difficulty,
-        reason:     reason,
-      })
+      send(socket, Transport(MContentMinerBlockDifficultyAdjust).new(
+        TransportType::M_TYPE_MINER_BLOCK_DIFFICULTY_ADJUST,
+        MContentMinerBlockDifficultyAdjust.new(@blockchain.mining_block, difficulty, reason)
+      ))
     end
 
     def send_invalid_block_update(socket, difficulty : Int32, reason : String)
-      send(socket, M_TYPE_MINER_BLOCK_INVALID, {
-        block:      @blockchain.mining_block,
-        difficulty: difficulty,
-        reason:     reason,
-      })
+      send(socket, Transport(MContentMinerBlockInvalid).new(
+        TransportType::M_TYPE_MINER_BLOCK_INVALID,
+        MContentMinerBlockInvalid.new(@blockchain.mining_block, difficulty, reason)
+      ))
     end
 
     def send_updated_block(socket, difficulty : Int32)
-      send(socket, M_TYPE_MINER_BLOCK_UPDATE, {
-        block:      @blockchain.mining_block,
-        difficulty: difficulty,
-      })
+      send(socket, Transport(MContentMinerBlockUpdate).new(
+        TransportType::M_TYPE_MINER_BLOCK_UPDATE,
+        MContentMinerBlockUpdate.new(@blockchain.mining_block, difficulty)))
     end
 
     def send_warning(socket, reason : String, remaining_duration : Int32)
-      send(socket, M_TYPE_MINER_EXCEED_RATE, {
-        reason:             reason,
-        remaining_duration: remaining_duration,
-      })
+      send(socket, Transport.new(MContentMinerExceedRate).new(
+        TransportType::M_TYPE_MINER_EXCEED_RATE,
+        MContentMinerExceedRate.new(reason, remaining_duration)
+      ))
     end
 
     def find?(socket : HTTP::WebSocket) : Miner?
@@ -290,7 +292,8 @@ module ::Axentro::Core::NodeComponents
 
     def reject_miner_connection(socket : HTTP::WebSocket, reason : String)
       sleep 10 + rand(5)
-      send(socket, M_TYPE_MINER_HANDSHAKE_REJECTED, {reason: reason})
+      send(socket, Transport(MContentMinerHandshakeRejected).new(
+        TransportType::M_TYPE_MINER_HANDSHAKE_REJECTED, MContentMinerHandshakeRejected.new(reason)))
     end
 
     def mint_block(block : SlowBlock)

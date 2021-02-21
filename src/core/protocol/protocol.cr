@@ -23,6 +23,7 @@ module ::Axentro::Core::Protocol
     include MessagePack::Serializable
     property type : TransportType
     property message : T
+
     def initialize(@type, @message); end
   end
 
@@ -83,6 +84,8 @@ module ::Axentro::Core::Protocol
     property version : String
     property address : String
     property mid : String
+
+    def initialize(@version, @address, @mid); end
   end
 
   M_TYPE_MINER_HANDSHAKE_ACCEPTED = 0x0002
@@ -93,6 +96,8 @@ module ::Axentro::Core::Protocol
     property version : String
     property block : SlowBlock
     property difficulty : Int32
+
+    def initialize(@version, @block, @difficulty); end
   end
 
   M_TYPE_MINER_HANDSHAKE_REJECTED = 0x0003
@@ -101,6 +106,8 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     include MessagePack::Serializable
     property reason : String
+
+    def initialize(@reason); end
   end
 
   M_TYPE_MINER_FOUND_NONCE = 0x0004
@@ -109,6 +116,8 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     include MessagePack::Serializable
     property nonce : MinerNonce
+
+    def intialize(@nonce); end
   end
 
   M_TYPE_MINER_BLOCK_UPDATE = 0x0005
@@ -118,6 +127,8 @@ module ::Axentro::Core::Protocol
     include MessagePack::Serializable
     property block : SlowBlock
     property difficulty : Int32
+
+    def initialize(@block, @difficulty); end
   end
 
   M_TYPE_MINER_BLOCK_DIFFICULTY_ADJUST = 0x0006
@@ -128,6 +139,8 @@ module ::Axentro::Core::Protocol
     property block : SlowBlock
     property difficulty : Int32
     property reason : String
+
+    def initialize(@block, @difficulty, @reason); end
   end
 
   M_TYPE_MINER_BLOCK_INVALID = 0x0007
@@ -138,6 +151,8 @@ module ::Axentro::Core::Protocol
     property block : SlowBlock
     property difficulty : Int32
     property reason : String
+
+    def initialize(@block, @difficulty, @reason); end
   end
 
   M_TYPE_MINER_EXCEED_RATE = 0x0008
@@ -147,6 +162,8 @@ module ::Axentro::Core::Protocol
     include MessagePack::Serializable
     property reason : String
     property remaining_duration : Int32
+
+    def initialize(@reason, @remaining_duration); end
   end
 
   ######################################
@@ -159,6 +176,8 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     include MessagePack::Serializable
     property public_key : String
+
+    def initialize(@public_key); end
   end
 
   M_TYPE_CLIENT_SALT = 0x1005
@@ -167,6 +186,8 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     include MessagePack::Serializable
     property salt : String
+
+    def initialize(@salt); end
   end
 
   M_TYPE_CLIENT_UPGRADE = 0x1006
@@ -177,6 +198,8 @@ module ::Axentro::Core::Protocol
     property address : String
     property public_key : String
     property signature : String
+
+    def initialize(@address, @public_key, @signature); end
   end
 
   M_TYPE_CLIENT_HANDSHAKE_ACCEPTED = 0x1002
@@ -185,6 +208,8 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     include MessagePack::Serializable
     property address : String
+
+    def initialize(@address); end
   end
 
   M_TYPE_CLIENT_CONTENT = 0x1003
@@ -195,6 +220,8 @@ module ::Axentro::Core::Protocol
     property action : String
     property from : String
     property content : String
+
+    def initialize(@action, @from, @content); end
   end
 
   #
@@ -205,6 +232,8 @@ module ::Axentro::Core::Protocol
     include MessagePack::Serializable
     property to : String
     property message : String
+
+    def initialize(@to, @message); end
   end
 
   struct MContentClientAmount
@@ -212,6 +241,8 @@ module ::Axentro::Core::Protocol
     include MessagePack::Serializable
     property token : String
     property confirmation : Int32
+
+    def initialize(@token, @confirmation); end
   end
 
   #
@@ -225,6 +256,8 @@ module ::Axentro::Core::Protocol
     property from : String
     property to : String
     property content : String
+
+    def initialize(@from, @to, @content); end
   end
 
   ######################################
@@ -238,6 +271,8 @@ module ::Axentro::Core::Protocol
     include MessagePack::Serializable
     property version : String
     property context : Core::NodeComponents::Chord::NodeContext
+
+    def intialize(@version, @context); end
   end
 
   M_TYPE_CHORD_JOIN_PRIVATE = 0x0012
@@ -247,6 +282,8 @@ module ::Axentro::Core::Protocol
     include MessagePack::Serializable
     property version : String
     property context : Core::NodeComponents::Chord::NodeContext
+
+    def initialize(@version, @context); end
   end
 
   M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED = 0x0013
@@ -255,7 +292,8 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     include MessagePack::Serializable
     property context : Core::NodeComponents::Chord::NodeContext
-    # property is_reconnect : Bool
+
+    def initialize(@context); end
   end
 
   M_TYPE_CHORD_FOUND_SUCCESSOR = 0x0014
@@ -264,7 +302,8 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     include MessagePack::Serializable
     property context : Core::NodeComponents::Chord::NodeContext
-    # property is_reconnect : Bool
+
+    def initialize(@context); end
   end
 
   M_TYPE_CHORD_SEARCH_SUCCESSOR = 0x0015
@@ -273,7 +312,8 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     include MessagePack::Serializable
     property context : Core::NodeComponents::Chord::NodeContext
-    # property is_reconnect : Bool
+
+    def initialize(@context); end
   end
 
   M_TYPE_CHORD_STABILIZE_AS_SUCCESSOR = 0x0016
@@ -282,6 +322,8 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     include MessagePack::Serializable
     property predecessor_context : Core::NodeComponents::Chord::NodeContext
+
+    def initialize(@predecessor_context); end
   end
 
   M_TYPE_CHORD_STABILIZE_AS_PREDECESSOR = 0x0017
@@ -290,6 +332,8 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     include MessagePack::Serializable
     property successor_context : Core::NodeComponents::Chord::NodeContext
+
+    def initialize(@successor_context); end
   end
 
   M_TYPE_CHORD_JOIN_REJECTED = 0x0018
@@ -298,6 +342,8 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     include MessagePack::Serializable
     property reason : String
+
+    def initialize(@reason); end
   end
 
   M_TYPE_CHORD_BROADCAST_NODE_JOINED = 0x0019
@@ -307,6 +353,8 @@ module ::Axentro::Core::Protocol
     include MessagePack::Serializable
     property nodes : Array(Core::NodeComponents::Chord::NodeContext)
     property from : Core::NodeComponents::Chord::NodeContext
+
+    def initialize(@nodes, @from); end
   end
 
   M_TYPE_CHORD_RECONNECT = 0x0020
@@ -324,6 +372,8 @@ module ::Axentro::Core::Protocol
     include MessagePack::Serializable
     property transaction : Transaction
     property from : Core::NodeComponents::Chord::NodeContext
+
+    def initialize(@transaction, @from); end
   end
 
   M_TYPE_NODE_BROADCAST_BLOCK = 0x0102
@@ -333,6 +383,8 @@ module ::Axentro::Core::Protocol
     include MessagePack::Serializable
     property block : SlowBlock | FastBlock
     property from : Core::NodeComponents::Chord::NodeContext
+
+    def initialize(@block, @from); end
   end
 
   M_TYPE_NODE_REQUEST_CHAIN = 0x0103
@@ -343,6 +395,8 @@ module ::Axentro::Core::Protocol
     property start_slow_index : Int64
     property start_fast_index : Int64
     property chunk_size : Int32
+
+    def initialize(@start_slow_index, @start_fast_index, @chunk_size); end
   end
 
   M_TYPE_NODE_RECEIVE_CHAIN = 0x0104
@@ -352,6 +406,8 @@ module ::Axentro::Core::Protocol
     include MessagePack::Serializable
     property blocks : Blockchain::Chain?
     property chunk_size : Int32
+
+    def initialize(@blocks, @chunk_size); end
   end
 
   M_TYPE_NODE_REQUEST_TRANSACTIONS = 0x0106
@@ -360,6 +416,8 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     include MessagePack::Serializable
     property transactions : Array(Transaction)
+
+    def initialize(@transactions); end
   end
 
   M_TYPE_NODE_RECEIVE_TRANSACTIONS = 0x0107
@@ -368,6 +426,8 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     include MessagePack::Serializable
     property transactions : Array(Transaction)
+
+    def initialize(@transactions); end
   end
 
   M_TYPE_NODE_SEND_CLIENT_CONTENT = 0x0108
@@ -377,6 +437,8 @@ module ::Axentro::Core::Protocol
     include MessagePack::Serializable
     property content : String
     property from : Core::NodeComponents::Chord::NodeContext
+
+    def initialize(@content, @from); end
   end
 
   M_TYPE_NODE_BROADCAST_MINER_NONCE = 0x0110
@@ -386,6 +448,8 @@ module ::Axentro::Core::Protocol
     include MessagePack::Serializable
     property nonce : MinerNonce
     property from : Core::NodeComponents::Chord::NodeContext
+
+    def initialize(@nonce, @from); end
   end
 
   M_TYPE_NODE_REQUEST_MINER_NONCES = 0x0111
@@ -394,6 +458,8 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     include MessagePack::Serializable
     property nonces : Array(MinerNonce)
+
+    def initialize(@nonces); end
   end
 
   M_TYPE_NODE_RECEIVE_MINER_NONCES = 0x0112
@@ -402,6 +468,8 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     include MessagePack::Serializable
     property nonces : Array(MinerNonce)
+
+    def initialize(@nonces); end
   end
 
   M_TYPE_NODE_REQUEST_CHAIN_SIZE = 0x0113
@@ -412,6 +480,8 @@ module ::Axentro::Core::Protocol
     property latest_slow_index : Int64
     property latest_fast_index : Int64
     property chunk_size : Int32
+
+    def initialize(@latest_slow_index, @latest_fast_index, @chunk_size); end
   end
 
   M_TYPE_NODE_RECEIVE_CHAIN_SIZE = 0x0114
@@ -425,6 +495,8 @@ module ::Axentro::Core::Protocol
     property slow_target_index : Int64
     property fast_target_index : Int64
     property chunk_size : Int32
+
+    def initialize(@slowchain_start_index, @fastchain_start_index, @slow_target_index, @fast_target_index, @chunk_size); end
   end
 
   M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE = 0x0115
@@ -434,6 +506,8 @@ module ::Axentro::Core::Protocol
     include MessagePack::Serializable
     property latest_slow_index : Int64
     property latest_fast_index : Int64
+
+    def initialize(@latest_slow_index, @latest_fast_index); end
   end
 
   M_TYPE_NODE_RECEIVE_VALIDATION_CHALLENGE = 0x0116
@@ -442,6 +516,8 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     include MessagePack::Serializable
     property validation_blocks : Array(Int64)
+
+    def initialize(@validation_blocks); end
   end
 
   M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE_CHECK = 0x0117
@@ -450,6 +526,8 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     include MessagePack::Serializable
     property validation_hash : String
+
+    def initialize(@validation_hash); end
   end
 
   M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS = 0x0118
@@ -461,6 +539,8 @@ module ::Axentro::Core::Protocol
     include MessagePack::Serializable
     property reject_block : RejectBlock
     property from : Core::NodeComponents::Chord::NodeContext
+
+    def initialize(@reject_block, @from); end
   end
 
   ######################################

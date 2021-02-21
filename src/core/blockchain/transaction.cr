@@ -269,6 +269,8 @@ module ::Axentro::Core
   end
 
   class Transaction
+    include MessagePack::Serializable
+
     JSON.mapping(
       id: String,
       action: String,
