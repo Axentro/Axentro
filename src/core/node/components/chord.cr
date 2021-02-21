@@ -330,6 +330,8 @@ module ::Axentro::Core::NodeComponents
 
           ping_all
 
+          reconnect_private_nodes
+
           align_successors
 
           stabilise_finger_table
@@ -340,6 +342,21 @@ module ::Axentro::Core::NodeComponents
           end
         end
       end
+    end
+
+    def reconnect_private_nodes
+      if @is_private && @connect_host && @connect_port
+        if @successor_list.size == 0
+          socket = HTTP::WebSocket.new(@connect_host.not_nil!, "/peer?node", @connect_port.not_nil!, @use_ssl)
+          socket.ping
+
+          @this_node.not_nil!.phase = SetupPhase::CONNECTING_NODES
+          info "successfully restored connection to parent node"
+          join_to_private(@this_node.not_nil!, @connect_host.not_nil!, @connect_port.not_nil!)
+        end
+      end
+    rescue i : IO::Error
+      warning "lost connection - retrying to connect to parent node"
     end
 
     def set_node(node : Axentro::Core::Node)
