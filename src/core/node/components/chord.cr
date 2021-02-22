@@ -330,13 +330,12 @@ module ::Axentro::Core::NodeComponents
 
           ping_all
 
-          reconnect_private_nodes
-
           align_successors
 
           stabilise_finger_table
 
-          if (Time.local - now) >= 8.seconds
+          if (Time.local - now) >= 60.seconds
+            reconnect_private_nodes
             check_for_official_nodes
             now = Time.local
           end
@@ -345,6 +344,7 @@ module ::Axentro::Core::NodeComponents
     end
 
     def reconnect_private_nodes
+      return unless @this_node.not_nil!.phase == SetupPhase::DONE
       if @is_private && @connect_host && @connect_port
         if @successor_list.size == 0
           socket = HTTP::WebSocket.new(@connect_host.not_nil!, "/peer?node", @connect_port.not_nil!, @use_ssl)
@@ -356,7 +356,7 @@ module ::Axentro::Core::NodeComponents
         end
       end
     rescue i : IO::Error
-      warning "lost connection - retrying to connect to parent node"
+      warning "lost connection - retrying to connect to parent node (retry is once per minute)"
     end
 
     def set_node(node : Axentro::Core::Node)
