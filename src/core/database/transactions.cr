@@ -79,56 +79,58 @@ module ::Axentro::Core::Data::Transactions
   end
 
   def get_paginated_transactions(block_index : Int64, page : Int32, per_page : Int32, direction : String, sort_field : String, actions : Array(String))
-    page = page * per_page
+    limit = per_page
+    offset = Math.max((limit * page) - limit, 0)
+
     actions = actions.map { |a| "'#{a}'" }.join(",")
     transactions_by_query(
       "select * from transactions " \
-      "where block_id = ? " \
-      "and oid not in ( select oid from transactions " \
-      "order by #{sort_field} #{direction} limit ? ) " +
+      "where block_id = ? " +
       (actions.empty? ? "" : "and action in (#{actions}) ") +
-      "order by #{sort_field} #{direction} limit ?",
-      block_index, page, per_page)
+      "order by #{sort_field} #{direction} " \
+      "limit ? offset ?",
+      block_index, limit, offset)
   end
 
   def get_paginated_all_transactions(page : Int32, per_page : Int32, direction : String, sort_field : String, actions : Array(String))
-    page = page * per_page
+    limit = per_page
+    offset = Math.max((limit * page) - limit, 0)
+
     actions = actions.map { |a| "'#{a}'" }.join(",")
     transactions_by_query(
-      "select * from transactions " \
-      "where oid not in ( select oid from transactions " \
-      "order by #{sort_field} #{direction} limit ? ) " +
-      (actions.empty? ? "" : "and action in (#{actions}) ") +
-      "order by #{sort_field} #{direction} limit ?",
-      page, per_page)
+      "select * from transactions " +
+      (actions.empty? ? "" : "where action in (#{actions}) ") +
+      "order by #{sort_field} #{direction} " \
+      "limit ? offset ?",
+      limit, offset)
   end
 
   def get_paginated_transactions_for_address(address : String, page : Int32, per_page : Int32, direction : String, sort_field : String, actions : Array(String))
-    page = page * per_page
+    limit = per_page
+    offset = Math.max((limit * page) - limit, 0)
     actions = actions.map { |a| "'#{a}'" }.join(",")
 
     transactions_by_query(
-      "select * from transactions " \
-      "where id in (select transaction_id from senders " \
-      "where address = ? " \
+      "select * from transactions where id in " \
+      "(select transaction_id from senders where address = ? " \
       "union select transaction_id from recipients " \
       "where address = ?) " +
       (actions.empty? ? "" : "and action in (#{actions}) ") +
-      "and oid not in " \
-      "(select oid from transactions order by #{sort_field} #{direction} limit ? ) " \
-      "order by #{sort_field} #{direction} limit ?",
-      address, address, page, per_page)
+      "order by #{sort_field} #{direction}  " \
+      "limit ? offset ?",
+      address, address, limit, offset)
   end
 
   def get_paginated_tokens(page : Int32, per_page : Int32, direction : String)
     res = [] of String
-    page = page * per_page
+    limit = per_page
+    offset = Math.max((limit * page) - limit, 0)
+
     @db.query(
       "select distinct(token) from transactions " \
-      "where oid not in " \
-      "(select oid from transactions order by token #{direction} limit ?) " \
-      "order by token #{direction} limit ?",
-      page, per_page) do |rows|
+      "order by token #{direction} " \
+      "limit ? offset ?",
+      limit, offset) do |rows|
       rows.each { res << rows.read(String) }
     end
     res

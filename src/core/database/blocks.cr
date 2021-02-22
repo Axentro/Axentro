@@ -280,12 +280,13 @@ module ::Axentro::Core::Data::Blocks
 
   # ------- API -------
   def get_paginated_blocks(page, per_page, direction, sort_field) : Blockchain::Chain
-    page = page * per_page
+    limit = per_page
+    offset = Math.max((limit * page) - limit, 0)
+
     get_blocks_via_query(
       "select * from blocks " \
-      "where oid not in ( select oid from blocks " \
-      "order by #{sort_field} #{direction} limit ? ) " \
-      "order by #{sort_field} #{direction} limit ?", page, per_page)
+      "order by #{sort_field} #{direction} " \
+      "limit ? offset ?", limit, offset)
   end
 
   def latest_difficulty

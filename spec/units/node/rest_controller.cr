@@ -57,7 +57,7 @@ describe RESTController do
       asset_blockchain("/api/v1/blockchain?page=2&per_page=1&direction=down") do |result|
         blocks = Array(SlowBlock).from_json(result["data"].to_json)
         blocks.size.should eq(1)
-        blocks.first.index.should eq(96)
+        blocks.first.index.should eq(98)
       end
     end
   end
@@ -81,7 +81,7 @@ describe RESTController do
       asset_blockchain_header("/api/v1/blockchain/header?page=2&per_page=1&direction=down") do |result|
         blocks = Array(Blockchain::SlowHeader).from_json(result["data"].to_json)
         blocks.size.should eq(1)
-        blocks.first[:index].should eq(96)
+        blocks.first[:index].should eq(98)
       end
     end
   end
@@ -362,7 +362,7 @@ describe RESTController do
       with_factory do |block_factory, transaction_factory|
         address = transaction_factory.sender_wallet.address
         block_factory.add_slow_blocks(200)
-        exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/#{address}/transactions?per_page=50&page=2"), {address: address, page_size: 50, page: 1})) do |result|
+        exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/#{address}/transactions?per_page=50&page=2"), {address: address, page_size: 50, page: 2})) do |result|
           result["status"].to_s.should eq("success")
           data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
           transactions = Array(Transaction).from_json(data)
