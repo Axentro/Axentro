@@ -50,36 +50,27 @@ module ::Axentro::Core::NodeComponents
       @last_ensured = @block_start_time
     end
 
-    def ban_list
+    def self.ban_list(miner_mortality : Array(MinerMortality))
       _deviance = 10_000
       _ban_duration = 600_000 # 10 mins
       _ban_tolerance = 10
-
-      bans = [] of String
       now = __timestamp
-      @miner_mortality.group_by(&.ip).each do |ip, history|
-        rate = 0
-        history.in_groups_of(2).each do |grp|
-          joined = grp.compact.find { |m| m.action == "joined" }
-          remove = grp.compact.find { |m| m.action == "remove" }
-          if joined && remove
-            joined_time = joined.not_nil!.timestamp
-            removed_time = remove.not_nil!.timestamp
-            deviance = removed_time - joined_time
-            if deviance < _deviance
-              rate += 1
-            end
-          end
-        end
-        last_action = history.map(&.timestamp).max
-        if (now - last_action > _ban_duration)
-          @miner_mortality.reject! { |m| m.ip == ip }
-        end
-        if rate > _ban_tolerance
-          bans << ip
-        end
+
+      bans = Set(String).new
+
+      miner_mortality.group_by(&.ip).each do |ip, history|
+        time_history = history.map(&.timestamp)
+        result = time_history.last(10).in_groups_of(2, 0_i64).map { |group|
+          (group.first.not_nil! - group.last.not_nil!).abs
+        }.count { |deviance| deviance < _deviance }
+
+        last_action = time_history.max
+        miner_mortality.reject! { |m| m.ip == ip } if (now - last_action > _ban_duration)
+
+        bans << ip if result >= 5
       end
-      bans.uniq
+
+      bans
     end
 
     private def node

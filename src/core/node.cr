@@ -107,8 +107,9 @@ module ::Axentro::Core
       Defense.blocklist("ban noisy miners") do |request|
         if @phase == SetupPhase::DONE
           remote_connection = NetworkUtil.get_remote_connection(request)
-          result = @miners_manager.ban_list.includes?(remote_connection.ip)
-          METRICS_MINERS_BANNED_GAUGE[kind: "banned"].set @miners_manager.ban_list.size
+          banned = MinersManager.ban_list(@miners_manager.miner_mortality)
+          result = banned.includes?(remote_connection.ip)
+          METRICS_MINERS_BANNED_GAUGE[kind: "banned"].set banned.size
           if result
             METRICS_MINERS_COUNTER[kind: "banned"].inc
           end
