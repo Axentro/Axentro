@@ -201,7 +201,7 @@ module ::Axentro::Core::NodeComponents
         end
 
         actual_difficulty = calculate_pow_difficulty(block_hash, mined_nonce.value, mined_difficulty)
-        info "(#{miner.mid}) incoming nonce: #{mined_nonce.value} (actual: #{actual_difficulty}, expected: #{mined_difficulty})"
+        info "(#{miner.mid}) (#{miner.ip}) (#{miner.address}) incoming nonce: #{mined_nonce.value} (actual: #{actual_difficulty}, expected: #{mined_difficulty})"
         if actual_difficulty < mined_difficulty
           METRICS_NONCES_COUNTER[kind: "invalid"].inc
           warning "difficulty for nonce: #{mined_nonce.value} was #{actual_difficulty} and expected #{mined_difficulty} for block hash: #{block_hash}"
