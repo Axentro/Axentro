@@ -37,6 +37,7 @@ require "defense"
 require "crest"
 require "rate_limiter"
 require "crometheus"
+require "msgpack"
 
 require "./common"
 require "./core/modules"

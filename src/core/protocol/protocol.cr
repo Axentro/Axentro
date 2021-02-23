@@ -14,6 +14,15 @@ require "../blockchain/rewards/models.cr"
 require "../node/components/slow_sync.cr"
 
 module ::Axentro::Core::Protocol
+
+
+  struct Transport
+    include MessagePack::Serializable
+    property type : Int32
+    property content : String
+    def initialize(@type, @content); end
+  end
+
   ######################################
   # MINER
   ######################################

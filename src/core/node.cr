@@ -44,6 +44,7 @@ module ::Axentro::Core
     @sync_slow_blocks_target_index : Int64 = 0_i64
     @sync_fast_blocks_target_index : Int64 = 0_i64
     @validation_hash : String = ""
+    @send_over_msgpack = true
 
     # ameba:disable Metrics/CyclomaticComplexity
     def initialize(
@@ -228,9 +229,9 @@ module ::Axentro::Core
         info "asking to sync chain at indices slow: #{slow_sync_index}, fast: #{fast_sync_index}"
 
         if do_validate
-          send(_s, M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE, {latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index})
+          send(_s, M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE, {latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index}, @send_over_msgpack)
         else
-          send(_s, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {chunk_size: @sync_chunk_size, latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index})
+          send(_s, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {chunk_size: @sync_chunk_size, latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index}, @send_over_msgpack)
         end
       else
         warning "successor not found. skip synching blockchain"
@@ -269,7 +270,8 @@ module ::Axentro::Core
           M_TYPE_NODE_REQUEST_TRANSACTIONS,
           {
             transactions: transactions,
-          }
+          },
+          @send_over_msgpack
         )
       else
         warning "successor not found. skip synching transactions"
@@ -299,7 +301,8 @@ module ::Axentro::Core
           M_TYPE_NODE_REQUEST_MINER_NONCES,
           {
             nonces: miner_nonces,
-          }
+          },
+          @send_over_msgpack
         )
       else
         warning "successor not found. skip syncing miner nonces"
@@ -323,6 +326,95 @@ module ::Axentro::Core
 
     # ameba:disable Metrics/CyclomaticComplexity
     def peer(socket : HTTP::WebSocket, context : HTTP::Server::Context? = nil)
+      socket.on_binary do |message|
+        transport = Transport.from_msgpack(message)
+        message_type = transport.type
+        message_content = transport.content
+
+        case message_type
+        when M_TYPE_MINER_HANDSHAKE
+          METRICS_MINERS_COUNTER[kind: "attempted_join"].inc
+          @miners_manager.handshake(socket, context, message_content)
+        when M_TYPE_MINER_FOUND_NONCE
+          if _context = context
+            if miner = @miners_manager.find?(socket)
+              if @limiter.rate_limited?(:incoming_nonces, miner.mid)
+                METRICS_MINERS_COUNTER[kind: "rate_limit"].inc
+                remaining_duration = @limiter.rate_limited?(:incoming_nonces, miner.mid)
+                duration = remaining_duration.is_a?(Time::Span) ? remaining_duration.seconds : 0
+                warning "rate limiting miner (#{miner.ip}:#{miner.port}) : #{light_green(miner.name)} (#{miner.mid}) retry in #{duration} seconds"
+                @miners_manager.send_warning(socket, "nonce was rejected due to exceeded rate limit - retry in #{duration} seconds", duration)
+                next
+              end
+            end
+          end
+          @miners_manager.found_nonce(socket, message_content)
+        when M_TYPE_CLIENT_HANDSHAKE
+          @clients_manager.handshake(socket, message_content)
+        when M_TYPE_CLIENT_UPGRADE
+          @clients_manager.upgrade(socket, message_content)
+        when M_TYPE_CLIENT_CONTENT
+          @clients_manager.receive_content(message_content)
+        when M_TYPE_CHORD_JOIN
+          @chord.join(self, socket, message_content, false)
+        when M_TYPE_CHORD_RECONNECT
+          @chord.join(self, socket, message_content, true)
+        when M_TYPE_CHORD_JOIN_PRIVATE
+          @chord.join_private(self, socket, message_content, false)
+        when M_TYPE_CHORD_RECONNECT_PRIVATE
+          @chord.join_private(self, socket, message_content, true)
+        when M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED
+          @chord.join_private_accepted(self, socket, message_content)
+        when M_TYPE_CHORD_JOIN_REJECTED
+          @chord.join_rejected(self, socket, message_content)
+        when M_TYPE_CHORD_SEARCH_SUCCESSOR
+          @chord.search_successor(self, message_content)
+        when M_TYPE_CHORD_FOUND_SUCCESSOR
+          @chord.found_successor(self, message_content)
+        when M_TYPE_CHORD_STABILIZE_AS_SUCCESSOR
+          @chord.stabilize_as_successor(self, socket, message_content)
+        when M_TYPE_CHORD_STABILIZE_AS_PREDECESSOR
+          @chord.stabilize_as_predecessor(self, socket, message_content)
+        when M_TYPE_CHORD_BROADCAST_NODE_JOINED
+          _broadcast_node_joined(socket, message_content)
+        when M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE
+          _request_validation_challenge(socket, message_content)
+        when M_TYPE_NODE_RECEIVE_VALIDATION_CHALLENGE
+          _receive_validation_challenge(socket, message_content)
+        when M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE_CHECK
+          _request_validation_challenge_check(socket, message_content)
+        when M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS
+          _request_validation_success(socket, message_content)
+        when M_TYPE_NODE_REQUEST_CHAIN_SIZE
+          _request_chain_size(socket, message_content)
+        when M_TYPE_NODE_RECEIVE_CHAIN_SIZE
+          _receive_chain_size(socket, message_content)
+        when M_TYPE_NODE_REQUEST_CHAIN
+          _request_chain(socket, message_content)
+        when M_TYPE_NODE_RECEIVE_CHAIN
+          _receive_chain(socket, message_content)
+        when M_TYPE_NODE_BROADCAST_TRANSACTION
+          _broadcast_transaction(socket, message_content)
+        when M_TYPE_NODE_BROADCAST_BLOCK
+          _broadcast_block(socket, message_content)
+        when M_TYPE_NODE_REQUEST_TRANSACTIONS
+          _request_transactions(socket, message_content)
+        when M_TYPE_NODE_RECEIVE_TRANSACTIONS
+          _receive_transactions(socket, message_content)
+        when M_TYPE_NODE_BROADCAST_MINER_NONCE
+          _broadcast_miner_nonce(socket, message_content)
+        when M_TYPE_NODE_REQUEST_MINER_NONCES
+          _request_miner_nonces(socket, message_content)
+        when M_TYPE_NODE_RECEIVE_MINER_NONCES
+          _receive_miner_nonces(socket, message_content)
+        when M_TYPE_NODE_SEND_CLIENT_CONTENT
+          _receive_client_content(socket, message_content)
+        end
+      rescue e : Exception
+        handle_exception(socket, e)  
+      end
+      
+      # old json way
       socket.on_message do |message|
         message_json = JSON.parse(message)
         message_type = message_json["type"].as_i
@@ -407,6 +499,7 @@ module ::Axentro::Core
         when M_TYPE_NODE_SEND_CLIENT_CONTENT
           _receive_client_content(socket, message_content)
         end
+
       rescue e : Exception
         handle_exception(socket, e)
       end
@@ -420,7 +513,7 @@ module ::Axentro::Core
 
     private def prevent_self_connecting_case(message_type, content, from, successor)
       if (successor[:context][:id] != @chord.context[:id]) && (from.nil? || from[:is_private])
-        send(successor[:socket], message_type, content)
+        send(successor[:socket], message_type, content, @send_over_msgpack)
       end
     end
 
@@ -462,13 +555,13 @@ module ::Axentro::Core
       else
         _nodes[:private_nodes].each do |private_node|
           next if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
-          send(private_node[:socket], message_type, content)
+          send(private_node[:socket], message_type, content, @send_over_msgpack)
         end
 
         if successor = _nodes[:successor]
           if successor[:context][:id] != content[:from][:id]
             debug "sending to successor: #{message_type}"
-            send(successor[:socket], message_type, content)
+            send(successor[:socket], message_type, content, @send_over_msgpack)
           end
         end
       end
@@ -798,7 +891,7 @@ module ::Axentro::Core
       if remote_slow_index == 0_i64 && remote_fast_index == 0_i64
         # child has no blocks so bypass validation check
         info "validation challenge expedited as challenger has no blocks"
-        send(socket, M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS, {} of String => String)
+        send(socket, M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS, {} of String => String, @send_over_msgpack)
       else
         # tell child about blocks to validate based on a window of blocks
         # genesis block + (specified percentage of (max slow block - 10 latest slow)) + (specified percentage of (max fast block - 10 latest fast))
@@ -813,7 +906,7 @@ module ::Axentro::Core
         @validation_hash = @blockchain.get_hash_of_block_hashes(validation_blocks)
 
         info "validation challenge proceeding..."
-        send(socket, M_TYPE_NODE_RECEIVE_VALIDATION_CHALLENGE, {validation_blocks: validation_blocks})
+        send(socket, M_TYPE_NODE_RECEIVE_VALIDATION_CHALLENGE, {validation_blocks: validation_blocks}, @send_over_msgpack)
       end
 
       target_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
@@ -837,7 +930,7 @@ module ::Axentro::Core
 
       local_validation_hash = @blockchain.get_hash_of_block_hashes(validation_blocks)
 
-      send(socket, M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE_CHECK, {validation_hash: local_validation_hash})
+      send(socket, M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE_CHECK, {validation_hash: local_validation_hash}, @send_over_msgpack)
     end
 
     # on the parent
@@ -849,7 +942,7 @@ module ::Axentro::Core
 
       # if validation_hash == @validation_hash
       info "validation hash succesfully confirmed so informing connecting node"
-      send(socket, M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS, {} of String => String)
+      send(socket, M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS, {} of String => String, @send_over_msgpack)
       # else
       #   warning "validation hash failed so rejecting connection ..."
       #   send(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Database validation failed: your data is not compatible with our data!"})
@@ -864,7 +957,7 @@ module ::Axentro::Core
 
       slow_sync_index = latest_slow_index
       fast_sync_index = latest_fast_index
-      send(socket, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {chunk_size: @sync_chunk_size, latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index})
+      send(socket, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {chunk_size: @sync_chunk_size, latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index}, @send_over_msgpack)
     end
 
     # on the parent
@@ -881,7 +974,7 @@ module ::Axentro::Core
       target_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
 
       debug "sending with chunk size: #{@sync_chunk_size}"
-      send(socket, M_TYPE_NODE_RECEIVE_CHAIN_SIZE, {chunk_size: chunk_size, slowchain_start_index: remote_slow_index, fastchain_start_index: remote_fast_index, slow_target_index: target_slow_index, fast_target_index: target_fast_index})
+      send(socket, M_TYPE_NODE_RECEIVE_CHAIN_SIZE, {chunk_size: chunk_size, slowchain_start_index: remote_slow_index, fastchain_start_index: remote_fast_index, slow_target_index: target_slow_index, fast_target_index: target_fast_index}, @send_over_msgpack)
 
       if ((remote_slow_index > target_slow_index) || (remote_fast_index > target_fast_index))
         info "(request chain size) Remote indices were higher local indices so starting chain sync."
@@ -918,7 +1011,7 @@ module ::Axentro::Core
           proceed_setup
         end
       else
-        send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_slow_index: _remote_slow_start_index, chunk_size: chunk_size, start_fast_index: _remote_fast_start_index})
+        send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_slow_index: _remote_slow_start_index, chunk_size: chunk_size, start_fast_index: _remote_fast_start_index}, @send_over_msgpack)
       end
     end
 
@@ -936,7 +1029,7 @@ module ::Axentro::Core
       blocks = subchain_algo(remote_start_slow_index, remote_start_fast_index, chunk_size)
 
       METRICS_NODES_COUNTER[kind: "sync_requested"].inc
-      send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {blocks: blocks, chunk_size: chunk_size})
+      send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {blocks: blocks, chunk_size: chunk_size}, @send_over_msgpack)
       debug "chain sent to peer for sync"
 
       latest_local_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
@@ -997,7 +1090,7 @@ module ::Axentro::Core
         warning "yes - still need to sync"
         if replace_result.success
           info "mixed chain was replaced earlier ok so requesting another sync"
-          send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_slow_index: latest_local_slow_index, chunk_size: chunk_size, start_fast_index: latest_local_fast_index})
+          send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_slow_index: latest_local_slow_index, chunk_size: chunk_size, start_fast_index: latest_local_fast_index}, @send_over_msgpack)
         elsif !replace_result.success && @sync_retry_1_count < MAX_SYNC_RETRY
           @sync_retry_1_count += 2
           warning "(strategy 1) failed to replace mixed chain at: #{replace_result.index} so starting a decremental retry at (#{@sync_retry_1_count}/#{MAX_SYNC_RETRY})"
@@ -1051,7 +1144,7 @@ module ::Axentro::Core
         M_TYPE_NODE_RECEIVE_TRANSACTIONS,
         {
           transactions: transactions,
-        }
+        }, @send_over_msgpack
       )
     end
 
@@ -1082,7 +1175,7 @@ module ::Axentro::Core
         M_TYPE_NODE_RECEIVE_MINER_NONCES,
         {
           nonces: miner_nonces,
-        }
+        }, @send_over_msgpack
       )
     end
 
