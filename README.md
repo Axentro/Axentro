@@ -5,7 +5,12 @@
 <p align="center"><i>To be the <b>go to</b> platform for building <b>dApps</b> quickly and cheaply for business and gaming</i></p>
 
 <p align="center">
-<a href="https://circleci.com/gh/Axentro/Axentro/tree/master"><img src="https://circleci.com/gh/Axentro/Axentro/tree/master.png?circle-token=099c1a2ed8be9aebf10eb09f79d65dfa4b05cf8e"></a>
+<a href="https://github.com/Axentro/Axentro/actions/workflows/linux-ci.yml"><img src="https://github.com/Axentro/Axentro/actions/workflows/linux-ci.yml/badge.svg?branch=master"/></a>
+
+<a href="https://github.com/Axentro/Axentro/actions/workflows/macos-ci.yml"><img src="https://github.com/Axentro/Axentro/actions/workflows/macos-ci.yml/badge.svg?branch=master"/></a>
+
+<a href="https://circleci.com/gh/Axentro/Axentro/tree/master"><img src="https://circleci.com/gh/Axentro/Axentro.svg?style=shield&circle-token=099c1a2ed8be9aebf10eb09f79d65dfa4b05cf8e"></a>
+
 <a href="https://t.me/axentrohq"><img src="https://img.shields.io/static/v1.svg?label=chat&message=telegram&color=informational"/></a>
 <a href="https://twitter.com/axentrohq"><img src="https://img.shields.io/twitter/follow/axentrohq.svg?label=Follow&style=social"/></a>
 </p>
@@ -38,7 +43,7 @@ Follow the [Getting Started](https://guide.axentro.io/) documentation to explore
 |                 Name  |  Axentro                    |
 | --------------------: | :-------------------------- |
 |          Coin ticker  |  AXNT                       |
-|            Coin name  |  AXNT                       |
+|            Coin name  |  Axentro                    |
 |            Consensus  |  CDPoW                      |
 |     Max Block reward  |  12 AXNT (decreasing)       |
 |         Miner reward  |  Prorated on contribution   |
@@ -64,6 +69,8 @@ Questions or suggestions? Join our community here on [Telegram](https://t.me/axe
 - [@kingsleyh](https://github.com/kingsleyh) Kingsley Hendrickse - founder & lead developer
 - [@aaronbronow](https://github.com/aaronbronow) Aaron Bronow - core team
 - [@fenicks](https://github.com/fenicks) Christian Kakesa - core team
+- [@mathieulaporte](https://github.com/mathieulaporte) Mathieu Laporte - core team
+- [@m-o-e](https://github.com/m-o-e) Moe - core team
 - [@bararchy](https://github.com/bararchy) Bar Hofesh - Security advisor
 
 ## Past Contributors
