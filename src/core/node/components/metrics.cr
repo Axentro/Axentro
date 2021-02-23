@@ -19,7 +19,7 @@ module ::Axentro::Core::NodeComponents::Metrics
   # Miners
   # joined, removed, banned, rate_limited, decrease_difficulty, increase_difficulty
   Crometheus.alias MinerConnectionCounter = Crometheus::Counter[:kind]
-  METRICS_MINERS_COUNTER = MinerConnectionCounter.new(:axnt_miner_connections, "Miner connections (joined, removed, banned, rate_limited, increase_difficulty, decrease_difficulty)")
+  METRICS_MINERS_COUNTER = MinerConnectionCounter.new(:axnt_miner_connections, "Miner connections (joined, removed, banned, rate_limited, increase_difficulty, decrease_difficulty, old_miner)")
 
   Crometheus.alias MinersBannedGauge = Crometheus::Gauge[:kind]
   METRICS_MINERS_BANNED_GAUGE = MinersBannedGauge.new(:axnt_miners_banned, "Currently banned")

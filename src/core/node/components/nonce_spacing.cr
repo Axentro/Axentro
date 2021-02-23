@@ -95,7 +95,7 @@ module ::Axentro::Core::NodeComponents
       miner.difficulty = Math.max(1, last_difficulty - 1)
       if last_difficulty != miner.difficulty
         METRICS_MINERS_COUNTER[kind: "decrease_difficulty"].inc
-        info "(#{miner.mid}) (last nonce) decrease difficulty from #{last_difficulty} to #{miner.difficulty}"
+        info "(#{miner.mid}) (#{miner.ip}) (#{miner.address}) decrease difficulty from #{last_difficulty} to #{miner.difficulty}"
         return NonceSpacingResult.new(miner.difficulty, "dynamically decreasing difficulty from #{last_difficulty} to #{miner.difficulty}")
       end
     end
@@ -105,7 +105,7 @@ module ::Axentro::Core::NodeComponents
       miner.difficulty = Math.max(1, last_difficulty + difficulty_amount)
       if last_difficulty != miner.difficulty
         METRICS_MINERS_COUNTER[kind: "increase_difficulty"].inc
-        info "(#{miner.mid}) (last nonce) increasing difficulty from #{last_difficulty} to #{miner.difficulty} for last deviance: #{last_deviance}"
+        info "(#{miner.mid}) (#{miner.ip}) (#{miner.address}) increasing difficulty from #{last_difficulty} to #{miner.difficulty} for last deviance: #{last_deviance}"
         return NonceSpacingResult.new(miner.difficulty, "dynamically increasing difficulty from #{last_difficulty} to #{miner.difficulty}")
       end
     end

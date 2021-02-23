@@ -19,8 +19,9 @@ module ::Axentro::Core::NodeComponents
     property ip : String
     property port : Int32
     property name : String
+    property address : String
 
-    def initialize(@socket, @mid, @difficulty, @ip, @port, @name); end
+    def initialize(@socket, @mid, @difficulty, @ip, @port, @name, @address); end
   end
 
   struct MinerMortality
@@ -119,7 +120,10 @@ module ::Axentro::Core::NodeComponents
       reject_miner_connection(socket, network_check.reason) if network_check.invalid?
 
       version_check = MinerValidation.has_valid_version?(version)
-      reject_miner_connection(socket, version_check.reason) if version_check.invalid?
+      if version_check.invalid?
+        METRICS_MINERS_COUNTER[kind: "old_miner"].inc
+        reject_miner_connection(socket, version_check.reason)
+      end
 
       max_miners_check = MinerValidation.can_add_miners?(miners.size, @blockchain.max_miners)
       reject_miner_connection(socket, max_miners_check.reason) if max_miners_check.invalid?
@@ -132,7 +136,7 @@ module ::Axentro::Core::NodeComponents
       remote_port = remote_connection.try(&.port) || 0
       miner_name = HumanHash.humanize(mid)
 
-      miner = Miner.new(socket, mid, @blockchain.mining_block.difficulty, remote_ip, remote_port, miner_name)
+      miner = Miner.new(socket, mid, @blockchain.mining_block.difficulty, remote_ip, remote_port, miner_name, address)
 
       @miners << miner
       @miner_mortality << MinerMortality.new(miner.ip, "joined", __timestamp)
@@ -142,7 +146,7 @@ module ::Axentro::Core::NodeComponents
 
       @nonce_spacing.track_miner_difficulty(miner.mid, @blockchain.mining_block.difficulty)
 
-      info "joined miner (#{miner.ip}:#{miner.port}) : #{light_green(miner.name)} (#{miner.mid}) (#{@miners.size})"
+      info "joined miner (#{miner.ip}:#{miner.port}) : #{miner.address} #{light_green(miner.name)} (#{miner.mid}) (#{@miners.size})"
 
       send(socket, M_TYPE_MINER_HANDSHAKE_ACCEPTED, {
         version:    Core::CORE_VERSION,
@@ -311,7 +315,7 @@ module ::Axentro::Core::NodeComponents
       current_size = @miners.size
       message = ""
       if mnr = @miners.find { |miner| miner.socket == socket }
-        message = "(#{mnr.ip}:#{mnr.port}) : #{light_green(mnr.name)} (#{mnr.mid})"
+        message = "(#{mnr.ip}:#{mnr.port}) : #{mnr.address} #{light_green(mnr.name)} (#{mnr.mid})"
         @miner_mortality << MinerMortality.new(mnr.ip, "remove", __timestamp)
       end
       @miners.reject! do |miner|
