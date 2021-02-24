@@ -24,6 +24,7 @@ module ::Axentro::Core
     property difficulty : Int32
     property kind : BlockKind
     property address : String
+    property version : String
 
     def initialize(
       @index : Int64,
@@ -32,21 +33,12 @@ module ::Axentro::Core
       @prev_hash : String,
       @timestamp : Int64,
       @difficulty : Int32,
-      @address : String
+      @address : String,
+      @version : String
     )
       raise "index must be even number" if index.odd?
       @merkle_tree_root = calculate_merkle_tree_root
       @kind = BlockKind::SLOW
-    end
-
-    def to_s
-      debug "SlowBlock index: #{@index}"
-      debug "SlowBlock transactions for block #{@index}: #{@transactions.size}"
-      debug "SlowBlock nonce for block #{@index}: #{@nonce}"
-      debug "SlowBlock prev_hash for block #{@index}: #{@prev_hash}"
-      debug "SlowBlock timestamp for block #{@index}: #{@timestamp}"
-      debug "SlowBlock difficulty for block #{@index}: #{@difficulty}"
-      debug "SlowBlock hash for block #{@index}: #{self.to_hash}"
     end
 
     def to_header : Blockchain::SlowHeader
@@ -222,9 +214,10 @@ module ::Axentro::Core
     property merkle_tree_root : String
     property difficulty : Int32
     property address : String
+    property version : String
 
     def self.from_slow_block(b : SlowBlock)
-      SlowBlockNoTimestamp.new(b.index, b.transactions, b.nonce, b.prev_hash, b.merkle_tree_root, b.difficulty, b.address)
+      SlowBlockNoTimestamp.new(b.index, b.transactions, b.nonce, b.prev_hash, b.merkle_tree_root, b.difficulty, b.address, b.version)
     end
 
     def initialize(
@@ -234,7 +227,8 @@ module ::Axentro::Core
       @prev_hash : String,
       @merkle_tree_root : String,
       @difficulty : Int32,
-      @address : String
+      @address : String,
+      @version : String
     )
     end
 

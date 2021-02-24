@@ -111,7 +111,8 @@ module ::Axentro::Core::FastChain
         address,
         public_key,
         signature,
-        hash
+        hash,
+        Core::BLOCK_VERSION
       )
     else
       raise Axentro::Common::AxentroException.new("error could not mint fast block as wallet was nil")

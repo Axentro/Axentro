@@ -15,7 +15,7 @@ require "../blockchain/block/*"
 module ::Axentro::Core::Data::Blocks
   # ------- Definition -------
   def block_insert_fields_string : String
-    "?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
+    "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
   end
 
   # ------- Insert -------
@@ -23,9 +23,9 @@ module ::Axentro::Core::Data::Blocks
     ary = [] of DB::Any
     case block
     when SlowBlock
-      ary << block.index << block.nonce.to_s << block.prev_hash << block.timestamp << block.difficulty << block.address << block.kind.to_s << "" << "" << ""
+      ary << block.index << block.nonce.to_s << block.prev_hash << block.timestamp << block.difficulty << block.address << block.kind.to_s << "" << "" << "" << block.version
     when FastBlock
-      ary << block.index << "" << block.prev_hash << block.timestamp << 0 << block.address << block.kind.to_s << block.public_key << block.signature << block.hash
+      ary << block.index << "" << block.prev_hash << block.timestamp << 0 << block.address << block.kind.to_s << block.public_key << block.signature << block.hash << block.version
     end
     ary
   end
@@ -66,6 +66,7 @@ module ::Axentro::Core::Data::Blocks
         public_key = rows.read(String)
         signature = rows.read(String)
         hash = rows.read(String)
+        version = rows.read(String)
         verbose "read block idx: #{idx}"
         verbose "read nonce: #{nonce}"
         verbose "read prev_hash: #{prev_hash}"
@@ -74,12 +75,12 @@ module ::Axentro::Core::Data::Blocks
         verbose "read block kind: #{kind_string}"
         if kind_string == "SLOW"
           verbose "read diffculty: #{diffculty}"
-          blocks << SlowBlock.new(idx, [] of Transaction, nonce, prev_hash, timestamp, diffculty, address)
+          blocks << SlowBlock.new(idx, [] of Transaction, nonce, prev_hash, timestamp, diffculty, address, version)
         else
           verbose "read public_key: #{public_key}"
           verbose "read signature: #{signature}"
           verbose "read hash: #{hash}"
-          blocks << FastBlock.new(idx, [] of Transaction, prev_hash, timestamp, address, public_key, signature, hash)
+          blocks << FastBlock.new(idx, [] of Transaction, prev_hash, timestamp, address, public_key, signature, hash, version)
         end
       end
     end

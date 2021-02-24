@@ -22,6 +22,11 @@ class CreateIndexes < MG::Base
   end
 
   def down : String
-    ""
+    <<-SQL
+      DROP INDEX idx_recipients;
+      DROP INDEX idx_senders;
+      DROP INDEX idx_blocks;
+      DROP INDEX idx_transactions;
+    SQL
   end
 end

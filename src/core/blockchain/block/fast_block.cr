@@ -25,6 +25,7 @@ module ::Axentro::Core
     property public_key : String
     property signature : String
     property hash : String
+    property version : String
 
     def initialize(
       @index : Int64,
@@ -34,7 +35,8 @@ module ::Axentro::Core
       @address : String,
       @public_key : String,
       @signature : String,
-      @hash : String
+      @hash : String,
+      @version : String
     )
       raise "index must be odd number" if index.even?
       @merkle_tree_root = calculate_merkle_tree_root

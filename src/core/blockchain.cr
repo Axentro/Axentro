@@ -506,6 +506,7 @@ module ::Axentro::Core
       genesis_timestamp = 0_i64
       genesis_difficulty = Consensus::MINER_DIFFICULTY_TARGET
       address = "genesis"
+      version = Core::BLOCK_VERSION
 
       SlowBlock.new(
         genesis_index,
@@ -514,7 +515,8 @@ module ::Axentro::Core
         genesis_prev_hash,
         genesis_timestamp,
         genesis_difficulty,
-        address
+        address,
+        version
       )
     end
 
@@ -600,7 +602,8 @@ module ::Axentro::Core
         latest_slow_block.to_hash,
         timestamp,
         latest_slow_block.difficulty,
-        @wallet_address
+        @wallet_address,
+        Core::BLOCK_VERSION
       )
 
       latest_hash = @mining_block.not_nil!.to_hash

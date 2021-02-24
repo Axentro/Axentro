@@ -29,6 +29,7 @@ module ::Axentro::Core
       # apply migrations
       mg = MG::Migration.new(@db, tag: "main")
       mg.migrate
+      # mg.migrate to: 11
 
       @db.exec "PRAGMA synchronous=OFF"
       @db.exec "PRAGMA cache_size=10000"
