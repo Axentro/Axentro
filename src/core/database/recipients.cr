@@ -14,20 +14,8 @@ require "../blockchain/block/*"
 
 module ::Axentro::Core::Data::Recipients
   # ------- Definition -------
-  def recipient_table_create_string
-    "transaction_id text, block_id integer, idx integer, address text, amount integer"
-  end
-
-  def recipient_primary_key_string
-    "transaction_id, block_id, idx"
-  end
-
   def recipient_insert_fields_string
     "?, ?, ?, ?, ?"
-  end
-
-  def archived_recipient_table_create_string
-    "block_hash string, archive_timestamp integer, reason text, transaction_id text, block_id integer, idx integer, address text, amount integer"
   end
 
   # ------- Insert -------

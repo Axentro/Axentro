@@ -16,15 +16,6 @@ require "../dapps/dapp"
 require "../dapps/build_in/rejects"
 
 module ::Axentro::Core::Data::Rejects
-  # ------- Definition -------
-  def rejects_table_create_string
-    "transaction_id text, address text, reason text, timestamp integer"
-  end
-
-  def rejects_primary_key_string
-    "transaction_id"
-  end
-
   # ------- Insert -------
   def insert_reject(reject : Reject)
     @db.exec("insert or ignore into rejects values (?, ?, ?, ?)", reject.transaction_id, reject.sender_address, reject.reason, reject.timestamp)

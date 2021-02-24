@@ -14,20 +14,9 @@ require "../blockchain/block/*"
 
 module ::Axentro::Core::Data::Senders
   # ------- Definition -------
-  def sender_table_create_string
-    "transaction_id text, block_id integer, idx integer, address text, public_key text, amount integer, fee integer, signature text"
-  end
-
-  def sender_primary_key_string
-    "transaction_id, block_id, idx"
-  end
 
   def sender_insert_fields_string
     "?, ?, ?, ?, ?, ?, ?, ?"
-  end
-
-  def archived_sender_table_create_string
-    "block_hash string, archive_timestamp integer, reason text, transaction_id text, block_id integer, idx integer, address text, public_key text, amount integer, fee integer, signature text"
   end
 
   # ------- Insert -------

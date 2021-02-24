@@ -14,16 +14,8 @@ require "../blockchain/block/*"
 
 module ::Axentro::Core::Data::Blocks
   # ------- Definition -------
-  def block_table_create_string : String
-    "idx integer primary key, nonce text, prev_hash text, timestamp integer, difficulty integer, address text, kind text, public_key text, signature text, hash text"
-  end
-
   def block_insert_fields_string : String
     "?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
-  end
-
-  def archived_block_table_create_string : String
-    "block_hash string, archive_timestamp integer, reason text, idx integer, nonce text, prev_hash text, timestamp integer, difficulty integer, address text, kind text, public_key text, signature text, hash text"
   end
 
   # ------- Insert -------

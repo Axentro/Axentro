@@ -24,20 +24,8 @@ module ::Axentro::Core::Data::Transactions
   end
 
   # ------- Definition -------
-  def transaction_table_create_string
-    "id text, idx integer, block_id integer, action text, message text, token text, prev_hash text, timestamp integer, scaled integer, kind text, version text"
-  end
-
-  def transaction_primary_key_string
-    "id, idx, block_id"
-  end
-
   def transaction_insert_fields_string
     "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
-  end
-
-  def archived_transaction_table_create_string
-    "block_hash string, archive_timestamp integer, reason text, id text, idx integer, block_id integer, action text, message text, token text, prev_hash text, timestamp integer, scaled integer, kind text, version text"
   end
 
   # ------- Insert -------

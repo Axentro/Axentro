@@ -16,15 +16,6 @@ require "../dapps/dapp"
 require "../dapps/build_in/nonce_info"
 
 module ::Axentro::Core::Data::Nonces
-  # ------- Definition -------
-  def nonces_table_create_string
-    "address text, nonce text, latest_hash text, block_id integer, difficulty integer, timestamp integer"
-  end
-
-  def nonces_primary_key_string
-    "address, nonce, block_id"
-  end
-
   # ------- Insert -------
   def insert_nonce(nonce : Nonce)
     @db.exec("insert or ignore into nonces values (?, ?, ?, ?, ?, ?)", nonce.address, nonce.nonce, nonce.latest_hash, nonce.block_id, nonce.difficulty, nonce.timestamp)

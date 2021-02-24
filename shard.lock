@@ -52,6 +52,10 @@ shards:
     git: https://github.com/crystal-lang/json_mapping.cr.git
     version: 0.1.0
 
+  mg:
+    git: https://github.com/hkalexling/mg.git
+    version: 0.4.0+git.commit.2cb21417e7793cd9b0dadf5c5888ee2c2f1e39b4
+
   monocypher:
     git: https://github.com/axentro/monocypher.cr.git
     version: 3.1.1

@@ -12,54 +12,10 @@
 require "../blockchain/*"
 require "../blockchain/block/*"
 require "../database/*"
+require "../database/migrations/*"
+require "../modules/logger"
 
 module ::Axentro::Core
-  class FastPool
-    @db : DB::Database
-
-    def initialize(database_path : String)
-      dir = Path[database_path].parent
-      path = File.expand_path("#{dir}/fast_pool.sqlite3")
-      @db = DB.open("sqlite3://#{path}")
-      @db.exec "create table if not exists transactions (id text primary key,content text not null)"
-      @db.exec "PRAGMA synchronous=OFF"
-      @db.exec "PRAGMA cache_size=10000"
-      @db.exec "PRAGMA journal_mode=WAL"
-    end
-
-    # ------- Insert -------
-    def insert_transaction(transaction : Transaction)
-      @db.exec("insert into transactions (id, content) values (?, ?)", transaction.id, transaction.to_json)
-    rescue e : Exception
-      warning "Handling error on insert fast transaction to database with message: #{e.message || "unknown"}"
-    end
-
-    # ------- Query -------
-    def get_all_transactions : Array(Transaction)
-      transactions = [] of Transaction
-      @db.query(
-        "select content from transactions"
-      ) do |rows|
-        rows.each do
-          json = rows.read(String)
-          transactions << Transaction.from_json(json)
-        end
-        transactions
-      end
-    end
-
-    # ------- Delete -------
-    def delete_all
-      @db.exec("delete from transactions")
-    end
-
-    def delete(transaction : Transaction)
-      @db.exec("delete from transactions where id = ?", transaction.id)
-    end
-
-    include Logger
-  end
-
   class Database
     getter path : String
     MEMORY        = "%3Amemory%3A"
@@ -69,28 +25,14 @@ module ::Axentro::Core
 
     def initialize(@path : String)
       @db = DB.open("sqlite3://#{memory_or_disk(path)}")
-      @db.exec "create table if not exists blocks (#{block_table_create_string})"
-      @db.exec "create table if not exists transactions (#{transaction_table_create_string}, primary key (#{transaction_primary_key_string}))"
-      @db.exec "create table if not exists recipients (#{recipient_table_create_string}, primary key (#{recipient_primary_key_string}))"
-      @db.exec "create table if not exists senders (#{sender_table_create_string}, primary key (#{sender_primary_key_string}))"
-      @db.exec "create table if not exists rejects (#{rejects_table_create_string}, primary key (#{rejects_primary_key_string}))"
-      @db.exec "create table if not exists nonces (#{nonces_table_create_string}, primary key (#{nonces_primary_key_string}))"
 
-      # archive tables
-      @db.exec "create table if not exists archived_blocks (#{archived_block_table_create_string}, primary key (block_hash, idx))"
-      @db.exec "create table if not exists archived_transactions (#{archived_transaction_table_create_string}, primary key (block_hash, idx, block_id))"
-      @db.exec "create table if not exists archived_recipients (#{archived_recipient_table_create_string}, primary key (block_hash, idx, block_id))"
-      @db.exec "create table if not exists archived_senders (#{archived_sender_table_create_string}, primary key (block_hash, idx, block_id))"
+      # apply migrations
+      mg = MG::Migration.new(@db, tag: "main")
+      mg.migrate
 
       @db.exec "PRAGMA synchronous=OFF"
       @db.exec "PRAGMA cache_size=10000"
       @db.exec "PRAGMA journal_mode=WAL"
-
-      # indexes
-      @db.exec "create index if not exists idx_recipients on recipients (transaction_id)"
-      @db.exec "create index if not exists idx_senders on senders (transaction_id)"
-      @db.exec "create index if not exists idx_blocks on blocks (timestamp)"
-      @db.exec "create index if not exists idx_transactions on transactions (block_id)"
     end
 
     def self.in_memory
@@ -102,7 +44,6 @@ module ::Axentro::Core
     end
 
     private def memory_or_disk(value : String) : String
-      # value.starts_with?(MEMORY) ? value : File.expand_path(value)
       if value.starts_with?(MEMORY)
         value
       else

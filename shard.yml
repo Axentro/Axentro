@@ -49,6 +49,8 @@ dependencies:
     github: z64/rate_limiter
   crometheus:
     github: darwinnn/crometheus
+  mg:
+    github: hkalexling/mg   
 
 development_dependencies:
   spinach:

@@ -9,6 +9,7 @@
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
+require "../../fast_pool_database/*"
 
 module ::Axentro::Core
   class FastTransactionPool
