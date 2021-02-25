@@ -20,7 +20,7 @@ class AddBlockVersionToArchive < MG::Base
 
   def down : String
     # sqlite3 does not support drop column so have to do this
-    <<-SQL  
+    <<-SQL
       CREATE TEMPORARY TABLE archived_blocks_temporary (
         block_hash             TEXT NOT NULL,
         archive_timestamp      INTEGER NOT NULL,
@@ -37,11 +37,8 @@ class AddBlockVersionToArchive < MG::Base
         hash                   TEXT NOT NULL,
         version                TEXT NOT NULL
       );
-    
-    INSERT INTO archived_blocks_temporary SELECT * FROM archived_blocks;
-    
+      INSERT INTO archived_blocks_temporary SELECT * FROM archived_blocks;
     DROP TABLE archived_blocks;
-    
     CREATE TABLE archived_blocks (
       block_hash             TEXT NOT NULL,
       archive_timestamp      INTEGER NOT NULL,
@@ -57,10 +54,8 @@ class AddBlockVersionToArchive < MG::Base
       signature              TEXT NOT NULL,
       hash                   TEXT NOT NULL,
       );
-    
-    INSERT INTO archived_blocks SELECT block_hash, archive_timestamp, reason, idx, nonce, prev_hash, timestamp, difficulty, address, kind, public_key, signature, hash
+      INSERT INTO archived_blocks SELECT block_hash, archive_timestamp, reason, idx, nonce, prev_hash, timestamp, difficulty, address, kind, public_key, signature, hash
     FROM archived_blocks_temporary;
-    
     DROP TABLE archived_blocks_temporary;
     SQL
   end

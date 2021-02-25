@@ -72,7 +72,8 @@ private def make_incoming_block(index, transactions, hash, timestamp, difficulty
     hash,
     timestamp,
     difficulty,
-    address
+    address,
+    BLOCK_VERSION
   )
 end
 

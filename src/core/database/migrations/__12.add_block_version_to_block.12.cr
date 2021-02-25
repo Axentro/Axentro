@@ -20,7 +20,7 @@ class AddBlockVersionToBlock < MG::Base
 
   def down : String
     # sqlite3 does not support drop column so have to do this
-    <<-SQL  
+    <<-SQL
       CREATE TEMPORARY TABLE blocks_temporary (
         idx             INTEGER PRIMARY KEY,
         nonce           TEXT NOT NULL,
@@ -34,11 +34,8 @@ class AddBlockVersionToBlock < MG::Base
         hash            TEXT NOT NULL,
         version         TEXT NOT NULL
       );
-    
-    INSERT INTO blocks_temporary SELECT * FROM blocks;
-    
+      INSERT INTO blocks_temporary SELECT * FROM blocks;
     DROP TABLE blocks;
-    
     CREATE TABLE blocks (
         idx             INTEGER PRIMARY KEY,
         nonce           TEXT NOT NULL,
@@ -51,10 +48,8 @@ class AddBlockVersionToBlock < MG::Base
         signature       TEXT NOT NULL,
         hash            TEXT NOT NULL
       );
-    
-    INSERT INTO blocks SELECT idx, nonce, prev_hash, timestamp, difficulty, address, kind, public_key, signature, hash
+      INSERT INTO blocks SELECT idx, nonce, prev_hash, timestamp, difficulty, address, kind, public_key, signature, hash
     FROM blocks_temporary;
-    
     DROP TABLE blocks_temporary;
     SQL
   end
