@@ -17,7 +17,6 @@ include Hashes
 include Units::Utils
 include Axentro::Core::DApps::BuildIn
 include Axentro::Core::Controllers
-include Axentro::Core::Block
 
 describe "slow block ids for validation should include genesis index plus specified percentage of rest of the slow chain - backed off by latest 10" do
   it "when (chain - latest 10) is less than 10" do

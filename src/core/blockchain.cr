@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "./blockchain/*"
-require "./blockchain/block/*"
+require "./blockchain/domain_model/*"
 require "./blockchain/chain/*"
 require "./blockchain/rewards/*"
 require "./dapps"
@@ -766,7 +766,6 @@ module ::Axentro::Core
     end
 
     include FastChain
-    include Block
     include DApps
     include Hashes
     include Logger

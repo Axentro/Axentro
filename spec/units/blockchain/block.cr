@@ -13,7 +13,6 @@
 require "./../../spec_helper"
 
 include Axentro::Core
-include Block
 include Hashes
 include Units::Utils
 

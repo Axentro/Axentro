@@ -11,49 +11,55 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core
-  class SlowBlock
+  class FastBlock
     extend Hashes
 
     include JSON::Serializable
     property index : Int64
     property transactions : Array(Transaction)
-    property nonce : BlockNonce
     property prev_hash : String
     property merkle_tree_root : String
     property timestamp : Int64
-    property difficulty : Int32
     property kind : BlockKind
     property address : String
+    property public_key : String
+    property signature : String
+    property hash : String
     property version : String
 
     def initialize(
       @index : Int64,
       @transactions : Array(Transaction),
-      @nonce : BlockNonce,
       @prev_hash : String,
       @timestamp : Int64,
-      @difficulty : Int32,
       @address : String,
+      @public_key : String,
+      @signature : String,
+      @hash : String,
       @version : String
     )
-      raise "index must be even number" if index.odd?
+      raise "index must be odd number" if index.even?
       @merkle_tree_root = calculate_merkle_tree_root
-      @kind = BlockKind::SLOW
+      @kind = BlockKind::FAST
+      debug "fast: merkle tree root of minted block: #{@merkle_tree_root}"
     end
 
-    def to_header : Blockchain::SlowHeader
+    def to_header : Blockchain::FastHeader
       {
         index:            @index,
-        nonce:            @nonce,
         prev_hash:        @prev_hash,
         merkle_tree_root: @merkle_tree_root,
         timestamp:        @timestamp,
-        difficulty:       @difficulty,
       }
     end
 
     def to_hash : String
-      string = SlowBlockNoTimestamp.from_slow_block(self).to_json
+      string = FastBlockNoTimestamp.from_fast_block(self).to_json
+      sha256(string)
+    end
+
+    def self.to_hash(index : Int64, transactions : Array(Transaction), prev_hash : String, address : String, public_key : String) : String
+      string = {index: index, transactions: transactions, prev_hash: prev_hash, address: address, public_key: public_key}.to_json
       sha256(string)
     end
 
@@ -87,31 +93,14 @@ module ::Axentro::Core
     end
 
     def kind : String
-      is_slow_block? ? "SLOW" : "FAST"
-    end
-
-    # This uses the @ shortcut to set the nonce onto the block
-    def with_nonce(@nonce : BlockNonce) : SlowBlock
-      self
-    end
-
-    def with_difficulty(@difficulty : Int32) : SlowBlock
-      self
-    end
-
-    def with_timestamp(@timestamp : Int64) : SlowBlock
-      self
-    end
-
-    def valid_block_nonce?(difficulty : Int32) : Bool
-      is_nonce_valid?(to_hash, @nonce, difficulty)
+      is_fast_block? ? "FAST" : "SLOW"
     end
 
     private def validate_transactions(transactions : Array(Transaction), blockchain : Blockchain) : ValidatedTransactions
-      result = SlowTransactionPool.find_all(transactions)
-      slow_transactions = result.found + result.not_found
+      result = FastTransactionPool.find_all(transactions)
+      fast_transactions = result.found + result.not_found
 
-      vt = Validation::Transaction.validate_common(slow_transactions, blockchain.network_type)
+      vt = Validation::Transaction.validate_common(fast_transactions, blockchain.network_type)
 
       coinbase_transactions = vt.passed.select(&.is_coinbase?)
       body_transactions = vt.passed.reject(&.is_coinbase?)
@@ -122,68 +111,57 @@ module ::Axentro::Core
     end
 
     # ameba:disable Metrics/CyclomaticComplexity
-    def valid?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool
-      return valid_as_genesis? if @index == 0_i64
+    def valid?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = true) : Bool
+      return true if @index <= 1_i64
 
       chain_network = blockchain.database.chain_network_kind
       block_network = Address.get_network_from_address(@address)
 
       if chain_network && block_network != chain_network
-        raise "Invalid slow block network type: incoming block is of type: #{block_network[:name]} but chain is of type: #{chain_network.not_nil![:name]}"
+        raise "Invalid fast block network type: incoming block is of type: #{block_network[:name]} but chain is of type: #{chain_network.not_nil![:name]}"
       end
+
+      valid_signature = KeyUtils.verify_signature(@hash, @signature, @public_key)
+      raise "Invalid Block Signature: the current block index: #{@index} has an invalid signature" unless valid_signature
 
       prev_block_index = @index - 2
-      _prev_block = blockchain.database.get_previous_slow_from(prev_block_index)
+      _prev_block = blockchain.database.get_block(prev_block_index)
 
-      raise "(slow_block::valid?) error finding previous slow block: #{prev_block_index} for current block: #{@index}" if _prev_block.nil?
-      prev_block = _prev_block.not_nil!.as(SlowBlock)
+      raise "(fast_block::valid?) error finding fast previous block: #{prev_block_index} for current block: #{@index}" if _prev_block.nil?
+      prev_block = _prev_block.not_nil!.as(FastBlock)
 
-      unless doing_replace
-        latest_slow_index = blockchain.get_latest_index_for_slow
-        raise "Index Mismatch: the current block index: #{@index} should match the latest slow block index: #{latest_slow_index}" if @index != latest_slow_index
-      end
-
-      _prev_hash = @prev_hash
-      # exception occured with this block during switch to new mining system
-      # hardcoding an exception for now and figure out a good way to deal with it in future
-      if @index == 99948
-        _prev_hash = "2ad3af4b045fde25b584ec98ff65392231b252d9fd4e263c4945c9ae7582f9b4"
-      end
-      raise "Invalid Previous Slow Block Hash: for current index: #{@index} the slow block prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{_prev_hash}" if prev_block.to_hash != _prev_hash
+      raise "Invalid Previous Fast Block Hash: for current index: #{@index} the fast block prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
 
       unless skip_transactions
         vt = validate_transactions(transactions, blockchain)
         raise vt.failed.first.reason if vt.failed.size != 0
       end
 
-      next_timestamp = __timestamp
+      # Add an extra 30 seconds for latency when running fastnode on it's own node
+      next_timestamp = __timestamp + 30000
       prev_timestamp = prev_block.timestamp
 
       if prev_timestamp > @timestamp || next_timestamp < @timestamp
-        raise "Invalid Timestamp: #{@timestamp} " +
+        raise "Fast Invalid Timestamp: #{@timestamp} " +
               "(timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
-      end
-
-      if @difficulty > 0
-        raise "Invalid Nonce: #{@nonce} for difficulty #{@difficulty}" unless calculate_pow_difficulty(to_hash, @nonce, @difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
       end
 
       merkle_tree_root = calculate_merkle_tree_root
 
       if merkle_tree_root != @merkle_tree_root
-        raise "Invalid Merkle Tree Root: (expected #{@merkle_tree_root} but got #{merkle_tree_root})"
+        raise "Fast Invalid Merkle Tree Root: (expected #{@merkle_tree_root} but got #{merkle_tree_root})"
+      end
+
+      unless doing_replace
+        latest_fast_index = blockchain.get_latest_index_for_fast
+        raise "Fast Index Mismatch: the current block index: #{@index} should match the lastest fast block index: #{latest_fast_index}" if @index != latest_fast_index
       end
 
       true
     end
 
     def valid_as_genesis? : Bool
-      raise "Invalid Genesis Index: index has to be '0' for genesis block: #{@index}" if @index != 0
-      raise "Invalid Genesis Nonce: nonce has to be '0' for genesis block: #{@nonce}" if @nonce != "0"
-      raise "Invalid Genesis Previous Hash: prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
-      raise "Invalid Genesis Difficulty: difficulty has to be '#{Consensus::MINER_DIFFICULTY_TARGET}' for genesis block: #{@difficulty}" if @difficulty != Consensus::MINER_DIFFICULTY_TARGET
-      raise "Invalid Genesis Address: address has to be 'genesis' for genesis block" if @address != "genesis"
-      true
+      false
     end
 
     def find_transaction(transaction_id : String) : Transaction?
@@ -196,42 +174,38 @@ module ::Axentro::Core
       @merkle_tree_root = calculate_merkle_tree_root
     end
 
-    include Block
     include Hashes
     include Logger
     include Protocol
     include Consensus
     include Common::Timestamp
-    include NonceModels
   end
 
-  class SlowBlockNoTimestamp
+  class FastBlockNoTimestamp
     include JSON::Serializable
     property index : Int64
     property transactions : Array(Transaction)
-    property nonce : String
     property prev_hash : String
     property merkle_tree_root : String
-    property difficulty : Int32
     property address : String
-    property version : String
+    property public_key : String
+    property signature : String
+    property hash : String
 
-    def self.from_slow_block(b : SlowBlock)
-      SlowBlockNoTimestamp.new(b.index, b.transactions, b.nonce, b.prev_hash, b.merkle_tree_root, b.difficulty, b.address, b.version)
+    def self.from_fast_block(b : FastBlock)
+      self.new(b.index, b.transactions, b.prev_hash, b.merkle_tree_root, b.address, b.public_key, b.signature, b.hash)
     end
 
     def initialize(
       @index : Int64,
       @transactions : Array(Transaction),
-      @nonce : String,
       @prev_hash : String,
       @merkle_tree_root : String,
-      @difficulty : Int32,
       @address : String,
-      @version : String
+      @public_key : String,
+      @signature : String,
+      @hash : String
     )
     end
-
-    include NonceModels
   end
 end

@@ -10,7 +10,7 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 require "../blockchain/*"
-require "../blockchain/block/*"
+require "../blockchain/domain_model/*"
 require "../database/*"
 require "../database/migrations/*"
 require "../modules/logger"

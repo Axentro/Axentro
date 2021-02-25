@@ -9,9 +9,9 @@
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
-require "../blockchain/block.cr"
-require "../blockchain/rewards/models.cr"
-require "../node/components/slow_sync.cr"
+require "../blockchain/block"
+require "../blockchain/rewards/models"
+require "../node/components/slow_sync"
 
 module ::Axentro::Core::Protocol
   ######################################

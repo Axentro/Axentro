@@ -18,7 +18,6 @@ include Hashes
 include Units::Utils
 include Axentro::Core::DApps::BuildIn
 include Axentro::Core::Controllers
-include Axentro::Core::Block
 
 describe Blockchain do
   describe "setup" do

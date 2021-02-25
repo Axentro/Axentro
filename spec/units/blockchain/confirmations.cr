@@ -18,7 +18,6 @@ include Hashes
 include Units::Utils
 include Axentro::Core::DApps::BuildIn
 include Axentro::Core::Controllers
-include Axentro::Core::Block
 
 describe Blockchain do
   it "it should get the number of confirmations for a transaction with just slow blocks" do
