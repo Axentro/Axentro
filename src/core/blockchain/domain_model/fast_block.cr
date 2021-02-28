@@ -39,7 +39,7 @@ module ::Axentro::Core
       @version : String
     )
       raise "index must be odd number" if index.even?
-      @merkle_tree_root = calculate_merkle_tree_root
+      @merkle_tree_root = calculate_merkle_tree_root(@transactions)
       @kind = BlockKind::FAST
       debug "fast: merkle tree root of minted block: #{@merkle_tree_root}"
     end
@@ -63,10 +63,10 @@ module ::Axentro::Core
       sha256(string)
     end
 
-    def calculate_merkle_tree_root : String
-      return "" if @transactions.size == 0
+    def calculate_merkle_tree_root(transactions : Array(Transaction)) : String
+      return "" if transactions.size == 0
 
-      current_hashes = @transactions.map { |tx| tx.to_hash }
+      current_hashes = transactions.map { |tx| tx.to_hash }
 
       loop do
         tmp_hashes = [] of String
@@ -96,68 +96,10 @@ module ::Axentro::Core
       is_fast_block? ? "FAST" : "SLOW"
     end
 
-    private def validate_transactions(transactions : Array(Transaction), blockchain : Blockchain) : ValidatedTransactions
-      result = FastTransactionPool.find_all(transactions)
-      fast_transactions = result.found + result.not_found
-
-      vt = Validation::Transaction.validate_common(fast_transactions, blockchain.network_type)
-
-      coinbase_transactions = vt.passed.select(&.is_coinbase?)
-      body_transactions = vt.passed.reject(&.is_coinbase?)
-
-      vt.concat(Validation::Transaction.validate_coinbase(coinbase_transactions, body_transactions, blockchain, @index))
-      vt.concat(Validation::Transaction.validate_embedded(coinbase_transactions + body_transactions, blockchain))
-      vt
-    end
-
-    # ameba:disable Metrics/CyclomaticComplexity
-    def valid?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = true) : Bool
+    def valid?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool
       return true if @index <= 1_i64
-
-      chain_network = blockchain.database.chain_network_kind
-      block_network = Address.get_network_from_address(@address)
-
-      if chain_network && block_network != chain_network
-        raise "Invalid fast block network type: incoming block is of type: #{block_network[:name]} but chain is of type: #{chain_network.not_nil![:name]}"
-      end
-
-      valid_signature = KeyUtils.verify_signature(@hash, @signature, @public_key)
-      raise "Invalid Block Signature: the current block index: #{@index} has an invalid signature" unless valid_signature
-
-      prev_block_index = @index - 2
-      _prev_block = blockchain.database.get_block(prev_block_index)
-
-      raise "(fast_block::valid?) error finding fast previous block: #{prev_block_index} for current block: #{@index}" if _prev_block.nil?
-      prev_block = _prev_block.not_nil!.as(FastBlock)
-
-      raise "Invalid Previous Fast Block Hash: for current index: #{@index} the fast block prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{@prev_hash}" if prev_block.to_hash != @prev_hash
-
-      unless skip_transactions
-        vt = validate_transactions(transactions, blockchain)
-        raise vt.failed.first.reason if vt.failed.size != 0
-      end
-
-      # Add an extra 30 seconds for latency when running fastnode on it's own node
-      next_timestamp = __timestamp + 30000
-      prev_timestamp = prev_block.timestamp
-
-      if prev_timestamp > @timestamp || next_timestamp < @timestamp
-        raise "Fast Invalid Timestamp: #{@timestamp} " +
-              "(timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
-      end
-
-      merkle_tree_root = calculate_merkle_tree_root
-
-      if merkle_tree_root != @merkle_tree_root
-        raise "Fast Invalid Merkle Tree Root: (expected #{@merkle_tree_root} but got #{merkle_tree_root})"
-      end
-
-      unless doing_replace
-        latest_fast_index = blockchain.get_latest_index_for_fast
-        raise "Fast Index Mismatch: the current block index: #{@index} should match the lastest fast block index: #{latest_fast_index}" if @index != latest_fast_index
-      end
-
-      true
+      validated_block = BlockValidator.validate_fast(self.as(FastBlock), blockchain, skip_transactions, doing_replace)
+      validated_block.valid ? validated_block.valid : raise Axentro::Common::AxentroException.new(validated_block.reason)
     end
 
     def valid_as_genesis? : Bool
@@ -171,7 +113,7 @@ module ::Axentro::Core
     def set_transactions(txns : Transactions)
       @transactions = txns
       verbose "Number of transactions in block: #{txns.size}"
-      @merkle_tree_root = calculate_merkle_tree_root
+      @merkle_tree_root = calculate_merkle_tree_root(@transactions)
     end
 
     include Hashes

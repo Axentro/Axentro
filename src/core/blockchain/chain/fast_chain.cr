@@ -122,12 +122,12 @@ module ::Axentro::Core::FastChain
   def align_fast_transactions(coinbase_transaction : Transaction, coinbase_amount : Int64, embedded_fast_transactions : Array(Transaction)) : Transactions
     transactions = [coinbase_transaction] + embedded_fast_transactions
 
-    vt = Validation::Transaction.validate_common(transactions, @network_type)
+    vt = TransactionValidator.validate_common(transactions, @network_type)
     block_index = latest_fast_block.nil? ? 0_i64 : latest_fast_block.not_nil!.index
 
     # don't validate prev hash here as we haven't assigned them yet. We assign lower down after we have all the valid transactions
     skip_prev_hash_check = true
-    vt.concat(Validation::Transaction.validate_embedded(transactions, self, skip_prev_hash_check))
+    vt.concat(TransactionValidator.validate_embedded(transactions, self, skip_prev_hash_check))
 
     vt.failed.each do |ft|
       rejects.record_reject(ft.transaction.id, Rejects.address_from_senders(ft.transaction.senders), ft.reason)
@@ -136,7 +136,7 @@ module ::Axentro::Core::FastChain
     end
 
     # validate coinbase and fix it if incorrect (due to rejected transactions)
-    vtc = Validation::Transaction.validate_coinbase([coinbase_transaction], vt.passed, self, block_index)
+    vtc = TransactionValidator.validate_coinbase([coinbase_transaction], vt.passed, self, block_index)
     aligned_transactions = if vtc.failed.size == 0
                              vt.passed
                            else
@@ -184,7 +184,7 @@ module ::Axentro::Core::FastChain
     results = FastTransactionPool.find_all(transactions.select(&.is_fast_transaction?))
     fast_transactions = results.found + results.not_found
 
-    vt = Validation::Transaction.validate_common(fast_transactions, @network_type)
+    vt = TransactionValidator.validate_common(fast_transactions, @network_type)
 
     vt.failed.each do |ft|
       rejects.record_reject(ft.transaction.id, Rejects.address_from_senders(ft.transaction.senders), ft.reason)

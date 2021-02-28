@@ -12,6 +12,7 @@
 
 require "./blockchain/*"
 require "./blockchain/domain_model/*"
+require "./blockchain/validators/*"
 require "./blockchain/chain/*"
 require "./blockchain/rewards/*"
 require "./dapps"
@@ -406,7 +407,7 @@ module ::Axentro::Core
     end
 
     private def _add_transaction(transaction : Transaction)
-      vt = Validation::Transaction.validate_common([transaction], @network_type)
+      vt = TransactionValidator.validate_common([transaction], @network_type)
 
       # TODO - could reject in bulk also
       vt.failed.each do |ft|
@@ -634,10 +635,10 @@ module ::Axentro::Core
       transactions = [coinbase_transaction] + embedded_slow_transactions
 
       # 1. first validate all the embedded transactions without the prev_hash
-      vt = Validation::Transaction.validate_common(transactions, @network_type)
+      vt = TransactionValidator.validate_common(transactions, @network_type)
 
       skip_prev_hash_check = true
-      vt.concat(Validation::Transaction.validate_embedded(transactions, self, skip_prev_hash_check))
+      vt.concat(TransactionValidator.validate_embedded(transactions, self, skip_prev_hash_check))
 
       vt.failed.each do |ft|
         rejects.record_reject(ft.transaction.id, Rejects.address_from_senders(ft.transaction.senders), ft.reason)
@@ -647,7 +648,7 @@ module ::Axentro::Core
 
       # 2. after any transactions have been rejected then - check coinbase and re-create if incorrect
       # validate coinbase and fix it if incorrect (due to rejected transactions)
-      vtc = Validation::Transaction.validate_coinbase([coinbase_transaction], vt.passed, self, the_latest_index)
+      vtc = TransactionValidator.validate_coinbase([coinbase_transaction], vt.passed, self, the_latest_index)
       aligned_transactions = if vtc.failed.size == 0
                                vt.passed
                              else
@@ -713,7 +714,7 @@ module ::Axentro::Core
       results = SlowTransactionPool.find_all(transactions.select(&.is_slow_transaction?))
       slow_transactions = results.found + results.not_found
 
-      vt = Validation::Transaction.validate_common(slow_transactions, @network_type)
+      vt = TransactionValidator.validate_common(slow_transactions, @network_type)
 
       vt.failed.each do |ft|
         rejects.record_reject(ft.transaction.id, Rejects.address_from_senders(ft.transaction.senders), ft.reason)
@@ -774,6 +775,7 @@ module ::Axentro::Core
     include TransactionModels
     include NonceModels
     include Common::Timestamp
+    include TransactionValidator
     include NodeComponents::Metrics
   end
 end

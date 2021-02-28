@@ -36,20 +36,20 @@ describe SlowBlock do
   describe "#calculate_merkle_tree_root" do
     it "should return empty merkle tree root value when no transactions" do
       block = SlowBlock.new(0_i64, [] of Transaction, a_nonce, "prev_hash", 0_i64, 3_i32, NODE_ADDRESS, BLOCK_VERSION)
-      block.calculate_merkle_tree_root.should eq("")
+      block.calculate_merkle_tree_root(block.transactions).should eq("")
     end
 
     it "should calculate merkle tree root when coinbase transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
       block = SlowBlock.new(2_i64, [coinbase_transaction], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS, BLOCK_VERSION)
-      block.calculate_merkle_tree_root.should eq("9632de14946bb268017a591a171c1f8a0ba640be")
+      block.calculate_merkle_tree_root(block.transactions).should eq("9632de14946bb268017a591a171c1f8a0ba640be")
     end
 
     it "should calculate merkle tree root when 2 transactions (first is coinbase)" do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = SlowBlock.new(2_i64, [coinbase_transaction, transaction1], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS, BLOCK_VERSION)
-      block.calculate_merkle_tree_root.should eq("4d15a9292afd5e4e53275bffe49badf3eafe6b1b")
+      block.calculate_merkle_tree_root(block.transactions).should eq("4d15a9292afd5e4e53275bffe49badf3eafe6b1b")
     end
   end
 
@@ -158,7 +158,7 @@ describe SlowBlock do
         mainnet_address = "TTBjYTcxZmNhNjAxZTJkNTAyNGI4MGExMWYzODA1MjdjZjlkNjI3NDEzMDc3NGFj"
         block = SlowBlock.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, mainnet_address, BLOCK_VERSION)
 
-        expect_raises(Exception, "Invalid slow block network type: incoming block is of type: mainnet but chain is of type: testnet") do
+        expect_raises(Exception, "Invalid block network type: incoming block is of type: mainnet but chain is of type: testnet") do
           block.valid?(block_factory.blockchain, false)
         end
       end
@@ -208,7 +208,7 @@ describe SlowBlock do
         block = blockchain.mint_fast_block(valid_transactions)
         block.address = mainnet_address
 
-        expect_raises(Exception, "Invalid fast block network type: incoming block is of type: mainnet but chain is of type: testnet") do
+        expect_raises(Exception, "Invalid block network type: incoming block is of type: mainnet but chain is of type: testnet") do
           block.valid?(block_factory.blockchain, false)
         end
       end
