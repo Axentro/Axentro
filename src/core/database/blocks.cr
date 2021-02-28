@@ -73,15 +73,15 @@ module ::Axentro::Core::Data::Blocks
         verbose "read timestamp: #{timestamp}"
         verbose "read address: #{address}"
         verbose "read block kind: #{kind_string}"
-        if kind_string == "SLOW"
+        # if kind_string == "SLOW"
           verbose "read diffculty: #{diffculty}"
-          blocks << SlowBlock.new(idx, [] of Transaction, nonce, prev_hash, timestamp, diffculty, address, version)
-        else
-          verbose "read public_key: #{public_key}"
-          verbose "read signature: #{signature}"
-          verbose "read hash: #{hash}"
-          blocks << FastBlock.new(idx, [] of Transaction, prev_hash, timestamp, address, public_key, signature, hash, version)
-        end
+          blocks << SlowBlock.new(idx, [] of Transaction, nonce, prev_hash, timestamp, diffculty, Block::BlockKind.parse(kind_string), address, public_key, signature, hash, version)
+        # else
+        #   verbose "read public_key: #{public_key}"
+        #   verbose "read signature: #{signature}"
+        #   verbose "read hash: #{hash}"
+        #   blocks << FastBlock.new(idx, [] of Transaction, prev_hash, timestamp, address, public_key, signature, hash, version)
+        # end
       end
     end
 

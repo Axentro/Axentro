@@ -23,6 +23,9 @@ module ::Axentro::Core
     property difficulty : Int32
     property kind : BlockKind
     property address : String
+    property public_key : String
+    property signature : String
+    property hash : String
     property version : String
 
     def initialize(
@@ -32,27 +35,42 @@ module ::Axentro::Core
       @prev_hash : String,
       @timestamp : Int64,
       @difficulty : Int32,
+      @kind : BlockKind,
       @address : String,
+      @public_key : String,
+      @signature : String,
+      @hash : String,
       @version : String
     )
-      raise "index must be even number" if index.odd?
+      if @kind == BlockKind::SLOW && index.odd?
+        raise AxentroException.new("index must be even number")
+      end
+      if @kind == BlockKind::FAST && index.even?
+        raise AxentroException.new("index must be odd number")
+      end
+
       @merkle_tree_root = calculate_merkle_tree_root(@transactions)
-      @kind = BlockKind::SLOW
     end
 
-    def to_header : Blockchain::SlowHeader
-      {
-        index:            @index,
-        nonce:            @nonce,
-        prev_hash:        @prev_hash,
-        merkle_tree_root: @merkle_tree_root,
-        timestamp:        @timestamp,
-        difficulty:       @difficulty,
-      }
+    def to_header : Blockchain::Header
+        {
+          index:            @index,
+          nonce:            @nonce,
+          prev_hash:        @prev_hash,
+          merkle_tree_root: @merkle_tree_root,
+          timestamp:        @timestamp,
+          difficulty:       @difficulty,
+        }
     end
 
     def to_hash : String
       string = SlowBlockNoTimestamp.from_slow_block(self).to_json
+      sha256(string)
+    end
+
+    # for fast block
+    def self.to_hash(index : Int64, transactions : Array(Transaction), prev_hash : String, address : String, public_key : String) : String
+      string = {index: index, transactions: transactions, prev_hash: prev_hash, address: address, public_key: public_key}.to_json
       sha256(string)
     end
 
@@ -106,86 +124,15 @@ module ::Axentro::Core
       is_nonce_valid?(to_hash, @nonce, difficulty)
     end
 
-    private def validate_transactions(transactions : Array(Transaction), blockchain : Blockchain) : ValidatedTransactions
-      result = SlowTransactionPool.find_all(transactions)
-      slow_transactions = result.found + result.not_found
-
-      vt = TransactionValidator.validate_common(slow_transactions, blockchain.network_type)
-
-      coinbase_transactions = vt.passed.select(&.is_coinbase?)
-      body_transactions = vt.passed.reject(&.is_coinbase?)
-
-      vt.concat(TransactionValidator.validate_coinbase(coinbase_transactions, body_transactions, blockchain, @index))
-      vt.concat(TransactionValidator.validate_embedded(coinbase_transactions + body_transactions, blockchain))
-      vt
-    end
-
     def valid?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool
-      validated_block = BlockValidator.validate_slow(self.as(SlowBlock), blockchain, skip_transactions, doing_replace)
-      validated_block.valid ? validated_block.valid : raise Axentro::Common::AxentroException.new(validated_block.reason)
-    end
-
-    # def valid?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool
-    #   return valid_as_genesis? if @index == 0_i64
-
-    #   chain_network = blockchain.database.chain_network_kind
-    #   block_network = Address.get_network_from_address(@address)
-
-    #   if chain_network && block_network != chain_network
-    #     raise "Invalid slow block network type: incoming block is of type: #{block_network[:name]} but chain is of type: #{chain_network.not_nil![:name]}"
-    #   end
-
-    #   prev_block_index = @index - 2
-    #   _prev_block = blockchain.database.get_previous_slow_from(prev_block_index)
-
-    #   raise "(slow_block::valid?) error finding previous slow block: #{prev_block_index} for current block: #{@index}" if _prev_block.nil?
-    #   prev_block = _prev_block.not_nil!.as(SlowBlock)
-
-    #   unless doing_replace
-    #     latest_slow_index = blockchain.get_latest_index_for_slow
-    #     raise "Index Mismatch: the current block index: #{@index} should match the latest slow block index: #{latest_slow_index}" if @index != latest_slow_index
-    #   end
-
-    #   _prev_hash = @prev_hash
-    #   # exception occured with this block during switch to new mining system
-    #   # hardcoding an exception for now and figure out a good way to deal with it in future
-    #   if @index == 99948
-    #     _prev_hash = "2ad3af4b045fde25b584ec98ff65392231b252d9fd4e263c4945c9ae7582f9b4"
-    #   end
-    #   raise "Invalid Previous Slow Block Hash: for current index: #{@index} the slow block prev_hash is invalid: (prev index: #{prev_block.index}) #{prev_block.to_hash} != #{_prev_hash}" if prev_block.to_hash != _prev_hash
-
-    #   unless skip_transactions
-    #     vt = validate_transactions(transactions, blockchain)
-    #     raise vt.failed.first.reason if vt.failed.size != 0
-    #   end
-
-    #   next_timestamp = __timestamp
-    #   prev_timestamp = prev_block.timestamp
-
-    #   if prev_timestamp > @timestamp || next_timestamp < @timestamp
-    #     raise "Invalid Timestamp: #{@timestamp} " +
-    #           "(timestamp should be bigger than #{prev_timestamp} and smaller than #{next_timestamp})"
-    #   end
-
-    #   if @difficulty > 0
-    #     raise "Invalid Nonce: #{@nonce} for difficulty #{@difficulty}" unless calculate_pow_difficulty(to_hash, @nonce, @difficulty) >= block_difficulty_to_miner_difficulty(@difficulty)
-    #   end
-
-    #   merkle_tree_root = calculate_merkle_tree_root
-
-    #   if merkle_tree_root != @merkle_tree_root
-    #     raise "Invalid Merkle Tree Root: (expected #{@merkle_tree_root} but got #{merkle_tree_root})"
-    #   end
-
-    #   true
-    # end
-
-    def valid_as_genesis? : Bool
-      raise "Invalid Genesis Index: index has to be '0' for genesis block: #{@index}" if @index != 0
-      raise "Invalid Genesis Nonce: nonce has to be '0' for genesis block: #{@nonce}" if @nonce != "0"
-      raise "Invalid Genesis Previous Hash: prev_hash has to be 'genesis' for genesis block: #{@prev_hash}" if @prev_hash != "genesis"
-      raise "Invalid Genesis Difficulty: difficulty has to be '#{Consensus::MINER_DIFFICULTY_TARGET}' for genesis block: #{@difficulty}" if @difficulty != Consensus::MINER_DIFFICULTY_TARGET
-      raise "Invalid Genesis Address: address has to be 'genesis' for genesis block" if @address != "genesis"
+      # if @kind == BlockKind::FAST
+      #   return true if @index <= 1_i64
+      #   validated_block = BlockValidator.validate_fast(self.as(FastBlock), blockchain, skip_transactions, doing_replace)
+      #   validated_block.valid ? validated_block.valid : raise Axentro::Common::AxentroException.new(validated_block.reason)
+      # else
+      #   validated_block = BlockValidator.validate_slow(self.as(SlowBlock), blockchain, skip_transactions, doing_replace)
+      #   validated_block.valid ? validated_block.valid : raise Axentro::Common::AxentroException.new(validated_block.reason)
+      # end
       true
     end
 
@@ -203,7 +150,7 @@ module ::Axentro::Core
     include Logger
     include Protocol
     include Consensus
-    include Common::Timestamp
+    include Common
     include NonceModels
   end
 
@@ -216,10 +163,13 @@ module ::Axentro::Core
     property merkle_tree_root : String
     property difficulty : Int32
     property address : String
+    property public_key : String
+    property signature : String
+    property hash : String
     property version : String
 
     def self.from_slow_block(b : SlowBlock)
-      SlowBlockNoTimestamp.new(b.index, b.transactions, b.nonce, b.prev_hash, b.merkle_tree_root, b.difficulty, b.address, b.version)
+      SlowBlockNoTimestamp.new(b.index, b.transactions, b.nonce, b.prev_hash, b.merkle_tree_root, b.difficulty, b.address, b.public_key, b.signature, b.hash, b.version)
     end
 
     def initialize(
@@ -230,6 +180,9 @@ module ::Axentro::Core
       @merkle_tree_root : String,
       @difficulty : Int32,
       @address : String,
+      @public_key : String,
+      @signature : String,
+      @hash : String,
       @version : String
     )
     end

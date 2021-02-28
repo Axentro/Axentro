@@ -29,7 +29,7 @@ module ::Axentro::Core
   class Blockchain
     TOKEN_DEFAULT = Core::DApps::BuildIn::UTXO::DEFAULT
 
-    alias SlowHeader = NamedTuple(
+    alias Header = NamedTuple(
       index: Int64,
       nonce: BlockNonce,
       prev_hash: String,
@@ -506,7 +506,11 @@ module ::Axentro::Core
       genesis_prev_hash = "genesis"
       genesis_timestamp = 0_i64
       genesis_difficulty = Consensus::MINER_DIFFICULTY_TARGET
+      kind = Block::BlockKind::SLOW
       address = "genesis"
+      public_key = ""
+      signature = ""
+      hash = ""
       version = Core::BLOCK_VERSION
 
       SlowBlock.new(
@@ -516,7 +520,11 @@ module ::Axentro::Core
         genesis_prev_hash,
         genesis_timestamp,
         genesis_difficulty,
+        kind,
         address,
+        public_key,
+        signature,
+        hash,
         version
       )
     end
@@ -603,7 +611,11 @@ module ::Axentro::Core
         latest_slow_block.to_hash,
         timestamp,
         latest_slow_block.difficulty,
+        BlockKind::SLOW,
         @wallet_address,
+        "",
+        "",
+        "",
         Core::BLOCK_VERSION
       )
 
