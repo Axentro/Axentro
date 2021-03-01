@@ -41,8 +41,7 @@ module ::Axentro::Core
     @sync_giving_up : Bool = false
 
     # child node gets this from parent on setup
-    @sync_slow_blocks_target_index : Int64 = 0_i64
-    @sync_fast_blocks_target_index : Int64 = 0_i64
+    @sync_blocks_target_index : Int64 = 0_i64
     @validation_hash : String = ""
 
     # ameba:disable Metrics/CyclomaticComplexity
@@ -200,18 +199,17 @@ module ::Axentro::Core
       node.listen
     end
 
-    private def sync_chain_from_point(slow_index : Int64, fast_index : Int64, socket : HTTP::WebSocket? = nil)
-      _sync_chain(slow_index, fast_index, socket, false)
+    private def sync_chain_from_point(index : Int64, socket : HTTP::WebSocket? = nil)
+      _sync_chain(index, socket, false)
     end
 
     private def sync_chain(socket : HTTP::WebSocket? = nil, do_validate : Bool = true)
-      slow_index = get_latest_slow_index
-      fast_index = get_latest_fast_index
-      _sync_chain(slow_index, fast_index, socket, do_validate)
+      index = database.latest_index
+      _sync_chain(index, socket, do_validate)
     end
 
     # mostly on the child unless child chain is longer than parent then it happens on parent too
-    private def _sync_chain(slow_index : Int64, fast_index : Int64, socket : HTTP::WebSocket? = nil, do_validate : Bool = true)
+    private def _sync_chain(index : Int64, socket : HTTP::WebSocket? = nil, do_validate : Bool = true)
       info "start synching chain"
 
       s = if _socket = socket
@@ -223,14 +221,12 @@ module ::Axentro::Core
           end
 
       if _s = s
-        slow_sync_index = slow_index
-        fast_sync_index = fast_index
-        info "asking to sync chain at indices slow: #{slow_sync_index}, fast: #{fast_sync_index}"
+        info "asking to sync chain at indices: #{index}"
 
         if do_validate
-          send(_s, M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE, {latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index})
+          send(_s, M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE, {latest_index: index})
         else
-          send(_s, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {chunk_size: @sync_chunk_size, latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index})
+          send(_s, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {chunk_size: @sync_chunk_size, latest_index: index })
         end
       else
         warning "successor not found. skip synching blockchain"
@@ -572,6 +568,7 @@ module ::Axentro::Core
       end
     end
 
+    # TODO - can we consolidate this into one broadcast?
     private def broadcast_slow_block(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
       # random_secs = Random.rand(30)
       # warning "++++++++++++ sleeping #{random_secs} seconds before sending to try to cause chaos....."
@@ -580,23 +577,22 @@ module ::Axentro::Core
       # sleep(120)
       # warning "++++++++++++ finished sleeping"
 
-      latest_slow = get_latest_slow_from_db
-      has_block = @blockchain.database.get_block(block.index)
-      latest_local_fast_index = get_latest_fast_index
-      slow_sync = SlowSync.new(block, @blockchain.mining_block, (has_block.nil? ? nil : has_block.not_nil!.as(SlowBlock)), latest_slow)
+      latest_block = database.get_block(database.latest_index) || database.get_block(0_i64).not_nil!
+      has_block = database.get_block(block.index)
+      slow_sync = SlowSync.new(block, @blockchain.mining_block, (has_block.nil? ? nil : has_block.not_nil!), latest_block)
       state = slow_sync.process
 
       case state
       when SlowSyncState::CREATE
-        execute_create(socket, block, latest_slow, latest_local_fast_index, from)
+        execute_create(socket, block, latest_block, from)
       when SlowSyncState::REPLACE
-        execute_replace(socket, block, latest_slow, latest_local_fast_index, from)
+        execute_replace(socket, block, latest_block, from)
       when SlowSyncState::REJECT_OLD
-        execute_reject(socket, block, latest_slow, RejectBlockReason::OLD, from)
+        execute_reject(socket, block, latest_block, RejectBlockReason::OLD, from)
       when SlowSyncState::REJECT_VERY_OLD
-        execute_reject(socket, block, latest_slow, RejectBlockReason::VERY_OLD, from)
+        execute_reject(socket, block, latest_block, RejectBlockReason::VERY_OLD, from)
       when SlowSyncState::SYNC
-        execute_sync(socket, block, latest_slow, from)
+        execute_sync(socket, block, latest_block, from)
       else
         raise "Error - unknown SlowSyncState: #{state}"
       end
@@ -611,23 +607,14 @@ module ::Axentro::Core
       blocks.size > 0 ? blocks.first.as(SlowBlock) : raise "Node::get_latest_slow_from_db: no slow blocks found in database"
     end
 
-    private def sync_chain_on_error(conflicted_index : Int64, latest_local_slow_index : Int64, latest_local_fast_index : Int64, count : Int32, socket : HTTP::WebSocket)
-      if conflicted_index.even?
-        slow_index = @blockchain.database.lowest_slow_index_after_slow_block(latest_local_slow_index - count) || latest_local_slow_index
-        fast_index = @blockchain.database.lowest_fast_index_after_slow_block(slow_index) || latest_local_fast_index
-
-        warning "(slow) sync_chain_on_error: attempting to re-sync from failed slow block #{conflicted_index} with slow_index: #{slow_index}, fast_index: #{fast_index}"
-        sync_chain_from_point(slow_index, fast_index, socket)
-      else
-        fast_index = @blockchain.database.lowest_fast_index_after_fast_block(latest_local_fast_index - count) || latest_local_fast_index
-        slow_index = @blockchain.database.lowest_slow_index_after_fast_block(fast_index) || latest_local_slow_index
-
-        warning "(fast) sync_chain_on_error: attempting to re-sync from failed fast block #{conflicted_index} with slow_index: #{slow_index}, fast_index: #{fast_index}"
-        sync_chain_from_point(slow_index, fast_index, socket)
-      end
+    private def sync_chain_on_error(conflicted_index : Int64, latest_local_index : Int64, count : Int32, socket : HTTP::WebSocket)
+        index = database.lowest_index_after_block(latest_local_index - count) || latest_local_index
+ 
+        warning "sync_chain_on_error: attempting to re-sync from failed block #{conflicted_index} with index: #{index}"
+        sync_chain_from_point(index, socket)
     end
 
-    private def execute_create(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, latest_local_fast_index : Int64, from : Chord::NodeContext?)
+    private def execute_create(socket : HTTP::WebSocket, block : SlowBlock, latest_block : SlowBlock, from : Chord::NodeContext?)
       info "received block: #{block.index} from peer that I don't have in my db"
 
       # random_secs = Random.rand(30)
@@ -649,12 +636,12 @@ module ::Axentro::Core
       warning "received block: #{block.index} from peer that I don't have in my db was invalid - so keeping my local and re-syncing"
       warning "error was: #{e.message || "unknown error"}"
 
-      sync_chain_on_error(block.index, latest_slow.index, latest_local_fast_index, 2, socket)
+      sync_chain_on_error(block.index, latest_block.index, 2, socket)
     end
 
-    private def execute_replace(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, latest_local_fast_index : Int64, from : Chord::NodeContext?)
-      warning "slow: blockchain conflicted at incoming #{block.index} and local (#{light_cyan(latest_slow.index)})"
-      warning "slow: local timestamp: #{latest_slow.timestamp}, arriving block timestamp: #{block.timestamp}"
+    private def execute_replace(socket : HTTP::WebSocket, block : SlowBlock, latest_block : SlowBlock, from : Chord::NodeContext?)
+      warning "slow: blockchain conflicted at incoming #{block.index} and local (#{light_cyan(latest_block.index)})"
+      warning "slow: local timestamp: #{latest_block.timestamp}, arriving block timestamp: #{block.timestamp}"
       warning "slow: arriving block's timestamp indicates it was minted earlier than latest local block (or at the same time but has different hash)"
 
       # don't check transactions here as will fail since they already exist in the existing block
@@ -669,24 +656,24 @@ module ::Axentro::Core
       warning "arriving block #{block.index} failed validity check, we can't make it our local latest - so keeping my local and re-syncing"
       warning "error was: #{e.message || "unknown error"}"
 
-      sync_chain_on_error(block.index, latest_slow.index, latest_local_fast_index, 2, socket)
+      sync_chain_on_error(block.index, latest_block.index, 2, socket)
     end
 
-    private def execute_reject(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, reason : RejectBlockReason, from : Chord::NodeContext?)
+    private def execute_reject(socket : HTTP::WebSocket, block : SlowBlock, latest_block : SlowBlock, reason : RejectBlockReason, from : Chord::NodeContext?)
       case reason
       when RejectBlockReason::OLD
-        warning "slow: blockchain conflicted at incoming #{block.index} and local (#{light_cyan(latest_slow.index)})"
-        warning "slow: local timestamp: #{latest_slow.timestamp}, arriving block timestamp: #{block.timestamp}"
-        warning "keeping our local block: #{latest_slow.index} and ignoring the block: #{block.index} because local one was minted first or (at the same time but with identical hash)"
+        warning "slow: blockchain conflicted at incoming #{block.index} and local (#{light_cyan(latest_block.index)})"
+        warning "slow: local timestamp: #{latest_block.timestamp}, arriving block timestamp: #{block.timestamp}"
+        warning "keeping our local block: #{latest_block.index} and ignoring the block: #{block.index} because local one was minted first or (at the same time but with identical hash)"
       when RejectBlockReason::VERY_OLD
-        warning "ignore very old block: #{block.index} because local latest is: #{latest_slow.index}"
+        warning "ignore very old block: #{block.index} because local latest is: #{latest_block.index}"
       else
         warning "unknown rejection reason #{reason} - so ignoring it"
       end
     end
 
-    private def execute_sync(socket : HTTP::WebSocket, block : SlowBlock, latest_slow : SlowBlock, from : Chord::NodeContext?)
-      warning "slow: require new chain after - local: #{latest_slow.index} for incoming from peer: #{block.index}"
+    private def execute_sync(socket : HTTP::WebSocket, block : SlowBlock, latest_block : SlowBlock, from : Chord::NodeContext?)
+      warning "slow: require new chain after - local: #{latest_block.index} for incoming from peer: #{block.index}"
       sync_chain(socket, false)
     end
 
@@ -785,43 +772,40 @@ module ::Axentro::Core
       @clients_manager.receive_content(content, from)
     end
 
+    # TODO - fix me
     # on the parent
     private def _request_validation_challenge(socket, _content)
       _m_content = MContentNodeRequestValidationChallenge.from_json(_content)
 
-      remote_slow_index = _m_content.latest_slow_index
-      remote_fast_index = _m_content.latest_fast_index
+      remote_index = _m_content.latest_index
+ 
+      info "requested validation challenge with latest index: #{remote_index}"
 
-      info "requested validation challenge with latest slow index: #{remote_slow_index} , latest fast index: #{remote_fast_index}"
-
-      if remote_slow_index == 0_i64 && remote_fast_index == 0_i64
+      if remote_index == 0_i64
         # child has no blocks so bypass validation check
         info "validation challenge expedited as challenger has no blocks"
         send(socket, M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS, {} of String => String)
       else
         # tell child about blocks to validate based on a window of blocks
         # genesis block + (specified percentage of (max slow block - 10 latest slow)) + (specified percentage of (max fast block - 10 latest fast))
-        local_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
-        local_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
+        local_index = database.latest_index
+  
+        validation_index = Math.min(remote_index, local_index)
 
-        validation_slow_index = Math.min(remote_slow_index, local_slow_index)
-        validation_fast_index = Math.min(remote_fast_index, local_fast_index)
-
-        chain_integrity = ChainIntegrity.new(validation_slow_index, validation_fast_index, @security_level_percentage)
-        validation_blocks = chain_integrity.get_validation_block_ids
-        @validation_hash = @blockchain.get_hash_of_block_hashes(validation_blocks)
+        # chain_integrity = ChainIntegrity.new(validation_slow_index, validation_fast_index, @security_level_percentage)
+        # validation_blocks = chain_integrity.get_validation_block_ids
+        # @validation_hash = @blockchain.get_hash_of_block_hashes(validation_blocks)
+        validation_blocks = [0_i64]
 
         info "validation challenge proceeding..."
         send(socket, M_TYPE_NODE_RECEIVE_VALIDATION_CHALLENGE, {validation_blocks: validation_blocks})
       end
 
-      target_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
-      target_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
+      target_index = database.latest_index
 
-      if ((remote_slow_index > target_slow_index) || (remote_fast_index > target_fast_index))
-        info "(request validation challenge) Remote indices were higher local indices so starting chain sync."
-        info "Remote slow: #{remote_slow_index}, target slow: #{target_slow_index}"
-        info "Remote fast: #{remote_fast_index}, target fast: #{target_fast_index}"
+      if database.get_block(remote_index).nil?
+        info "(request validation challenge) Remote block not found locally so starting chain sync."
+        info "Remote index: #{remote_index}, target index: #{target_index}"
         sync_chain(socket, false)
       end
     end
@@ -858,34 +842,27 @@ module ::Axentro::Core
     # on the child
     private def _request_validation_success(socket, _content)
       info "validation hash successfuly validated - proceed to sync"
-      latest_slow_index = get_latest_slow_index
-      latest_fast_index = get_latest_fast_index
-
-      slow_sync_index = latest_slow_index
-      fast_sync_index = latest_fast_index
-      send(socket, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {chunk_size: @sync_chunk_size, latest_slow_index: slow_sync_index, latest_fast_index: fast_sync_index})
+      latest_index = database.latest_index
+      send(socket, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {chunk_size: @sync_chunk_size, latest_index: latest_index})
     end
 
     # on the parent
     private def _request_chain_size(socket, _content)
       _m_content = MContentNodeRequestChainSize.from_json(_content)
 
-      remote_slow_index = _m_content.latest_slow_index
-      remote_fast_index = _m_content.latest_fast_index
+      remote_index = _m_content.latest_index
       chunk_size = _m_content.chunk_size
 
-      debug "requested new chain size with latest slow index: #{remote_slow_index} , latest fast index: #{remote_fast_index}"
+      debug "requested new chain size with latest index: #{remote_index}"
 
-      target_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
-      target_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
+      target_index = database.latest_index
 
-      debug "sending with chunk size: #{@sync_chunk_size}"
-      send(socket, M_TYPE_NODE_RECEIVE_CHAIN_SIZE, {chunk_size: chunk_size, slowchain_start_index: remote_slow_index, fastchain_start_index: remote_fast_index, slow_target_index: target_slow_index, fast_target_index: target_fast_index})
+      info "(_request_chain_size) responding from parent with:  remote_index: #{remote_index}, target_index: #{target_index}"
+      send(socket, M_TYPE_NODE_RECEIVE_CHAIN_SIZE, {chunk_size: chunk_size, start_index: remote_index, target_index: target_index})
 
-      if ((remote_slow_index > target_slow_index) || (remote_fast_index > target_fast_index))
-        info "(request chain size) Remote indices were higher local indices so starting chain sync."
-        info "Remote slow: #{remote_slow_index}, target slow: #{target_slow_index}"
-        info "Remote fast: #{remote_fast_index}, target fast: #{target_fast_index}"
+      if database.get_block(remote_index).nil?
+        info "(request chain size) Remote block not found locally so starting chain sync."
+        info "Remote index: #{remote_index}, target index: #{target_index}"
         sync_chain(socket, false)
       end
     end
@@ -894,22 +871,17 @@ module ::Axentro::Core
     private def _receive_chain_size(socket, _content)
       _m_content = MContentNodeReceiveChainSize.from_json(_content)
 
-      _remote_slow_start_index = _m_content.slowchain_start_index
-      _remote_fast_start_index = _m_content.fastchain_start_index
+      _remote_start_index = _m_content.start_index
 
-      @sync_slow_blocks_target_index = _m_content.slow_target_index
-      @sync_fast_blocks_target_index = _m_content.fast_target_index
+      @sync_blocks_target_index = _m_content.target_index
 
       chunk_size = _m_content.chunk_size
 
-      latest_local_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
-      latest_local_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
+      latest_local_index = database.latest_index
 
-      # if there are no blocks then set to -1 to force sync the genesis block from peer
-      latest_local_slow_index = -1_i64 if latest_local_slow_index == 0_i64
-      latest_local_fast_index = -1_i64 if latest_local_fast_index == 0_i64
+      info "(_receive_chain_size) receiving from parent with:  remote_index: #{_remote_start_index}, latest_local_index: #{latest_local_index}, @sync_blocks_target_index: #{@sync_blocks_target_index}"
 
-      if latest_local_slow_index >= @sync_slow_blocks_target_index && latest_local_fast_index >= @sync_fast_blocks_target_index
+      if database.get_block(@sync_blocks_target_index)
         # nothing to sync so proceed to transaction syncing
         info "no blocks to sync to moving onto transaction sync"
         if @phase == SetupPhase::BLOCKCHAIN_SYNCING
@@ -917,7 +889,7 @@ module ::Axentro::Core
           proceed_setup
         end
       else
-        send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_slow_index: _remote_slow_start_index, chunk_size: chunk_size, start_fast_index: _remote_fast_start_index})
+        send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_index: _remote_start_index, chunk_size: chunk_size})
       end
     end
 
@@ -925,26 +897,23 @@ module ::Axentro::Core
     private def _request_chain(socket, _content)
       _m_content = MContentNodeRequestChain.from_json(_content)
 
-      remote_start_slow_index = _m_content.start_slow_index
-      remote_start_fast_index = _m_content.start_fast_index
+      remote_start_index = _m_content.start_index
 
       chunk_size = _m_content.chunk_size
 
-      debug "requested new chain slow start index: #{remote_start_slow_index} with chunk #{chunk_size} , latest fast index: #{remote_start_fast_index} with chunk #{chunk_size}"
+      blocks = database.chunk_from(remote_start_index, chunk_size)
 
-      blocks = subchain_algo(remote_start_slow_index, remote_start_fast_index, chunk_size)
+      info "(_request_chain) requested new chain start index: #{remote_start_index}, found blocks: #{blocks.size}"
 
       METRICS_NODES_COUNTER[kind: "sync_requested"].inc
       send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {blocks: blocks, chunk_size: chunk_size})
       debug "chain sent to peer for sync"
 
-      latest_local_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
-      latest_local_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
+      latest_local_index = database.latest_index
 
-      if ((remote_start_slow_index > latest_local_slow_index) || (remote_start_fast_index > latest_local_fast_index))
-        info "(request chain) Remote indices were higher local indices so starting chain sync."
-        info "Remote slow: #{remote_start_slow_index}, target slow: #{latest_local_slow_index}"
-        info "Remote fast: #{remote_start_fast_index}, target fast: #{latest_local_fast_index}"
+      if database.get_block(remote_start_index).nil?
+        info "(request chain) Remote block not found locally so starting chain sync."
+        info "Remote index: #{remote_start_index}, target index: #{latest_local_index}"
         sync_chain(socket, false)
       end
     end
@@ -954,59 +923,46 @@ module ::Axentro::Core
     private def _receive_chain(socket, _content)
       _m_content = MContentNodeReceiveChain.from_json(_content)
 
-      _remote_chain = _m_content.blocks
+      remote_chain = _m_content.blocks
       chunk_size = _m_content.chunk_size
 
-      _remote_slow_chain = _remote_chain.nil? ? nil : _remote_chain.not_nil!.select(&.is_slow_block?)
-      _remote_fast_chain = _remote_chain.nil? ? nil : _remote_chain.not_nil!.select(&.is_fast_block?)
-
-      if remote_slow_chain = _remote_slow_chain
-        info "received #{remote_slow_chain.size} SLOW blocks"
+      if _remote_chain = remote_chain
+        info "received #{_remote_chain.size} blocks"
       else
-        info "received empty SLOW chain"
+        info "received empty chain"
       end
 
-      if remote_fast_chain = _remote_fast_chain
-        info "received #{remote_fast_chain.size} FAST blocks"
-      else
-        info "received empty FAST chain"
-      end
-
-      previous_local_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
-      previous_local_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
-
+      previous_local_index = database.latest_index
+ 
       replace_result = @blockchain.replace_mixed_chain(_remote_chain)
       if replace_result.success
-        latest_local_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
-        latest_local_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
+        latest_local_index = database.latest_index
 
-        info "slow: chain updated: #{light_green(previous_local_slow_index)} -> #{light_green(latest_local_slow_index)}"
-        info "fast: chain updated: #{light_green(previous_local_fast_index)} -> #{light_green(latest_local_fast_index)}"
+        info "chain updated: #{light_green(previous_local_index)} -> #{light_green(latest_local_index)}"
 
         @miners_manager.broadcast
       end
 
-      latest_local_slow_index = @blockchain.database.highest_index_of_kind(BlockKind::SLOW)
-      latest_local_fast_index = @blockchain.database.highest_index_of_kind(BlockKind::FAST)
+      latest_local_index = database.latest_index
 
-      info "checking if still need to sync: slow #{light_yellow(latest_local_slow_index)}/#{light_blue(@sync_slow_blocks_target_index)} fast #{light_yellow(latest_local_fast_index)}/#{light_blue(@sync_fast_blocks_target_index)}"
-      sync_required = latest_local_slow_index < @sync_slow_blocks_target_index || latest_local_fast_index < @sync_fast_blocks_target_index
+      info "checking if still need to sync: #{light_yellow(latest_local_index)}/#{light_blue(@sync_blocks_target_index)}"
+      sync_required = latest_local_index < @sync_blocks_target_index
 
       if sync_required && !@sync_giving_up
         warning "yes - still need to sync"
         if replace_result.success
           info "mixed chain was replaced earlier ok so requesting another sync"
-          send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_slow_index: latest_local_slow_index, chunk_size: chunk_size, start_fast_index: latest_local_fast_index})
+          send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_index: latest_local_index, chunk_size: chunk_size})
         elsif !replace_result.success && @sync_retry_1_count < MAX_SYNC_RETRY
           @sync_retry_1_count += 2
           warning "(strategy 1) failed to replace mixed chain at: #{replace_result.index} so starting a decremental retry at (#{@sync_retry_1_count}/#{MAX_SYNC_RETRY})"
-          sync_chain_on_error(replace_result.index, latest_local_slow_index, latest_local_fast_index, @sync_retry_1_count, socket)
+          sync_chain_on_error(replace_result.index, latest_local_index, @sync_retry_1_count, socket)
         elsif !replace_result.success && @sync_retry_2_count < MAX_SYNC_RETRY
           warning "can't recover giving up"
           @sync_retry_2_count += 2
           sleep_seconds = 10 * @sync_retry_2_count
           warning "(strategy 2) failed to replace mixed chain at: #{replace_result.index} so starting a decremental retry with sleep #{sleep_seconds} seconds at (#{@sync_retry_2_count}/#{MAX_SYNC_RETRY})"
-          sync_chain_on_error(replace_result.index, latest_local_slow_index, latest_local_fast_index, @sync_retry_1_count, socket)
+          sync_chain_on_error(replace_result.index, latest_local_index, @sync_retry_1_count, socket)
           sleep(sleep_seconds)
         else
           warning "can't recover giving up"

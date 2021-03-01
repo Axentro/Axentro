@@ -54,6 +54,17 @@ module ::Axentro::Core
       end
     end
 
+    def latest_index : Int64
+      idx : Int64? = nil 
+      @db.query("select idx from blocks order by timestamp desc limit 1") do |rows|
+        rows.each do 
+          idx = rows.read(Int64?)
+        end
+      end
+    info "database.latest_index: #{idx || 0_i64} "
+      idx || 0_i64
+    end
+
     def highest_index_of_kind(kind : Block::BlockKind) : Int64
       idx : Int64? = nil
 
@@ -80,6 +91,16 @@ module ::Axentro::Core
     # this could return null if the index given was 0
     def lowest_slow_index_after_slow_block(index : Int64) : Int64?
       @db.query_one("select max(idx) from blocks where kind = 'SLOW' and timestamp < (select timestamp from blocks where idx = ?)", index, as: Int64?)
+    end
+
+    def lowest_index_after_block(index : Int64) : Int64?
+      idx : Int64? = nil
+      @db.query("select idx from blocks where timestamp > (select timestamp from blocks where idx = ?) order by timestamp desc limit 1", index) do |rows|
+        rows.each do 
+          idx = rows.read(Int64?)
+        end
+      end
+      idx || 0_i64
     end
 
     # this could return null if there are no slow blocks found after the fast block timestamp

@@ -255,8 +255,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeRequestChain
     include JSON::Serializable
-    property start_slow_index : Int64
-    property start_fast_index : Int64
+    property start_index : Int64
     property chunk_size : Int32
   end
 
@@ -324,8 +323,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeRequestChainSize
     include JSON::Serializable
-    property latest_slow_index : Int64
-    property latest_fast_index : Int64
+    property latest_index : Int64
     property chunk_size : Int32
   end
 
@@ -334,10 +332,8 @@ module ::Axentro::Core::Protocol
   struct MContentNodeReceiveChainSize
     include JSON::Serializable
 
-    property slowchain_start_index : Int64
-    property fastchain_start_index : Int64
-    property slow_target_index : Int64
-    property fast_target_index : Int64
+    property start_index : Int64
+    property target_index : Int64
     property chunk_size : Int32
   end
 
@@ -345,8 +341,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeRequestValidationChallenge
     include JSON::Serializable
-    property latest_slow_index : Int64
-    property latest_fast_index : Int64
+    property latest_index : Int64
   end
 
   M_TYPE_NODE_RECEIVE_VALIDATION_CHALLENGE = 0x0116

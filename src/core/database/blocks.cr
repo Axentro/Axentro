@@ -121,6 +121,10 @@ module ::Axentro::Core::Data::Blocks
     get_blocks_via_query("select * from blocks where idx between ? and ? order by timestamp asc", start, finish)
   end
 
+  def chunk_from(start_index : Int64, chunk_size : Int32) : Blockchain::Chain
+    get_blocks_via_query("select * from blocks where timestamp >= (select timestamp from blocks where idx = ?) order by timestamp asc limit ?", start_index, chunk_size)
+  end
+
   def get_blocks_by_ids(ids : Array(Int64)) : Blockchain::Chain
     index_list = ids.map(&.to_s).join(",")
     get_blocks_via_query("select * from blocks where idx in (#{index_list})")
