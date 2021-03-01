@@ -226,7 +226,7 @@ module ::Axentro::Core
         if do_validate
           send(_s, M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE, {latest_index: index})
         else
-          send(_s, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {chunk_size: @sync_chunk_size, latest_index: index })
+          send(_s, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {chunk_size: @sync_chunk_size, latest_index: index})
         end
       else
         warning "successor not found. skip synching blockchain"
@@ -602,16 +602,11 @@ module ::Axentro::Core
       send_block(block, from)
     end
 
-    private def get_latest_slow_from_db : SlowBlock
-      blocks = @blockchain.database.get_highest_block_for_kind(BlockKind::SLOW)
-      blocks.size > 0 ? blocks.first.as(SlowBlock) : raise "Node::get_latest_slow_from_db: no slow blocks found in database"
-    end
-
     private def sync_chain_on_error(conflicted_index : Int64, latest_local_index : Int64, count : Int32, socket : HTTP::WebSocket)
-        index = database.lowest_index_after_block(latest_local_index - count) || latest_local_index
- 
-        warning "sync_chain_on_error: attempting to re-sync from failed block #{conflicted_index} with index: #{index}"
-        sync_chain_from_point(index, socket)
+      index = database.lowest_index_after_block(latest_local_index - count) || latest_local_index
+
+      warning "sync_chain_on_error: attempting to re-sync from failed block #{conflicted_index} with index: #{index}"
+      sync_chain_from_point(index, socket)
     end
 
     private def execute_create(socket : HTTP::WebSocket, block : SlowBlock, latest_block : SlowBlock, from : Chord::NodeContext?)
@@ -778,7 +773,7 @@ module ::Axentro::Core
       _m_content = MContentNodeRequestValidationChallenge.from_json(_content)
 
       remote_index = _m_content.latest_index
- 
+
       info "requested validation challenge with latest index: #{remote_index}"
 
       if remote_index == 0_i64
@@ -788,9 +783,9 @@ module ::Axentro::Core
       else
         # tell child about blocks to validate based on a window of blocks
         # genesis block + (specified percentage of (max slow block - 10 latest slow)) + (specified percentage of (max fast block - 10 latest fast))
-        local_index = database.latest_index
-  
-        validation_index = Math.min(remote_index, local_index)
+        # local_index = database.latest_index
+
+        # validation_index = Math.min(remote_index, local_index)
 
         # chain_integrity = ChainIntegrity.new(validation_slow_index, validation_fast_index, @security_level_percentage)
         # validation_blocks = chain_integrity.get_validation_block_ids
@@ -933,7 +928,7 @@ module ::Axentro::Core
       end
 
       previous_local_index = database.latest_index
- 
+
       replace_result = @blockchain.replace_mixed_chain(_remote_chain)
       if replace_result.success
         latest_local_index = database.latest_index

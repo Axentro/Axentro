@@ -55,13 +55,13 @@ module ::Axentro::Core
     end
 
     def latest_index : Int64
-      idx : Int64? = nil 
+      idx : Int64? = nil
       @db.query("select idx from blocks order by timestamp desc limit 1") do |rows|
-        rows.each do 
+        rows.each do
           idx = rows.read(Int64?)
         end
       end
-    info "database.latest_index: #{idx || 0_i64} "
+      info "database.latest_index: #{idx || 0_i64} "
       idx || 0_i64
     end
 
@@ -96,7 +96,7 @@ module ::Axentro::Core
     def lowest_index_after_block(index : Int64) : Int64?
       idx : Int64? = nil
       @db.query("select idx from blocks where timestamp > (select timestamp from blocks where idx = ?) order by timestamp desc limit 1", index) do |rows|
-        rows.each do 
+        rows.each do
           idx = rows.read(Int64?)
         end
       end

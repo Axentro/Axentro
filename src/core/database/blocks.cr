@@ -103,24 +103,6 @@ module ::Axentro::Core::Data::Blocks
     block
   end
 
-  def get_blocks(index : Int64) : Blockchain::Chain
-    verbose "Reading blocks from the database starting at block #{index}"
-    get_blocks_via_query("select * from blocks where idx >= ?", index)
-  end
-
-  def get_slow_blocks(index : Int64, count : Int32) : Blockchain::Chain
-    verbose "Reading blocks from the database starting at block #{index} with count #{count}"
-    if index == 0
-      get_blocks_via_query("select * from blocks where idx >= ? and kind = 'SLOW' limit ?", index, count)
-    else
-      get_blocks_via_query("select * from blocks where idx > ? and kind = 'SLOW' limit ?", index, count)
-    end
-  end
-
-  def batch_by_time(start : Int32, finish : Int32) : Blockchain::Chain
-    get_blocks_via_query("select * from blocks where idx between ? and ? order by timestamp asc", start, finish)
-  end
-
   def chunk_from(start_index : Int64, chunk_size : Int32) : Blockchain::Chain
     get_blocks_via_query("select * from blocks where timestamp >= (select timestamp from blocks where idx = ?) order by timestamp asc limit ?", start_index, chunk_size)
   end
@@ -128,18 +110,6 @@ module ::Axentro::Core::Data::Blocks
   def get_blocks_by_ids(ids : Array(Int64)) : Blockchain::Chain
     index_list = ids.map(&.to_s).join(",")
     get_blocks_via_query("select * from blocks where idx in (#{index_list})")
-  end
-
-  def get_fast_blocks(index : Int64, count : Int32) : Blockchain::Chain
-    verbose "Reading blocks from the database starting at block #{index} for count #{count}"
-    blocks = get_blocks_via_query("select * from blocks where idx > ? and kind = 'FAST' limit ?", index, count)
-    blocks
-  end
-
-  def get_blocks_not_in_list(the_list : Array(Int64))
-    verbose "get_blocks_not_in_list called, list length: #{the_list.size}"
-    index_list = the_list.map(&.to_s).join(",")
-    get_blocks_via_query("select * from blocks where idx not in (#{index_list})")
   end
 
   def total_blocks : Int32
