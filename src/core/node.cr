@@ -539,7 +539,7 @@ module ::Axentro::Core
 
     # ----- blocks -----
 
-    def send_block(block : SlowBlock | FastBlock, from : Chord::NodeContext? = nil)
+    def send_block(block : SlowBlock, from : Chord::NodeContext? = nil)
       debug "entering send_block"
       content = if from.nil? || (!from.nil? && from[:is_private])
                   {block: block, from: @chord.context}
@@ -562,11 +562,13 @@ module ::Axentro::Core
       send_on_chord(M_TYPE_NODE_SEND_CLIENT_CONTENT, _content, from)
     end
 
-    def broadcast_block(socket : HTTP::WebSocket, block : SlowBlock | FastBlock, from : Chord::NodeContext? = nil)
+    def broadcast_block(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
       info "New #{block.kind} block coming from peer with index: #{block.index}"
-      case block
-      when SlowBlock then broadcast_slow_block(socket, block, from)
-      when FastBlock then broadcast_fast_block(socket, block, from)
+      case BlockKind.parse(block.kind)
+      when BlockKind::SLOW
+        broadcast_slow_block(socket, block, from)
+      when BlockKind::FAST
+        broadcast_fast_block(socket, block, from)
       end
     end
 
@@ -688,7 +690,7 @@ module ::Axentro::Core
       sync_chain(socket, false)
     end
 
-    def fast_block_was_signed_by_official_fast_node?(block : FastBlock) : Bool
+    def fast_block_was_signed_by_official_fast_node?(block : SlowBlock) : Bool
       debug "verifying fast block was signed by official fast node"
       hash_salt = block.hash
       signature = block.signature
@@ -698,7 +700,7 @@ module ::Axentro::Core
     end
 
     # There is only 1 fast node on the network in phase 1 - so use this simple logic until that changes
-    private def broadcast_fast_block(socket : HTTP::WebSocket, block : FastBlock, from : Chord::NodeContext? = nil)
+    private def broadcast_fast_block(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
       if fast_block_was_signed_by_official_fast_node?(block)
         if @blockchain.database.do_i_have_block(block.index)
           if i_am_a_fast_node?
@@ -725,11 +727,8 @@ module ::Axentro::Core
       error e.message || "no message content for exception"
     end
 
-    def new_block(block : SlowBlock | FastBlock)
-      case block
-      when SlowBlock then @blockchain.push_slow_block(block)
-      when FastBlock then @blockchain.push_fast_block(block)
-      end
+    def new_block(block : SlowBlock)
+      @blockchain.push_slow_block(block)
 
       @pubsub_controller.broadcast_latest_block
       @wallet_info_controller.update_wallet_information(block.transactions)

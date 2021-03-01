@@ -135,7 +135,7 @@ describe "Chunked Sync" do
 
   describe "validation on sync - check the % of incoming blocks according to the configured security percentage (20% default)" do
     it "on incoming chain" do
-      incoming_chain = [] of (SlowBlock | FastBlock)
+      incoming_chain = [] of SlowBlock
       with_factory do |block_factory, _|
         block_factory.add_slow_blocks(40)
         sleep 0.001

@@ -54,14 +54,14 @@ module ::Axentro::Core::FastChain
     end
   end
 
-  def latest_fast_block : FastBlock?
+  def latest_fast_block : SlowBlock?
     fast_blocks = @chain.select(&.is_fast_block?)
-    (fast_blocks.size > 0) ? fast_blocks.last.as(FastBlock) : nil
+    (fast_blocks.size > 0) ? fast_blocks.last : nil
   end
 
   def latest_fast_block_index_or_zero : Int64
     fast_blocks = @chain.select(&.is_fast_block?)
-    (fast_blocks.size > 0) ? fast_blocks.last.as(FastBlock).index : 0_i64
+    (fast_blocks.size > 0) ? fast_blocks.last.index : 0_i64
   end
 
   def get_latest_index_for_fast
@@ -88,7 +88,7 @@ module ::Axentro::Core::FastChain
     debug "minting fast block #{latest_index}"
 
     latest_fasts = @database.get_highest_block_for_kind(BlockKind::FAST)
-    _latest_block = latest_fasts.size > 0 ? latest_fasts.first.as(FastBlock) : get_genesis_block
+    _latest_block = latest_fasts.size > 0 ? latest_fasts.first : get_genesis_block
 
     timestamp = __timestamp
 
@@ -97,13 +97,13 @@ module ::Axentro::Core::FastChain
       public_key = wallet.public_key
       latest_block_hash = _latest_block.to_hash
 
-      hash = FastBlock.to_hash(latest_index, transactions, latest_block_hash, address, public_key)
+      hash = SlowBlock.to_hash(latest_index, transactions, latest_block_hash, address, public_key)
       private_key = Wif.new(wallet.wif).private_key.as_hex
       signature = KeyUtils.sign(private_key, hash)
 
       info "#{magenta("MINTING FAST BLOCK")}: #{light_green(latest_index)}"
 
-      FastBlock.new(
+      SlowBlock.new(
         latest_index,
         transactions,
         latest_block_hash,
@@ -205,18 +205,18 @@ module ::Axentro::Core::FastChain
     debug "replace transactions in pool: #{FastTransactionPool.all.size}"
   end
 
-  def clean_fast_transactions_used_in_block(block : FastBlock)
+  def clean_fast_transactions_used_in_block(block : SlowBlock)
     FastTransactionPool.lock
     transactions = pending_fast_transactions.reject { |t| block.find_transaction(t.id) == true }.select(&.is_fast_transaction?)
     FastTransactionPool.replace(transactions)
   end
 
-  def push_fast_block(block : FastBlock)
-    _push_block(block)
-    clean_fast_transactions
+  # def push_fast_block(block : SlowBlock)
+  #   _push_block(block)
+  #   clean_fast_transactions
 
-    block
-  end
+  #   block
+  # end
 
   include Block
   include ::Axentro::Core::DApps::BuildIn

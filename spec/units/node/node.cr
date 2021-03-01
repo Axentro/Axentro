@@ -45,11 +45,11 @@ private def create_fast_block(wallet)
   address = wallet.address
   public_key = wallet.public_key
 
-  hash = FastBlock.to_hash(latest_index, transactions, latest_block_hash, address, public_key)
+  hash = SlowBlock.to_hash(latest_index, transactions, latest_block_hash, address, public_key)
   private_key = Wif.new(wallet.wif).private_key.as_hex
   signature = KeyUtils.sign(private_key, hash)
 
-  FastBlock.new(
+  SlowBlock.new(
     latest_index,
     transactions,
     latest_block_hash,

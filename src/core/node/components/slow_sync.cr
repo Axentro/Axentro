@@ -27,9 +27,9 @@ module ::Axentro::Core::NodeComponents
   struct RejectBlock
     include JSON::Serializable
     property reason : RejectBlockReason
-    property rejected : SlowBlock | FastBlock
+    property rejected : SlowBlock
     property latest : SlowBlock
-    property same : SlowBlock? | FastBlock?
+    property same : SlowBlock?
 
     def initialize(@reason, @rejected, @latest, @same); end
   end

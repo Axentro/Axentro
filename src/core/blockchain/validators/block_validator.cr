@@ -24,7 +24,7 @@ module ::Axentro::Core::BlockValidator
     end
   end
 
-  def validate_fast(block : FastBlock, blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : ValidatedFastBlock
+  def validate_fast(block : SlowBlock, blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : ValidatedSlowBlock
     validate_fast_block(block, blockchain, skip_transactions, doing_replace)
   end
 
@@ -45,7 +45,7 @@ module ::Axentro::Core::BlockValidator
     prev_block_index = block.index - 2_i64
     _prev_block = blockchain.database.get_previous_slow_from(prev_block_index)
     raise AxentroException.new("(slow_block::valid?) error finding previous slow block: #{prev_block_index} for current block: #{block.index}") if _prev_block.nil?
-    prev_block = _prev_block.not_nil!.as(SlowBlock)
+    prev_block = _prev_block.not_nil!
 
     BlockValidator::Rules.rule_network_type(chain_network, block_network)
 
@@ -69,15 +69,15 @@ module ::Axentro::Core::BlockValidator
     ValidatedSlowBlock.new(false, block, "unexpected error: #{e.message || "unknown error"}")
   end
 
-  def validate_fast_block(block : FastBlock, blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : ValidatedFastBlock
+  def validate_fast_block(block : SlowBlock, blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : ValidatedSlowBlock
     chain_network = blockchain.database.chain_network_kind
     block_network = Address.get_network_from_address(block.address)
 
     prev_block_index = block.index - 2_i64
     _prev_block = blockchain.database.get_block(prev_block_index)
 
-    raise AxentroException.new("(fast_block::valid?) error finding previous slow block: #{prev_block_index} for current block: #{block.index}") if _prev_block.nil?
-    prev_block = _prev_block.not_nil!.as(FastBlock)
+    raise AxentroException.new("(fast_block::valid?) error finding previous fast block: #{prev_block_index} for current block: #{block.index}") if _prev_block.nil?
+    prev_block = _prev_block.not_nil!
 
     BlockValidator::Rules.rule_fast_signature(block)
 
@@ -93,12 +93,12 @@ module ::Axentro::Core::BlockValidator
 
     BlockValidator::Rules.rule_merkle_tree(block)
 
-    ValidatedFastBlock.new(true, block)
+    ValidatedSlowBlock.new(true, block)
   rescue e : Axentro::Common::AxentroException
-    ValidatedFastBlock.new(false, block, e.message || "unknown error")
+    ValidatedSlowBlock.new(false, block, e.message || "unknown error")
   rescue e : Exception
     error("#{e.class}: #{e.message || "unknown error"}\n#{e.backtrace.join("\n")}")
-    ValidatedFastBlock.new(false, block, "unexpected error: #{e.message || "unknown error"}")
+    ValidatedSlowBlock.new(false, block, "unexpected error: #{e.message || "unknown error"}")
   end
 
   module Rules
@@ -217,14 +217,6 @@ module ::Axentro::Core::BlockValidator
   struct ValidatedSlowBlock
     getter valid : Bool
     getter block : SlowBlock
-    getter reason : String
-
-    def initialize(@valid, @block, @reason = ""); end
-  end
-
-  struct ValidatedFastBlock
-    getter valid : Bool
-    getter block : FastBlock
     getter reason : String
 
     def initialize(@valid, @block, @reason = ""); end

@@ -42,10 +42,46 @@ module ::Axentro::Core
       @hash : String,
       @version : String
     )
-      if @kind == BlockKind::SLOW && index.odd?
+      @merkle_tree_root = calculate_merkle_tree_root(@transactions)
+    end
+
+    def initialize(
+      @index : Int64,
+      @transactions : Array(Transaction),
+      @nonce : BlockNonce,
+      @prev_hash : String,
+      @timestamp : Int64,
+      @difficulty : Int32,
+      @address : String,
+      @version : String
+    )
+      @public_key = ""
+      @signature = ""
+      @hash = ""
+      @kind = BlockKind::SLOW
+      if index.odd?
         raise AxentroException.new("index must be even number")
       end
-      if @kind == BlockKind::FAST && index.even?
+
+      @merkle_tree_root = calculate_merkle_tree_root(@transactions)
+    end
+
+    def initialize(
+      @index : Int64,
+      @transactions : Array(Transaction),
+      @prev_hash : String,
+      @timestamp : Int64,
+      @address : String,
+      @public_key : String,
+      @signature : String,
+      @hash : String,
+      @version : String
+    )
+      @nonce = ""
+      @difficulty = 0
+      @kind = BlockKind::FAST
+
+      if index.even?
         raise AxentroException.new("index must be odd number")
       end
 
@@ -53,14 +89,14 @@ module ::Axentro::Core
     end
 
     def to_header : Blockchain::Header
-        {
-          index:            @index,
-          nonce:            @nonce,
-          prev_hash:        @prev_hash,
-          merkle_tree_root: @merkle_tree_root,
-          timestamp:        @timestamp,
-          difficulty:       @difficulty,
-        }
+      {
+        index:            @index,
+        nonce:            @nonce,
+        prev_hash:        @prev_hash,
+        merkle_tree_root: @merkle_tree_root,
+        timestamp:        @timestamp,
+        difficulty:       @difficulty,
+      }
     end
 
     def to_hash : String
@@ -125,15 +161,16 @@ module ::Axentro::Core
     end
 
     def valid?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool
-      # if @kind == BlockKind::FAST
-      #   return true if @index <= 1_i64
-      #   validated_block = BlockValidator.validate_fast(self.as(FastBlock), blockchain, skip_transactions, doing_replace)
-      #   validated_block.valid ? validated_block.valid : raise Axentro::Common::AxentroException.new(validated_block.reason)
-      # else
-      #   validated_block = BlockValidator.validate_slow(self.as(SlowBlock), blockchain, skip_transactions, doing_replace)
-      #   validated_block.valid ? validated_block.valid : raise Axentro::Common::AxentroException.new(validated_block.reason)
-      # end
-      true
+      if @kind == Block::BlockKind::FAST
+        info "valid? fast"
+        return true if @index <= 1_i64
+        validated_block = BlockValidator.validate_fast(self, blockchain, skip_transactions, doing_replace)
+        validated_block.valid ? validated_block.valid : raise Axentro::Common::AxentroException.new(validated_block.reason)
+      else
+        info "valid? slow"
+        validated_block = BlockValidator.validate_slow(self, blockchain, skip_transactions, doing_replace)
+        validated_block.valid ? validated_block.valid : raise Axentro::Common::AxentroException.new(validated_block.reason)
+      end
     end
 
     def find_transaction(transaction_id : String) : Transaction?

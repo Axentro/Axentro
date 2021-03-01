@@ -247,7 +247,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeBroadcastBlock
     include JSON::Serializable
-    property block : SlowBlock | FastBlock
+    property block : SlowBlock
     property from : Core::NodeComponents::Chord::NodeContext
   end
 

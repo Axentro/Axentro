@@ -38,7 +38,7 @@ module ::Axentro::Core
       difficulty: Int32,
     )
 
-    getter chain : Chain = [] of (SlowBlock | FastBlock)
+    getter chain : Chain = [] of SlowBlock
     # getter wallet : Wallet
     getter wallet_address : String
     getter max_miners : Int32
@@ -218,14 +218,18 @@ module ::Axentro::Core
       mining_block.with_nonce(block_nonce).valid_block_nonce?(mining_block_difficulty)
     end
 
-    def valid_block?(block : SlowBlock | FastBlock, skip_transactions : Bool = false, doing_replace : Bool = false) : SlowBlock? | FastBlock?
-      case block
-      when SlowBlock
-        return block if block.valid?(self, skip_transactions, doing_replace)
-      when FastBlock
-        return block if block.valid?(self, skip_transactions, doing_replace)
-      end
-      nil
+    # def valid_block?(block : SlowBlock | FastBlock, skip_transactions : Bool = false, doing_replace : Bool = false) : SlowBlock? | FastBlock?
+    #   case block
+    #   when SlowBlock
+    #     return block if block.valid?(self, skip_transactions, doing_replace)
+    #   when FastBlock
+    #     return block if block.valid?(self, skip_transactions, doing_replace)
+    #   end
+    #   nil
+    # end
+
+    def valid_block?(block : SlowBlock, skip_transactions : Bool = false, doing_replace : Bool = false) : SlowBlock?
+      block if block.valid?(self, skip_transactions, doing_replace)
     end
 
     def mining_block_difficulty : Int32
@@ -248,7 +252,7 @@ module ::Axentro::Core
       block_difficulty_to_miner_difficulty(difficulty)
     end
 
-    def replace_block(block : SlowBlock | FastBlock)
+    def replace_block(block : SlowBlock)
       target_index = @chain.index { |b| b.index == block.index }
       if target_index
         @chain[target_index] = block
@@ -265,6 +269,7 @@ module ::Axentro::Core
     def push_slow_block(block : SlowBlock)
       _push_block(block)
       clean_slow_transactions
+      clean_fast_transactions
 
       debug "after clean_transactions, now calling refresh_mining_block in push_block"
       refresh_mining_block
@@ -314,7 +319,7 @@ module ::Axentro::Core
       end
     end
 
-    private def _push_block(block : SlowBlock | FastBlock)
+    private def _push_block(block : SlowBlock)
       @chain.push(block)
       debug "sending #{block.kind} block to DB with timestamp of #{block.timestamp}"
       @database.push_block(block)
@@ -456,7 +461,7 @@ module ::Axentro::Core
       MinerNoncePool
     end
 
-    def latest_block : SlowBlock | FastBlock
+    def latest_block : SlowBlock
       @chain[-1]
     end
 
@@ -476,11 +481,11 @@ module ::Axentro::Core
       slow_blocks[-2].as(SlowBlock)
     end
 
-    def latest_fast_block_when_replacing : FastBlock
+    def latest_fast_block_when_replacing : SlowBlock
       fast_blocks = @chain.select(&.is_fast_block?)
       debug "number of fast blocks when replace attempted: #{fast_blocks.size}"
-      return fast_blocks[0].as(FastBlock) if fast_blocks.size == 1
-      fast_blocks[-2].as(FastBlock)
+      return fast_blocks[0] if fast_blocks.size == 1
+      fast_blocks[-2]
     end
 
     def latest_index : Int64
@@ -553,17 +558,13 @@ module ::Axentro::Core
       FastTransactionPool.embedded
     end
 
-    def replace_with_block_from_peer(block : SlowBlock | FastBlock)
+    def replace_with_block_from_peer(block : SlowBlock)
       replace_block(block)
       debug "replace transactions in indices array that were in the block being replaced with those from the replacement block"
       dapps_clear_record
       debug "cleaning the transactions because of the replacement"
-      case block
-      when SlowBlock
-        clean_slow_transactions_used_in_block(block)
-      when FastBlock
-        clean_fast_transactions_used_in_block(block)
-      end
+      clean_slow_transactions_used_in_block(block)
+      clean_fast_transactions_used_in_block(block)
       debug "refreshing mining block after accepting new block from peer"
       refresh_mining_block if block.kind == "SLOW"
     end
@@ -611,11 +612,7 @@ module ::Axentro::Core
         latest_slow_block.to_hash,
         timestamp,
         latest_slow_block.difficulty,
-        BlockKind::SLOW,
         @wallet_address,
-        "",
-        "",
-        "",
         Core::BLOCK_VERSION
       )
 

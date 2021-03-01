@@ -19,18 +19,13 @@ module ::Axentro::Core::Data::Blocks
   end
 
   # ------- Insert -------
-  def block_insert_values_array(block : SlowBlock | FastBlock) : Array(DB::Any)
+  def block_insert_values_array(block : SlowBlock) : Array(DB::Any)
     ary = [] of DB::Any
-    case block
-    when SlowBlock
-      ary << block.index << block.nonce.to_s << block.prev_hash << block.timestamp << block.difficulty << block.address << block.kind.to_s << "" << "" << "" << block.version
-    when FastBlock
-      ary << block.index << "" << block.prev_hash << block.timestamp << 0 << block.address << block.kind.to_s << block.public_key << block.signature << block.hash << block.version
-    end
+    ary << block.index << block.nonce.to_s << block.prev_hash << block.timestamp << block.difficulty << block.address << block.kind.to_s << block.public_key << block.signature << block.hash << block.version
     ary
   end
 
-  def push_block(block : SlowBlock | FastBlock)
+  def push_block(block : SlowBlock)
     verbose "database.push_block with block index #{block.index} of kind: #{block.kind}"
     @db.exec "BEGIN TRANSACTION"
     block.transactions.each_with_index do |t, ti|
@@ -53,7 +48,7 @@ module ::Axentro::Core::Data::Blocks
 
   # ------- Query -------
   def get_blocks_via_query(the_query, *args) : Blockchain::Chain
-    blocks : Blockchain::Chain = [] of SlowBlock | FastBlock
+    blocks : Blockchain::Chain = [] of SlowBlock
     @db.query(the_query, args: args.to_a) do |rows|
       rows.each do
         idx = rows.read(Int64)
@@ -67,31 +62,12 @@ module ::Axentro::Core::Data::Blocks
         signature = rows.read(String)
         hash = rows.read(String)
         version = rows.read(String)
-        verbose "read block idx: #{idx}"
-        verbose "read nonce: #{nonce}"
-        verbose "read prev_hash: #{prev_hash}"
-        verbose "read timestamp: #{timestamp}"
-        verbose "read address: #{address}"
-        verbose "read block kind: #{kind_string}"
-        # if kind_string == "SLOW"
-          verbose "read diffculty: #{diffculty}"
-          blocks << SlowBlock.new(idx, [] of Transaction, nonce, prev_hash, timestamp, diffculty, Block::BlockKind.parse(kind_string), address, public_key, signature, hash, version)
-        # else
-        #   verbose "read public_key: #{public_key}"
-        #   verbose "read signature: #{signature}"
-        #   verbose "read hash: #{hash}"
-        #   blocks << FastBlock.new(idx, [] of Transaction, prev_hash, timestamp, address, public_key, signature, hash, version)
-        # end
+        blocks << SlowBlock.new(idx, [] of Transaction, nonce, prev_hash, timestamp, diffculty, Block::BlockKind.parse(kind_string), address, public_key, signature, hash, version)
       end
     end
 
     blocks.each do |block|
-      case block
-      when SlowBlock
-        block.set_transactions(get_all_transactions(block.index))
-      when FastBlock
-        block.set_transactions(get_all_transactions(block.index))
-      end
+      block.set_transactions(get_all_transactions(block.index))
     end
 
     blocks

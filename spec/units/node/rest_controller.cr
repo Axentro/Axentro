@@ -65,21 +65,21 @@ describe RESTController do
   describe "__v1_blockchain_header" do
     it "should return the blockchain headers with pagination defaults (page:0,per_page:20,direction:desc)" do
       asset_blockchain_header("/api/v1/blockchain/header") do |result|
-        blocks = Array(Blockchain::SlowHeader).from_json(result["data"].to_json)
+        blocks = Array(Blockchain::Header).from_json(result["data"].to_json)
         blocks.size.should eq(20)
         blocks.first[:index].should eq(100)
       end
     end
     it "should return the blockchain headers with pagination specified direction (page:0,per_page:20,direction:asc)" do
       asset_blockchain_header("/api/v1/blockchain/header/?direction=up") do |result|
-        blocks = Array(Blockchain::SlowHeader).from_json(result["data"].to_json)
+        blocks = Array(Blockchain::Header).from_json(result["data"].to_json)
         blocks.size.should eq(20)
         blocks.first[:index].should eq(0)
       end
     end
     it "should return the blockchain headers with pagination specified direction (page:2,per_page:1,direction:desc)" do
       asset_blockchain_header("/api/v1/blockchain/header?page=2&per_page=1&direction=down") do |result|
-        blocks = Array(Blockchain::SlowHeader).from_json(result["data"].to_json)
+        blocks = Array(Blockchain::Header).from_json(result["data"].to_json)
         blocks.size.should eq(1)
         blocks.first[:index].should eq(98)
       end
@@ -140,7 +140,7 @@ describe RESTController do
         block_factory.add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_block_index_header(context("/api/v1/block/0/header"), {index: 0})) do |result|
           result["status"].to_s.should eq("success")
-          Blockchain::SlowHeader.from_json(result["result"].to_json)
+          Blockchain::Header.from_json(result["result"].to_json)
         end
       end
     end
@@ -221,7 +221,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_transaction_id_block_header(context("/api/v1/transaction/#{transaction.id}/block/header"), {id: transaction.id})) do |result|
           result["status"].to_s.should eq("success")
-          Blockchain::SlowHeader.from_json(result["result"].to_json)
+          Blockchain::Header.from_json(result["result"].to_json)
         end
       end
     end

@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core::Block
-  alias Chain = Array(SlowBlock | FastBlock)
+  alias Chain = Array(SlowBlock)
 
   enum BlockKind
     SLOW
