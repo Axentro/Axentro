@@ -162,12 +162,10 @@ module ::Axentro::Core
 
     def valid?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool
       if @kind == Block::BlockKind::FAST
-        info "valid? fast"
         return true if @index <= 1_i64
         validated_block = BlockValidator.validate_fast(self, blockchain, skip_transactions, doing_replace)
         validated_block.valid ? validated_block.valid : raise Axentro::Common::AxentroException.new(validated_block.reason)
       else
-        info "valid? slow"
         validated_block = BlockValidator.validate_slow(self, blockchain, skip_transactions, doing_replace)
         validated_block.valid ? validated_block.valid : raise Axentro::Common::AxentroException.new(validated_block.reason)
       end
