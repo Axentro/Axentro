@@ -61,7 +61,7 @@ module ::Axentro::Core
           idx = rows.read(Int64?)
         end
       end
-      info "database.latest_index: #{idx || 0_i64} "
+      debug "database.latest_index: #{idx || 0_i64} "
       idx || 0_i64
     end
 

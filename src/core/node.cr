@@ -767,7 +767,6 @@ module ::Axentro::Core
       @clients_manager.receive_content(content, from)
     end
 
-    # TODO - fix me
     # on the parent
     private def _request_validation_challenge(socket, _content)
       _m_content = MContentNodeRequestValidationChallenge.from_json(_content)
@@ -782,15 +781,14 @@ module ::Axentro::Core
         send(socket, M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS, {} of String => String)
       else
         # tell child about blocks to validate based on a window of blocks
-        # genesis block + (specified percentage of (max slow block - 10 latest slow)) + (specified percentage of (max fast block - 10 latest fast))
-        # local_index = database.latest_index
+        # genesis block + (specified percentage of (max block - 10 latest))
+        local_index = database.latest_index
 
-        # validation_index = Math.min(remote_index, local_index)
+        validation_index = Math.min(remote_index, local_index)
 
-        # chain_integrity = ChainIntegrity.new(validation_slow_index, validation_fast_index, @security_level_percentage)
-        # validation_blocks = chain_integrity.get_validation_block_ids
-        # @validation_hash = @blockchain.get_hash_of_block_hashes(validation_blocks)
-        validation_blocks = [0_i64]
+        chain_integrity = ChainIntegrity.new(validation_index, @security_level_percentage)
+        validation_blocks = chain_integrity.get_validation_block_ids
+        @validation_hash = @blockchain.get_hash_of_block_hashes(validation_blocks)
 
         info "validation challenge proceeding..."
         send(socket, M_TYPE_NODE_RECEIVE_VALIDATION_CHALLENGE, {validation_blocks: validation_blocks})
@@ -821,17 +819,17 @@ module ::Axentro::Core
     # on the parent
     private def _request_validation_challenge_check(socket, _content)
       _m_content = MContentNodeRequestValidationChallengeCheck.from_json(_content)
-      # validation_hash = _m_content.validation_hash
+      validation_hash = _m_content.validation_hash
 
       debug "checking validation challenge hash from connecting node"
 
-      # if validation_hash == @validation_hash
+      if validation_hash == @validation_hash
       info "validation hash succesfully confirmed so informing connecting node"
       send(socket, M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS, {} of String => String)
-      # else
-      #   warning "validation hash failed so rejecting connection ..."
-      #   send(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Database validation failed: your data is not compatible with our data!"})
-      # end
+      else
+        warning "validation hash failed so rejecting connection ..."
+        send(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Database validation failed: your data is not compatible with our data!"})
+      end
     end
 
     # on the child
@@ -852,7 +850,7 @@ module ::Axentro::Core
 
       target_index = database.latest_index
 
-      info "(_request_chain_size) responding from parent with:  remote_index: #{remote_index}, target_index: #{target_index}"
+      debug "(_request_chain_size) responding from parent with:  remote_index: #{remote_index}, target_index: #{target_index}"
       send(socket, M_TYPE_NODE_RECEIVE_CHAIN_SIZE, {chunk_size: chunk_size, start_index: remote_index, target_index: target_index})
 
       if database.get_block(remote_index).nil?
@@ -874,7 +872,7 @@ module ::Axentro::Core
 
       latest_local_index = database.latest_index
 
-      info "(_receive_chain_size) receiving from parent with:  remote_index: #{_remote_start_index}, latest_local_index: #{latest_local_index}, @sync_blocks_target_index: #{@sync_blocks_target_index}"
+      debug "(_receive_chain_size) receiving from parent with:  remote_index: #{_remote_start_index}, latest_local_index: #{latest_local_index}, @sync_blocks_target_index: #{@sync_blocks_target_index}"
 
       if database.get_block(@sync_blocks_target_index)
         # nothing to sync so proceed to transaction syncing
