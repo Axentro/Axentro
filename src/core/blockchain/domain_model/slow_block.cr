@@ -100,8 +100,18 @@ module ::Axentro::Core
     end
 
     def to_hash : String
-      string = SlowBlockNoTimestamp.from_slow_block(self).to_json
-      sha256(string)
+      if @version == "V1"
+        if @kind == BlockKind::FAST
+          string = FastBlockNoTimestampV1.from_fast_block(self).to_json
+          sha256(string)
+        else
+          string = SlowBlockNoTimestampV1.from_slow_block(self).to_json
+          sha256(string)
+        end
+      else
+        string = SlowBlockNoTimestampV2.from_slow_block(self).to_json
+        sha256(string)
+      end
     end
 
     # for fast block
@@ -189,7 +199,63 @@ module ::Axentro::Core
     include NonceModels
   end
 
-  class SlowBlockNoTimestamp
+  class SlowBlockNoTimestampV1
+    include JSON::Serializable
+    property index : Int64
+    property transactions : Array(Transaction)
+    property nonce : String
+    property prev_hash : String
+    property merkle_tree_root : String
+    property difficulty : Int32
+    property address : String
+
+    def self.from_slow_block(b : SlowBlock)
+      self.new(b.index, b.transactions, b.nonce, b.prev_hash, b.merkle_tree_root, b.difficulty, b.address)
+    end
+
+    def initialize(
+      @index : Int64,
+      @transactions : Array(Transaction),
+      @nonce : String,
+      @prev_hash : String,
+      @merkle_tree_root : String,
+      @difficulty : Int32,
+      @address : String
+    )
+    end
+
+    include NonceModels
+  end
+
+  class FastBlockNoTimestampV1
+    include JSON::Serializable
+    property index : Int64
+    property transactions : Array(Transaction)
+    property prev_hash : String
+    property merkle_tree_root : String
+    property address : String
+    property public_key : String
+    property signature : String
+    property hash : String
+
+    def self.from_fast_block(b : SlowBlock)
+      self.new(b.index, b.transactions, b.prev_hash, b.merkle_tree_root, b.address, b.public_key, b.signature, b.hash)
+    end
+
+    def initialize(
+      @index : Int64,
+      @transactions : Array(Transaction),
+      @prev_hash : String,
+      @merkle_tree_root : String,
+      @address : String,
+      @public_key : String,
+      @signature : String,
+      @hash : String
+    )
+    end
+  end
+
+  class SlowBlockNoTimestampV2
     include JSON::Serializable
     property index : Int64
     property transactions : Array(Transaction)
@@ -204,7 +270,7 @@ module ::Axentro::Core
     property version : String
 
     def self.from_slow_block(b : SlowBlock)
-      SlowBlockNoTimestamp.new(b.index, b.transactions, b.nonce, b.prev_hash, b.merkle_tree_root, b.difficulty, b.address, b.public_key, b.signature, b.hash, b.version)
+      self.new(b.index, b.transactions, b.nonce, b.prev_hash, b.merkle_tree_root, b.difficulty, b.address, b.public_key, b.signature, b.hash, b.version)
     end
 
     def initialize(
