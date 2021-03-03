@@ -15,13 +15,13 @@ require "../blockchain/domain_model/*"
 module ::Axentro::Core::Data::Blocks
   # ------- Definition -------
   def block_insert_fields_string : String
-    "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
+    "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
   end
 
   # ------- Insert -------
   def block_insert_values_array(block : SlowBlock) : Array(DB::Any)
     ary = [] of DB::Any
-    ary << block.index << block.nonce.to_s << block.prev_hash << block.timestamp << block.difficulty << block.address << block.kind.to_s << block.public_key << block.signature << block.hash << block.version
+    ary << block.index << block.nonce.to_s << block.prev_hash << block.timestamp << block.difficulty << block.address << block.kind.to_s << block.public_key << block.signature << block.hash << block.version << block.hash_version
     ary
   end
 
@@ -62,7 +62,8 @@ module ::Axentro::Core::Data::Blocks
         signature = rows.read(String)
         hash = rows.read(String)
         version = rows.read(String)
-        blocks << SlowBlock.new(idx, [] of Transaction, nonce, prev_hash, timestamp, diffculty, Block::BlockKind.parse(kind_string), address, public_key, signature, hash, version)
+        hash_version = rows.read(String)
+        blocks << SlowBlock.new(idx, [] of Transaction, nonce, prev_hash, timestamp, diffculty, Block::BlockKind.parse(kind_string), address, public_key, signature, hash, version, hash_version)
       end
     end
 

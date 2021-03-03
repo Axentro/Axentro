@@ -824,8 +824,8 @@ module ::Axentro::Core
       debug "checking validation challenge hash from connecting node"
 
       if validation_hash == @validation_hash
-      info "validation hash succesfully confirmed so informing connecting node"
-      send(socket, M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS, {} of String => String)
+        info "validation hash succesfully confirmed so informing connecting node"
+        send(socket, M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS, {} of String => String)
       else
         warning "validation hash failed so rejecting connection ..."
         send(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Database validation failed: your data is not compatible with our data!"})
@@ -896,7 +896,7 @@ module ::Axentro::Core
 
       blocks = database.chunk_from(remote_start_index, chunk_size)
 
-      info "(_request_chain) requested new chain start index: #{remote_start_index}, found blocks: #{blocks.size}"
+      info "requested new chain start index: #{remote_start_index}, found blocks: #{blocks.size}"
 
       METRICS_NODES_COUNTER[kind: "sync_requested"].inc
       send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {blocks: blocks, chunk_size: chunk_size})

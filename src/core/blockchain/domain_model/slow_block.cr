@@ -27,7 +27,9 @@ module ::Axentro::Core
     property signature : String
     property hash : String
     property version : String
+    property hash_version : String
 
+    # full
     def initialize(
       @index : Int64,
       @transactions : Array(Transaction),
@@ -40,11 +42,13 @@ module ::Axentro::Core
       @public_key : String,
       @signature : String,
       @hash : String,
-      @version : String
+      @version : String,
+      @hash_version : String
     )
       @merkle_tree_root = calculate_merkle_tree_root(@transactions)
     end
 
+    # slow
     def initialize(
       @index : Int64,
       @transactions : Array(Transaction),
@@ -53,7 +57,8 @@ module ::Axentro::Core
       @timestamp : Int64,
       @difficulty : Int32,
       @address : String,
-      @version : String
+      @version : String,
+      @hash_version : String
     )
       @public_key = ""
       @signature = ""
@@ -66,6 +71,7 @@ module ::Axentro::Core
       @merkle_tree_root = calculate_merkle_tree_root(@transactions)
     end
 
+    # fast
     def initialize(
       @index : Int64,
       @transactions : Array(Transaction),
@@ -75,7 +81,8 @@ module ::Axentro::Core
       @public_key : String,
       @signature : String,
       @hash : String,
-      @version : String
+      @version : String,
+      @hash_version : String
     )
       @nonce = ""
       @difficulty = 0
@@ -100,7 +107,10 @@ module ::Axentro::Core
     end
 
     def to_hash : String
-      if @version == "V1"
+      if @version == Core::BLOCK_VERSION
+        string = SlowBlockNoTimestampV2.from_block(self).to_json
+        argon2(string)
+      else
         if @kind == BlockKind::FAST
           string = FastBlockNoTimestampV1.from_fast_block(self).to_json
           sha256(string)
@@ -108,9 +118,6 @@ module ::Axentro::Core
           string = SlowBlockNoTimestampV1.from_slow_block(self).to_json
           sha256(string)
         end
-      else
-        string = SlowBlockNoTimestampV2.from_slow_block(self).to_json
-        sha256(string)
       end
     end
 
@@ -129,7 +136,7 @@ module ::Axentro::Core
         tmp_hashes = [] of String
 
         (current_hashes.size / 2).to_i.times do |i|
-          tmp_hashes.push(sha256(current_hashes[i*2] + current_hashes[i*2 + 1]))
+          tmp_hashes.push(apply_merkle_hash_version(current_hashes[i*2] + current_hashes[i*2 + 1]))
         end
 
         tmp_hashes.push(current_hashes[-1]) if current_hashes.size % 2 == 1
@@ -139,6 +146,14 @@ module ::Axentro::Core
       end
 
       ripemd160(current_hashes[0])
+    end
+
+    private def apply_merkle_hash_version(hash)
+      if @hash_version == Core::HASH_VERSION
+        argon2(hash)
+      else
+        sha256(hash)
+      end
     end
 
     def is_slow_block?
@@ -255,6 +270,38 @@ module ::Axentro::Core
     end
   end
 
+  # class FastBlockNoTimestampV2
+  #   include JSON::Serializable
+  #   property index : Int64
+  #   property transactions : Array(Transaction)
+  #   property prev_hash : String
+  #   property merkle_tree_root : String
+  #   property address : String
+  #   property public_key : String
+  #   property signature : String
+  #   property hash : String
+  #   property version : String
+  #   property hash_version : String
+
+  #   def self.from_fast_block(b : SlowBlock)
+  #     self.new(b.index, b.transactions, b.prev_hash, b.merkle_tree_root, b.address, b.public_key, b.signature, b.hash, b.version, b.hash_version)
+  #   end
+
+  #   def initialize(
+  #     @index : Int64,
+  #     @transactions : Array(Transaction),
+  #     @prev_hash : String,
+  #     @merkle_tree_root : String,
+  #     @address : String,
+  #     @public_key : String,
+  #     @signature : String,
+  #     @hash : String,
+  #     @version : String,
+  #     @hash_version : String
+  #   )
+  #   end
+  # end
+
   class SlowBlockNoTimestampV2
     include JSON::Serializable
     property index : Int64
@@ -268,9 +315,10 @@ module ::Axentro::Core
     property signature : String
     property hash : String
     property version : String
+    property hash_version : String
 
-    def self.from_slow_block(b : SlowBlock)
-      self.new(b.index, b.transactions, b.nonce, b.prev_hash, b.merkle_tree_root, b.difficulty, b.address, b.public_key, b.signature, b.hash, b.version)
+    def self.from_block(b : SlowBlock)
+      self.new(b.index, b.transactions, b.nonce, b.prev_hash, b.merkle_tree_root, b.difficulty, b.address, b.public_key, b.signature, b.hash, b.version, b.hash_version)
     end
 
     def initialize(
@@ -284,7 +332,8 @@ module ::Axentro::Core
       @public_key : String,
       @signature : String,
       @hash : String,
-      @version : String
+      @version : String,
+      @hash_version : String
     )
     end
 

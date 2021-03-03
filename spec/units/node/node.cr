@@ -58,6 +58,7 @@ private def create_fast_block(wallet)
     public_key,
     signature,
     hash,
-    BLOCK_VERSION
+    BLOCK_VERSION,
+    HASH_VERSION
   )
 end

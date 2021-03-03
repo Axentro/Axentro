@@ -517,6 +517,7 @@ module ::Axentro::Core
       signature = ""
       hash = ""
       version = Core::BLOCK_VERSION
+      hash_version = Core::HASH_VERSION
 
       SlowBlock.new(
         genesis_index,
@@ -530,7 +531,8 @@ module ::Axentro::Core
         public_key,
         signature,
         hash,
-        version
+        version,
+        hash_version
       )
     end
 
@@ -613,7 +615,8 @@ module ::Axentro::Core
         timestamp,
         latest_slow_block.difficulty,
         @wallet_address,
-        Core::BLOCK_VERSION
+        Core::BLOCK_VERSION,
+        Core::HASH_VERSION
       )
 
       latest_hash = @mining_block.not_nil!.to_hash
