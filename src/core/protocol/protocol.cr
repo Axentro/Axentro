@@ -9,7 +9,6 @@
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
-require "../blockchain/block"
 require "../blockchain/rewards/models"
 require "../node/components/slow_sync"
 
@@ -32,7 +31,7 @@ module ::Axentro::Core::Protocol
   struct MContentMinerHandshakeAccepted
     include JSON::Serializable
     property version : String
-    property block : SlowBlock
+    property block : Block
     property difficulty : Int32
   end
 
@@ -54,7 +53,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentMinerBlockUpdate
     include JSON::Serializable
-    property block : SlowBlock
+    property block : Block
     property difficulty : Int32
   end
 
@@ -62,7 +61,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentMinerBlockDifficultyAdjust
     include JSON::Serializable
-    property block : SlowBlock
+    property block : Block
     property difficulty : Int32
     property reason : String
   end
@@ -71,7 +70,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentMinerBlockInvalid
     include JSON::Serializable
-    property block : SlowBlock
+    property block : Block
     property difficulty : Int32
     property reason : String
   end
@@ -247,7 +246,7 @@ module ::Axentro::Core::Protocol
 
   struct MContentNodeBroadcastBlock
     include JSON::Serializable
-    property block : SlowBlock
+    property block : Block
     property from : Core::NodeComponents::Chord::NodeContext
   end
 
@@ -383,7 +382,7 @@ module ::Axentro::Core::Protocol
     DONE
   end
 
-  include Block
+  include ::Axentro::Core
   include ::Axentro::Core::NodeComponents
   include ::Axentro::Core::NonceModels
 end

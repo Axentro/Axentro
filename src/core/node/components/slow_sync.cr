@@ -27,19 +27,19 @@ module ::Axentro::Core::NodeComponents
   struct RejectBlock
     include JSON::Serializable
     property reason : RejectBlockReason
-    property rejected : SlowBlock
-    property latest : SlowBlock
-    property same : SlowBlock?
+    property rejected : Block
+    property latest : Block
+    property same : Block?
 
     def initialize(@reason, @rejected, @latest, @same); end
   end
 
   class SlowSync
-    def initialize(@incoming_block : SlowBlock, @mining_block : SlowBlock, @has_block : SlowBlock?, @latest_slow : SlowBlock); end
+    def initialize(@incoming_block : Block, @mining_block : Block, @has_block : Block?, @latest_slow : Block); end
 
     def process : SlowSyncState
       if @has_block
-        already_in_db(@has_block.not_nil!.as(SlowBlock))
+        already_in_db(@has_block.not_nil!.as(Block))
       else
         not_in_db
       end
@@ -61,7 +61,7 @@ module ::Axentro::Core::NodeComponents
       end
     end
 
-    private def already_in_db(existing_block : SlowBlock)
+    private def already_in_db(existing_block : Block)
       # if incoming block latest in sequence
       if @incoming_block.index == @latest_slow.index
         if @incoming_block.difficulty > existing_block.difficulty

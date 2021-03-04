@@ -41,21 +41,21 @@ describe RESTController do
   describe "__v1_blockchain" do
     it "should return the full blockchain with pagination defaults (page:0,per_page:20,direction:desc)" do
       asset_blockchain("/api/v1/blockchain") do |result|
-        blocks = Array(SlowBlock).from_json(result["data"].to_json)
+        blocks = Array(Block).from_json(result["data"].to_json)
         blocks.size.should eq(20)
         blocks.first.index.should eq(100)
       end
     end
     it "should return the full blockchain with pagination specified direction (page:0,per_page:20,direction:asc)" do
       asset_blockchain("/api/v1/blockchain?direction=up") do |result|
-        blocks = Array(SlowBlock).from_json(result["data"].to_json)
+        blocks = Array(Block).from_json(result["data"].to_json)
         blocks.size.should eq(20)
         blocks.first.index.should eq(0)
       end
     end
     it "should return the full blockchain with pagination specified direction (page:2,per_page:1,direction:desc)" do
       asset_blockchain("/api/v1/blockchain?page=2&per_page=1&direction=down") do |result|
-        blocks = Array(SlowBlock).from_json(result["data"].to_json)
+        blocks = Array(Block).from_json(result["data"].to_json)
         blocks.size.should eq(1)
         blocks.first.index.should eq(98)
       end
@@ -119,7 +119,7 @@ describe RESTController do
         block_factory.add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_block_index(context("/api/v1/block"), {index: 0})) do |result|
           result["status"].to_s.should eq("success")
-          SlowBlock.from_json(result["result"]["block"].to_json)
+          Block.from_json(result["result"]["block"].to_json)
         end
       end
     end
@@ -199,7 +199,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_transaction_id_block(context("/api/v1/transaction/#{transaction.id}/block"), {id: transaction.id})) do |result|
           result["status"].to_s.should eq("success")
-          SlowBlock.from_json(result["result"]["block"].to_json)
+          Block.from_json(result["result"]["block"].to_json)
         end
       end
     end

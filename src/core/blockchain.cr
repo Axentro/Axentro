@@ -38,7 +38,7 @@ module ::Axentro::Core
       difficulty: Int32,
     )
 
-    getter chain : Chain = [] of SlowBlock
+    getter chain : Chain = [] of Block
     # getter wallet : Wallet
     getter wallet_address : String
     getter max_miners : Int32
@@ -49,7 +49,7 @@ module ::Axentro::Core
     @sync_chunk_size : Int32
     @record_nonces : Bool
     @node : Node?
-    @mining_block : SlowBlock?
+    @mining_block : Block?
     @block_reward_calculator = BlockRewardCalculator.init
     @max_miners : Int32
     @is_standalone : Bool
@@ -107,8 +107,8 @@ module ::Axentro::Core
       push_slow_block(genesis_block)
     end
 
-    def get_genesis_block : SlowBlock
-      @database.get_block(0).not_nil!.as(SlowBlock)
+    def get_genesis_block : Block
+      @database.get_block(0).not_nil!.as(Block)
     end
 
     private def restore_from_database(database : Database)
@@ -173,9 +173,9 @@ module ::Axentro::Core
         error "Error could not restore slow blocks from database at index: #{current_index}"
         error e.message || "unknown error while restoring slow blocks from database"
         warning "archiving slow blocks from index #{current_index} and up"
-        database.archive_blocks_of_kind(current_index, "restore", Block::BlockKind::SLOW)
+        database.archive_blocks_of_kind(current_index, "restore", BlockKind::SLOW)
         warning "deleting slow blocks from index #{current_index} and up"
-        database.delete_blocks_of_kind(current_index, Block::BlockKind::SLOW)
+        database.delete_blocks_of_kind(current_index, BlockKind::SLOW)
       end
     ensure
       push_genesis if @is_standalone && @chain.size == 0
@@ -208,9 +208,9 @@ module ::Axentro::Core
         error "Error could not restore fast blocks from database at index: #{current_index}"
         error e.message || "unknown error while restoring fast blocks from database"
         warning "archiving fast blocks from index #{current_index} and up"
-        database.archive_blocks_of_kind(current_index, "restore", Block::BlockKind::FAST)
+        database.archive_blocks_of_kind(current_index, "restore", BlockKind::FAST)
         warning "deleting fast blocks from index #{current_index} and up"
-        database.delete_blocks_of_kind(current_index.not_nil!, Block::BlockKind::FAST)
+        database.delete_blocks_of_kind(current_index.not_nil!, BlockKind::FAST)
       end
     end
 
@@ -218,9 +218,9 @@ module ::Axentro::Core
       mining_block.with_nonce(block_nonce).valid_block_nonce?(mining_block_difficulty)
     end
 
-    # def valid_block?(block : SlowBlock | FastBlock, skip_transactions : Bool = false, doing_replace : Bool = false) : SlowBlock? | FastBlock?
+    # def valid_block?(block : Block | FastBlock, skip_transactions : Bool = false, doing_replace : Bool = false) : Block? | FastBlock?
     #   case block
-    #   when SlowBlock
+    #   when Block
     #     return block if block.valid?(self, skip_transactions, doing_replace)
     #   when FastBlock
     #     return block if block.valid?(self, skip_transactions, doing_replace)
@@ -228,7 +228,7 @@ module ::Axentro::Core
     #   nil
     # end
 
-    def valid_block?(block : SlowBlock, skip_transactions : Bool = false, doing_replace : Bool = false) : SlowBlock?
+    def valid_block?(block : Block, skip_transactions : Bool = false, doing_replace : Bool = false) : Block?
       block if block.valid?(self, skip_transactions, doing_replace)
     end
 
@@ -252,7 +252,7 @@ module ::Axentro::Core
       block_difficulty_to_miner_difficulty(difficulty)
     end
 
-    def replace_block(block : SlowBlock)
+    def replace_block(block : Block)
       target_index = @chain.index { |b| b.index == block.index }
       if target_index
         @chain[target_index] = block
@@ -266,7 +266,7 @@ module ::Axentro::Core
       end
     end
 
-    def push_slow_block(block : SlowBlock)
+    def push_slow_block(block : Block)
       _push_block(block)
       clean_slow_transactions
       clean_fast_transactions
@@ -319,7 +319,7 @@ module ::Axentro::Core
       end
     end
 
-    private def _push_block(block : SlowBlock)
+    private def _push_block(block : Block)
       @chain.push(block)
       debug "sending #{block.kind} block to DB with timestamp of #{block.timestamp}"
       @database.push_block(block)
@@ -461,7 +461,7 @@ module ::Axentro::Core
       MinerNoncePool
     end
 
-    def latest_block : SlowBlock
+    def latest_block : Block
       @chain[-1]
     end
 
@@ -469,19 +469,19 @@ module ::Axentro::Core
       @chain.size <= 0
     end
 
-    def latest_slow_block : SlowBlock
+    def latest_slow_block : Block
       slow_blocks = @chain.select(&.is_slow_block?)
-      return slow_blocks[0].as(SlowBlock) if slow_blocks.size < 1
-      slow_blocks[-1].as(SlowBlock)
+      return slow_blocks[0].as(Block) if slow_blocks.size < 1
+      slow_blocks[-1].as(Block)
     end
 
-    def latest_slow_block_when_replacing : SlowBlock
+    def latest_slow_block_when_replacing : Block
       slow_blocks = @chain.select(&.is_slow_block?)
-      return slow_blocks[0].as(SlowBlock) if slow_blocks.size < 1
-      slow_blocks[-2].as(SlowBlock)
+      return slow_blocks[0].as(Block) if slow_blocks.size < 1
+      slow_blocks[-2].as(Block)
     end
 
-    def latest_fast_block_when_replacing : SlowBlock
+    def latest_fast_block_when_replacing : Block
       fast_blocks = @chain.select(&.is_fast_block?)
       debug "number of fast blocks when replace attempted: #{fast_blocks.size}"
       return fast_blocks[0] if fast_blocks.size == 1
@@ -504,14 +504,14 @@ module ::Axentro::Core
       dev_fund + official_nodes
     end
 
-    def genesis_block : SlowBlock
+    def genesis_block : Block
       genesis_index = 0_i64
       genesis_transactions = get_genesis_block_transactions
       genesis_nonce = "0"
       genesis_prev_hash = "genesis"
       genesis_timestamp = 0_i64
       genesis_difficulty = Consensus::MINER_DIFFICULTY_TARGET
-      kind = Block::BlockKind::SLOW
+      kind = BlockKind::SLOW
       address = "genesis"
       public_key = ""
       signature = ""
@@ -519,7 +519,7 @@ module ::Axentro::Core
       version = Core::BLOCK_VERSION
       hash_version = Core::HASH_VERSION
 
-      SlowBlock.new(
+      Block.new(
         genesis_index,
         genesis_transactions,
         genesis_nonce,
@@ -560,7 +560,7 @@ module ::Axentro::Core
       FastTransactionPool.embedded
     end
 
-    def replace_with_block_from_peer(block : SlowBlock)
+    def replace_with_block_from_peer(block : Block)
       replace_block(block)
       debug "replace transactions in indices array that were in the block being replaced with those from the replacement block"
       dapps_clear_record
@@ -571,7 +571,7 @@ module ::Axentro::Core
       refresh_mining_block if block.kind == "SLOW"
     end
 
-    def mining_block : SlowBlock
+    def mining_block : Block
       debug "calling refresh_mining_block in mining_block" unless @mining_block
       refresh_mining_block unless @mining_block
       @mining_block.not_nil!
@@ -607,7 +607,7 @@ module ::Axentro::Core
       transactions = align_slow_transactions(coinbase_transaction, coinbase_amount, the_latest_index, embedded_slow_transactions)
       timestamp = __timestamp
 
-      @mining_block = SlowBlock.new(
+      @mining_block = Block.new(
         the_latest_index,
         transactions,
         "0",
@@ -753,7 +753,7 @@ module ::Axentro::Core
       MinerNoncePool.replace(replace_miner_nonces)
     end
 
-    def clean_slow_transactions_used_in_block(block : SlowBlock)
+    def clean_slow_transactions_used_in_block(block : Block)
       SlowTransactionPool.lock
       transactions = pending_slow_transactions.reject { |t| block.find_transaction(t.id) == true }.select(&.is_slow_transaction?)
       SlowTransactionPool.replace(transactions)

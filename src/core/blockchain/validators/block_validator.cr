@@ -16,7 +16,7 @@ module ::Axentro::Core::BlockValidator
   include Axentro::Common
   include Logger
 
-  def validate_slow(block : SlowBlock, blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : ValidatedSlowBlock
+  def validate_slow(block : Block, blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : ValidatedSlowBlock
     if block.index == 0_i64
       validate_genesis(block)
     else
@@ -24,11 +24,11 @@ module ::Axentro::Core::BlockValidator
     end
   end
 
-  def validate_fast(block : SlowBlock, blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : ValidatedSlowBlock
+  def validate_fast(block : Block, blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : ValidatedSlowBlock
     validate_fast_block(block, blockchain, skip_transactions, doing_replace)
   end
 
-  def validate_genesis(block : SlowBlock)
+  def validate_genesis(block : Block)
     BlockValidator::Rules.rule_genesis(block)
     ValidatedSlowBlock.new(true, block)
   rescue e : Axentro::Common::AxentroException
@@ -38,7 +38,7 @@ module ::Axentro::Core::BlockValidator
     ValidatedSlowBlock.new(false, block, "unexpected error: #{e.message || "unknown error"}")
   end
 
-  def validate_slow_block(block : SlowBlock, blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : ValidatedSlowBlock
+  def validate_slow_block(block : Block, blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : ValidatedSlowBlock
     chain_network = blockchain.database.chain_network_kind
     block_network = Address.get_network_from_address(block.address)
 
@@ -69,7 +69,7 @@ module ::Axentro::Core::BlockValidator
     ValidatedSlowBlock.new(false, block, "unexpected error: #{e.message || "unknown error"}")
   end
 
-  def validate_fast_block(block : SlowBlock, blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : ValidatedSlowBlock
+  def validate_fast_block(block : Block, blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : ValidatedSlowBlock
     chain_network = blockchain.database.chain_network_kind
     block_network = Address.get_network_from_address(block.address)
 
@@ -222,7 +222,7 @@ module ::Axentro::Core::BlockValidator
 
   struct ValidatedSlowBlock
     getter valid : Bool
-    getter block : SlowBlock
+    getter block : Block
     getter reason : String
 
     def initialize(@valid, @block, @reason = ""); end

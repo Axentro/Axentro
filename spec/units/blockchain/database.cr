@@ -24,7 +24,7 @@ describe Blockchain do
     it "should recover from database error when trying to insert a block that already exists" do
       with_factory do |block_factory|
         database = block_factory.blockchain.database
-        block = SlowBlock.new(0_i64, [] of Transaction, "0", "genesis", 0_i64, 3_i32, "123", BLOCK_VERSION, HASH_VERSION)
+        block = Block.new(0_i64, [] of Transaction, "0", "genesis", 0_i64, 3_i32, "123", BLOCK_VERSION, HASH_VERSION)
         # no error should be thrown here
         (1..2).to_a.each do
           database.push_block(block)

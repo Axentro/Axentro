@@ -60,7 +60,7 @@ describe Blockchain do
       with_factory do |block_factory|
         chain = block_factory.add_slow_blocks(6).add_fast_blocks(10).chain
         fast_sub_chain = chain.select(&.is_fast_block?)
-        slow_block_1 = chain[2].as(SlowBlock)
+        slow_block_1 = chain[2].as(Block)
         slow_sub_chain = chain.select(&.is_slow_block?)
 
         database = Axentro::Core::Database.in_memory

@@ -19,13 +19,13 @@ module ::Axentro::Core::Data::Blocks
   end
 
   # ------- Insert -------
-  def block_insert_values_array(block : SlowBlock) : Array(DB::Any)
+  def block_insert_values_array(block : Block) : Array(DB::Any)
     ary = [] of DB::Any
     ary << block.index << block.nonce.to_s << block.prev_hash << block.timestamp << block.difficulty << block.address << block.kind.to_s << block.public_key << block.signature << block.hash << block.version << block.hash_version
     ary
   end
 
-  def push_block(block : SlowBlock)
+  def push_block(block : Block)
     verbose "database.push_block with block index #{block.index} of kind: #{block.kind}"
     @db.exec "BEGIN TRANSACTION"
     block.transactions.each_with_index do |t, ti|
@@ -48,7 +48,7 @@ module ::Axentro::Core::Data::Blocks
 
   # ------- Query -------
   def get_blocks_via_query(the_query, *args) : Blockchain::Chain
-    blocks : Blockchain::Chain = [] of SlowBlock
+    blocks : Blockchain::Chain = [] of Block
     @db.query(the_query, args: args.to_a) do |rows|
       rows.each do
         idx = rows.read(Int64)
@@ -63,7 +63,7 @@ module ::Axentro::Core::Data::Blocks
         hash = rows.read(String)
         version = rows.read(String)
         hash_version = rows.read(String)
-        blocks << SlowBlock.new(idx, [] of Transaction, nonce, prev_hash, timestamp, diffculty, Block::BlockKind.parse(kind_string), address, public_key, signature, hash, version, hash_version)
+        blocks << Block.new(idx, [] of Transaction, nonce, prev_hash, timestamp, diffculty, BlockKind.parse(kind_string), address, public_key, signature, hash, version, hash_version)
       end
     end
 
@@ -82,14 +82,14 @@ module ::Axentro::Core::Data::Blocks
     block
   end
 
-  def get_previous_slow_from(index : Int64) : SlowBlock?
-    block : SlowBlock? = nil
+  def get_previous_slow_from(index : Int64) : Block?
+    block : Block? = nil
     blocks = get_blocks_via_query("select * from blocks where idx <= ? and kind = 'SLOW' order by idx desc limit 1", index)
-    block = blocks[0].as(SlowBlock) if blocks.size > 0
+    block = blocks[0].as(Block) if blocks.size > 0
     block
   end
 
-  def get_highest_block_for_kind(kind : Block::BlockKind)
+  def get_highest_block_for_kind(kind : BlockKind)
     get_blocks_via_query("select * from blocks where idx in (select max(idx) from blocks where kind = ?)", kind.to_s)
   end
 
@@ -154,7 +154,7 @@ module ::Axentro::Core::Data::Blocks
     @db.exec("ROLLBACK")
   end
 
-  def archive_blocks_of_kind(from : Int64, reason : String, kind : Block::BlockKind) # reason: restore or sync
+  def archive_blocks_of_kind(from : Int64, reason : String, kind : BlockKind) # reason: restore or sync
     now = __timestamp
     @db.exec "BEGIN TRANSACTION"
     blocks = get_blocks_via_query("select * from blocks where idx >= ? and kind = ?", from, kind.to_s)
@@ -187,7 +187,7 @@ module ::Axentro::Core::Data::Blocks
     @db.exec "delete from recipients where block_id >= ?", from
   end
 
-  def delete_blocks_of_kind(from : Int64, kind : Block::BlockKind)
+  def delete_blocks_of_kind(from : Int64, kind : BlockKind)
     blocks = get_block_ids_from(from, kind)
     if blocks.size > 0
       block_ids = blocks.map { |b| "'#{b}'" }.uniq.join(",")
@@ -198,7 +198,7 @@ module ::Axentro::Core::Data::Blocks
     end
   end
 
-  def get_block_ids_from(from : Int64, kind : Block::BlockKind)
+  def get_block_ids_from(from : Int64, kind : BlockKind)
     ids = [] of Int64
     @db.query("select idx from blocks where idx >= ? and kind = ?", from, kind.to_s) do |rows|
       rows.each do

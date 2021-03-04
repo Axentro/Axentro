@@ -162,7 +162,7 @@ module ::Units::Utils::ChainGenerator
       # valid block is tested separately
       valid_block = @blockchain.valid_block?(block, true)
       case valid_block
-      when SlowBlock
+      when Block
         @blockchain.push_slow_block(valid_block)
       else
         raise "error could not push slow block onto blockchain - block was not valid"
@@ -176,7 +176,7 @@ module ::Units::Utils::ChainGenerator
       # valid block is tested separately
       valid_block = @blockchain.valid_block?(block, true)
       case valid_block
-      when SlowBlock
+      when Block
         @blockchain.push_slow_block(valid_block)
       else
         raise "error could not push fast block onto blockchain - block was not valid"

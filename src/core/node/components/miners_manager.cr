@@ -36,7 +36,7 @@ module ::Axentro::Core::NodeComponents
     alias Miners = Array(Miner)
     getter miners : Miners = Miners.new
 
-    @most_difficult_block_so_far : SlowBlock
+    @most_difficult_block_so_far : Block
     @block_start_time : Int64
     @nonce_spacing : NonceSpacing = NonceSpacing.new
     @last_ensured : Int64
@@ -288,7 +288,7 @@ module ::Axentro::Core::NodeComponents
       send(socket, M_TYPE_MINER_HANDSHAKE_REJECTED, {reason: reason})
     end
 
-    def mint_block(block : SlowBlock)
+    def mint_block(block : Block)
       METRICS_BLOCKS_COUNTER[kind: "slow"].inc
       @leading_miner = nil
       @highest_difficulty_mined_so_far = 0

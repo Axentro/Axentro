@@ -535,7 +535,7 @@ module ::Axentro::Core
 
     # ----- blocks -----
 
-    def send_block(block : SlowBlock, from : Chord::NodeContext? = nil)
+    def send_block(block : Block, from : Chord::NodeContext? = nil)
       debug "entering send_block"
       content = if from.nil? || (!from.nil? && from[:is_private])
                   {block: block, from: @chord.context}
@@ -558,7 +558,7 @@ module ::Axentro::Core
       send_on_chord(M_TYPE_NODE_SEND_CLIENT_CONTENT, _content, from)
     end
 
-    def broadcast_block(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
+    def broadcast_block(socket : HTTP::WebSocket, block : Block, from : Chord::NodeContext? = nil)
       info "New #{block.kind} block coming from peer with index: #{block.index}"
       case BlockKind.parse(block.kind)
       when BlockKind::SLOW
@@ -569,7 +569,7 @@ module ::Axentro::Core
     end
 
     # TODO - can we consolidate this into one broadcast?
-    private def broadcast_slow_block(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
+    private def broadcast_slow_block(socket : HTTP::WebSocket, block : Block, from : Chord::NodeContext? = nil)
       # random_secs = Random.rand(30)
       # warning "++++++++++++ sleeping #{random_secs} seconds before sending to try to cause chaos....."
       # warning "++++++++++++ sleeping 2 minutes before sending to try to cause chaos....."
@@ -609,7 +609,7 @@ module ::Axentro::Core
       sync_chain_from_point(index, socket)
     end
 
-    private def execute_create(socket : HTTP::WebSocket, block : SlowBlock, latest_block : SlowBlock, from : Chord::NodeContext?)
+    private def execute_create(socket : HTTP::WebSocket, block : Block, latest_block : Block, from : Chord::NodeContext?)
       info "received block: #{block.index} from peer that I don't have in my db"
 
       # random_secs = Random.rand(30)
@@ -634,7 +634,7 @@ module ::Axentro::Core
       sync_chain_on_error(block.index, latest_block.index, 2, socket)
     end
 
-    private def execute_replace(socket : HTTP::WebSocket, block : SlowBlock, latest_block : SlowBlock, from : Chord::NodeContext?)
+    private def execute_replace(socket : HTTP::WebSocket, block : Block, latest_block : Block, from : Chord::NodeContext?)
       warning "slow: blockchain conflicted at incoming #{block.index} and local (#{light_cyan(latest_block.index)})"
       warning "slow: local timestamp: #{latest_block.timestamp}, arriving block timestamp: #{block.timestamp}"
       warning "slow: arriving block's timestamp indicates it was minted earlier than latest local block (or at the same time but has different hash)"
@@ -654,7 +654,7 @@ module ::Axentro::Core
       sync_chain_on_error(block.index, latest_block.index, 2, socket)
     end
 
-    private def execute_reject(socket : HTTP::WebSocket, block : SlowBlock, latest_block : SlowBlock, reason : RejectBlockReason, from : Chord::NodeContext?)
+    private def execute_reject(socket : HTTP::WebSocket, block : Block, latest_block : Block, reason : RejectBlockReason, from : Chord::NodeContext?)
       case reason
       when RejectBlockReason::OLD
         warning "slow: blockchain conflicted at incoming #{block.index} and local (#{light_cyan(latest_block.index)})"
@@ -667,12 +667,12 @@ module ::Axentro::Core
       end
     end
 
-    private def execute_sync(socket : HTTP::WebSocket, block : SlowBlock, latest_block : SlowBlock, from : Chord::NodeContext?)
+    private def execute_sync(socket : HTTP::WebSocket, block : Block, latest_block : Block, from : Chord::NodeContext?)
       warning "slow: require new chain after - local: #{latest_block.index} for incoming from peer: #{block.index}"
       sync_chain(socket, false)
     end
 
-    def fast_block_was_signed_by_official_fast_node?(block : SlowBlock) : Bool
+    def fast_block_was_signed_by_official_fast_node?(block : Block) : Bool
       debug "verifying fast block was signed by official fast node"
       hash_salt = block.hash
       signature = block.signature
@@ -682,7 +682,7 @@ module ::Axentro::Core
     end
 
     # There is only 1 fast node on the network in phase 1 - so use this simple logic until that changes
-    private def broadcast_fast_block(socket : HTTP::WebSocket, block : SlowBlock, from : Chord::NodeContext? = nil)
+    private def broadcast_fast_block(socket : HTTP::WebSocket, block : Block, from : Chord::NodeContext? = nil)
       if fast_block_was_signed_by_official_fast_node?(block)
         if @blockchain.database.do_i_have_block(block.index)
           if i_am_a_fast_node?
@@ -709,7 +709,7 @@ module ::Axentro::Core
       error e.message || "no message content for exception"
     end
 
-    def new_block(block : SlowBlock)
+    def new_block(block : Block)
       @blockchain.push_slow_block(block)
 
       @pubsub_controller.broadcast_latest_block

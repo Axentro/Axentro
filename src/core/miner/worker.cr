@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core
-  alias MinerWork = NamedTuple(start_nonce: BlockNonce, difficulty: Int32, block: SlowBlock)
+  alias MinerWork = NamedTuple(start_nonce: BlockNonce, difficulty: Int32, block: Block)
 
   class MinerWorker < Tokoroten::Worker
     def task(message : String)

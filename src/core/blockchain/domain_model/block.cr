@@ -10,7 +10,18 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 module ::Axentro::Core
-  class SlowBlock
+  alias Chain = Array(Block)
+
+  enum BlockKind
+    SLOW
+    FAST
+
+    def to_json(builder : JSON::Builder)
+      builder.string(to_s)
+    end
+  end
+
+  class Block
     extend Hashes
 
     include JSON::Serializable
@@ -169,15 +180,15 @@ module ::Axentro::Core
     end
 
     # This uses the @ shortcut to set the nonce onto the block
-    def with_nonce(@nonce : BlockNonce) : SlowBlock
+    def with_nonce(@nonce : BlockNonce) : Block
       self
     end
 
-    def with_difficulty(@difficulty : Int32) : SlowBlock
+    def with_difficulty(@difficulty : Int32) : Block
       self
     end
 
-    def with_timestamp(@timestamp : Int64) : SlowBlock
+    def with_timestamp(@timestamp : Int64) : Block
       self
     end
 
@@ -186,7 +197,7 @@ module ::Axentro::Core
     end
 
     def valid?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool
-      if @kind == Block::BlockKind::FAST
+      if @kind == BlockKind::FAST
         return true if @index <= 1_i64
         validated_block = BlockValidator.validate_fast(self, blockchain, skip_transactions, doing_replace)
         validated_block.valid ? validated_block.valid : raise Axentro::Common::AxentroException.new(validated_block.reason)
@@ -224,7 +235,7 @@ module ::Axentro::Core
     property difficulty : Int32
     property address : String
 
-    def self.from_slow_block(b : SlowBlock)
+    def self.from_slow_block(b : Block)
       self.new(b.index, b.transactions, b.nonce, b.prev_hash, b.merkle_tree_root, b.difficulty, b.address)
     end
 
@@ -253,7 +264,7 @@ module ::Axentro::Core
     property signature : String
     property hash : String
 
-    def self.from_fast_block(b : SlowBlock)
+    def self.from_fast_block(b : Block)
       self.new(b.index, b.transactions, b.prev_hash, b.merkle_tree_root, b.address, b.public_key, b.signature, b.hash)
     end
 
@@ -283,7 +294,7 @@ module ::Axentro::Core
   #   property version : String
   #   property hash_version : String
 
-  #   def self.from_fast_block(b : SlowBlock)
+  #   def self.from_fast_block(b : Block)
   #     self.new(b.index, b.transactions, b.prev_hash, b.merkle_tree_root, b.address, b.public_key, b.signature, b.hash, b.version, b.hash_version)
   #   end
 
@@ -317,7 +328,7 @@ module ::Axentro::Core
     property version : String
     property hash_version : String
 
-    def self.from_block(b : SlowBlock)
+    def self.from_block(b : Block)
       self.new(b.index, b.transactions, b.nonce, b.prev_hash, b.merkle_tree_root, b.difficulty, b.address, b.public_key, b.signature, b.hash, b.version, b.hash_version)
     end
 

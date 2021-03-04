@@ -54,7 +54,7 @@ module ::Axentro::Core::FastChain
     end
   end
 
-  def latest_fast_block : SlowBlock?
+  def latest_fast_block : Block?
     fast_blocks = @chain.select(&.is_fast_block?)
     (fast_blocks.size > 0) ? fast_blocks.last : nil
   end
@@ -97,13 +97,13 @@ module ::Axentro::Core::FastChain
       public_key = wallet.public_key
       latest_block_hash = _latest_block.to_hash
 
-      hash = SlowBlock.to_hash(latest_index, transactions, latest_block_hash, address, public_key)
+      hash = Block.to_hash(latest_index, transactions, latest_block_hash, address, public_key)
       private_key = Wif.new(wallet.wif).private_key.as_hex
       signature = KeyUtils.sign(private_key, hash)
 
       info "#{magenta("MINTING FAST BLOCK")}: #{light_green(latest_index)}"
 
-      SlowBlock.new(
+      Block.new(
         latest_index,
         transactions,
         latest_block_hash,
@@ -206,20 +206,19 @@ module ::Axentro::Core::FastChain
     debug "replace transactions in pool: #{FastTransactionPool.all.size}"
   end
 
-  def clean_fast_transactions_used_in_block(block : SlowBlock)
+  def clean_fast_transactions_used_in_block(block : Block)
     FastTransactionPool.lock
     transactions = pending_fast_transactions.reject { |t| block.find_transaction(t.id) == true }.select(&.is_fast_transaction?)
     FastTransactionPool.replace(transactions)
   end
 
-  # def push_fast_block(block : SlowBlock)
+  # def push_fast_block(block : Block)
   #   _push_block(block)
   #   clean_fast_transactions
 
   #   block
   # end
 
-  include Block
   include ::Axentro::Core::DApps::BuildIn
   include NodeComponents::Metrics
 end

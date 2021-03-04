@@ -65,7 +65,7 @@ module ::Axentro::Core
       idx || 0_i64
     end
 
-    def highest_index_of_kind(kind : Block::BlockKind) : Int64
+    def highest_index_of_kind(kind : BlockKind) : Int64
       idx : Int64? = nil
 
       @db.query "select max(idx) from blocks where kind = '#{kind}'" do |rows|
@@ -127,7 +127,7 @@ module ::Axentro::Core
       end
     end
 
-    def total(kind : Block::BlockKind)
+    def total(kind : BlockKind)
       idx : Int64? = nil
       @db.query("select count(*) from blocks where kind = ?", kind.to_s) do |rows|
         rows.each do
