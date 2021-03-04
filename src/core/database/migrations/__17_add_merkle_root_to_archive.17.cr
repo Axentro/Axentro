@@ -11,10 +11,10 @@
 # Removal or modification of this copyright notice is prohibited.
 
 @[MG::Tags("main")]
-class AddBlockVersionToArchive < MG::Base
+class AddMerkleRootToArchive < MG::Base
   def up : String
     <<-SQL
-      ALTER TABLE archived_blocks ADD COLUMN version TEXT NOT NULL DEFAULT "V1"
+      ALTER TABLE archived_blocks ADD COLUMN merkle_tree_root TEXT NOT NULL DEFAULT "0"
     SQL
   end
 
@@ -35,7 +35,9 @@ class AddBlockVersionToArchive < MG::Base
         public_key             TEXT NOT NULL,
         signature              TEXT NOT NULL,
         hash                   TEXT NOT NULL,
-        version                TEXT NOT NULL
+        version                TEXT NOT NULL,
+        hash_version           TEXT NOT NULL,
+        merkle_tree_root       TEXT NOT NULL
       );
       INSERT INTO archived_blocks_temporary SELECT * FROM archived_blocks;
     DROP TABLE archived_blocks;
@@ -53,8 +55,10 @@ class AddBlockVersionToArchive < MG::Base
       public_key             TEXT NOT NULL,
       signature              TEXT NOT NULL,
       hash                   TEXT NOT NULL,
+      version                TEXT NOT NULL,
+      hash_version           TEXT NOT NULL,
       );
-      INSERT INTO archived_blocks SELECT block_hash, archive_timestamp, reason, idx, nonce, prev_hash, timestamp, difficulty, address, kind, public_key, signature, hash
+      INSERT INTO archived_blocks SELECT block_hash, archive_timestamp, reason, idx, nonce, prev_hash, timestamp, difficulty, address, kind, public_key, signature, hash, version, hash_version
     FROM archived_blocks_temporary;
     DROP TABLE archived_blocks_temporary;
     SQL

@@ -54,9 +54,9 @@ module ::Axentro::Core
       @signature : String,
       @hash : String,
       @version : String,
-      @hash_version : String
+      @hash_version : String,
+      @merkle_tree_root : String
     )
-      @merkle_tree_root = calculate_merkle_tree_root(@transactions)
     end
 
     # slow
@@ -139,32 +139,7 @@ module ::Axentro::Core
     end
 
     def calculate_merkle_tree_root(transactions : Array(Transaction)) : String
-      return "" if transactions.size == 0
-
-      current_hashes = transactions.map { |tx| tx.to_hash }
-
-      loop do
-        tmp_hashes = [] of String
-
-        (current_hashes.size / 2).to_i.times do |i|
-          tmp_hashes.push(apply_merkle_hash_version(current_hashes[i*2] + current_hashes[i*2 + 1]))
-        end
-
-        tmp_hashes.push(current_hashes[-1]) if current_hashes.size % 2 == 1
-
-        current_hashes = tmp_hashes
-        break if current_hashes.size == 1
-      end
-
-      ripemd160(current_hashes[0])
-    end
-
-    private def apply_merkle_hash_version(hash)
-      if @hash_version == Core::HASH_VERSION
-        argon2(hash)
-      else
-        sha256(hash)
-      end
+      MerkleTreeCalculator.new(@hash_version).calculate_merkle_tree_root(transactions)
     end
 
     def is_slow_block?

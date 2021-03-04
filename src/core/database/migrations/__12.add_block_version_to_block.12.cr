@@ -14,7 +14,7 @@
 class AddBlockVersionToBlock < MG::Base
   def up : String
     <<-SQL
-      ALTER TABLE blocks ADD COLUMN version STRING NOT NULL DEFAULT "V1"
+      ALTER TABLE blocks ADD COLUMN version TEXT NOT NULL DEFAULT "V1"
     SQL
   end
 

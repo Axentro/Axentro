@@ -29,7 +29,6 @@ module ::Axentro::Core
       # apply migrations
       mg = MG::Migration.new(@db, tag: "main")
       mg.migrate
-      # mg.migrate to: 11
 
       @db.exec "PRAGMA synchronous=OFF"
       @db.exec "PRAGMA cache_size=10000"
@@ -81,18 +80,6 @@ module ::Axentro::Core
       @db.query_one("select count(*) from blocks where timestamp > (select timestamp from blocks where idx = ?)", index, as: Int32)
     end
 
-    # this could return null if there are no fast blocks found after the slow block timestamp
-    # this could also return null if the slow block is not found
-    def lowest_fast_index_after_slow_block(index : Int64) : Int64?
-      @db.query_one("select min(idx) from blocks where kind = 'FAST' and timestamp >= (select timestamp from blocks where idx = ?)", index, as: Int64?)
-    end
-
-    # this could return null if the slow block is not found
-    # this could return null if the index given was 0
-    def lowest_slow_index_after_slow_block(index : Int64) : Int64?
-      @db.query_one("select max(idx) from blocks where kind = 'SLOW' and timestamp < (select timestamp from blocks where idx = ?)", index, as: Int64?)
-    end
-
     def lowest_index_after_block(index : Int64) : Int64?
       idx : Int64? = nil
       @db.query("select idx from blocks where timestamp > (select timestamp from blocks where idx = ?) order by timestamp desc limit 1", index) do |rows|
@@ -101,17 +88,6 @@ module ::Axentro::Core
         end
       end
       idx || 0_i64
-    end
-
-    # this could return null if there are no slow blocks found after the fast block timestamp
-    # this could also return null if the fast block is not found
-    def lowest_fast_index_after_fast_block(index : Int64) : Int64?
-      @db.query_one("select max(idx) from blocks where kind = 'FAST' and timestamp < (select timestamp from blocks where idx = ?)", index, as: Int64?)
-    end
-
-    # this could return null if fast block is not found
-    def lowest_slow_index_after_fast_block(index : Int64) : Int64?
-      @db.query_one("select min(idx) from blocks where kind = 'SLOW' and timestamp >= (select timestamp from blocks where idx = ?)", index, as: Int64?)
     end
 
     def chain_network_kind : Core::Node::Network?

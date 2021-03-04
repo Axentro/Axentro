@@ -518,6 +518,7 @@ module ::Axentro::Core
       hash = ""
       version = Core::BLOCK_VERSION
       hash_version = Core::HASH_VERSION
+      merkle_tree_root = MerkleTreeCalculator.new(hash_version).calculate_merkle_tree_root(genesis_transactions)
 
       Block.new(
         genesis_index,
@@ -532,7 +533,8 @@ module ::Axentro::Core
         signature,
         hash,
         version,
-        hash_version
+        hash_version,
+        merkle_tree_root
       )
     end
 

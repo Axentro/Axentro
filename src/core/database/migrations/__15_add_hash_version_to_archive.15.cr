@@ -14,7 +14,7 @@
 class AddHashVersionToArchive < MG::Base
   def up : String
     <<-SQL
-      ALTER TABLE archived_blocks ADD COLUMN hash_version STRING NOT NULL DEFAULT "V1"
+      ALTER TABLE archived_blocks ADD COLUMN hash_version TEXT NOT NULL DEFAULT "V1"
     SQL
   end
 
