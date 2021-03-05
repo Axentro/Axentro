@@ -77,14 +77,14 @@ module ::Axentro::Core
       setup_dapps
 
       if @database.total_blocks == 0
-        push_genesis if @is_standalone
+        if @is_standalone
+          push_genesis
+          refresh_mining_block
+        end
       else
         @database.validate_local_db_blocks
       end
-
-      # TODO - fix me
-      refresh_mining_block
-
+     
       unless node.is_private_node?
         spawn process_fast_transactions
       end
