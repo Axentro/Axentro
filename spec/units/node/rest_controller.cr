@@ -100,17 +100,6 @@ describe RESTController do
         end
       end
     end
-    it "should return the full blockchain size when chain is bigger than memory" do
-      with_factory do |block_factory, _|
-        slow_blocks_to_add = block_factory.slow_blocks_to_hold + 8
-        fast_blocks_to_add = slow_blocks_to_add
-        block_factory.add_slow_blocks(slow_blocks_to_add).add_fast_blocks(fast_blocks_to_add)
-        exec_rest_api(block_factory.rest.__v1_blockchain_size(context("/api/v1/blockchain/size"), no_params)) do |result|
-          result["status"].to_s.should eq("success")
-          result["result"]["totals"]["total_size"].should eq(slow_blocks_to_add + fast_blocks_to_add + 1)
-        end
-      end
-    end
   end
 
   describe "__v1_block_index" do

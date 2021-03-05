@@ -75,34 +75,6 @@ describe Blockchain do
     end
   end
 
-  describe "trim chain" do
-    # These tests use >= in the assertion because it has a timestamp cutoff which can vary when the test runs
-    it "should trim the chain correctly taking into account both slow and fast blocks when there are fewer fast blocks" do
-      with_factory do |block_factory|
-        # trim_chain_in_memory - should always keep both @slow_blocks_to_hold and @fast_blocks_to_hold in the memory chain
-        block_factory.add_fast_blocks(2).add_slow_blocks(block_factory.slow_blocks_to_hold + 10)
-        block_factory.chain.count(&.is_fast_block?).should eq(2)
-        block_factory.chain.count(&.is_slow_block?).should be >= 60
-      end
-    end
-    it "should trim the chain correctly taking into account both slow and fast blocks when there are more fast blocks" do
-      with_factory do |block_factory|
-        # trim_chain_in_memory - should always keep both @slow_blocks_to_hold and @fast_blocks_to_hold in the memory chain
-        block_factory.add_fast_blocks(block_factory.fast_blocks_to_hold + 10).add_slow_blocks(block_factory.slow_blocks_to_hold + 10)
-        block_factory.chain.count(&.is_fast_block?).should be >= 60
-        block_factory.chain.count(&.is_slow_block?).should be >= 60
-      end
-    end
-    it "should trim the chain correctly taking into account both slow and fast blocks when there are more fast blocks than slow" do
-      with_factory do |block_factory|
-        # trim_chain_in_memory - should always keep both @slow_blocks_to_hold and @fast_blocks_to_hold in the memory chain
-        block_factory.add_slow_blocks(1).add_fast_blocks(block_factory.fast_blocks_to_hold + 10)
-        block_factory.chain.count(&.is_fast_block?).should be >= 60
-        block_factory.chain.count(&.is_slow_block?).should eq(2)
-      end
-    end
-  end
-
   describe "add_transaction" do
     it "should add a transaction to the pool" do
       with_factory do |block_factory, transaction_factory|
@@ -310,31 +282,6 @@ describe Blockchain do
         block_factory.add_slow_blocks(3).add_fast_blocks(4)
         blockchain = block_factory.blockchain
         blockchain.get_latest_index_for_slow.should eq(8)
-      end
-    end
-  end
-
-  describe "restore from database" do
-    it "should load the whole chain from the database when the chain size is less than the memory allocation" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(10)
-        database = block_factory.database
-        blockchain = Blockchain.new("testnet", block_factory.node_wallet, block_factory.node_wallet.address, "", database, nil, nil, 20, 100, false, 512, true)
-        blockchain.setup(block_factory.node)
-        # including genesis block total chain size should be 11
-        blockchain.chain.size.should eq(11)
-      end
-    end
-    it "should load a subset of the whole chain from the database when the chain size is more than the memory allocation" do
-      with_factory do |block_factory|
-        slow_blocks_to_add = block_factory.slow_blocks_to_hold + 8
-        fast_blocks_to_add = slow_blocks_to_add
-        block_factory.add_slow_blocks(slow_blocks_to_add).add_fast_blocks(fast_blocks_to_add)
-        database = block_factory.database
-        blockchain = Blockchain.new("testnet", block_factory.node_wallet, block_factory.node_wallet.address, "", database, nil, nil, 20, 100, false, 512, true)
-        blockchain.setup(block_factory.node)
-        # including genesis block total chain size should be the number of blocks to hold
-        blockchain.chain.size.should eq(blockchain.slow_blocks_to_hold + blockchain.fast_blocks_to_hold)
       end
     end
   end

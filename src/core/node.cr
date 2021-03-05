@@ -1092,14 +1092,14 @@ module ::Axentro::Core
     def load_blockchain_from_database
       @blockchain.setup(self)
 
-      if @blockchain.has_no_blocks?
-        info "There were no blocks in the database - "
+      if database.total_blocks == 0
+        info "There were no blocks in the database"
         @phase = SetupPhase::CONNECTING_NODES
         proceed_setup
       else
-        info "loaded blockchain's total size: #{light_cyan(@blockchain.chain.size)}"
-        info "highest slow block index: #{light_cyan(@blockchain.latest_slow_block.index)}"
-        info "highest fast block index: #{light_cyan(@blockchain.latest_fast_block_index_or_zero)}"
+        info "loaded blockchain's total size: #{light_cyan(database.total_blocks)}"
+        info "highest slow block index: #{light_cyan(database.highest_index_of_kind(BlockKind::SLOW))}"
+        info "highest fast block index: #{light_cyan(database.highest_index_of_kind(BlockKind::FAST))}"
 
         if !@database
           warning "no database has been specified"
@@ -1118,9 +1118,9 @@ module ::Axentro::Core
 
       case @phase
       when SetupPhase::NONE
-        @phase = SetupPhase::BLOCKCHAIN_LOADING
+        @phase = SetupPhase::BLOCKCHAIN_VALIDATING
         proceed_setup
-      when SetupPhase::BLOCKCHAIN_LOADING
+      when SetupPhase::BLOCKCHAIN_VALIDATING
         load_blockchain_from_database
       when SetupPhase::CONNECTING_NODES
         setup_connectivity

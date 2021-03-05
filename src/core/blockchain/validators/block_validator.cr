@@ -16,7 +16,7 @@ module ::Axentro::Core::BlockValidator
   include Axentro::Common
   include Logger
 
-  def validate_slow(block : Block, blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : ValidatedSlowBlock
+  def validate_slow(block : Block, blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : ValidatedBlock
     if block.index == 0_i64
       validate_genesis(block)
     else
@@ -24,21 +24,33 @@ module ::Axentro::Core::BlockValidator
     end
   end
 
-  def validate_fast(block : Block, blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : ValidatedSlowBlock
+  def validate_fast(block : Block, blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : ValidatedBlock
     validate_fast_block(block, blockchain, skip_transactions, doing_replace)
+  end
+
+  def quick_validate(block : Block, prev_block : Block) : ValidatedBlock
+    BlockValidator::Rules.rule_prev_hash(block, prev_block)
+    BlockValidator::Rules.rule_merkle_tree(block)
+
+    ValidatedBlock.new(true, block)
+  rescue e : Axentro::Common::AxentroException
+    ValidatedBlock.new(false, block, e.message || "unknown error")
+  rescue e : Exception
+    error("#{e.class}: #{e.message || "unknown error"}\n#{e.backtrace.join("\n")}")
+    ValidatedBlock.new(false, block, "unexpected error: #{e.message || "unknown error"}")
   end
 
   def validate_genesis(block : Block)
     BlockValidator::Rules.rule_genesis(block)
-    ValidatedSlowBlock.new(true, block)
+    ValidatedBlock.new(true, block)
   rescue e : Axentro::Common::AxentroException
-    ValidatedSlowBlock.new(false, block, e.message || "unknown error")
+    ValidatedBlock.new(false, block, e.message || "unknown error")
   rescue e : Exception
     error("#{e.class}: #{e.message || "unknown error"}\n#{e.backtrace.join("\n")}")
-    ValidatedSlowBlock.new(false, block, "unexpected error: #{e.message || "unknown error"}")
+    ValidatedBlock.new(false, block, "unexpected error: #{e.message || "unknown error"}")
   end
 
-  def validate_slow_block(block : Block, blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : ValidatedSlowBlock
+  def validate_slow_block(block : Block, blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : ValidatedBlock
     chain_network = blockchain.database.chain_network_kind
     block_network = Address.get_network_from_address(block.address)
 
@@ -61,15 +73,15 @@ module ::Axentro::Core::BlockValidator
 
     BlockValidator::Rules.rule_merkle_tree(block)
 
-    ValidatedSlowBlock.new(true, block)
+    ValidatedBlock.new(true, block)
   rescue e : Axentro::Common::AxentroException
-    ValidatedSlowBlock.new(false, block, e.message || "unknown error")
+    ValidatedBlock.new(false, block, e.message || "unknown error")
   rescue e : Exception
     error("#{e.class}: #{e.message || "unknown error"}\n#{e.backtrace.join("\n")}")
-    ValidatedSlowBlock.new(false, block, "unexpected error: #{e.message || "unknown error"}")
+    ValidatedBlock.new(false, block, "unexpected error: #{e.message || "unknown error"}")
   end
 
-  def validate_fast_block(block : Block, blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : ValidatedSlowBlock
+  def validate_fast_block(block : Block, blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : ValidatedBlock
     chain_network = blockchain.database.chain_network_kind
     block_network = Address.get_network_from_address(block.address)
 
@@ -93,12 +105,12 @@ module ::Axentro::Core::BlockValidator
 
     BlockValidator::Rules.rule_merkle_tree(block)
 
-    ValidatedSlowBlock.new(true, block)
+    ValidatedBlock.new(true, block)
   rescue e : Axentro::Common::AxentroException
-    ValidatedSlowBlock.new(false, block, e.message || "unknown error")
+    ValidatedBlock.new(false, block, e.message || "unknown error")
   rescue e : Exception
     error("#{e.class}: #{e.message || "unknown error"}\n#{e.backtrace.join("\n")}")
-    ValidatedSlowBlock.new(false, block, "unexpected error: #{e.message || "unknown error"}")
+    ValidatedBlock.new(false, block, "unexpected error: #{e.message || "unknown error"}")
   end
 
   module Rules
@@ -220,7 +232,7 @@ module ::Axentro::Core::BlockValidator
     end
   end
 
-  struct ValidatedSlowBlock
+  struct ValidatedBlock
     getter valid : Bool
     getter block : Block
     getter reason : String

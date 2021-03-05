@@ -44,8 +44,6 @@ module ::Axentro::Core
     getter max_miners : Int32
 
     @network_type : String
-    @slow_blocks_to_hold : Int64
-    @fast_blocks_to_hold : Int64
     @sync_chunk_size : Int32
     @record_nonces : Bool
     @node : Node?
@@ -63,10 +61,6 @@ module ::Axentro::Core
 
       info "Security Level Percentage used for blockchain validation is #{@security_level_percentage}"
       info "Blockchain sync chunk size is #{@sync_chunk_size}"
-
-      @slow_blocks_to_hold = ENV.has_key?("AXE_TESTING") ? 60_i64 : 240_i64
-      @fast_blocks_to_hold = @slow_blocks_to_hold
-      info "holding #{@slow_blocks_to_hold} slow blocks and #{@fast_blocks_to_hold} fast blocks in memory"
     end
 
     def database
@@ -80,7 +74,14 @@ module ::Axentro::Core
     def setup(@node : Node)
       setup_dapps
 
-      restore_from_database(@database)
+      if @database.total_blocks == 0
+        push_genesis if @is_standalone
+      else
+        @database.validate_local_db_blocks
+      end
+
+      # TODO - fix me
+      # refresh_mining_block
 
       unless node.is_private_node?
         spawn process_fast_transactions
@@ -89,14 +90,6 @@ module ::Axentro::Core
 
     def database
       @database
-    end
-
-    def slow_blocks_to_hold
-      @slow_blocks_to_hold
-    end
-
-    def fast_blocks_to_hold
-      @fast_blocks_to_hold
     end
 
     def node
@@ -276,56 +269,12 @@ module ::Axentro::Core
       block
     end
 
-    def trim_chain_in_memory
-      _trim_chain_in_memory_slow
-      _trim_chain_in_memory_fast
-    end
-
-    private def _trim_chain_in_memory_slow
-      slow_blocks = @chain.select(&.is_slow_block?).last(@slow_blocks_to_hold)
-      debug "trim chain, slow block count: #{slow_blocks.size}"
-      cutoff_timestamp = slow_blocks[0].timestamp
-      debug "trim chain, 1st slow block index to hold: #{slow_blocks[0].index} cutoff timestamp is: #{cutoff_timestamp}"
-      if cutoff_timestamp != 0
-        debug "chain size before slow block deletions: #{@chain.size}"
-        @chain.select(&.is_slow_block?).reverse.each { |blk|
-          if (blk.timestamp != 0) && (blk.timestamp < cutoff_timestamp)
-            debug "Deleting slow block index: #{blk.index} with timestamp: #{blk.timestamp}"
-            @chain.delete(blk)
-          end
-        }
-        debug "chain size after slow block deletions: #{@chain.size}"
-      end
-    end
-
-    private def _trim_chain_in_memory_fast
-      fast_blocks = @chain.select(&.is_fast_block?).last(@fast_blocks_to_hold)
-      if fast_blocks.size > 0
-        debug "trim chain, fast block count: #{fast_blocks.size}"
-        cutoff_timestamp = fast_blocks[0].timestamp
-        debug "trim chain, 1st fast block index to hold: #{fast_blocks[0].index} cutoff timestamp is: #{cutoff_timestamp}"
-        if cutoff_timestamp != 0
-          debug "chain size before fast block deletions: #{@chain.size}"
-          @chain.select(&.is_fast_block?).reverse.each { |blk|
-            if (blk.timestamp != 0) && (blk.timestamp < cutoff_timestamp)
-              debug "Deleting fast block index: #{blk.index} with timestamp: #{blk.timestamp}"
-              @chain.delete(blk)
-            end
-          }
-          debug "chain size after fast block deletions: #{@chain.size}"
-        end
-      else
-        debug "there are no fast blocks to trim"
-      end
-    end
-
     private def _push_block(block : Block)
       @chain.push(block)
       debug "sending #{block.kind} block to DB with timestamp of #{block.timestamp}"
       @database.push_block(block)
       @chain.sort_by! { |blk| blk.index }
       dapps_record
-      trim_chain_in_memory
     end
 
     def replace_mixed_chain(subchain : Chain?) : ReplaceBlocksResult
@@ -333,8 +282,6 @@ module ::Axentro::Core
       result = replace_mixed_blocks(subchain)
 
       @chain.sort_by!(&.index)
-
-      trim_chain_in_memory
 
       clean_slow_transactions
       clean_fast_transactions
