@@ -46,8 +46,7 @@ private def create_coinbase_transaction(blockchain, index, transactions) : Trans
 end
 
 private def get_latest_slow(database : Database) : Block
-  blocks = database.get_highest_block_for_kind(BlockKind::SLOW)
-  blocks.size > 0 ? blocks.first.as(Block) : raise "no slow blocks"
+  database.get_highest_block_for_kind!(BlockKind::SLOW)
 end
 
 private def make_incoming_next_in_sequence(latest_slow : Block, blockchain) : Block

@@ -46,34 +46,34 @@ describe Blockchain do
     end
   end
 
-  describe "replace_mixed_chain" do
-    it "should return false if no subchains and do nothing" do
-      with_factory do |block_factory|
-        before = block_factory.chain
-        expected_result = ReplaceBlocksResult.new(0_i64, false)
-        block_factory.blockchain.replace_mixed_chain(nil).should eq(expected_result)
-        before.should eq(block_factory.chain)
-      end
-    end
+  # describe "replace_mixed_chain" do
+  #   it "should return false if no subchains and do nothing" do
+  #     with_factory do |block_factory|
+  #       before = block_factory.chain
+  #       expected_result = ReplaceBlocksResult.new(0_i64, false)
+  #       block_factory.blockchain.replace_mixed_chain(nil).should eq(expected_result)
+  #       before.should eq(block_factory.chain)
+  #     end
+  #   end
 
-    it "should return true and replace chain when fast and slow blocks in chain" do
-      with_factory do |block_factory|
-        chain = block_factory.add_slow_blocks(6).add_fast_blocks(10).chain
-        fast_sub_chain = chain.select(&.is_fast_block?)
-        slow_block_1 = chain[2].as(Block)
-        slow_sub_chain = chain.select(&.is_slow_block?)
+  #   it "should return true and replace chain when fast and slow blocks in chain" do
+  #     with_factory do |block_factory|
+  #       chain = block_factory.add_slow_blocks(6).add_fast_blocks(10).chain
+  #       fast_sub_chain = chain.select(&.is_fast_block?)
+  #       slow_block_1 = chain[2].as(Block)
+  #       slow_sub_chain = chain.select(&.is_slow_block?)
 
-        database = Axentro::Core::Database.in_memory
-        blockchain = Blockchain.new("testnet", block_factory.node_wallet, block_factory.node_wallet.address, "", database, nil, nil, 20, 100, false, 512, true)
-        blockchain.setup(block_factory.node)
-        blockchain.push_slow_block(slow_block_1)
-        expected = (blockchain.chain + slow_sub_chain[2..-1] + fast_sub_chain[0..-1]).map(&.index).sort
-        expected_result = ReplaceBlocksResult.new(19_i64, true)
-        blockchain.replace_mixed_chain(slow_sub_chain[2..-1] + fast_sub_chain[0..-1]).should eq(expected_result)
-        blockchain.chain.map(&.index).sort.should eq(expected)
-      end
-    end
-  end
+  #       database = Axentro::Core::Database.in_memory
+  #       blockchain = Blockchain.new("testnet", block_factory.node_wallet, block_factory.node_wallet.address, "", database, nil, nil, 20, 100, false, 512, true)
+  #       blockchain.setup(block_factory.node)
+  #       blockchain.push_slow_block(slow_block_1)
+  #       expected = (blockchain.chain + slow_sub_chain[2..-1] + fast_sub_chain[0..-1]).map(&.index).sort
+  #       expected_result = ReplaceBlocksResult.new(19_i64, true)
+  #       blockchain.replace_mixed_chain(slow_sub_chain[2..-1] + fast_sub_chain[0..-1]).should eq(expected_result)
+  #       blockchain.chain.map(&.index).sort.should eq(expected)
+  #     end
+  #   end
+  # end
 
   describe "add_transaction" do
     it "should add a transaction to the pool" do
@@ -226,62 +226,6 @@ describe Blockchain do
         else
           fail "no rejects found"
         end
-      end
-    end
-  end
-
-  describe "latest_block" do
-    it "should return the latest block when slow" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3)
-        blockchain = block_factory.blockchain
-        blockchain.latest_block.index.should eq(6)
-      end
-    end
-
-    it "should return the latest block when fast" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3).add_fast_blocks(4)
-        blockchain = block_factory.blockchain
-        blockchain.latest_block.index.should eq(7)
-      end
-    end
-  end
-
-  describe "latest_slow_block" do
-    it "should return the latest slow block" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3).add_fast_blocks(2)
-        blockchain = block_factory.blockchain
-        blockchain.latest_block.index.should eq(6)
-      end
-    end
-  end
-
-  describe "latest_index" do
-    it "should return the latest index when slow" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3)
-        blockchain = block_factory.blockchain
-        blockchain.latest_index.should eq(6)
-      end
-    end
-
-    it "should return the latest index when fast" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3).add_fast_blocks(4)
-        blockchain = block_factory.blockchain
-        blockchain.latest_index.should eq(7)
-      end
-    end
-  end
-
-  describe "get_latest_index_for_slow" do
-    it "should return the latest index when slow" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3).add_fast_blocks(4)
-        blockchain = block_factory.blockchain
-        blockchain.get_latest_index_for_slow.should eq(8)
       end
     end
   end

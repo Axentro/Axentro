@@ -78,7 +78,7 @@ module ::Axentro::Core::Data::Blocks
   def validate_local_db_blocks
     max_slow = highest_index_of_kind(BlockKind::SLOW)
     max_fast = highest_index_of_kind(BlockKind::FAST)
-
+    block : Block? = nil
     @db.transaction do |tx|
       conn = tx.connection
       prev_slow_block : Block? = nil
@@ -150,23 +150,26 @@ module ::Axentro::Core::Data::Blocks
               transactions << t
             end
 
-            block = Block.new(b_idx, transactions, b_nonce, b_prev_hash, b_timestamp, b_diffculty, BlockKind.parse(b_kind_string), b_address, b_public_key, b_signature, b_hash, b_version, b_hash_version, b_merkle_tree_root)
+            block_kind = BlockKind.parse(b_kind_string)
+            block = Block.new(b_idx, transactions, b_nonce, b_prev_hash, b_timestamp, b_diffculty, block_kind, b_address, b_public_key, b_signature, b_hash, b_version, b_hash_version, b_merkle_tree_root)
 
             if prev_slow_block
-              if block.kind == "SLOW"
+              if block_kind == BlockKind::SLOW
                 progress("block ##{block.index} was validated", block.index, max_slow)
-                BlockValidator.quick_validate(block, prev_slow_block)
+                validated_block = BlockValidator.quick_validate(block, prev_slow_block)
+                raise Axentro::Common::AxentroException.new(validated_block.reason) unless validated_block.valid
               end
             end
 
             if prev_fast_block
-              if block.kind == "FAST"
+              if block_kind == BlockKind::FAST
                 progress("block ##{block.index} was validated", block.index, max_fast)
-                BlockValidator.quick_validate(block, prev_fast_block)
+                validated_block = BlockValidator.quick_validate(block, prev_fast_block)
+                raise Axentro::Common::AxentroException.new(validated_block.reason) unless validated_block.valid
               end
             end
 
-            if block.kind == "SLOW"
+            if block_kind == BlockKind::SLOW
               prev_slow_block = block
             else
               prev_fast_block = block
@@ -174,6 +177,16 @@ module ::Axentro::Core::Data::Blocks
           end
         end
       end
+    end
+  rescue e : Exception
+    if block
+      block_kind = BlockKind.parse(block.kind)
+      error "Error validating blocks from database at index: #{block.index}"
+      error e.message || "unknown error while validating blocks from database"
+      warning "archiving blocks from index #{block.index} and up"
+      archive_blocks_of_kind(block.index, "db_validate", block_kind)
+      warning "deleting #{block_kind} blocks from index #{block.index} and up"
+      delete_blocks_of_kind(block.index, block_kind)
     end
   end
 
@@ -192,8 +205,24 @@ module ::Axentro::Core::Data::Blocks
     block
   end
 
-  def get_highest_block_for_kind(kind : BlockKind)
-    get_blocks_via_query("select * from blocks where idx in (select max(idx) from blocks where kind = ?)", kind.to_s)
+  def get_highest_block : Block?
+    blocks = get_blocks_via_query("select * from blocks order by timestamp desc limit 1")
+    blocks.size > 0 ? blocks.first : nil
+  end
+
+  def get_highest_block! : Block?
+    blocks = get_blocks_via_query("select * from blocks order by timestamp desc limit 1")
+    blocks.size > 0 ? blocks.first : nil
+  end
+
+  def get_highest_block_for_kind(kind : BlockKind) : Block?
+    blocks = get_blocks_via_query("select * from blocks where idx in (select max(idx) from blocks where kind = ?)", kind.to_s)
+    blocks.size > 0 ? blocks.first : nil
+  end
+
+  def get_highest_block_for_kind!(kind : BlockKind) : Block
+    blocks = get_blocks_via_query("select * from blocks where idx in (select max(idx) from blocks where kind = ?)", kind.to_s)
+    blocks.size > 0 ? blocks.first : raise "get_highest_block_for_kind! did not find a #{kind} block"
   end
 
   def get_block_for_transaction(transaction_id : String) : Block?

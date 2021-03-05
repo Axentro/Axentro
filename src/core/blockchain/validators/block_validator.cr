@@ -132,14 +132,14 @@ module ::Axentro::Core::BlockValidator
 
     def rule_prev_block_slow_index(doing_replace, blockchain, current_block_index)
       unless doing_replace
-        latest_slow_index = blockchain.get_latest_index_for_slow
+        latest_slow_index = blockchain.database.highest_index_of_kind(BlockKind::SLOW) + 2
         raise AxentroException.new("Index Mismatch: the current block index: #{current_block_index} should match the latest slow block index: #{latest_slow_index}") if current_block_index != latest_slow_index
       end
     end
 
     def rule_prev_block_fast_index(doing_replace, blockchain, current_block_index)
       unless doing_replace
-        latest_slow_index = blockchain.get_latest_index_for_fast
+        latest_slow_index = blockchain.database.highest_index_of_kind(BlockKind::FAST) + 2
         raise AxentroException.new("Index Mismatch: the current block index: #{current_block_index} should match the latest fast block index: #{latest_slow_index}") if current_block_index != latest_slow_index
       end
     end

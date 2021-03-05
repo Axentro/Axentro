@@ -54,20 +54,20 @@ module ::Axentro::Core::FastChain
     end
   end
 
-  def latest_fast_block : Block?
-    fast_blocks = @chain.select(&.is_fast_block?)
-    (fast_blocks.size > 0) ? fast_blocks.last : nil
-  end
+  # def latest_fast_block : Block?
+  #   fast_blocks = @chain.select(&.is_fast_block?)
+  #   (fast_blocks.size > 0) ? fast_blocks.last : nil
+  # end
 
-  def latest_fast_block_index_or_zero : Int64
-    fast_blocks = @chain.select(&.is_fast_block?)
-    (fast_blocks.size > 0) ? fast_blocks.last.index : 0_i64
-  end
+  # def latest_fast_block_index_or_zero : Int64
+  #   fast_blocks = @chain.select(&.is_fast_block?)
+  #   (fast_blocks.size > 0) ? fast_blocks.last.index : 0_i64
+  # end
 
-  def get_latest_index_for_fast
-    index = latest_fast_block_index_or_zero
-    index.odd? ? index + 2 : index + 1
-  end
+  # def get_latest_index_for_fast
+  #   index = latest_fast_block_index_or_zero
+  #   index.odd? ? index + 2 : index + 1
+  # end
 
   def get_latest_index_from_db_for_mint
     index = database.highest_index_of_kind(BlockKind::FAST)
@@ -87,15 +87,14 @@ module ::Axentro::Core::FastChain
     latest_index = valid_transactions[:latest_index]
     debug "minting fast block #{latest_index}"
 
-    latest_fasts = @database.get_highest_block_for_kind(BlockKind::FAST)
-    _latest_block = latest_fasts.size > 0 ? latest_fasts.first : get_genesis_block
+    latest_fast_block = @database.get_highest_block_for_kind(BlockKind::FAST) || get_genesis_block
 
     timestamp = __timestamp
 
     if wallet = node.get_wallet
       address = wallet.address
       public_key = wallet.public_key
-      latest_block_hash = _latest_block.to_hash
+      latest_block_hash = latest_fast_block.to_hash
 
       hash = Block.to_hash(latest_index, transactions, latest_block_hash, address, public_key)
       private_key = Wif.new(wallet.wif).private_key.as_hex
@@ -124,7 +123,7 @@ module ::Axentro::Core::FastChain
     transactions = [coinbase_transaction] + embedded_fast_transactions
 
     vt = TransactionValidator.validate_common(transactions, @network_type)
-    block_index = latest_fast_block.nil? ? 0_i64 : latest_fast_block.not_nil!.index
+    block_index = @database.highest_index_of_kind(BlockKind::FAST)
 
     # don't validate prev hash here as we haven't assigned them yet. We assign lower down after we have all the valid transactions
     skip_prev_hash_check = true

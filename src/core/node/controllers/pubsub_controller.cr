@@ -26,14 +26,14 @@ module ::Axentro::Core::Controllers
       @sockets << socket
       debug "new pubsub subscriber coming (#{@sockets.size})"
 
-      socket.send(@blockchain.latest_block.to_json)
+      socket.send(@blockchain.database.get_highest_block!.to_json)
     end
 
     def broadcast_latest_block
       debug "broadcast to the subscribers (#{@sockets.size})"
 
       @sockets.each do |socket|
-        socket.send(@blockchain.latest_block.to_json)
+        socket.send(@blockchain.database.get_highest_block!.to_json)
       rescue e : Exception
         @sockets.delete(socket)
         debug "a pubsub subscriber disconnected (#{@sockets.size})"
