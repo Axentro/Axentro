@@ -84,7 +84,7 @@ module ::Axentro::Core
       else
         @database.validate_local_db_blocks
       end
-     
+
       unless node.is_private_node?
         spawn process_fast_transactions
       end
