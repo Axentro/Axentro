@@ -919,10 +919,12 @@ module ::Axentro::Core
     # spike with streaming blocks
     private def _request_stream_block(socket, _content)
       _m_content = MContentNodeRequestStreamBlock.from_json(_content)
-      remote_start_index = _m_content.start_index
-      info "requested stream chain from index: #{remote_start_index}"
+      start_index = _m_content.start_index
+      info "requested stream chain from index: #{start_index}"
       
-      database.stream_blocks_from(remote_start_index, socket)
+      database.stream_blocks_from(start_index) do |block, total_size|
+         send(socket, M_TYPE_NODE_RECEIVE_STREAM_BLOCK, {block: block, start_index: start_index, total_size: total_size})
+      end
     end
 
     private def _receive_stream_block(socket, _content)

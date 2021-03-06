@@ -75,6 +75,9 @@ module ::Axentro::Core::Data::Blocks
     blocks
   end
 
+
+  
+
   def validate_local_db_blocks
     max_slow = highest_index_of_kind(BlockKind::SLOW)
     max_fast = highest_index_of_kind(BlockKind::FAST)
@@ -190,7 +193,7 @@ module ::Axentro::Core::Data::Blocks
     end
   end
 
-  def stream_blocks_from(index : Int64, socket)
+  def stream_blocks_from(index : Int64)
     block : Block? = nil
     total_size = 0
     @db.transaction do |tx|
@@ -268,12 +271,8 @@ module ::Axentro::Core::Data::Blocks
             block_kind = BlockKind.parse(b_kind_string)
             block = Block.new(b_idx, transactions, b_nonce, b_prev_hash, b_timestamp, b_diffculty, block_kind, b_address, b_public_key, b_signature, b_hash, b_version, b_hash_version, b_merkle_tree_root)
 
-            if block
-                json_content = {block: block, start_index: index, total_size: total_size * 2}.to_json
-                m = { type: M_TYPE_NODE_RECEIVE_STREAM_BLOCK, content: json_content}.to_json
-                 socket.send(m)
-                end
-
+            yield block, (total_size * 2) if block
+                
           end
         end
       end
