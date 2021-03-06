@@ -386,6 +386,10 @@ module ::Axentro::Core
           _request_chain(socket, message_content)
         when M_TYPE_NODE_RECEIVE_CHAIN
           _receive_chain(socket, message_content)
+        when M_TYPE_NODE_REQUEST_STREAM_BLOCK
+          _request_stream_block(socket, message_content)
+        when M_TYPE_NODE_RECEIVE_STREAM_BLOCK
+          _receive_stream_block(socket, message_content)
         when M_TYPE_NODE_BROADCAST_TRANSACTION
           _broadcast_transaction(socket, message_content)
         when M_TYPE_NODE_BROADCAST_BLOCK
@@ -882,7 +886,8 @@ module ::Axentro::Core
           proceed_setup
         end
       else
-        send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_index: _remote_start_index, chunk_size: chunk_size})
+        # send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_index: _remote_start_index, chunk_size: chunk_size})
+        send(socket, M_TYPE_NODE_REQUEST_STREAM_BLOCK, {start_index: _remote_start_index})
       end
     end
 
@@ -909,6 +914,26 @@ module ::Axentro::Core
         info "Remote index: #{remote_start_index}, target index: #{latest_local_index}"
         sync_chain(socket, false)
       end
+    end
+
+    # spike with streaming blocks
+    private def _request_stream_block(socket, _content)
+      _m_content = MContentNodeRequestStreamBlock.from_json(_content)
+      remote_start_index = _m_content.start_index
+      info "requested stream chain from index: #{remote_start_index}"
+      
+      database.stream_blocks_from(remote_start_index, socket)
+    end
+
+    private def _receive_stream_block(socket, _content)
+      _m_content = MContentNodeReceiveStreamBlock.from_json(_content)
+      remote_start_index = _m_content.start_index
+      total_size = _m_content.total_size
+      block = Block.from_json(_m_content.block.to_json)
+      # put all the blocks into the db first
+      # then run the quick validate local db starting from 10 blocks back from the new downloaded blocks
+      # then continue
+      progress("block ##{block.index} was received", block.index, total_size)
     end
 
     # on child
