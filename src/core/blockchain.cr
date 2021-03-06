@@ -137,7 +137,6 @@ module ::Axentro::Core
     def replace_block(block : Block)
       target_index = chain.index { |b| b.index == block.index }
       if target_index
-        # @chain[target_index] = block
         # validate during replace block
         @database.delete_block(block.index)
         # check block is valid here (including checking transactions) - we are in replace
@@ -224,10 +223,6 @@ module ::Axentro::Core
         if index
           @database.archive_blocks(index, "sync")
           @database.delete_blocks(index)
-          # chain.each_index { |i|
-          #   debug "gonna delete at index #{i}"
-          #   @chain.delete_at(i) if @chain[i].index >= index
-          # }
         end
         break
       end
@@ -287,43 +282,6 @@ module ::Axentro::Core
     def miner_nonce_pool
       MinerNoncePool
     end
-
-    # def latest_block : Block
-    #   @chain[-1]
-    # end
-
-    # def has_no_blocks? : Bool
-    #   @chain.size <= 0
-    # end
-
-    # def latest_slow_block : Block
-    #   slow_blocks = @chain.select(&.is_slow_block?)
-    #   return slow_blocks[0].as(Block) if slow_blocks.size < 1
-    #   slow_blocks[-1].as(Block)
-    # end
-
-    # def latest_slow_block_when_replacing : Block
-    #   slow_blocks = @chain.select(&.is_slow_block?)
-    #   return slow_blocks[0].as(Block) if slow_blocks.size < 1
-    #   slow_blocks[-2].as(Block)
-    # end
-
-    # def latest_fast_block_when_replacing : Block
-    #   fast_blocks = @chain.select(&.is_fast_block?)
-    #   debug "number of fast blocks when replace attempted: #{fast_blocks.size}"
-    #   return fast_blocks[0] if fast_blocks.size == 1
-    #   fast_blocks[-2]
-    # end
-
-    # def latest_index : Int64
-    #   latest_block.index
-    # end
-
-    # def get_latest_index_for_slow
-    #   return 0_i64 if has_no_blocks?
-    #   index = latest_slow_block.index
-    #   index.even? ? index + 2 : index + 1
-    # end
 
     private def get_genesis_block_transactions
       dev_fund = @developer_fund ? DeveloperFund.transactions(@developer_fund.not_nil!.get_config) : [] of Transaction
@@ -589,19 +547,6 @@ module ::Axentro::Core
       transactions = pending_slow_transactions.reject { |t| indices.get(t.id) }.select(&.is_slow_transaction?)
       SlowTransactionPool.replace(transactions)
     end
-
-    # private def dapps_record
-    #   @dapps.each do |dapp|
-    #     dapp.record(@chain)
-    #   end
-    # end
-
-    # private def dapps_clear_record
-    #   @dapps.each do |dapp|
-    #     dapp.clear
-    #     dapp.record(@chain)
-    #   end
-    # end
 
     include FastChain
     include DApps

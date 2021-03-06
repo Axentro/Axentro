@@ -54,21 +54,6 @@ module ::Axentro::Core::FastChain
     end
   end
 
-  # def latest_fast_block : Block?
-  #   fast_blocks = @chain.select(&.is_fast_block?)
-  #   (fast_blocks.size > 0) ? fast_blocks.last : nil
-  # end
-
-  # def latest_fast_block_index_or_zero : Int64
-  #   fast_blocks = @chain.select(&.is_fast_block?)
-  #   (fast_blocks.size > 0) ? fast_blocks.last.index : 0_i64
-  # end
-
-  # def get_latest_index_for_fast
-  #   index = latest_fast_block_index_or_zero
-  #   index.odd? ? index + 2 : index + 1
-  # end
-
   def get_latest_index_from_db_for_mint
     index = database.highest_index_of_kind(BlockKind::FAST)
     index.odd? ? index + 2 : index + 1
