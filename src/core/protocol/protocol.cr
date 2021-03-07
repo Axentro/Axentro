@@ -279,6 +279,7 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     property block : Block
     property start_index : Int64
+    property target_index : Int64
     property total_size : Int32
   end
 

@@ -75,8 +75,83 @@ module ::Axentro::Core::Data::Blocks
     blocks
   end
 
+  private def retrieve_blocks(conn : DB::Connection)
+    block : Block? = nil
+    conn.query("select * from blocks order by timestamp asc") do |block_rows|
+      block_rows.each do
+        b_idx = block_rows.read(Int64)
+        b_nonce = block_rows.read(String)
+        b_prev_hash = block_rows.read(String)
+        b_timestamp = block_rows.read(Int64)
+        b_diffculty = block_rows.read(Int32)
+        b_address = block_rows.read(String)
+        b_kind_string = block_rows.read(String)
+        b_public_key = block_rows.read(String)
+        b_signature = block_rows.read(String)
+        b_hash = block_rows.read(String)
+        b_version = block_rows.read(String)
+        b_hash_version = block_rows.read(String)
+        b_merkle_tree_root = block_rows.read(String)
 
-  
+        transactions = [] of Transaction
+
+        conn.query("select * from transactions where block_id = ? order by idx asc", b_idx) do |txn_rows|
+          txn_rows.each do
+            t_id = txn_rows.read(String)
+            txn_rows.read(Int32)
+            txn_rows.read(Int64)
+            t_action = txn_rows.read(String)
+            t_message = txn_rows.read(String)
+            t_token = txn_rows.read(String)
+            t_prev_hash = txn_rows.read(String)
+            t_timestamp = txn_rows.read(Int64)
+            t_scaled = txn_rows.read(Int32)
+            t_kind_string = txn_rows.read(String)
+            t_kind = t_kind_string == "SLOW" ? TransactionKind::SLOW : TransactionKind::FAST
+            t_version_string = txn_rows.read(String)
+            t_version = TransactionVersion.parse(t_version_string)
+
+            recipients = [] of Transaction::Recipient
+            conn.query("select * from recipients where transaction_id = ? order by idx", t_id) do |rec_rows|
+              rec_rows.each do
+                rec_rows.read(String)
+                rec_rows.read(Int64)
+                rec_rows.read(Int32)
+                recipients << {
+                  address: rec_rows.read(String),
+                  amount:  rec_rows.read(Int64),
+                }
+              end
+            end
+
+            senders = [] of Transaction::Sender
+            conn.query("select * from senders where transaction_id = ? order by idx", t_id) do |snd_rows|
+              snd_rows.each do
+                snd_rows.read(String?)
+                snd_rows.read(Int64)
+                snd_rows.read(Int32)
+                senders << {
+                  address:    snd_rows.read(String),
+                  public_key: snd_rows.read(String),
+                  amount:     snd_rows.read(Int64),
+                  fee:        snd_rows.read(Int64),
+                  signature:  snd_rows.read(String),
+                }
+              end
+            end
+
+            t = Transaction.new(t_id, t_action, senders, recipients, t_message, t_token, t_prev_hash, t_timestamp, t_scaled, t_kind, t_version)
+            transactions << t
+          end
+
+          block_kind = BlockKind.parse(b_kind_string)
+          block = Block.new(b_idx, transactions, b_nonce, b_prev_hash, b_timestamp, b_diffculty, block_kind, b_address, b_public_key, b_signature, b_hash, b_version, b_hash_version, b_merkle_tree_root)
+
+          yield block
+        end
+      end
+    end
+  end
 
   def validate_local_db_blocks
     max_slow = highest_index_of_kind(BlockKind::SLOW)
@@ -86,98 +161,30 @@ module ::Axentro::Core::Data::Blocks
       conn = tx.connection
       prev_slow_block : Block? = nil
       prev_fast_block : Block? = nil
-      conn.query("select * from blocks order by timestamp asc") do |block_rows|
-        block_rows.each do
-          b_idx = block_rows.read(Int64)
-          b_nonce = block_rows.read(String)
-          b_prev_hash = block_rows.read(String)
-          b_timestamp = block_rows.read(Int64)
-          b_diffculty = block_rows.read(Int32)
-          b_address = block_rows.read(String)
-          b_kind_string = block_rows.read(String)
-          b_public_key = block_rows.read(String)
-          b_signature = block_rows.read(String)
-          b_hash = block_rows.read(String)
-          b_version = block_rows.read(String)
-          b_hash_version = block_rows.read(String)
-          b_merkle_tree_root = block_rows.read(String)
-
-          transactions = [] of Transaction
-
-          conn.query("select * from transactions where block_id = ? order by idx asc", b_idx) do |txn_rows|
-            txn_rows.each do
-              t_id = txn_rows.read(String)
-              txn_rows.read(Int32)
-              txn_rows.read(Int64)
-              t_action = txn_rows.read(String)
-              t_message = txn_rows.read(String)
-              t_token = txn_rows.read(String)
-              t_prev_hash = txn_rows.read(String)
-              t_timestamp = txn_rows.read(Int64)
-              t_scaled = txn_rows.read(Int32)
-              t_kind_string = txn_rows.read(String)
-              t_kind = t_kind_string == "SLOW" ? TransactionKind::SLOW : TransactionKind::FAST
-              t_version_string = txn_rows.read(String)
-              t_version = TransactionVersion.parse(t_version_string)
-
-              recipients = [] of Transaction::Recipient
-              conn.query("select * from recipients where transaction_id = ? order by idx", t_id) do |rec_rows|
-                rec_rows.each do
-                  rec_rows.read(String)
-                  rec_rows.read(Int64)
-                  rec_rows.read(Int32)
-                  recipients << {
-                    address: rec_rows.read(String),
-                    amount:  rec_rows.read(Int64),
-                  }
-                end
-              end
-
-              senders = [] of Transaction::Sender
-              conn.query("select * from senders where transaction_id = ? order by idx", t_id) do |snd_rows|
-                snd_rows.each do
-                  snd_rows.read(String?)
-                  snd_rows.read(Int64)
-                  snd_rows.read(Int32)
-                  senders << {
-                    address:    snd_rows.read(String),
-                    public_key: snd_rows.read(String),
-                    amount:     snd_rows.read(Int64),
-                    fee:        snd_rows.read(Int64),
-                    signature:  snd_rows.read(String),
-                  }
-                end
-              end
-
-              t = Transaction.new(t_id, t_action, senders, recipients, t_message, t_token, t_prev_hash, t_timestamp, t_scaled, t_kind, t_version)
-              transactions << t
-            end
-
-            block_kind = BlockKind.parse(b_kind_string)
-            block = Block.new(b_idx, transactions, b_nonce, b_prev_hash, b_timestamp, b_diffculty, block_kind, b_address, b_public_key, b_signature, b_hash, b_version, b_hash_version, b_merkle_tree_root)
-
-            if prev_slow_block
-              if block_kind == BlockKind::SLOW
-                progress("block ##{block.index} was validated", block.index, max_slow)
-                validated_block = BlockValidator.quick_validate(block, prev_slow_block)
-                raise Axentro::Common::AxentroException.new(validated_block.reason) unless validated_block.valid
-              end
-            end
-
-            if prev_fast_block
-              if block_kind == BlockKind::FAST
-                progress("block ##{block.index} was validated", block.index, max_fast)
-                validated_block = BlockValidator.quick_validate(block, prev_fast_block)
-                raise Axentro::Common::AxentroException.new(validated_block.reason) unless validated_block.valid
-              end
-            end
-
-            if block_kind == BlockKind::SLOW
-              prev_slow_block = block
-            else
-              prev_fast_block = block
-            end
+ 
+      retrieve_blocks(conn) do |_block|
+        block = _block
+        block_kind = BlockKind.parse(block.kind)
+        if prev_slow_block
+          if block_kind == BlockKind::SLOW
+            validated_block = BlockValidator.quick_validate(block, prev_slow_block)
+            raise Axentro::Common::AxentroException.new(validated_block.reason) unless validated_block.valid
+            progress("block ##{block.index} was validated", block.index, max_slow)
           end
+        end
+
+        if prev_fast_block
+          if block_kind == BlockKind::FAST
+            validated_block = BlockValidator.quick_validate(block, prev_fast_block)
+            raise Axentro::Common::AxentroException.new(validated_block.reason) unless validated_block.valid
+            progress("block ##{block.index} was validated", block.index, max_fast)
+          end
+        end
+
+        if block_kind == BlockKind::SLOW
+          prev_slow_block = block
+        else
+          prev_fast_block = block
         end
       end
     end
@@ -198,83 +205,10 @@ module ::Axentro::Core::Data::Blocks
     total_size = 0
     @db.transaction do |tx|
       conn = tx.connection
-      
       total_size = conn.query_one("select count(*) from blocks where idx > ?", index, as: Int32)
-      
-      conn.query("select * from blocks where idx >= ? order by timestamp asc", index) do |block_rows|
-        block_rows.each do
-          b_idx = block_rows.read(Int64)
-          b_nonce = block_rows.read(String)
-          b_prev_hash = block_rows.read(String)
-          b_timestamp = block_rows.read(Int64)
-          b_diffculty = block_rows.read(Int32)
-          b_address = block_rows.read(String)
-          b_kind_string = block_rows.read(String)
-          b_public_key = block_rows.read(String)
-          b_signature = block_rows.read(String)
-          b_hash = block_rows.read(String)
-          b_version = block_rows.read(String)
-          b_hash_version = block_rows.read(String)
-          b_merkle_tree_root = block_rows.read(String)
-
-          transactions = [] of Transaction
-
-          conn.query("select * from transactions where block_id = ? order by idx asc", b_idx) do |txn_rows|
-            txn_rows.each do
-              t_id = txn_rows.read(String)
-              txn_rows.read(Int32)
-              txn_rows.read(Int64)
-              t_action = txn_rows.read(String)
-              t_message = txn_rows.read(String)
-              t_token = txn_rows.read(String)
-              t_prev_hash = txn_rows.read(String)
-              t_timestamp = txn_rows.read(Int64)
-              t_scaled = txn_rows.read(Int32)
-              t_kind_string = txn_rows.read(String)
-              t_kind = t_kind_string == "SLOW" ? TransactionKind::SLOW : TransactionKind::FAST
-              t_version_string = txn_rows.read(String)
-              t_version = TransactionVersion.parse(t_version_string)
-
-              recipients = [] of Transaction::Recipient
-              conn.query("select * from recipients where transaction_id = ? order by idx", t_id) do |rec_rows|
-                rec_rows.each do
-                  rec_rows.read(String)
-                  rec_rows.read(Int64)
-                  rec_rows.read(Int32)
-                  recipients << {
-                    address: rec_rows.read(String),
-                    amount:  rec_rows.read(Int64),
-                  }
-                end
-              end
-
-              senders = [] of Transaction::Sender
-              conn.query("select * from senders where transaction_id = ? order by idx", t_id) do |snd_rows|
-                snd_rows.each do
-                  snd_rows.read(String?)
-                  snd_rows.read(Int64)
-                  snd_rows.read(Int32)
-                  senders << {
-                    address:    snd_rows.read(String),
-                    public_key: snd_rows.read(String),
-                    amount:     snd_rows.read(Int64),
-                    fee:        snd_rows.read(Int64),
-                    signature:  snd_rows.read(String),
-                  }
-                end
-              end
-
-              t = Transaction.new(t_id, t_action, senders, recipients, t_message, t_token, t_prev_hash, t_timestamp, t_scaled, t_kind, t_version)
-              transactions << t
-            end
-
-            block_kind = BlockKind.parse(b_kind_string)
-            block = Block.new(b_idx, transactions, b_nonce, b_prev_hash, b_timestamp, b_diffculty, block_kind, b_address, b_public_key, b_signature, b_hash, b_version, b_hash_version, b_merkle_tree_root)
-
-            yield block, (total_size * 2) if block
-                
-          end
-        end
+      retrieve_blocks(conn) do |_block|
+        block = _block
+        yield block, (total_size * 2)
       end
     end
   rescue e : Exception
@@ -463,5 +397,5 @@ module ::Axentro::Core::Data::Blocks
     @db.query_one("select difficulty from blocks order by idx desc limit 1", as: Int32)
   end
 
-include Protocol
+  include Protocol
 end
