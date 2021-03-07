@@ -162,7 +162,7 @@ module ::Axentro::Core::Data::Blocks
       conn = tx.connection
       prev_slow_block : Block? = nil
       prev_fast_block : Block? = nil
- 
+
       retrieve_blocks(conn) do |_block|
         block = _block
         block_kind = BlockKind.parse(block.kind)

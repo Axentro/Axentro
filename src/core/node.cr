@@ -884,7 +884,7 @@ module ::Axentro::Core
 
       @sync_blocks_target_index = _m_content.target_index
 
-      chunk_size = _m_content.chunk_size
+      # chunk_size = _m_content.chunk_size
 
       latest_local_index = database.latest_index
 
@@ -953,8 +953,8 @@ module ::Axentro::Core
       if block.index == 0_i64 || block.index > start_slow
         database.push_block(block)
       end
-      
-      if block.index == target_slow    
+
+      if block.index == target_slow
         start_fast = database.highest_index_of_kind(BlockKind::FAST)
         send(socket, M_TYPE_NODE_REQUEST_STREAM_FAST_BLOCK, {start_fast: start_fast})
       end
@@ -969,8 +969,8 @@ module ::Axentro::Core
       target_fast = database.highest_index_of_kind(BlockKind::FAST)
       if target_fast == 0_i64
         # if no fast blocks just send the genesis block (the child will ignore it but continue setup)
-        block = database.get_block(0_i64)
-        send(socket, M_TYPE_NODE_RECEIVE_STREAM_FAST_BLOCK, {block: block, start_fast: start_fast, target_fast: target_fast, total_size: 0})
+        _block = database.get_block(0_i64)
+        send(socket, M_TYPE_NODE_RECEIVE_STREAM_FAST_BLOCK, {block: _block, start_fast: start_fast, target_fast: target_fast, total_size: 0})
       else
         database.stream_blocks_from(start_fast, BlockKind::FAST) do |block, total_size|
           send(socket, M_TYPE_NODE_RECEIVE_STREAM_FAST_BLOCK, {block: block, start_fast: start_fast, target_fast: target_fast, total_size: total_size})
@@ -985,7 +985,7 @@ module ::Axentro::Core
       target_fast = _m_content.target_fast
       total_size = _m_content.total_size
       block = Block.from_json(_m_content.block.to_json)
- 
+
       progress("block ##{block.index} was received", block.index, total_size)
       if block.index > start_fast
         database.push_block(block)
@@ -994,7 +994,7 @@ module ::Axentro::Core
       if block.index == target_fast
         info "finished writing to db"
         database.validate_local_db_blocks
-          
+
         if @phase == SetupPhase::BLOCKCHAIN_SYNCING
           @phase = SetupPhase::TRANSACTION_SYNCING
           proceed_setup
