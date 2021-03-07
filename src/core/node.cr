@@ -307,7 +307,7 @@ module ::Axentro::Core
         )
       else
         warning "successor not found. skip syncing miner nonces"
-
+   
         if @phase == SetupPhase::MINER_NONCE_SYNCING
           @phase = SetupPhase::PRE_DONE
           proceed_setup
