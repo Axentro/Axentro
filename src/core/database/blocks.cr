@@ -75,9 +75,10 @@ module ::Axentro::Core::Data::Blocks
     blocks
   end
 
-  private def retrieve_blocks(conn : DB::Connection)
+  private def retrieve_blocks(conn : DB::Connection, from_index : Int64 = 0_i64, kind : BlockKind? = nil)
     block : Block? = nil
-    conn.query("select * from blocks order by timestamp asc") do |block_rows|
+    kind_condition = kind ? "and kind = '#{kind}'" : ""
+    conn.query("select * from blocks where idx >= ? #{kind_condition}", from_index) do |block_rows|
       block_rows.each do
         b_idx = block_rows.read(Int64)
         b_nonce = block_rows.read(String)
@@ -112,7 +113,7 @@ module ::Axentro::Core::Data::Blocks
             t_version = TransactionVersion.parse(t_version_string)
 
             recipients = [] of Transaction::Recipient
-            conn.query("select * from recipients where transaction_id = ? order by idx", t_id) do |rec_rows|
+            conn.query("select * from recipients where transaction_id = ? order by idx asc", t_id) do |rec_rows|
               rec_rows.each do
                 rec_rows.read(String)
                 rec_rows.read(Int64)
@@ -125,7 +126,7 @@ module ::Axentro::Core::Data::Blocks
             end
 
             senders = [] of Transaction::Sender
-            conn.query("select * from senders where transaction_id = ? order by idx", t_id) do |snd_rows|
+            conn.query("select * from senders where transaction_id = ? order by idx asc", t_id) do |snd_rows|
               snd_rows.each do
                 snd_rows.read(String?)
                 snd_rows.read(Int64)
@@ -200,13 +201,13 @@ module ::Axentro::Core::Data::Blocks
     end
   end
 
-  def stream_blocks_from(index : Int64)
+  def stream_blocks_from(index : Int64, kind : BlockKind)
     block : Block? = nil
     total_size = 0
     @db.transaction do |tx|
       conn = tx.connection
-      total_size = conn.query_one("select count(*) from blocks where idx > ?", index, as: Int32)
-      retrieve_blocks(conn) do |_block|
+      total_size = conn.query_one("select count(*) from blocks where idx > ? and kind = ?", index, kind.to_s, as: Int32)
+      retrieve_blocks(conn, index, kind) do |_block|
         block = _block
         yield block, (total_size * 2)
       end

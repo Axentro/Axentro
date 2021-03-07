@@ -266,20 +266,37 @@ module ::Axentro::Core::Protocol
     property chunk_size : Int32
   end
 
-  M_TYPE_NODE_REQUEST_STREAM_BLOCK = 0x0120
+  M_TYPE_NODE_REQUEST_STREAM_SLOW_BLOCK = 0x0120
 
-  struct MContentNodeRequestStreamBlock
+  struct MContentNodeRequestStreamSlowBlock
     include JSON::Serializable
-    property start_index : Int64
+    property start_slow : Int64
   end
 
-  M_TYPE_NODE_RECEIVE_STREAM_BLOCK = 0x0121
+  M_TYPE_NODE_RECEIVE_STREAM_SLOW_BLOCK = 0x0121
 
-  struct MContentNodeReceiveStreamBlock
+  struct MContentNodeReceiveStreamSlowBlock
     include JSON::Serializable
     property block : Block
-    property start_index : Int64
-    property target_index : Int64
+    property start_slow : Int64
+    property target_slow : Int64
+    property total_size : Int32
+  end
+
+  M_TYPE_NODE_REQUEST_STREAM_FAST_BLOCK = 0x0122
+
+  struct MContentNodeRequestStreamFastBlock
+    include JSON::Serializable
+    property start_fast : Int64
+  end
+
+  M_TYPE_NODE_RECEIVE_STREAM_FAST_BLOCK = 0x0123
+
+  struct MContentNodeReceiveStreamFastBlock
+    include JSON::Serializable
+    property block : Block
+    property start_fast : Int64
+    property target_fast : Int64
     property total_size : Int32
   end
 

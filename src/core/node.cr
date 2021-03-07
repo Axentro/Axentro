@@ -223,8 +223,16 @@ module ::Axentro::Core
       if _s = s
         info "asking to sync chain at indices: #{index}"
 
-        if do_validate
-          send(_s, M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE, {latest_index: index})
+        # if do_validate
+        #   send(_s, M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE, {latest_index: index})
+        # else
+        #   send(_s, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {chunk_size: @sync_chunk_size, latest_index: index})
+        # end
+
+        if @phase == SetupPhase::BLOCKCHAIN_SYNCING
+          # if stil setting up use quick streaming and validation
+          start_slow = database.highest_index_of_kind(BlockKind::SLOW)
+          send(s, M_TYPE_NODE_REQUEST_STREAM_SLOW_BLOCK, {start_slow: start_slow})
         else
           send(_s, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {chunk_size: @sync_chunk_size, latest_index: index})
         end
@@ -386,10 +394,14 @@ module ::Axentro::Core
           _request_chain(socket, message_content)
         when M_TYPE_NODE_RECEIVE_CHAIN
           _receive_chain(socket, message_content)
-        when M_TYPE_NODE_REQUEST_STREAM_BLOCK
-          _request_stream_block(socket, message_content)
-        when M_TYPE_NODE_RECEIVE_STREAM_BLOCK
-          _receive_stream_block(socket, message_content)
+        when M_TYPE_NODE_REQUEST_STREAM_SLOW_BLOCK
+          _request_stream_slow_block(socket, message_content)
+        when M_TYPE_NODE_RECEIVE_STREAM_SLOW_BLOCK
+          _receive_stream_slow_block(socket, message_content)
+        when M_TYPE_NODE_REQUEST_STREAM_FAST_BLOCK
+          _request_stream_fast_block(socket, message_content)
+        when M_TYPE_NODE_RECEIVE_STREAM_FAST_BLOCK
+          _receive_stream_fast_block(socket, message_content)
         when M_TYPE_NODE_BROADCAST_TRANSACTION
           _broadcast_transaction(socket, message_content)
         when M_TYPE_NODE_BROADCAST_BLOCK
@@ -887,7 +899,7 @@ module ::Axentro::Core
         end
       else
         # send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_index: _remote_start_index, chunk_size: chunk_size})
-        send(socket, M_TYPE_NODE_REQUEST_STREAM_BLOCK, {start_index: _remote_start_index})
+        send(socket, M_TYPE_NODE_REQUEST_STREAM_SLOW_BLOCK, {start_index: _remote_start_index})
       end
     end
 
@@ -917,32 +929,77 @@ module ::Axentro::Core
     end
 
     # spike with streaming blocks
-    private def _request_stream_block(socket, _content)
-      _m_content = MContentNodeRequestStreamBlock.from_json(_content)
-      start_index = _m_content.start_index
-      info "requested stream chain from index: #{start_index}"
+    # on parent
+    private def _request_stream_slow_block(socket, _content)
+      _m_content = MContentNodeRequestStreamSlowBlock.from_json(_content)
+      start_slow = _m_content.start_slow
+      info "requested stream slow chain from slow index: #{start_slow}"
 
-      target_index = database.latest_index
-      database.stream_blocks_from(start_index) do |block, total_size|
-        send(socket, M_TYPE_NODE_RECEIVE_STREAM_BLOCK, {block: block, start_index: start_index, target_index: target_index, total_size: total_size})
+      target_slow = database.highest_index_of_kind(BlockKind::SLOW)
+      database.stream_blocks_from(start_slow, BlockKind::SLOW) do |block, total_size|
+        send(socket, M_TYPE_NODE_RECEIVE_STREAM_SLOW_BLOCK, {block: block, start_slow: start_slow, target_slow: target_slow, total_size: total_size})
       end
     end
 
-    private def _receive_stream_block(socket, _content)
-      _m_content = MContentNodeReceiveStreamBlock.from_json(_content)
-      remote_start_index = _m_content.start_index
-      target_index = _m_content.target_index
+    # on child
+    private def _receive_stream_slow_block(socket, _content)
+      _m_content = MContentNodeReceiveStreamSlowBlock.from_json(_content)
+      start_slow = _m_content.start_slow
+      target_slow = _m_content.target_slow
+      total_size = _m_content.total_size
+      block = Block.from_json(_m_content.block.to_json)
+
+      progress("slow block ##{block.index} was received", block.index, total_size)
+      if block.index == 0_i64 || block.index > start_slow
+        database.push_block(block)
+      end
+      
+      if block.index == target_slow    
+        start_fast = database.highest_index_of_kind(BlockKind::FAST)
+        send(socket, M_TYPE_NODE_REQUEST_STREAM_FAST_BLOCK, {start_fast: start_fast})
+      end
+    end
+
+    # on parent
+    private def _request_stream_fast_block(socket, _content)
+      _m_content = MContentNodeRequestStreamFastBlock.from_json(_content)
+      start_fast = _m_content.start_fast
+      info "requested stream fast chain from fast index: #{start_fast}"
+
+      target_fast = database.highest_index_of_kind(BlockKind::FAST)
+      if target_fast == 0_i64
+        # if no fast blocks just send the genesis block (the child will ignore it but continue setup)
+        block = database.get_block(0_i64)
+        send(socket, M_TYPE_NODE_RECEIVE_STREAM_FAST_BLOCK, {block: block, start_fast: start_fast, target_fast: target_fast, total_size: 0})
+      else
+        database.stream_blocks_from(start_fast, BlockKind::FAST) do |block, total_size|
+          send(socket, M_TYPE_NODE_RECEIVE_STREAM_FAST_BLOCK, {block: block, start_fast: start_fast, target_fast: target_fast, total_size: total_size})
+        end
+      end
+    end
+
+    # on child
+    private def _receive_stream_fast_block(socket, _content)
+      _m_content = MContentNodeReceiveStreamFastBlock.from_json(_content)
+      start_fast = _m_content.start_fast
+      target_fast = _m_content.target_fast
       total_size = _m_content.total_size
       block = Block.from_json(_m_content.block.to_json)
  
       progress("block ##{block.index} was received", block.index, total_size)
-      database.push_block(block)
-      
-      if block.index == target_index
-        puts "finished writing to db"
-        
+      if block.index > start_fast
+        database.push_block(block)
       end
 
+      if block.index == target_fast
+        info "finished writing to db"
+        database.validate_local_db_blocks
+          
+        if @phase == SetupPhase::BLOCKCHAIN_SYNCING
+          @phase = SetupPhase::TRANSACTION_SYNCING
+          proceed_setup
+        end
+      end
     end
 
     # on child
@@ -1166,6 +1223,12 @@ module ::Axentro::Core
         sync_miner_nonces
       when SetupPhase::PRE_DONE
         info "successfully setup the node"
+
+        # if not private then start fast txn loop
+        if !@is_private
+          spawn @blockchain.process_fast_transactions
+        end
+
         @phase = SetupPhase::DONE
       end
     end

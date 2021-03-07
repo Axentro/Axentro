@@ -82,11 +82,10 @@ module ::Axentro::Core
           refresh_mining_block
         end
       else
-        @database.validate_local_db_blocks
-      end
-
-      unless node.is_private_node?
-        spawn process_fast_transactions
+        if @is_standalone
+          info "validating db for standalone node"
+          @database.validate_local_db_blocks
+        end
       end
     end
 
