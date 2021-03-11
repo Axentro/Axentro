@@ -779,7 +779,7 @@ module ::Axentro::Core
       info "finished streaming #{stream_size} slow blocks to peer"
 
       if start_slow > target_slow
-        send(socket, M_TYPE_NODE_REQUEST_STREAM_SLOW_BLOCK, {start_slow: start_slow})
+        send(socket, M_TYPE_NODE_REQUEST_STREAM_SLOW_BLOCK, {start_slow: target_slow})
       end
     end
 
@@ -816,7 +816,7 @@ module ::Axentro::Core
       end
 
       if start_fast > target_fast
-        send(socket, M_TYPE_NODE_REQUEST_STREAM_FAST_BLOCK, {start_fast: start_fast})
+        send(socket, M_TYPE_NODE_REQUEST_STREAM_FAST_BLOCK, {start_fast: target_fast})
       end
     end
 
