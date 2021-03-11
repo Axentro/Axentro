@@ -461,13 +461,13 @@ module ::Axentro::Core::NodeComponents
 
     def find_all_nodes : NamedTuple(private_nodes: Nodes, public_nodes: Set(NodeContext))
       public_nodes = @finger_table.group_by { |ctx| [ctx[:host], ctx[:port]] }.flat_map(&.last)
-      public_nodes += @successor_list.map{|s| s[:context] }
+      public_nodes += @successor_list.map { |s| s[:context] }
       if predecessor = @predecessor
         public_nodes << predecessor[:context]
       end
       {
         private_nodes: @private_nodes,
-        public_nodes: public_nodes.reject { |ctx| ctx[:id] == context[:id] }.to_set,
+        public_nodes:  public_nodes.reject { |ctx| ctx[:id] == context[:id] }.to_set,
       }
     end
 

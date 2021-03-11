@@ -250,28 +250,11 @@ module ::Axentro::Core::Protocol
     property from : Core::NodeComponents::Chord::NodeContext
   end
 
-  # M_TYPE_NODE_REQUEST_CHAIN = 0x0103
-
-  # struct MContentNodeRequestChain
-  #   include JSON::Serializable
-  #   property start_index : Int64
-  #   property chunk_size : Int32
-  # end
-
-  # M_TYPE_NODE_RECEIVE_CHAIN = 0x0104
-
-  # struct MContentNodeReceiveChain
-  #   include JSON::Serializable
-  #   property blocks : Blockchain::Chain?
-  #   property chunk_size : Int32
-  # end
-
   M_TYPE_NODE_REQUEST_STREAM_SLOW_BLOCK = 0x0120
 
   struct MContentNodeRequestStreamSlowBlock
     include JSON::Serializable
     property start_slow : Int64
-    # property from : Core::NodeComponents::Chord::NodeContext
   end
 
   M_TYPE_NODE_RECEIVE_STREAM_SLOW_BLOCK = 0x0121
@@ -344,47 +327,6 @@ module ::Axentro::Core::Protocol
     include JSON::Serializable
     property nonces : Array(MinerNonce)
   end
-
-  M_TYPE_NODE_REQUEST_CHAIN_SIZE = 0x0113
-
-  struct MContentNodeRequestChainSize
-    include JSON::Serializable
-    property latest_index : Int64
-    property chunk_size : Int32
-  end
-
-  M_TYPE_NODE_RECEIVE_CHAIN_SIZE = 0x0114
-
-  struct MContentNodeReceiveChainSize
-    include JSON::Serializable
-
-    property start_index : Int64
-    property target_index : Int64
-    property chunk_size : Int32
-  end
-
-  M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE = 0x0115
-
-  struct MContentNodeRequestValidationChallenge
-    include JSON::Serializable
-    property latest_index : Int64
-  end
-
-  M_TYPE_NODE_RECEIVE_VALIDATION_CHALLENGE = 0x0116
-
-  struct MContentNodeReceiveValidationChallenge
-    include JSON::Serializable
-    property validation_blocks : Array(Int64)
-  end
-
-  M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE_CHECK = 0x0117
-
-  struct MContentNodeRequestValidationChallengeCheck
-    include JSON::Serializable
-    property validation_hash : String
-  end
-
-  M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS = 0x0118
 
   M_TYPE_NODE_BROADCAST_REJECT_BLOCK = 0x0119
 

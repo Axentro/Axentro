@@ -238,10 +238,10 @@ module ::Axentro::Core::Data::Blocks
     total_size = 0
     @db.transaction do |tx|
       conn = tx.connection
-      total_size = conn.query_one("select count(*) from blocks where idx > ? and kind = ?", index, kind.to_s, as: Int32)
+      total_size = conn.query_one("select count(*) from blocks where idx >= ? and kind = ?", index, kind.to_s, as: Int32)
       retrieve_blocks(conn, index, kind) do |_block|
         block = _block
-        yield block, (total_size * 2)
+        yield block, total_size
       end
     end
   rescue e : Exception
