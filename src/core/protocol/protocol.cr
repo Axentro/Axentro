@@ -250,27 +250,28 @@ module ::Axentro::Core::Protocol
     property from : Core::NodeComponents::Chord::NodeContext
   end
 
-  M_TYPE_NODE_REQUEST_CHAIN = 0x0103
+  # M_TYPE_NODE_REQUEST_CHAIN = 0x0103
 
-  struct MContentNodeRequestChain
-    include JSON::Serializable
-    property start_index : Int64
-    property chunk_size : Int32
-  end
+  # struct MContentNodeRequestChain
+  #   include JSON::Serializable
+  #   property start_index : Int64
+  #   property chunk_size : Int32
+  # end
 
-  M_TYPE_NODE_RECEIVE_CHAIN = 0x0104
+  # M_TYPE_NODE_RECEIVE_CHAIN = 0x0104
 
-  struct MContentNodeReceiveChain
-    include JSON::Serializable
-    property blocks : Blockchain::Chain?
-    property chunk_size : Int32
-  end
+  # struct MContentNodeReceiveChain
+  #   include JSON::Serializable
+  #   property blocks : Blockchain::Chain?
+  #   property chunk_size : Int32
+  # end
 
   M_TYPE_NODE_REQUEST_STREAM_SLOW_BLOCK = 0x0120
 
   struct MContentNodeRequestStreamSlowBlock
     include JSON::Serializable
     property start_slow : Int64
+    # property from : Core::NodeComponents::Chord::NodeContext
   end
 
   M_TYPE_NODE_RECEIVE_STREAM_SLOW_BLOCK = 0x0121

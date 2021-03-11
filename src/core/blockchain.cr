@@ -161,17 +161,17 @@ module ::Axentro::Core
       @database.push_block(block)
     end
 
-    def replace_mixed_chain(subchain : Chain?) : ReplaceBlocksResult
-      result = replace_mixed_blocks(subchain)
+    # def replace_mixed_chain(subchain : Chain?) : ReplaceBlocksResult
+    #   result = replace_mixed_blocks(subchain)
 
-      clean_slow_transactions
-      clean_fast_transactions
+    #   clean_slow_transactions
+    #   clean_fast_transactions
 
-      debug "calling refresh_mining_block in replace_chain"
-      refresh_mining_block
+    #   debug "calling refresh_mining_block in replace_chain"
+    #   refresh_mining_block
 
-      result
-    end
+    #   result
+    # end
 
     def get_hash_of_block_hashes(block_ids : Array(Int64))
       @database.make_validation_hash_from(block_ids)
@@ -186,47 +186,47 @@ module ::Axentro::Core
       incoming_indices.shuffle.first(percentage_as_count)
     end
 
-    private def replace_mixed_blocks(chain) : ReplaceBlocksResult
-      result = ReplaceBlocksResult.new(0_i64, true)
+    # private def replace_mixed_blocks(chain) : ReplaceBlocksResult
+    #   result = ReplaceBlocksResult.new(0_i64, true)
 
-      if chain.nil?
-        result.success = false
-        return result
-      end
+    #   if chain.nil?
+    #     result.success = false
+    #     return result
+    #   end
 
-      indexes_for_validity_checking = create_indexes_to_check(chain.not_nil!)
+    #   indexes_for_validity_checking = create_indexes_to_check(chain.not_nil!)
 
-      chain.not_nil!.sort_by(&.timestamp).each do |block|
-        index = block.index
-        result.index = index
+    #   chain.not_nil!.sort_by(&.timestamp).each do |block|
+    #     index = block.index
+    #     result.index = index
 
-        target_index = chain.index { |b| b.index == index }
-        target_index ? (chain[target_index] = block) : chain << block
+    #     target_index = chain.index { |b| b.index == index }
+    #     target_index ? (chain[target_index] = block) : chain << block
 
-        @database.delete_block(block.index)
-        # running the valid block test only on a subset of blocks for speed on sync
-        if (indexes_for_validity_checking.size == 0) || indexes_for_validity_checking.includes?(index)
-          debug "doing valid check on block #{index}"
-          # this valid check is historic and not as latest block
-          block.valid?(self, false, true)
-        end
+    #     @database.delete_block(block.index)
+    #     # running the valid block test only on a subset of blocks for speed on sync
+    #     if (indexes_for_validity_checking.size == 0) || indexes_for_validity_checking.includes?(index)
+    #       debug "doing valid check on block #{index}"
+    #       # this valid check is historic and not as latest block
+    #       block.valid?(self, false, true)
+    #     end
 
-        @database.push_block(block)
+    #     @database.push_block(block)
 
-        progress "block ##{index} was synced", index, chain.not_nil!.map(&.index).max
-      rescue e : Exception
-        error "found invalid block while syncing blocks at index #{index}.. deleting all blocks from invalid and up"
-        error "the reason:"
-        error e.message.not_nil!
-        result.success = false
-        if index
-          @database.archive_blocks(index, "sync")
-          @database.delete_blocks(index)
-        end
-        break
-      end
-      result
-    end
+    #     progress "block ##{index} was synced", index, chain.not_nil!.map(&.index).max
+    #   rescue e : Exception
+    #     error "found invalid block while syncing blocks at index #{index}.. deleting all blocks from invalid and up"
+    #     error "the reason:"
+    #     error e.message.not_nil!
+    #     result.success = false
+    #     if index
+    #       @database.archive_blocks(index, "sync")
+    #       @database.delete_blocks(index)
+    #     end
+    #     break
+    #   end
+    #   result
+    # end
 
     def add_transaction(transaction : Transaction, with_spawn : Bool = true)
       with_spawn ? spawn { _add_transaction(transaction) } : _add_transaction(transaction)

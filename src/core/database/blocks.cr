@@ -46,6 +46,29 @@ module ::Axentro::Core::Data::Blocks
     @db.exec("ROLLBACK")
   end
 
+  # insert or replace block
+  def inplace_block(block : Block)
+    verbose "database.push_block with block index #{block.index} of kind: #{block.kind}"
+    @db.exec "BEGIN TRANSACTION"
+    delete_block(block.index)
+    block.transactions.each_with_index do |t, ti|
+      verbose "writing transaction #{ti} to database with short ID of #{t.short_id}" if ti < 4
+      t.senders.each_index do |i|
+        @db.exec "insert into senders values (#{sender_insert_fields_string})", args: sender_insert_values_array(block, t, i)
+      end
+      t.recipients.each_index do |i|
+        @db.exec "insert into recipients values (#{recipient_insert_fields_string})", args: recipient_insert_values_array(block, t, i)
+      end
+      @db.exec "insert into transactions values (#{transaction_insert_fields_string})", args: transaction_insert_values_array(t, ti, block.index)
+    end
+    verbose "inserting block with #{block.transactions.size} transactions into database with index: #{block.index}"
+    @db.exec "insert into blocks values (#{block_insert_fields_string})", args: block_insert_values_array(block)
+    @db.exec "END TRANSACTION"
+  rescue e : Exception
+    warning "Rolling back db due to error when pushing block to database with message: #{e.message || "unknown"}"
+    @db.exec("ROLLBACK")
+  end
+
   # ------- Query -------
   def get_blocks_via_query(the_query, *args) : Blockchain::Chain
     blocks : Blockchain::Chain = [] of Block
@@ -154,7 +177,8 @@ module ::Axentro::Core::Data::Blocks
     end
   end
 
-  def validate_local_db_blocks
+  def validate_local_db_blocks(with_archive : Bool = true) : ReplaceBlocksResult
+    result = ReplaceBlocksResult.new(0_i64, true)
     max_slow = highest_index_of_kind(BlockKind::SLOW)
     max_fast = highest_index_of_kind(BlockKind::FAST)
     block : Block? = nil
@@ -187,18 +211,26 @@ module ::Axentro::Core::Data::Blocks
         else
           prev_fast_block = block
         end
+
+        result.index = block.index
       end
     end
+    result
   rescue e : Exception
+    result = ReplaceBlocksResult.new(0_i64, false)
     if block
+      result.index = block.index
       block_kind = BlockKind.parse(block.kind)
       error "Error validating blocks from database at index: #{block.index}"
       error e.message || "unknown error while validating blocks from database"
-      warning "archiving blocks from index #{block.index} and up"
-      archive_blocks_of_kind(block.index, "db_validate", block_kind)
+      if with_archive
+        warning "archiving blocks from index #{block.index} and up"
+        archive_blocks_of_kind(block.index, "db_validate", block_kind)
+      end
       warning "deleting #{block_kind} blocks from index #{block.index} and up"
       delete_blocks_of_kind(block.index, block_kind)
     end
+    result
   end
 
   def stream_blocks_from(index : Int64, kind : BlockKind)

@@ -13,6 +13,18 @@
 require "./node/*"
 
 module ::Axentro::Core
+  struct NodeConnection
+    property host : String
+    property port : Int32
+    property ssl : Bool
+
+    def initialize(@host, @port, @ssl); end
+
+    def to_s
+      "#{host}:#{port}"
+    end
+  end
+
   class Node < HandleSocket
     alias Network = NamedTuple(
       prefix: String,
@@ -36,9 +48,8 @@ module ::Axentro::Core
     @wallet_info_controller : Controllers::WalletInfoController
 
     MAX_SYNC_RETRY = 20
-    @sync_retry_1_count : Int32 = 0
-    @sync_retry_2_count : Int32 = 0
-    @sync_giving_up : Bool = false
+    @sync_retry_count : Int32 = 2
+    @sync_retry_list : Set(NodeConnection) = Set(NodeConnection).new
 
     # child node gets this from parent on setup
     @sync_blocks_target_index : Int64 = 0_i64
@@ -200,17 +211,17 @@ module ::Axentro::Core
     end
 
     private def sync_chain_from_point(index : Int64, socket : HTTP::WebSocket? = nil)
-      _sync_chain(index, socket, false)
+      _sync_chain(index, socket)
     end
 
-    private def sync_chain(socket : HTTP::WebSocket? = nil, do_validate : Bool = true)
-      index = database.latest_index
-      _sync_chain(index, socket, do_validate)
+    private def sync_chain(socket : HTTP::WebSocket? = nil)
+      start_slow = database.highest_index_of_kind(BlockKind::SLOW)
+      _sync_chain(start_slow, socket)
     end
 
     # mostly on the child unless child chain is longer than parent then it happens on parent too
-    private def _sync_chain(index : Int64, socket : HTTP::WebSocket? = nil, do_validate : Bool = true)
-      info "start synching chain"
+    private def _sync_chain(slow_start : Int64, socket : HTTP::WebSocket? = nil)
+      info "start synching chain from slow index: #{slow_start}"
 
       s = if _socket = socket
             _socket
@@ -221,21 +232,12 @@ module ::Axentro::Core
           end
 
       if _s = s
-        info "asking to sync chain at indices: #{index}"
 
-        # if do_validate
-        #   send(_s, M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE, {latest_index: index})
-        # else
-        #   send(_s, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {chunk_size: @sync_chunk_size, latest_index: index})
-        # end
 
-        if @phase == SetupPhase::BLOCKCHAIN_SYNCING
-          # if stil setting up use quick streaming and validation
-          start_slow = database.highest_index_of_kind(BlockKind::SLOW)
-          send(s, M_TYPE_NODE_REQUEST_STREAM_SLOW_BLOCK, {start_slow: start_slow})
-        else
-          send(_s, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {chunk_size: @sync_chunk_size, latest_index: index})
-        end
+        info "requesting to stream slow blocks from index: #{slow_start}"
+        send(s, M_TYPE_NODE_REQUEST_STREAM_SLOW_BLOCK, {start_slow: slow_start})
+
+     
       else
         warning "successor not found. skip synching blockchain"
 
@@ -246,13 +248,13 @@ module ::Axentro::Core
       end
     end
 
-    def get_latest_slow_index : Int64
-      @blockchain.has_no_blocks? ? 0_i64 : @blockchain.latest_slow_block.index
-    end
+    # def get_latest_slow_index : Int64
+    #   @blockchain.has_no_blocks? ? 0_i64 : @blockchain.latest_slow_block.index
+    # end
 
-    def get_latest_fast_index : Int64
-      @blockchain.has_no_blocks? ? 0_i64 : (@blockchain.latest_fast_block || @blockchain.get_genesis_block).index
-    end
+    # def get_latest_fast_index : Int64
+    #   @blockchain.has_no_blocks? ? 0_i64 : (@blockchain.latest_fast_block || @blockchain.get_genesis_block).index
+    # end
 
     private def sync_transactions(socket : HTTP::WebSocket? = nil)
       info "start synching transactions"
@@ -307,7 +309,7 @@ module ::Axentro::Core
         )
       else
         warning "successor not found. skip syncing miner nonces"
-   
+
         if @phase == SetupPhase::MINER_NONCE_SYNCING
           @phase = SetupPhase::PRE_DONE
           proceed_setup
@@ -378,22 +380,22 @@ module ::Axentro::Core
           @chord.stabilize_as_predecessor(self, socket, message_content)
         when M_TYPE_CHORD_BROADCAST_NODE_JOINED
           _broadcast_node_joined(socket, message_content)
-        when M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE
-          _request_validation_challenge(socket, message_content)
-        when M_TYPE_NODE_RECEIVE_VALIDATION_CHALLENGE
-          _receive_validation_challenge(socket, message_content)
-        when M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE_CHECK
-          _request_validation_challenge_check(socket, message_content)
-        when M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS
-          _request_validation_success(socket, message_content)
-        when M_TYPE_NODE_REQUEST_CHAIN_SIZE
-          _request_chain_size(socket, message_content)
-        when M_TYPE_NODE_RECEIVE_CHAIN_SIZE
-          _receive_chain_size(socket, message_content)
-        when M_TYPE_NODE_REQUEST_CHAIN
-          _request_chain(socket, message_content)
-        when M_TYPE_NODE_RECEIVE_CHAIN
-          _receive_chain(socket, message_content)
+          # when M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE
+          #   _request_validation_challenge(socket, message_content)
+          # when M_TYPE_NODE_RECEIVE_VALIDATION_CHALLENGE
+          #   _receive_validation_challenge(socket, message_content)
+          # when M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE_CHECK
+          #   _request_validation_challenge_check(socket, message_content)
+          # when M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS
+          #   _request_validation_success(socket, message_content)
+          # when M_TYPE_NODE_REQUEST_CHAIN_SIZE
+          #   _request_chain_size(socket, message_content)
+          # when M_TYPE_NODE_RECEIVE_CHAIN_SIZE
+          #   _receive_chain_size(socket, message_content)
+          # when M_TYPE_NODE_REQUEST_CHAIN
+          #   _request_chain(socket, message_content)
+          # when M_TYPE_NODE_RECEIVE_CHAIN
+          #   _receive_chain(socket, message_content)
         when M_TYPE_NODE_REQUEST_STREAM_SLOW_BLOCK
           _request_stream_slow_block(socket, message_content)
         when M_TYPE_NODE_RECEIVE_STREAM_SLOW_BLOCK
@@ -593,9 +595,11 @@ module ::Axentro::Core
       # sleep(120)
       # warning "++++++++++++ finished sleeping"
 
-      latest_block = database.get_block(database.latest_index) || database.get_block(0_i64).not_nil!
+      # latest_block = database.get_block(database.latest_index) || database.get_block(0_i64).not_nil!
+      latest_block = database.get_highest_block_for_kind!(BlockKind::SLOW)
       has_block = database.get_block(block.index)
-      slow_sync = SlowSync.new(block, @blockchain.mining_block, (has_block.nil? ? nil : has_block.not_nil!), latest_block)
+      # slow_sync = SlowSync.new(block, @blockchain.mining_block, (has_block.nil? ? nil : has_block.not_nil!), latest_block)
+      slow_sync = SlowSync.new(block, @blockchain.mining_block, has_block, latest_block)
       state = slow_sync.process
 
       case state
@@ -619,7 +623,7 @@ module ::Axentro::Core
     end
 
     private def sync_chain_on_error(conflicted_index : Int64, latest_local_index : Int64, count : Int32, socket : HTTP::WebSocket)
-      index = database.lowest_index_after_block(latest_local_index - count) || latest_local_index
+      index = database.lowest_slow_index_after_block(latest_local_index - count) || latest_local_index
 
       warning "sync_chain_on_error: attempting to re-sync from failed block #{conflicted_index} with index: #{index}"
       sync_chain_from_point(index, socket)
@@ -644,7 +648,7 @@ module ::Axentro::Core
         info "#{magenta("NEW SLOW BLOCK broadcasted")}: #{light_green(_block.index)} at difficulty: #{light_cyan(_block.difficulty)}"
       end
     rescue e : Exception
-      warning "received block: #{block.index} from peer that I don't have in my db was invalid - so keeping my local and re-syncing"
+      warning "received block: #{block.index} from peer that I don't have in my db was invalid"
       warning "error was: #{e.message || "unknown error"}"
 
       sync_chain_on_error(block.index, latest_block.index, 2, socket)
@@ -664,7 +668,7 @@ module ::Axentro::Core
         @miners_manager.forget_most_difficult
       end
     rescue e : Exception
-      warning "arriving block #{block.index} failed validity check, we can't make it our local latest - so keeping my local and re-syncing"
+      warning "arriving block #{block.index} failed validity check, we can't make it our local latest"
       warning "error was: #{e.message || "unknown error"}"
 
       sync_chain_on_error(block.index, latest_block.index, 2, socket)
@@ -685,7 +689,7 @@ module ::Axentro::Core
 
     private def execute_sync(socket : HTTP::WebSocket, block : Block, latest_block : Block, from : Chord::NodeContext?)
       warning "slow: require new chain after - local: #{latest_block.index} for incoming from peer: #{block.index}"
-      sync_chain(socket, false)
+      sync_chain(socket)
     end
 
     def fast_block_was_signed_by_official_fast_node?(block : Block) : Bool
@@ -783,152 +787,6 @@ module ::Axentro::Core
       @clients_manager.receive_content(content, from)
     end
 
-    # on the parent
-    private def _request_validation_challenge(socket, _content)
-      _m_content = MContentNodeRequestValidationChallenge.from_json(_content)
-
-      remote_index = _m_content.latest_index
-
-      info "requested validation challenge with latest index: #{remote_index}"
-
-      if remote_index == 0_i64
-        # child has no blocks so bypass validation check
-        info "validation challenge expedited as challenger has no blocks"
-        send(socket, M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS, {} of String => String)
-      else
-        # tell child about blocks to validate based on a window of blocks
-        # genesis block + (specified percentage of (max block - 10 latest))
-        local_index = database.latest_index
-
-        validation_index = Math.min(remote_index, local_index)
-
-        chain_integrity = ChainIntegrity.new(validation_index, @security_level_percentage)
-        validation_blocks = chain_integrity.get_validation_block_ids
-        @validation_hash = @blockchain.get_hash_of_block_hashes(validation_blocks)
-
-        info "validation challenge proceeding..."
-        send(socket, M_TYPE_NODE_RECEIVE_VALIDATION_CHALLENGE, {validation_blocks: validation_blocks})
-      end
-
-      target_index = database.latest_index
-
-      if database.get_block(remote_index).nil?
-        info "(request validation challenge) Remote block not found locally so starting chain sync."
-        info "Remote index: #{remote_index}, target index: #{target_index}"
-        sync_chain(socket, false)
-      end
-    end
-
-    # on the child
-    private def _receive_validation_challenge(socket, _content)
-      _m_content = MContentNodeReceiveValidationChallenge.from_json(_content)
-
-      validation_blocks = _m_content.validation_blocks
-
-      info "received validation challenge from remote node"
-
-      local_validation_hash = @blockchain.get_hash_of_block_hashes(validation_blocks)
-
-      send(socket, M_TYPE_NODE_REQUEST_VALIDATION_CHALLENGE_CHECK, {validation_hash: local_validation_hash})
-    end
-
-    # on the parent
-    private def _request_validation_challenge_check(socket, _content)
-      _m_content = MContentNodeRequestValidationChallengeCheck.from_json(_content)
-      # validation_hash = _m_content.validation_hash
-
-      debug "checking validation challenge hash from connecting node"
-
-      # if validation_hash == @validation_hash
-      info "validation hash succesfully confirmed so informing connecting node"
-      send(socket, M_TYPE_NODE_REQUEST_VALIDATION_SUCCESS, {} of String => String)
-      # else
-      #   warning "validation hash failed so rejecting connection ..."
-      #   send(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "Database validation failed: your data is not compatible with our data!"})
-      # end
-    end
-
-    # on the child
-    private def _request_validation_success(socket, _content)
-      info "validation hash successfuly validated - proceed to sync"
-      latest_index = database.latest_index
-      send(socket, M_TYPE_NODE_REQUEST_CHAIN_SIZE, {chunk_size: @sync_chunk_size, latest_index: latest_index})
-    end
-
-    # on the parent
-    private def _request_chain_size(socket, _content)
-      _m_content = MContentNodeRequestChainSize.from_json(_content)
-
-      remote_index = _m_content.latest_index
-      chunk_size = _m_content.chunk_size
-
-      debug "requested new chain size with latest index: #{remote_index}"
-
-      target_index = database.latest_index
-
-      debug "(_request_chain_size) responding from parent with:  remote_index: #{remote_index}, target_index: #{target_index}"
-      send(socket, M_TYPE_NODE_RECEIVE_CHAIN_SIZE, {chunk_size: chunk_size, start_index: remote_index, target_index: target_index})
-
-      if database.get_block(remote_index).nil?
-        info "(request chain size) Remote block not found locally so starting chain sync."
-        info "Remote index: #{remote_index}, target index: #{target_index}"
-        sync_chain(socket, false)
-      end
-    end
-
-    # on the child
-    private def _receive_chain_size(socket, _content)
-      _m_content = MContentNodeReceiveChainSize.from_json(_content)
-
-      _remote_start_index = _m_content.start_index
-
-      @sync_blocks_target_index = _m_content.target_index
-
-      # chunk_size = _m_content.chunk_size
-
-      latest_local_index = database.latest_index
-
-      debug "(_receive_chain_size) receiving from parent with:  remote_index: #{_remote_start_index}, latest_local_index: #{latest_local_index}, @sync_blocks_target_index: #{@sync_blocks_target_index}"
-
-      if database.get_block(@sync_blocks_target_index)
-        # nothing to sync so proceed to transaction syncing
-        info "no blocks to sync to moving onto transaction sync"
-        if @phase == SetupPhase::BLOCKCHAIN_SYNCING
-          @phase = SetupPhase::TRANSACTION_SYNCING
-          proceed_setup
-        end
-      else
-        # send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_index: _remote_start_index, chunk_size: chunk_size})
-        send(socket, M_TYPE_NODE_REQUEST_STREAM_SLOW_BLOCK, {start_index: _remote_start_index})
-      end
-    end
-
-    # on the parent
-    private def _request_chain(socket, _content)
-      _m_content = MContentNodeRequestChain.from_json(_content)
-
-      remote_start_index = _m_content.start_index
-
-      chunk_size = _m_content.chunk_size
-
-      blocks = database.chunk_from(remote_start_index, chunk_size)
-
-      info "requested new chain start index: #{remote_start_index}, found blocks: #{blocks.size}"
-
-      METRICS_NODES_COUNTER[kind: "sync_requested"].inc
-      send(socket, M_TYPE_NODE_RECEIVE_CHAIN, {blocks: blocks, chunk_size: chunk_size})
-      debug "chain sent to peer for sync"
-
-      latest_local_index = database.latest_index
-
-      if database.get_block(remote_start_index).nil?
-        info "(request chain) Remote block not found locally so starting chain sync."
-        info "Remote index: #{remote_start_index}, target index: #{latest_local_index}"
-        sync_chain(socket, false)
-      end
-    end
-
-    # spike with streaming blocks
     # on parent
     private def _request_stream_slow_block(socket, _content)
       _m_content = MContentNodeRequestStreamSlowBlock.from_json(_content)
@@ -936,23 +794,30 @@ module ::Axentro::Core
       info "requested stream slow chain from slow index: #{start_slow}"
 
       target_slow = database.highest_index_of_kind(BlockKind::SLOW)
+      stream_size = 0
       database.stream_blocks_from(start_slow, BlockKind::SLOW) do |block, total_size|
+        stream_size = total_size
+      info "stream slow block: #{block.index}"
         send(socket, M_TYPE_NODE_RECEIVE_STREAM_SLOW_BLOCK, {block: block, start_slow: start_slow, target_slow: target_slow, total_size: total_size})
       end
+      info "finished streaming #{stream_size} slow blocks to peer"
     end
 
     # on child
     private def _receive_stream_slow_block(socket, _content)
+    info "HERE"
       _m_content = MContentNodeReceiveStreamSlowBlock.from_json(_content)
       start_slow = _m_content.start_slow
       target_slow = _m_content.target_slow
       total_size = _m_content.total_size
       block = Block.from_json(_m_content.block.to_json)
 
-      progress("slow block ##{block.index} was received", block.index, total_size)
-      if block.index == 0_i64 || block.index > start_slow
-        database.push_block(block)
-      end
+    info "received slow stream from peer (start:#{start_slow}, target:#{target_slow}, block: #{block.index} size:#{total_size})"
+
+      # progress("slow block ##{block.index} was received (start:#{start_slow}, target:#{target_slow}, size:#{total_size})", block.index, total_size)
+      # if block.index == 0_i64 || block.index > start_slow
+        database.inplace_block(block)
+      # end
 
       if block.index == target_slow
         start_fast = database.highest_index_of_kind(BlockKind::FAST)
@@ -986,97 +851,140 @@ module ::Axentro::Core
       total_size = _m_content.total_size
       block = Block.from_json(_m_content.block.to_json)
 
-      progress("block ##{block.index} was received", block.index, total_size)
-      if block.index > start_fast
-        database.push_block(block)
-      end
+      progress("fast block ##{block.index} was received (start:#{start_fast}, target:#{target_fast}, size:#{total_size})", block.index, total_size)
+      # if block.index > start_fast
+        database.inplace_block(block)
+      # end
 
       if block.index == target_fast
-        info "finished writing to db"
-        database.validate_local_db_blocks
+        info "finished writing to db for completed sync and starting db validation"
 
-        if @phase == SetupPhase::BLOCKCHAIN_SYNCING
-          @phase = SetupPhase::TRANSACTION_SYNCING
-          proceed_setup
+        result = database.validate_local_db_blocks
+
+        if result.success
+        info "all blocks successfully validated at block: #{result.index}"
+          if @phase == SetupPhase::BLOCKCHAIN_SYNCING
+            @phase = SetupPhase::TRANSACTION_SYNCING
+            proceed_setup
+          end
+        else
+          # retry sync
+          warning "failed to validated blocks at block: #{result.index} - starting sync retry"
+          if @sync_retry_count <= MAX_SYNC_RETRY
+            next_connection = retry_sync(result)
+            info "retry sync from node: #{next_connection.to_s}"
+         
+            node_socket = HTTP::WebSocket.new("localhost", "/peer?node", 3000, false)
+            # pp node_socket.ping
+            
+            sync_chain_on_error(result.index, database.highest_index_of_kind(BlockKind::SLOW), @sync_retry_count, node_socket)
+            # node_socket.close
+            socket.close
+          end
         end
       end
+    end
+
+    private def retry_sync(result : ReplaceBlocksResult)
+      node_connections = @chord.find_all_nodes[:public_nodes].map { |nc| NodeConnection.new(nc[:host], nc[:port], nc[:ssl]) }
+      
+      # (0..30_000).each do
+      #   break if @chord.find_predecessor?
+      #   sleep 0.001
+      # end
+
+      # if predecessor = @chord.find_predecessor?
+      #   node_connections << NodeConnection.new(predecessor[:context][:host], predecessor[:context][:port], predecessor[:context][:ssl])
+      # end
+      next_connections = node_connections.reject { |nc| @sync_retry_list.map(&.to_s).includes?(nc.to_s) }
+
+      pp next_connections 
+
+      if next_connections.size == 1
+        @sync_retry_list.clear
+        @sync_retry_count += 2
+      end
+      
+      next_connection = next_connections.first
+      @sync_retry_list << next_connection
+      next_connection
+      
     end
 
     # on child
-    # ameba:disable Metrics/CyclomaticComplexity
-    private def _receive_chain(socket, _content)
-      _m_content = MContentNodeReceiveChain.from_json(_content)
+    # private def _receive_chain(socket, _content)
+    #   _m_content = MContentNodeReceiveChain.from_json(_content)
 
-      remote_chain = _m_content.blocks
-      chunk_size = _m_content.chunk_size
+    #   remote_chain = _m_content.blocks
+    #   chunk_size = _m_content.chunk_size
 
-      if _remote_chain = remote_chain
-        info "received #{_remote_chain.size} blocks"
-      else
-        info "received empty chain"
-      end
+    #   if _remote_chain = remote_chain
+    #     info "received #{_remote_chain.size} blocks"
+    #   else
+    #     info "received empty chain"
+    #   end
 
-      previous_local_index = database.latest_index
+    #   previous_local_index = database.latest_index
 
-      replace_result = @blockchain.replace_mixed_chain(_remote_chain)
-      if replace_result.success
-        latest_local_index = database.latest_index
+    #   replace_result = @blockchain.replace_mixed_chain(_remote_chain)
+    #   if replace_result.success
+    #     latest_local_index = database.latest_index
 
-        info "chain updated: #{light_green(previous_local_index)} -> #{light_green(latest_local_index)}"
+    #     info "chain updated: #{light_green(previous_local_index)} -> #{light_green(latest_local_index)}"
 
-        @miners_manager.broadcast
-      end
+    #     @miners_manager.broadcast
+    #   end
 
-      latest_local_index = database.latest_index
+    #   latest_local_index = database.latest_index
 
-      info "checking if still need to sync: #{light_yellow(latest_local_index)}/#{light_blue(@sync_blocks_target_index)}"
-      sync_required = latest_local_index < @sync_blocks_target_index
+    #   info "checking if still need to sync: #{light_yellow(latest_local_index)}/#{light_blue(@sync_blocks_target_index)}"
+    #   sync_required = latest_local_index < @sync_blocks_target_index
 
-      if sync_required && !@sync_giving_up
-        warning "yes - still need to sync"
-        if replace_result.success
-          info "mixed chain was replaced earlier ok so requesting another sync"
-          send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_index: latest_local_index, chunk_size: chunk_size})
-        elsif !replace_result.success && @sync_retry_1_count < MAX_SYNC_RETRY
-          @sync_retry_1_count += 2
-          warning "(strategy 1) failed to replace mixed chain at: #{replace_result.index} so starting a decremental retry at (#{@sync_retry_1_count}/#{MAX_SYNC_RETRY})"
-          sync_chain_on_error(replace_result.index, latest_local_index, @sync_retry_1_count, socket)
-        elsif !replace_result.success && @sync_retry_2_count < MAX_SYNC_RETRY
-          warning "can't recover giving up"
-          @sync_retry_2_count += 2
-          sleep_seconds = 10 * @sync_retry_2_count
-          warning "(strategy 2) failed to replace mixed chain at: #{replace_result.index} so starting a decremental retry with sleep #{sleep_seconds} seconds at (#{@sync_retry_2_count}/#{MAX_SYNC_RETRY})"
-          sync_chain_on_error(replace_result.index, latest_local_index, @sync_retry_1_count, socket)
-          sleep(sleep_seconds)
-        else
-          warning "can't recover giving up"
-          @giving_up = true
-        end
-      elsif sync_required && @sync_giving_up
-        # we were unable to get back in sync
-        @sync_retry_1_count = 0
-        @sync_retry_2_count = 0
-        @sync_giving_up = false
+    #   if sync_required && !@sync_giving_up
+    #     warning "yes - still need to sync"
+    #     if replace_result.success
+    #       info "mixed chain was replaced earlier ok so requesting another sync"
+    #       send(socket, M_TYPE_NODE_REQUEST_CHAIN, {start_index: latest_local_index, chunk_size: chunk_size})
+    #     elsif !replace_result.success && @sync_retry_1_count < MAX_SYNC_RETRY
+    #       @sync_retry_1_count += 2
+    #       warning "(strategy 1) failed to replace mixed chain at: #{replace_result.index} so starting a decremental retry at (#{@sync_retry_1_count}/#{MAX_SYNC_RETRY})"
+    #       sync_chain_on_error(replace_result.index, latest_local_index, @sync_retry_1_count, socket)
+    #     elsif !replace_result.success && @sync_retry_2_count < MAX_SYNC_RETRY
+    #       warning "can't recover giving up"
+    #       @sync_retry_2_count += 2
+    #       sleep_seconds = 10 * @sync_retry_2_count
+    #       warning "(strategy 2) failed to replace mixed chain at: #{replace_result.index} so starting a decremental retry with sleep #{sleep_seconds} seconds at (#{@sync_retry_2_count}/#{MAX_SYNC_RETRY})"
+    #       sync_chain_on_error(replace_result.index, latest_local_index, @sync_retry_1_count, socket)
+    #       sleep(sleep_seconds)
+    #     else
+    #       warning "can't recover giving up"
+    #       @giving_up = true
+    #     end
+    #   elsif sync_required && @sync_giving_up
+    #     # we were unable to get back in sync
+    #     @sync_retry_1_count = 0
+    #     @sync_retry_2_count = 0
+    #     @sync_giving_up = false
 
-        warning "chain failed to fully sync - but moving on to transaction syncing anyway"
-        # if no more to sync then move onto phase transaction syncing
-        if @phase == SetupPhase::BLOCKCHAIN_SYNCING
-          @phase = SetupPhase::TRANSACTION_SYNCING
-          proceed_setup
-        end
-      else
-        @sync_retry_1_count = 0
-        @sync_retry_2_count = 0
-        @sync_giving_up = false
+    #     warning "chain failed to fully sync - but moving on to transaction syncing anyway"
+    #     # if no more to sync then move onto phase transaction syncing
+    #     if @phase == SetupPhase::BLOCKCHAIN_SYNCING
+    #       @phase = SetupPhase::TRANSACTION_SYNCING
+    #       proceed_setup
+    #     end
+    #   else
+    #     @sync_retry_1_count = 0
+    #     @sync_retry_2_count = 0
+    #     @sync_giving_up = false
 
-        info "chain fully synced so moving on to transaction syncing"
-        # if no more to sync then move onto phase transaction syncing
-        if @phase == SetupPhase::BLOCKCHAIN_SYNCING
-          @phase = SetupPhase::TRANSACTION_SYNCING
-          proceed_setup
-        end
-      end
-    end
+    #     info "chain fully synced so moving on to transaction syncing"
+    #     # if no more to sync then move onto phase transaction syncing
+    #     if @phase == SetupPhase::BLOCKCHAIN_SYNCING
+    #       @phase = SetupPhase::TRANSACTION_SYNCING
+    #       proceed_setup
+    #     end
+    #   end
+    # end
 
     private def _request_transactions(socket, _content)
       MContentNodeRequestTransactions.from_json(_content)

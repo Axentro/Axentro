@@ -90,6 +90,16 @@ module ::Axentro::Core
       idx || 0_i64
     end
 
+    def lowest_slow_index_after_block(index : Int64) : Int64?
+      idx : Int64? = nil
+      @db.query("select idx from blocks where timestamp > (select timestamp from blocks where idx = ?) and kind = ? order by timestamp desc limit 1", index, BlockKind::SLOW.to_s) do |rows|
+        rows.each do
+          idx = rows.read(Int64?)
+        end
+      end
+      idx || 0_i64
+    end
+
     def chain_network_kind : Core::Node::Network?
       address = nil
       @db.query("select address from blocks where address != 'genesis' limit 1") do |rows|
