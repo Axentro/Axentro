@@ -23,7 +23,7 @@ module ::Axentro::Core::Data::Senders
   def sender_insert_values_array(b : Block, t : Transaction, sender_index : Int32) : Array(DB::Any)
     ary = [] of DB::Any
     s = t.senders[sender_index]
-    ary << t.id << b.index << sender_index << s[:address] << s[:public_key] << s[:amount] << s[:fee] << s[:signature]
+    ary << t.id << b.index << sender_index << s.address << s.public_key << s.amount << s.fee << s.signature
   end
 
   # ------- Query -------
@@ -34,13 +34,12 @@ module ::Axentro::Core::Data::Senders
         rows.read(String?)
         rows.read(Int64)
         rows.read(Int32)
-        senders << {
-          address:    rows.read(String),
-          public_key: rows.read(String),
-          amount:     rows.read(Int64),
-          fee:        rows.read(Int64),
-          signature:  rows.read(String),
-        }
+        address = rows.read(String)
+        public_key = rows.read(String)
+        amount = rows.read(Int64)
+        fee = rows.read(Int64)
+        signature = rows.read(String)
+        senders << Sender.new(address, public_key, amount, fee, signature)
       end
     end
     senders

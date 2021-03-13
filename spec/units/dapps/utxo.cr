@@ -24,7 +24,7 @@ describe UTXO do
         chain = block_factory.add_slow_blocks(10).chain
         utxo = UTXO.new(block_factory.blockchain)
         utxo.record(chain)
-        address = chain[1].transactions.first.recipients.first[:address]
+        address = chain[1].transactions.first.recipients.first.address
         historic_per_address = {address => [TokenQuantity.new(TOKEN_DEFAULT, 11999965560_i64)]}
 
         utxo.get_for_batch(address, TOKEN_DEFAULT, historic_per_address).should eq(11999965560_i64)
@@ -63,7 +63,7 @@ describe UTXO do
           chain = block_factory.add_slow_block.chain
           utxo = UTXO.new(block_factory.blockchain)
           utxo.record(chain)
-          address = chain[1].transactions.first.recipients.first[:address]
+          address = chain[1].transactions.first.recipients.first.address
           historic_per_address = {address => [TokenQuantity.new(TOKEN_DEFAULT, 11999965560_i64)]}
 
           utxo.get_for_batch(address, "UNKNOWN", historic_per_address).should eq(0)
@@ -75,7 +75,7 @@ describe UTXO do
           chain = block_factory.add_slow_blocks(10).chain
           utxo = UTXO.new(block_factory.blockchain)
           utxo.record(chain)
-          address = chain[1].transactions.first.recipients.first[:address]
+          address = chain[1].transactions.first.recipients.first.address
           historic_per_address = {address => [TokenQuantity.new(TOKEN_DEFAULT, 11999965560_i64)]}
 
           utxo.get_for_batch(address, "UNKNOWN", historic_per_address).should eq(0)
@@ -92,8 +92,8 @@ describe UTXO do
         utxo.record(chain)
 
         transactions = chain.reject { |blk| blk.prev_hash == "genesis" }.flat_map { |blk| blk.transactions }
-        address = chain[1].transactions.first.recipients.first[:address]
-        expected_amount = transactions.flat_map { |txn| txn.recipients.select { |r| r[:address] == address } }.map { |x| x[:amount] }.sum * 2
+        address = chain[1].transactions.first.recipients.first.address
+        expected_amount = transactions.flat_map { |txn| txn.recipients.select { |r| r.address == address } }.map { |x| x.amount }.sum * 2
         historic_per_address = {address => [TokenQuantity.new(TOKEN_DEFAULT, expected_amount - 1199999373_i64)]}
 
         utxo.get_pending_batch(address, transactions, TOKEN_DEFAULT, historic_per_address).should eq(expected_amount)
@@ -107,8 +107,8 @@ describe UTXO do
         utxo.record(chain)
 
         transactions = [] of Transaction
-        address = chain[1].transactions.first.recipients.first[:address]
-        expected_amount = chain.reject { |blk| blk.prev_hash == "genesis" }.flat_map { |blk| blk.transactions.first.recipients.select { |r| r[:address] == address } }.map { |x| x[:amount] }.sum
+        address = chain[1].transactions.first.recipients.first.address
+        expected_amount = chain.reject { |blk| blk.prev_hash == "genesis" }.flat_map { |blk| blk.transactions.first.recipients.select { |r| r.address == address } }.map { |x| x.amount }.sum
         historic_per_address = {address => [TokenQuantity.new(TOKEN_DEFAULT, expected_amount)]}
 
         utxo.get_pending_batch(address, transactions, TOKEN_DEFAULT, historic_per_address).should eq(expected_amount)
@@ -343,7 +343,7 @@ describe UTXO do
       it "should return the amount" do
         with_factory do |block_factory, _|
           block_factory.add_slow_blocks(6)
-          recipient_address = block_factory.chain.last.transactions.first.recipients.first[:address]
+          recipient_address = block_factory.chain.last.transactions.first.recipients.first.address
           payload = {call: "amount", address: recipient_address, confirmation: 1, token: TOKEN_DEFAULT}.to_json
           json = JSON.parse(payload)
 

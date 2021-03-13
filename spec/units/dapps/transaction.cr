@@ -89,8 +89,14 @@ describe TransactionCreator do
             transaction.action.should eq("send")
             transaction.prev_hash.should eq("0")
             transaction.message.should eq("")
-            transaction.senders.should eq(expected_senders)
-            transaction.recipients.should eq(expected_recipients)
+            transaction.senders.each_with_index do |s, i|
+              s.address.should eq(expected_senders[i].address)
+              s.amount.should eq(expected_senders[i].amount)
+            end
+            transaction.recipients.each_with_index do |r, i|
+              r.address.should eq(expected_recipients[i].address)
+              r.amount.should eq(expected_recipients[i].amount)
+            end
             transaction.kind.should eq(TransactionKind::SLOW)
           end
         end
@@ -130,7 +136,7 @@ describe TransactionCreator do
               transaction.action.should eq("send")
               transaction.prev_hash.should eq("0")
               transaction.message.should eq("0")
-              transaction.senders.first["signature"].should_not eq("0")
+              transaction.senders.first.signature.should_not eq("0")
               transaction.senders.should_not eq(senders)
             end
           end

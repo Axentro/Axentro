@@ -41,48 +41,48 @@ module ::Axentro::Core::TransactionValidator
 
   def validate_senders(transaction : Axentro::Core::Transaction, network_type : String)
     transaction.senders.each do |sender|
-      network = Keys::Address.from(sender[:address], "sender").network
-      return FailedTransaction.new(transaction, "sender address: #{sender[:address]} has wrong network type: #{network[:name]}, this node is running as: #{network_type}") if network[:name] != network_type
+      network = Keys::Address.from(sender.address, "sender").network
+      return FailedTransaction.new(transaction, "sender address: #{sender.address} has wrong network type: #{network[:name]}, this node is running as: #{network_type}") if network[:name] != network_type
 
-      public_key = Keys::PublicKey.new(sender[:public_key], network)
+      public_key = Keys::PublicKey.new(sender.public_key, network)
 
-      if public_key.address.as_hex != sender[:address]
-        return FailedTransaction.new(transaction, "sender public key mismatch - sender public key: #{public_key.as_hex} is not for sender address: #{sender[:address]}")
+      if public_key.address.as_hex != sender.address
+        return FailedTransaction.new(transaction, "sender public key mismatch - sender public key: #{public_key.as_hex} is not for sender address: #{sender.address}")
       end
 
       verbose "unsigned_json: #{transaction.as_unsigned.to_json}"
       verbose "unsigned_json_hash: #{transaction.as_unsigned.to_hash}"
       verbose "public key: #{public_key.as_hex}"
-      verbose "signature: #{sender[:signature]}"
+      verbose "signature: #{sender.signature}"
 
-      verify_result = KeyUtils.verify_signature(transaction.as_unsigned.to_hash, sender[:signature], public_key.as_hex)
+      verify_result = KeyUtils.verify_signature(transaction.as_unsigned.to_hash, sender.signature, public_key.as_hex)
 
       verbose "verify signature result: #{verify_result}"
 
       if !verify_result
-        return FailedTransaction.new(transaction, "invalid signing for sender: #{sender[:address]}")
+        return FailedTransaction.new(transaction, "invalid signing for sender: #{sender.address}")
       end
 
-      unless Keys::Address.from(sender[:address], "sender")
-        return FailedTransaction.new(transaction, "invalid checksum for sender's address: #{sender[:address]}")
+      unless Keys::Address.from(sender.address, "sender")
+        return FailedTransaction.new(transaction, "invalid checksum for sender's address: #{sender.address}")
       end
 
-      valid_amount?(sender[:amount])
+      valid_amount?(sender.amount)
       nil
     end
   end
 
   def validate_recipients(transaction : Axentro::Core::Transaction, network_type : String)
     transaction.recipients.each do |recipient|
-      recipient_address = Keys::Address.from(recipient[:address], "recipient")
+      recipient_address = Keys::Address.from(recipient.address, "recipient")
       unless recipient_address
-        return FailedTransaction.new(transaction, "invalid checksum for recipient's address: #{recipient[:address]}")
+        return FailedTransaction.new(transaction, "invalid checksum for recipient's address: #{recipient.address}")
       end
 
       network = recipient_address.network
-      return FailedTransaction.new(transaction, "recipient address: #{recipient[:address]} has wrong network type: #{network[:name]}, this node is running as: #{network_type}") if network[:name] != network_type
+      return FailedTransaction.new(transaction, "recipient address: #{recipient.address} has wrong network type: #{network[:name]}, this node is running as: #{network_type}") if network[:name] != network_type
 
-      valid_amount?(recipient[:amount])
+      valid_amount?(recipient.amount)
     end
   end
 
@@ -126,7 +126,7 @@ module ::Axentro::Core::TransactionValidator
       vt << FailedTransaction.new(transaction, "there should be no Sender for a coinbase transaction") && next if transaction.senders.size != 0
       vt << FailedTransaction.new(transaction, "prev_hash of coinbase transaction has to be '0'") && next if transaction.prev_hash != "0"
 
-      served_sum = transaction.recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
+      served_sum = transaction.recipients.reduce(0_i64) { |sum, recipient| sum + recipient.amount }
       served_sum_expected = transaction.is_slow_transaction? ? (blockchain.coinbase_slow_amount(block_index, embedded_transactions) + blockchain.total_fees(embedded_transactions)) : blockchain.coinbase_fast_amount(block_index, embedded_transactions)
 
       if served_sum != served_sum_expected

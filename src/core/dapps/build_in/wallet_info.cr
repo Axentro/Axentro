@@ -125,11 +125,11 @@ module ::Axentro::Core::DApps::BuildIn
       page, per_page, direction, sort_field = 0, 100, 1, 1
 
       all_completed_transactions = database.get_paginated_transactions_for_address(address, page, per_page, Direction.new(direction).to_s, TransactionSortField.new(sort_field).to_s, [] of String)
-      incoming_completed_transactions = incoming(address, "Completed", all_completed_transactions.select { |t| t.recipients.map { |r| r[:address] }.includes?(address) })
-      outgoing_completed_transactions = outgoing(address, "Completed", all_completed_transactions.select { |t| t.senders.map { |r| r[:address] }.includes?(address) })
+      incoming_completed_transactions = incoming(address, "Completed", all_completed_transactions.select { |t| t.recipients.map { |r| r.address }.includes?(address) })
+      outgoing_completed_transactions = outgoing(address, "Completed", all_completed_transactions.select { |t| t.senders.map { |r| r.address }.includes?(address) })
 
-      incoming_pending_transactions = incoming(address, "Pending", (blockchain.pending_slow_transactions + blockchain.pending_fast_transactions).select { |t| t.recipients.map { |r| r.[:address] }.includes?(address) })
-      outgoing_pending_transactions = outgoing(address, "Pending", (blockchain.pending_slow_transactions + blockchain.pending_fast_transactions).select { |t| t.senders.map { |r| r.[:address] }.includes?(address) })
+      incoming_pending_transactions = incoming(address, "Pending", (blockchain.pending_slow_transactions + blockchain.pending_fast_transactions).select { |t| t.recipients.map { |r| r.address }.includes?(address) })
+      outgoing_pending_transactions = outgoing(address, "Pending", (blockchain.pending_slow_transactions + blockchain.pending_fast_transactions).select { |t| t.senders.map { |r| r.address }.includes?(address) })
 
       recent_transactions = incoming_completed_transactions + outgoing_completed_transactions + incoming_pending_transactions + outgoing_pending_transactions
       rejected_transactions = rejections(database.find_reject_by_address(address))
@@ -179,12 +179,12 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     private def first_recipient(recipients)
-      r = recipients.map(&.[:address])
+      r = recipients.map(&.address)
       r.size > 0 ? r.first : ""
     end
 
     private def first_sender(senders)
-      s = senders.map(&.[:address])
+      s = senders.map(&.address)
       s.size > 0 ? s.first : ""
     end
 
@@ -221,19 +221,19 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     private def amount_for_recipients(address, recipients) : String
-      scale_decimal(recipients.select { |r| r[:address] == address }.map(&.[:amount]).reduce(0_i64) { |acc, v| acc + v })
+      scale_decimal(recipients.select { |r| r.address == address }.map(&.amount).reduce(0_i64) { |acc, v| acc + v })
     end
 
     private def amount_for_senders(address, senders) : String
-      scale_decimal(senders.select { |s| s[:address] == address }.map(&.[:amount]).reduce(0_i64) { |acc, v| acc + v })
+      scale_decimal(senders.select { |s| s.address == address }.map(&.amount).reduce(0_i64) { |acc, v| acc + v })
     end
 
     private def fee_for_senders(address, senders) : String
-      scale_decimal(senders.select { |s| s[:address] == address }.map(&.[:fee]).reduce(0_i64) { |acc, v| acc + v })
+      scale_decimal(senders.select { |s| s.address == address }.map(&.fee).reduce(0_i64) { |acc, v| acc + v })
     end
 
     private def domain_for_senders(senders) : String
-      _senders = senders.map(&.[:address]).uniq
+      _senders = senders.map(&.address).uniq
       if _senders.size > 0
         domains = _senders.flat_map { |address| database.get_domain_map_for_address(address).keys.uniq }
         if domains.size > 0
@@ -247,7 +247,7 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     private def domain_for_recipients(recipients) : String
-      _recipients = recipients.map(&.[:address]).uniq
+      _recipients = recipients.map(&.address).uniq
       if _recipients.size > 0
         domains = _recipients.flat_map { |address| database.get_domain_map_for_address(address).keys.uniq }
         if domains.size > 0

@@ -9,31 +9,53 @@
 # LICENSE file.
 #
 # Removal or modification of this copyright notice is prohibited.
+require "json"
 
 module ::Axentro::Core::TransactionModels
   enum TransactionKind
     SLOW
     FAST
 
-    def to_json(builder : JSON::Builder)
-      builder.string(to_s)
+    def to_json(j : JSON::Builder)
+      j.string(to_s)
     end
   end
 
   enum TransactionVersion
     V1
 
-    def to_json(builder : JSON::Builder)
-      builder.string(to_s)
+    def to_json(j : JSON::Builder)
+      j.string(to_s)
     end
   end
 
-  alias Sender = NamedTuple(
-    address: String,
-    public_key: String,
-    amount: Int64,
-    fee: Int64,
-    signature: String)
+  # alias Sender = NamedTuple(
+  #   address: String,
+  #   public_key: String,
+  #   amount: Int64,
+  #   fee: Int64,
+  #   signature: String)
+
+  class Sender
+    include JSON::Serializable
+    property address : String
+    property public_key : String
+    property amount : Int64
+    property fee : Int64
+    property signature : String
+
+    def initialize(@address, @public_key, @amount, @fee, @signature); end
+
+    # def to_json(j : JSON::Builder)
+    #   j.object do
+    #     j.field("address", @address)
+    #     j.field("public_key", @public_key)
+    #     j.field("amount", @amount)
+    #     j.field("fee", @fee)
+    #     j.field("signature", @signature)
+    #   end
+    # end
+  end
 
   alias Senders = Array(Sender)
 
@@ -46,10 +68,25 @@ module ::Axentro::Core::TransactionModels
 
   alias SendersDecimal = Array(SenderDecimal)
 
-  alias Recipient = NamedTuple(
-    address: String,
-    amount: Int64,
-  )
+  # alias Recipient = NamedTuple(
+  #   address: String,
+  #   amount: Int64,
+  # )
+
+  class Recipient
+    include JSON::Serializable
+    property address : String
+    property amount : Int64
+
+    def initialize(@address, @amount); end
+
+    # def to_json(j : JSON::Builder)
+    #   j.object do
+    #     j.field("address", @address)
+    #     j.field("amount", @amount)
+    #   end
+    # end
+  end
 
   alias Recipients = Array(Recipient)
 

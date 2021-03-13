@@ -37,25 +37,19 @@ module ::Axentro::Core
         .map do |address, nonces|
           address_total_difficulty = nonces.reduce(0) { |difficulty_acc, nonce| difficulty_acc + nonce.difficulty }
           amount = (@miner_rewards_total * address_total_difficulty) / total_difficulty
-          {address: address, amount: amount.to_i64}
+          Recipient.new(address, amount.to_i64)
         end
-        .reject { |m| m[:amount] == 0 }
+        .reject { |m| m.amount == 0 }
     end
 
     def node_rewards_as_recipients(miners_recipients : Array(Transaction::Recipient)) : Array(Transaction::Recipient)
       node_recipients : Array(Transaction::Recipient) = [] of Transaction::Recipient
-      node_recipient_amount = @coinbase_amount - miners_recipients.reduce(0_i64) { |sum, m| sum + m[:amount] }
+      node_recipient_amount = @coinbase_amount - miners_recipients.reduce(0_i64) { |sum, m| sum + m.amount }
 
       if @is_fastnode
-        node_recipients << {
-          address: @wallet_address,
-          amount:  node_recipient_amount + @fee,
-        }
+        node_recipients << Recipient.new(@wallet_address, node_recipient_amount + @fee)
       else
-        node_recipients << {
-          address: @wallet_address,
-          amount:  node_recipient_amount,
-        }
+        node_recipients << Recipient.new(@wallet_address, node_recipient_amount)
         node_recipients += @fastnode_recipients
       end
       node_recipients

@@ -148,7 +148,7 @@ describe BlockchainInfo do
         # and it makes it difficult to make the expected confirmations
         with_factory(nil, true) do |block_factory, _|
           block_factory.add_slow_blocks(10)
-          address = block_factory.chain.last.transactions.last.recipients.last["address"]
+          address = block_factory.chain.last.transactions.last.recipients.last.address
           payload = {call: "transactions", address: address}.to_json
           json = JSON.parse(payload)
 

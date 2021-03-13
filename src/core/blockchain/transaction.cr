@@ -18,7 +18,7 @@ module ::Axentro::Core
     JSON.mapping(
       id: String,
       action: String,
-      senders: Senders,
+      senders: Array(Sender),
       recipients: Recipients,
       message: String,
       token: String,
@@ -32,10 +32,26 @@ module ::Axentro::Core
     setter prev_hash : String
     @common_validated : Bool = false
 
+    # def to_json(j : JSON::Builder)
+    #   j.object do
+    #     j.field("id", @id)
+    #     j.field("action", @action)
+    #     j.field("message", @message)
+    #     j.field("token", @token)
+    #     j.field("prev_hash", @prev_hash)
+    #     j.field("timestamp", @timestamp)
+    #     j.field("scaled", @scaled)
+    #     j.field("kind", @kind.to_s)
+    #     j.field("version", @version.to_s)
+    #     j.field("senders", @senders.to_json)
+    #     j.field("recipients", @recipients.to_json)
+    #   end
+    # end
+
     def initialize(
       @id : String,
       @action : String,
-      @senders : Senders,
+      @senders : Array(Sender),
       @recipients : Recipients,
       @message : String,
       @token : String,
@@ -87,15 +103,9 @@ module ::Axentro::Core
     end
 
     def as_unsigned : Transaction
-      unsigned_senders = self.senders.map { |s|
-        {
-          address:    s[:address],
-          public_key: s[:public_key],
-          amount:     s[:amount],
-          fee:        s[:fee],
-          signature:  "0",
-        }
-      }
+      unsigned_senders = self.senders.map do |s|
+        Sender.new(s.address, s.public_key, s.amount, s.fee, "0")
+      end
 
       Transaction.new(
         self.id,
@@ -115,16 +125,8 @@ module ::Axentro::Core
     def as_signed(wallets : Array(Wallet)) : Transaction
       signed_senders = self.senders.map_with_index { |s, i|
         private_key = Wif.new(wallets[i].wif).private_key
-
         signature = KeyUtils.sign(private_key.as_hex, self.to_hash)
-
-        {
-          address:    s[:address],
-          public_key: s[:public_key],
-          amount:     s[:amount],
-          fee:        s[:fee],
-          signature:  signature,
-        }
+        Sender.new(s.address, s.public_key, s.amount, s.fee, signature)
       }
 
       Transaction.new(
@@ -151,15 +153,15 @@ module ::Axentro::Core
     end
 
     def sender_total_amount : Int64
-      senders.reduce(0_i64) { |sum, sender| sum + sender[:amount] }
+      senders.reduce(0_i64) { |sum, sender| sum + sender.amount }
     end
 
     def recipient_total_amount : Int64
-      recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
+      recipients.reduce(0_i64) { |sum, recipient| sum + recipient.amount }
     end
 
     def total_fees : Int64
-      senders.reduce(0_i64) { |sum, sender| sum + sender[:fee] }
+      senders.reduce(0_i64) { |sum, sender| sum + sender.fee }
     end
 
     def set_senders(@senders)

@@ -62,13 +62,7 @@ module ::Axentro::Core
     end
 
     private def scale_i64(sender : SenderDecimal) : Sender
-      {
-        address:    sender[:address],
-        public_key: sender[:public_key],
-        amount:     scale_i64(sender[:amount]),
-        fee:        scale_i64(sender[:fee]),
-        signature:  sender[:signature],
-      }
+      Sender.new(sender[:address], sender[:public_key], scale_i64(sender[:amount]), scale_i64(sender[:fee]), sender[:signature])
     end
 
     private def scale_i64(recipients : RecipientsDecimal) : Recipients
@@ -76,10 +70,7 @@ module ::Axentro::Core
     end
 
     private def scale_i64(recipient : RecipientDecimal) : Recipient
-      {
-        address: recipient[:address],
-        amount:  scale_i64(recipient[:amount]),
-      }
+      Recipient.new(recipient[:address], scale_i64(recipient[:amount]))
     end
 
     private def scale_decimal(senders : Senders) : SendersDecimal
@@ -88,11 +79,11 @@ module ::Axentro::Core
 
     private def scale_decimal(sender : Sender) : SenderDecimal
       {
-        address:    sender[:address],
-        public_key: sender[:public_key],
-        amount:     scale_decimal(sender[:amount]),
-        fee:        scale_decimal(sender[:fee]),
-        signature:  sender[:signature],
+        address:    sender.address,
+        public_key: sender.public_key,
+        amount:     scale_decimal(sender.amount),
+        fee:        scale_decimal(sender.fee),
+        signature:  sender.signature,
       }
     end
 
@@ -102,8 +93,8 @@ module ::Axentro::Core
 
     private def scale_decimal(recipient : Recipient) : RecipientDecimal
       {
-        address: recipient[:address],
-        amount:  scale_decimal(recipient[:amount]),
+        address: recipient.address,
+        amount:  scale_decimal(recipient.amount),
       }
     end
 

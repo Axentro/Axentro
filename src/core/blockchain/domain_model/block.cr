@@ -16,8 +16,8 @@ module ::Axentro::Core
     SLOW
     FAST
 
-    def to_json(builder : JSON::Builder)
-      builder.string(to_s)
+    def to_json(j : JSON::Builder)
+      j.string(to_s)
     end
   end
 
@@ -225,6 +225,20 @@ module ::Axentro::Core
     )
     end
 
+    # def to_json
+    #   JSON.build do |json|
+    #     json.object do
+    #       json.field("index", @index)
+    #       json.field("nonce", @nonce)
+    #       json.field("prev_hash", @prev_hash)
+    #       json.field("merkle_tree_root", @merkle_tree_root)
+    #       json.field("difficulty", @difficulty)
+    #       json.field("address", @address)
+    #       json.field("transactions", @transactions.to_json)
+    #     end
+    #   end
+    # end
+
     include NonceModels
   end
 
@@ -254,39 +268,22 @@ module ::Axentro::Core
       @hash : String
     )
     end
+
+    # def to_json
+    #   JSON.build do |json|
+    #     json.object do
+    #       json.field("index", @index)
+    #       json.field("prev_hash", @prev_hash)
+    #       json.field("merkle_tree_root", @merkle_tree_root)
+    #       json.field("address", @address)
+    #       json.field("public_key", @public_key)
+    #       json.field("signature", @signature)
+    #       json.field("hash", @hash)
+    #       json.field("transactions", @transactions.to_json)
+    #     end
+    #   end
+    # end
   end
-
-  # class FastBlockNoTimestampV2
-  #   include JSON::Serializable
-  #   property index : Int64
-  #   property transactions : Array(Transaction)
-  #   property prev_hash : String
-  #   property merkle_tree_root : String
-  #   property address : String
-  #   property public_key : String
-  #   property signature : String
-  #   property hash : String
-  #   property version : String
-  #   property hash_version : String
-
-  #   def self.from_fast_block(b : Block)
-  #     self.new(b.index, b.transactions, b.prev_hash, b.merkle_tree_root, b.address, b.public_key, b.signature, b.hash, b.version, b.hash_version)
-  #   end
-
-  #   def initialize(
-  #     @index : Int64,
-  #     @transactions : Array(Transaction),
-  #     @prev_hash : String,
-  #     @merkle_tree_root : String,
-  #     @address : String,
-  #     @public_key : String,
-  #     @signature : String,
-  #     @hash : String,
-  #     @version : String,
-  #     @hash_version : String
-  #   )
-  #   end
-  # end
 
   class SlowBlockNoTimestampV2
     include JSON::Serializable
@@ -322,6 +319,25 @@ module ::Axentro::Core
       @hash_version : String
     )
     end
+
+    # def to_json
+    #   JSON.build do |json|
+    #     json.object do
+    #       json.field("index", @index)
+    #       json.field("nonce", @nonce)
+    #       json.field("prev_hash", @prev_hash)
+    #       json.field("merkle_tree_root", @merkle_tree_root)
+    #       json.field("difficulty", @difficulty)
+    #       json.field("address", @address)
+    #       json.field("public_key", @public_key)
+    #       json.field("signature", @signature)
+    #       json.field("hash", @hash)
+    #       json.field("version", @version)
+    #       json.field("hash_version", @hash_version)
+    #       json.field("transactions", @transactions.to_json)
+    #     end
+    #   end
+    # end
 
     include NonceModels
   end

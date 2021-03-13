@@ -141,10 +141,9 @@ module ::Axentro::Core::Data::Blocks
                 rec_rows.read(String)
                 rec_rows.read(Int64)
                 rec_rows.read(Int32)
-                recipients << {
-                  address: rec_rows.read(String),
-                  amount:  rec_rows.read(Int64),
-                }
+                address = rec_rows.read(String)
+                amount = rec_rows.read(Int64)
+                recipients << Recipient.new(address, amount)
               end
             end
 
@@ -154,13 +153,12 @@ module ::Axentro::Core::Data::Blocks
                 snd_rows.read(String?)
                 snd_rows.read(Int64)
                 snd_rows.read(Int32)
-                senders << {
-                  address:    snd_rows.read(String),
-                  public_key: snd_rows.read(String),
-                  amount:     snd_rows.read(Int64),
-                  fee:        snd_rows.read(Int64),
-                  signature:  snd_rows.read(String),
-                }
+                address = snd_rows.read(String)
+                public_key = snd_rows.read(String)
+                amount = snd_rows.read(Int64)
+                fee = snd_rows.read(Int64)
+                signature = snd_rows.read(String)
+                senders << Sender.new(address, public_key, amount, fee, signature)
               end
             end
 

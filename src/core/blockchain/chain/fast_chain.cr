@@ -137,11 +137,7 @@ module ::Axentro::Core::FastChain
   end
 
   def create_coinbase_fast_transaction(coinbase_amount : Int64) : Transaction
-    node_reccipient = {
-      address: @wallet_address,
-      amount:  coinbase_amount,
-    }
-
+    node_reccipient = Recipient.new(@wallet_address, coinbase_amount)
     senders = [] of Transaction::Sender # No senders
 
     recipients = coinbase_amount > 0 ? [node_reccipient] : [] of Transaction::Recipient

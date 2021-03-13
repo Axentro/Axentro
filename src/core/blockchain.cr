@@ -461,10 +461,7 @@ module ::Axentro::Core
     def coinbase_recipient_for_fastnode(fee) : Array(Transaction::Recipient)
       fastnodes = official_node.all_fast_impl
       if fastnodes.size > 0 && fee > 0
-        return [{
-          address: fastnodes.first,
-          amount:  fee,
-        }]
+        return [Recipient.new(fastnodes.first, fee)]
       end
       [] of Transaction::Recipient
     end

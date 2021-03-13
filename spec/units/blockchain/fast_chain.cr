@@ -87,8 +87,8 @@ describe Blockchain do
         transaction = blockchain.create_coinbase_fast_transaction(amount)
         transaction.action.should eq("head")
         recipient = transaction.recipients.first
-        recipient[:address].should eq(block_factory.node_wallet.address)
-        recipient[:amount].should eq(amount)
+        recipient.address.should eq(block_factory.node_wallet.address)
+        recipient.amount.should eq(amount)
       end
     end
   end

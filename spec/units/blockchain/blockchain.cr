@@ -140,15 +140,8 @@ describe Blockchain do
       victim_wallet = Wallet.from_json(Wallet.create(true).to_json)
       hacker_wallet = Wallet.from_json(Wallet.create(true).to_json)
 
-      sender = {address:    victim_wallet.address,
-                public_key: hacker_wallet.public_key,
-                amount:     10000000_i64,
-                fee:        10000000_i64,
-                signature:  "0",
-      }
-
-      recipient = {address: hacker_wallet.address,
-                   amount:  10000000_i64}
+      sender = Sender.new(victim_wallet.address, hacker_wallet.public_key, 10000000_i64, 10000000_i64, "0")
+      recipient = Recipient.new(hacker_wallet.address, 10000000_i64)
 
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
@@ -180,15 +173,8 @@ describe Blockchain do
       victim_wallet = Wallet.from_json(Wallet.create(true).to_json)
       hacker_wallet = Wallet.from_json(Wallet.create(true).to_json)
 
-      sender = {address:    victim_wallet.address,
-                public_key: victim_wallet.public_key,
-                amount:     10000000_i64,
-                fee:        10000000_i64,
-                signature:  "0",
-      }
-
-      recipient = {address: hacker_wallet.address,
-                   amount:  10000000_i64}
+      sender = Sender.new(victim_wallet.address, victim_wallet.public_key, 10000000_i64, 10000000_i64, "0")
+      recipient = Recipient.new(hacker_wallet.address, 10000000_i64)
 
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
@@ -279,7 +265,7 @@ describe Blockchain do
 
         # add a transaction to embedded that will be rejected (not enough funds) and coinbase amount should not add the rejected transactions fee
         aligned = blockchain.align_slow_transactions(coinbase_transaction, 1, 8, block_factory.blockchain.embedded_slow_transactions + [transaction_factory.make_send(90000000000000_i64)])
-        aligned.first.recipients.map(&.["amount"]).sum.should eq(1200007495)
+        aligned.first.recipients.map(&.amount).sum.should eq(1200007495)
       end
     end
   end
@@ -293,8 +279,8 @@ describe Blockchain do
         transaction = blockchain.create_coinbase_slow_transaction(amount, 0_i64, [block_factory.miner])
         transaction.action.should eq("head")
         recipient = transaction.recipients.first
-        recipient[:address].should eq(block_factory.node_wallet.address)
-        recipient[:amount].should eq(amount)
+        recipient.address.should eq(block_factory.node_wallet.address)
+        recipient.amount.should eq(amount)
       end
     end
 
@@ -307,8 +293,8 @@ describe Blockchain do
         transaction = blockchain.create_coinbase_slow_transaction(amount, fastnode_fees, [block_factory.miner])
         transaction.action.should eq("head")
         recipient = transaction.recipients.first
-        recipient[:address].should eq(block_factory.node_wallet.address)
-        recipient[:amount].should eq(amount + fastnode_fees)
+        recipient.address.should eq(block_factory.node_wallet.address)
+        recipient.amount.should eq(amount + fastnode_fees)
       end
     end
   end

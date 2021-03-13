@@ -51,13 +51,12 @@ module ::Axentro::Core
           rows.read(String?)
           rows.read(Int64)
           rows.read(Int32)
-          senders << {
-            address:    rows.read(String),
-            public_key: rows.read(String),
-            amount:     rows.read(Int64),
-            fee:        rows.read(Int64),
-            signature:  rows.read(String),
-          }
+          address = rows.read(String)
+          public_key = rows.read(String)
+          amount = rows.read(Int64)
+          fee = rows.read(Int64)
+          signature = rows.read(String)
+          senders << Sender.new(address, public_key, amount, fee, signature)
         end
       end
       senders
@@ -70,10 +69,9 @@ module ::Axentro::Core
           rows.read(String)
           rows.read(Int64)
           rows.read(Int32)
-          recipients << {
-            address: rows.read(String),
-            amount:  rows.read(Int64),
-          }
+          address = rows.read(String)
+          amount = rows.read(Int64)
+          recipients << Recipient.new(address, amount)
         end
       end
       recipients

@@ -326,8 +326,7 @@ def a_coinbase_transaction(amount : Int64)
 end
 
 def a_recipient_with_address(address : String, amount : Int64)
-  {address: address,
-   amount:  amount}
+  Recipient.new(address, amount)
 end
 
 def a_fixed_sender_wallet

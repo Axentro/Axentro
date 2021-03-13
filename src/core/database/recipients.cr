@@ -22,7 +22,7 @@ module ::Axentro::Core::Data::Recipients
   def recipient_insert_values_array(b : Block, t : Transaction, recipient_index : Int32) : Array(DB::Any)
     ary = [] of DB::Any
     r = t.recipients[recipient_index]
-    ary << t.id << b.index << recipient_index << r[:address] << r[:amount]
+    ary << t.id << b.index << recipient_index << r.address << r.amount
   end
 
   # ------- Query -------
@@ -33,10 +33,9 @@ module ::Axentro::Core::Data::Recipients
         rows.read(String)
         rows.read(Int64)
         rows.read(Int32)
-        recipients << {
-          address: rows.read(String),
-          amount:  rows.read(Int64),
-        }
+        address = rows.read(String)
+        amount = rows.read(Int64)
+        recipients << Recipient.new(address, amount)
       end
     end
     recipients

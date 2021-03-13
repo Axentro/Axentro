@@ -53,8 +53,8 @@ module ::Axentro::Core::Controllers
     def update_wallet_information(transactions)
       debug "broadcast to the subscribers (#{@sockets.size})"
 
-      senders = transactions.flat_map { |t| t.senders.map(&.[:address]) }
-      recipients = transactions.flat_map { |t| t.recipients.map(&.[:address]) }
+      senders = transactions.flat_map { |t| t.senders.map(&.address) }
+      recipients = transactions.flat_map { |t| t.recipients.map(&.address) }
       addresses = (senders + recipients).uniq
 
       addresses.each do |address|

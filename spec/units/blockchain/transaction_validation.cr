@@ -414,13 +414,8 @@ describe TransactionValidator do
       with_factory do |block_factory, transaction_factory|
         block_factory.add_slow_block
 
-        invalid_sender = {
-          address:    Base64.strict_encode("T0invalid-wallet-address"),
-          public_key: transaction_factory.sender_wallet.public_key,
-          amount:     1000_i64,
-          fee:        1_i64,
-          signature:  "0",
-        }
+        invalid_sender = Sender.new(Base64.strict_encode("T0invalid-wallet-address"), transaction_factory.sender_wallet.public_key, 1000_i64,
+          1_i64, "0")
 
         transaction = Transaction.new(
           Transaction.create_id,
@@ -448,10 +443,7 @@ describe TransactionValidator do
       with_factory do |block_factory, transaction_factory|
         block_factory.add_slow_block
 
-        invalid_recipient = {
-          address: Base64.strict_encode("T0invalid-wallet-address"),
-          amount:  1000_i64,
-        }
+        invalid_recipient = Recipient.new(Base64.strict_encode("T0invalid-wallet-address"), 1000_i64)
 
         unsigned_transaction = Transaction.new(
           Transaction.create_id,

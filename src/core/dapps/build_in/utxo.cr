@@ -33,16 +33,16 @@ module ::Axentro::Core::DApps::BuildIn
       historic = get_for_batch(address, token, historic_per_address)
 
       if token == "AXNT"
-        fees_sum = transactions.flat_map(&.senders).select { |s| s[:address] == address }.map(&.[:fee]).sum
-        senders_sum = transactions.select { |t| t.token == token }.flat_map(&.senders).select { |s| s[:address] == address }.map(&.[:amount]).sum
-        recipients_sum = transactions.select { |t| t.token == token }.flat_map(&.recipients).select { |r| r[:address] == address }.map(&.[:amount]).sum
+        fees_sum = transactions.flat_map(&.senders).select { |s| s.address == address }.map(&.fee).sum
+        senders_sum = transactions.select { |t| t.token == token }.flat_map(&.senders).select { |s| s.address == address }.map(&.amount).sum
+        recipients_sum = transactions.select { |t| t.token == token }.flat_map(&.recipients).select { |r| r.address == address }.map(&.amount).sum
         historic + (recipients_sum - (senders_sum + fees_sum))
       else
         # when tokens are created or updated the sender == recipient. This results in 0 pending amounts since the total is recipient - sender.
         # so for these cases we discard the sender amount in the calculation.
         exclusions = ["create_token", "update_token"]
-        senders_sum = transactions.reject { |t| exclusions.includes?(t.action) }.select { |t| t.token == token }.flat_map(&.senders).select { |s| s[:address] == address }.map(&.[:amount]).sum
-        recipients_sum = transactions.select { |t| t.token == token }.flat_map(&.recipients).select { |r| r[:address] == address }.map(&.[:amount]).sum
+        senders_sum = transactions.reject { |t| exclusions.includes?(t.action) }.select { |t| t.token == token }.flat_map(&.senders).select { |s| s.address == address }.map(&.amount).sum
+        recipients_sum = transactions.select { |t| t.token == token }.flat_map(&.recipients).select { |r| r.address == address }.map(&.amount).sum
         historic + (recipients_sum - (senders_sum))
       end
     end
@@ -58,7 +58,7 @@ module ::Axentro::Core::DApps::BuildIn
     # ameba:disable Metrics/CyclomaticComplexity
     def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
       # get amounts for all addresses into an in memory structure for all relevant tokens
-      addresses = transactions.flat_map { |t| t.senders.map { |s| s[:address] } }
+      addresses = transactions.flat_map { |t| t.senders.map { |s| s.address } }
       historic_per_address = database.get_address_amounts(addresses)
       vt = ValidatedTransactions.empty
 
@@ -73,15 +73,15 @@ module ::Axentro::Core::DApps::BuildIn
 
         sender = transaction.senders[0]
 
-        amount_token = get_pending_batch(sender[:address], processed_transactions, transaction.token, historic_per_address)
-        amount_default = transaction.token == DEFAULT ? amount_token : get_pending_batch(sender[:address], processed_transactions, DEFAULT, historic_per_address)
+        amount_token = get_pending_batch(sender.address, processed_transactions, transaction.token, historic_per_address)
+        amount_default = transaction.token == DEFAULT ? amount_token : get_pending_batch(sender.address, processed_transactions, DEFAULT, historic_per_address)
 
-        as_recipients = transaction.recipients.select { |recipient| recipient[:address] == sender[:address] }
-        amount_token_as_recipients = as_recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
+        as_recipients = transaction.recipients.select { |recipient| recipient.address == sender.address }
+        amount_token_as_recipients = as_recipients.reduce(0_i64) { |sum, recipient| sum + recipient.amount }
         amount_default_as_recipients = transaction.token == DEFAULT ? amount_token_as_recipients : 0_i64
 
-        pay_token = sender[:amount]
-        pay_default = (transaction.token == DEFAULT ? sender[:amount] : 0_i64) + sender[:fee]
+        pay_token = sender.amount
+        pay_default = (transaction.token == DEFAULT ? sender.amount : 0_i64) + sender.fee
 
         # send rules
         total_available = amount_token + amount_token_as_recipients
