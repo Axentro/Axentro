@@ -46,15 +46,15 @@ module ::Axentro::Core::TransactionModels
 
     def initialize(@address, @public_key, @amount, @fee, @signature); end
 
-    # def to_json(j : JSON::Builder)
-    #   j.object do
-    #     j.field("address", @address)
-    #     j.field("public_key", @public_key)
-    #     j.field("amount", @amount)
-    #     j.field("fee", @fee)
-    #     j.field("signature", @signature)
-    #   end
-    # end
+    def to_json(j : JSON::Builder)
+      j.object do
+        j.field("address", @address)
+        j.field("public_key", @public_key)
+        j.field("amount", @amount)
+        j.field("fee", @fee)
+        j.field("signature", @signature)
+      end
+    end
   end
 
   alias Senders = Array(Sender)
@@ -80,12 +80,12 @@ module ::Axentro::Core::TransactionModels
 
     def initialize(@address, @amount); end
 
-    # def to_json(j : JSON::Builder)
-    #   j.object do
-    #     j.field("address", @address)
-    #     j.field("amount", @amount)
-    #   end
-    # end
+    def to_json(j : JSON::Builder)
+      j.object do
+        j.field("address", @address)
+        j.field("amount", @amount)
+      end
+    end
   end
 
   alias Recipients = Array(Recipient)

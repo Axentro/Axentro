@@ -225,19 +225,17 @@ module ::Axentro::Core
     )
     end
 
-    # def to_json
-    #   JSON.build do |json|
-    #     json.object do
-    #       json.field("index", @index)
-    #       json.field("nonce", @nonce)
-    #       json.field("prev_hash", @prev_hash)
-    #       json.field("merkle_tree_root", @merkle_tree_root)
-    #       json.field("difficulty", @difficulty)
-    #       json.field("address", @address)
-    #       json.field("transactions", @transactions.to_json)
-    #     end
-    #   end
-    # end
+    def to_json(j : JSON::Builder)
+      j.object do
+        j.field("index", @index)
+        j.field("nonce", @nonce)
+        j.field("prev_hash", @prev_hash)
+        j.field("merkle_tree_root", @merkle_tree_root)
+        j.field("difficulty", @difficulty)
+        j.field("address", @address)
+        j.field("transactions", @transactions.to_json)
+      end
+    end
 
     include NonceModels
   end
@@ -320,24 +318,22 @@ module ::Axentro::Core
     )
     end
 
-    # def to_json
-    #   JSON.build do |json|
-    #     json.object do
-    #       json.field("index", @index)
-    #       json.field("nonce", @nonce)
-    #       json.field("prev_hash", @prev_hash)
-    #       json.field("merkle_tree_root", @merkle_tree_root)
-    #       json.field("difficulty", @difficulty)
-    #       json.field("address", @address)
-    #       json.field("public_key", @public_key)
-    #       json.field("signature", @signature)
-    #       json.field("hash", @hash)
-    #       json.field("version", @version)
-    #       json.field("hash_version", @hash_version)
-    #       json.field("transactions", @transactions.to_json)
-    #     end
-    #   end
-    # end
+    def to_json(j : JSON::Builder)
+      j.object do
+        j.field("index", @index)
+        j.field("nonce", @nonce)
+        j.field("prev_hash", @prev_hash)
+        j.field("merkle_tree_root", @merkle_tree_root)
+        j.field("difficulty", @difficulty)
+        j.field("address", @address)
+        j.field("public_key", @public_key)
+        j.field("signature", @signature)
+        j.field("hash", @hash)
+        j.field("version", @version)
+        j.field("hash_version", @hash_version)
+        j.field("transactions", @transactions)
+      end
+    end
 
     include NonceModels
   end

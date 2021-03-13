@@ -42,14 +42,14 @@ describe Block do
     it "should calculate merkle tree root when coinbase transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
       block = Block.new(2_i64, [coinbase_transaction], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS, BLOCK_VERSION, HASH_VERSION)
-      block.calculate_merkle_tree_root(block.transactions).should eq("9632de14946bb268017a591a171c1f8a0ba640be")
+      block.calculate_merkle_tree_root(block.transactions).should eq("bee3099ee4b83de2a2c9dd2115e762b13e46ffa0")
     end
 
     it "should calculate merkle tree root when 2 transactions (first is coinbase)" do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = Block.new(2_i64, [coinbase_transaction, transaction1], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS, BLOCK_VERSION, HASH_VERSION)
-      block.calculate_merkle_tree_root(block.transactions).should eq("ff3d0968c8b2ede49637e3ac4aa47718de3ee29e")
+      block.calculate_merkle_tree_root(block.transactions).should eq("aa6039adc7c8997d7be55e1755cd00f318f225aa")
     end
   end
 
@@ -143,7 +143,7 @@ describe Block do
         timestamp = chain[1].timestamp
         block = Block.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS, BLOCK_VERSION, HASH_VERSION)
         block.merkle_tree_root = "invalid"
-        expect_raises(Exception, "Invalid Merkle Tree Root: (expected invalid but got d10753346b7c32ada2cafcad9449d08e07aa6e63)") do
+        expect_raises(Exception, "Invalid Merkle Tree Root: (expected invalid but got f5cf2a5c37473765ffc535ac9e9acb8a6dafb9c2)") do
           block.valid?(block_factory.blockchain, false)
         end
       end

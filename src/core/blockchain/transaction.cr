@@ -32,21 +32,21 @@ module ::Axentro::Core
     setter prev_hash : String
     @common_validated : Bool = false
 
-    # def to_json(j : JSON::Builder)
-    #   j.object do
-    #     j.field("id", @id)
-    #     j.field("action", @action)
-    #     j.field("message", @message)
-    #     j.field("token", @token)
-    #     j.field("prev_hash", @prev_hash)
-    #     j.field("timestamp", @timestamp)
-    #     j.field("scaled", @scaled)
-    #     j.field("kind", @kind.to_s)
-    #     j.field("version", @version.to_s)
-    #     j.field("senders", @senders.to_json)
-    #     j.field("recipients", @recipients.to_json)
-    #   end
-    # end
+    def to_json(j : JSON::Builder)
+      j.object do
+        j.field("id", @id)
+        j.field("action", @action)
+        j.field("message", @message)
+        j.field("token", @token)
+        j.field("prev_hash", @prev_hash)
+        j.field("timestamp", @timestamp)
+        j.field("scaled", @scaled)
+        j.field("kind", @kind)
+        j.field("version", @version)
+        j.field("senders", @senders)
+        j.field("recipients", @recipients)
+      end
+    end
 
     def initialize(
       @id : String,
