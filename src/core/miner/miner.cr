@@ -27,10 +27,10 @@ module ::Axentro::Core
     def run
       @socket = HTTP::WebSocket.new(@host, "/peer?miner", @port, @use_ssl)
 
-      socket.on_message do |message|
-        message_json = JSON.parse(message)
-        message_type = message_json["type"].as_i
-        message_content = message_json["content"].to_s
+      socket.on_binary do |message|
+        transport = Transport.from_msgpack(message)
+        message_type = transport.type
+        message_content = transport.content
 
         case message_type
         when M_TYPE_MINER_HANDSHAKE_ACCEPTED
