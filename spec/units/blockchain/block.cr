@@ -42,14 +42,14 @@ describe Block do
     it "should calculate merkle tree root when coinbase transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
       block = Block.new(2_i64, [coinbase_transaction], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS, BLOCK_VERSION, HASH_VERSION)
-      block.calculate_merkle_tree_root(block.transactions).should eq("bee3099ee4b83de2a2c9dd2115e762b13e46ffa0")
+      block.calculate_merkle_tree_root(block.transactions).should eq("ee2a76acd61a587ae85fc444bdbf72b07944ceec")
     end
 
     it "should calculate merkle tree root when 2 transactions (first is coinbase)" do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = Block.new(2_i64, [coinbase_transaction, transaction1], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS, BLOCK_VERSION, HASH_VERSION)
-      block.calculate_merkle_tree_root(block.transactions).should eq("aa6039adc7c8997d7be55e1755cd00f318f225aa")
+      block.calculate_merkle_tree_root(block.transactions).should eq("58ecb32608384bb5587977c3546e8762090b5dab")
     end
   end
 

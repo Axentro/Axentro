@@ -33,6 +33,8 @@ module ::Axentro::Core
     @common_validated : Bool = false
 
     def to_json(j : JSON::Builder)
+      sorted_senders = @senders.sort_by { |s| {s.address, s.public_key, s.amount, s.fee, s.signature} }
+      sorted_recipients = @recipients.sort_by { |r| {r.address, r.amount} }
       j.object do
         j.field("id", @id)
         j.field("action", @action)
@@ -43,8 +45,8 @@ module ::Axentro::Core
         j.field("scaled", @scaled)
         j.field("kind", @kind)
         j.field("version", @version)
-        j.field("senders", @senders)
-        j.field("recipients", @recipients)
+        j.field("senders", sorted_senders)
+        j.field("recipients", sorted_recipients)
       end
     end
 

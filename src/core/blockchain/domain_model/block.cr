@@ -319,6 +319,7 @@ module ::Axentro::Core
     end
 
     def to_json(j : JSON::Builder)
+      sorted_transactions = @transactions.sort_by { |t| {t.timestamp, t.id} }
       j.object do
         j.field("index", @index)
         j.field("nonce", @nonce)
@@ -331,7 +332,7 @@ module ::Axentro::Core
         j.field("hash", @hash)
         j.field("version", @version)
         j.field("hash_version", @hash_version)
-        j.field("transactions", @transactions)
+        j.field("transactions", sorted_transactions)
       end
     end
 
