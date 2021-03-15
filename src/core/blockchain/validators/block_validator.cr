@@ -150,14 +150,6 @@ module ::Axentro::Core::BlockValidator
         raise AxentroException.new("Invalid Previous Slow Block Hash: for current index: #{block.index} the slow block prev_hash is invalid: (prev index: #{prev_block.index}) #{regen_prev_hash} != #{block.prev_hash}") if regen_prev_hash != block.prev_hash
       else
         _prev_hash = block.prev_hash
-        # exception occured with this block during switch to new mining system
-        # hardcoding an exception for now and figure out a good way to deal with it in future
-        if block.index == 99948_i64
-          _prev_hash = "2ad3af4b045fde25b584ec98ff65392231b252d9fd4e263c4945c9ae7582f9b4"
-        end
-        if block.index == 116490
-          _prev_hash = "cb5af953dc6eb69166b72dcf8db34b02c83db3add257cb6366b74d66006e8a58"
-        end
         regen_prev_hash = prev_block.to_hash
         raise AxentroException.new("Invalid Previous Slow Block Hash: for current index: #{block.index} the slow block prev_hash is invalid: (prev index: #{prev_block.index}) #{regen_prev_hash} != #{_prev_hash}") if regen_prev_hash != _prev_hash
       end

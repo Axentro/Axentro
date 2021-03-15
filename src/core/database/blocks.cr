@@ -98,7 +98,7 @@ module ::Axentro::Core::Data::Blocks
     blocks
   end
 
-  private def retrieve_blocks(conn : DB::Connection, from_index : Int64 = 0_i64, kind : BlockKind? = nil)
+  def self.retrieve_blocks(conn : DB::Connection, from_index : Int64 = 0_i64, kind : BlockKind? = nil)
     block : Block? = nil
     kind_condition = kind ? "and kind = '#{kind}'" : ""
     conn.query("select * from blocks where idx >= ? #{kind_condition}", from_index) do |block_rows|
@@ -185,7 +185,7 @@ module ::Axentro::Core::Data::Blocks
       prev_slow_block : Block? = nil
       prev_fast_block : Block? = nil
 
-      retrieve_blocks(conn) do |_block|
+      Blocks.retrieve_blocks(conn) do |_block|
         block = _block
         block_kind = BlockKind.parse(block.kind)
         if prev_slow_block
@@ -237,7 +237,7 @@ module ::Axentro::Core::Data::Blocks
     @db.transaction do |tx|
       conn = tx.connection
       total_size = conn.query_one("select count(*) from blocks where idx >= ? and kind = ?", index, kind.to_s, as: Int32)
-      retrieve_blocks(conn, index, kind) do |_block|
+      Blocks.retrieve_blocks(conn, index, kind) do |_block|
         block = _block
         yield block, total_size
       end
