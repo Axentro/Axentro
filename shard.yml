@@ -51,6 +51,8 @@ dependencies:
     github: darwinnn/crometheus
   mg:
     github: hkalexling/mg   
+  msgpack:
+    github: crystal-community/msgpack-crystal       
 
 development_dependencies:
   spinach:

@@ -21,48 +21,6 @@ class AddMerkleRootToBlock < MG::Base
     SQL
   end
 
-  # def after_up(conn : DB::Connection)
-  #   # ms = MigrationSupport.new(conn)
-
-  #   # ms.transactions_by_query("select * from transactions where block_id >= 0").each do |block_id, transactions|
-  #   #   merkle = MerkleTreeCalculator.new("V1").calculate_merkle_tree_root(transactions)
-  #   #   conn.exec("update blocks set merkle_tree_root = '#{merkle}' where idx = ?", block_id)
-  #   # end
-
-  #   # transactions
-  #   Blocks.retrieve_blocks(conn) do |block|
-  #     sorted_aligned_transactions = block.transactions.select(&.is_coinbase?) + block.transactions.reject(&.is_coinbase?).sort_by(&.timestamp)
-  #     sorted_aligned_transactions.map_with_index do |transaction, index|
-  #       transaction.add_prev_hash((index == 0 ? "0" : sorted_aligned_transactions[index - 1].to_hash))
-  #       if transaction.prev_hash != 0
-  #         conn.exec("update transactions set prev_hash = '#{transaction.prev_hash}' where id = ?", transaction.id)
-  #       end
-  #     end
-  #   end
-
-  #   # merkle
-  #   Blocks.retrieve_blocks(conn) do |block|
-  #     merkle = MerkleTreeCalculator.new("V1").calculate_merkle_tree_root(block.transactions)
-  #     conn.exec("update blocks set merkle_tree_root = '#{merkle}' where idx = ?", block.index)
-  #   end
-
-  #   [BlockKind::SLOW, BlockKind::FAST].each do |block_kind|
-  #     prev_block : Block? = nil
-  #     Blocks.retrieve_blocks(conn, 0_i64, block_kind) do |block|
-
-  #       if prev_block.nil?
-  #         prev_block = block
-  #         next
-  #       end
-
-  #       prev_block_hash = prev_block.not_nil!.to_hash
-  #       conn.exec("update blocks set prev_hash = '#{prev_block_hash}' where idx = ?", block.index)
-
-  #       prev_block = block
-  #     end
-  #   end
-  # end
-
   def down : String
     # sqlite3 does not support drop column so have to do this
     <<-SQL

@@ -40,6 +40,7 @@ require "crest"
 require "rate_limiter"
 require "crometheus"
 require "mg"
+require "msgpack"
 
 require "./common"
 require "./core/modules"

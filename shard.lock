@@ -60,6 +60,10 @@ shards:
     git: https://github.com/axentro/monocypher.cr.git
     version: 3.1.1
 
+  msgpack:
+    git: https://github.com/crystal-community/msgpack-crystal.git
+    version: 0.17.2
+
   myhtml:
     git: https://github.com/kostya/myhtml.git
     version: 1.5.3
