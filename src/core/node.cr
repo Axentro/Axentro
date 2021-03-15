@@ -325,10 +325,10 @@ module ::Axentro::Core
 
     # ameba:disable Metrics/CyclomaticComplexity
     def peer(socket : HTTP::WebSocket, context : HTTP::Server::Context? = nil)
-      socket.on_message do |message|
-        message_json = JSON.parse(message)
-        message_type = message_json["type"].as_i
-        message_content = message_json["content"].as_s
+      socket.on_binary do |message|
+        transport = Transport.from_msgpack(message)
+        message_type = transport.type
+        message_content = transport.content
 
         case message_type
         when M_TYPE_MINER_HANDSHAKE
