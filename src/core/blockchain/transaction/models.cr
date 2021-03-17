@@ -29,13 +29,6 @@ module ::Axentro::Core::TransactionModels
     end
   end
 
-  # alias Sender = NamedTuple(
-  #   address: String,
-  #   public_key: String,
-  #   amount: Int64,
-  #   fee: Int64,
-  #   signature: String)
-
   class Sender
     include JSON::Serializable
     property address : String
@@ -67,11 +60,6 @@ module ::Axentro::Core::TransactionModels
     signature: String)
 
   alias SendersDecimal = Array(SenderDecimal)
-
-  # alias Recipient = NamedTuple(
-  #   address: String,
-  #   amount: Int64,
-  # )
 
   class Recipient
     include JSON::Serializable
