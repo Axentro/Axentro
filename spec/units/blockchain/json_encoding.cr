@@ -189,7 +189,7 @@ def transaction_1
   ]
   recipients = [
     Recipient.new("VDAwZDRiYTg0MWVlZjE4M2U3OWY2N2E0YmZkZDJjN2JmMWE0ZTViMjE3ZDNmZTU1", 3000_i64),
-    Recipient.new("VDA4M2YwYTkzZTQxZTQ0NzdjOGRjMDU4ZTkwZTI4OWY1NDNkMDZjYmU3ODQyM2Rk", 2000_i64)
+    Recipient.new("VDA4M2YwYTkzZTQxZTQ0NzdjOGRjMDU4ZTkwZTI4OWY1NDNkMDZjYmU3ODQyM2Rk", 2000_i64),
   ]
   Transaction.new(id, "send", senders, recipients, "0", "AXNT", "0", timestamp, 1, TransactionKind::FAST, TransactionVersion::V1)
 end
