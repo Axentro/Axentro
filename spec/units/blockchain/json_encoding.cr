@@ -58,8 +58,8 @@ describe "Json encoding" do
                   "amount":3000
                }
             ]
-         }      
-    }.gsub(/\s+/,"")
+         }
+    }.gsub(/\s+/, "")
     transaction_1.to_json.should eq(expected_json)
   end
 
@@ -71,8 +71,8 @@ describe "Json encoding" do
       [transaction_1, transaction_2], "nonce", "prev_hash", timestamp,
       17, BlockKind::FAST, "address", "public_key", "signature", "hash", BLOCK_VERSION, HASH_VERSION, "merkle_tree_root")
 
-      hashable_block = SlowBlockNoTimestampV2.from_block(block)
-      expected_json = %Q{
+    hashable_block = SlowBlockNoTimestampV2.from_block(block)
+    expected_json = %Q{
         {
             "index":2,
             "nonce":"nonce",
@@ -162,8 +162,8 @@ describe "Json encoding" do
                }
             ]
          }
-        }.gsub(/\s+/,"")
-      hashable_block.to_json.should eq(expected_json)  
+        }.gsub(/\s+/, "")
+    hashable_block.to_json.should eq(expected_json)
   end
 end
 
