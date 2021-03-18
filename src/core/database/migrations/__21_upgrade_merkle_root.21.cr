@@ -21,7 +21,7 @@ class UpgradeMerkleRoot < MG::Base
 
   def after_up(conn : DB::Connection)
     Blocks.retrieve_blocks(conn) do |block|
-      merkle = MerkleTreeCalculator.new("V1").calculate_merkle_tree_root(block.transactions)
+      merkle = MerkleTreeCalculator.new(HashVersion::V1).calculate_merkle_tree_root(block.transactions)
       conn.exec("update blocks set merkle_tree_root = '#{merkle}' where idx = ?", block.index)
     end
   end

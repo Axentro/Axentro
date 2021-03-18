@@ -15,13 +15,13 @@ require "../blockchain/domain_model/*"
 module ::Axentro::Core::Data::Blocks
   # ------- Definition -------
   def block_insert_fields_string : String
-    "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
+    "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
   end
 
   # ------- Insert -------
   def block_insert_values_array(block : Block) : Array(DB::Any)
     ary = [] of DB::Any
-    ary << block.index << block.nonce.to_s << block.prev_hash << block.timestamp << block.difficulty << block.address << block.kind.to_s << block.public_key << block.signature << block.hash << block.version << block.hash_version << block.merkle_tree_root
+    ary << block.index << block.nonce.to_s << block.prev_hash << block.timestamp << block.difficulty << block.address << block.kind.to_s << block.public_key << block.signature << block.hash << block.version.to_s << block.hash_version.to_s << block.merkle_tree_root << block.checkpoint << block.mining_version.to_s
     ary
   end
 
@@ -84,10 +84,13 @@ module ::Axentro::Core::Data::Blocks
         public_key = rows.read(String)
         signature = rows.read(String)
         hash = rows.read(String)
-        version = rows.read(String)
-        hash_version = rows.read(String)
+        version = BlockVersion.parse(rows.read(String))
+        hash_version = HashVersion.parse(rows.read(String))
         merkle_tree_root = rows.read(String)
-        blocks << Block.new(idx, [] of Transaction, nonce, prev_hash, timestamp, diffculty, BlockKind.parse(kind_string), address, public_key, signature, hash, version, hash_version, merkle_tree_root)
+        checkpoint = rows.read(String)
+        mining_version = MiningVersion.parse(rows.read(String))
+
+        blocks << Block.new(idx, [] of Transaction, nonce, prev_hash, timestamp, diffculty, BlockKind.parse(kind_string), address, public_key, signature, hash, version, hash_version, merkle_tree_root, checkpoint, mining_version)
       end
     end
 
@@ -113,9 +116,11 @@ module ::Axentro::Core::Data::Blocks
         b_public_key = block_rows.read(String)
         b_signature = block_rows.read(String)
         b_hash = block_rows.read(String)
-        b_version = block_rows.read(String)
-        b_hash_version = block_rows.read(String)
+        b_version = BlockVersion.parse(block_rows.read(String))
+        b_hash_version = HashVersion.parse(block_rows.read(String))
         b_merkle_tree_root = block_rows.read(String)
+        b_checkpoint = block_rows.read(String)
+        b_mining_version = MiningVersion.parse(block_rows.read(String))
 
         transactions = [] of Transaction
 
@@ -167,7 +172,7 @@ module ::Axentro::Core::Data::Blocks
           end
 
           block_kind = BlockKind.parse(b_kind_string)
-          block = Block.new(b_idx, transactions, b_nonce, b_prev_hash, b_timestamp, b_diffculty, block_kind, b_address, b_public_key, b_signature, b_hash, b_version, b_hash_version, b_merkle_tree_root)
+          block = Block.new(b_idx, transactions, b_nonce, b_prev_hash, b_timestamp, b_diffculty, block_kind, b_address, b_public_key, b_signature, b_hash, b_version, b_hash_version, b_merkle_tree_root, b_checkpoint, b_mining_version)
 
           yield block
         end

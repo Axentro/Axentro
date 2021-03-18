@@ -29,6 +29,33 @@ module ::Axentro::Core::TransactionModels
     end
   end
 
+  enum BlockVersion
+    V1
+    V2
+
+    def to_json(j : JSON::Builder)
+      j.string(to_s)
+    end
+  end
+
+  enum HashVersion
+    V1
+    V2
+
+    def to_json(j : JSON::Builder)
+      j.string(to_s)
+    end
+  end
+
+  enum MiningVersion
+    V1
+    V2
+
+    def to_json(j : JSON::Builder)
+      j.string(to_s)
+    end
+  end
+
   class Sender
     include JSON::Serializable
     property address : String

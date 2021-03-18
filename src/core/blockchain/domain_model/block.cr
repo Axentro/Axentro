@@ -37,8 +37,10 @@ module ::Axentro::Core
     property public_key : String
     property signature : String
     property hash : String
-    property version : String
-    property hash_version : String
+    property version : BlockVersion
+    property hash_version : HashVersion
+    property checkpoint : String
+    property mining_version : MiningVersion
 
     # full
     def initialize(
@@ -53,9 +55,11 @@ module ::Axentro::Core
       @public_key : String,
       @signature : String,
       @hash : String,
-      @version : String,
-      @hash_version : String,
-      @merkle_tree_root : String
+      @version : BlockVersion,
+      @hash_version : HashVersion,
+      @merkle_tree_root : String,
+      @checkpoint : String,
+      @mining_version : MiningVersion
     )
     end
 
@@ -68,8 +72,10 @@ module ::Axentro::Core
       @timestamp : Int64,
       @difficulty : Int32,
       @address : String,
-      @version : String,
-      @hash_version : String
+      @version : BlockVersion,
+      @hash_version : HashVersion,
+      @checkpoint : String,
+      @mining_version : MiningVersion
     )
       @public_key = ""
       @signature = ""
@@ -92,12 +98,14 @@ module ::Axentro::Core
       @public_key : String,
       @signature : String,
       @hash : String,
-      @version : String,
-      @hash_version : String
+      @version : BlockVersion,
+      @hash_version : HashVersion,
+      @checkpoint : String
     )
       @nonce = ""
       @difficulty = 0
       @kind = BlockKind::FAST
+      @mining_version = MiningVersion::V1
 
       if index.even?
         raise AxentroException.new("index must be odd number")
@@ -118,7 +126,7 @@ module ::Axentro::Core
     end
 
     def to_hash : String
-      if @version == Core::BLOCK_VERSION
+      if @version == BlockVersion::V2
         string = SlowBlockNoTimestampV2.from_block(self).to_json
         argon2(string)
       else
@@ -266,21 +274,6 @@ module ::Axentro::Core
       @hash : String
     )
     end
-
-    # def to_json
-    #   JSON.build do |json|
-    #     json.object do
-    #       json.field("index", @index)
-    #       json.field("prev_hash", @prev_hash)
-    #       json.field("merkle_tree_root", @merkle_tree_root)
-    #       json.field("address", @address)
-    #       json.field("public_key", @public_key)
-    #       json.field("signature", @signature)
-    #       json.field("hash", @hash)
-    #       json.field("transactions", @transactions.to_json)
-    #     end
-    #   end
-    # end
   end
 
   class SlowBlockNoTimestampV2
@@ -295,11 +288,13 @@ module ::Axentro::Core
     property public_key : String
     property signature : String
     property hash : String
-    property version : String
-    property hash_version : String
+    property version : BlockVersion
+    property hash_version : HashVersion
+    property checkpoint : String
+    property mining_version : MiningVersion
 
     def self.from_block(b : Block)
-      self.new(b.index, b.transactions, b.nonce, b.prev_hash, b.merkle_tree_root, b.difficulty, b.address, b.public_key, b.signature, b.hash, b.version, b.hash_version)
+      self.new(b.index, b.transactions, b.nonce, b.prev_hash, b.merkle_tree_root, b.difficulty, b.address, b.public_key, b.signature, b.hash, b.version, b.hash_version, b.checkpoint, b.mining_version)
     end
 
     def initialize(
@@ -313,8 +308,10 @@ module ::Axentro::Core
       @public_key : String,
       @signature : String,
       @hash : String,
-      @version : String,
-      @hash_version : String
+      @version : BlockVersion,
+      @hash_version : HashVersion,
+      @checkpoint : String,
+      @mining_version : MiningVersion
     )
     end
 
@@ -332,6 +329,8 @@ module ::Axentro::Core
         j.field("hash", @hash)
         j.field("version", @version)
         j.field("hash_version", @hash_version)
+        j.field("checkpoint", @checkpoint)
+        j.field("mining_version", @mining_version)
         j.field("transactions", sorted_transactions)
       end
     end

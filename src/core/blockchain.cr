@@ -161,18 +161,6 @@ module ::Axentro::Core
       @database.push_block(block)
     end
 
-    # def replace_mixed_chain(subchain : Chain?) : ReplaceBlocksResult
-    #   result = replace_mixed_blocks(subchain)
-
-    #   clean_slow_transactions
-    #   clean_fast_transactions
-
-    #   debug "calling refresh_mining_block in replace_chain"
-    #   refresh_mining_block
-
-    #   result
-    # end
-
     def get_hash_of_block_hashes(block_ids : Array(Int64))
       @database.make_validation_hash_from(block_ids)
     end
@@ -185,48 +173,6 @@ module ::Axentro::Core
       percentage_as_count = (max_incoming_block_id*@security_level_percentage*0.01).ceil.to_i
       incoming_indices.shuffle.first(percentage_as_count)
     end
-
-    # private def replace_mixed_blocks(chain) : ReplaceBlocksResult
-    #   result = ReplaceBlocksResult.new(0_i64, true)
-
-    #   if chain.nil?
-    #     result.success = false
-    #     return result
-    #   end
-
-    #   indexes_for_validity_checking = create_indexes_to_check(chain.not_nil!)
-
-    #   chain.not_nil!.sort_by(&.timestamp).each do |block|
-    #     index = block.index
-    #     result.index = index
-
-    #     target_index = chain.index { |b| b.index == index }
-    #     target_index ? (chain[target_index] = block) : chain << block
-
-    #     @database.delete_block(block.index)
-    #     # running the valid block test only on a subset of blocks for speed on sync
-    #     if (indexes_for_validity_checking.size == 0) || indexes_for_validity_checking.includes?(index)
-    #       debug "doing valid check on block #{index}"
-    #       # this valid check is historic and not as latest block
-    #       block.valid?(self, false, true)
-    #     end
-
-    #     @database.push_block(block)
-
-    #     progress "block ##{index} was synced", index, chain.not_nil!.map(&.index).max
-    #   rescue e : Exception
-    #     error "found invalid block while syncing blocks at index #{index}.. deleting all blocks from invalid and up"
-    #     error "the reason:"
-    #     error e.message.not_nil!
-    #     result.success = false
-    #     if index
-    #       @database.archive_blocks(index, "sync")
-    #       @database.delete_blocks(index)
-    #     end
-    #     break
-    #   end
-    #   result
-    # end
 
     def add_transaction(transaction : Transaction, with_spawn : Bool = true)
       with_spawn ? spawn { _add_transaction(transaction) } : _add_transaction(transaction)
@@ -300,9 +246,11 @@ module ::Axentro::Core
       public_key = ""
       signature = ""
       hash = ""
-      version = Core::BLOCK_VERSION
-      hash_version = Core::HASH_VERSION
+      version = BlockVersion::V2
+      hash_version = HashVersion::V2
       merkle_tree_root = MerkleTreeCalculator.new(hash_version).calculate_merkle_tree_root(genesis_transactions)
+      checkpoint = ""
+      mining_version = MiningVersion::V2
 
       Block.new(
         genesis_index,
@@ -318,7 +266,9 @@ module ::Axentro::Core
         hash,
         version,
         hash_version,
-        merkle_tree_root
+        merkle_tree_root,
+        checkpoint,
+        mining_version
       )
     end
 
@@ -397,8 +347,10 @@ module ::Axentro::Core
         timestamp,
         latest_slow_block.difficulty,
         @wallet_address,
-        Core::BLOCK_VERSION,
-        Core::HASH_VERSION
+        BlockVersion::V2,
+        HashVersion::V2,
+        "",
+        MiningVersion::V2
       )
 
       latest_hash = @mining_block.not_nil!.to_hash
