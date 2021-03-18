@@ -405,17 +405,13 @@ module ::Axentro::Core::Data::Blocks
     ids
   end
 
-  def make_validation_hash_from(block_ids : Array(Int64)) : String
-    hashes = [] of String
-    ids = block_ids.map { |b| "'#{b}'" }.uniq.join(",")
-    @db.query("select prev_hash from blocks where idx in (#{ids})") do |rows|
-      rows.each do
-        res = rows.read(String)
-        hashes << res
-      end
-    end
-    concatenated_hashes = hashes.join("")
-    sha256(concatenated_hashes)
+  # write checkpoint merkle for every 1000th Slow and 1001th Fast
+  # on validate if blocks have checkpoints then validate only checkpoints otherwise validate normal quick
+  def get_checkpoint_merkle(index : Int64, kind : BlockKind) : String
+    # slow block modulo should be 0 and fast block modulo should be 1
+    return "" if (index % 1000) != (kind == BlockKind::SLOW ? 0 : 1)
+    blocks = get_blocks_via_query("select * from blocks where idx <= ? and kind = ? order by idx asc limit 1000", index, kind.to_s)
+    MerkleTreeCalculator.new(HashVersion::V2).calculate_merkle_tree_root(blocks)
   end
 
   # ------- API -------

@@ -19,46 +19,6 @@ class AddHashVersionToArchive < MG::Base
   end
 
   def down : String
-    # sqlite3 does not support drop column so have to do this
-    <<-SQL
-      CREATE TEMPORARY TABLE archived_blocks_temporary (
-        block_hash             TEXT NOT NULL,
-        archive_timestamp      INTEGER NOT NULL,
-        reason                 TEXT NOT NULL,
-        idx                    INTEGER PRIMARY KEY,
-        nonce                  TEXT NOT NULL,
-        prev_hash              TEXT NOT NULL,
-        timestamp              INTEGER NOT NULL,
-        difficulty             INTEGER NOT NULL,
-        address                TEXT NOT NULL,
-        kind                   TEXT NOT NULL,
-        public_key             TEXT NOT NULL,
-        signature              TEXT NOT NULL,
-        hash                   TEXT NOT NULL,
-        version                TEXT NOT NULL,
-        hash_version           TEXT NOT NULL
-      );
-      INSERT INTO archived_blocks_temporary SELECT * FROM archived_blocks;
-    DROP TABLE archived_blocks;
-    CREATE TABLE archived_blocks (
-      block_hash             TEXT NOT NULL,
-      archive_timestamp      INTEGER NOT NULL,
-      reason                 TEXT NOT NULL,
-      idx                    INTEGER PRIMARY KEY,
-      nonce                  TEXT NOT NULL,
-      prev_hash              TEXT NOT NULL,
-      timestamp              INTEGER NOT NULL,
-      difficulty             INTEGER NOT NULL,
-      address                TEXT NOT NULL,
-      kind                   TEXT NOT NULL,
-      public_key             TEXT NOT NULL,
-      signature              TEXT NOT NULL,
-      hash                   TEXT NOT NULL,
-      version                TEXT NOT NULL
-      );
-      INSERT INTO archived_blocks SELECT block_hash, archive_timestamp, reason, idx, nonce, prev_hash, timestamp, difficulty, address, kind, public_key, signature, hash, version
-    FROM archived_blocks_temporary;
-    DROP TABLE archived_blocks_temporary;
-    SQL
+    ""
   end
 end

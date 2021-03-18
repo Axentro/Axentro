@@ -161,19 +161,6 @@ module ::Axentro::Core
       @database.push_block(block)
     end
 
-    def get_hash_of_block_hashes(block_ids : Array(Int64))
-      @database.make_validation_hash_from(block_ids)
-    end
-
-    def create_indexes_to_check(incoming_chain)
-      return [] of Int64 if @security_level_percentage == 100_i64
-      return [] of Int64 if incoming_chain.empty?
-      incoming_indices = incoming_chain.map(&.index)
-      max_incoming_block_id = incoming_indices.max
-      percentage_as_count = (max_incoming_block_id*@security_level_percentage*0.01).ceil.to_i
-      incoming_indices.shuffle.first(percentage_as_count)
-    end
-
     def add_transaction(transaction : Transaction, with_spawn : Bool = true)
       with_spawn ? spawn { _add_transaction(transaction) } : _add_transaction(transaction)
     end
@@ -339,6 +326,8 @@ module ::Axentro::Core
       transactions = align_slow_transactions(coinbase_transaction, coinbase_amount, the_next_index, embedded_slow_transactions)
       timestamp = __timestamp
 
+      checkpoint = @database.get_checkpoint_merkle(the_next_index, BlockKind::SLOW)
+
       @mining_block = Block.new(
         the_next_index,
         transactions,
@@ -349,7 +338,7 @@ module ::Axentro::Core
         @wallet_address,
         BlockVersion::V2,
         HashVersion::V2,
-        "",
+        checkpoint,
         MiningVersion::V2
       )
 

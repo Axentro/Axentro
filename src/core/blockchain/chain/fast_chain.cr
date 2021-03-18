@@ -84,6 +84,7 @@ module ::Axentro::Core::FastChain
       hash = Block.to_hash(latest_index, transactions, latest_block_hash, address, public_key)
       private_key = Wif.new(wallet.wif).private_key.as_hex
       signature = KeyUtils.sign(private_key, hash)
+      checkpoint = @database.get_checkpoint_merkle(latest_index, BlockKind::FAST)
 
       info "#{magenta("MINTING FAST BLOCK")}: #{light_green(latest_index)}"
 
@@ -98,7 +99,7 @@ module ::Axentro::Core::FastChain
         hash,
         BlockVersion::V2,
         HashVersion::V2,
-        ""
+        checkpoint
       )
     else
       raise Axentro::Common::AxentroException.new("error could not mint fast block as wallet was nil")

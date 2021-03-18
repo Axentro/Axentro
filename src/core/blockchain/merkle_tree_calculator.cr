@@ -19,7 +19,12 @@ module ::Axentro::Core
       _calculate_merkle_tree_root(current_hashes)
     end
 
-    private def _calculate_merkle_tree_root(current_hashes : Array(String)) : String
+    def calculate_merkle_tree_root(blocks : Array(Block)) : String
+      current_hashes = blocks.map { |block| block.to_hash }
+      _calculate_merkle_tree_root(current_hashes)
+    end
+
+    def _calculate_merkle_tree_root(current_hashes : Array(String)) : String
       return "" if current_hashes.size == 0
 
       loop do
