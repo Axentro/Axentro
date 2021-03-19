@@ -847,7 +847,7 @@ module ::Axentro::Core
           # retry sync
           warning "failed to validated blocks at block: #{result.index} - starting sync retry"
           if @sync_retry_count <= MAX_SYNC_RETRY
-            next_connection = retry_sync(result)
+            next_connection = retry_sync
             warning "retry sync from node: #{next_connection}"
 
             node_socket = HTTP::WebSocket.new(next_connection.host, "/peer?node", next_connection.port, next_connection.ssl)
@@ -866,7 +866,7 @@ module ::Axentro::Core
       end
     end
 
-    private def retry_sync(result : ReplaceBlocksResult)
+    private def retry_sync
       node_connections = @chord.find_all_nodes[:public_nodes].map { |nc| NodeConnection.new(nc[:host], nc[:port], nc[:ssl]) }
       next_connections = node_connections.reject { |nc| @sync_retry_list.map(&.to_s).includes?(nc.to_s) }
 

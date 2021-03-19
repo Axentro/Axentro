@@ -190,8 +190,12 @@ module ::Axentro::Core::Data::Blocks
   end
 
   def validate_local_db_blocks : ReplaceBlocksResult
-    validate_local_db_blocks_for(BlockKind::SLOW)
-    validate_local_db_blocks_for(BlockKind::FAST)
+   # only care about slow result here because need to resync on failure during receive from peer
+   # during startup phase when this is called - just archive and delete invalid blocks and startup 
+   result = validate_local_db_blocks_for(BlockKind::SLOW)
+   validate_local_db_blocks_for(BlockKind::FAST)
+   
+    result
   end
 
   def validate_local_db_blocks_for(kind : BlockKind) : ReplaceBlocksResult
@@ -199,14 +203,15 @@ module ::Axentro::Core::Data::Blocks
     max = highest_index_of_kind(kind)
     blocks = [] of Block
     block : Block? = nil
-    @db.transaction do |tx|
-      conn = tx.connection
+    fast_checkpoint_size = BLOCK_CHECKPOINT_SIZE + 1
+    amount_to_take = (BLOCK_CHECKPOINT_SIZE / 2).to_i
+    @db.using_connection do |conn|
       prev_block : Block? = nil
       Blocks.retrieve_blocks_for_query(conn, "select * from blocks where kind = ? order by idx asc", kind.to_s) do |_block|
         block = _block
         blocks << block
 
-        if block.index < (kind == BlockKind::SLOW ? BLOCK_CHECKPOINT_SIZE : BLOCK_CHECKPOINT_SIZE + 1)
+        if block.index < (kind == BlockKind::SLOW ? BLOCK_CHECKPOINT_SIZE : fast_checkpoint_size)
           # validate without checkpoints
           if prev_block
             validated_block = BlockValidator.quick_validate(block, prev_block)
@@ -216,7 +221,7 @@ module ::Axentro::Core::Data::Blocks
         else
           # validate using checkpoints
           next if block.checkpoint == ""
-          validated_block = BlockValidator.checkpoint_validate(block, blocks.reject { |b| b.index == block.index }.last((BLOCK_CHECKPOINT_SIZE / 2).to_i))
+          validated_block = BlockValidator.checkpoint_validate(block, blocks.reject { |b| b.index == block.index }.last(amount_to_take))
           blocks = [blocks.last]
           raise Axentro::Common::AxentroException.new(validated_block.reason) unless validated_block.valid
           progress("block ##{block.index} was validated", block.index, max)
