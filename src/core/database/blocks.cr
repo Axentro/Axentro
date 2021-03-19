@@ -190,11 +190,11 @@ module ::Axentro::Core::Data::Blocks
   end
 
   def validate_local_db_blocks : ReplaceBlocksResult
-   # only care about slow result here because need to resync on failure during receive from peer
-   # during startup phase when this is called - just archive and delete invalid blocks and startup 
-   result = validate_local_db_blocks_for(BlockKind::SLOW)
-   validate_local_db_blocks_for(BlockKind::FAST)
-   
+    # only care about slow result here because need to resync on failure during receive from peer
+    # during startup phase when this is called - just archive and delete invalid blocks and startup
+    result = validate_local_db_blocks_for(BlockKind::SLOW)
+    validate_local_db_blocks_for(BlockKind::FAST)
+
     result
   end
 
