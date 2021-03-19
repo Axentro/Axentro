@@ -13,6 +13,8 @@ require "../blockchain/*"
 require "../blockchain/domain_model/*"
 
 module ::Axentro::Core::Data::Blocks
+  BLOCK_CHECKPOINT_SIZE = 2000
+
   # ------- Definition -------
   def block_insert_fields_string : String
     "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
@@ -102,9 +104,16 @@ module ::Axentro::Core::Data::Blocks
   end
 
   def self.retrieve_blocks(conn : DB::Connection, from_index : Int64 = 0_i64, kind : BlockKind? = nil)
-    block : Block? = nil
     kind_condition = kind ? "and kind = '#{kind}'" : ""
-    conn.query("select * from blocks where idx >= ? #{kind_condition}", from_index) do |block_rows|
+    query = "select * from blocks where idx >= ? #{kind_condition}"
+    Blocks.retrieve_blocks_for_query(conn, query, from_index) do |block|
+      yield block
+    end
+  end
+
+  def self.retrieve_blocks_for_query(conn : DB::Connection, query : String, *args)
+    block : Block? = nil
+    conn.query(query, args: args.to_a) do |block_rows|
       block_rows.each do
         b_idx = block_rows.read(Int64)
         b_nonce = block_rows.read(String)
@@ -180,41 +189,40 @@ module ::Axentro::Core::Data::Blocks
     end
   end
 
-  def validate_local_db_blocks(with_archive : Bool = true) : ReplaceBlocksResult
+  def validate_local_db_blocks : ReplaceBlocksResult
+    validate_local_db_blocks_for(BlockKind::SLOW)
+    validate_local_db_blocks_for(BlockKind::FAST)
+  end
+
+  def validate_local_db_blocks_for(kind : BlockKind) : ReplaceBlocksResult
     result = ReplaceBlocksResult.new(0_i64, true)
-    max_slow = highest_index_of_kind(BlockKind::SLOW)
-    max_fast = highest_index_of_kind(BlockKind::FAST)
+    max = highest_index_of_kind(kind)
+    blocks = [] of Block
     block : Block? = nil
     @db.transaction do |tx|
       conn = tx.connection
-      prev_slow_block : Block? = nil
-      prev_fast_block : Block? = nil
-
-      Blocks.retrieve_blocks(conn) do |_block|
+      prev_block : Block? = nil
+      Blocks.retrieve_blocks_for_query(conn, "select * from blocks where kind = ? order by idx asc", kind.to_s) do |_block|
         block = _block
-        block_kind = BlockKind.parse(block.kind)
-        if prev_slow_block
-          if block_kind == BlockKind::SLOW
-            validated_block = BlockValidator.quick_validate(block, prev_slow_block)
-            raise Axentro::Common::AxentroException.new(validated_block.reason) unless validated_block.valid
-            progress("block ##{block.index} was validated", block.index, max_slow)
-          end
-        end
+        blocks << block
 
-        if prev_fast_block
-          if block_kind == BlockKind::FAST
-            validated_block = BlockValidator.quick_validate(block, prev_fast_block)
+        if block.index < (kind == BlockKind::SLOW ? BLOCK_CHECKPOINT_SIZE : BLOCK_CHECKPOINT_SIZE + 1)
+          # validate without checkpoints
+          if prev_block
+            validated_block = BlockValidator.quick_validate(block, prev_block)
             raise Axentro::Common::AxentroException.new(validated_block.reason) unless validated_block.valid
-            progress("block ##{block.index} was validated", block.index, max_fast)
+            progress("block ##{block.index} was validated", block.index, max)
           end
-        end
-
-        if block_kind == BlockKind::SLOW
-          prev_slow_block = block
         else
-          prev_fast_block = block
+          # validate using checkpoints
+          next if block.checkpoint == ""
+          validated_block = BlockValidator.checkpoint_validate(block, blocks.reject { |b| b.index == block.index }.last((BLOCK_CHECKPOINT_SIZE / 2).to_i))
+          blocks = [blocks.last]
+          raise Axentro::Common::AxentroException.new(validated_block.reason) unless validated_block.valid
+          progress("block ##{block.index} was validated", block.index, max)
         end
 
+        prev_block = block
         result.index = block.index
       end
     end
@@ -222,14 +230,12 @@ module ::Axentro::Core::Data::Blocks
   rescue e : Exception
     result = ReplaceBlocksResult.new(0_i64, false)
     if block
-      result.index = block.index
       block_kind = BlockKind.parse(block.kind)
+      result.index = block.index
       error "Error validating blocks from database at index: #{block.index}"
       error e.message || "unknown error while validating blocks from database"
-      if with_archive
-        warning "archiving blocks from index #{block.index} and up"
-        archive_blocks_of_kind(block.index, "db_validate", block_kind)
-      end
+      warning "archiving blocks from index #{block.index} and up"
+      archive_blocks_of_kind(block.index, "db_validate", block_kind)
       warning "deleting #{block_kind} blocks from index #{block.index} and up"
       delete_blocks_of_kind(block.index, block_kind)
     end
@@ -408,9 +414,21 @@ module ::Axentro::Core::Data::Blocks
   # write checkpoint merkle for every 1000th Slow and 1001th Fast
   # on validate if blocks have checkpoints then validate only checkpoints otherwise validate normal quick
   def get_checkpoint_merkle(index : Int64, kind : BlockKind) : String
+    result = ""
+    @db.using_connection do |conn|
+      result = Blocks.get_checkpoint_merkle(conn, index, kind)
+    end
+    result
+  end
+
+  def self.get_checkpoint_merkle(conn : DB::Connection, index : Int64, kind : BlockKind) : String
     # slow block modulo should be 0 and fast block modulo should be 1
-    return "" if (index % 1000) != (kind == BlockKind::SLOW ? 0 : 1)
-    blocks = get_blocks_via_query("select * from blocks where idx <= ? and kind = ? order by idx asc limit 1000", index, kind.to_s)
+    return "" if (index % BLOCK_CHECKPOINT_SIZE) != (kind == BlockKind::SLOW ? 0 : 1)
+    blocks = [] of Block
+    start_index = index - BLOCK_CHECKPOINT_SIZE
+    Blocks.retrieve_blocks_for_query(conn, "select * from blocks where kind = ? and idx between ? and ? order by idx asc", kind.to_s, start_index, index - 2) do |block|
+      blocks << block
+    end
     MerkleTreeCalculator.new(HashVersion::V2).calculate_merkle_tree_root(blocks)
   end
 

@@ -17,6 +17,7 @@ class CreateIndexes < MG::Base
       CREATE INDEX IF NOT EXISTS idx_recipients   on recipients (transaction_id);
       CREATE INDEX IF NOT EXISTS idx_senders      on senders (transaction_id);
       CREATE INDEX IF NOT EXISTS idx_blocks       on blocks (timestamp);
+      CREATE INDEX IF NOT EXISTS idx_blocks_kind  on blocks (kind);
       CREATE INDEX IF NOT EXISTS idx_transactions on transactions (block_id);
     SQL
   end
