@@ -200,7 +200,7 @@ module ::Axentro::Core::NodeComponents
           send_invalid_block_update(socket, mined_difficulty, message)
         end
 
-        actual_difficulty = calculate_pow_difficulty(block_hash, mined_nonce.value, mined_difficulty)
+        actual_difficulty = calculate_pow_difficulty(block.mining_version, block_hash, mined_nonce.value, mined_difficulty)
         info "(#{miner.mid}) (#{miner.ip}) (#{miner.address}) incoming nonce: #{mined_nonce.value} (actual: #{actual_difficulty}, expected: #{mined_difficulty})"
         if actual_difficulty < mined_difficulty
           METRICS_NONCES_COUNTER[kind: "invalid"].inc

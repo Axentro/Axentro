@@ -237,7 +237,7 @@ module ::Axentro::Core
       hash_version = HashVersion::V2
       merkle_tree_root = MerkleTreeCalculator.new(hash_version).calculate_merkle_tree_root(genesis_transactions)
       checkpoint = ""
-      mining_version = MiningVersion::V2
+      mining_version = MiningVersion::V1
 
       Block.new(
         genesis_index,
@@ -339,7 +339,7 @@ module ::Axentro::Core
         BlockVersion::V2,
         HashVersion::V2,
         checkpoint,
-        MiningVersion::V2
+        MiningVersion::V1
       )
 
       latest_hash = @mining_block.not_nil!.to_hash

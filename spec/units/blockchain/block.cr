@@ -20,7 +20,7 @@ NODE_ADDRESS = "VDA2NjU5N2JlNDA3ZDk5Nzg4MGY2NjY5YjhhOTUwZTE2M2VmNjM5OWM2M2EyMWQz
 
 describe Block do
   it "should create a genesis block (new block with no transactions)" do
-    block = Block.new(0_i64, [] of Transaction, "0", "genesis", 0_i64, 3_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V2)
+    block = Block.new(0_i64, [] of Transaction, "0", "genesis", 0_i64, 3_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
     block.index.should eq(0)
     block.transactions.should eq([] of Transaction)
     block.nonce.should eq("0")
@@ -29,26 +29,26 @@ describe Block do
   end
 
   it "should return the header for #to_header" do
-    block = Block.new(0_i64, [] of Transaction, "0", "genesis", 0_i64, 3_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V2)
+    block = Block.new(0_i64, [] of Transaction, "0", "genesis", 0_i64, 3_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
     block.to_header.should eq({index: 0_i64, nonce: "0", prev_hash: "genesis", merkle_tree_root: "", timestamp: 0_i64, difficulty: 3})
   end
 
   describe "#calculate_merkle_tree_root" do
     it "should return empty merkle tree root value when no transactions" do
-      block = Block.new(0_i64, [] of Transaction, a_nonce, "prev_hash", 0_i64, 3_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V2)
+      block = Block.new(0_i64, [] of Transaction, a_nonce, "prev_hash", 0_i64, 3_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
       block.calculate_merkle_tree_root(block.transactions).should eq("")
     end
 
     it "should calculate merkle tree root when coinbase transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
-      block = Block.new(2_i64, [coinbase_transaction], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V2)
+      block = Block.new(2_i64, [coinbase_transaction], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
       block.calculate_merkle_tree_root(block.transactions).should eq("ee2a76acd61a587ae85fc444bdbf72b07944ceec")
     end
 
     it "should calculate merkle tree root when 2 transactions (first is coinbase)" do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
-      block = Block.new(2_i64, [coinbase_transaction, transaction1], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V2)
+      block = Block.new(2_i64, [coinbase_transaction, transaction1], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
       block.calculate_merkle_tree_root(block.transactions).should eq("58ecb32608384bb5587977c3546e8762090b5dab")
     end
   end
@@ -79,7 +79,7 @@ describe Block do
         chain = block_factory.add_slow_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
-        block = Block.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V2)
+        block = Block.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
         block.valid?(block_factory.blockchain, false).should be_true
       end
     end
@@ -89,7 +89,7 @@ describe Block do
         chain = block_factory.add_slow_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
-        block = Block.new(98_i64, [a_coinbase_transaction(1199969322_i64)], a_nonce, prev_hash, timestamp, 1_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V2)
+        block = Block.new(98_i64, [a_coinbase_transaction(1199969322_i64)], a_nonce, prev_hash, timestamp, 1_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
 
         expect_raises(Exception, "Index Mismatch: the current block index: 98 should match the latest slow block index: 4") do
           block.valid?(block_factory.blockchain, false)
@@ -102,7 +102,7 @@ describe Block do
         chain = block_factory.add_slow_blocks(1).chain
         prev_hash = "invalid"
         timestamp = chain[1].timestamp
-        block = Block.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V2)
+        block = Block.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
 
         expect_raises(Exception, /prev_hash is invalid:/) do
           block.valid?(block_factory.blockchain, false)
@@ -115,7 +115,7 @@ describe Block do
         chain = block_factory.add_slow_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp - 10000000
-        block = Block.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V2)
+        block = Block.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
 
         expect_raises(Exception, /Invalid Timestamp:/) do
           block.valid?(block_factory.blockchain, false)
@@ -128,7 +128,7 @@ describe Block do
         chain = block_factory.add_slow_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp + 10000000
-        block = Block.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V2)
+        block = Block.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
 
         expect_raises(Exception, /Invalid Timestamp:/) do
           block.valid?(block_factory.blockchain, false)
@@ -141,7 +141,7 @@ describe Block do
         chain = block_factory.add_slow_blocks(1).chain
         prev_hash = chain[1].to_hash
         timestamp = chain[1].timestamp
-        block = Block.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V2)
+        block = Block.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
         block.merkle_tree_root = "invalid"
         expect_raises(Exception, "Invalid Merkle Tree Root: (expected invalid but got f5cf2a5c37473765ffc535ac9e9acb8a6dafb9c2)") do
           block.valid?(block_factory.blockchain, false)
@@ -156,7 +156,7 @@ describe Block do
         timestamp = chain[1].timestamp
 
         mainnet_address = "TTBjYTcxZmNhNjAxZTJkNTAyNGI4MGExMWYzODA1MjdjZjlkNjI3NDEzMDc3NGFj"
-        block = Block.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, mainnet_address, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V2)
+        block = Block.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, mainnet_address, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
 
         expect_raises(Exception, "Invalid block network type: incoming block is of type: mainnet but chain is of type: testnet") do
           block.valid?(block_factory.blockchain, false)
@@ -171,7 +171,7 @@ describe Block do
         timestamp = chain[1].timestamp
 
         testnet_address = "VDAxMWQ4YjY1MTlhNTI2ZDNlMDYxMjk3OTdmYjY5YmRjODcwNzViYjA1YjFjNjBl"
-        block = Block.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, testnet_address, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V2)
+        block = Block.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, testnet_address, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
 
         block.valid?(block_factory.blockchain, false).should be_true
       end
@@ -190,7 +190,7 @@ describe Block do
         prev_hash = chain[0].to_hash
         timestamp = chain[0].timestamp
 
-        block = Block.new(2_i64, [a_coinbase_transaction(1199999373_i64)], a_nonce, prev_hash, timestamp, 0_i32, mainnet_address, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V2)
+        block = Block.new(2_i64, [a_coinbase_transaction(1199999373_i64)], a_nonce, prev_hash, timestamp, 0_i32, mainnet_address, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
 
         block.valid?(block_factory.blockchain, false).should be_true
       end
@@ -265,19 +265,19 @@ describe Block do
   describe "#find_transaction" do
     it "should find a transaction when an matching one exists" do
       coinbase_transaction = a_fixed_coinbase_transaction
-      block = Block.new(2_i64, [coinbase_transaction, a_fixed_signed_transaction], a_nonce, "prev_hash_1", 0_i64, 3_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V2)
+      block = Block.new(2_i64, [coinbase_transaction, a_fixed_signed_transaction], a_nonce, "prev_hash_1", 0_i64, 3_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
       block.find_transaction(coinbase_transaction.id).should eq(coinbase_transaction)
     end
 
     it "should find a transaction when an matching one exists given a partial transaction id" do
       coinbase_transaction = a_fixed_coinbase_transaction
-      block = Block.new(2_i64, [coinbase_transaction, a_fixed_signed_transaction], a_nonce, "prev_hash_1", 0_i64, 3_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V2)
+      block = Block.new(2_i64, [coinbase_transaction, a_fixed_signed_transaction], a_nonce, "prev_hash_1", 0_i64, 3_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
       block.find_transaction(coinbase_transaction.id[0, 8]).should eq(coinbase_transaction)
     end
 
     it "should return nil when cannot find a matching transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
-      block = Block.new(2_i64, [coinbase_transaction, a_fixed_signed_transaction], a_nonce, "prev_hash_1", 0_i64, 3_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V2)
+      block = Block.new(2_i64, [coinbase_transaction, a_fixed_signed_transaction], a_nonce, "prev_hash_1", 0_i64, 3_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
       block.find_transaction("transaction-not-found").should be_nil
     end
   end

@@ -69,7 +69,7 @@ describe "Json encoding" do
     timestamp = 1615971474028_i64
     block = Block.new(2,
       [transaction_1, transaction_2], "nonce", "prev_hash", timestamp,
-      17, BlockKind::FAST, "address", "public_key", "signature", "hash", BlockVersion::V2, HashVersion::V2, "merkle_tree_root", "", MiningVersion::V2)
+      17, BlockKind::FAST, "address", "public_key", "signature", "hash", BlockVersion::V2, HashVersion::V2, "merkle_tree_root", "", MiningVersion::V1)
 
     hashable_block = SlowBlockNoTimestampV2.from_block(block)
     expected_json = %Q{
@@ -86,7 +86,7 @@ describe "Json encoding" do
             "version":"V2",
             "hash_version":"V2",
             "checkpoint":"",
-            "mining_version":"V2",
+            "mining_version":"V1",
             "transactions":[
                {
                   "id":"be8473ea093084461006581b776c2ef1b960ee946a5eaf42f175cd9aace8fd1a",

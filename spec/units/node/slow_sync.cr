@@ -71,7 +71,7 @@ private def make_incoming_block(index, transactions, hash, timestamp, difficulty
     BlockVersion::V2,
     HashVersion::V2,
     "",
-    MiningVersion::V2
+    MiningVersion::V1
   )
 end
 

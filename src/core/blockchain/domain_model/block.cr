@@ -176,7 +176,7 @@ module ::Axentro::Core
     end
 
     def valid_block_nonce?(difficulty : Int32) : Bool
-      is_nonce_valid?(to_hash, @nonce, difficulty)
+      is_nonce_valid?(mining_version, to_hash, @nonce, difficulty)
     end
 
     def valid?(blockchain : Blockchain, skip_transactions : Bool = false, doing_replace : Bool = false) : Bool

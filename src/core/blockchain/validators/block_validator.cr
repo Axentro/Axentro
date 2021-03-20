@@ -198,7 +198,7 @@ module ::Axentro::Core::BlockValidator
 
     def rule_difficulty(block)
       if block.difficulty > 0
-        raise AxentroException.new("Invalid Nonce: #{block.nonce} for difficulty #{block.difficulty}") unless block.calculate_pow_difficulty(block.to_hash, block.nonce, block.difficulty) >= block.block_difficulty_to_miner_difficulty(block.difficulty)
+        raise AxentroException.new("Invalid Nonce: #{block.nonce} for difficulty #{block.difficulty}") unless block.calculate_pow_difficulty(block.mining_version, block.to_hash, block.nonce, block.difficulty) >= block.block_difficulty_to_miner_difficulty(block.difficulty)
       end
     end
 
