@@ -14,11 +14,13 @@
 class CreateIndexes < MG::Base
   def up : String
     <<-SQL
-      CREATE INDEX IF NOT EXISTS idx_recipients   on recipients (transaction_id);
-      CREATE INDEX IF NOT EXISTS idx_senders      on senders (transaction_id);
-      CREATE INDEX IF NOT EXISTS idx_blocks       on blocks (timestamp);
-      CREATE INDEX IF NOT EXISTS idx_blocks_kind  on blocks (kind);
-      CREATE INDEX IF NOT EXISTS idx_transactions on transactions (block_id);
+      CREATE INDEX IF NOT EXISTS idx_recipients         on recipients (transaction_id);
+      CREATE INDEX IF NOT EXISTS idx_senders            on senders (transaction_id);
+      CREATE INDEX IF NOT EXISTS idx_recipients_block   on recipients (block_id);
+      CREATE INDEX IF NOT EXISTS idx_senders_block      on senders (block_id);
+      CREATE INDEX IF NOT EXISTS idx_blocks             on blocks (timestamp);
+      CREATE INDEX IF NOT EXISTS idx_blocks_kind        on blocks (kind);
+      CREATE INDEX IF NOT EXISTS idx_transactions       on transactions (block_id);
     SQL
   end
 
@@ -26,6 +28,8 @@ class CreateIndexes < MG::Base
     <<-SQL
       DROP INDEX idx_recipients;
       DROP INDEX idx_senders;
+      DROP INDEX idx_recipients_block;
+      DROP INDEX idx_senders_block;
       DROP INDEX idx_blocks;
       DROP INDEX idx_blocks_kind;
       DROP INDEX idx_transactions;
