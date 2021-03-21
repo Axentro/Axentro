@@ -91,6 +91,14 @@ module ::Axentro::Core::Protocol
     property remaining_duration : Int32
   end
 
+  M_TYPE_MINER_INSUFFICIENT_DURATION = 0x0009
+
+  struct MContentMinerInsufficientDuration
+    include JSON::Serializable
+    property reason : String
+    property connected_duration : Int64
+  end
+
   ######################################
   # CLIENT
   ######################################

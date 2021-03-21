@@ -32,6 +32,12 @@ module ::Axentro::Core::NodeComponents
     def initialize(@ip, @action, @timestamp); end
   end
 
+  struct MinerConnected
+    property mid : String
+    property at : Int64
+    def initialize(@mid, @at); end
+  end
+
   class MinersManager < HandleSocket
     alias Miners = Array(Miner)
     getter miners : Miners = Miners.new
@@ -41,6 +47,7 @@ module ::Axentro::Core::NodeComponents
     @nonce_spacing : NonceSpacing = NonceSpacing.new
     @last_ensured : Int64
     @leading_miner : Miner?
+    @miner_connected : Array(MinerConnected) = [] of MinerConnected
 
     getter miner_mortality : Array(MinerMortality) = [] of MinerMortality
 
@@ -91,15 +98,17 @@ module ::Axentro::Core::NodeComponents
         if deviation > boundary && no_nonces && last_ensured_deviation > 10_000
           warning "no nonces found for block within 1 min 30 secs - attempting to ensure 2 min block time"
 
-          if leading_miner = @leading_miner
-            info "reduce difficulty to ensure block mined within 2 mins"
-            current_difficulty = leading_miner.difficulty
-            leading_miner.difficulty = current_difficulty - 1
-            METRICS_MINERS_COUNTER[kind: "decrease_difficulty_ensure_block"].inc
-            send_adjust_block_difficulty(leading_miner.socket, leading_miner.difficulty, "reducing difficulty from #{current_difficulty} to #{leading_miner.difficulty} to ensure block time")
-            @last_ensured = __timestamp
-          else
-            @leading_miner = @nonce_spacing.leading_miner(@miners)
+          @miners.each do |miner|
+            if connected_mid = @miner_connected.find{|mc| mc.mid == miner.mid}
+              connected_duration = __timestamp - connected_mid.at  
+              if connected_duration >= 120_000
+                METRICS_MINERS_COUNTER[kind: "decrease_difficulty_ensure_block"].inc
+                current_difficulty = miner.difficulty
+                miner.difficulty = current_difficulty - 1
+                send_adjust_block_difficulty(miner.socket, miner.difficulty, "reducing difficulty from #{current_difficulty} to #{miner.difficulty} to ensure block time")
+                @last_ensured = __timestamp
+              end
+            end
           end
         end
       end
@@ -139,7 +148,9 @@ module ::Axentro::Core::NodeComponents
       miner = Miner.new(socket, mid, @blockchain.mining_block.difficulty, remote_ip, remote_port, miner_name, address)
 
       @miners << miner
-      @miner_mortality << MinerMortality.new(miner.ip, "joined", __timestamp)
+      now = __timestamp
+      @miner_mortality << MinerMortality.new(miner.ip, "joined", now)
+      @miner_connected << MinerConnected.new(miner.mid, now)
 
       METRICS_MINERS_COUNTER[kind: "joined"].inc
       METRICS_CONNECTED_GAUGE[kind: "miners"].set @miners.size
@@ -158,10 +169,10 @@ module ::Axentro::Core::NodeComponents
         loop do
           sleep rand(10..20)
           verbose "in check loop"
+          # if miner was removed break out of loop
+          break unless @miners.map(&.mid).includes?(miner.mid)
           if spacing = @nonce_spacing.compute(miner, true)
             verbose "check was computed for #{miner.mid}"
-            # if miner was removed break out of loop
-            break unless @miners.map(&.mid).includes?(miner.mid)
             send_adjust_block_difficulty(miner.socket, spacing.difficulty, spacing.reason)
           end
           check_if_block_has_expired
@@ -183,13 +194,32 @@ module ::Axentro::Core::NodeComponents
       mined_difficulty = mined_nonce.difficulty
 
       if miner = find?(socket)
+
+        if connected_mid = @miner_connected.find{|mc| mc.mid == miner.mid}
+
+        connected_duration = __timestamp - connected_mid.at  
+        if connected_duration < 120_000 && @miners.size > 1
+          message = "(#{miner.mid}) rejecting nonce as miner was only connected for #{connected_duration / 1000 } secs but mininum is 120 secs for reward"
+          warning message
+          # we still want to increase the difficulty here to regulate mining for miner loyalty strategy
+          # found a nonce so track it in the history
+          @nonce_spacing.track_miner_difficulty(miner.mid, miner.difficulty)
+
+          # throttle nonce difficulty target
+          if spacing = @nonce_spacing.compute(miner)
+            send_adjust_block_difficulty(miner.socket, spacing.difficulty, spacing.reason)
+          end
+          
+          return send_insufficient_duration(socket, message, connected_duration)
+        end
+
         block = @blockchain.mining_block.with_nonce(mined_nonce.value).with_difficulty(mined_difficulty)
         block_hash = block.to_hash
 
         if @blockchain.miner_nonce_pool.find(mined_nonce)
           message = "nonce #{mined_nonce.value} has already been discovered"
           warning message
-          send_invalid_block_update(socket, mined_difficulty, message)
+          return send_invalid_block_update(socket, mined_difficulty, message)
         end
 
         # allow a bit of extra time for latency for nonces
@@ -197,7 +227,7 @@ module ::Axentro::Core::NodeComponents
         if mined_timestamp < mining_block_with_buffer
           message = "invalid timestamp for received nonce: #{mined_nonce.value} nonce mined at: #{Time.unix_ms(mined_timestamp)} before current mining block was created at: #{Time.unix_ms(mining_block_with_buffer)} (#{Time.unix_ms(@blockchain.mining_block.timestamp)})"
           warning message
-          send_invalid_block_update(socket, mined_difficulty, message)
+          return send_invalid_block_update(socket, mined_difficulty, message)
         end
 
         actual_difficulty = calculate_pow_difficulty(block.mining_version, block_hash, mined_nonce.value, mined_difficulty)
@@ -232,6 +262,7 @@ module ::Axentro::Core::NodeComponents
 
           check_if_block_has_expired
         end
+      end
       end
     end
 
@@ -279,6 +310,13 @@ module ::Axentro::Core::NodeComponents
       })
     end
 
+    def send_insufficient_duration(socket, reason : String, connected_duration : Int64)
+      send(socket, M_TYPE_MINER_INSUFFICIENT_DURATION, {
+        reason:             reason,
+        connected_duration: connected_duration,
+      })
+    end
+
     def find?(socket : HTTP::WebSocket) : Miner?
       @miners.find { |m| m.socket == socket }
     end
@@ -317,12 +355,17 @@ module ::Axentro::Core::NodeComponents
       if mnr = @miners.find { |miner| miner.socket == socket }
         message = "(#{mnr.ip}:#{mnr.port}) : #{mnr.address} #{light_green(mnr.name)} (#{mnr.mid})"
         @miner_mortality << MinerMortality.new(mnr.ip, "remove", __timestamp)
+        mnr.socket.close
+        @miners.reject!{|m| m.mid == mnr.mid}
+        @miner_connected.reject!{|mc| mc.mid == mnr.mid}
+        @nonce_spacing.delete(mnr.mid)
+        METRICS_MINERS_COUNTER[kind: "removed"].inc
       end
-      @miners.reject! do |miner|
-        r = miner.socket == socket
-        METRICS_MINERS_COUNTER[kind: "removed"].inc if r
-        r
-      end
+      # @miners.reject! do |miner|
+      #   r = miner.socket == socket
+      #   METRICS_MINERS_COUNTER[kind: "removed"].inc if r
+      #   r
+      # end
 
       METRICS_CONNECTED_GAUGE[kind: "miners"].set @miners.size
       info "remove miner #{message} (#{current_size} -> #{@miners.size})" if current_size > @miners.size

@@ -40,6 +40,10 @@ module ::Axentro::Core::NodeComponents
       @nonce_meta_map[mid]?
     end
 
+    def delete(mid : String)
+      @nonce_meta_map.delete(mid)
+    end
+
     def leading_miner(miners : Array(Miner)) : Miner?
       grouped = miners.group_by(&.difficulty)
       return unless grouped.keys.size > 0
