@@ -46,7 +46,7 @@ module ::Axentro::Core
         when M_TYPE_MINER_EXCEED_RATE
           _miner_exceed_rate_warning(message_content)
         when M_TYPE_MINER_INSUFFICIENT_DURATION
-          _miner_insufficient_duration_warning(message_content) 
+          _miner_insufficient_duration_warning(message_content)
         end
       rescue e : Exception
         warning "receive invalid message, will be ignored: #{e}"
