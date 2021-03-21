@@ -14,7 +14,7 @@
 class AddBlockVersionToArchive < MG::Base
   def up : String
     <<-SQL
-      ALTER TABLE archived_blocks ADD COLUMN version TEXT NOT NULL DEFAULT "V1"
+      ALTER TABLE archived_blocks ADD COLUMN version TEXT NOT NULL DEFAULT "V2"
     SQL
   end
 

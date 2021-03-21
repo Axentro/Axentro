@@ -71,7 +71,7 @@ describe "Json encoding" do
       [transaction_1, transaction_2], "nonce", "prev_hash", timestamp,
       17, BlockKind::FAST, "address", "public_key", "signature", "hash", BlockVersion::V2, HashVersion::V2, "merkle_tree_root", "", MiningVersion::V1)
 
-    hashable_block = SlowBlockNoTimestampV2.from_block(block)
+    hashable_block = BlockNoTimestamp.from_block(block)
     expected_json = %Q{
         {
             "index":2,

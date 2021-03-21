@@ -44,11 +44,7 @@ module ::Axentro::Core
     end
 
     private def apply_merkle_hash_version(hash)
-      if @hash_version == HashVersion::V2
-        argon2(hash)
-      else
-        sha256(hash)
-      end
+      argon2(hash)
     end
   end
 end

@@ -14,7 +14,7 @@
 class AddHashVersionToBlock < MG::Base
   def up : String
     <<-SQL
-      ALTER TABLE blocks ADD COLUMN hash_version TEXT NOT NULL DEFAULT "V1"
+      ALTER TABLE blocks ADD COLUMN hash_version TEXT NOT NULL DEFAULT "V2"
     SQL
   end
 

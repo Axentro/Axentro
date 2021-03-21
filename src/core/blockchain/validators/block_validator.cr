@@ -157,14 +157,8 @@ module ::Axentro::Core::BlockValidator
     end
 
     def rule_prev_hash(block, prev_block)
-      if block.version == BlockVersion::V2
-        regen_prev_hash = prev_block.to_hash
-        raise AxentroException.new("Invalid Previous Slow Block Hash: for current index: #{block.index} the slow block prev_hash is invalid: (prev index: #{prev_block.index}) #{regen_prev_hash} != #{block.prev_hash}") if regen_prev_hash != block.prev_hash
-      else
-        _prev_hash = block.prev_hash
-        regen_prev_hash = prev_block.to_hash
-        raise AxentroException.new("Invalid Previous Slow Block Hash: for current index: #{block.index} the slow block prev_hash is invalid: (prev index: #{prev_block.index}) #{regen_prev_hash} != #{_prev_hash}") if regen_prev_hash != _prev_hash
-      end
+      regen_prev_hash = prev_block.to_hash
+      raise AxentroException.new("Invalid Previous Slow Block Hash: for current index: #{block.index} the slow block prev_hash is invalid: (prev index: #{prev_block.index}) #{regen_prev_hash} != #{block.prev_hash}") if regen_prev_hash != block.prev_hash
     end
 
     def rule_slow_transactions(skip_transactions, transactions, blockchain, current_block_index)
