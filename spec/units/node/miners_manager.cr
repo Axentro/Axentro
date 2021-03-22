@@ -21,19 +21,19 @@ ONE_SECOND = 1000
 describe MinersManager do
   it "should include in ban list if duration between join and remove is less than 10 seconds for 10 times" do
     now = __timestamp
-    miner_mortality = [] of MinerMortality
+    miner_mortality = LRUCache(String, Array(MinerMortality)).new(max_size: 10_000)
 
     (1..11).to_a.each do |_|
       join_and_remove(miner_mortality, now, ONE_SECOND)
       now += ONE_SECOND
     end
 
-    MinersManager.ban_list(miner_mortality).should eq(Set{"1"})
+    MinersManager.ban_list(miner_mortality.items).should eq(Set{"1"})
   end
 
   it "should not include in ban list if duration between join and remove is greater than 10 seconds for 10 times" do
     now = __timestamp
-    miner_mortality = [] of MinerMortality
+    miner_mortality = LRUCache(String, Array(MinerMortality)).new(max_size: 10_000)
 
     # add 9 that are less than boundary
     (1..9).to_a.each do |_|
@@ -47,11 +47,13 @@ describe MinersManager do
     end
 
     # should not be in ban list because only 9 happened less than boundary
-    MinersManager.ban_list(miner_mortality).should be_empty
+    MinersManager.ban_list(miner_mortality.items).should be_empty
   end
 end
 
 def join_and_remove(miner_mortality, now, spacing)
-  miner_mortality << MinerMortality.new("1", "joined", now)
-  miner_mortality << MinerMortality.new("1", "remove", now + spacing)
+  mortalities = miner_mortality.get("1") || [] of MinerMortality
+  mortalities << MinerMortality.new("joined", now)
+  mortalities << MinerMortality.new("remove", now + spacing)
+  miner_mortality.set("1", mortalities, Time.utc + 10.minutes)
 end

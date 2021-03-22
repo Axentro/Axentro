@@ -113,6 +113,9 @@ module ::Axentro::Core::NodeComponents
       @finger_table = @finger_table.uniq { |n| n.id }.group_by { |n| "#{n.host}_#{n.port}" }.flat_map do |_, group|
         group.sort_by(&.joined_at).first
       end
+
+      @context.slow_block = @database.highest_index_of_kind(BlockKind::SLOW)
+      @context.fast_block = @database.highest_index_of_kind(BlockKind::FAST)
     end
 
     def clean_finger_table

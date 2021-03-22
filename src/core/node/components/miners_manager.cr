@@ -25,11 +25,10 @@ module ::Axentro::Core::NodeComponents
   end
 
   struct MinerMortality
-    property ip : String
     property action : String
     property timestamp : Int64
 
-    def initialize(@ip, @action, @timestamp); end
+    def initialize(@action, @timestamp); end
   end
 
   struct MinerConnected
@@ -49,8 +48,7 @@ module ::Axentro::Core::NodeComponents
     @last_ensured : Int64
     @leading_miner : Miner?
     @miner_connected : Array(MinerConnected) = [] of MinerConnected
-
-    getter miner_mortality : Array(MinerMortality) = [] of MinerMortality
+    @miner_mortality = LRUCache(String, Array(MinerMortality)).new(max_size: 10_000)
 
     def initialize(@blockchain : Blockchain, @is_private_node : Bool)
       @highest_difficulty_mined_so_far = 0
@@ -59,7 +57,11 @@ module ::Axentro::Core::NodeComponents
       @last_ensured = @block_start_time
     end
 
-    def self.ban_list(miner_mortality : Array(MinerMortality))
+    def get_mortalities
+      @miner_mortality.items
+    end
+
+    def self.ban_list(miner_mortalities : Hash(String, Tuple(Array(MinerMortality), Time?)))
       _deviance = 10_000
       _ban_duration = 600_000 # 10 mins
       _ban_tolerance = 10
@@ -67,14 +69,15 @@ module ::Axentro::Core::NodeComponents
 
       bans = Set(String).new
 
-      miner_mortality.group_by(&.ip).each do |ip, history|
+      miner_mortalities.each do |ip, tpl|
+        history = tpl.first
         time_history = history.map(&.timestamp)
         result = time_history.last(10).in_groups_of(2, 0_i64).map { |group|
           (group.first.not_nil! - group.last.not_nil!).abs
         }.count { |deviance| deviance < _deviance }
 
         last_action = time_history.max
-        miner_mortality.reject! { |m| m.ip == ip } if (now - last_action > _ban_duration)
+        miner_mortalities.delete(ip) if (now - last_action > _ban_duration)
 
         bans << ip if result >= 5
       end
@@ -150,7 +153,11 @@ module ::Axentro::Core::NodeComponents
 
       @miners << miner
       now = __timestamp
-      @miner_mortality << MinerMortality.new(miner.ip, "joined", now)
+
+      mortalities = @miner_mortality.get(miner.ip) || [] of MinerMortality
+      mortalities << MinerMortality.new("joined", now)
+      @miner_mortality.set(miner.ip, mortalities, Time.utc + 10.minutes)
+
       @miner_connected << MinerConnected.new(miner.mid, now)
 
       METRICS_MINERS_COUNTER[kind: "joined"].inc
@@ -354,19 +361,17 @@ module ::Axentro::Core::NodeComponents
       message = ""
       if mnr = @miners.find { |miner| miner.socket == socket }
         message = "(#{mnr.ip}:#{mnr.port}) : #{mnr.address} #{light_green(mnr.name)} (#{mnr.mid})"
-        @miner_mortality << MinerMortality.new(mnr.ip, "remove", __timestamp)
+
+        mortalities = @miner_mortality.get(mnr.ip) || [] of MinerMortality
+        mortalities << MinerMortality.new("remove", __timestamp)
+        @miner_mortality.set(mnr.ip, mortalities, Time.utc + 10.minutes)
+
         mnr.socket.close
         @miners.reject! { |m| m.mid == mnr.mid }
         @miner_connected.reject! { |mc| mc.mid == mnr.mid }
         @nonce_spacing.delete(mnr.mid)
         METRICS_MINERS_COUNTER[kind: "removed"].inc
       end
-      # @miners.reject! do |miner|
-      #   r = miner.socket == socket
-      #   METRICS_MINERS_COUNTER[kind: "removed"].inc if r
-      #   r
-      # end
-
       METRICS_CONNECTED_GAUGE[kind: "miners"].set @miners.size
       info "remove miner #{message} (#{current_size} -> #{@miners.size})" if current_size > @miners.size
     end

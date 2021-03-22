@@ -39,6 +39,7 @@ require "rate_limiter"
 require "crometheus"
 require "mg"
 require "msgpack"
+require "lru-cache"
 
 require "./common"
 require "./core/modules"
