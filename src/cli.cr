@@ -95,7 +95,7 @@ module ::Axentro::Interface
 
     def command_line
       return @axe_action[:name] if @parents.size == 0
-      @parents.map { |a| a[:name] }.join(" ") + " " + @axe_action[:name]
+      @parents.map(&.a[:name]).join(" ") + " " + @axe_action[:name]
     end
 
     def next_parents : Array(AxeAction)
@@ -103,7 +103,7 @@ module ::Axentro::Interface
     end
 
     def sub_action_names : Array(String)
-      sub_actions.map { |a| a[:name] }
+      sub_actions.map(&.a[:name])
     end
 
     def run
