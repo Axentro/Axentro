@@ -83,7 +83,7 @@ describe NodeInfo do
         node_id = block_factory.node.chord.context.id
         wallet_address = block_factory.node.chord.context.address
         with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-          result.should eq("{\"id\":\"#{node_id}\",\"host\":\"\",\"port\":-1,\"ssl\":false,\"type\":\"testnet\",\"is_private\":true,\"address\":\"#{wallet_address}\"}")
+          result.gsub(/\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d UTC/, "").should eq("{\"id\":\"#{node_id}\",\"host\":\"\",\"port\":-1,\"ssl\":false,\"type\":\"testnet\",\"is_private\":true,\"address\":\"#{wallet_address}\",\"slow_block\":0,\"fast_block\":0,\"joined_at\":\"\"}")
         end
       end
     end
@@ -99,7 +99,7 @@ describe NodeInfo do
         node_id = block_factory.node.chord.context.id
         wallet_address = block_factory.node.chord.context.address
         with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-          result.should eq("{\"id\":\"#{node_id}\",\"host\":\"\",\"port\":-1,\"ssl\":false,\"type\":\"testnet\",\"is_private\":true,\"address\":\"#{wallet_address}\"}")
+          result.gsub(/\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d UTC/, "").should eq("{\"id\":\"#{node_id}\",\"host\":\"\",\"port\":-1,\"ssl\":false,\"type\":\"testnet\",\"is_private\":true,\"address\":\"#{wallet_address}\",\"slow_block\":0,\"fast_block\":0,\"joined_at\":\"\"}")
         end
       end
     end
@@ -115,7 +115,7 @@ describe NodeInfo do
 
         node_id = block_factory.node.chord.context.id
         with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-          result.should eq("[{\"id\":\"#{node_id}\",\"host\":\"\",\"port\":-1,\"ssl\":false,\"type\":\"testnet\",\"is_private\":true,\"address\":\"#{wallet_address}\"}]")
+          result.gsub(/\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d UTC/, "").should eq("[{\"id\":\"#{node_id}\",\"host\":\"\",\"port\":-1,\"ssl\":false,\"type\":\"testnet\",\"is_private\":true,\"address\":\"#{wallet_address}\",\"slow_block\":0,\"fast_block\":0,\"joined_at\":\"\"}]")
         end
       end
     end

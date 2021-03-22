@@ -12,6 +12,7 @@
 
 require "./node_id"
 require "./metrics"
+require "json"
 
 module ::Axentro::Core::NodeComponents
   class Chord < HandleSocket
@@ -28,8 +29,13 @@ module ::Axentro::Core::NodeComponents
       property type : String
       property is_private : Bool
       property address : String
+      property slow_block : Int64
+      property fast_block : Int64
 
-      def initialize(@id, @host, @port, @ssl, @type, @is_private, @address); end
+      @[JSON::Field(converter: Int64::EpochMillisConverter)]
+      property joined_at : Int64
+
+      def initialize(@id, @host, @port, @ssl, @type, @is_private, @address, @slow_block, @fast_block, @joined_at); end
     end
 
     class Node
@@ -47,11 +53,14 @@ module ::Axentro::Core::NodeComponents
     @successor_list : Nodes = Nodes.new
     @predecessor : Node?
     @private_nodes : Nodes = Nodes.new
-    @finger_table : Set(NodeContext) = Set.new([] of NodeContext)
+    @finger_table : Array(NodeContext) = [] of NodeContext
 
     @show_network = 0
 
+    getter context : NodeContext
+
     def initialize(
+      @database : Database,
       @connect_host : String?,
       @connect_port : Int32?,
       @public_host : String?,
@@ -69,6 +78,19 @@ module ::Axentro::Core::NodeComponents
     )
       @node_id = NodeID.new
 
+      @context = NodeContext.new(
+        @node_id.id,
+        @public_host || "",
+        @public_port || -1,
+        @ssl || false,
+        @network_type,
+        @is_private,
+        @wallet_address,
+        @database.highest_index_of_kind(BlockKind::SLOW),
+        @database.highest_index_of_kind(BlockKind::FAST),
+        __timestamp
+      )
+
       info "node id: #{light_green(@node_id.to_s)}"
 
       stabilize_process
@@ -85,7 +107,12 @@ module ::Axentro::Core::NodeComponents
     end
 
     def add_to_finger_table(joined_nodes)
-      joined_nodes.each { |n| @finger_table.add(n) unless n.is_private }
+      joined_nodes.each { |n| @finger_table.push(n) unless n.is_private }
+
+      # remove duplicates by id and then by newest host/port
+      @finger_table = @finger_table.uniq { |n| n.id }.group_by { |n| "#{n.host}_#{n.port}" }.flat_map do |_, group|
+        group.sort_by(&.joined_at).first
+      end
     end
 
     def clean_finger_table
@@ -193,7 +220,6 @@ module ::Axentro::Core::NodeComponents
       _m_content = MContentChordJoinPrivateAccepted.from_json(_content)
 
       _context = _m_content.context
-
       debug "successfully joined the network"
 
       @successor_list.push(Node.new(_context, socket))
@@ -614,18 +640,6 @@ module ::Axentro::Core::NodeComponents
         end
       end
       METRICS_CONNECTED_GAUGE[kind: "private_nodes"].set @private_nodes.size
-    end
-
-    def context
-      NodeContext.new(
-        @node_id.id,
-        @public_host || "",
-        @public_port || -1,
-        @ssl || false,
-        @network_type,
-        @is_private,
-        @wallet_address
-      )
     end
 
     def connected_nodes
