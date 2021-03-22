@@ -2,7 +2,7 @@ version: 2.0
 shards:
   ameba:
     git: https://github.com/veelenga/ameba.git
-    version: 0.13.4
+    version: 0.14.1
 
   baked_file_system:
     git: https://github.com/axentro/baked_file_system.git
@@ -58,7 +58,7 @@ shards:
 
   mg:
     git: https://github.com/hkalexling/mg.git
-    version: 0.4.0+git.commit.2cb21417e7793cd9b0dadf5c5888ee2c2f1e39b4
+    version: 0.4.0+git.commit.0190b7880152aff2a2a633f2a53427adf9e596f2
 
   monocypher:
     git: https://github.com/axentro/monocypher.cr.git
