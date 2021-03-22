@@ -80,8 +80,8 @@ describe NodeInfo do
         payload = {call: "node"}.to_json
         json = JSON.parse(payload)
 
-        node_id = block_factory.node.chord.context[:id]
-        wallet_address = block_factory.node.chord.context[:address]
+        node_id = block_factory.node.chord.context.id
+        wallet_address = block_factory.node.chord.context.address
         with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
           result.should eq("{\"id\":\"#{node_id}\",\"host\":\"\",\"port\":-1,\"ssl\":false,\"type\":\"testnet\",\"is_private\":true,\"address\":\"#{wallet_address}\"}")
         end
@@ -92,12 +92,12 @@ describe NodeInfo do
   describe "#node_id" do
     it "should return the node on the network" do
       with_factory do |block_factory, _|
-        node_id = block_factory.node.chord.context[:id]
+        node_id = block_factory.node.chord.context.id
         payload = {call: "node_id", id: node_id}.to_json
         json = JSON.parse(payload)
 
-        node_id = block_factory.node.chord.context[:id]
-        wallet_address = block_factory.node.chord.context[:address]
+        node_id = block_factory.node.chord.context.id
+        wallet_address = block_factory.node.chord.context.address
         with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
           result.should eq("{\"id\":\"#{node_id}\",\"host\":\"\",\"port\":-1,\"ssl\":false,\"type\":\"testnet\",\"is_private\":true,\"address\":\"#{wallet_address}\"}")
         end
@@ -108,12 +108,12 @@ describe NodeInfo do
   describe "#node_id" do
     it "should return the node on the network" do
       with_factory do |block_factory, _|
-        node_id = block_factory.node.chord.context[:id]
-        wallet_address = block_factory.node.chord.context[:address]
+        node_id = block_factory.node.chord.context.id
+        wallet_address = block_factory.node.chord.context.address
         payload = {call: "node_address", address: wallet_address}.to_json
         json = JSON.parse(payload)
 
-        node_id = block_factory.node.chord.context[:id]
+        node_id = block_factory.node.chord.context.id
         with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
           result.should eq("[{\"id\":\"#{node_id}\",\"host\":\"\",\"port\":-1,\"ssl\":false,\"type\":\"testnet\",\"is_private\":true,\"address\":\"#{wallet_address}\"}]")
         end
@@ -127,7 +127,7 @@ describe NodeInfo do
         payload = {call: "official_nodes"}.to_json
         json = JSON.parse(payload)
 
-        wallet_address = block_factory.node.chord.context[:address]
+        wallet_address = block_factory.node.chord.context.address
 
         with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
           result.should eq("{\"all\":[\"#{wallet_address}\"],\"online\":[]}")

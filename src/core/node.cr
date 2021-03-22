@@ -187,7 +187,7 @@ module ::Axentro::Core
     end
 
     def get_node_id
-      @chord.context[:id]
+      @chord.context.id
     end
 
     def has_no_connections?
@@ -226,9 +226,9 @@ module ::Axentro::Core
       s = if _socket = socket
             _socket
           elsif predecessor = @chord.find_predecessor?
-            predecessor[:socket]
+            predecessor.socket
           elsif successor = @chord.find_successor?
-            successor[:socket]
+            successor.socket
           end
 
       if _s = s
@@ -258,9 +258,9 @@ module ::Axentro::Core
       s = if _socket = socket
             _socket
           elsif predecessor = @chord.find_predecessor?
-            predecessor[:socket]
+            predecessor.socket
           elsif successor = @chord.find_successor?
-            successor[:socket]
+            successor.socket
           end
 
       if _s = s
@@ -289,9 +289,9 @@ module ::Axentro::Core
       s = if _socket = socket
             _socket
           elsif predecessor = @chord.find_predecessor?
-            predecessor[:socket]
+            predecessor.socket
           elsif successor = @chord.find_successor?
-            successor[:socket]
+            successor.socket
           end
 
       if _s = s
@@ -413,8 +413,8 @@ module ::Axentro::Core
     end
 
     private def prevent_self_connecting_case(message_type, content, from, successor)
-      if (successor[:context][:id] != @chord.context[:id]) && (from.nil? || from[:is_private])
-        send(successor[:socket], message_type, content)
+      if (successor.context.id != @chord.context.id) && (from.nil? || from.is_private)
+        send(successor.socket, message_type, content)
       end
     end
 
@@ -455,21 +455,21 @@ module ::Axentro::Core
         end
       else
         _nodes[:private_nodes].each do |private_node|
-          next if !from.nil? && from[:is_private] && private_node[:context][:id] == from[:id]
-          send(private_node[:socket], message_type, content)
+          next if !from.nil? && from.is_private && private_node.context.id == from.id
+          send(private_node.socket, message_type, content)
         end
 
         if successor = _nodes[:successor]
-          if successor[:context][:id] != content[:from][:id]
+          if successor.context.id != content[:from].id
             debug "sending to successor: #{message_type}"
-            send(successor[:socket], message_type, content)
+            send(successor.socket, message_type, content)
           end
         end
       end
     end
 
     def send_transaction(transaction : Transaction, from : Chord::NodeContext? = nil)
-      content = if from.nil? || (!from.nil? && from[:is_private])
+      content = if from.nil? || (!from.nil? && from.is_private)
                   {transaction: transaction, from: @chord.context}
                 else
                   {transaction: transaction, from: from}
@@ -502,7 +502,7 @@ module ::Axentro::Core
     end
 
     def send_miner_nonce(miner_nonce : MinerNonce, from : Chord::NodeContext? = nil)
-      content = if from.nil? || (!from.nil? && from[:is_private])
+      content = if from.nil? || (!from.nil? && from.is_private)
                   {nonce: miner_nonce, from: @chord.context}
                 else
                   {nonce: miner_nonce, from: from}
@@ -522,7 +522,7 @@ module ::Axentro::Core
     end
 
     def send_nodes_joined(joined_nodes : Array(Chord::NodeContext), from : Chord::NodeContext? = nil)
-      content = if from.nil? || (!from.nil? && from[:is_private])
+      content = if from.nil? || (!from.nil? && from.is_private)
                   {nodes: joined_nodes, from: @chord.context}
                 else
                   {nodes: joined_nodes, from: from}
@@ -535,7 +535,7 @@ module ::Axentro::Core
 
     def send_block(block : Block, from : Chord::NodeContext? = nil)
       debug "entering send_block"
-      content = if from.nil? || (!from.nil? && from[:is_private])
+      content = if from.nil? || (!from.nil? && from.is_private)
                   {block: block, from: @chord.context}
                 else
                   {block: block, from: from}
@@ -547,7 +547,7 @@ module ::Axentro::Core
     end
 
     def send_client_content(content : String, from : Chord::NodeContext? = nil)
-      _content = if from.nil? || (!from.nil? && from[:is_private])
+      _content = if from.nil? || (!from.nil? && from.is_private)
                    {content: content, from: @chord.context}
                  else
                    {content: content, from: from}
@@ -867,7 +867,7 @@ module ::Axentro::Core
     end
 
     private def retry_sync
-      node_connections = @chord.find_all_nodes[:public_nodes].map { |nc| NodeConnection.new(nc[:host], nc[:port], nc[:ssl]) }
+      node_connections = @chord.find_all_nodes[:public_nodes].map { |nc| NodeConnection.new(nc.host, nc.port, nc.ssl) }
       next_connections = node_connections.reject { |nc| @sync_retry_list.map(&.to_s).includes?(nc.to_s) }
 
       if next_connections.size == 1

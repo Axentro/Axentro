@@ -17,21 +17,28 @@ module ::Axentro::Core::NodeComponents
   class Chord < HandleSocket
     SUCCESSOR_LIST_SIZE = 3
 
-    alias NodeContext = NamedTuple(
-      id: String,
-      host: String,
-      port: Int32,
-      ssl: Bool,
-      type: String,
-      is_private: Bool,
-      address: String)
-
     alias NodeContexts = Array(NodeContext)
 
-    alias Node = NamedTuple(
-      context: NodeContext,
-      socket: HTTP::WebSocket,
-    )
+    class NodeContext
+      include JSON::Serializable
+      property id : String
+      property host : String
+      property port : Int32
+      property ssl : Bool
+      property type : String
+      property is_private : Bool
+      property address : String
+
+      def initialize(@id, @host, @port, @ssl, @type, @is_private, @address); end
+    end
+
+    class Node
+      include JSON::Serializable
+      property context : NodeContext
+      property socket : HTTP::WebSocket
+
+      def initialize(@context, @socket); end
+    end
 
     alias Nodes = Array(Node)
 
@@ -69,16 +76,16 @@ module ::Axentro::Core::NodeComponents
     end
 
     def all_node_contexts
-      contexts = Set.new(@successor_list.map { |s| s[:context] })
+      contexts = Set.new(@successor_list.map { |s| s.context })
       if predecessor = @predecessor
-        contexts.add(predecessor[:context])
+        contexts.add(predecessor.context)
       end
       contexts.add(context)
       contexts.to_a
     end
 
     def add_to_finger_table(joined_nodes)
-      joined_nodes.each { |n| @finger_table.add(n) unless n[:is_private] }
+      joined_nodes.each { |n| @finger_table.add(n) unless n.is_private }
     end
 
     def clean_finger_table
@@ -138,18 +145,18 @@ module ::Axentro::Core::NodeComponents
 
       _context = _m_content.context
 
-      debug "#{_context[:host]}:#{_context[:port]} try to join Axentro"
+      debug "#{_context.host}:#{_context.port} try to join Axentro"
 
-      if _context[:type] != @network_type
+      if _context.type != @network_type
         send_once(_context, M_TYPE_CHORD_JOIN_REJECTED, {reason: "network type mismatch. " +
-                                                                 "your network: #{_context[:type]}, our network: #{@network_type}"})
+                                                                 "your network: #{_context.type}, our network: #{@network_type}"})
         return
       end
 
       if @whitelist.size > 0
-        info "checking if host is in whitelist: host is: #{_context[:host]}:#{_context[:port]} and whitelist is: #{@whitelist.inspect}"
-        if !@whitelist.includes?(_context[:host])
-          warning "node was rejected as not in the whitelist: #{_context[:host]}:#{_context[:port]}"
+        info "checking if host is in whitelist: host is: #{_context.host}:#{_context.port} and whitelist is: #{@whitelist.inspect}"
+        if !@whitelist.includes?(_context.host)
+          warning "node was rejected as not in the whitelist: #{_context.host}:#{_context.port}"
           send_once(_context, M_TYPE_CHORD_JOIN_REJECTED, {reason: "node connections are disabled for this node: " + @whitelist_message})
           return
         end
@@ -170,16 +177,13 @@ module ::Axentro::Core::NodeComponents
         return
       end
 
-      if _context[:type] != @network_type
+      if _context.type != @network_type
         send(socket, M_TYPE_CHORD_JOIN_REJECTED, {reason: "network type mismatch. " +
-                                                          "your network: #{_context[:type]}, our network: #{@network_type}"})
+                                                          "your network: #{_context.type}, our network: #{@network_type}"})
         return
       end
 
-      @private_nodes << {
-        socket:  socket,
-        context: _context,
-      }
+      @private_nodes << Node.new(_context, socket)
       METRICS_NODES_COUNTER[kind: "private_node_joined"].inc
       METRICS_CONNECTED_GAUGE[kind: "private_nodes"].set @private_nodes.size
       send(socket, M_TYPE_CHORD_JOIN_PRIVATE_ACCEPTED, {context: context})
@@ -192,12 +196,9 @@ module ::Axentro::Core::NodeComponents
 
       debug "successfully joined the network"
 
-      @successor_list.push({
-        socket:  socket,
-        context: _context,
-      })
+      @successor_list.push(Node.new(_context, socket))
 
-      @predecessor = {socket: socket, context: _context}
+      @predecessor = Node.new(_context, socket)
 
       node.phase = SetupPhase::BLOCKCHAIN_SYNCING
       node.proceed_setup
@@ -231,39 +232,39 @@ module ::Axentro::Core::NodeComponents
       _context = _m_content.predecessor_context
 
       if predecessor = @predecessor
-        predecessor_node_id = NodeID.create_from(predecessor[:context][:id])
+        predecessor_node_id = NodeID.create_from(predecessor.context.id)
 
         if @node_id < predecessor_node_id &&
            (
-             @node_id > _context[:id] ||
-             predecessor_node_id < _context[:id]
+             @node_id > _context.id ||
+             predecessor_node_id < _context.id
            )
-          info "found new predecessor: #{_context[:host]}:#{_context[:port]}"
-          @predecessor = {socket: socket, context: _context}
+          info "found new predecessor: #{_context.host}:#{_context.port}"
+          @predecessor = Node.new(_context, socket)
           node.send_nodes_joined(all_node_contexts)
         elsif @node_id > predecessor_node_id &&
-              @node_id > _context[:id] &&
-              predecessor_node_id < _context[:id]
-          info "found new predecessor: #{_context[:host]}:#{_context[:port]}"
-          @predecessor = {socket: socket, context: _context}
+              @node_id > _context.id &&
+              predecessor_node_id < _context.id
+          info "found new predecessor: #{_context.host}:#{_context.port}"
+          @predecessor = Node.new(_context, socket)
           node.send_nodes_joined(all_node_contexts)
         end
       else
-        info "found new predecessor: #{_context[:host]}:#{_context[:port]}"
+        info "found new predecessor: #{_context.host}:#{_context.port}"
         node.send_nodes_joined(all_node_contexts)
-        @predecessor = {socket: socket, context: _context}
+        @predecessor = Node.new(_context, socket)
       end
 
       send_overlay(
         socket,
         M_TYPE_CHORD_STABILIZE_AS_PREDECESSOR,
         {
-          successor_context: @predecessor.not_nil![:context],
+          successor_context: @predecessor.not_nil!.context,
         }
       )
 
       if @successor_list.size == 0
-        connect_to_successor(node, @predecessor.not_nil![:context])
+        connect_to_successor(node, @predecessor.not_nil!.context)
       end
     end
 
@@ -274,18 +275,18 @@ module ::Axentro::Core::NodeComponents
 
       if @successor_list.size > 0
         successor = @successor_list[0]
-        successor_node_id = NodeID.create_from(successor[:context][:id])
+        successor_node_id = NodeID.create_from(successor.context.id)
 
         if @node_id > successor_node_id &&
            (
-             @node_id < _context[:id] ||
-             successor_node_id > _context[:id]
+             @node_id < _context.id ||
+             successor_node_id > _context.id
            )
           connect_to_successor(node, _context)
           node.send_nodes_joined(all_node_contexts)
         elsif @node_id < successor_node_id &&
-              @node_id < _context[:id] &&
-              successor_node_id > _context[:id]
+              @node_id < _context.id &&
+              successor_node_id > _context.id
           connect_to_successor(node, _context)
           node.send_nodes_joined(all_node_contexts)
         end
@@ -308,7 +309,7 @@ module ::Axentro::Core::NodeComponents
             if @successor_list.size > 0
               @successor_list.each_with_index do |successor, i|
                 table_line "successor (#{i})",
-                  "#{successor[:context][:host]}:#{successor[:context][:port]}"
+                  "#{successor.context.host}:#{successor.context.port}"
               end
             else
               table_line "successor", "Not found"
@@ -316,7 +317,7 @@ module ::Axentro::Core::NodeComponents
 
             if predecessor = @predecessor
               table_line "predecessor",
-                "#{predecessor[:context][:host]}:#{predecessor[:context][:port]}"
+                "#{predecessor.context.host}:#{predecessor.context.port}"
             else
               table_line "predecessor", "Not found"
             end
@@ -367,7 +368,7 @@ module ::Axentro::Core::NodeComponents
       node_list = @official_node.all_impl
 
       if @finger_table.size > 0 && !is_only_this_node
-        if (node_list & @finger_table.map { |n| n[:address] }).empty?
+        if (node_list & @finger_table.map { |n| n.address }).empty?
           warning "This node is #{red("NOT connected")} to an official network"
           if @exit_if_unofficial
             warning "This node is configured to terminate if not connected to an official network - terminating now"
@@ -380,7 +381,7 @@ module ::Axentro::Core::NodeComponents
     end
 
     private def is_only_this_node
-      @finger_table.size == 1 && @finger_table.map { |n| n[:address] }.first == @wallet_address
+      @finger_table.size == 1 && @finger_table.map { |n| n.address }.first == @wallet_address
     end
 
     def search_successor(node, _content : String)
@@ -392,37 +393,37 @@ module ::Axentro::Core::NodeComponents
     def search_successor(node, _context : NodeContext)
       if @successor_list.size > 0
         successor = @successor_list[0]
-        successor_node_id = NodeID.create_from(successor[:context][:id])
+        successor_node_id = NodeID.create_from(successor.context.id)
 
         if @node_id > successor_node_id &&
            (
-             @node_id < _context[:id] ||
-             successor_node_id > _context[:id]
+             @node_id < _context.id ||
+             successor_node_id > _context.id
            )
           send_once(
             _context,
             M_TYPE_CHORD_FOUND_SUCCESSOR,
             {
-              context: successor[:context],
+              context: successor.context,
             }
           )
 
           connect_to_successor(node, _context)
         elsif successor_node_id > @node_id &&
-              successor_node_id > _context[:id] &&
-              @node_id < _context[:id]
+              successor_node_id > _context.id &&
+              @node_id < _context.id
           send_once(
             _context,
             M_TYPE_CHORD_FOUND_SUCCESSOR,
             {
-              context: successor[:context],
+              context: successor.context,
             }
           )
 
           connect_to_successor(node, _context)
         else
           send_overlay(
-            successor[:socket],
+            successor.socket,
             M_TYPE_CHORD_SEARCH_SUCCESSOR,
             {
               context: _context,
@@ -460,28 +461,28 @@ module ::Axentro::Core::NodeComponents
     end
 
     def find_all_nodes : NamedTuple(private_nodes: Nodes, public_nodes: Set(NodeContext))
-      public_nodes = @finger_table.group_by { |ctx| [ctx[:host], ctx[:port]] }.flat_map(&.last)
-      public_nodes += @successor_list.map { |s| s[:context] }
+      public_nodes = @finger_table.group_by { |ctx| [ctx.host, ctx.port] }.flat_map(&.last)
+      public_nodes += @successor_list.map { |s| s.context }
       if predecessor = @predecessor
-        public_nodes << predecessor[:context]
+        public_nodes << predecessor.context
       end
       {
         private_nodes: @private_nodes,
-        public_nodes:  public_nodes.reject { |ctx| ctx[:id] == context[:id] }.to_set,
+        public_nodes:  public_nodes.reject { |ctx| ctx.id == context.id }.to_set,
       }
     end
 
     def connect_to_successor(node, _context : NodeContext)
-      if _context[:is_private]
+      if _context.is_private
         error "the connecting node is private"
         error "please specify a public node as connecting node"
         error "exit with -1"
         exit -1
       end
 
-      info "found new successor: #{_context[:host]}:#{_context[:port]}"
+      info "found new successor: #{_context.host}:#{_context.port}"
 
-      socket = HTTP::WebSocket.new(_context[:host], "/peer?node", _context[:port], @use_ssl)
+      socket = HTTP::WebSocket.new(_context.host, "/peer?node", _context.port, @use_ssl)
 
       node.peer(socket)
 
@@ -492,10 +493,10 @@ module ::Axentro::Core::NodeComponents
       end
 
       if @successor_list.size > 0
-        @successor_list[0][:socket].close
-        @successor_list[0] = {socket: socket, context: _context}
+        @successor_list[0].socket.close
+        @successor_list[0] = Node.new(_context, socket)
       else
-        @successor_list.push({socket: socket, context: _context})
+        @successor_list.push(Node.new(_context, socket))
       end
 
       METRICS_NODES_COUNTER[kind: "public_node_joined"].inc
@@ -508,7 +509,7 @@ module ::Axentro::Core::NodeComponents
       if @successor_list.size > SUCCESSOR_LIST_SIZE
         removed_successors = @successor_list[SUCCESSOR_LIST_SIZE..-1]
         removed_successors.each do |successor|
-          successor[:socket].close
+          successor.socket.close
         end
 
         @successor_list = @successor_list[0..SUCCESSOR_LIST_SIZE - 1]
@@ -519,7 +520,7 @@ module ::Axentro::Core::NodeComponents
 
         unless @is_private
           send_overlay(
-            successor[:socket],
+            successor.socket,
             M_TYPE_CHORD_STABILIZE_AS_SUCCESSOR,
             {
               predecessor_context: context,
@@ -530,7 +531,7 @@ module ::Axentro::Core::NodeComponents
     end
 
     def send_once(_context : NodeContext, t : Int32, content)
-      send_once(_context[:host], _context[:port], t, content)
+      send_once(_context.host, _context.port, t, content)
     end
 
     def send_once(connect_host : String, connect_port : Int32, t : Int32, content)
@@ -553,19 +554,19 @@ module ::Axentro::Core::NodeComponents
 
     def ping_all
       @successor_list.each do |successor|
-        ping(successor[:socket])
+        ping(successor.socket)
       end
 
       if predecessor = @predecessor
-        ping(predecessor[:socket])
+        ping(predecessor.socket)
       end
     end
 
     def stabilise_finger_table
       sockets = [] of HTTP::WebSocket
       @finger_table.each do |ctx|
-        debug "stabilize finger table: #{ctx[:host]}:#{ctx[:port]}}"
-        socket = HTTP::WebSocket.new(ctx[:host], "/peer?node", ctx[:port], ctx[:ssl])
+        debug "stabilize finger table: #{ctx.host}:#{ctx.port}}"
+        socket = HTTP::WebSocket.new(ctx.host, "/peer?node", ctx.port, ctx.ssl)
         sockets << socket
         socket.ping
       rescue i : IO::Error
@@ -584,7 +585,7 @@ module ::Axentro::Core::NodeComponents
 
     def clean_connection(socket)
       @successor_list.each do |successor|
-        if successor[:socket] == socket
+        if successor.socket == socket
           current_successors = @successor_list.size
 
           @successor_list.delete(successor)
@@ -597,7 +598,7 @@ module ::Axentro::Core::NodeComponents
       end
 
       if predecessor = @predecessor
-        if predecessor[:socket] == socket
+        if predecessor.socket == socket
           debug "predecessor has been removed"
 
           @predecessor = nil
@@ -607,7 +608,7 @@ module ::Axentro::Core::NodeComponents
       METRICS_CONNECTED_GAUGE[kind: "public_nodes"].set (@successor_list.size + (@predecessor.nil? ? 0 : 1))
 
       @private_nodes.each do |private_node|
-        if private_node[:socket] == socket
+        if private_node.socket == socket
           @private_nodes.delete(private_node)
           METRICS_NODES_COUNTER[kind: "private_node_removed"].inc
         end
@@ -616,15 +617,15 @@ module ::Axentro::Core::NodeComponents
     end
 
     def context
-      {
-        id:         @node_id.id,
-        host:       @public_host || "",
-        port:       @public_port || -1,
-        ssl:        @ssl || false,
-        type:       @network_type,
-        is_private: @is_private,
-        address:    @wallet_address,
-      }
+      NodeContext.new(
+        @node_id.id,
+        @public_host || "",
+        @public_port || -1,
+        @ssl || false,
+        @network_type,
+        @is_private,
+        @wallet_address
+      )
     end
 
     def connected_nodes
@@ -641,7 +642,7 @@ module ::Axentro::Core::NodeComponents
     end
 
     def extract_context(node : Node) : NodeContext
-      node[:context]
+      node.context
     end
 
     def extract_context(node : Nil) : Nil
@@ -649,10 +650,10 @@ module ::Axentro::Core::NodeComponents
     end
 
     def find_node(id : String) : NodeContext
-      return context if context[:id] == id
+      return context if context.id == id
 
       (@finger_table.to_a + @private_nodes.map { |n| extract_context(n) }).each do |ctx|
-        return ctx if ctx[:id] == id
+        return ctx if ctx.id == id
       end
 
       raise "the node #{id} not found. (only searching nodes which are currently connected.)"
@@ -661,7 +662,7 @@ module ::Axentro::Core::NodeComponents
     def find_node_by_address(address : String) : Array(NodeContext)
       list = @finger_table.to_a + @private_nodes.map { |n| extract_context(n) }
       list = list << context
-      result = list.select { |ctx| ctx[:address] == address }
+      result = list.select { |ctx| ctx.address == address }
 
       raise "the node with address #{address} not found. (only searching nodes which are currently connected.)" if result.empty?
       result.uniq
@@ -676,10 +677,10 @@ module ::Axentro::Core::NodeComponents
 
     private def online_official_nodes
       list = @finger_table << context
-      list = list.reject(&.[:is_private]).select { |ctx| @official_node.all_impl.includes?(ctx[:address]) }
+      list = list.reject(&.is_private).select { |ctx| @official_node.all_impl.includes?(ctx.address) }
       list.map do |ctx|
-        transport = ctx[:ssl] ? "https://" : "http://"
-        {id: ctx[:id], address: ctx[:address], url: "#{transport}#{ctx[:host]}:#{ctx[:port]}"}
+        transport = ctx.ssl ? "https://" : "http://"
+        {id: ctx.id, address: ctx.address, url: "#{transport}#{ctx.host}:#{ctx.port}"}
       end
     end
 
