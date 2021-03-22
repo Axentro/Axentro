@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install shards
-        run: shards install
+        run: shards install --ignore-crystal-version
 
       - name: Run specs
         run: crystal spec --error-on-warnings --error-trace
@@ -35,7 +35,7 @@ jobs:
     name: Check format
     runs-on: macos-latest
     steps:
-      - name: Install Crystal
+      - name: Install Crystal --ignore-crystal-version
         run: brew install crystal
 
       - name: Checkout source code
@@ -55,7 +55,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install shards
-        run: shards install
+        run: shards install --ignore-crystal-version
 
       - name: Run ameba
         run: bin/ameba
@@ -72,7 +72,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install shards
-        run: shards install
+        run: shards install --ignore-crystal-version
 
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v3.x
