@@ -265,7 +265,7 @@ describe Blockchain do
 
         # add a transaction to embedded that will be rejected (not enough funds) and coinbase amount should not add the rejected transactions fee
         aligned = blockchain.align_slow_transactions(coinbase_transaction, 1, 8, block_factory.blockchain.embedded_slow_transactions + [transaction_factory.make_send(90000000000000_i64)])
-        aligned.first.recipients.map(&.amount).sum.should eq(1200007495)
+        aligned.first.recipients.sum(&.amount).should eq(1200007495)
       end
     end
   end

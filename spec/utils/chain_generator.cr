@@ -121,7 +121,7 @@ module ::Units::Utils::ChainGenerator
     end
 
     def sub_chain
-      @blockchain.chain.reject! { |b| b.prev_hash == "genesis" }
+      @blockchain.chain.reject!(&.prev_hash.==("genesis"))
     end
 
     def remove_difficulty

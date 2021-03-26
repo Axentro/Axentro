@@ -23,7 +23,7 @@ module ::Axentro::Core::Consensus
     buffer = Argon2::Engine.raw_hash_buffer(
       Argon2::Engine::EngineType::ARGON2ID, block_hash, nonce_slice.hexstring, 1, 16, 512)
 
-    bits = buffer.flat_map { |b| (0..7).map { |n| b.bit(n) }.reverse }
+    bits = buffer.flat_map { |b| (0..7).map { |n| b.bit(n) }.reverse! }
     leading_bits = bits[0, difficulty].join("")
     leading_bits.split("1")[0].size
   end

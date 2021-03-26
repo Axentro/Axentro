@@ -40,7 +40,7 @@ module ::Axentro::Core::DApps::BuildIn
       processed_transactions = transactions.select(&.is_coinbase?)
 
       body_transactions = transactions.reject(&.is_coinbase?)
-      token_map = database.token_info(body_transactions.map(&.token).reject { |t| t == TOKEN_DEFAULT }.uniq)
+      token_map = database.token_info(body_transactions.map(&.token).reject(&.==(TOKEN_DEFAULT)).uniq!)
 
       body_transactions.each do |transaction|
         token = transaction.token

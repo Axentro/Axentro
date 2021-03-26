@@ -73,7 +73,7 @@ module ::Axentro::Core::DApps::BuildIn
       domain_name = transaction.message
       price = sender.amount
 
-      existing_domains = database.get_domain_map_for_address(sender.address).keys.uniq
+      existing_domains = database.get_domain_map_for_address(sender.address).keys.uniq!
       raise "You may only have 1 human readable address per wallet address. You already own: #{existing_domains.join(",")}" if existing_domains.size >= 1
 
       valid_domain?(domain_name)

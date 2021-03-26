@@ -74,7 +74,7 @@ module ::Axentro::Core::NodeComponents
         time_history = history.map(&.timestamp)
         result = time_history.last(10).in_groups_of(2, 0_i64).map { |group|
           (group.first.not_nil! - group.last.not_nil!).abs
-        }.count { |deviance| deviance < _deviance }
+        }.count(&.<(_deviance))
 
         last_action = time_history.max
         miner_mortalities.delete(ip) if (now - last_action > _ban_duration)
@@ -103,7 +103,7 @@ module ::Axentro::Core::NodeComponents
           warning "no nonces found for block within 1 min 30 secs - attempting to ensure 2 min block time"
 
           @miners.each do |miner|
-            if connected_mid = @miner_connected.find { |mc| mc.mid == miner.mid }
+            if connected_mid = @miner_connected.find(&.mid.==(miner.mid))
               connected_duration = __timestamp - connected_mid.at
               if connected_duration >= 120_000
                 METRICS_MINERS_COUNTER[kind: "decrease_difficulty_ensure_block"].inc
@@ -203,7 +203,7 @@ module ::Axentro::Core::NodeComponents
       mined_difficulty = mined_nonce.difficulty
 
       if miner = find?(socket)
-        if connected_mid = @miner_connected.find { |mc| mc.mid == miner.mid }
+        if connected_mid = @miner_connected.find(&.mid.==(miner.mid))
           connected_duration = __timestamp - connected_mid.at
           if connected_duration < 120_000 && @miners.size > 1
             message = "(#{miner.mid}) rejecting nonce as miner was only connected for #{connected_duration / 1000} secs but mininum is 120 secs for reward"
@@ -325,7 +325,7 @@ module ::Axentro::Core::NodeComponents
     end
 
     def find?(socket : HTTP::WebSocket) : Miner?
-      @miners.find { |m| m.socket == socket }
+      @miners.find(&.socket.==(socket))
     end
 
     def reject_miner_connection(socket : HTTP::WebSocket, reason : String)
@@ -359,7 +359,7 @@ module ::Axentro::Core::NodeComponents
     def clean_connection(socket)
       current_size = @miners.size
       message = ""
-      if mnr = @miners.find { |miner| miner.socket == socket }
+      if mnr = @miners.find(&.socket.==(socket))
         message = "(#{mnr.ip}:#{mnr.port}) : #{mnr.address} #{light_green(mnr.name)} (#{mnr.mid})"
 
         mortalities = @miner_mortality.get(mnr.ip) || [] of MinerMortality
@@ -367,8 +367,8 @@ module ::Axentro::Core::NodeComponents
         @miner_mortality.set(mnr.ip, mortalities, Time.utc + 10.minutes)
 
         mnr.socket.close
-        @miners.reject! { |m| m.mid == mnr.mid }
-        @miner_connected.reject! { |mc| mc.mid == mnr.mid }
+        @miners.reject!(&.mid.==(mnr.mid))
+        @miner_connected.reject!(&.mid.==(mnr.mid))
         @nonce_spacing.delete(mnr.mid)
         METRICS_MINERS_COUNTER[kind: "removed"].inc
       end

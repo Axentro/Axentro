@@ -81,7 +81,7 @@ module ::Axentro::Core
     end
 
     def delete(transaction : Transaction)
-      @pool.reject! { |t| t.id == transaction.id }
+      @pool.reject!(&.id.==(transaction.id))
       @db.delete(transaction)
     end
 
@@ -136,7 +136,7 @@ module ::Axentro::Core
     end
 
     def find(transaction : Transaction) : Transaction?
-      return nil unless found_transaction = @pool.find { |t| t == transaction }
+      return nil unless found_transaction = @pool.find(&.==(transaction))
 
       found_transaction.prev_hash = transaction.prev_hash
       found_transaction

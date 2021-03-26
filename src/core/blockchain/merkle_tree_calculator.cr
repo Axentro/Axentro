@@ -15,12 +15,12 @@ module ::Axentro::Core
     def initialize(@hash_version : HashVersion); end
 
     def calculate_merkle_tree_root(transactions : Array(Transaction)) : String
-      current_hashes = transactions.map { |tx| tx.to_hash }
+      current_hashes = transactions.map(&.to_hash)
       _calculate_merkle_tree_root(current_hashes)
     end
 
     def calculate_merkle_tree_root(blocks : Array(Block)) : String
-      current_hashes = blocks.map { |block| block.to_hash }
+      current_hashes = blocks.map(&.to_hash)
       _calculate_merkle_tree_root(current_hashes)
     end
 

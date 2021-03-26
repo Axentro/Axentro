@@ -134,7 +134,7 @@ module ::Axentro::Core
     end
 
     def replace_block(block : Block)
-      target_index = chain.index { |b| b.index == block.index }
+      target_index = chain.index(&.index.==(block.index))
       if target_index
         # validate during replace block
         @database.delete_block(block.index)
@@ -260,7 +260,7 @@ module ::Axentro::Core
     end
 
     def available_actions : Array(String)
-      OfficialNode.apply_exclusions(@dapps).map { |dapp| dapp.transaction_actions }.flatten
+      OfficialNode.apply_exclusions(@dapps).flat_map(&.transaction_actions)
     end
 
     def pending_miner_nonces : MinerNonces
@@ -347,7 +347,7 @@ module ::Axentro::Core
       # if record nonces is true then write nonces to the db
       if @record_nonces
         miners_nonces = MinerNoncePool.embedded
-        miners_nonces.group_by { |mn| mn.address }.map do |_, nonces|
+        miners_nonces.group_by(&.address).map do |_, nonces|
           nonces.each do |nonce|
             database.insert_nonce(Nonce.new(nonce.address, nonce.value, latest_hash, the_next_index, nonce.difficulty, nonce.timestamp))
           end
@@ -393,7 +393,7 @@ module ::Axentro::Core
                              end
 
       # 3. create all the prev_hashes for the transactions
-      sorted_aligned_transactions = [coinbase_transaction] + aligned_transactions.reject(&.is_coinbase?).sort_by(&.timestamp)
+      sorted_aligned_transactions = [coinbase_transaction] + aligned_transactions.reject(&.is_coinbase?).sort_by!(&.timestamp)
       sorted_aligned_transactions.map_with_index do |transaction, index|
         transaction.add_prev_hash((index == 0 ? "0" : sorted_aligned_transactions[index - 1].to_hash))
       end

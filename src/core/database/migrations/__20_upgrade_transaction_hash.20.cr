@@ -21,7 +21,7 @@ class UpgradeTransactionHash < MG::Base
 
   def after_up(conn : DB::Connection)
     Blocks.retrieve_blocks(conn) do |block|
-      sorted_aligned_transactions = block.transactions.select(&.is_coinbase?) + block.transactions.reject(&.is_coinbase?).sort_by(&.timestamp)
+      sorted_aligned_transactions = block.transactions.select(&.is_coinbase?) + block.transactions.reject(&.is_coinbase?).sort_by!(&.timestamp)
       sorted_aligned_transactions.map_with_index do |transaction, index|
         transaction.add_prev_hash((index == 0 ? "0" : sorted_aligned_transactions[index - 1].to_hash))
         if transaction.prev_hash != 0

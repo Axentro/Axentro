@@ -159,17 +159,17 @@ module ::Axentro::Interface::Axe
     end
 
     private def recipients(recipients, action)
-      r = recipients.map { |x| x["address"].as_s.strip }
+      r = recipients.map(&.["address"].as_s.strip)
       r.empty? ? "" : "#{r.first} #{for_action(action, r.size)} "
     end
 
     private def to(senders)
-      r = senders.map { |x| x["address"].as_s.strip }
+      r = senders.map(&.["address"].as_s.strip)
       r.empty? ? "" : "#{r.first} #{if_lots(r.size)} "
     end
 
     private def amount(recipients)
-      scale_decimal(recipients.map { |r| r["amount"].as_i64 }.sum)
+      scale_decimal(recipients.sum(&.["amount"].as_i64))
     end
 
     private def if_lots(size)

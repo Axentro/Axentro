@@ -296,7 +296,7 @@ describe RESTController do
         transaction = transaction_factory.make_send(100_i64)
         block_factory.add_slow_block([transaction]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/#{address}/transactions"), {address: address})) do |result|
-          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map(&.["transaction"]).to_json
           Array(Transaction).from_json(data)
         end
       end
@@ -308,9 +308,9 @@ describe RESTController do
         block_factory.add_slow_block([transaction]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/#{address}/transactions?actions=send"), {address: address, actions: "send"})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map(&.["transaction"]).to_json
           transactions = Array(Transaction).from_json(data)
-          transactions.map { |txn| txn.action }.uniq.should eq(["send"])
+          transactions.map(&.action).uniq!.should eq(["send"])
         end
       end
     end
@@ -341,7 +341,7 @@ describe RESTController do
         block_factory.add_slow_blocks(100)
         exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/#{address}/transactions"), {address: address})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map(&.["transaction"]).to_json
           transactions = Array(Transaction).from_json(data)
           transactions.size.should eq(20)
         end
@@ -353,7 +353,7 @@ describe RESTController do
         block_factory.add_slow_blocks(200)
         exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/#{address}/transactions?per_page=50&page=2"), {address: address, page_size: 50, page: 2})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map(&.["transaction"]).to_json
           transactions = Array(Transaction).from_json(data)
           transactions.size.should eq(50)
         end
@@ -417,7 +417,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction, transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_domain_transactions(context("/api/v1/domain/#{domain}/transactions"), {domain: domain})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map(&.["transaction"]).to_json
           Array(Transaction).from_json(data)
         end
       end
@@ -429,9 +429,9 @@ describe RESTController do
         block_factory.add_slow_block([transaction, transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_domain_transactions(context("/api/v1/domain/#{domain}/transactions?actions=send"), {domain: domain, actions: "send"})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map(&.["transaction"]).to_json
           transactions = Array(Transaction).from_json(data)
-          transactions.map { |txn| txn.action }.uniq.should eq(["send"])
+          transactions.map(&.action).uniq!.should eq(["send"])
         end
       end
     end
@@ -452,7 +452,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(100)
         exec_rest_api(block_factory.rest.__v1_domain_transactions(context("/api/v1/domain/#{domain}/transactions"), {domain: domain})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map(&.["transaction"]).to_json
           transactions = Array(Transaction).from_json(data)
           transactions.size.should eq(20)
         end
@@ -464,7 +464,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(200)
         exec_rest_api(block_factory.rest.__v1_domain_transactions(context("/api/v1/domain/#{domain}/transactions?per_page=50&page=2"), {domain: domain, page_size: 50, page: 1})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map(&.["transaction"]).to_json
           transactions = Array(Transaction).from_json(data)
           transactions.size.should eq(50)
         end

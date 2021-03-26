@@ -221,7 +221,7 @@ module ::Axentro::Core::Data::Blocks
         else
           # validate using checkpoints
           next if block.checkpoint == ""
-          validated_block = BlockValidator.checkpoint_validate(block, blocks.reject { |b| b.index == block.index }.last(amount_to_take))
+          validated_block = BlockValidator.checkpoint_validate(block, blocks.reject(&.index.==(block.index)).last(amount_to_take))
           blocks = [blocks.last]
           raise Axentro::Common::AxentroException.new(validated_block.reason) unless validated_block.valid
           progress("block ##{block.index} was validated", block.index, max)
@@ -316,7 +316,7 @@ module ::Axentro::Core::Data::Blocks
   end
 
   def get_blocks_by_ids(ids : Array(Int64)) : Blockchain::Chain
-    index_list = ids.map(&.to_s).join(",")
+    index_list = ids.join(&.to_s.+(","))
     get_blocks_via_query("select * from blocks where idx in (#{index_list})")
   end
 
@@ -397,7 +397,7 @@ module ::Axentro::Core::Data::Blocks
   def delete_blocks_of_kind(from : Int64, kind : BlockKind)
     blocks = get_block_ids_from(from, kind)
     if blocks.size > 0
-      block_ids = blocks.map { |b| "'#{b}'" }.uniq.join(",")
+      block_ids = blocks.map { |b| "'#{b}'" }.uniq!.join(",")
       @db.exec "delete from blocks where idx in (#{block_ids})"
       @db.exec "delete from transactions where block_id in (#{block_ids})"
       @db.exec "delete from senders where block_id in (#{block_ids})"

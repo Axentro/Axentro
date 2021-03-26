@@ -43,10 +43,10 @@ module ::Axentro::Interface
         exit exit_code
       end
       available_sub_actions =
-        sub_actions.map { |a| " - #{light_green("%-20s" % a[:name])} | #{"%-40s" % a[:desc]}" }.join("\n")
+        sub_actions.join("\n") { |a| " - #{light_green("%-20s" % a[:name])} | #{"%-40s" % a[:desc]}" }
       available_sub_actions = "nothing" if available_sub_actions == ""
 
-      message_size = message.split("\n").max_by { |m| m.size }.size
+      message_size = message.split("\n").max_by(&.size).size
       messages = message.split("\n").map { |m| white_bg(black(" %-#{message_size}s " % m)) }
 
       puts "\n" +
@@ -95,7 +95,7 @@ module ::Axentro::Interface
 
     def command_line
       return @axe_action[:name] if @parents.size == 0
-      @parents.map(&.[:name]).join(" ") + " " + @axe_action[:name]
+      @parents.join(" ", &.[:name]) + " " + @axe_action[:name]
     end
 
     def next_parents : Array(AxeAction)

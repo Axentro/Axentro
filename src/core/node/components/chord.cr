@@ -98,7 +98,7 @@ module ::Axentro::Core::NodeComponents
     end
 
     def all_node_contexts
-      contexts = Set.new(@successor_list.map { |s| s.context })
+      contexts = Set.new(@successor_list.map(&.context))
       if predecessor = @predecessor
         contexts.add(predecessor.context)
       end
@@ -110,7 +110,7 @@ module ::Axentro::Core::NodeComponents
       joined_nodes.each { |n| @finger_table.push(n) unless n.is_private }
 
       # remove duplicates by id and then by newest host/port
-      @finger_table = @finger_table.uniq { |n| n.id }.group_by { |n| "#{n.host}_#{n.port}" }.flat_map do |_, group|
+      @finger_table = @finger_table.uniq(&.id).group_by { |n| "#{n.host}_#{n.port}" }.flat_map do |_, group|
         group.sort_by(&.joined_at).first
       end
 
@@ -397,7 +397,7 @@ module ::Axentro::Core::NodeComponents
       node_list = @official_node.all_impl
 
       if @finger_table.size > 0 && !is_only_this_node
-        if (node_list & @finger_table.map { |n| n.address }).empty?
+        if (node_list & @finger_table.map(&.address)).empty?
           warning "This node is #{red("NOT connected")} to an official network"
           if @exit_if_unofficial
             warning "This node is configured to terminate if not connected to an official network - terminating now"
@@ -410,7 +410,7 @@ module ::Axentro::Core::NodeComponents
     end
 
     private def is_only_this_node
-      @finger_table.size == 1 && @finger_table.map { |n| n.address }.first == @wallet_address
+      @finger_table.size == 1 && @finger_table.map(&.address).first == @wallet_address
     end
 
     def search_successor(node, _content : String)
@@ -491,13 +491,13 @@ module ::Axentro::Core::NodeComponents
 
     def find_all_nodes : NamedTuple(private_nodes: Nodes, public_nodes: Set(NodeContext))
       public_nodes = @finger_table.group_by { |ctx| [ctx.host, ctx.port] }.flat_map(&.last)
-      public_nodes += @successor_list.map { |s| s.context }
+      public_nodes += @successor_list.map(&.context)
       if predecessor = @predecessor
         public_nodes << predecessor.context
       end
       {
         private_nodes: @private_nodes,
-        public_nodes:  public_nodes.reject { |ctx| ctx.id == context.id }.to_set,
+        public_nodes:  public_nodes.reject(&.id.==(context.id)).to_set,
       }
     end
 
@@ -601,7 +601,7 @@ module ::Axentro::Core::NodeComponents
       rescue i : IO::Error
         @finger_table.delete(ctx)
       end
-      sockets.each { |s| s.close }
+      sockets.each(&.close)
     rescue i : IO::Error
       stabilise_finger_table
     end
@@ -679,7 +679,7 @@ module ::Axentro::Core::NodeComponents
     def find_node_by_address(address : String) : Array(NodeContext)
       list = @finger_table.to_a + @private_nodes.map { |n| extract_context(n) }
       list = list << context
-      result = list.select { |ctx| ctx.address == address }
+      result = list.select(&.address.==(address))
 
       raise "the node with address #{address} not found. (only searching nodes which are currently connected.)" if result.empty?
       result.uniq

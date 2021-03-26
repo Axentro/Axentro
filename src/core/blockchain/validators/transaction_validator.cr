@@ -156,7 +156,7 @@ module ::Axentro::Core::TransactionValidator
 
       def rule_sender_mismatches(transactions : Array(Axentro::Core::Transaction)) : ValidatedTransactions
         vt = ValidatedTransactions.empty
-        transactions.reject { |t| t.is_coinbase? }.each do |transaction|
+        transactions.reject(&.is_coinbase?).each do |transaction|
           vt << rule_sender_mismatch(transaction)
         end
         vt
@@ -233,7 +233,7 @@ class ValidatedTransactions
 
     # if any of the new transactions are common validated and already stored in passed - updated the stored ones
     # and set them as common validated
-    other.passed.select { |t| t.is_common_validated? }.each do |transaction|
+    other.passed.select(&.is_common_validated?).each do |transaction|
       passed.each do |validated_transaction|
         validated_transaction.set_common_validated if transaction.is_common_validated?
       end

@@ -42,7 +42,7 @@ describe Blockchain do
     genesis_block = blockchain.chain.first
     genesis_block.prev_hash.should eq("genesis")
     expected_recipients = [{address: "VDAwZTdkZGNjYjg1NDA1ZjdhYzk1M2ExMDAzNmY5MjUyYjI0MmMwNGJjZWY4NjA3", amount: 500000000000}, {address: "VDBjY2NmOGMyZmQ0MDc4NTIyNDBmYzNmOWQ3M2NlMzljODExOTBjYTQ0ZjMxMGFl", amount: 900000000000}]
-    genesis_block.transactions.flat_map(&.recipients).sort_by(&.amount).each_with_index do |r, i|
+    genesis_block.transactions.flat_map(&.recipients).sort_by!(&.amount).each_with_index do |r, i|
       r.address.should eq(expected_recipients[i][:address])
       r.amount.should eq(expected_recipients[i][:amount])
     end

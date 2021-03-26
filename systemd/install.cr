@@ -52,7 +52,7 @@ class SystemInstall
     conf = File.read_lines(File.expand_path("./systemd/axen.service")).join("\n")
     conf = conf.gsub("<environment>", env)
     file_name = "axen-#{env}.service"
-    File.open(file_name, "w") { |f| f.puts conf }
+    File.open(file_name, "w", &.puts(conf))
     puts `sudo mv #{file_name} /etc/systemd/system/axen.service`
     puts "installing rsyslog"
     puts `sudo cp #{File.expand_path("./systemd/49-axentro.conf")} /etc/rsyslog.d/`

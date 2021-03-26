@@ -144,7 +144,7 @@ module ::E2E
     end
 
     def latest_block_index : Int32
-      block_sizes.min_by { |port_size| port_size[:size] }[:size] - 1
+      block_sizes.min_by(&.[:size])[:size] - 1
     end
 
     def latest_confirmed_block_index : Int32

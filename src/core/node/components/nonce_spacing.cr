@@ -47,7 +47,7 @@ module ::Axentro::Core::NodeComponents
     def leading_miner(miners : Array(Miner)) : Miner?
       grouped = miners.group_by(&.difficulty)
       return unless grouped.keys.size > 0
-      grouped[grouped.keys.sort.last].first
+      grouped[grouped.keys.sort!.last].first
     end
 
     def compute(miner : Miner, in_check : Bool = false) : NonceSpacingResult?

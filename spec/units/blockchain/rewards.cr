@@ -157,7 +157,7 @@ def assert_reward_distribution(nonces1, nonces2, expected_percent_1, expected_pe
 end
 
 def get_recipient_for(recipients, address)
-  recipients.find { |r| r.address == address }.not_nil!
+  recipients.find(&.address.==(address)).not_nil!
 end
 
 def as_percentage(percent_of, total = TOTAL_BLOCK_REWARD)

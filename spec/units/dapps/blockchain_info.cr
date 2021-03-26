@@ -173,7 +173,7 @@ describe BlockchainInfo do
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
             target_index = 2
-            unless expected_block = block_factory.chain.find { |block| block.index == target_index }
+            unless expected_block = block_factory.chain.find(&.index.==(target_index))
               fail "could not find block: #{target_index} in chain"
             end
 
@@ -208,7 +208,7 @@ describe BlockchainInfo do
           json = JSON.parse(payload)
 
           with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-            expected_block = block_factory.chain.find { |blk| blk.transactions.map { |txn| txn.id }.includes?(transaction_id) }.to_json
+            expected_block = block_factory.chain.find { |blk| blk.transactions.map(&.id).includes?(transaction_id) }.to_json
 
             json_result = JSON.parse(result)
             json_result["block"].to_json.should eq(expected_block)

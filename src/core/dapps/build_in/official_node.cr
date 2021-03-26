@@ -42,7 +42,7 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def all_impl : Array(String)
-      database.get_official_nodes.values.flatten.uniq
+      database.get_official_nodes.values.flatten.uniq!
     end
 
     def all_slow_impl : Array(String)

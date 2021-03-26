@@ -29,7 +29,7 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def self.address_from_senders(senders : Array(Sender))
-      sender_list = senders.map { |s| s.address }
+      sender_list = senders.map(&.address)
       sender_list.empty? ? "" : sender_list.first
     end
 

@@ -20,7 +20,7 @@ module ::Axentro::Core::Data::Transactions
 
   def internal_actions_list
     # exclude burn_token as this is used to calculate recipients sum
-    INTERNAL_ACTIONS.reject { |a| a == "burn_token" }.map { |action| "'#{action}'" }.uniq.join(",")
+    INTERNAL_ACTIONS.reject(&.==("burn_token")).map { |action| "'#{action}'" }.uniq!.join(",")
   end
 
   # ------- Definition -------
@@ -70,7 +70,7 @@ module ::Axentro::Core::Data::Transactions
     limit = per_page
     offset = Math.max((limit * page) - limit, 0)
 
-    actions = actions.map { |a| "'#{a}'" }.join(",")
+    actions = actions.join(",") { |a| "'#{a}'" }
     transactions_by_query(
       "select * from transactions " \
       "where block_id = ? " +
@@ -84,7 +84,7 @@ module ::Axentro::Core::Data::Transactions
     limit = per_page
     offset = Math.max((limit * page) - limit, 0)
 
-    actions = actions.map { |a| "'#{a}'" }.join(",")
+    actions = actions.join(",") { |a| "'#{a}'" }
     transactions_by_query(
       "select * from transactions " +
       (actions.empty? ? "" : "where action in (#{actions}) ") +
@@ -96,7 +96,7 @@ module ::Axentro::Core::Data::Transactions
   def get_paginated_transactions_for_address(address : String, page : Int32, per_page : Int32, direction : String, sort_field : String, actions : Array(String))
     limit = per_page
     offset = Math.max((limit * page) - limit, 0)
-    actions = actions.map { |a| "'#{a}'" }.join(",")
+    actions = actions.join(",") { |a| "'#{a}'" }
 
     transactions_by_query(
       "select * from transactions where id in " \
@@ -195,7 +195,7 @@ module ::Axentro::Core::Data::Transactions
         domain_names << rows.read(String)
       end
     end
-    domain_names.map { |n| get_domain_map_for(n)[n]? }.compact
+    domain_names.compact_map { |n| get_domain_map_for(n)[n]? }
   end
 
   private def status(action) : Status
@@ -228,9 +228,9 @@ module ::Axentro::Core::Data::Transactions
       unique_tokens = (recipient_sum + sender_sum + burned_sum).map(&.token).push("AXNT").uniq
 
       unique_tokens.map do |token|
-        recipient = recipient_sum.select { |r| r.token == token }.map(&.amount).sum
-        sender = sender_sum.select { |s| s.token == token }.map(&.amount).sum
-        burned = burned_sum.select { |b| b.token == token }.map(&.amount).sum
+        recipient = recipient_sum.select(&.token.==(token)).sum(&.amount)
+        sender = sender_sum.select(&.token.==(token)).sum(&.amount)
+        burned = burned_sum.select(&.token.==(token)).sum(&.amount)
         fee = fee_sum_per_address[address]
 
         if token == "AXNT"
@@ -252,9 +252,9 @@ module ::Axentro::Core::Data::Transactions
     unique_tokens = (recipient_sum + sender_sum + burned_sum).map(&.token).push("AXNT").uniq
     fee = get_fee_sum(address)
     unique_tokens.map do |token|
-      recipient = recipient_sum.select { |r| r.token == token }.map(&.amount).sum
-      sender = sender_sum.select { |s| s.token == token }.map(&.amount).sum
-      burned = burned_sum.select { |b| b.token == token }.map(&.amount).sum
+      recipient = recipient_sum.select(&.token.==(token)).sum(&.amount)
+      sender = sender_sum.select(&.token.==(token)).sum(&.amount)
+      burned = burned_sum.select(&.token.==(token)).sum(&.amount)
 
       if token == "AXNT"
         sender = sender + fee
@@ -303,7 +303,7 @@ module ::Axentro::Core::Data::Transactions
   private def get_recipient_sum_per_address(addresses : Array(String)) : Hash(String, Array(TokenQuantity))
     amounts_per_address : Hash(String, Array(TokenQuantity)) = {} of String => Array(TokenQuantity)
     addresses.uniq.each { |a| amounts_per_address[a] = [] of TokenQuantity }
-    address_list = addresses.map { |a| "'#{a}'" }.uniq.join(",")
+    address_list = addresses.map { |a| "'#{a}'" }.uniq!.join(",")
     @db.query(
       "select r.address, t.token, sum(r.amount) as 'rec' from transactions t " \
       "join recipients r on r.transaction_id = t.id " \
@@ -343,7 +343,7 @@ module ::Axentro::Core::Data::Transactions
   private def get_sender_sum_per_address(addresses : Array(String)) : Hash(String, Array(TokenQuantity))
     amounts_per_address : Hash(String, Array(TokenQuantity)) = {} of String => Array(TokenQuantity)
     addresses.uniq.each { |a| amounts_per_address[a] = [] of TokenQuantity }
-    address_list = addresses.map { |a| "'#{a}'" }.uniq.join(",")
+    address_list = addresses.map { |a| "'#{a}'" }.uniq!.join(",")
     @db.query(
       "select s.address, t.token, sum(s.amount) as 'send' from transactions t " \
       "join senders s on s.transaction_id = t.id " \
@@ -378,7 +378,7 @@ module ::Axentro::Core::Data::Transactions
   private def get_fee_sum_per_address(addresses : Array(String)) : Hash(String, Int64)
     amounts_per_address : Hash(String, Int64) = {} of String => Int64
     addresses.uniq.each { |a| amounts_per_address[a] = 0_i64 }
-    address_list = addresses.map { |a| "'#{a}'" }.uniq.join(",")
+    address_list = addresses.map { |a| "'#{a}'" }.uniq!.join(",")
     @db.query(
       "select address, sum(fee) as 'fee' " \
       "from senders " \
@@ -416,7 +416,7 @@ module ::Axentro::Core::Data::Transactions
   private def get_burned_token_sum_per_address(addresses : Array(String)) : Hash(String, Array(TokenQuantity))
     amounts_per_address : Hash(String, Array(TokenQuantity)) = {} of String => Array(TokenQuantity)
     addresses.uniq.each { |a| amounts_per_address[a] = [] of TokenQuantity }
-    address_list = addresses.map { |a| "'#{a}'" }.uniq.join(",")
+    address_list = addresses.map { |a| "'#{a}'" }.uniq!.join(",")
     @db.query(
       "select r.address, t.token, sum(r.amount) as 'burn' " \
       "from transactions t " \
@@ -437,7 +437,7 @@ module ::Axentro::Core::Data::Transactions
 
   # ------- Indices -------
   def get_transactions_and_block_that_exist(transactions : Array(Transaction)) : Array(TransactionWithBlock)
-    transaction_list = transactions.map { |t| "'#{t.id}'" }.uniq.join(",")
+    transaction_list = transactions.map { |t| "'#{t.id}'" }.uniq!.join(",")
     transaction_ids = {} of String => Int64
     @db.query(
       "select id, block_id from transactions " \
@@ -480,7 +480,7 @@ module ::Axentro::Core::Data::Transactions
 
   # ------- Tokens -------
   def token_info(unique_tokens : Array(String)) : Hash(String, DApps::BuildIn::TokenInfo)
-    token_list = unique_tokens.map { |t| "'#{t}'" }.uniq.join(",")
+    token_list = unique_tokens.map { |t| "'#{t}'" }.uniq!.join(",")
     token_map = {} of String => DApps::BuildIn::TokenInfo
     @db.query(
       "select t.token, r.address, t.action " \

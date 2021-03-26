@@ -132,7 +132,7 @@ module ::Axentro::Core::FastChain
                              [coinbase_transaction] + vt.passed.reject(&.is_coinbase?)
                            end
 
-    sorted_aligned_transactions = [coinbase_transaction] + aligned_transactions.reject(&.is_coinbase?).sort_by(&.timestamp)
+    sorted_aligned_transactions = [coinbase_transaction] + aligned_transactions.reject(&.is_coinbase?).sort_by!(&.timestamp)
     sorted_aligned_transactions.map_with_index do |transaction, index|
       transaction.add_prev_hash((index == 0 ? "0" : sorted_aligned_transactions[index - 1].to_hash))
     end

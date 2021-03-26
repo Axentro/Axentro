@@ -15,7 +15,7 @@ require "../spec_helper"
 describe "License" do
   it "should have a license at the top of every crystal file" do
     exclusions = ["bin/ameba.cr"]
-    Dir["**/*.cr"].reject { |f| f.starts_with?("lib") }.each do |file_path|
+    Dir["**/*.cr"].reject(&.starts_with?("lib")).each do |file_path|
       # if this fails uncomment the line below to see the failed file
       # to fix: cd tools then crystal run add_license.cr
       # puts "file: #{file_path}"

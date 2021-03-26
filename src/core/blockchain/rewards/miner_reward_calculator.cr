@@ -18,7 +18,7 @@ module ::Axentro::Core
     def initialize(@difficulties, @percentage); end
 
     def self.tier_for(difficulty : Int32, tiers : Array(RewardTier)) : RewardTier?
-      tiers.find { |t| t.difficulties.includes?(difficulty) }
+      tiers.find(&.difficulties.includes?(difficulty))
     end
   end
 
@@ -39,7 +39,7 @@ module ::Axentro::Core
           amount = (@miner_rewards_total * address_total_difficulty) / total_difficulty
           Recipient.new(address, amount.to_i64)
         end
-        .reject { |m| m.amount == 0 }
+        .reject(&.amount.==(0))
     end
 
     def node_rewards_as_recipients(miners_recipients : Array(Transaction::Recipient)) : Array(Transaction::Recipient)
