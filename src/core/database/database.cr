@@ -143,6 +143,7 @@ module ::Axentro::Core
     include Data::Nonces
     include Data::Blocks
     include Data::Rejects
+    include Data::Assets
     include Data::Senders
     include Data::Recipients
     include Data::Transactions

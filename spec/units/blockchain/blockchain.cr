@@ -149,6 +149,7 @@ describe Blockchain do
         "send", # action
         [sender],
         [recipient],
+        [] of Transaction::Asset,
         "0",    # message
         "AXNT", # token
         "0",    # prev_hash
@@ -182,6 +183,7 @@ describe Blockchain do
         "send", # action
         [sender],
         [recipient],
+        [] of Transaction::Asset,
         "0",    # message
         "AXNT", # token
         "0",    # prev_hash

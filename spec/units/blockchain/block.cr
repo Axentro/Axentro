@@ -42,14 +42,14 @@ describe Block do
     it "should calculate merkle tree root when coinbase transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
       block = Block.new(2_i64, [coinbase_transaction], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
-      block.calculate_merkle_tree_root(block.transactions).should eq("ee2a76acd61a587ae85fc444bdbf72b07944ceec")
+      block.calculate_merkle_tree_root(block.transactions).should eq("4ccb2a70c1b83dc744e6dc9177086c42ff0a93ab")
     end
 
     it "should calculate merkle tree root when 2 transactions (first is coinbase)" do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = Block.new(2_i64, [coinbase_transaction, transaction1], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
-      block.calculate_merkle_tree_root(block.transactions).should eq("58ecb32608384bb5587977c3546e8762090b5dab")
+      block.calculate_merkle_tree_root(block.transactions).should eq("21637b97d91890af22ede15e72790150fabaf8ce")
     end
   end
 
@@ -143,7 +143,7 @@ describe Block do
         timestamp = chain[1].timestamp
         block = Block.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
         block.merkle_tree_root = "invalid"
-        expect_raises(Exception, "Invalid Merkle Tree Root: (expected invalid but got f5cf2a5c37473765ffc535ac9e9acb8a6dafb9c2)") do
+        expect_raises(Exception, "Invalid Merkle Tree Root: (expected invalid but got 18f3650480ff8cc6b0b204ca0f6140c0a81255b7)") do
           block.valid?(block_factory.blockchain, false)
         end
       end
@@ -297,6 +297,7 @@ def a_fixed_coinbase_transaction
     "head", # action
     [] of Transaction::Sender,
     [recipient1, recipient2, recipient3],
+    [] of Transaction::Asset,
     "0",           # message
     TOKEN_DEFAULT, # token
     "0",           # prev_hash
@@ -315,6 +316,7 @@ def a_coinbase_transaction(amount : Int64)
     "head", # action
     [] of Transaction::Sender,
     [recipient1],
+    [] of Transaction::Asset,
     "0",           # message
     TOKEN_DEFAULT, # token
     "0",           # prev_hash
@@ -347,6 +349,7 @@ def a_fixed_signed_transaction
     "send", # action
     [a_signed_sender(sender_wallet, 1000_i64, "6fee937285f5bfb59d84d4e371ab28f6e2a9226091ef781b6039781778662b0f")],
     [a_recipient(recipient_wallet, 10_i64)],
+    [] of Transaction::Asset,
     "0",           # message
     TOKEN_DEFAULT, # token
     "0",           # prev_hash

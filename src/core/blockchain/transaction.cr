@@ -20,6 +20,7 @@ module ::Axentro::Core
       action: String,
       senders: Array(Sender),
       recipients: Recipients,
+      assets: Array(Asset),
       message: String,
       token: String,
       prev_hash: String,
@@ -35,6 +36,7 @@ module ::Axentro::Core
     def to_json(j : JSON::Builder)
       sorted_senders = @senders.sort_by { |s| {s.address, s.public_key, s.amount, s.fee, s.signature} }
       sorted_recipients = @recipients.sort_by { |r| {r.address, r.amount} }
+      sorted_assets = @assets.sort_by { |a| {a.timestamp, a.asset_id} }
       j.object do
         j.field("id", @id)
         j.field("action", @action)
@@ -47,6 +49,7 @@ module ::Axentro::Core
         j.field("version", @version)
         j.field("senders", sorted_senders)
         j.field("recipients", sorted_recipients)
+        j.field("assets", sorted_assets)
       end
     end
 
@@ -55,6 +58,7 @@ module ::Axentro::Core
       @action : String,
       @senders : Array(Sender),
       @recipients : Recipients,
+      @assets : Array(Asset),
       @message : String,
       @token : String,
       @prev_hash : String,
@@ -114,6 +118,7 @@ module ::Axentro::Core
         self.action,
         unsigned_senders,
         self.recipients,
+        self.assets,
         self.message,
         self.token,
         "0",
@@ -136,6 +141,7 @@ module ::Axentro::Core
         self.action,
         signed_senders,
         self.recipients,
+        self.assets,
         self.message,
         self.token,
         "0",
@@ -172,6 +178,9 @@ module ::Axentro::Core
     def set_recipients(@recipients)
     end
 
+    def set_assets(@assets)
+    end
+
     #
     # ignore prev_hash for comparison
     #
@@ -180,6 +189,7 @@ module ::Axentro::Core
       return false unless @action == other.action
       return false unless @senders == other.senders
       return false unless @recipients == other.recipients
+      return false unless @assets == other.assets
       return false unless @token == other.token
       return false unless @timestamp == other.timestamp
       return false unless @scaled == other.scaled

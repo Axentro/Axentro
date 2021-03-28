@@ -423,6 +423,7 @@ module ::Axentro::Core
         "head",
         senders,
         recipients,
+        [] of Transaction::Asset,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash

@@ -520,7 +520,7 @@ module ::Axentro::Core::Data::Transactions
         version_string = rows.read(String)
         version = TransactionVersion.parse(version_string)
 
-        t = Transaction.new(t_id, action, [] of Transaction::Sender, [] of Transaction::Recipient, message, token, prev_hash, timestamp, scaled, kind, version)
+        t = Transaction.new(t_id, action, [] of Transaction::Sender, [] of Transaction::Recipient, [] of Transaction::Asset, message, token, prev_hash, timestamp, scaled, kind, version)
         transactions << t
         verbose "reading transaction #{ti} from database with short ID of #{t.short_id}" if ti < 4
         ti += 1
@@ -529,6 +529,7 @@ module ::Axentro::Core::Data::Transactions
     transactions.each do |t|
       t.set_senders(get_senders(t))
       t.set_recipients(get_recipients(t))
+      t.set_assets(get_assets(t))
     end
     transactions
   end

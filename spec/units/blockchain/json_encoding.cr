@@ -57,7 +57,8 @@ describe "Json encoding" do
                   "address":"VDAwZDRiYTg0MWVlZjE4M2U3OWY2N2E0YmZkZDJjN2JmMWE0ZTViMjE3ZDNmZTU1",
                   "amount":3000
                }
-            ]
+            ],
+            "assets":[]
          }
     }.gsub(/\s+/, "")
     transaction_1.to_json.should eq(expected_json)
@@ -123,7 +124,8 @@ describe "Json encoding" do
                         "address":"VDAwZDRiYTg0MWVlZjE4M2U3OWY2N2E0YmZkZDJjN2JmMWE0ZTViMjE3ZDNmZTU1",
                         "amount":3000
                      }
-                  ]
+                  ],
+                  "assets":[]
                },
                {
                   "id":".32b2dbcd7b7494cffb89cb7f8bd188bf4c496da965332e7b08328d4e63442856",
@@ -160,7 +162,8 @@ describe "Json encoding" do
                         "address":"VDAwZDRiYTg0MWVlZjE4M2U3OWY2N2E0YmZkZDJjN2JmMWE0ZTViMjE3ZDNmZTU1",
                         "amount":3000
                      }
-                  ]
+                  ],
+                  "assets":[]
                }
             ]
          }
@@ -193,7 +196,7 @@ def transaction_1
     Recipient.new("VDAwZDRiYTg0MWVlZjE4M2U3OWY2N2E0YmZkZDJjN2JmMWE0ZTViMjE3ZDNmZTU1", 3000_i64),
     Recipient.new("VDA4M2YwYTkzZTQxZTQ0NzdjOGRjMDU4ZTkwZTI4OWY1NDNkMDZjYmU3ODQyM2Rk", 2000_i64),
   ]
-  Transaction.new(id, "send", senders, recipients, "0", "AXNT", "0", timestamp, 1, TransactionKind::FAST, TransactionVersion::V1)
+  Transaction.new(id, "send", senders, recipients, [] of Transaction::Asset, "0", "AXNT", "0", timestamp, 1, TransactionKind::FAST, TransactionVersion::V1)
 end
 
 def transaction_2
@@ -220,5 +223,5 @@ def transaction_2
     Recipient.new("VDA4M2YwYTkzZTQxZTQ0NzdjOGRjMDU4ZTkwZTI4OWY1NDNkMDZjYmU3ODQyM2Rk", 2000_i64),
     Recipient.new("VDAwZDRiYTg0MWVlZjE4M2U3OWY2N2E0YmZkZDJjN2JmMWE0ZTViMjE3ZDNmZTU1", 3000_i64),
   ]
-  Transaction.new(id, "send", senders, recipients, "0", "AXNT", "0", timestamp, 1, TransactionKind::FAST, TransactionVersion::V1)
+  Transaction.new(id, "send", senders, recipients, [] of Transaction::Asset, "0", "AXNT", "0", timestamp, 1, TransactionKind::FAST, TransactionVersion::V1)
 end

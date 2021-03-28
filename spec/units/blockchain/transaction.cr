@@ -32,6 +32,7 @@ describe Transaction do
       "send", # action
       [a_sender(sender_wallet, 1000_i64)],
       [a_recipient(recipient_wallet, 10_i64)],
+      [] of Transaction::Asset,
       "0",           # message
       TOKEN_DEFAULT, # token
       "0",           # prev_hash
@@ -67,6 +68,7 @@ describe Transaction do
         "send", # action
         [a_sender(sender_wallet, 10001_i64)],
         [] of Transaction::Recipient,
+        [] of Transaction::Asset,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -91,6 +93,7 @@ describe Transaction do
         "send", # action
         [a_sender(sender_wallet, 10001_i64)],
         [] of Transaction::Recipient,
+        [] of Transaction::Asset,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -119,6 +122,7 @@ describe Transaction do
         "send", # action
         [a_sender(sender_wallet, 10_i64)],
         [a_recipient(recipient_wallet, 10_i64)],
+        [] of Transaction::Asset,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -142,6 +146,7 @@ describe Transaction do
         "send", # action
         [a_sender(sender_wallet, 10_i64)],
         [a_recipient(recipient_wallet, 10_i64)],
+        [] of Transaction::Asset,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -165,6 +170,7 @@ describe Transaction do
         "send", # action
         [a_sender(sender_wallet, 11_i64)],
         [a_recipient(recipient_wallet, 10_i64)],
+        [] of Transaction::Asset,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash

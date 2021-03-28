@@ -24,12 +24,14 @@ describe RPCController do
         with_factory do |block_factory, transaction_factory|
           senders = [a_decimal_sender(transaction_factory.sender_wallet, "1", "0.0001")]
           recipients = [a_decimal_recipient(transaction_factory.recipient_wallet, "10")]
+          assets = [] of Transaction::Asset
 
           payload = {
             call:       "create_unsigned_transaction",
             action:     "send",
             senders:    senders,
             recipients: recipients,
+            assets:     assets,
             message:    "",
             token:      TOKEN_DEFAULT,
             kind:       "SLOW",

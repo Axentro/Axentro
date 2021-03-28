@@ -113,4 +113,35 @@ module ::Axentro::Core::TransactionModels
   alias RecipientsDecimal = Array(RecipientDecimal)
 
   alias Transactions = Array(Transaction)
+
+  class Asset
+    include JSON::Serializable
+    property asset_id : String
+    property name : String
+    property description : String
+    property media_location : String
+    property media_hash : String
+    property quantity : Int32
+    property terms : String
+    property version : Int32
+    property timestamp : Int64
+
+    def initialize(@asset_id, @name, @description, @media_location, @media_hash, @quantity, @terms, @version, @timestamp); end
+
+    def to_json(j : JSON::Builder)
+      j.object do
+        j.field("asset_id", @asset_id)
+        j.field("name", @name)
+        j.field("description", @description)
+        j.field("media_location", @media_location)
+        j.field("media_hash", @media_hash)
+        j.field("quantity", @quantity)
+        j.field("terms", @terms)
+        j.field("version", @version)
+        j.field("timestamp", @timestamp)
+      end
+    end
+  end
+
+  alias Assets = Array(Asset)
 end

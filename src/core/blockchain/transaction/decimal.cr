@@ -17,6 +17,7 @@ module ::Axentro::Core
     property action : String
     property senders : SendersDecimal
     property recipients : RecipientsDecimal
+    property assets : Array(Asset)
     property message : String
     property token : String
     property prev_hash : String
@@ -30,6 +31,7 @@ module ::Axentro::Core
       @action : String,
       @senders : SendersDecimal,
       @recipients : RecipientsDecimal,
+      @assets : Array(Asset),
       @message : String,
       @token : String,
       @prev_hash : String,
@@ -47,6 +49,7 @@ module ::Axentro::Core
         @action,
         scale_i64(@senders),
         scale_i64(@recipients),
+        @assets,
         @message,
         @token,
         @prev_hash,

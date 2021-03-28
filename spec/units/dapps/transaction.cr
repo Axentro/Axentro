@@ -73,6 +73,7 @@ describe TransactionCreator do
             action:     "send",
             senders:    senders,
             recipients: recipients,
+            assets:     [] of Transaction::Asset,
             message:    "",
             token:      TOKEN_DEFAULT,
             kind:       "SLOW",
@@ -97,6 +98,7 @@ describe TransactionCreator do
               r.address.should eq(expected_recipients[i].address)
               r.amount.should eq(expected_recipients[i].amount)
             end
+            transaction.assets.size.should eq(0)
             transaction.kind.should eq(TransactionKind::SLOW)
           end
         end
@@ -113,6 +115,7 @@ describe TransactionCreator do
               "send", # action
               senders,
               recipients,
+              [] of Transaction::Asset,
               "0",           # message
               TOKEN_DEFAULT, # token
               "0",           # prev_hash
@@ -138,6 +141,7 @@ describe TransactionCreator do
               transaction.message.should eq("0")
               transaction.senders.first.signature.should_not eq("0")
               transaction.senders.should_not eq(senders)
+              transaction.assets.size.should eq(0)
             end
           end
         end

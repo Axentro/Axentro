@@ -48,12 +48,13 @@ module ::Axentro::Core::DApps::BuildIn
       action = json["action"].as_s
       senders = SendersDecimal.from_json(json["senders"].to_json)
       recipients = RecipientsDecimal.from_json(json["recipients"].to_json)
+      assets = Assets.from_json(json["assets"].to_json)
       message = json["message"].as_s
       token = json["token"].as_s
       kind = TransactionKind.parse(json["kind"].as_s)
       version = TransactionVersion.parse(json["version"].as_s)
 
-      transaction = create_unsigned_transaction_impl(action, senders, recipients, message, token, kind, version)
+      transaction = create_unsigned_transaction_impl(action, senders, recipients, assets, message, token, kind, version)
 
       context.response.print api_success(transaction)
       context
@@ -95,6 +96,8 @@ module ::Axentro::Core::DApps::BuildIn
         "send",
         senders,
         recipients,
+        [] of Transaction::Asset,
+        assets,
         "",
         "AXNT",
         kind,
@@ -107,6 +110,7 @@ module ::Axentro::Core::DApps::BuildIn
       action : String,
       senders : SendersDecimal,
       recipients : RecipientsDecimal,
+      assets : Assets,
       message : String,
       token : String,
       kind : TransactionKind,
@@ -118,6 +122,7 @@ module ::Axentro::Core::DApps::BuildIn
         action,
         senders,
         recipients,
+        assets,
         message,
         token,
         "0",         # prev_hash

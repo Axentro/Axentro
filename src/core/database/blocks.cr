@@ -176,7 +176,23 @@ module ::Axentro::Core::Data::Blocks
               end
             end
 
-            t = Transaction.new(t_id, t_action, senders, recipients, t_message, t_token, t_prev_hash, t_timestamp, t_scaled, t_kind, t_version)
+            assets = [] of Transaction::Asset
+            conn.query("select * from assets where transaction_id = ? order by idx asc", t_id) do |asset_rows|
+              asset_rows.each do
+                asset_id = asset_rows.read(String)
+                name = asset_rows.read(String)
+                description = asset_rows.read(String)
+                media_location = asset_rows.read(String)
+                media_hash = asset_rows.read(String)
+                quantity = asset_rows.read(Int32)
+                terms = asset_rows.read(String)
+                version = asset_rows.read(Int32)
+                timestamp = asset_rows.read(Int64)
+                assets << Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, version, timestamp)
+              end
+            end
+
+            t = Transaction.new(t_id, t_action, senders, recipients, assets, t_message, t_token, t_prev_hash, t_timestamp, t_scaled, t_kind, t_version)
             transactions << t
           end
 
