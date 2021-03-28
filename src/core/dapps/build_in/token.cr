@@ -126,7 +126,7 @@ module ::Axentro::Core::DApps::BuildIn
 
         # rules for just lock token
         if action == "lock_token"
-          raise "the sender amount must be 0 when locking the token: KINGS" unless recipient_amount == 0_i64
+          raise "the sender amount must be 0 when locking the token: #{token}" unless recipient_amount == 0_i64
 
           if (token_exists_in_db && token_map[token].is_locked) || !token_locked_in_transactions.nil?
             raise "the token: #{token} is already locked"
