@@ -94,6 +94,12 @@ module ::Axentro::Core::TransactionValidator
       vt << FailedTransaction.new(transaction, "message size exceeds: #{transaction.message.bytesize} for #{MESSAGE_SIZE_LIMIT}") && next if transaction.message.bytesize > MESSAGE_SIZE_LIMIT
       vt << FailedTransaction.new(transaction, "token size exceeds: #{transaction.token.bytesize} for #{TOKEN_SIZE_LIMIT}") && next if transaction.token.bytesize > TOKEN_SIZE_LIMIT
       vt << FailedTransaction.new(transaction, "unscaled transaction") && next if transaction.scaled != 1
+      vt << FailedTransaction.new(transaction, "action must not be empty") && next if transaction.action.empty?
+
+      if !Data::Transactions::ASSET_ACTIONS.includes?(transaction.action) && transaction.assets.size > 0
+        vt << FailedTransaction.new(transaction, "assets must be empty for supplied action: #{transaction.action}")
+        next
+      end
 
       if failed_transaction = validate_senders(transaction, network_type)
         vt << failed_transaction

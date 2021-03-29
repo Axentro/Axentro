@@ -318,6 +318,66 @@ describe TransactionValidator do
       end
     end
 
+    it "should raise error if action is empty" do
+      with_factory do |block_factory, transaction_factory|
+        block_factory.add_slow_block
+        sender_wallet = transaction_factory.sender_wallet
+        recipient_wallet = transaction_factory.recipient_wallet
+
+        transaction_id = Transaction.create_id
+        unsigned_transaction = Transaction.new(
+          transaction_id,
+          "", # action
+          [a_sender(sender_wallet, 40000_i64)],
+          [a_recipient(recipient_wallet, 40000_i64)],
+          [] of Transaction::Asset,
+          "0",           # message
+          TOKEN_DEFAULT, # token
+          "0",           # prev_hash
+          0_i64,         # timestamp
+          1,             # scaled
+          TransactionKind::SLOW,
+          TransactionVersion::V1
+        )
+        transaction = unsigned_transaction.as_signed([sender_wallet])
+        result = TransactionValidator.validate_common([transaction], "testnet")
+        result.passed.should be_empty
+        result.failed.size.should eq(1)
+        result.failed.first.reason.should eq("action must not be empty")
+      end
+    end
+
+    it "should raise error if assets is not empty for any non asset action" do
+      Data::Transactions::UTXO_ACTIONS.each do |action|
+        with_factory do |block_factory, transaction_factory|
+          block_factory.add_slow_block
+          sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
+
+          transaction_id = Transaction.create_id
+          unsigned_transaction = Transaction.new(
+            transaction_id,
+            action, # action
+            [a_sender(sender_wallet, 40000_i64)],
+            [a_recipient(recipient_wallet, 40000_i64)],
+            [a_quick_asset("asset_id")],
+            "0",           # message
+            TOKEN_DEFAULT, # token
+            "0",           # prev_hash
+            0_i64,         # timestamp
+            1,             # scaled
+            TransactionKind::SLOW,
+            TransactionVersion::V1
+          )
+          transaction = unsigned_transaction.as_signed([sender_wallet])
+          result = TransactionValidator.validate_common([transaction], "testnet")
+          result.passed.should be_empty
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("assets must be empty for supplied action: #{transaction.action}")
+        end
+      end
+    end
+
     it "should raise transaction id length error if not 64" do
       with_factory do |block_factory, transaction_factory|
         block_factory.add_slow_block

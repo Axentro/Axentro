@@ -47,15 +47,11 @@ module ::Units::Utils::TransactionHelper
     }
   end
 
-  # def sign(wallet : Wallet, transaction : Transaction)
-  #   secp256k1 = ECDSA::Secp256k1.new
-  #   wif = Keys::Wif.new(wallet.wif)
+  def an_asset(asset_id : String, name : String, description : String, media_location : String, media_hash : String, quantity : Int32, terms : String, version : Int32, timestamp : Int64)
+    Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, version, timestamp)
+  end
 
-  #   sign = secp256k1.sign(
-  #     wif.private_key.as_big_i,
-  #     transaction.to_hash,
-  #   )
-
-  #   {r: sign[0].to_s(base: 16), s: sign[1].to_s(base: 16)}
-  # end
+  def a_quick_asset(asset_id : String, timestamp : Int64 = __timestamp)
+    Asset.new(asset_id, "name", "desc", "media_location", "media_hash", 1, "terms", 1, timestamp)
+  end
 end
