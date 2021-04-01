@@ -348,7 +348,7 @@ describe TransactionValidator do
     end
 
     it "should raise error if assets is not empty for any non asset action" do
-      Data::Transactions::UTXO_ACTIONS.each do |action|
+      DApps::UTXO_ACTIONS.each do |action|
         with_factory do |block_factory, transaction_factory|
           block_factory.add_slow_block
           sender_wallet = transaction_factory.sender_wallet

@@ -27,26 +27,29 @@ module ::Axentro::Core::Data::Blocks
     ary
   end
 
-  def push_block(block : Block)
-    verbose "database.push_block with block index #{block.index} of kind: #{block.kind}"
-    @db.exec "BEGIN TRANSACTION"
-    block.transactions.each_with_index do |t, ti|
-      verbose "writing transaction #{ti} to database with short ID of #{t.short_id}" if ti < 4
-      t.senders.each_index do |i|
-        @db.exec "insert into senders values (#{sender_insert_fields_string})", args: sender_insert_values_array(block, t, i)
-      end
-      t.recipients.each_index do |i|
-        @db.exec "insert into recipients values (#{recipient_insert_fields_string})", args: recipient_insert_values_array(block, t, i)
-      end
-      @db.exec "insert into transactions values (#{transaction_insert_fields_string})", args: transaction_insert_values_array(t, ti, block.index)
-    end
-    verbose "inserting block with #{block.transactions.size} transactions into database with index: #{block.index}"
-    @db.exec "insert into blocks values (#{block_insert_fields_string})", args: block_insert_values_array(block)
-    @db.exec "END TRANSACTION"
-  rescue e : Exception
-    warning "Rolling back db due to error when pushing block to database with message: #{e.message || "unknown"}"
-    @db.exec("ROLLBACK")
-  end
+  # def push_block(block : Block)
+  #   verbose "database.push_block with block index #{block.index} of kind: #{block.kind}"
+  #   @db.exec "BEGIN TRANSACTION"
+  #   block.transactions.each_with_index do |t, ti|
+  #     verbose "writing transaction #{ti} to database with short ID of #{t.short_id}" if ti < 4
+  #     t.senders.each_index do |i|
+  #       @db.exec "insert into senders values (#{sender_insert_fields_string})", args: sender_insert_values_array(block, t, i)
+  #     end
+  #     t.recipients.each_index do |i|
+  #       @db.exec "insert into recipients values (#{recipient_insert_fields_string})", args: recipient_insert_values_array(block, t, i)
+  #     end
+  #     t.assets.each_index do |i|
+  #       @db.exec "insert into assets values (#{asset_insert_fields_string})", args: asset_insert_values_array(block, t, i)
+  #     end
+  #     @db.exec "insert into transactions values (#{transaction_insert_fields_string})", args: transaction_insert_values_array(t, ti, block.index)
+  #   end
+  #   verbose "inserting block with #{block.transactions.size} transactions into database with index: #{block.index}"
+  #   @db.exec "insert into blocks values (#{block_insert_fields_string})", args: block_insert_values_array(block)
+  #   @db.exec "END TRANSACTION"
+  # rescue e : Exception
+  #   warning "Rolling back db due to error when pushing block to database with message: #{e.message || "unknown"}"
+  #   @db.exec("ROLLBACK")
+  # end
 
   # insert or replace block
   def inplace_block(block : Block)
@@ -60,6 +63,9 @@ module ::Axentro::Core::Data::Blocks
       end
       t.recipients.each_index do |i|
         @db.exec "insert into recipients values (#{recipient_insert_fields_string})", args: recipient_insert_values_array(block, t, i)
+      end
+      t.assets.each_index do |i|
+        @db.exec "insert into assets values (#{asset_insert_fields_string})", args: asset_insert_values_array(block, t, i)
       end
       @db.exec "insert into transactions values (#{transaction_insert_fields_string})", args: transaction_insert_values_array(t, ti, block.index)
     end

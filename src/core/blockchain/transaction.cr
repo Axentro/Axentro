@@ -190,6 +190,7 @@ module ::Axentro::Core
       return false unless @senders == other.senders
       return false unless @recipients == other.recipients
       return false unless @assets == other.assets
+      return false unless @assets == other.assets
       return false unless @token == other.token
       return false unless @timestamp == other.timestamp
       return false unless @scaled == other.scaled

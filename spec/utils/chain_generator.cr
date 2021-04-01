@@ -533,6 +533,35 @@ module ::Units::Utils::ChainGenerator
       unsigned_transaction.as_signed([sender_wallet])
     end
 
+    def make_create_asset(asset : Asset, sender_wallet : Wallet = @sender_wallet)
+      make_asset(
+        "AXNT",
+        "create_assset",
+        [a_sender(sender_wallet, 0_i64, 0_i64)],
+        [a_recipient(sender_wallet, 0_i64)],
+        [asset]
+      )
+    end
+
+    def make_asset(token : String, action : String, senders : Array(Transaction::Sender), recipients : Array(Transaction::Recipient), assets : Array(Transaction::Asset)) : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        action, # action
+        senders,
+        recipients,
+        assets,
+        "0",   # message
+        token, # token
+        "0",   # prev_hash
+        0_i64, # timestamp
+        1,     # scaled
+        TransactionKind::SLOW,
+        TransactionVersion::V1
+      )
+      unsigned_transaction.as_signed([sender_wallet])
+    end
+
     def make_create_offical_slownode(token : String = TOKEN_DEFAULT, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(

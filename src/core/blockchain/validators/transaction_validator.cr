@@ -96,7 +96,9 @@ module ::Axentro::Core::TransactionValidator
       vt << FailedTransaction.new(transaction, "unscaled transaction") && next if transaction.scaled != 1
       vt << FailedTransaction.new(transaction, "action must not be empty") && next if transaction.action.empty?
 
-      if !Data::Transactions::ASSET_ACTIONS.includes?(transaction.action) && transaction.assets.size > 0
+      # TODO - validate transaction id is not already in db or in current batch of transactions
+
+      if !DApps::ASSET_ACTIONS.includes?(transaction.action) && transaction.assets.size > 0
         vt << FailedTransaction.new(transaction, "assets must be empty for supplied action: #{transaction.action}")
         next
       end

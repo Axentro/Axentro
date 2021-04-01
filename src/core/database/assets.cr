@@ -32,6 +32,9 @@ module ::Axentro::Core::Data::Assets
     @db.query "select * from assets where transaction_id = ? order by idx", t.id do |rows|
       rows.each do
         asset_id = rows.read(String)
+        rows.read(String)
+        rows.read(Int64)
+        rows.read(Int32)
         name = rows.read(String)
         description = rows.read(String)
         media_location = rows.read(String)
@@ -44,5 +47,31 @@ module ::Axentro::Core::Data::Assets
       end
     end
     assets
+  end
+
+  # based on asset_id, media_location and media_hash
+  def existing_assets_from(assets : Array(Asset)) : Array(Asset)
+    _assets = [] of Transaction::Asset
+    asset_list = assets.map { |a| "'#{a.asset_id}'" }.uniq!.join(",")
+    media_locations = assets.map { |a| "'#{a.media_location}'" }.uniq!.join(",")
+    media_hashes = assets.map { |a| "'#{a.media_hash}'" }.uniq!.join(",")
+    @db.query "select * from assets where asset_id in (#{asset_list}) or media_location in (#{media_locations}) or media_hash in (#{media_hashes}) order by idx" do |rows|
+      rows.each do
+        asset_id = rows.read(String)
+        rows.read(String)
+        rows.read(Int64)
+        rows.read(Int32)
+        name = rows.read(String)
+        description = rows.read(String)
+        media_location = rows.read(String)
+        media_hash = rows.read(String)
+        quantity = rows.read(Int32)
+        terms = rows.read(String)
+        version = rows.read(Int32)
+        timestamp = rows.read(Int64)
+        _assets << Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, version, timestamp)
+      end
+    end
+    _assets
   end
 end

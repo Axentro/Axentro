@@ -137,10 +137,10 @@ module ::Axentro::Core
       target_index = chain.index(&.index.==(block.index))
       if target_index
         # validate during replace block
-        @database.delete_block(block.index)
+        # @database.delete_block(block.index)
         # check block is valid here (including checking transactions) - we are in replace
         block.valid?(self, false, true)
-        @database.push_block(block)
+        @database.inplace_block(block)
       else
         warning "replacement block location not found in local chain"
       end
@@ -158,7 +158,7 @@ module ::Axentro::Core
 
     private def _push_block(block : Block)
       debug "sending #{block.kind} block to DB with timestamp of #{block.timestamp}"
-      @database.push_block(block)
+      @database.inplace_block(block)
     end
 
     def add_transaction(transaction : Transaction, with_spawn : Bool = true)

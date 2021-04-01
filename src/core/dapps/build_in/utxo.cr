@@ -52,7 +52,7 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def transaction_related?(action : String) : Bool
-      Data::Transactions::INTERNAL_ACTIONS.includes?(action)
+      UTXO_ACTIONS.includes?(action)
     end
 
     # ameba:disable Metrics/CyclomaticComplexity

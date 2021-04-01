@@ -128,6 +128,12 @@ module ::Axentro::Core::TransactionModels
 
     def initialize(@asset_id, @name, @description, @media_location, @media_hash, @quantity, @terms, @version, @timestamp); end
 
+    def self.create_id : String
+      tmp_id = Random::Secure.hex(32)
+      return create_id if tmp_id[0] == "0"
+      tmp_id
+    end
+
     def to_json(j : JSON::Builder)
       j.object do
         j.field("asset_id", @asset_id)
@@ -140,6 +146,20 @@ module ::Axentro::Core::TransactionModels
         j.field("version", @version)
         j.field("timestamp", @timestamp)
       end
+    end
+
+    def ==(other : Asset) : Bool
+      return false unless @asset_id == other.asset_id
+      return false unless @name == other.name
+      return false unless @description == other.description
+      return false unless @media_location == other.media_location
+      return false unless @media_hash == other.media_hash
+      return false unless @quantity == other.quantity
+      return false unless @terms == other.terms
+      return false unless @version == other.version
+      return false unless @timestamp == other.timestamp
+
+      true
     end
   end
 

@@ -16,13 +16,9 @@ require "../dapps/dapp"
 require "../dapps/build_in/hra"
 
 module ::Axentro::Core::Data::Transactions
-  ASSET_ACTIONS    = ["create_asset", "update_asset", "lock_asset", "send_asset"]
-  UTXO_ACTIONS     = ["head", "send", "hra_buy", "hra_sell", "hra_cancel", "create_token", "update_token", "lock_token", "burn_token"]
-  INTERNAL_ACTIONS = UTXO_ACTIONS + ASSET_ACTIONS
-
   def internal_actions_list
     # exclude burn_token as this is used to calculate recipients sum
-    INTERNAL_ACTIONS.reject(&.==("burn_token")).map { |action| "'#{action}'" }.uniq!.join(",")
+    DApps::UTXO_ACTIONS.reject(&.==("burn_token")).map { |action| "'#{action}'" }.uniq!.join(",")
   end
 
   # ------- Definition -------
