@@ -55,7 +55,7 @@ describe AssetComponent do
         with_factory do |block_factory, transaction_factory|
           asset_id = Asset.create_id
           transaction = transaction_factory.make_create_asset(a_quick_asset(asset_id))
-          chain = block_factory.add_slow_blocks(10).chain
+          block_factory.add_slow_blocks(10)
           component = AssetComponent.new(block_factory.blockchain)
 
           result = component.valid_transactions?([transaction])
@@ -75,7 +75,7 @@ describe AssetComponent do
             [a_recipient(sender_wallet, 0_i64)],
             [] of Transaction::Asset
           )
-          chain = block_factory.add_slow_blocks(10).chain
+          block_factory.add_slow_blocks(10)
           component = AssetComponent.new(block_factory.blockchain)
 
           result = component.valid_transactions?([transaction])
@@ -95,7 +95,7 @@ describe AssetComponent do
             [a_recipient(sender_wallet, 0_i64)],
             [Transaction::Asset.new("123", "name", "description", "media_location", "media_hash", 1, "terms", 1, __timestamp)]
           )
-          chain = block_factory.add_slow_blocks(10).chain
+          block_factory.add_slow_blocks(10)
           component = AssetComponent.new(block_factory.blockchain)
 
           result = component.valid_transactions?([transaction])
@@ -116,7 +116,7 @@ describe AssetComponent do
             [a_recipient(sender_wallet, 0_i64)],
             [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 0, "terms", 1, __timestamp)]
           )
-          chain = block_factory.add_slow_blocks(10).chain
+          block_factory.add_slow_blocks(10)
           component = AssetComponent.new(block_factory.blockchain)
 
           result = component.valid_transactions?([transaction])
@@ -144,7 +144,7 @@ describe AssetComponent do
             [a_recipient(sender_wallet, 0_i64)],
             [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", 1, __timestamp)]
           )
-          chain = block_factory.add_slow_blocks(10).chain
+          block_factory.add_slow_blocks(10)
           component = AssetComponent.new(block_factory.blockchain)
 
           result = component.valid_transactions?([transaction1, transaction2])
@@ -202,7 +202,7 @@ describe AssetComponent do
             [a_recipient(sender_wallet, 0_i64)],
             [Transaction::Asset.new(asset_id_2, "name", "description", "media_location", "media_hash2", 1, "terms", 1, __timestamp)]
           )
-          chain = block_factory.add_slow_blocks(10).chain
+          block_factory.add_slow_blocks(10)
           component = AssetComponent.new(block_factory.blockchain)
 
           result = component.valid_transactions?([transaction1, transaction2])
@@ -280,7 +280,7 @@ describe AssetComponent do
             [a_recipient(sender_wallet, 0_i64)],
             [Transaction::Asset.new(asset_id_2, "name", "description", "media_location2", "media_hash", 1, "terms", 1, __timestamp)]
           )
-          chain = block_factory.add_slow_blocks(10).chain
+          block_factory.add_slow_blocks(10).chain
           component = AssetComponent.new(block_factory.blockchain)
 
           result = component.valid_transactions?([transaction1, transaction2])
@@ -406,7 +406,6 @@ describe AssetComponent do
       it "transaction -> token must not be empty" do
         with_factory do |block_factory, transaction_factory|
           sender_wallet = transaction_factory.sender_wallet
-          recipient_wallet = transaction_factory.recipient_wallet
           asset_id_1 = Transaction::Asset.create_id
           transaction = transaction_factory.make_asset(
             "",
@@ -428,7 +427,7 @@ describe AssetComponent do
       it "transaction -> amount must be 0" do
         with_factory do |block_factory, transaction_factory|
           sender_wallet = transaction_factory.sender_wallet
-          recipient_wallet = transaction_factory.recipient_wallet
+
           asset_id_1 = Transaction::Asset.create_id
           transaction = transaction_factory.make_asset(
             "AXNT",
@@ -450,7 +449,6 @@ describe AssetComponent do
       it "transaction -> fee must be 0" do
         with_factory do |block_factory, transaction_factory|
           sender_wallet = transaction_factory.sender_wallet
-          recipient_wallet = transaction_factory.recipient_wallet
           asset_id_1 = Transaction::Asset.create_id
           transaction = transaction_factory.make_asset(
             "AXNT",

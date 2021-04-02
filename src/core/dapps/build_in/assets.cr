@@ -23,6 +23,7 @@ module ::Axentro::Core::DApps::BuildIn
       transaction_actions.includes?(action)
     end
 
+    # ameba:disable Metrics/CyclomaticComplexity
     def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
       vt = ValidatedTransactions.empty
 
