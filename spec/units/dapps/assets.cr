@@ -241,34 +241,232 @@ describe AssetComponent do
         end
       end
 
-      it "asset -> asset_media can be empty" do
+      it "asset -> asset media_location can be empty" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          asset_id_1 = Transaction::Asset.create_id
+          transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id_1, "name", "description", "", "media_hash1", 1, "terms", 1, __timestamp)]
+          )
+
+          component = AssetComponent.new(block_factory.blockchain)
+
+          result = component.valid_transactions?([transaction])
+          result.passed.size.should eq(1)
+          result.failed.size.should eq(0)
+        end
       end
 
       it "asset -> asset_hash must be unique and not already exist - unless empty (when in same transaction batch)" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          asset_id_1 = Transaction::Asset.create_id
+          asset_id_2 = Transaction::Asset.create_id
+          transaction1 = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id_1, "name", "description", "media_location1", "media_hash", 1, "terms", 1, __timestamp)]
+          )
+          transaction2 = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id_2, "name", "description", "media_location2", "media_hash", 1, "terms", 1, __timestamp)]
+          )
+          chain = block_factory.add_slow_blocks(10).chain
+          component = AssetComponent.new(block_factory.blockchain)
+
+          result = component.valid_transactions?([transaction1, transaction2])
+          result.passed.size.should eq(1)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("asset media_hash must not already exist (asset_id: #{asset_id_2}, media_hash: media_hash) 'create_asset'")
+        end
       end
 
       it "asset -> asset_hash must be unique and not already exist - unless empty (when already in the db)" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          asset_id_1 = Transaction::Asset.create_id
+          asset_id_2 = Transaction::Asset.create_id
+          transaction1 = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id_1, "name", "description", "media_location1", "media_hash", 1, "terms", 1, __timestamp)]
+          )
+          transaction2 = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id_2, "name", "description", "media_location2", "media_hash", 1, "terms", 1, __timestamp)]
+          )
+          block_factory.add_slow_blocks(2).add_slow_block([transaction1]).add_slow_blocks(2)
+          component = AssetComponent.new(block_factory.blockchain)
+
+          result = component.valid_transactions?([transaction2])
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("asset media_hash must not already exist (asset_id: #{asset_id_2}, media_hash: media_hash) 'create_asset'")
+        end
       end
 
       it "asset -> asset_hash can be empty" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          asset_id_1 = Transaction::Asset.create_id
+          transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id_1, "name", "description", "media_location", "", 1, "terms", 1, __timestamp)]
+          )
+
+          component = AssetComponent.new(block_factory.blockchain)
+
+          result = component.valid_transactions?([transaction])
+          result.passed.size.should eq(1)
+          result.failed.size.should eq(0)
+        end
       end
 
       it "transaction -> senders must be 1" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          asset_id_1 = Transaction::Asset.create_id
+          transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [] of Transaction::Sender,
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id_1, "name", "description", "media_location", "", 1, "terms", 1, __timestamp)]
+          )
+
+          component = AssetComponent.new(block_factory.blockchain)
+
+          result = component.valid_transactions?([transaction])
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("senders can only be 1 for asset action")
+        end
       end
 
       it "transaction -> recipients must be 1" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          asset_id_1 = Transaction::Asset.create_id
+          transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [] of Transaction::Recipient,
+            [Transaction::Asset.new(asset_id_1, "name", "description", "media_location", "", 1, "terms", 1, __timestamp)]
+          )
+
+          component = AssetComponent.new(block_factory.blockchain)
+
+          result = component.valid_transactions?([transaction])
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("number of specified recipients must be 1 for 'create_asset'")
+        end
       end
 
       it "transaction -> sender and recipient must be the sender address" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
+          asset_id_1 = Transaction::Asset.create_id
+          transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(recipient_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id_1, "name", "description", "media_location", "", 1, "terms", 1, __timestamp)]
+          )
+
+          component = AssetComponent.new(block_factory.blockchain)
+
+          result = component.valid_transactions?([transaction])
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("address mismatch for 'create_asset'. sender: #{sender_wallet.address}, recipient: #{recipient_wallet.address}")
+        end
       end
 
       it "transaction -> token must not be empty" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
+          asset_id_1 = Transaction::Asset.create_id
+          transaction = transaction_factory.make_asset(
+            "",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id_1, "name", "description", "media_location", "", 1, "terms", 1, __timestamp)]
+          )
+
+          component = AssetComponent.new(block_factory.blockchain)
+
+          result = component.valid_transactions?([transaction])
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("token must not be empty")
+        end
       end
 
       it "transaction -> amount must be 0" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
+          asset_id_1 = Transaction::Asset.create_id
+          transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 100_i64, 0_i64)],
+            [a_recipient(sender_wallet, 100_i64)],
+            [Transaction::Asset.new(asset_id_1, "name", "description", "media_location", "", 1, "terms", 1, __timestamp)]
+          )
+
+          component = AssetComponent.new(block_factory.blockchain)
+
+          result = component.valid_transactions?([transaction])
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("amount must be 0 for action: create_asset")
+        end
       end
 
       it "transaction -> fee must be 0" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
+          asset_id_1 = Transaction::Asset.create_id
+          transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 100_i64, 200_i64)],
+            [a_recipient(sender_wallet, 100_i64)],
+            [Transaction::Asset.new(asset_id_1, "name", "description", "media_location", "", 1, "terms", 1, __timestamp)]
+          )
+
+          component = AssetComponent.new(block_factory.blockchain)
+
+          result = component.valid_transactions?([transaction])
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("amount must be 0 for action: create_asset")
+        end
       end
     end
   end

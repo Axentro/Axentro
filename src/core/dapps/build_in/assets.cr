@@ -25,7 +25,7 @@ module ::Axentro::Core::DApps::BuildIn
 
     def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
       vt = ValidatedTransactions.empty
-     
+
       processed_transactions = transactions.select(&.is_coinbase?)
       body_transactions = transactions.reject(&.is_coinbase?)
 
@@ -34,13 +34,14 @@ module ::Axentro::Core::DApps::BuildIn
       body_transactions.each do |transaction|
         token = transaction.token
         action = transaction.action
-      
+
         # common rules for transaction asset level
         #   raise "must not be the default token: #{token}" if token == TOKEN_DEFAULT
         raise "senders can only be 1 for asset action" if transaction.senders.size != 1
         raise "number of specified senders must be 1 for '#{action}'" if transaction.senders.size != 1
         raise "number of specified recipients must be 1 for '#{action}'" if transaction.recipients.size != 1
-       
+        raise "token must not be empty" if token.empty?
+
         sender = transaction.senders[0]
         sender_address = sender.address
         sender_amount = sender.amount
@@ -57,81 +58,78 @@ module ::Axentro::Core::DApps::BuildIn
 
         raise "amount must be 0 for action: #{action}" if (sender_amount != 0_i64 || recipient_amount != 0_i64)
 
+        # rules for create asset
+        # asset_exists_in_db = existing_assets.find(&.==(asset))
+        # asset_exists_in_transactions = processed_transactions.find{|t| t.action == "create_asset" && t.assets.includes?(asset)}
 
-  
-          # rules for create asset
-          # asset_exists_in_db = existing_assets.find(&.==(asset))
-          # asset_exists_in_transactions = processed_transactions.find{|t| t.action == "create_asset" && t.assets.includes?(asset)}
+        # find if the token was locked within the current set of transactions
+        # token_locked_in_transactions = processed_transactions.find { |processed_transaction|
+        #   processed_transaction.token == token && processed_transaction.action == "lock_token"
+        # }
 
-          # find if the token was locked within the current set of transactions
-          # token_locked_in_transactions = processed_transactions.find { |processed_transaction|
-          #   processed_transaction.token == token && processed_transaction.action == "lock_token"
-          # }
+        if action == "create_asset"
+          raise "a transaction must have exactly 1 asset for '#{action}'" if transaction.assets.size != 1
 
-          if action == "create_asset"
-            raise "a transaction must have exactly 1 asset for '#{action}'" if transaction.assets.size != 1 
+          asset = transaction.assets.first
+          raise "asset_id must be length of 64 for '#{action}'" if asset.asset_id.size != 64
+          raise "asset quantity must be 1 or more for '#{action}' with asset_id: #{asset.asset_id}" if asset.quantity <= 0
 
-            asset = transaction.assets.first
-            raise "asset_id must be length of 64 for '#{action}'" if asset.asset_id.size != 64
-            raise "asset quantity must be 1 or more for '#{action}' with asset_id: #{asset.asset_id}" if asset.quantity <= 0
+          asset_id_exists_in_db = existing_assets.find(&.asset_id.==(asset.asset_id))
+          asset_id_exists_in_transactions = processed_transactions.find { |t| t.action == "create_asset" && t.assets.map(&.asset_id).includes?(asset.asset_id) }
+          raise "asset_id must not already exist (asset_id: #{asset.asset_id}) '#{action}'" if asset_id_exists_in_db || asset_id_exists_in_transactions
 
-            asset_id_exists_in_db = existing_assets.find(&.asset_id.==(asset.asset_id))
-            asset_id_exists_in_transactions = processed_transactions.find{|t| t.action == "create_asset" && t.assets.map(&.asset_id).includes?(asset.asset_id)}
-            raise "asset_id must not already exist (asset_id: #{asset.asset_id}) '#{action}'" if asset_id_exists_in_db || asset_id_exists_in_transactions
-            
-            if !asset.media_location.empty?
+          if !asset.media_location.empty?
             asset_media_location_exists_in_db = existing_assets.find(&.media_location.==(asset.media_location))
-            asset_media_location_exists_in_transactions = processed_transactions.find{|t| t.action == "create_asset" && t.assets.map(&.media_location).includes?(asset.media_location)}
+            asset_media_location_exists_in_transactions = processed_transactions.find { |t| t.action == "create_asset" && t.assets.map(&.media_location).includes?(asset.media_location) }
             raise "asset media_location must not already exist (asset_id: #{asset.asset_id}, media_location: #{asset.media_location}) '#{action}'" if asset_media_location_exists_in_db || asset_media_location_exists_in_transactions
-            end
-
-            if !asset.media_hash.empty?
-            asset_media_hash_exists_in_db = existing_assets.find(&.media_hash.==(asset.media_hash))
-            asset_media_hash_exists_in_transactions = processed_transactions.find{|t| t.action == "create_asset" && t.assets.map(&.media_hash).includes?(asset.media_hash)}
-            raise "asset media_hash must not already exist (asset_id: #{asset.asset_id}, media_hash: #{asset.media_hash}) '#{action}'" if asset_media_hash_exists_in_db || asset_media_hash_exists_in_transactions
-            end
           end
 
-          # rules for just update
-          # if action == "update_token"
-          #   if (token_exists_in_db && token_map[token].is_locked) || !token_locked_in_transactions.nil?
-          #     raise "the token: #{token} is locked and may no longer be updated"
-          #   end
-          # end
+          if !asset.media_hash.empty?
+            asset_media_hash_exists_in_db = existing_assets.find(&.media_hash.==(asset.media_hash))
+            asset_media_hash_exists_in_transactions = processed_transactions.find { |t| t.action == "create_asset" && t.assets.map(&.media_hash).includes?(asset.media_hash) }
+            raise "asset media_hash must not already exist (asset_id: #{asset.asset_id}, media_hash: #{asset.media_hash}) '#{action}'" if asset_media_hash_exists_in_db || asset_media_hash_exists_in_transactions
+          end
+        end
 
-          # rules for just burn
-          # if action == "burn_token"
-          #   action_name = action.split("_").join(" ")
-          #   # token must already exist either in the db or in current transactions
-          #   raise "the token #{token} does not exist, you must create it before attempting to perform #{action_name}" unless (token_exists_in_db || token_exists_in_transactions)
-          # end
+        # rules for just update
+        # if action == "update_token"
+        #   if (token_exists_in_db && token_map[token].is_locked) || !token_locked_in_transactions.nil?
+        #     raise "the token: #{token} is locked and may no longer be updated"
+        #   end
+        # end
 
-          # rules for update and lock token
-          # if ["update_token", "lock_token"].includes?(action)
-          #   action_name = action.split("_").join(" ")
+        # rules for just burn
+        # if action == "burn_token"
+        #   action_name = action.split("_").join(" ")
+        #   # token must already exist either in the db or in current transactions
+        #   raise "the token #{token} does not exist, you must create it before attempting to perform #{action_name}" unless (token_exists_in_db || token_exists_in_transactions)
+        # end
 
-          #   # token must already exist either in the db or in current transactions
-          #   raise "the token #{token} does not exist, you must create it before attempting to perform #{action_name}" unless (token_exists_in_db || token_exists_in_transactions)
+        # rules for update and lock token
+        # if ["update_token", "lock_token"].includes?(action)
+        #   action_name = action.split("_").join(" ")
 
-          #   unless token_exists_in_transactions.nil?
-          #     token_creator = token_exists_in_transactions.not_nil!.recipients[0].address
-          #     raise "only the token creator can perform #{action_name} on existing token: #{token}" unless token_creator == recipient_address
-          #   end
+        #   # token must already exist either in the db or in current transactions
+        #   raise "the token #{token} does not exist, you must create it before attempting to perform #{action_name}" unless (token_exists_in_db || token_exists_in_transactions)
 
-          #   if token_exists_in_db
-          #     raise "only the token creator can perform #{action_name} on existing token: #{token}" unless token_map[token].created_by == recipient_address
-          #   end
-          # end
+        #   unless token_exists_in_transactions.nil?
+        #     token_creator = token_exists_in_transactions.not_nil!.recipients[0].address
+        #     raise "only the token creator can perform #{action_name} on existing token: #{token}" unless token_creator == recipient_address
+        #   end
 
-          # rules for just lock token
-          # if action == "lock_token"
-          #   raise "the sender amount must be 0 when locking the token: #{token}" unless recipient_amount == 0_i64
+        #   if token_exists_in_db
+        #     raise "only the token creator can perform #{action_name} on existing token: #{token}" unless token_map[token].created_by == recipient_address
+        #   end
+        # end
 
-          #   if (token_exists_in_db && token_map[token].is_locked) || !token_locked_in_transactions.nil?
-          #     raise "the token: #{token} is already locked"
-          #   end
-          # end
-       
+        # rules for just lock token
+        # if action == "lock_token"
+        #   raise "the sender amount must be 0 when locking the token: #{token}" unless recipient_amount == 0_i64
+
+        #   if (token_exists_in_db && token_map[token].is_locked) || !token_locked_in_transactions.nil?
+        #     raise "the token: #{token} is already locked"
+        #   end
+        # end
 
         vt << transaction
         processed_transactions << transaction
@@ -142,7 +140,7 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def self.fee(action : String) : Int64
-       0_i64
+      0_i64
     end
 
     def record(chain : Blockchain::Chain)

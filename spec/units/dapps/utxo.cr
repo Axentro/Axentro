@@ -158,7 +158,7 @@ describe UTXO do
       with_factory do |block_factory, _|
         utxo = UTXO.new(block_factory.blockchain)
         utxo.transaction_related?("whatever").should be_false
-        DApps::INTERNAL_ACTIONS.each do |action|
+        DApps::UTXO_ACTIONS.each do |action|
           utxo.transaction_related?(action).should be_true
         end
       end

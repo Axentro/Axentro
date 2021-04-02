@@ -27,7 +27,7 @@ describe Blockchain do
         block = Block.new(0_i64, [] of Transaction, "0", "genesis", 0_i64, 3_i32, "123", BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
         # no error should be thrown here
         (1..2).to_a.each do
-          database.push_block(block)
+          database.inplace_block(block)
         end
       end
     end

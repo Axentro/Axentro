@@ -43,7 +43,7 @@ module ::Axentro::Core::DApps
     def valid?(transactions : Array(Transaction)) : ValidatedTransactions
       vt = ValidatedTransactions.empty
       # coinbase transactions should not be checked for fees
-      transactions.each do |transaction|                                        # all asset transactions are free
+      transactions.each do |transaction| # all asset transactions are free
         vt << rule_not_enough_fee(transaction) unless transaction.is_coinbase? || ASSET_ACTIONS.includes?(transaction.action)
       end
       vt.concat(valid_transactions?(transactions))
