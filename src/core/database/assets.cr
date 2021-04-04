@@ -49,6 +49,33 @@ module ::Axentro::Core::Data::Assets
     assets
   end
 
+  def get_all_asset_versions(asset_id : String) : Array(Asset)
+    assets = [] of Transaction::Asset
+    @db.query("select * from assets where asset_id = ? order by version desc", asset_id) do |rows|
+      rows.each do
+        asset_id = rows.read(String)
+        rows.read(String)
+        rows.read(Int64)
+        rows.read(Int32)
+        name = rows.read(String)
+        description = rows.read(String)
+        media_location = rows.read(String)
+        media_hash = rows.read(String)
+        quantity = rows.read(Int32)
+        terms = rows.read(String)
+        version = rows.read(Int32)
+        timestamp = rows.read(Int64)
+        assets << Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, version, timestamp)
+      end
+    end
+    assets
+  end
+
+  def get_latest_asset(asset_id : String) : Asset?
+    assets = get_all_asset_versions(asset_id)
+    assets.size > 0 ? assets.first : nil
+  end
+
   # based on asset_id, media_location and media_hash
   def existing_assets_from(assets : Array(Asset)) : Array(Asset)
     _assets = [] of Transaction::Asset
