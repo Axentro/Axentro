@@ -97,7 +97,6 @@ module ::Axentro::Core::DApps::BuildIn
         senders,
         recipients,
         [] of Transaction::Asset,
-        assets,
         "",
         "AXNT",
         kind,
