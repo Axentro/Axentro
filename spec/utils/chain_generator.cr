@@ -543,7 +543,7 @@ module ::Units::Utils::ChainGenerator
       )
     end
 
-    def make_asset(token : String, action : String, senders : Array(Transaction::Sender), recipients : Array(Transaction::Recipient), assets : Array(Transaction::Asset)) : Transaction
+    def make_asset(token : String, action : String, senders : Array(Transaction::Sender), recipients : Array(Transaction::Recipient), assets : Array(Transaction::Asset), message : String = "0") : Transaction
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
         transaction_id,
@@ -551,11 +551,11 @@ module ::Units::Utils::ChainGenerator
         senders,
         recipients,
         assets,
-        "0",   # message
-        token, # token
-        "0",   # prev_hash
-        0_i64, # timestamp
-        1,     # scaled
+        message, # message
+        token,   # token
+        "0",     # prev_hash
+        0_i64,   # timestamp
+        1,       # scaled
         TransactionKind::SLOW,
         TransactionVersion::V1
       )

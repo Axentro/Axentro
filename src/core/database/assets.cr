@@ -16,14 +16,14 @@ module ::Axentro::Core::Data::Assets
   # ------- Definition -------
 
   def asset_insert_fields_string
-    "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
+    "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
   end
 
   # ------- Insert -------
   def asset_insert_values_array(b : Block, t : Transaction, asset_index : Int32) : Array(DB::Any)
     ary = [] of DB::Any
     a = t.assets[asset_index]
-    ary << a.asset_id << t.id << b.index << asset_index << a.name << a.description << a.media_location << a.media_hash << a.quantity << a.terms << a.version << a.timestamp
+    ary << a.asset_id << t.id << b.index << asset_index << a.name << a.description << a.media_location << a.media_hash << a.quantity << a.terms << a.locked << a.version << a.timestamp
   end
 
   # ------- Query -------
@@ -41,9 +41,10 @@ module ::Axentro::Core::Data::Assets
         media_hash = rows.read(String)
         quantity = rows.read(Int32)
         terms = rows.read(String)
+        locked = rows.read(Int32)
         version = rows.read(Int32)
         timestamp = rows.read(Int64)
-        assets << Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, version, timestamp)
+        assets << Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, locked, version, timestamp)
       end
     end
     assets
@@ -63,9 +64,10 @@ module ::Axentro::Core::Data::Assets
         media_hash = rows.read(String)
         quantity = rows.read(Int32)
         terms = rows.read(String)
+        locked = rows.read(Int32)
         version = rows.read(Int32)
         timestamp = rows.read(Int64)
-        assets << Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, version, timestamp)
+        assets << Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, locked, version, timestamp)
       end
     end
     assets
@@ -94,9 +96,10 @@ module ::Axentro::Core::Data::Assets
         media_hash = rows.read(String)
         quantity = rows.read(Int32)
         terms = rows.read(String)
+        locked = rows.read(Int32)
         version = rows.read(Int32)
         timestamp = rows.read(Int64)
-        _assets << Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, version, timestamp)
+        _assets << Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, locked, version, timestamp)
       end
     end
     _assets

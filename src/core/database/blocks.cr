@@ -192,9 +192,10 @@ module ::Axentro::Core::Data::Blocks
                 media_hash = asset_rows.read(String)
                 quantity = asset_rows.read(Int32)
                 terms = asset_rows.read(String)
+                locked = asset_rows.read(Int32)
                 version = asset_rows.read(Int32)
                 timestamp = asset_rows.read(Int64)
-                assets << Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, version, timestamp)
+                assets << Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, locked, version, timestamp)
               end
             end
 

@@ -68,6 +68,7 @@ module ::Axentro::Core::DApps::BuildIn
         if action == "create_asset"
           asset = transaction.assets.first
           raise "asset version must be 1 for '#{action}'" if asset.version != 1
+          raise "asset locked must be 0 for '#{action}'" if asset.locked != 0
 
           asset_id_exists_in_db = existing_assets.find(&.asset_id.==(asset.asset_id))
           asset_id_exists_in_transactions = processed_transactions.find { |t| t.action == "create_asset" && t.assets.map(&.asset_id).includes?(asset.asset_id) }
@@ -99,6 +100,7 @@ module ::Axentro::Core::DApps::BuildIn
           if latest_asset
             next_asset_version = latest_asset.version + 1
             raise "expected asset version #{next_asset_version} not #{asset.version} as next in sequence for '#{action}'" if asset.version != next_asset_version
+            raise "asset is locked so no updates are possible for '#{action}'" if latest_asset.locked != 0
           end
 
           if !asset.media_location.empty?
@@ -112,15 +114,6 @@ module ::Axentro::Core::DApps::BuildIn
             asset_media_hash_exists_in_transactions = processed_transactions.find { |t| t.assets.reject(&.asset_id.==(asset.asset_id)).map(&.media_hash).includes?(asset.media_hash) }
             raise "asset media_hash must not already exist (asset_id: #{asset.asset_id}, media_hash: #{asset.media_hash}) '#{action}'" if asset_media_hash_exists_in_db || asset_media_hash_exists_in_transactions
           end
-        end
-
-        if action == "lock_asset"
-          asset_id = transaction.message
-          raise "message should contain asset_id" if asset_id.empty?
-
-          asset_id_exists_in_db = database.get_latest_asset(asset_id)
-          asset_id_exists_in_transactions = processed_transactions.find(&.assets.map(&.asset_id).includes?(asset_id))
-          raise "cannot lock asset with asset_id: #{asset_id} as asset with this id is not found" unless asset_id_exists_in_db || asset_id_exists_in_transactions
         end
 
         vt << transaction

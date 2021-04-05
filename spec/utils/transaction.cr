@@ -47,11 +47,11 @@ module ::Units::Utils::TransactionHelper
     }
   end
 
-  def an_asset(asset_id : String, name : String, description : String, media_location : String, media_hash : String, quantity : Int32, terms : String, version : Int32, timestamp : Int64)
-    Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, version, timestamp)
+  def an_asset(asset_id : String, name : String, description : String, media_location : String, media_hash : String, quantity : Int32, terms : String, locked : Int32, version : Int32, timestamp : Int64)
+    Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, locked, version, timestamp)
   end
 
   def a_quick_asset(asset_id : String, timestamp : Int64 = __timestamp)
-    Asset.new(asset_id, "name", "desc", "media_location", "media_hash", 1, "terms", 1, timestamp)
+    Asset.new(asset_id, "name", "desc", "media_location", "media_hash", 1, "terms", 0, 1, timestamp)
   end
 end

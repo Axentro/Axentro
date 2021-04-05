@@ -15,7 +15,7 @@ class CreateAssetsTable < MG::Base
   def up : String
     <<-SQL
     CREATE TABLE IF NOT EXISTS assets (
-      asset_id            TEXT NOT NULL PRIMARY KEY,
+      asset_id            TEXT NOT NULL,
       transaction_id      TEXT NOT NULL,
       block_id            INTEGER NOT NULL,
       idx                 INTEGER NOT NULL,
@@ -25,8 +25,10 @@ class CreateAssetsTable < MG::Base
       media_hash          TEXT NOT NULL,
       quantity            INTEGER NOT NULL,
       terms               TEXT NOT NULL,
+      locked              INTEGER NOT NULL,
       version             INTEGER NOT NULL,
-      timestamp           INTEGER NOT NULL
+      timestamp           INTEGER NOT NULL,
+      PRIMARY KEY         (asset_id, version)
       );
     SQL
   end

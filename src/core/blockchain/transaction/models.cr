@@ -123,10 +123,11 @@ module ::Axentro::Core::TransactionModels
     property media_hash : String
     property quantity : Int32
     property terms : String
+    property locked : Int32
     property version : Int32
     property timestamp : Int64
 
-    def initialize(@asset_id, @name, @description, @media_location, @media_hash, @quantity, @terms, @version, @timestamp); end
+    def initialize(@asset_id, @name, @description, @media_location, @media_hash, @quantity, @terms, @locked, @version, @timestamp); end
 
     def self.create_id : String
       tmp_id = Random::Secure.hex(32)
@@ -143,6 +144,7 @@ module ::Axentro::Core::TransactionModels
         j.field("media_hash", @media_hash)
         j.field("quantity", @quantity)
         j.field("terms", @terms)
+        j.field("locked", @locked)
         j.field("version", @version)
         j.field("timestamp", @timestamp)
       end
@@ -156,6 +158,7 @@ module ::Axentro::Core::TransactionModels
       return false unless @media_hash == other.media_hash
       return false unless @quantity == other.quantity
       return false unless @terms == other.terms
+      return false unless @locked == other.locked
       return false unless @version == other.version
       return false unless @timestamp == other.timestamp
 
