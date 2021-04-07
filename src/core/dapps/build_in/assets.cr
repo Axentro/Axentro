@@ -11,6 +11,16 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core::DApps::BuildIn
+
+  class AssetVersion
+    property asset_id : String
+    property transaction_id : String
+    property version : Int32
+    property action : String
+    property address : String
+    def initialize(@asset_id, @transaction_id, @version, @action, @address); end
+  end
+
   class AssetComponent < DApp
     def setup
     end
@@ -92,9 +102,9 @@ module ::Axentro::Core::DApps::BuildIn
 
           asset_id_exists_in_db = existing_assets.find(&.asset_id.==(asset.asset_id))
           asset_id_exists_in_transactions = processed_transactions.find(&.assets.map(&.asset_id).includes?(asset.asset_id))
-          raise "cannot update asset with asset_id: #{asset.asset_id} as asset with this id is not found" unless asset_id_exists_in_db || asset_id_exists_in_transactions
+          raise "cannot #{action.split("_").join(" ")} with asset_id: #{asset.asset_id} as asset with this id is not found" unless asset_id_exists_in_db || asset_id_exists_in_transactions
 
-          latest_assets = (existing_assets + processed_transactions.flat_map(&.assets)).select(&.asset_id.==(asset.asset_id)).uniq!.sort_by(&.version)
+          latest_assets = (existing_assets + processed_transactions.flat_map(&.assets)).select(&.asset_id.==(asset.asset_id)).sort_by(&.version)
           latest_asset = latest_assets.size > 0 ? latest_assets.last : nil
 
           if latest_asset
@@ -103,6 +113,20 @@ module ::Axentro::Core::DApps::BuildIn
             raise "asset is locked so no updates are possible for '#{action}'" if latest_asset.locked != 0
           end
 
+            db_asset_versions = database.get_transactions_for_asset(asset.asset_id)
+
+            txn_asset_versions = processed_transactions.select{|t| t.assets.map(&.asset_id).includes?(asset.asset_id) }.map do |t|
+              asset = t.assets.first
+              address = t.action == "send_asset" ? t.recipients.map(&.address).first : t.senders.map(&.address).first
+              AssetVersion.new(asset.asset_id, t.id, asset.version, t.action, address)
+            end
+
+            all_asset_versions = (db_asset_versions + txn_asset_versions)
+
+            asset_owner = all_asset_versions.sort_by(&.version).last.address
+            sender_address = transaction.senders.map(&.address).last
+            raise "cannot update asset with asset_id: #{asset.asset_id} as sender with address #{sender_address} does not own this asset (owned by: #{asset_owner})" if sender_address != asset_owner
+        
           if !asset.media_location.empty?
             asset_media_location_exists_in_db = existing_assets.reject(&.asset_id.==(asset.asset_id)).find(&.media_location.==(asset.media_location))
             asset_media_location_exists_in_transactions = processed_transactions.find { |t| t.assets.reject(&.asset_id.==(asset.asset_id)).map(&.media_location).includes?(asset.media_location) }
@@ -121,7 +145,7 @@ module ::Axentro::Core::DApps::BuildIn
       rescue e : Exception
         vt << FailedTransaction.new(transaction, e.message || "unknown error")
       end
-      vt
+       vt
     end
 
     def self.fee(action : String) : Int64

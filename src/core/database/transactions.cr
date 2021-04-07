@@ -41,6 +41,16 @@ module ::Axentro::Core::Data::Transactions
       block_index)
   end
 
+  def get_transactions_for_asset(asset_id : String) : Array(AssetVersion)
+    transactions = transactions_by_query("select * from transactions where id in (select transaction_id from assets where asset_id = ? order by version desc)", asset_id)
+    transactions.map do |t|
+      asset = t.assets.first
+      address = t.action == "send_asset" ? t.recipients.map(&.address).first : t.senders.map(&.address).first
+      AssetVersion.new(asset_id, t.id, asset.version, t.action, address)
+    end
+  end
+
+
   # ------- API -------
   def total_transactions(transaction_kind : TransactionKind) : Int32
     kind = transaction_kind == TransactionKind::SLOW ? "SLOW" : "FAST"

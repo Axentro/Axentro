@@ -552,6 +552,55 @@ describe AssetComponent do
         end
       end
 
+      it "only asset owner can update_asset" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          non_owner_wallet = Wallet.from_json(Wallet.create(true).to_json)
+  
+          asset_id = Transaction::Asset.create_id
+
+          create_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", 0, 1, __timestamp)]
+          )
+
+          update_transaction_1 = transaction_factory.make_asset(
+            "AXNT",
+            "update_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "updated_name", "description", "media_location", "media_hash", 1, "terms", 0, 2, __timestamp)]
+          ) 
+
+          update_transaction_2 = transaction_factory.make_asset(
+            "AXNT",
+            "update_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "updated_name", "updated_description", "media_location", "media_hash", 1, "terms", 0, 3, __timestamp)]
+          ) 
+
+          block_factory.add_slow_block([create_transaction,update_transaction_1]).add_slow_blocks(2)
+          component = AssetComponent.new(block_factory.blockchain)
+
+          update_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "update_asset",
+            [a_sender(non_owner_wallet, 0_i64, 0_i64)],
+            [a_recipient(non_owner_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "faker", "faker", "media_location", "media_hash", 1, "terms", 0, 4, __timestamp)]
+          )
+
+          result = component.valid_transactions?([update_transaction_2, update_transaction])
+          result.passed.size.should eq(1)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("cannot update asset with asset_id: #{asset_id} as sender with address #{non_owner_wallet.address} does not own this asset (owned by: #{sender_wallet.address})")
+        end
+      end
+
       it "asset version should be next in sequence" do
         with_factory do |block_factory, transaction_factory|
           sender_wallet = transaction_factory.sender_wallet
@@ -795,6 +844,58 @@ describe AssetComponent do
           result.failed.size.should eq(0)
         end
       end
+
+      it "only asset owner can lock_asset" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          non_owner_wallet = Wallet.from_json(Wallet.create(true).to_json)
+  
+          asset_id = Transaction::Asset.create_id
+
+          create_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", 0, 1, __timestamp)]
+          )
+
+          update_transaction_1 = transaction_factory.make_asset(
+            "AXNT",
+            "update_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "updated_name", "description", "media_location", "media_hash", 1, "terms", 0, 2, __timestamp)]
+          ) 
+
+          update_transaction_2 = transaction_factory.make_asset(
+            "AXNT",
+            "update_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "updated_name", "updated_description", "media_location", "media_hash", 1, "terms", 0, 3, __timestamp)]
+          ) 
+
+          block_factory.add_slow_block([create_transaction,update_transaction_1]).add_slow_blocks(2)
+          component = AssetComponent.new(block_factory.blockchain)
+
+          update_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "lock_asset",
+            [a_sender(non_owner_wallet, 0_i64, 0_i64)],
+            [a_recipient(non_owner_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "faker", "faker", "media_location", "media_hash", 1, "terms", 1, 4, __timestamp)]
+          )
+
+          result = component.valid_transactions?([update_transaction_2, update_transaction])
+          result.passed.size.should eq(1)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("cannot lock asset with asset_id: #{asset_id} as sender with address #{non_owner_wallet.address} does not own this asset (owned by: #{sender_wallet.address})")
+        end
+      end
     end
   end
 end
+
+# can only update or lock asset that is owned by sender
+# can only send asset that is owned by sender
