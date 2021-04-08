@@ -556,7 +556,7 @@ describe AssetComponent do
         with_factory do |block_factory, transaction_factory|
           sender_wallet = transaction_factory.sender_wallet
           non_owner_wallet = Wallet.from_json(Wallet.create(true).to_json)
-  
+
           asset_id = Transaction::Asset.create_id
 
           create_transaction = transaction_factory.make_asset(
@@ -573,7 +573,7 @@ describe AssetComponent do
             [a_sender(sender_wallet, 0_i64, 0_i64)],
             [a_recipient(sender_wallet, 0_i64)],
             [Transaction::Asset.new(asset_id, "updated_name", "description", "media_location", "media_hash", 1, "terms", 0, 2, __timestamp)]
-          ) 
+          )
 
           update_transaction_2 = transaction_factory.make_asset(
             "AXNT",
@@ -581,9 +581,9 @@ describe AssetComponent do
             [a_sender(sender_wallet, 0_i64, 0_i64)],
             [a_recipient(sender_wallet, 0_i64)],
             [Transaction::Asset.new(asset_id, "updated_name", "updated_description", "media_location", "media_hash", 1, "terms", 0, 3, __timestamp)]
-          ) 
+          )
 
-          block_factory.add_slow_block([create_transaction,update_transaction_1]).add_slow_blocks(2)
+          block_factory.add_slow_block([create_transaction, update_transaction_1]).add_slow_blocks(2)
           component = AssetComponent.new(block_factory.blockchain)
 
           update_transaction = transaction_factory.make_asset(
@@ -816,7 +816,7 @@ describe AssetComponent do
     end
 
     describe "lock_asset" do
-      it "should pass when valid lock_asset transaction" do
+      it "should pass when valid update_asset lock transaction" do
         with_factory do |block_factory, transaction_factory|
           sender_wallet = transaction_factory.sender_wallet
           asset_id = Transaction::Asset.create_id
@@ -842,55 +842,6 @@ describe AssetComponent do
           result = component.valid_transactions?([lock_transaction])
           result.passed.size.should eq(1)
           result.failed.size.should eq(0)
-        end
-      end
-
-      it "only asset owner can lock_asset" do
-        with_factory do |block_factory, transaction_factory|
-          sender_wallet = transaction_factory.sender_wallet
-          non_owner_wallet = Wallet.from_json(Wallet.create(true).to_json)
-  
-          asset_id = Transaction::Asset.create_id
-
-          create_transaction = transaction_factory.make_asset(
-            "AXNT",
-            "create_asset",
-            [a_sender(sender_wallet, 0_i64, 0_i64)],
-            [a_recipient(sender_wallet, 0_i64)],
-            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", 0, 1, __timestamp)]
-          )
-
-          update_transaction_1 = transaction_factory.make_asset(
-            "AXNT",
-            "update_asset",
-            [a_sender(sender_wallet, 0_i64, 0_i64)],
-            [a_recipient(sender_wallet, 0_i64)],
-            [Transaction::Asset.new(asset_id, "updated_name", "description", "media_location", "media_hash", 1, "terms", 0, 2, __timestamp)]
-          ) 
-
-          update_transaction_2 = transaction_factory.make_asset(
-            "AXNT",
-            "update_asset",
-            [a_sender(sender_wallet, 0_i64, 0_i64)],
-            [a_recipient(sender_wallet, 0_i64)],
-            [Transaction::Asset.new(asset_id, "updated_name", "updated_description", "media_location", "media_hash", 1, "terms", 0, 3, __timestamp)]
-          ) 
-
-          block_factory.add_slow_block([create_transaction,update_transaction_1]).add_slow_blocks(2)
-          component = AssetComponent.new(block_factory.blockchain)
-
-          update_transaction = transaction_factory.make_asset(
-            "AXNT",
-            "lock_asset",
-            [a_sender(non_owner_wallet, 0_i64, 0_i64)],
-            [a_recipient(non_owner_wallet, 0_i64)],
-            [Transaction::Asset.new(asset_id, "faker", "faker", "media_location", "media_hash", 1, "terms", 1, 4, __timestamp)]
-          )
-
-          result = component.valid_transactions?([update_transaction_2, update_transaction])
-          result.passed.size.should eq(1)
-          result.failed.size.should eq(1)
-          result.failed.first.reason.should eq("cannot lock asset with asset_id: #{asset_id} as sender with address #{non_owner_wallet.address} does not own this asset (owned by: #{sender_wallet.address})")
         end
       end
     end

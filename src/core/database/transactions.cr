@@ -50,7 +50,6 @@ module ::Axentro::Core::Data::Transactions
     end
   end
 
-
   # ------- API -------
   def total_transactions(transaction_kind : TransactionKind) : Int32
     kind = transaction_kind == TransactionKind::SLOW ? "SLOW" : "FAST"
