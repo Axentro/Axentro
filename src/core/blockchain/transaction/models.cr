@@ -56,6 +56,15 @@ module ::Axentro::Core::TransactionModels
     end
   end
 
+  enum AssetAccess
+    UNLOCKED
+    LOCKED
+
+    def to_json(j : JSON::Builder)
+      j.string(to_s)
+    end
+  end
+
   class Sender
     include JSON::Serializable
     property address : String
@@ -63,8 +72,10 @@ module ::Axentro::Core::TransactionModels
     property amount : Int64
     property fee : Int64
     property signature : String
+    property asset_id : String?
+    property asset_quantity : Int32?
 
-    def initialize(@address, @public_key, @amount, @fee, @signature); end
+    def initialize(@address, @public_key, @amount, @fee, @signature, @asset_id = nil, @asset_quantity = nil); end
 
     def to_json(j : JSON::Builder)
       j.object do
@@ -73,42 +84,80 @@ module ::Axentro::Core::TransactionModels
         j.field("amount", @amount)
         j.field("fee", @fee)
         j.field("signature", @signature)
+        j.field("asset_id", @asset_id) if @asset_id
+        j.field("asset_quantity", @asset_quantity) if @asset_quantity
       end
     end
   end
 
   alias Senders = Array(Sender)
 
-  alias SenderDecimal = NamedTuple(
-    address: String,
-    public_key: String,
-    amount: String,
-    fee: String,
-    signature: String)
-
   alias SendersDecimal = Array(SenderDecimal)
+
+  class SenderDecimal
+    include JSON::Serializable
+    property address : String
+    property public_key : String
+    property amount : String
+    property fee : String
+    property signature : String
+    property asset_id : String?
+    property asset_quantity : Int32?
+
+    def initialize(@address, @public_key, @amount, @fee, @signature, @asset_id = nil, @asset_quantity = nil); end
+
+    def to_json(j : JSON::Builder)
+      j.object do
+        j.field("address", @address)
+        j.field("public_key", @public_key)
+        j.field("amount", @amount)
+        j.field("fee", @fee)
+        j.field("signature", @signature)
+        j.field("asset_id", @asset_id) if @asset_id
+        j.field("asset_quantity", @asset_quantity) if @asset_quantity
+      end
+    end
+  end
 
   class Recipient
     include JSON::Serializable
     property address : String
     property amount : Int64
+    property asset_id : String?
+    property asset_quantity : Int32?
 
-    def initialize(@address, @amount); end
+    def initialize(@address, @amount, @asset_id = nil, @asset_quantity = nil); end
 
     def to_json(j : JSON::Builder)
       j.object do
         j.field("address", @address)
         j.field("amount", @amount)
+        j.field("asset_id", @asset_id) if @asset_id
+        j.field("asset_quantity", @asset_quantity) if @asset_quantity
       end
     end
   end
 
   alias Recipients = Array(Recipient)
 
-  alias RecipientDecimal = NamedTuple(
-    address: String,
-    amount: String,
-  )
+  class RecipientDecimal
+    include JSON::Serializable
+    property address : String
+    property amount : String
+    property asset_id : String?
+    property asset_quantity : Int32?
+
+    def initialize(@address, @amount, @asset_id = nil, @asset_quantity = nil); end
+
+    def to_json(j : JSON::Builder)
+      j.object do
+        j.field("address", @address)
+        j.field("amount", @amount)
+        j.field("asset_id", @asset_id) if @asset_id
+        j.field("asset_quantity", @asset_quantity) if @asset_quantity
+      end
+    end
+  end
 
   alias RecipientsDecimal = Array(RecipientDecimal)
 
@@ -123,7 +172,7 @@ module ::Axentro::Core::TransactionModels
     property media_hash : String
     property quantity : Int32
     property terms : String
-    property locked : Int32
+    property locked : AssetAccess
     property version : Int32
     property timestamp : Int64
 

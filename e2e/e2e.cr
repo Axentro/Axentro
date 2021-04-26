@@ -32,7 +32,7 @@ class AxentroE2E
   end
 
   def parse_option!
-    OptionParser.parse! do |parser|
+    OptionParser.parse do |parser|
       parser.banner = "Usage: e2e [options]"
 
       parser.on("--mode=MODE", "E2E test mode (on of [all_public, all_private, one_private])") do |mode|

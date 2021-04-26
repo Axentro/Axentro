@@ -115,7 +115,7 @@ module ::Axentro::Interface
 
       if ARGV.size > 0 && ARGV[0].starts_with?('-')
         if parser = option_parser
-          parser.parse!
+          parser.parse
         end
       end
 

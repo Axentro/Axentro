@@ -40,7 +40,7 @@ module ::Axentro::Core
 
     def self.transactions(config : DeveloperFundConfig)
       recipients = config.addresses.map do |item|
-        {address: item["address"], amount: item["amount"].to_s}
+        RecipientDecimal.new(item["address"], item["amount"].to_s)
       end
 
       transaction_id = Transaction.create_id

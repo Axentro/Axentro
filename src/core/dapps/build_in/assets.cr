@@ -73,28 +73,28 @@ module ::Axentro::Core::DApps::BuildIn
           asset = transaction.assets.first
           raise "asset_id must be length of 64 for '#{action}'" if asset.asset_id.size != 64
           raise "asset quantity must be 1 or more for '#{action}' with asset_id: #{asset.asset_id}" if asset.quantity <= 0
+
+          if !asset.media_location.empty?
+            asset_media_location_exists_in_db = existing_assets.reject(&.asset_id.==(asset.asset_id)).find(&.media_location.==(asset.media_location))
+            asset_media_location_exists_in_transactions = processed_transactions.find { |t| t.assets.reject(&.asset_id.==(asset.asset_id)).map(&.media_location).includes?(asset.media_location) }
+            raise "asset media_location must not already exist (asset_id: #{asset.asset_id}, media_location: #{asset.media_location}) '#{action}'" if asset_media_location_exists_in_db || asset_media_location_exists_in_transactions
+          end
+
+          if !asset.media_hash.empty?
+            asset_media_hash_exists_in_db = existing_assets.reject(&.asset_id.==(asset.asset_id)).find(&.media_hash.==(asset.media_hash))
+            asset_media_hash_exists_in_transactions = processed_transactions.find { |t| t.assets.reject(&.asset_id.==(asset.asset_id)).map(&.media_hash).includes?(asset.media_hash) }
+            raise "asset media_hash must not already exist (asset_id: #{asset.asset_id}, media_hash: #{asset.media_hash}) '#{action}'" if asset_media_hash_exists_in_db || asset_media_hash_exists_in_transactions
+          end
         end
 
         if action == "create_asset"
           asset = transaction.assets.first
           raise "asset version must be 1 for '#{action}'" if asset.version != 1
-          raise "asset locked must be 0 for '#{action}'" if asset.locked != 0
+          raise "asset must be either locked or unlocked for '#{action}'" unless [AssetAccess::UNLOCKED, AssetAccess::LOCKED].includes?(asset.locked)
 
           asset_id_exists_in_db = existing_assets.find(&.asset_id.==(asset.asset_id))
           asset_id_exists_in_transactions = processed_transactions.find { |t| t.action == "create_asset" && t.assets.map(&.asset_id).includes?(asset.asset_id) }
           raise "asset_id must not already exist (asset_id: #{asset.asset_id}) '#{action}'" if asset_id_exists_in_db || asset_id_exists_in_transactions
-
-          if !asset.media_location.empty?
-            asset_media_location_exists_in_db = existing_assets.find(&.media_location.==(asset.media_location))
-            asset_media_location_exists_in_transactions = processed_transactions.find { |t| t.action == "create_asset" && t.assets.map(&.media_location).includes?(asset.media_location) }
-            raise "asset media_location must not already exist (asset_id: #{asset.asset_id}, media_location: #{asset.media_location}) '#{action}'" if asset_media_location_exists_in_db || asset_media_location_exists_in_transactions
-          end
-
-          if !asset.media_hash.empty?
-            asset_media_hash_exists_in_db = existing_assets.find(&.media_hash.==(asset.media_hash))
-            asset_media_hash_exists_in_transactions = processed_transactions.find { |t| t.action == "create_asset" && t.assets.map(&.media_hash).includes?(asset.media_hash) }
-            raise "asset media_hash must not already exist (asset_id: #{asset.asset_id}, media_hash: #{asset.media_hash}) '#{action}'" if asset_media_hash_exists_in_db || asset_media_hash_exists_in_transactions
-          end
         end
 
         if action == "update_asset"
@@ -110,34 +110,28 @@ module ::Axentro::Core::DApps::BuildIn
           if latest_asset
             next_asset_version = latest_asset.version + 1
             raise "expected asset version #{next_asset_version} not #{asset.version} as next in sequence for '#{action}'" if asset.version != next_asset_version
-            raise "asset is locked so no updates are possible for '#{action}'" if latest_asset.locked != 0
+            raise "asset is locked so no updates are possible for '#{action}'" if latest_asset.locked != AssetAccess::UNLOCKED
           end
 
-          db_asset_versions = database.get_transactions_for_asset(asset.asset_id)
+          # ------------
+          # db_asset_versions = database.get_transactions_for_asset(asset.asset_id)
 
-          txn_asset_versions = processed_transactions.select { |t| t.assets.map(&.asset_id).includes?(asset.asset_id) }.map do |t|
-            asset = t.assets.first
-            address = t.action == "send_asset" ? t.recipients.map(&.address).first : t.senders.map(&.address).first
-            AssetVersion.new(asset.asset_id, t.id, asset.version, t.action, address)
-          end
+          # txn_asset_versions = processed_transactions.select { |t| t.assets.map(&.asset_id).includes?(asset.asset_id) }.map do |t|
+          #   asset = t.assets.first
+          #   address = t.action == "send_asset" ? t.recipients.map(&.address).first : t.senders.map(&.address).first
+          #   AssetVersion.new(asset.asset_id, t.id, asset.version, t.action, address)
+          # end
 
-          all_asset_versions = (db_asset_versions + txn_asset_versions)
+          # all_asset_versions = (db_asset_versions + txn_asset_versions)
 
-          asset_owner = all_asset_versions.sort_by(&.version).last.address
-          sender_address = transaction.senders.map(&.address).last
-          raise "cannot update asset with asset_id: #{asset.asset_id} as sender with address #{sender_address} does not own this asset (owned by: #{asset_owner})" if sender_address != asset_owner
+          # asset_owner = all_asset_versions.sort_by(&.version).last.address
+          # sender_address = transaction.senders.map(&.address).last
+          # raise "cannot update asset with asset_id: #{asset.asset_id} as sender with address #{sender_address} does not own this asset (owned by: #{asset_owner})" if sender_address != asset_owner
+          # -------------
+          # asset ownership
 
-          if !asset.media_location.empty?
-            asset_media_location_exists_in_db = existing_assets.reject(&.asset_id.==(asset.asset_id)).find(&.media_location.==(asset.media_location))
-            asset_media_location_exists_in_transactions = processed_transactions.find { |t| t.assets.reject(&.asset_id.==(asset.asset_id)).map(&.media_location).includes?(asset.media_location) }
-            raise "asset media_location must not already exist (asset_id: #{asset.asset_id}, media_location: #{asset.media_location}) '#{action}'" if asset_media_location_exists_in_db || asset_media_location_exists_in_transactions
-          end
+          
 
-          if !asset.media_hash.empty?
-            asset_media_hash_exists_in_db = existing_assets.reject(&.asset_id.==(asset.asset_id)).find(&.media_hash.==(asset.media_hash))
-            asset_media_hash_exists_in_transactions = processed_transactions.find { |t| t.assets.reject(&.asset_id.==(asset.asset_id)).map(&.media_hash).includes?(asset.media_hash) }
-            raise "asset media_hash must not already exist (asset_id: #{asset.asset_id}, media_hash: #{asset.media_hash}) '#{action}'" if asset_media_hash_exists_in_db || asset_media_hash_exists_in_transactions
-          end
         end
 
         vt << transaction

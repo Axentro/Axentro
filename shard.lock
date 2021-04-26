@@ -2,7 +2,7 @@ version: 2.0
 shards:
   ameba:
     git: https://github.com/veelenga/ameba.git
-    version: 0.14.1
+    version: 0.14.3
 
   baked_file_system:
     git: https://github.com/axentro/baked_file_system.git
@@ -10,7 +10,7 @@ shards:
 
   crest:
     git: https://github.com/mamantoha/crest.git
-    version: 0.26.7
+    version: 0.27.0
 
   crometheus:
     git: https://github.com/darwinnn/crometheus.git
@@ -22,7 +22,7 @@ shards:
 
   db:
     git: https://github.com/crystal-lang/crystal-db.git
-    version: 0.10.0
+    version: 0.10.1
 
   defense:
     git: https://github.com/defense-cr/defense.git
@@ -50,11 +50,11 @@ shards:
 
   json_mapping:
     git: https://github.com/crystal-lang/json_mapping.cr.git
-    version: 0.1.0
+    version: 0.1.1
 
   lru-cache:
     git: https://github.com/nicolab/crystal-lru-cache.git
-    version: 1.0.2
+    version: 1.0.3
 
   mg:
     git: https://github.com/hkalexling/mg.git
@@ -70,15 +70,15 @@ shards:
 
   myhtml:
     git: https://github.com/kostya/myhtml.git
-    version: 1.5.3
+    version: 1.5.4
 
   pool:
     git: https://github.com/ysbaddaden/pool.git
-    version: 0.2.3
+    version: 0.2.4
 
   radix:
     git: https://github.com/luislavena/radix.git
-    version: 0.4.0
+    version: 0.4.1
 
   rate_limiter:
     git: https://github.com/z64/rate_limiter.git
