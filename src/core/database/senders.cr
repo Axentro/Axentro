@@ -16,14 +16,14 @@ module ::Axentro::Core::Data::Senders
   # ------- Definition -------
 
   def sender_insert_fields_string
-    "?, ?, ?, ?, ?, ?, ?, ?"
+    "?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
   end
 
   # ------- Insert -------
   def sender_insert_values_array(b : Block, t : Transaction, sender_index : Int32) : Array(DB::Any)
     ary = [] of DB::Any
     s = t.senders[sender_index]
-    ary << t.id << b.index << sender_index << s.address << s.public_key << s.amount << s.fee << s.signature
+    ary << t.id << b.index << sender_index << s.address << s.public_key << s.amount << s.fee << s.signature << s.asset_id << s.asset_quantity
   end
 
   # ------- Query -------
@@ -39,7 +39,9 @@ module ::Axentro::Core::Data::Senders
         amount = rows.read(Int64)
         fee = rows.read(Int64)
         signature = rows.read(String)
-        senders << Sender.new(address, public_key, amount, fee, signature)
+        asset_id = rows.read(String?)
+        asset_quantity = rows.read(Int32?)
+        senders << Sender.new(address, public_key, amount, fee, signature, asset_id, asset_quantity)
       end
     end
     senders

@@ -130,8 +130,6 @@ module ::Axentro::Core::DApps::BuildIn
           # -------------
           # asset ownership
 
-          
-
         end
 
         vt << transaction

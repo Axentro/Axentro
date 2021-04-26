@@ -15,14 +15,14 @@ require "../blockchain/domain_model/*"
 module ::Axentro::Core::Data::Recipients
   # ------- Definition -------
   def recipient_insert_fields_string
-    "?, ?, ?, ?, ?"
+    "?, ?, ?, ?, ?, ?, ?"
   end
 
   # ------- Insert -------
   def recipient_insert_values_array(b : Block, t : Transaction, recipient_index : Int32) : Array(DB::Any)
     ary = [] of DB::Any
     r = t.recipients[recipient_index]
-    ary << t.id << b.index << recipient_index << r.address << r.amount
+    ary << t.id << b.index << recipient_index << r.address << r.amount << r.asset_id << r.asset_quantity
   end
 
   # ------- Query -------
@@ -35,7 +35,9 @@ module ::Axentro::Core::Data::Recipients
         rows.read(Int32)
         address = rows.read(String)
         amount = rows.read(Int64)
-        recipients << Recipient.new(address, amount)
+        asset_id = rows.read(String?)
+        asset_quantity = rows.read(Int32?)
+        recipients << Recipient.new(address, amount, asset_id, asset_quantity)
       end
     end
     recipients
