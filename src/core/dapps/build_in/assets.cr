@@ -48,7 +48,7 @@ module ::Axentro::Core::DApps::BuildIn
       body_transactions = transactions.reject(&.is_coinbase?)
 
       existing_assets = database.existing_assets_from(body_transactions.flat_map(&.assets))
-      existing_quantities_per_asset = database.get_address_asset_amounts(body_transactions.flat_map(&.senders.map(&.address)))
+      # existing_quantities_per_asset = database.get_address_asset_amounts(body_transactions.flat_map(&.senders.map(&.address)))
 
       body_transactions.each do |transaction|
         token = transaction.token
@@ -141,7 +141,6 @@ module ::Axentro::Core::DApps::BuildIn
           raise "cannot update asset with asset_id: #{asset.asset_id} as sender with address #{sender_address} does not own this asset (owned by: #{asset_owner})" if sender_address != asset_owner
         elsif action == "send_asset"
           # asset = transaction.assets.first
-
           # processed_asset_quantities = processed_quantities_per_asset([sender_address], processed_transactions)
           # all_asset_quantities = existing_quantities_per_asset.merge(processed_asset_quantities) { |_, xs, ys| (xs + ys).uniq! }
 
@@ -175,7 +174,7 @@ module ::Axentro::Core::DApps::BuildIn
         recipient_sum = recipient_sum_per_address[address]
         sender_sum = sender_sum_per_address[address]
         create_update_sum = create_update_sum_per_address[address]
-        unique_asset_ids = (recipient_sum + sender_sum + create_update_sum).map(&.asset_id).uniq
+        unique_asset_ids = (recipient_sum + sender_sum + create_update_sum).map(&.asset_id).uniq!
 
         unique_asset_ids.map do |asset_id|
           recipient = recipient_sum.select(&.asset_id.==(asset_id)).sum(&.quantity)
@@ -199,7 +198,7 @@ module ::Axentro::Core::DApps::BuildIn
       addresses.each do |address|
         address_recipients = processed_transactions.flat_map(&.recipients).select { |recipient| address == recipient.address }.select { |r| !r.asset_id.nil? }
         address_recipients.group_by(&.asset_id).each do |asset_id, recipients|
-          amounts_per_address[address] << AssetQuantity.new(asset_id.not_nil!, recipients.map(&.asset_quantity).compact.sum)
+          amounts_per_address[address] << AssetQuantity.new(asset_id.not_nil!, recipients.compact_map(&.asset_quantity).sum)
         end
       end
 
@@ -213,7 +212,7 @@ module ::Axentro::Core::DApps::BuildIn
       addresses.each do |address|
         address_senders = processed_transactions.flat_map(&.senders).select { |sender| address == sender.address }.select { |r| !r.asset_id.nil? }
         address_senders.group_by(&.asset_id).each do |asset_id, senders|
-          amounts_per_address[address] << AssetQuantity.new(asset_id.not_nil!, senders.map(&.asset_quantity).compact.sum)
+          amounts_per_address[address] << AssetQuantity.new(asset_id.not_nil!, senders.compact_map(&.asset_quantity).sum)
         end
       end
 
@@ -227,7 +226,7 @@ module ::Axentro::Core::DApps::BuildIn
       addresses.each do |address|
         create_update_assets = processed_transactions.select { |t| ["create_asset", "update_asset"].includes?(t.action) }.flat_map(&.assets)
         create_update_assets.group_by(&.asset_id).each do |asset_id, assets|
-          amounts_per_address[address] << AssetQuantity.new(asset_id, assets.map(&.quantity).sum)
+          amounts_per_address[address] << AssetQuantity.new(asset_id, assets.sum(&.quantity))
         end
       end
 

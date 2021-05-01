@@ -983,7 +983,6 @@ describe AssetComponent do
           result.failed.size.should eq(0)
         end
       end
-      
 
       # it "boop" do
       #   with_factory do |block_factory, transaction_factory|

@@ -69,7 +69,7 @@ module ::Axentro::Core::Data::Assets
       recipient_sum = recipient_sum_per_address[address]
       sender_sum = sender_sum_per_address[address]
       create_update_sum = create_update_sum_per_address[address]
-      unique_asset_ids = (recipient_sum + sender_sum + create_update_sum).map(&.asset_id).uniq
+      unique_asset_ids = (recipient_sum + sender_sum + create_update_sum).map(&.asset_id).uniq!
 
       unique_asset_ids.map do |asset_id|
         recipient = recipient_sum.select(&.asset_id.==(asset_id)).sum(&.quantity)
@@ -159,7 +159,7 @@ module ::Axentro::Core::Data::Assets
       end
     end
 
-    asset_versions.group_by(&.asset_id).map { |asset_id, avs| avs.select { |a| a.version == avs.map(&.version).max } }.flatten.each do |asset_version|
+    asset_versions.group_by(&.asset_id).flat_map { |_, avs| avs.select(&.version.==(avs.map(&.version).max)) }.each do |asset_version|
       amounts_per_address[asset_version.address] << AssetQuantity.new(asset_version.asset_id, asset_version.quantity)
     end
 
