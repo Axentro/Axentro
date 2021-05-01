@@ -133,7 +133,7 @@ module ::Axentro::Core
       signed_senders = self.senders.map_with_index { |s, i|
         private_key = Wif.new(wallets[i].wif).private_key
         signature = KeyUtils.sign(private_key.as_hex, self.to_hash)
-        Sender.new(s.address, s.public_key, s.amount, s.fee, signature)
+        Sender.new(s.address, s.public_key, s.amount, s.fee, signature, s.asset_id, s.asset_quantity)
       }
 
       Transaction.new(

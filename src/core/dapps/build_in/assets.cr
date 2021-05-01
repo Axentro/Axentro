@@ -47,7 +47,8 @@ module ::Axentro::Core::DApps::BuildIn
       processed_transactions = transactions.select(&.is_coinbase?)
       body_transactions = transactions.reject(&.is_coinbase?)
 
-      existing_assets = database.existing_assets_from(body_transactions.flat_map(&.assets))
+      existing_sender_assets = database.existing_assets_from_sender(body_transactions.flat_map(&.senders.compact_map(&.asset_id)))
+      existing_assets = database.existing_assets_from(body_transactions.flat_map(&.assets) + existing_sender_assets)
       # existing_quantities_per_asset = database.get_address_asset_amounts(body_transactions.flat_map(&.senders.map(&.address)))
 
       body_transactions.each do |transaction|
@@ -140,6 +141,22 @@ module ::Axentro::Core::DApps::BuildIn
           sender_address = transaction.senders.map(&.address).last
           raise "cannot update asset with asset_id: #{asset.asset_id} as sender with address #{sender_address} does not own this asset (owned by: #{asset_owner})" if sender_address != asset_owner
         elsif action == "send_asset"
+
+          # asset should be empty for send
+
+          # senders asset_id should not be nil
+
+          # sender asset_quantity should be 1 or more
+    
+          sender_asset_id = sender.asset_id.not_nil!
+
+          latest_assets = (existing_assets + processed_transactions.flat_map(&.assets)).select(&.asset_id.==(sender_asset_id)).sort_by!(&.version)    
+          latest_asset = latest_assets.size > 0 ? latest_assets.last : nil
+          
+          if latest_asset
+            raise "asset must be locked in order to send asset #{sender_asset_id}" if latest_asset.locked != AssetAccess::LOCKED
+          end
+         
           # asset = transaction.assets.first
           # processed_asset_quantities = processed_quantities_per_asset([sender_address], processed_transactions)
           # all_asset_quantities = existing_quantities_per_asset.merge(processed_asset_quantities) { |_, xs, ys| (xs + ys).uniq! }

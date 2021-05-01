@@ -196,6 +196,30 @@ module ::Axentro::Core::Data::Assets
     assets.size > 0 ? assets.first : nil
   end
 
+  def existing_assets_from_sender(asset_ids : Array(String)) : Array(Asset)
+    _assets = [] of Transaction::Asset
+    asset_list = asset_ids.map { |a| "'#{a}'" }.uniq!.join(",")
+    @db.query("select * from assets where asset_id in (#{asset_list})") do |rows|
+     rows.each do
+      asset_id = rows.read(String)
+      rows.read(String)
+      rows.read(Int64)
+      rows.read(Int32)
+      name = rows.read(String)
+      description = rows.read(String)
+      media_location = rows.read(String)
+      media_hash = rows.read(String)
+      quantity = rows.read(Int32)
+      terms = rows.read(String)
+      locked = AssetAccess.parse(rows.read(String))
+      version = rows.read(Int32)
+      timestamp = rows.read(Int64)
+      _assets << Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, locked, version, timestamp)
+    end
+    end
+    _assets.group_by(&.asset_id).flat_map{|_, assets| assets.select{|a| a.version == assets.map(&.version).max } }
+  end
+
   # based on asset_id, media_location and media_hash
   def existing_assets_from(assets : Array(Asset)) : Array(Asset)
     _assets = [] of Transaction::Asset
@@ -221,6 +245,6 @@ module ::Axentro::Core::Data::Assets
         _assets << Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, locked, version, timestamp)
       end
     end
-    _assets
+    _assets.group_by(&.asset_id).flat_map{|_, assets| assets.select{|a| a.version == assets.map(&.version).max } }
   end
 end
