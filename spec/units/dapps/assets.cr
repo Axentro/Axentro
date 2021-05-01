@@ -564,15 +564,7 @@ describe AssetComponent do
             "create_asset",
             [a_sender(sender_wallet, 0_i64, 0_i64)],
             [a_recipient(sender_wallet, 0_i64)],
-            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 1, __timestamp)]
-          )
-
-          update_transaction_1 = transaction_factory.make_asset(
-            "AXNT",
-            "update_asset",
-            [a_sender(sender_wallet, 0_i64, 0_i64)],
-            [a_recipient(sender_wallet, 0_i64)],
-            [Transaction::Asset.new(asset_id, "updated_name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 2, __timestamp)]
+            [Transaction::Asset.new(asset_id, "name1", "description", "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 1, __timestamp)]
           )
 
           update_transaction_2 = transaction_factory.make_asset(
@@ -580,13 +572,21 @@ describe AssetComponent do
             "update_asset",
             [a_sender(sender_wallet, 0_i64, 0_i64)],
             [a_recipient(sender_wallet, 0_i64)],
-            [Transaction::Asset.new(asset_id, "updated_name", "updated_description", "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 3, __timestamp)]
+            [Transaction::Asset.new(asset_id, "updated_name2", "description", "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 2, __timestamp)]
           )
 
-          block_factory.add_slow_block([create_transaction, update_transaction_1]).add_slow_blocks(2)
+          update_transaction_3 = transaction_factory.make_asset(
+            "AXNT",
+            "update_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "updated_name3", "updated_description", "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 3, __timestamp)]
+          )
+
+          block_factory.add_slow_block([create_transaction, update_transaction_2]).add_slow_blocks(2)
           component = AssetComponent.new(block_factory.blockchain)
 
-          update_transaction = transaction_factory.make_asset(
+          update_transaction_4 = transaction_factory.make_asset(
             "AXNT",
             "update_asset",
             [a_sender(non_owner_wallet, 0_i64, 0_i64)],
@@ -594,7 +594,7 @@ describe AssetComponent do
             [Transaction::Asset.new(asset_id, "faker", "faker", "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 4, __timestamp)]
           )
 
-          result = component.valid_transactions?([update_transaction_2, update_transaction])
+          result = component.valid_transactions?([update_transaction_3, update_transaction_4])
           result.passed.size.should eq(1)
           result.failed.size.should eq(1)
           result.failed.first.reason.should eq("cannot update asset with asset_id: #{asset_id} as sender with address #{non_owner_wallet.address} does not own this asset (owned by: #{sender_wallet.address})")
@@ -927,6 +927,7 @@ describe AssetComponent do
       it "should pass when valid send_asset transaction (in transaction batch)" do
         with_factory do |block_factory, transaction_factory|
           sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
           asset_id = Transaction::Asset.create_id
 
           create_transaction = transaction_factory.make_asset(
@@ -942,9 +943,9 @@ describe AssetComponent do
           send_asset_transaction = transaction_factory.make_asset(
             "AXNT",
             "send_asset",
-            [a_sender(sender_wallet, 0_i64, 0_i64)],
-            [a_recipient(sender_wallet, 0_i64)],
-            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 1, __timestamp)]
+            [an_asset_sender(sender_wallet, asset_id)],
+            [an_asset_recipient(recipient_wallet, asset_id)],
+            [] of Transaction::Asset
           )
 
           result = component.valid_transactions?([create_transaction, send_asset_transaction])
@@ -982,6 +983,51 @@ describe AssetComponent do
           result.failed.size.should eq(0)
         end
       end
+      
+
+      # it "boop" do
+      #   with_factory do |block_factory, transaction_factory|
+      #     sender_wallet = transaction_factory.sender_wallet
+      #     asset_id = Transaction::Asset.create_id
+
+      #     create_transaction = transaction_factory.make_asset(
+      #       "AXNT",
+      #       "create_asset",
+      #       [a_sender(sender_wallet, 0_i64, 0_i64)],
+      #       [a_recipient(sender_wallet, 0_i64)],
+      #       [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 1, __timestamp)]
+      #     )
+
+      #     update_transaction = transaction_factory.make_asset(
+      #       "AXNT",
+      #       "update_asset",
+      #       [a_sender(sender_wallet, 0_i64, 0_i64)],
+      #       [a_recipient(sender_wallet, 0_i64)],
+      #       [Transaction::Asset.new(asset_id, "name1", "description", "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 2, __timestamp)]
+      #     )
+
+      #     update_transaction2 = transaction_factory.make_asset(
+      #       "AXNT",
+      #       "update_asset",
+      #       [a_sender(sender_wallet, 0_i64, 0_i64)],
+      #       [a_recipient(sender_wallet, 0_i64)],
+      #       [Transaction::Asset.new(asset_id, "name1", "description", "media_location", "media_hash", 100, "terms", AssetAccess::UNLOCKED, 3, __timestamp)]
+      #     )
+
+      #     asset_id2 = Transaction::Asset.create_id
+      #     create_transaction2 = transaction_factory.make_asset(
+      #       "AXNT",
+      #       "create_asset",
+      #       [a_sender(sender_wallet, 0_i64, 0_i64)],
+      #       [a_recipient(sender_wallet, 0_i64)],
+      #       [Transaction::Asset.new(asset_id2, "name2", "description2", "media_location2", "media_hash2", 1, "terms2", AssetAccess::UNLOCKED, 1, __timestamp)]
+      #     )
+
+      #     block_factory.add_slow_block([create_transaction, update_transaction, create_transaction2, update_transaction2]).add_slow_blocks(2)
+
+      #     pp block_factory.database.get_address_asset_amounts([sender_wallet.address])
+      #   end
+      # end
 
       it "asset must be locked in order to send_asset (in transaction batch)" do
       end

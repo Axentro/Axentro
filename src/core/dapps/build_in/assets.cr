@@ -21,6 +21,13 @@ module ::Axentro::Core::DApps::BuildIn
     def initialize(@asset_id, @transaction_id, @version, @action, @address); end
   end
 
+  class AssetQuantity
+    property asset_id : String
+    property quantity : Int32
+
+    def initialize(@asset_id, @quantity); end
+  end
+
   class AssetComponent < DApp
     def setup
     end
@@ -41,6 +48,7 @@ module ::Axentro::Core::DApps::BuildIn
       body_transactions = transactions.reject(&.is_coinbase?)
 
       existing_assets = database.existing_assets_from(body_transactions.flat_map(&.assets))
+      existing_quantities_per_asset = database.get_address_asset_amounts(body_transactions.flat_map(&.senders.map(&.address)))
 
       body_transactions.each do |transaction|
         token = transaction.token
@@ -60,15 +68,15 @@ module ::Axentro::Core::DApps::BuildIn
         recipient_address = recipient.address
         recipient_amount = recipient.amount
 
-        raise "address mismatch for '#{action}'. " +
-              "sender: #{sender_address}, recipient: #{recipient_address}" if sender_address != recipient_address
-
-        raise "amount mismatch for '#{action}'. " +
-              "sender: #{sender_amount}, recipient: #{recipient_amount}" if sender_amount != recipient_amount
-
         raise "amount must be 0 for action: #{action}" if (sender_amount != 0_i64 || recipient_amount != 0_i64)
 
         if ["create_asset", "update_asset"].includes?(action)
+          raise "address mismatch for '#{action}'. " +
+                "sender: #{sender_address}, recipient: #{recipient_address}" if sender_address != recipient_address
+
+          raise "amount mismatch for '#{action}'. " +
+                "sender: #{sender_amount}, recipient: #{recipient_amount}" if sender_amount != recipient_amount
+
           raise "a transaction must have exactly 1 asset for '#{action}'" if transaction.assets.size != 1
           asset = transaction.assets.first
           raise "asset_id must be length of 64 for '#{action}'" if asset.asset_id.size != 64
@@ -77,13 +85,17 @@ module ::Axentro::Core::DApps::BuildIn
           if !asset.media_location.empty?
             asset_media_location_exists_in_db = existing_assets.reject(&.asset_id.==(asset.asset_id)).find(&.media_location.==(asset.media_location))
             asset_media_location_exists_in_transactions = processed_transactions.find { |t| t.assets.reject(&.asset_id.==(asset.asset_id)).map(&.media_location).includes?(asset.media_location) }
-            raise "asset media_location must not already exist (asset_id: #{asset.asset_id}, media_location: #{asset.media_location}) '#{action}'" if asset_media_location_exists_in_db || asset_media_location_exists_in_transactions
+            if asset_media_location_exists_in_db || asset_media_location_exists_in_transactions
+              raise "asset media_location must not already exist (asset_id: #{asset.asset_id}, media_location: #{asset.media_location}) '#{action}'"
+            end
           end
 
           if !asset.media_hash.empty?
             asset_media_hash_exists_in_db = existing_assets.reject(&.asset_id.==(asset.asset_id)).find(&.media_hash.==(asset.media_hash))
             asset_media_hash_exists_in_transactions = processed_transactions.find { |t| t.assets.reject(&.asset_id.==(asset.asset_id)).map(&.media_hash).includes?(asset.media_hash) }
-            raise "asset media_hash must not already exist (asset_id: #{asset.asset_id}, media_hash: #{asset.media_hash}) '#{action}'" if asset_media_hash_exists_in_db || asset_media_hash_exists_in_transactions
+            if asset_media_hash_exists_in_db || asset_media_hash_exists_in_transactions
+              raise "asset media_hash must not already exist (asset_id: #{asset.asset_id}, media_hash: #{asset.media_hash}) '#{action}'"
+            end
           end
         end
 
@@ -94,10 +106,10 @@ module ::Axentro::Core::DApps::BuildIn
 
           asset_id_exists_in_db = existing_assets.find(&.asset_id.==(asset.asset_id))
           asset_id_exists_in_transactions = processed_transactions.find { |t| t.action == "create_asset" && t.assets.map(&.asset_id).includes?(asset.asset_id) }
-          raise "asset_id must not already exist (asset_id: #{asset.asset_id}) '#{action}'" if asset_id_exists_in_db || asset_id_exists_in_transactions
-        end
-
-        if action == "update_asset"
+          if asset_id_exists_in_db || asset_id_exists_in_transactions
+            raise "asset_id must not already exist (asset_id: #{asset.asset_id}) '#{action}'"
+          end
+        elsif action == "update_asset"
           asset = transaction.assets.first
 
           asset_id_exists_in_db = existing_assets.find(&.asset_id.==(asset.asset_id))
@@ -113,23 +125,33 @@ module ::Axentro::Core::DApps::BuildIn
             raise "asset is locked so no updates are possible for '#{action}'" if latest_asset.locked != AssetAccess::UNLOCKED
           end
 
-          # ------------
-          # db_asset_versions = database.get_transactions_for_asset(asset.asset_id)
-
-          # txn_asset_versions = processed_transactions.select { |t| t.assets.map(&.asset_id).includes?(asset.asset_id) }.map do |t|
-          #   asset = t.assets.first
-          #   address = t.action == "send_asset" ? t.recipients.map(&.address).first : t.senders.map(&.address).first
-          #   AssetVersion.new(asset.asset_id, t.id, asset.version, t.action, address)
-          # end
-
-          # all_asset_versions = (db_asset_versions + txn_asset_versions)
-
-          # asset_owner = all_asset_versions.sort_by(&.version).last.address
-          # sender_address = transaction.senders.map(&.address).last
-          # raise "cannot update asset with asset_id: #{asset.asset_id} as sender with address #{sender_address} does not own this asset (owned by: #{asset_owner})" if sender_address != asset_owner
-          # -------------
           # asset ownership
+          db_asset_versions = database.get_transactions_for_asset(asset.asset_id)
 
+          txn_asset_versions = processed_transactions.select { |t| t.assets.map(&.asset_id).includes?(asset.asset_id) }.map do |t|
+            asset = t.assets.first
+            address = t.action == "send_asset" ? t.recipients.map(&.address).first : t.senders.map(&.address).first
+            AssetVersion.new(asset.asset_id, t.id, asset.version, t.action, address)
+          end
+
+          all_asset_versions = (db_asset_versions + txn_asset_versions)
+
+          asset_owner = all_asset_versions.sort_by(&.version).last.address
+          sender_address = transaction.senders.map(&.address).last
+          raise "cannot update asset with asset_id: #{asset.asset_id} as sender with address #{sender_address} does not own this asset (owned by: #{asset_owner})" if sender_address != asset_owner
+        elsif action == "send_asset"
+          # asset = transaction.assets.first
+
+          # processed_asset_quantities = processed_quantities_per_asset([sender_address], processed_transactions)
+          # all_asset_quantities = existing_quantities_per_asset.merge(processed_asset_quantities) { |_, xs, ys| (xs + ys).uniq! }
+
+          # if has_assets = all_asset_quantities[sender_address]?
+          #   if has_assets.find(&.asset_id.==(asset.asset_id)).nil?
+          #     raise "cannot update asset with asset_id: #{asset.asset_id} as sender with address #{sender_address} does not own this asset"
+          #   end
+          # else
+          #   raise "cannot update asset with asset_id: #{asset.asset_id} as sender with address #{sender_address} does not own this asset"
+          # end
         end
 
         vt << transaction
@@ -138,6 +160,78 @@ module ::Axentro::Core::DApps::BuildIn
         vt << FailedTransaction.new(transaction, e.message || "unknown error")
       end
       vt
+    end
+
+    private def processed_quantities_per_asset(addresses : Array(String), processed_transactions : Array(Transaction)) : Hash(String, Array(AssetQuantity))
+      addresses.uniq!
+      amounts_per_address : Hash(String, Array(AssetQuantity)) = {} of String => Array(AssetQuantity)
+      addresses.each { |a| amounts_per_address[a] = [] of AssetQuantity }
+
+      recipient_sum_per_address = get_asset_recipient_sum_per_address(addresses, processed_transactions)
+      sender_sum_per_address = get_asset_sender_sum_per_address(addresses, processed_transactions)
+      create_update_sum_per_address = get_asset_create_update_sum_per_address(addresses, processed_transactions)
+
+      addresses.each do |address|
+        recipient_sum = recipient_sum_per_address[address]
+        sender_sum = sender_sum_per_address[address]
+        create_update_sum = create_update_sum_per_address[address]
+        unique_asset_ids = (recipient_sum + sender_sum + create_update_sum).map(&.asset_id).uniq
+
+        unique_asset_ids.map do |asset_id|
+          recipient = recipient_sum.select(&.asset_id.==(asset_id)).sum(&.quantity)
+          sender = sender_sum.select(&.asset_id.==(asset_id)).sum(&.quantity)
+          create_update = create_update_sum.select(&.asset_id.==(asset_id)).sum(&.quantity)
+
+          send_receive_balance = recipient - sender
+          balance = create_update + send_receive_balance
+
+          amounts_per_address[address] << AssetQuantity.new(asset_id, balance)
+        end
+      end
+
+      amounts_per_address
+    end
+
+    private def get_asset_recipient_sum_per_address(addresses : Array(String), processed_transactions : Array(Transaction)) : Hash(String, Array(AssetQuantity))
+      amounts_per_address : Hash(String, Array(AssetQuantity)) = {} of String => Array(AssetQuantity)
+      addresses.each { |a| amounts_per_address[a] = [] of AssetQuantity }
+
+      addresses.each do |address|
+        address_recipients = processed_transactions.flat_map(&.recipients).select { |recipient| address == recipient.address }.select { |r| !r.asset_id.nil? }
+        address_recipients.group_by(&.asset_id).each do |asset_id, recipients|
+          amounts_per_address[address] << AssetQuantity.new(asset_id.not_nil!, recipients.map(&.asset_quantity).compact.sum)
+        end
+      end
+
+      amounts_per_address
+    end
+
+    private def get_asset_sender_sum_per_address(addresses : Array(String), processed_transactions : Array(Transaction)) : Hash(String, Array(AssetQuantity))
+      amounts_per_address : Hash(String, Array(AssetQuantity)) = {} of String => Array(AssetQuantity)
+      addresses.each { |a| amounts_per_address[a] = [] of AssetQuantity }
+
+      addresses.each do |address|
+        address_senders = processed_transactions.flat_map(&.senders).select { |sender| address == sender.address }.select { |r| !r.asset_id.nil? }
+        address_senders.group_by(&.asset_id).each do |asset_id, senders|
+          amounts_per_address[address] << AssetQuantity.new(asset_id.not_nil!, senders.map(&.asset_quantity).compact.sum)
+        end
+      end
+
+      amounts_per_address
+    end
+
+    private def get_asset_create_update_sum_per_address(addresses : Array(String), processed_transactions : Array(Transaction)) : Hash(String, Array(AssetQuantity))
+      amounts_per_address : Hash(String, Array(AssetQuantity)) = {} of String => Array(AssetQuantity)
+      addresses.each { |a| amounts_per_address[a] = [] of AssetQuantity }
+
+      addresses.each do |address|
+        create_update_assets = processed_transactions.select { |t| ["create_asset", "update_asset"].includes?(t.action) }.flat_map(&.assets)
+        create_update_assets.group_by(&.asset_id).each do |asset_id, assets|
+          amounts_per_address[address] << AssetQuantity.new(asset_id, assets.map(&.quantity).sum)
+        end
+      end
+
+      amounts_per_address
     end
 
     def self.fee(action : String) : Int64

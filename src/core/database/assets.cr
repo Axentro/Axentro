@@ -13,6 +13,10 @@ require "../blockchain/*"
 require "../blockchain/domain_model/*"
 
 module ::Axentro::Core::Data::Assets
+  def internal_asset_actions_list
+    DApps::ASSET_ACTIONS.map { |action| "'#{action}'" }.uniq!.join(",")
+  end
+
   # ------- Definition -------
 
   def asset_insert_fields_string
@@ -50,6 +54,120 @@ module ::Axentro::Core::Data::Assets
     assets
   end
 
+  # ------- asset utxo -------
+
+  def get_address_asset_amounts(addresses : Array(String)) : Hash(String, Array(AssetQuantity))
+    addresses.uniq!
+    amounts_per_address : Hash(String, Array(AssetQuantity)) = {} of String => Array(AssetQuantity)
+    addresses.each { |a| amounts_per_address[a] = [] of AssetQuantity }
+
+    recipient_sum_per_address = get_asset_recipient_sum_per_address(addresses)
+    sender_sum_per_address = get_asset_sender_sum_per_address(addresses)
+    create_update_sum_per_address = get_asset_create_update_sum_per_address(addresses)
+
+    addresses.each do |address|
+      recipient_sum = recipient_sum_per_address[address]
+      sender_sum = sender_sum_per_address[address]
+      create_update_sum = create_update_sum_per_address[address]
+      unique_asset_ids = (recipient_sum + sender_sum + create_update_sum).map(&.asset_id).uniq
+
+      unique_asset_ids.map do |asset_id|
+        recipient = recipient_sum.select(&.asset_id.==(asset_id)).sum(&.quantity)
+        sender = sender_sum.select(&.asset_id.==(asset_id)).sum(&.quantity)
+        create_update = create_update_sum.select(&.asset_id.==(asset_id)).sum(&.quantity)
+
+        send_receive_balance = recipient - sender
+        balance = create_update + send_receive_balance
+
+        amounts_per_address[address] << AssetQuantity.new(asset_id, balance)
+      end
+    end
+
+    amounts_per_address
+  end
+
+  private def get_asset_recipient_sum_per_address(addresses : Array(String)) : Hash(String, Array(AssetQuantity))
+    amounts_per_address : Hash(String, Array(AssetQuantity)) = {} of String => Array(AssetQuantity)
+    addresses.uniq.each { |a| amounts_per_address[a] = [] of AssetQuantity }
+    address_list = addresses.map { |a| "'#{a}'" }.uniq!.join(",")
+    @db.query(
+      "select r.address, r.asset_id, sum(r.asset_quantity) as 'rec' from transactions t " \
+      "join recipients r on r.transaction_id = t.id " \
+      "where r.address in (#{address_list}) " \
+      "and t.action in (#{internal_asset_actions_list}) " \
+      "group by r.address, r.asset_id") do |rows|
+      rows.each do
+        address = rows.read(String)
+        asset_id = rows.read(String?)
+        next unless asset_id
+        quantity = rows.read(Int32?) || 0
+        amounts_per_address[address] << AssetQuantity.new(asset_id.not_nil!, quantity)
+      end
+    end
+    amounts_per_address
+  end
+
+  private def get_asset_sender_sum_per_address(addresses : Array(String)) : Hash(String, Array(AssetQuantity))
+    amounts_per_address : Hash(String, Array(AssetQuantity)) = {} of String => Array(AssetQuantity)
+    addresses.uniq.each { |a| amounts_per_address[a] = [] of AssetQuantity }
+    address_list = addresses.map { |a| "'#{a}'" }.uniq!.join(",")
+    @db.query(
+      "select s.address, s.asset_id, sum(s.asset_quantity) as 'send' from transactions t " \
+      "join senders s on s.transaction_id = t.id " \
+      "where s.address in (#{address_list}) " \
+      "and t.action = 'send_asset' " \
+      "group by s.address, s.asset_id") do |rows|
+      rows.each do
+        address = rows.read(String)
+        asset_id = rows.read(String?)
+        next unless asset_id
+        quantity = rows.read(Int32?) || 0
+        amounts_per_address[address] << AssetQuantity.new(asset_id.not_nil!, quantity)
+      end
+    end
+    amounts_per_address
+  end
+
+  struct AssetVersionQuantity
+    property asset_id : String
+    property address : String
+    property quantity : Int32
+    property version : Int32
+
+    def initialize(@asset_id, @address, @quantity, @version); end
+  end
+
+  # find quantity for latest asset_version where either create or update action
+  private def get_asset_create_update_sum_per_address(addresses : Array(String)) : Hash(String, Array(AssetQuantity))
+    amounts_per_address : Hash(String, Array(AssetQuantity)) = {} of String => Array(AssetQuantity)
+    addresses.uniq.each { |a| amounts_per_address[a] = [] of AssetQuantity }
+    address_list = addresses.map { |a| "'#{a}'" }.uniq!.join(",")
+    asset_versions = [] of AssetVersionQuantity
+
+    @db.query(
+      "select s.address, a.asset_id, a.quantity, a.version from transactions t " \
+      "join assets a on a.transaction_id = t.id " \
+      "join senders s on s.transaction_id = t.id " \
+      "where s.address in (#{address_list}) " \
+      "and t.action in ('create_asset', 'update_asset') ") do |rows|
+      rows.each do
+        address = rows.read(String)
+        asset_id = rows.read(String)
+        asset_quantity = rows.read(Int32?) || 0
+        asset_version = rows.read(Int32)
+        asset_versions << AssetVersionQuantity.new(asset_id.not_nil!, address, asset_quantity, asset_version)
+      end
+    end
+
+    asset_versions.group_by(&.asset_id).map { |asset_id, avs| avs.select { |a| a.version == avs.map(&.version).max } }.flatten.each do |asset_version|
+      amounts_per_address[asset_version.address] << AssetQuantity.new(asset_version.asset_id, asset_version.quantity)
+    end
+
+    amounts_per_address
+  end
+
+  # ----------------
+
   def get_all_asset_versions(asset_id : String) : Array(Asset)
     assets = [] of Transaction::Asset
     @db.query("select * from assets where asset_id = ? order by version desc", asset_id) do |rows|
@@ -84,6 +202,7 @@ module ::Axentro::Core::Data::Assets
     asset_list = assets.map { |a| "'#{a.asset_id}'" }.uniq!.join(",")
     media_locations = assets.map { |a| "'#{a.media_location}'" }.uniq!.join(",")
     media_hashes = assets.map { |a| "'#{a.media_hash}'" }.uniq!.join(",")
+
     @db.query "select * from assets where asset_id in (#{asset_list}) or media_location in (#{media_locations}) or media_hash in (#{media_hashes}) order by idx" do |rows|
       rows.each do
         asset_id = rows.read(String)
