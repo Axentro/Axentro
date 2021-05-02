@@ -11,6 +11,12 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core::DApps::BuildIn
+  ASSET_NAME_LIMIT           =  256
+  ASSET_DESCRIPTION_LIMIT    = 2048
+  ASSET_MEDIA_LOCATION_LIMIT = 2048
+  ASSET_MEDIA_HASH_LIMIT     =  512
+  ASSET_TERMS_LIMIT          = 2048
+
   class AssetVersion
     property asset_id : String
     property transaction_id : String
@@ -90,6 +96,12 @@ module ::Axentro::Core::DApps::BuildIn
             if asset_media_location_exists_in_db || asset_media_location_exists_in_transactions
               raise "asset media_location must not already exist (asset_id: #{asset.asset_id}, media_location: #{asset.media_location}) '#{action}'"
             end
+
+            # bytesize limits
+            asset_media_location_bytesize = asset.media_location.bytesize
+            if asset_media_location_bytesize > ASSET_MEDIA_LOCATION_LIMIT
+              raise "asset media_location must not exceed #{ASSET_MEDIA_LOCATION_LIMIT} bytes, you have: #{asset_media_location_bytesize}"
+            end
           end
 
           if !asset.media_hash.empty?
@@ -98,6 +110,28 @@ module ::Axentro::Core::DApps::BuildIn
             if asset_media_hash_exists_in_db || asset_media_hash_exists_in_transactions
               raise "asset media_hash must not already exist (asset_id: #{asset.asset_id}, media_hash: #{asset.media_hash}) '#{action}'"
             end
+
+            # bytesize limits
+            asset_media_hash_bytesize = asset.media_hash.bytesize
+            if asset_media_hash_bytesize > ASSET_MEDIA_HASH_LIMIT
+              raise "asset media_hash must not exceed #{ASSET_MEDIA_HASH_LIMIT} bytes, you have: #{asset_media_hash_bytesize}"
+            end
+          end
+
+          # bytesize limits
+          asset_name_bytesize = asset.name.bytesize
+          if asset_name_bytesize > ASSET_NAME_LIMIT
+            raise "asset name must not exceed #{ASSET_NAME_LIMIT} bytes, you have: #{asset_name_bytesize}"
+          end
+
+          asset_description_bytesize = asset.description.bytesize
+          if asset_description_bytesize > ASSET_DESCRIPTION_LIMIT
+            raise "asset description must not exceed #{ASSET_DESCRIPTION_LIMIT} bytes, you have: #{asset_description_bytesize}"
+          end
+
+          asset_terms_bytesize = asset.terms.bytesize
+          if asset_terms_bytesize > ASSET_TERMS_LIMIT
+            raise "asset terms must not exceed #{ASSET_TERMS_LIMIT} bytes, you have: #{asset_terms_bytesize}"
           end
         end
 

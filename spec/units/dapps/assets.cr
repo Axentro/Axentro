@@ -775,13 +775,137 @@ describe AssetComponent do
         end
       end
 
-      # it "cannot send fields with size greater than max size for name, description, media_location, media_hash, terms (in transaction batch)" do
-      #   fail "todo"
-      # end
+      it "cannot send fields with size greater than max size for name, description, media_location, media_hash, terms" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          asset_id_1 = Transaction::Asset.create_id
+          asset_id_2 = Transaction::Asset.create_id
+          asset_id_3 = Transaction::Asset.create_id
+          asset_id_4 = Transaction::Asset.create_id
 
-      # it "cannot send fields with size greater than max size for name, description, media_location, media_hash, terms (in db)" do
-      #   fail "todo"
-      # end
+          long_value = "exceeds"*500
+
+          # Create asset
+          create_name_exceeds = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id_1, long_value, "description", "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 1, __timestamp)]
+          )
+
+          create_description_exceeds = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id_2, "name", long_value, "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 1, __timestamp)]
+          )
+
+          create_media_location_exceeds = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id_3, "name", "description", long_value, "media_hash", 1, "terms", AssetAccess::UNLOCKED, 1, __timestamp)]
+          )
+
+          create_media_hash_exceeds = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id_4, "name", "description", "media_location", long_value, 1, "terms", AssetAccess::UNLOCKED, 1, __timestamp)]
+          )
+
+          create_terms_exceeds = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id_4, "name", "description", "media_location", "media_hash", 1, long_value, AssetAccess::UNLOCKED, 1, __timestamp)]
+          )
+
+          # Update asset
+          create_asset = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id_1, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 1, __timestamp)]
+          )
+
+          update_name_exceeds = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id_1, long_value, "description", "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 1, __timestamp)]
+          )
+
+          update_description_exceeds = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id_1, "name", long_value, "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 1, __timestamp)]
+          )
+
+          update_media_location_exceeds = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id_1, "name", "description", long_value, "media_hash", 1, "terms", AssetAccess::UNLOCKED, 1, __timestamp)]
+          )
+
+          update_media_hash_exceeds = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id_1, "name", "description", "media_location", long_value, 1, "terms", AssetAccess::UNLOCKED, 1, __timestamp)]
+          )
+
+          update_terms_exceeds = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id_1, "name", "description", "media_location", "media_hash", 1, long_value, AssetAccess::UNLOCKED, 1, __timestamp)]
+          )
+
+          component = AssetComponent.new(block_factory.blockchain)
+
+          result = component.valid_transactions?([
+            create_name_exceeds,
+            create_description_exceeds,
+            create_terms_exceeds,
+            create_media_location_exceeds,
+            create_media_hash_exceeds,
+            create_asset,
+            update_name_exceeds,
+            update_description_exceeds,
+            update_terms_exceeds,
+            update_media_location_exceeds,
+            update_media_hash_exceeds,
+          ])
+
+          result.passed.size.should eq(1)
+          result.failed.size.should eq(10)
+          result.failed.first.reason.should eq("asset name must not exceed 256 bytes, you have: 3500")
+          result.failed[1].reason.should eq("asset description must not exceed 2048 bytes, you have: 3500")
+          result.failed[2].reason.should eq("asset terms must not exceed 2048 bytes, you have: 3500")
+          result.failed[3].reason.should eq("asset media_location must not exceed 2048 bytes, you have: 3500")
+          result.failed[4].reason.should eq("asset media_hash must not exceed 512 bytes, you have: 3500")
+
+          result.failed[5].reason.should eq("asset name must not exceed 256 bytes, you have: 3500")
+          result.failed[6].reason.should eq("asset description must not exceed 2048 bytes, you have: 3500")
+          result.failed[7].reason.should eq("asset terms must not exceed 2048 bytes, you have: 3500")
+          result.failed[8].reason.should eq("asset media_location must not exceed 2048 bytes, you have: 3500")
+          result.failed[9].reason.should eq("asset media_hash must not exceed 512 bytes, you have: 3500")
+        end
+      end
 
       it "cannot update asset if locked (in transaction batch)" do
         with_factory do |block_factory, transaction_factory|
