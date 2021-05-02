@@ -62,22 +62,15 @@ module ::Axentro::Core::DApps::BuildIn
 
     def create_sender(amount : String, address : String, public_key : String, fee : String) : SendersDecimal
       senders = SendersDecimal.new
-      senders.push({
-        address:    address,
-        public_key: public_key,
-        amount:     amount,
-        fee:        fee,
-        signature:  "0",
-      })
+      senders.push(
+        SenderDecimal.new(address, public_key, amount, fee, "0"))
       senders
     end
 
     def create_recipient(address : String, amount : String) : RecipientsDecimal
       recipients = RecipientsDecimal.new
-      recipients.push({
-        address: address,
-        amount:  amount,
-      })
+      recipients.push(
+        RecipientDecimal.new(address, amount))
       recipients
     end
 

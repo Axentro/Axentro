@@ -173,21 +173,11 @@ module ::Axentro::Interface::Axe
 
       senders = SendersDecimal.new
       senders.push(
-        {
-          address:    wallets[0].address,
-          public_key: wallets[0].public_key,
-          amount:     amount,
-          fee:        fee,
-          signature:  "0",
-        }
-      )
+        SenderDecimal.new(wallets[0].address, wallets[0].public_key, amount, fee, "0"))
 
       recipients = RecipientsDecimal.new
       recipients.push(
-        {
-          address: address,
-          amount:  amount,
-        }
+        RecipientDecimal.new(address, amount)
       )
 
       puts ""

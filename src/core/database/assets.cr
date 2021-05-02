@@ -11,6 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 require "../blockchain/*"
 require "../blockchain/domain_model/*"
+require "../dapps/build_in/assets"
 
 module ::Axentro::Core::Data::Assets
   def internal_asset_actions_list
@@ -246,4 +247,6 @@ module ::Axentro::Core::Data::Assets
     end
     _assets.group_by(&.asset_id).flat_map { |_, ass| ass.select(&.version.==(ass.map(&.version).max)) }
   end
+
+  include ::Axentro::Core::DApps::BuildIn
 end

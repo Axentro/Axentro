@@ -94,21 +94,12 @@ module ::Axentro::Interface::Axe
 
       senders = SendersDecimal.new
       senders.push(
-        {
-          address:    wallet.address,
-          public_key: wallet.public_key,
-          amount:     amount,
-          fee:        fee,
-          signature:  "0",
-        }
+        SenderDecimal.new(wallet.address, wallet.public_key, amount, fee, "0")
       )
 
       recipients = RecipientsDecimal.new
       recipients.push(
-        {
-          address: to_address.as_hex,
-          amount:  amount,
-        }
+        RecipientDecimal.new(to_address.as_hex, amount)
       )
 
       kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW

@@ -91,13 +91,9 @@ module ::Axentro::Interface::Axe
       wallet = get_wallet(wallet_path, G.op.__wallet_password)
 
       senders = SendersDecimal.new
-      senders.push({
-        address:    wallet.address,
-        public_key: wallet.public_key,
-        amount:     price,
-        fee:        fee,
-        signature:  "0",
-      })
+      senders.push(
+        SenderDecimal.new(wallet.address, wallet.public_key, price, fee, "0")
+      )
 
       recipients = RecipientsDecimal.new
 
@@ -105,10 +101,8 @@ module ::Axentro::Interface::Axe
         resolved_price = resolved["domain"]["price"].as_s
         resolved_address = resolved["domain"]["address"].as_s
 
-        recipients.push({
-          address: resolved_address,
-          amount:  resolved_price,
-        })
+        recipients.push(
+          RecipientDecimal.new(resolved_address, resolved_price))
       end
 
       kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW
@@ -134,19 +128,12 @@ module ::Axentro::Interface::Axe
       wallet = get_wallet(wallet_path, G.op.__wallet_password)
 
       senders = SendersDecimal.new
-      senders.push({
-        address:    wallet.address,
-        public_key: wallet.public_key,
-        amount:     price,
-        fee:        fee,
-        signature:  "0",
-      })
+      senders.push(
+        SenderDecimal.new(wallet.address, wallet.public_key, price, fee, "0"))
 
       recipients = RecipientsDecimal.new
-      recipients.push({
-        address: wallet.address,
-        amount:  price,
-      })
+      recipients.push(
+        RecipientDecimal.new(wallet.address, price))
 
       kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW
 
@@ -170,19 +157,12 @@ module ::Axentro::Interface::Axe
       wallet = get_wallet(wallet_path, G.op.__wallet_password)
 
       senders = SendersDecimal.new
-      senders.push({
-        address:    wallet.address,
-        public_key: wallet.public_key,
-        amount:     "0",
-        fee:        fee,
-        signature:  "0",
-      })
+      senders.push(
+        SenderDecimal.new(wallet.address, wallet.public_key, "0", fee, "0"))
 
       recipients = RecipientsDecimal.new
-      recipients.push({
-        address: wallet.address,
-        amount:  "0",
-      })
+      recipients.push(
+        RecipientDecimal.new(wallet.address, "0"))
 
       kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW
 
