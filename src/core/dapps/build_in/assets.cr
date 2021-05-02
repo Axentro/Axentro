@@ -189,10 +189,6 @@ module ::Axentro::Core::DApps::BuildIn
           processed_asset_quantities = processed_quantities_per_asset(all_addresses, processed_transactions)
           all_asset_quantities = existing_quantities_per_asset.merge(processed_asset_quantities) { |_, xs, ys| (xs + ys).uniq! }
 
-          # pp existing_quantities_per_asset
-          # pp processed_asset_quantities
-          # pp all_asset_quantities
-
           if has_assets = all_asset_quantities[sender_address]?
             if has_assets.size <= 0
               raise "you have 0 quantity of asset: #{sender_asset_id} so you cannot send #{sender_asset_quantity}"
@@ -227,10 +223,6 @@ module ::Axentro::Core::DApps::BuildIn
       recipient_sum_per_address = get_asset_recipient_sum_per_address(addresses, processed_transactions)
       sender_sum_per_address = get_asset_sender_sum_per_address(addresses, processed_transactions)
       create_update_sum_per_address = get_asset_create_update_sum_per_address(addresses, processed_transactions)
-
-      # pp recipient_sum_per_address
-      # pp sender_sum_per_address
-      # pp create_update_sum_per_address
 
       addresses.each do |address|
         recipient_sum = recipient_sum_per_address[address]

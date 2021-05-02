@@ -543,7 +543,7 @@ module ::Units::Utils::ChainGenerator
       )
     end
 
-    def make_asset(token : String, action : String, senders : Array(Transaction::Sender), recipients : Array(Transaction::Recipient), assets : Array(Transaction::Asset), message : String = "0") : Transaction
+    def make_asset(token : String, action : String, senders : Array(Transaction::Sender), recipients : Array(Transaction::Recipient), assets : Array(Transaction::Asset), signing_wallet : Wallet = @sender_wallet, message : String = "0") : Transaction
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
         transaction_id,
@@ -559,7 +559,7 @@ module ::Units::Utils::ChainGenerator
         TransactionKind::SLOW,
         TransactionVersion::V1
       )
-      unsigned_transaction.as_signed([sender_wallet])
+      unsigned_transaction.as_signed([signing_wallet])
     end
 
     def make_create_offical_slownode(token : String = TOKEN_DEFAULT, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
