@@ -1090,48 +1090,590 @@ describe AssetComponent do
         end
       end
 
+      it "asset_id must not be empty (sender)" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
+          asset_id = Transaction::Asset.create_id
+
+          create_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::LOCKED, 1, __timestamp)]
+          )
+          block_factory.add_slow_block([create_transaction]).add_slow_blocks(2)
+          component = AssetComponent.new(block_factory.blockchain)
+
+          send_asset_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(sender_wallet, nil)],
+            [an_asset_recipient(recipient_wallet, asset_id)],
+            [] of Transaction::Asset
+          )
+
+          result = component.valid_transactions?([send_asset_transaction])
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("asset_id must be supplied for both sender and recipient in order to send an asset")
+        end
+      end
+
+      it "asset_id must not be empty (recipient)" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
+          asset_id = Transaction::Asset.create_id
+
+          create_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::LOCKED, 1, __timestamp)]
+          )
+          block_factory.add_slow_block([create_transaction]).add_slow_blocks(2)
+          component = AssetComponent.new(block_factory.blockchain)
+
+          send_asset_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(sender_wallet, asset_id)],
+            [an_asset_recipient(recipient_wallet, nil)],
+            [] of Transaction::Asset
+          )
+
+          result = component.valid_transactions?([send_asset_transaction])
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("asset_id must be supplied for both sender and recipient in order to send an asset")
+        end
+      end
+
+      it "asset must be empty" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
+          asset_id = Transaction::Asset.create_id
+
+          create_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::LOCKED, 1, __timestamp)]
+          )
+          block_factory.add_slow_block([create_transaction]).add_slow_blocks(2)
+          component = AssetComponent.new(block_factory.blockchain)
+
+          send_asset_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(sender_wallet, asset_id)],
+            [an_asset_recipient(recipient_wallet, asset_id)],
+            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::LOCKED, 1, __timestamp)]
+          )
+
+          result = component.valid_transactions?([send_asset_transaction])
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("The assets should be empty in the transaction for action: send_asset")
+        end
+      end
+
+      it "asset_quantity should be 1 or more (sender)" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
+          asset_id = Transaction::Asset.create_id
+
+          create_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::LOCKED, 1, __timestamp)]
+          )
+          block_factory.add_slow_block([create_transaction]).add_slow_blocks(2)
+          component = AssetComponent.new(block_factory.blockchain)
+
+          send_asset_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(sender_wallet, asset_id, 0)],
+            [an_asset_recipient(recipient_wallet, asset_id, 0)],
+            [] of Transaction::Asset
+          )
+
+          result = component.valid_transactions?([send_asset_transaction])
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("asset_quantity must be 1 or more for both sender and recipient in order to send an asset")
+        end
+      end
+
+      it "asset_quantity should be 1 or more (recipient)" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
+          asset_id = Transaction::Asset.create_id
+
+          create_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::LOCKED, 1, __timestamp)]
+          )
+          block_factory.add_slow_block([create_transaction]).add_slow_blocks(2)
+          component = AssetComponent.new(block_factory.blockchain)
+
+          send_asset_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(sender_wallet, asset_id, 1)],
+            [an_asset_recipient(recipient_wallet, asset_id, 0)],
+            [] of Transaction::Asset
+          )
+
+          result = component.valid_transactions?([send_asset_transaction])
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("asset_quantity must be 1 or more for both sender and recipient in order to send an asset")
+        end
+      end
+
+      it "asset_quantity should not be nil" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
+          asset_id = Transaction::Asset.create_id
+
+          create_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::LOCKED, 1, __timestamp)]
+          )
+          block_factory.add_slow_block([create_transaction]).add_slow_blocks(2)
+          component = AssetComponent.new(block_factory.blockchain)
+
+          send_asset_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(sender_wallet, asset_id, nil)],
+            [an_asset_recipient(recipient_wallet, asset_id, 1)],
+            [] of Transaction::Asset
+          )
+
+          result = component.valid_transactions?([send_asset_transaction])
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("asset_quantity must be 1 or more for both sender and recipient in order to send an asset (was nil)")
+        end
+      end
+
+      it "asset_quantity should not be the same for recipient and sender" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
+          asset_id = Transaction::Asset.create_id
+
+          create_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::LOCKED, 1, __timestamp)]
+          )
+          block_factory.add_slow_block([create_transaction]).add_slow_blocks(2)
+          component = AssetComponent.new(block_factory.blockchain)
+
+          send_asset_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(sender_wallet, asset_id, 2)],
+            [an_asset_recipient(recipient_wallet, asset_id, 1)],
+            [] of Transaction::Asset
+          )
+
+          result = component.valid_transactions?([send_asset_transaction])
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("asset_quantity must be the same for both sender and recipient in order to send an asset")
+        end
+      end
+
       it "cannot send an asset that you do not own (in transaction batch)" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
+          non_owner_wallet = Wallet.from_json(Wallet.create(true).to_json)
+
+          asset_id = Transaction::Asset.create_id
+
+          create_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::LOCKED, 1, __timestamp)]
+          )
+
+          component = AssetComponent.new(block_factory.blockchain)
+
+          send_asset_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(non_owner_wallet, asset_id, 2)],
+            [an_asset_recipient(recipient_wallet, asset_id, 2)],
+            [] of Transaction::Asset
+          )
+
+          result = component.valid_transactions?([create_transaction, send_asset_transaction])
+          result.passed.size.should eq(1)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("you have 0 quantity of asset: #{asset_id} so you cannot send 2")
+        end
       end
 
       it "cannot send an asset that you do not own (in db)" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
+          non_owner_wallet = Wallet.from_json(Wallet.create(true).to_json)
+
+          asset_id = Transaction::Asset.create_id
+
+          create_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::LOCKED, 1, __timestamp)]
+          )
+
+          block_factory.add_slow_block([create_transaction]).add_slow_blocks(2)
+          component = AssetComponent.new(block_factory.blockchain)
+
+          send_asset_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(non_owner_wallet, asset_id, 2)],
+            [an_asset_recipient(recipient_wallet, asset_id, 2)],
+            [] of Transaction::Asset
+          )
+
+          result = component.valid_transactions?([send_asset_transaction])
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("you have 0 quantity of asset: #{asset_id} so you cannot send 2")
+        end
       end
 
       it "cannot send an asset quantity if you don't have enough (in transaction batch)" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
+
+          asset_id = Transaction::Asset.create_id
+
+          create_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::LOCKED, 1, __timestamp)]
+          )
+
+          component = AssetComponent.new(block_factory.blockchain)
+
+          send_asset_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(sender_wallet, asset_id, 2)],
+            [an_asset_recipient(recipient_wallet, asset_id, 2)],
+            [] of Transaction::Asset
+          )
+
+          result = component.valid_transactions?([create_transaction, send_asset_transaction])
+          result.passed.size.should eq(1)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("you have 1 quantity of asset: #{asset_id} so you cannot send 2")
+        end
       end
 
       it "cannot send an asset quantity if you don't have enough (in db)" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
+
+          asset_id = Transaction::Asset.create_id
+
+          create_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::LOCKED, 1, __timestamp)]
+          )
+
+          block_factory.add_slow_block([create_transaction]).add_slow_blocks(2)
+          component = AssetComponent.new(block_factory.blockchain)
+
+          send_asset_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(sender_wallet, asset_id, 2)],
+            [an_asset_recipient(recipient_wallet, asset_id, 2)],
+            [] of Transaction::Asset
+          )
+
+          result = component.valid_transactions?([send_asset_transaction])
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("you have 1 quantity of asset: #{asset_id} so you cannot send 2")
+        end
       end
+
+      it "cannot send an asset quantity if you don't have enough after sending once already (in transaction batch)" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
+
+          asset_id = Transaction::Asset.create_id
+
+          create_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::LOCKED, 1, __timestamp)]
+          )
+
+          component = AssetComponent.new(block_factory.blockchain)
+
+          send_asset_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(sender_wallet, asset_id, 1)],
+            [an_asset_recipient(recipient_wallet, asset_id, 1)],
+            [] of Transaction::Asset
+          )
+
+          send_asset_transaction_2 = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(sender_wallet, asset_id, 1)],
+            [an_asset_recipient(recipient_wallet, asset_id, 1)],
+            [] of Transaction::Asset
+          )
+
+          result = component.valid_transactions?([create_transaction, send_asset_transaction, send_asset_transaction_2])
+          result.passed.size.should eq(2)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("you have 0 quantity of asset: #{asset_id} so you cannot send 1")
+        end
+      end
+
+      it "cannot send an asset quantity if you don't have enough after sending once already (in db)" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
+
+          asset_id = Transaction::Asset.create_id
+
+          create_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::LOCKED, 1, __timestamp)]
+          )
+
+          send_asset_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(sender_wallet, asset_id, 1)],
+            [an_asset_recipient(recipient_wallet, asset_id, 1)],
+            [] of Transaction::Asset
+          )
+
+          block_factory.add_slow_block([create_transaction, send_asset_transaction]).add_slow_blocks(2)
+          component = AssetComponent.new(block_factory.blockchain)
+
+          send_asset_transaction_2 = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(sender_wallet, asset_id, 1)],
+            [an_asset_recipient(recipient_wallet, asset_id, 1)],
+            [] of Transaction::Asset
+          )
+
+          result = component.valid_transactions?([send_asset_transaction_2])
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("you have 0 quantity of asset: #{asset_id} so you cannot send 1")
+        end
+      end
+
+      # TODO - add specs about sending to self
+      it "send to self when you have a quantity available (in transaction batch)" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
+
+          asset_id = Transaction::Asset.create_id
+
+          create_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::LOCKED, 1, __timestamp)]
+          )
+
+          component = AssetComponent.new(block_factory.blockchain)
+
+          send_asset_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(sender_wallet, asset_id, 1)],
+            [an_asset_recipient(sender_wallet, asset_id, 1)],
+            [] of Transaction::Asset
+          )
+
+          send_asset_transaction_2 = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(sender_wallet, asset_id, 2)],
+            [an_asset_recipient(recipient_wallet, asset_id, 2)],
+            [] of Transaction::Asset
+          )
+
+          result = component.valid_transactions?([create_transaction, send_asset_transaction, send_asset_transaction_2])
+          result.passed.size.should eq(2)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("you have 1 quantity of asset: #{asset_id} so you cannot send 2")
+        end
+      end
+
+      it "send to self when you have a quantity available (in db)" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          recipient_wallet = transaction_factory.recipient_wallet
+
+          asset_id = Transaction::Asset.create_id
+
+          create_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::LOCKED, 1, __timestamp)]
+          )
+
+          send_asset_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(sender_wallet, asset_id, 1)],
+            [an_asset_recipient(sender_wallet, asset_id, 1)],
+            [] of Transaction::Asset
+          )
+
+          block_factory.add_slow_block([create_transaction, send_asset_transaction]).add_slow_blocks(2)
+          component = AssetComponent.new(block_factory.blockchain)
+
+          send_asset_transaction_2 = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(sender_wallet, asset_id, 2)],
+            [an_asset_recipient(recipient_wallet, asset_id, 2)],
+            [] of Transaction::Asset
+          )
+
+          result = component.valid_transactions?([send_asset_transaction_2])
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("you have 1 quantity of asset: #{asset_id} so you cannot send 2")
+        end
+      end
+
+      it "send to self when you have no quantity available (in transaction batch)" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          non_owner_wallet = Wallet.from_json(Wallet.create(true).to_json)
+
+          asset_id = Transaction::Asset.create_id
+
+          create_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::LOCKED, 1, __timestamp)]
+          )
+
+          component = AssetComponent.new(block_factory.blockchain)
+
+          send_asset_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(non_owner_wallet, asset_id, 1)],
+            [an_asset_recipient(non_owner_wallet, asset_id, 1)],
+            [] of Transaction::Asset
+          )
+
+          result = component.valid_transactions?([create_transaction, send_asset_transaction])
+          result.passed.size.should eq(1)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("you have 0 quantity of asset: #{asset_id} so you cannot send 1")
+        end
+      end
+
+      it "send to self when you have no quantity available (in db)" do
+        with_factory do |block_factory, transaction_factory|
+          sender_wallet = transaction_factory.sender_wallet
+          non_owner_wallet = Wallet.from_json(Wallet.create(true).to_json)
+
+          asset_id = Transaction::Asset.create_id
+
+          create_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "create_asset",
+            [a_sender(sender_wallet, 0_i64, 0_i64)],
+            [a_recipient(sender_wallet, 0_i64)],
+            [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::LOCKED, 1, __timestamp)]
+          )
+
+          block_factory.add_slow_block([create_transaction]).add_slow_blocks(2)
+          component = AssetComponent.new(block_factory.blockchain)
+
+          send_asset_transaction = transaction_factory.make_asset(
+            "AXNT",
+            "send_asset",
+            [an_asset_sender(non_owner_wallet, asset_id, 1)],
+            [an_asset_recipient(non_owner_wallet, asset_id, 1)],
+            [] of Transaction::Asset
+          )
+
+          result = component.valid_transactions?([send_asset_transaction])
+          result.passed.size.should eq(0)
+          result.failed.size.should eq(1)
+          result.failed.first.reason.should eq("you have 0 quantity of asset: #{asset_id} so you cannot send 1")
+        end
+      end
+
+      # TODO - add specs where quantity is updated before lock and send (in case getting more than 1 version of asset)
 
       it "can send one of many assets to another recipient (in transaction batch)" do
       end
 
       it "can send one of many assets to another recipient (in db)" do
       end
-
-      #   it "sender and recipient can be different" do
-      #     with_factory do |block_factory, transaction_factory|
-      #       sender_wallet = transaction_factory.sender_wallet
-      #       recipient_wallet = transaction_factory.recipient_wallet
-      #       asset_id_1 = Transaction::Asset.create_id
-      #       transaction = transaction_factory.make_asset(
-      #         "AXNT",
-      #         "create_asset",
-      #         [a_sender(sender_wallet, 0_i64, 0_i64)],
-      #         [a_recipient(recipient_wallet, 0_i64)],
-      #         [Transaction::Asset.new(asset_id_1, "name", "description", "media_location", "", 1, "terms", AssetAccess::UNLOCKED, 1, __timestamp)]
-      #       )
-
-      #       component = AssetComponent.new(block_factory.blockchain)
-
-      #       result = component.valid_transactions?([transaction])
-      #       result.passed.size.should eq(0)
-      #       result.failed.size.should eq(1)
-      #       result.failed.first.reason.should eq("address mismatch for 'create_asset'. sender: #{sender_wallet.address}, recipient: #{recipient_wallet.address}")
-      #     end
-      #   end
-
-      #   it "only asset owner can send the asset" do
-      #   end
 
       #   it "chain of multiple send assets works correctly" do
       #   end
@@ -1142,6 +1684,3 @@ describe AssetComponent do
     end
   end
 end
-
-# can only update or lock asset that is owned by sender
-# can only send asset that is owned by sender

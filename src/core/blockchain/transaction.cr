@@ -110,7 +110,7 @@ module ::Axentro::Core
 
     def as_unsigned : Transaction
       unsigned_senders = self.senders.map do |s|
-        Sender.new(s.address, s.public_key, s.amount, s.fee, "0")
+        Sender.new(s.address, s.public_key, s.amount, s.fee, "0", s.asset_id, s.asset_quantity)
       end
 
       Transaction.new(

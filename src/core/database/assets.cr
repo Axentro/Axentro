@@ -76,8 +76,7 @@ module ::Axentro::Core::Data::Assets
         sender = sender_sum.select(&.asset_id.==(asset_id)).sum(&.quantity)
         create_update = create_update_sum.select(&.asset_id.==(asset_id)).sum(&.quantity)
 
-        send_receive_balance = recipient - sender
-        balance = create_update + send_receive_balance
+        balance = (create_update + recipient) - sender
 
         amounts_per_address[address] << AssetQuantity.new(asset_id, balance)
       end
@@ -200,24 +199,24 @@ module ::Axentro::Core::Data::Assets
     _assets = [] of Transaction::Asset
     asset_list = asset_ids.map { |a| "'#{a}'" }.uniq!.join(",")
     @db.query("select * from assets where asset_id in (#{asset_list})") do |rows|
-     rows.each do
-      asset_id = rows.read(String)
-      rows.read(String)
-      rows.read(Int64)
-      rows.read(Int32)
-      name = rows.read(String)
-      description = rows.read(String)
-      media_location = rows.read(String)
-      media_hash = rows.read(String)
-      quantity = rows.read(Int32)
-      terms = rows.read(String)
-      locked = AssetAccess.parse(rows.read(String))
-      version = rows.read(Int32)
-      timestamp = rows.read(Int64)
-      _assets << Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, locked, version, timestamp)
+      rows.each do
+        asset_id = rows.read(String)
+        rows.read(String)
+        rows.read(Int64)
+        rows.read(Int32)
+        name = rows.read(String)
+        description = rows.read(String)
+        media_location = rows.read(String)
+        media_hash = rows.read(String)
+        quantity = rows.read(Int32)
+        terms = rows.read(String)
+        locked = AssetAccess.parse(rows.read(String))
+        version = rows.read(Int32)
+        timestamp = rows.read(Int64)
+        _assets << Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, locked, version, timestamp)
+      end
     end
-    end
-    _assets.group_by(&.asset_id).flat_map{|_, assets| assets.select{|a| a.version == assets.map(&.version).max } }
+    _assets.group_by(&.asset_id).flat_map { |_, assets| assets.select(&.version.==(assets.map(&.version).max)) }
   end
 
   # based on asset_id, media_location and media_hash
@@ -245,6 +244,6 @@ module ::Axentro::Core::Data::Assets
         _assets << Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, locked, version, timestamp)
       end
     end
-    _assets.group_by(&.asset_id).flat_map{|_, assets| assets.select{|a| a.version == assets.map(&.version).max } }
+    _assets.group_by(&.asset_id).flat_map { |_, ass| ass.select(&.version.==(ass.map(&.version).max)) }
   end
 end

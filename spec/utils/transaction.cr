@@ -21,7 +21,7 @@ module ::Units::Utils::TransactionHelper
     Recipient.new(recipient_address, amount)
   end
 
-  def an_asset_recipient(wallet : Wallet, asset_id : String, asset_quantity : Int32 = 1, amount : Int64 = 0_i64)
+  def an_asset_recipient(wallet : Wallet, asset_id : String?, asset_quantity : Int32? = 1, amount : Int64 = 0_i64)
     Recipient.new(wallet.address, amount, asset_id, asset_quantity)
   end
 
@@ -37,7 +37,7 @@ module ::Units::Utils::TransactionHelper
     Sender.new(wallet.address, wallet.public_key, amount, fee, "0")
   end
 
-  def an_asset_sender(wallet : Wallet, asset_id : String, asset_quantity : Int32 = 1, amount : Int64 = 0_i64, fee : Int64 = 0_i64, signature : String = "0") : Transaction::Sender
+  def an_asset_sender(wallet : Wallet, asset_id : String?, asset_quantity : Int32? = 1, amount : Int64 = 0_i64, fee : Int64 = 0_i64, signature : String = "0") : Transaction::Sender
     Sender.new(wallet.address, wallet.public_key, amount, fee, signature, asset_id, asset_quantity)
   end
 

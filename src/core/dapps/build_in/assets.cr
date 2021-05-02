@@ -49,7 +49,8 @@ module ::Axentro::Core::DApps::BuildIn
 
       existing_sender_assets = database.existing_assets_from_sender(body_transactions.flat_map(&.senders.compact_map(&.asset_id)))
       existing_assets = database.existing_assets_from(body_transactions.flat_map(&.assets) + existing_sender_assets)
-      # existing_quantities_per_asset = database.get_address_asset_amounts(body_transactions.flat_map(&.senders.map(&.address)))
+
+      existing_quantities_per_asset = database.get_address_asset_amounts(body_transactions.flat_map(&.senders.map(&.address)))
 
       body_transactions.each do |transaction|
         token = transaction.token
@@ -141,33 +142,73 @@ module ::Axentro::Core::DApps::BuildIn
           sender_address = transaction.senders.map(&.address).last
           raise "cannot update asset with asset_id: #{asset.asset_id} as sender with address #{sender_address} does not own this asset (owned by: #{asset_owner})" if sender_address != asset_owner
         elsif action == "send_asset"
-
           # asset should be empty for send
+          if transaction.assets.size != 0
+            raise "The assets should be empty in the transaction for action: send_asset"
+          end
 
-          # senders asset_id should not be nil
+          # senders and recipient asset_id should not be nil
+          if sender.asset_id.nil? || recipient.asset_id.nil?
+            raise "asset_id must be supplied for both sender and recipient in order to send an asset"
+          end
 
-          # sender asset_quantity should be 1 or more
-    
           sender_asset_id = sender.asset_id.not_nil!
+          recipient_asset_id = recipient.asset_id.not_nil!
 
-          latest_assets = (existing_assets + processed_transactions.flat_map(&.assets)).select(&.asset_id.==(sender_asset_id)).sort_by!(&.version)    
+          # sender and recipient asset_id should be the same
+          if sender_asset_id != recipient_asset_id
+            raise "asset_id must be the same for both sender and recipient in order to send an asset"
+          end
+
+          # sender and recipient asset_quantity should not be nil
+          if sender.asset_quantity.nil? || recipient.asset_quantity.nil?
+            raise "asset_quantity must be 1 or more for both sender and recipient in order to send an asset (was nil)"
+          end
+
+          sender_asset_quantity = sender.asset_quantity.not_nil!
+          recipient_asset_quantity = recipient.asset_quantity.not_nil!
+
+          # sender and recipients asset_quantity should be 1 or more
+          if sender_asset_quantity < 1 || recipient_asset_quantity < 1
+            raise "asset_quantity must be 1 or more for both sender and recipient in order to send an asset"
+          end
+
+          # sender and recipient asset_quantity should be the same
+          if sender_asset_quantity != recipient_asset_quantity
+            raise "asset_quantity must be the same for both sender and recipient in order to send an asset"
+          end
+
+          latest_assets = (existing_assets + processed_transactions.flat_map(&.assets)).select(&.asset_id.==(sender_asset_id)).sort_by!(&.version)
           latest_asset = latest_assets.size > 0 ? latest_assets.last : nil
-          
+
           if latest_asset
             raise "asset must be locked in order to send asset #{sender_asset_id}" if latest_asset.locked != AssetAccess::LOCKED
           end
-         
-          # asset = transaction.assets.first
-          # processed_asset_quantities = processed_quantities_per_asset([sender_address], processed_transactions)
-          # all_asset_quantities = existing_quantities_per_asset.merge(processed_asset_quantities) { |_, xs, ys| (xs + ys).uniq! }
 
-          # if has_assets = all_asset_quantities[sender_address]?
-          #   if has_assets.find(&.asset_id.==(asset.asset_id)).nil?
-          #     raise "cannot update asset with asset_id: #{asset.asset_id} as sender with address #{sender_address} does not own this asset"
-          #   end
-          # else
-          #   raise "cannot update asset with asset_id: #{asset.asset_id} as sender with address #{sender_address} does not own this asset"
-          # end
+          all_addresses = processed_transactions.flat_map(&.senders.map(&.address))
+          processed_asset_quantities = processed_quantities_per_asset(all_addresses, processed_transactions)
+          all_asset_quantities = existing_quantities_per_asset.merge(processed_asset_quantities) { |_, xs, ys| (xs + ys).uniq! }
+
+          # pp existing_quantities_per_asset
+          # pp processed_asset_quantities
+          # pp all_asset_quantities
+
+          if has_assets = all_asset_quantities[sender_address]?
+            if has_assets.size <= 0
+              raise "you have 0 quantity of asset: #{sender_asset_id} so you cannot send #{sender_asset_quantity}"
+            elsif has_assets.find(&.asset_id.==(sender_asset_id))
+              # sender has a quantity of the asset they are attempting to send
+              target_asset = has_assets.find(&.asset_id.==(sender_asset_id))
+              if target_asset.not_nil!.quantity < sender_asset_quantity
+                raise "you have #{target_asset.not_nil!.quantity} quantity of asset: #{sender_asset_id} so you cannot send #{sender_asset_quantity}"
+              end
+            else
+              # sender has no quantity of the asset they are attempting to send
+              raise "you have 0 quantity of asset: #{sender_asset_id} so you cannot send #{sender_asset_quantity}"
+            end
+          else
+            raise "you have 0 quantity of asset: #{sender_asset_id} so you cannot send #{sender_asset_quantity}"
+          end
         end
 
         vt << transaction
@@ -187,6 +228,10 @@ module ::Axentro::Core::DApps::BuildIn
       sender_sum_per_address = get_asset_sender_sum_per_address(addresses, processed_transactions)
       create_update_sum_per_address = get_asset_create_update_sum_per_address(addresses, processed_transactions)
 
+      # pp recipient_sum_per_address
+      # pp sender_sum_per_address
+      # pp create_update_sum_per_address
+
       addresses.each do |address|
         recipient_sum = recipient_sum_per_address[address]
         sender_sum = sender_sum_per_address[address]
@@ -198,8 +243,7 @@ module ::Axentro::Core::DApps::BuildIn
           sender = sender_sum.select(&.asset_id.==(asset_id)).sum(&.quantity)
           create_update = create_update_sum.select(&.asset_id.==(asset_id)).sum(&.quantity)
 
-          send_receive_balance = recipient - sender
-          balance = create_update + send_receive_balance
+          balance = (create_update + recipient) - sender
 
           amounts_per_address[address] << AssetQuantity.new(asset_id, balance)
         end
@@ -240,11 +284,14 @@ module ::Axentro::Core::DApps::BuildIn
       amounts_per_address : Hash(String, Array(AssetQuantity)) = {} of String => Array(AssetQuantity)
       addresses.each { |a| amounts_per_address[a] = [] of AssetQuantity }
 
-      addresses.each do |address|
-        create_update_assets = processed_transactions.select { |t| ["create_asset", "update_asset"].includes?(t.action) }.flat_map(&.assets)
-        create_update_assets.group_by(&.asset_id).each do |asset_id, assets|
-          amounts_per_address[address] << AssetQuantity.new(asset_id, assets.sum(&.quantity))
-        end
+      asset_transactions = processed_transactions.select { |t| ["create_asset", "update_asset"].includes?(t.action) }.reject(&.assets.empty?)
+      asset_transactions.group_by(&.assets.first.asset_id).each do |ai, txns|
+        # only use quantity from latest version of asset
+        asset_versions = txns.flat_map(&.assets)
+        latest_versions = asset_versions.select(&.version.==(asset_versions.map(&.version).max))
+
+        sender_address = txns.first.senders.first.address
+        amounts_per_address[sender_address] << AssetQuantity.new(ai, latest_versions.sum(&.quantity))
       end
 
       amounts_per_address
