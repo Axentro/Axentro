@@ -169,10 +169,10 @@ module ::Axentro::Core::Data::Assets
   # ----------------
 
   # ------- API -------
-  
+
   def get_asset_by_id(asset_id : String) : Asset?
     assets = [] of Transaction::Asset
-    @db.query "select * from assets where asset_id = ? and version = (select max(version) from assets where asset_id = ?)", asset_id, asset_id, do |rows|
+    @db.query "select * from assets where asset_id = ? and version = (select max(version) from assets where asset_id = ?)", asset_id, asset_id do |rows|
       rows.each do
         asset_id = rows.read(String)
         rows.read(String)
@@ -192,8 +192,8 @@ module ::Axentro::Core::Data::Assets
     end
     assets.size > 0 ? assets.first : nil
   end
-  
-    # ------- API -------
+
+  # ------- API -------
 
   def get_all_asset_versions(asset_id : String) : Array(Asset)
     assets = [] of Transaction::Asset

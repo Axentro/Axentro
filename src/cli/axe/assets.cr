@@ -196,7 +196,6 @@ module ::Axentro::Interface::Axe
 
     def get
       puts_help(HELP_CONNECTING_NODE) unless node = G.op.__connect_node
-      puts_help(HELP_WALLET_PATH) unless wallet_path = G.op.__wallet_path
       puts_help(HELP_ASSET_ID) unless asset_id = G.op.__asset_id
 
       payload = {call: "asset", asset_id: asset_id}.to_json
@@ -249,25 +248,25 @@ module ::Axentro::Interface::Axe
       else
         assets = json["assets"].as_a
         if assets.empty?
-            puts_success(I18n.translate("axe.cli.assets.amount.messages.amount", {address: address}))
-            puts_success(I18n.translate("axe.cli.assets.amount.messages.no_assets"))
+          puts_success(I18n.translate("axe.cli.assets.amount.messages.amount", {address: address}))
+          puts_success(I18n.translate("axe.cli.assets.amount.messages.no_assets"))
         else
-        confirmations = json["confirmations"]
+          confirmations = json["confirmations"]
 
-        puts_success(I18n.translate("axe.cli.assets.amount.messages.amount", {address: address}))
-        puts_success(I18n.translate("axe.cli.assets.amount.messages.confirmation", {confirmation: confirmations}))
+          puts_success(I18n.translate("axe.cli.assets.amount.messages.amount", {address: address}))
+          puts_success(I18n.translate("axe.cli.assets.amount.messages.confirmation", {confirmation: confirmations}))
 
-        table = Tallboy.table do
-          columns do
-            add "asset id"
-            add "quanity"
+          table = Tallboy.table do
+            columns do
+              add "asset id"
+              add "quanity"
+            end
+            header
+            rows [assets.flat_map { |a| [a["asset_id"], a["quantity"]] }]
           end
-          header
-          rows [assets.flat_map { |a| [a["asset_id"], a["quantity"]] }]
-        end
 
-        puts table.render
-      end
+          puts table.render
+        end
       end
     end
   end

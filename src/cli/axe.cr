@@ -64,6 +64,7 @@ module ::Axentro::Interface::Axe
       G.op.create_option_parser([] of Options)
     end
 
+    # ameba:disable Metrics/CyclomaticComplexity
     def run_impl(action_name) : OptionParser?
       case action_name
       when I18n.translate("axe.cli.wallet.title"), "wt"
@@ -115,7 +116,7 @@ module ::Axentro::Interface::Axe
         return AssetCli.new(
           {name: I18n.translate("axe.cli.assets.title"), desc: I18n.translate("axe.cli.assets.desc")},
           next_parents,
-        ).run    
+        ).run
       end
 
       specify_sub_action!(action_name)
