@@ -151,6 +151,16 @@ module ::Axentro::Core::Data::Transactions
     idx
   end
 
+  def get_block_index_for_asset(asset_id : String) : Int64?
+    idx : Int64? = nil
+    @db.query("select block_id from assets where asset_id like ? || '%'", asset_id) do |rows|
+      rows.each do
+        idx = rows.read(Int64?)
+      end
+    end
+    idx
+  end
+
   def get_domain_map_for(domain_name : String) : DomainMap
     domain_map = DomainMap.new
     @db.query(

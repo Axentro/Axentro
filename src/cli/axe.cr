@@ -53,6 +53,10 @@ module ::Axentro::Interface::Axe
           name: I18n.translate("axe.cli.client.title"),
           desc: I18n.translate("axe.cli.client.desc"),
         },
+        {
+          name: I18n.translate("axe.cli.assets.title"),
+          desc: I18n.translate("axe.cli.assets.desc"),
+        },
       ]
     end
 
@@ -107,6 +111,11 @@ module ::Axentro::Interface::Axe
           {name: I18n.translate("axe.cli.client.title"), desc: I18n.translate("axe.cli.client.desc")},
           next_parents,
         ).run
+      when I18n.translate("axe.cli.assets.title"), "as"
+        return AssetCli.new(
+          {name: I18n.translate("axe.cli.assets.title"), desc: I18n.translate("axe.cli.assets.desc")},
+          next_parents,
+        ).run    
       end
 
       specify_sub_action!(action_name)

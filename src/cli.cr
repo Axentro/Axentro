@@ -160,13 +160,14 @@ module ::Axentro::Interface
                         wallets : Array(Core::Wallet),
                         senders : SendersDecimal,
                         recipients : RecipientsDecimal,
+                        assets : Array(Asset),
                         message : String,
                         token : String,
                         kind : TransactionKind)
       raise "mismatch for wallet size and sender's size" if wallets.size != senders.size
 
       unsigned_transaction =
-        create_unsigned_transaction(node, action, senders, recipients, message, token, kind)
+        create_unsigned_transaction(node, action, senders, recipients, assets, message, token, kind)
 
       signed_transaction = sign(wallets, unsigned_transaction)
 
@@ -189,6 +190,7 @@ module ::Axentro::Interface
                                     action : String,
                                     senders : SendersDecimal,
                                     recipients : RecipientsDecimal,
+                                    assets : Array(Asset),
                                     message : String,
                                     token : String,
                                     kind : TransactionKind) : Core::Transaction
@@ -197,6 +199,7 @@ module ::Axentro::Interface
         action:     action,
         senders:    senders,
         recipients: recipients,
+        assets:     assets,
         message:    message,
         token:      token,
         kind:       kind,
@@ -224,6 +227,21 @@ module ::Axentro::Interface
 
       body = rpc(node, payload)
       JSON.parse(body)
+    end
+
+    private def determine_address(node, wallet_path, wallet_password, address, domain) : String
+      if _wallet_path = wallet_path
+        wallet = get_wallet(_wallet_path, wallet_password)
+        wallet.address
+      elsif _address = address
+        _address
+      elsif _domain = domain
+        resolved = resolve_internal(node, _domain)
+        raise "domain #{_domain} is not resolved" unless resolved["resolved"].as_bool
+        resolved["domain"]["address"].as_s
+      else
+        puts_help(HELP_WALLET_PATH_OR_ADDRESS_OR_DOMAIN)
+      end
     end
 
     abstract def sub_actions : Array(AxeAction)

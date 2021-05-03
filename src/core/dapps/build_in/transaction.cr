@@ -124,15 +124,17 @@ module ::Axentro::Core::DApps::BuildIn
         version
       ).to_transaction
 
-      fee = transaction.total_fees
+      if !ASSET_ACTIONS.includes?(action)
+        fee = transaction.total_fees
 
-      minimum_fee = if _fee = blockchain.fees.fees_impl[action]?
-                      scale_i64(_fee)
-                    else
-                      Core::DApps::BuildIn::UTXO.fee("send")
-                    end
+        minimum_fee = if _fee = blockchain.fees.fees_impl[action]?
+                        scale_i64(_fee)
+                      else
+                        Core::DApps::BuildIn::UTXO.fee("send")
+                      end
 
-      raise "the fee (#{scale_decimal(fee)}) is less than the minimum fee (#{scale_decimal(minimum_fee)})." if fee < minimum_fee
+        raise "the fee (#{scale_decimal(fee)}) is less than the minimum fee (#{scale_decimal(minimum_fee)})." if fee < minimum_fee
+      end
 
       transaction
     end

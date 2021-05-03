@@ -186,7 +186,7 @@ module ::Axentro::Interface::Axe
 
       kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW
 
-      add_transaction(@node.not_nil!, "send", wallets, senders, recipients, message, token, kind)
+      add_transaction(@node.not_nil!, "send", wallets, senders, recipients, [] of Transaction::Asset, message, token, kind)
 
       puts ""
 

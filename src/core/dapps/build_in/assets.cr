@@ -28,6 +28,7 @@ module ::Axentro::Core::DApps::BuildIn
   end
 
   class AssetQuantity
+    include JSON::Serializable
     property asset_id : String
     property quantity : Int32
 
@@ -334,6 +335,54 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def define_rpc?(call, json, context, params) : HTTP::Server::Context?
+      case call
+      when "asset"
+        return asset(json, context, params)
+      when "asset_balance"
+        return asset_balance(json, context, params)
+      end
+
+      nil
+    end
+
+    def asset(json, context, params)
+      asset_id = json["asset_id"].as_s
+
+      context.response.print api_success(asset_impl(asset_id))
+      context
+    end
+
+    def asset_balance(json, context, params)
+      address = json["address"].as_s
+
+      context.response.print api_success(asset_balance_impl(address))
+      context
+    end
+
+    def asset_impl(asset_id : String)
+      if asset = database.get_asset_by_id(asset_id)
+        confirmations = 0
+        if block_index = database.get_block_index_for_asset(asset.asset_id)
+          confirmations = database.get_confirmations(block_index)
+        end
+        return {
+          status:        "ok",
+          asset:         asset,
+          confirmations: confirmations,
+        }
+      end
+
+      {
+        status: "not found",
+        asset:  nil,
+      }
+    end
+
+    def asset_balance_impl(address : String)
+      assets = database.get_address_asset_amounts([address])
+      confirmations = database.get_amount_confirmation(address)
+
+      {confirmations: confirmations, assets: assets[address]? || [] of AssetQuantity}
     end
 
     def on_message(action : String, from_address : String, content : String, from = nil) : Bool

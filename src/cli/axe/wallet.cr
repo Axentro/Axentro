@@ -159,20 +159,20 @@ module ::Axentro::Interface::Axe
       end
     end
 
-    private def determine_address(node) : String
-      if wallet_path = G.op.__wallet_path
-        wallet = get_wallet(wallet_path, G.op.__wallet_password)
-        wallet.address
-      elsif _address = G.op.__address
-        _address
-      elsif _domain = G.op.__domain
-        resolved = resolve_internal(node, _domain)
-        raise "domain #{_domain} is not resolved" unless resolved["resolved"].as_bool
-        resolved["domain"]["address"].as_s
-      else
-        puts_help(HELP_WALLET_PATH_OR_ADDRESS_OR_DOMAIN)
-      end
-    end
+    # private def determine_address(node) : String
+    #   if wallet_path = G.op.__wallet_path
+    #     wallet = get_wallet(wallet_path, G.op.__wallet_password)
+    #     wallet.address
+    #   elsif _address = G.op.__address
+    #     _address
+    #   elsif _domain = G.op.__domain
+    #     resolved = resolve_internal(node, _domain)
+    #     raise "domain #{_domain} is not resolved" unless resolved["resolved"].as_bool
+    #     resolved["domain"]["address"].as_s
+    #   else
+    #     puts_help(HELP_WALLET_PATH_OR_ADDRESS_OR_DOMAIN)
+    #   end
+    # end
 
     def amount
       puts_help(HELP_WALLET_PATH_OR_ADDRESS_OR_DOMAIN) if G.op.__wallet_path.nil? && G.op.__address.nil? && G.op.__domain.nil?
@@ -184,7 +184,7 @@ module ::Axentro::Interface::Axe
                 "all"
               end
 
-      address = determine_address(node)
+      address = determine_address(node, G.op.__wallet_path, G.op.__wallet_password, G.op.__address, G.op.__domain)
 
       payload = {call: "amount", address: address, token: token}.to_json
 

@@ -65,7 +65,7 @@ module ::Axentro::Core
     end
 
     private def scale_i64(sender : SenderDecimal) : Sender
-      Sender.new(sender.address, sender.public_key, scale_i64(sender.amount), scale_i64(sender.fee), sender.signature)
+      Sender.new(sender.address, sender.public_key, scale_i64(sender.amount), scale_i64(sender.fee), sender.signature, sender.asset_id, sender.asset_quantity)
     end
 
     private def scale_i64(recipients : RecipientsDecimal) : Recipients
@@ -73,7 +73,7 @@ module ::Axentro::Core
     end
 
     private def scale_i64(recipient : RecipientDecimal) : Recipient
-      Recipient.new(recipient.address, scale_i64(recipient.amount))
+      Recipient.new(recipient.address, scale_i64(recipient.amount), recipient.asset_id, recipient.asset_quantity)
     end
 
     private def scale_decimal(senders : Senders) : SendersDecimal

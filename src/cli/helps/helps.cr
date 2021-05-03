@@ -35,5 +35,10 @@ module ::Axentro::Interface
     HELP_NODE_ID                          = I18n.translate("help.node.id")
     HELP_DEVELOPER_FUND                   = I18n.translate("help.developer_fund")
     HELP_IS_FAST_TRANSACTION              = I18n.translate("help.is_fast_transaction")
+    HELP_ASSET_ID                         = I18n.translate("help.assets.id")
+    HELP_ASSET_NAME                       = I18n.translate("help.assets.name")
+    HELP_ASSET_DESCRIPTION                = I18n.translate("help.assets.desc")
+    HELP_ASSET_MEDIA_LOCATION             = I18n.translate("help.assets.media_location")
+    HELP_ASSET_AMOUNT                     = I18n.translate("help.assets.amount")
   end
 end
