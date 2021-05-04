@@ -385,6 +385,19 @@ module ::Axentro::Core::DApps::BuildIn
       {confirmations: confirmations, assets: assets[address]? || [] of AssetQuantity}
     end
 
+    def address_assets_impl(address : String, page : Int32, per_page : Int32, direction : Int32, sort_field : Int32)
+      assets = database.get_paginated_assets_for_address(address, page, per_page, Direction.new(direction).to_s, AssetSortField.new(sort_field).to_s)
+      total_count = database.total_asset_count_for_address(address)
+      selected = assets.map do |asset|
+        confirmations = 0
+        if block_index = database.get_block_index_for_asset(asset.asset_id)
+          confirmations = database.get_confirmations(block_index)
+        end
+        {asset: asset, confirmations: confirmations, block_id: block_index}
+      end
+      {assets: selected, pagination: {page: page, per_page: per_page, direction: direction, sort_field: sort_field, count: selected.size, total_count: total_count}}
+    end
+
     def on_message(action : String, from_address : String, content : String, from = nil) : Bool
       false
     end

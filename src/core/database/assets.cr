@@ -193,29 +193,29 @@ module ::Axentro::Core::Data::Assets
     assets.size > 0 ? assets.first : nil
   end
 
+  def total_asset_count_for_address(address : String) : Int32
+    get_address_asset_amounts([address]).flat_map { |_, assets| assets }.size
+  end
+
+  def get_paginated_assets_for_address(address : String, page : Int32, per_page : Int32, direction : String, sort_field : String)
+    limit = per_page
+    offset = Math.max((limit * page) - limit, 0)
+
+    asset_list = get_address_asset_amounts([address]).flat_map { |_, assets| assets.map(&.asset_id) }.map { |a| "'#{a}'" }.uniq!.join(",")
+    assets_by_query(
+      "select * from assets a " \
+      "inner join (select asset_id, max(version) as version from assets where asset_id in (#{asset_list}) group by asset_id) b " \
+      "on a.asset_id = b.asset_id and a.version = b.version " \
+      "where a.asset_id in (#{asset_list}) " \
+      "order by #{sort_field} #{direction}  " \
+      "limit ? offset ?", limit, offset
+    )
+  end
+
   # ------- API -------
 
   def get_all_asset_versions(asset_id : String) : Array(Asset)
-    assets = [] of Transaction::Asset
-    @db.query("select * from assets where asset_id = ? order by version desc", asset_id) do |rows|
-      rows.each do
-        asset_id = rows.read(String)
-        rows.read(String)
-        rows.read(Int64)
-        rows.read(Int32)
-        name = rows.read(String)
-        description = rows.read(String)
-        media_location = rows.read(String)
-        media_hash = rows.read(String)
-        quantity = rows.read(Int32)
-        terms = rows.read(String)
-        locked = AssetAccess.parse(asset_rows.read(String))
-        version = rows.read(Int32)
-        timestamp = rows.read(Int64)
-        assets << Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, locked, version, timestamp)
-      end
-    end
-    assets
+    assets_by_query("select * from assets where asset_id = ? order by version desc", asset_id)
   end
 
   def get_latest_asset(asset_id : String) : Asset?
@@ -224,27 +224,8 @@ module ::Axentro::Core::Data::Assets
   end
 
   def existing_assets_from_sender(asset_ids : Array(String)) : Array(Asset)
-    _assets = [] of Transaction::Asset
     asset_list = asset_ids.map { |a| "'#{a}'" }.uniq!.join(",")
-    @db.query("select * from assets where asset_id in (#{asset_list})") do |rows|
-      rows.each do
-        asset_id = rows.read(String)
-        rows.read(String)
-        rows.read(Int64)
-        rows.read(Int32)
-        name = rows.read(String)
-        description = rows.read(String)
-        media_location = rows.read(String)
-        media_hash = rows.read(String)
-        quantity = rows.read(Int32)
-        terms = rows.read(String)
-        locked = AssetAccess.parse(rows.read(String))
-        version = rows.read(Int32)
-        timestamp = rows.read(Int64)
-        _assets << Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, locked, version, timestamp)
-      end
-    end
-    _assets.group_by(&.asset_id).flat_map { |_, assets| assets.select(&.version.==(assets.map(&.version).max)) }
+    assets_by_query("select * from assets where asset_id in (#{asset_list})").group_by(&.asset_id).flat_map { |_, assets| assets.select(&.version.==(assets.map(&.version).max)) }
   end
 
   # based on asset_id, media_location and media_hash
@@ -254,7 +235,12 @@ module ::Axentro::Core::Data::Assets
     media_locations = assets.map { |a| "'#{a.media_location}'" }.uniq!.join(",")
     media_hashes = assets.map { |a| "'#{a.media_hash}'" }.uniq!.join(",")
 
-    @db.query "select * from assets where asset_id in (#{asset_list}) or media_location in (#{media_locations}) or media_hash in (#{media_hashes}) order by idx" do |rows|
+    assets_by_query("select * from assets where asset_id in (#{asset_list}) or media_location in (#{media_locations}) or media_hash in (#{media_hashes}) order by idx").group_by(&.asset_id).flat_map { |_, ass| ass.select(&.version.==(ass.map(&.version).max)) }
+  end
+
+  def assets_by_query(query, *args)
+    assets = [] of Transaction::Asset
+    @db.query(query, args: args.to_a) do |rows|
       rows.each do
         asset_id = rows.read(String)
         rows.read(String)
@@ -269,10 +255,10 @@ module ::Axentro::Core::Data::Assets
         locked = AssetAccess.parse(rows.read(String))
         version = rows.read(Int32)
         timestamp = rows.read(Int64)
-        _assets << Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, locked, version, timestamp)
+        assets << Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, locked, version, timestamp)
       end
     end
-    _assets.group_by(&.asset_id).flat_map { |_, ass| ass.select(&.version.==(ass.map(&.version).max)) }
+    assets
   end
 
   include ::Axentro::Core::DApps::BuildIn

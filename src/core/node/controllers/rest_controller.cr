@@ -91,8 +91,6 @@ module ::Axentro::Core::Controllers
 
       post "/api/v1/transaction" { |context, params| __v1_transaction(context, params) }
       post "/api/v1/transaction/unsigned" { |context, params| __v1_transaction_unsigned(context, params) }
-
-      # post "/api/v1/transaction/send_token" { |context, params| __v1_transaction_send_token(context, params) }
       post "/api/v1/transaction/send_token/unsigned" { |context, params| __v1_transaction_send_token_unsigned(context, params) }
 
       get "/api/v1/wallet/:address" { |context, params| __v1_wallet(context, params) }
@@ -102,6 +100,14 @@ module ::Axentro::Core::Controllers
       get "/api/v1/nonces/pending/:address" { |context, params| __v1_pending_nonces(context, params) }
 
       get "/api/v1/mining/pending_block" { |context, params| __v1_pending_block(context, params) }
+
+      get "/api/v1/assets/:asset_id" { |context, params| __v1_assets_id(context, params) }
+      get "/api/v1/assets/address/:address" { |context, params| __v1_assets_address(context, params) }
+      # assets
+      # get asset detail by asset id
+      # get all assets for an address
+      # create an asset
+      # update an asset
 
       route_handler
     end
@@ -402,6 +408,22 @@ module ::Axentro::Core::Controllers
       with_response(context) do
         term = params["term"].to_s
         search_by_term(term)
+      end
+    end
+
+    def __v1_assets_id(context, params)
+      with_response(context) do
+        asset_id = params["asset_id"].to_s
+        @blockchain.asset_component.asset_impl(asset_id)
+      end
+    end
+
+    def __v1_assets_address(context, params)
+      with_response(context) do |query_params|
+        page, per_page, direction, sort_field = paginated(query_params)
+        address = params["address"].to_s
+
+        @blockchain.asset_component.address_assets_impl(address, page, per_page, direction, sort_field)
       end
     end
 

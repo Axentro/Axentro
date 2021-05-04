@@ -720,6 +720,84 @@ describe RESTController do
       end
     end
   end
+
+  describe "__v1_assets_id" do
+    it "should return the asset details for supplied asset_id" do
+      with_factory do |block_factory, transaction_factory|
+        asset_id = Transaction::Asset.create_id
+        sender_wallet = transaction_factory.sender_wallet
+
+        transaction1 = transaction_factory.make_asset(
+          "AXNT",
+          "create_asset",
+          [a_sender(sender_wallet, 0_i64, 0_i64)],
+          [a_recipient(sender_wallet, 0_i64)],
+          [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 1, __timestamp)]
+        )
+
+        block_factory.add_slow_block([transaction1]).add_slow_blocks(4)
+
+        exec_rest_api(block_factory.rest.__v1_assets_id(context("/api/v1/assets/#{asset_id}"), {asset_id: asset_id})) do |result|
+          result["status"].to_s.should eq("success")
+          asset = Transaction::Asset.from_json(result["result"]["asset"].to_json)
+          asset.asset_id.should eq(asset_id)
+        end
+      end
+    end
+    it "should return not found for supplied asset_id" do
+      with_factory do |block_factory, _|
+        asset_id = Transaction::Asset.create_id
+
+        exec_rest_api(block_factory.rest.__v1_assets_id(context("/api/v1/assets/#{asset_id}"), {asset_id: asset_id})) do |result|
+          result["status"].to_s.should eq("success")
+          result["result"]["status"].should eq("not found")
+          result["result"]["asset"].should eq(nil)
+        end
+      end
+    end
+  end
+
+  describe "__v1_assets_address" do
+    it "should return paginated asset details for supplied address" do
+      with_factory do |block_factory, transaction_factory|
+        asset_id = Transaction::Asset.create_id
+        sender_wallet = transaction_factory.sender_wallet
+
+        txns = (0..10).to_a.flat_map do
+          asset_id = Transaction::Asset.create_id
+          [create_asset(asset_id, transaction_factory, sender_wallet),
+           update_asset(asset_id, transaction_factory, sender_wallet)]
+        end
+        block_factory.add_slow_block(txns).add_slow_blocks(4)
+
+        exec_rest_api(block_factory.rest.__v1_assets_address(context("/api/v1/assets/address/#{sender_wallet.address}"), {address: sender_wallet.address})) do |result|
+          result["status"].to_s.should eq("success")
+          data = result["result"]["assets"].as_a.map(&.["asset"]).to_json
+          Array(Transaction::Asset).from_json(data).size.should eq(11)
+        end
+      end
+    end
+  end
+end
+
+private def create_asset(asset_id, transaction_factory, sender_wallet) : Transaction
+  transaction_factory.make_asset(
+    "AXNT",
+    "create_asset",
+    [a_sender(sender_wallet, 0_i64, 0_i64)],
+    [a_recipient(sender_wallet, 0_i64)],
+    [Transaction::Asset.new(asset_id, "name_#{asset_id}", "description_#{asset_id}", "media_location_#{asset_id}", "media_hash_#{asset_id}", 1, "terms", AssetAccess::UNLOCKED, 1, __timestamp)]
+  )
+end
+
+private def update_asset(asset_id, transaction_factory, sender_wallet) : Transaction
+  transaction_factory.make_asset(
+    "AXNT",
+    "update_asset",
+    [a_sender(sender_wallet, 0_i64, 0_i64)],
+    [a_recipient(sender_wallet, 0_i64)],
+    [Transaction::Asset.new(asset_id, "name_#{asset_id}", "description_#{asset_id}", "media_location_#{asset_id}", "media_hash_#{asset_id}", 2, "terms", AssetAccess::UNLOCKED, 2, __timestamp)]
+  )
 end
 
 struct DomainResult

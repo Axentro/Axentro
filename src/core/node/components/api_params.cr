@@ -57,6 +57,21 @@ module ::Axentro::Core::NodeComponents
       end
     end
 
+    # Used to specify a sorting field when retrieving assets via the API
+    enum AssetSortField
+      Id
+      Time
+
+      def to_s
+        case self
+        when Time
+          "timestamp"
+        else
+          "asset_id"
+        end
+      end
+    end
+
     def paginated(query_params, page = 1, per_page = 20, direction = Direction::Down, sort_field = 0)
       per_page_raw = query_params["per_page"]?.try &.to_i || per_page
       capped_per_page = per_page_raw > 100 ? 100 : per_page_raw
