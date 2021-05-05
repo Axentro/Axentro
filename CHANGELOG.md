@@ -13,6 +13,31 @@
 
 **Closed issues:**
 
+- Validate Asset max field sizes [\#433](https://github.com/Axentro/Axentro/issues/433)
+- send asset [\#431](https://github.com/Axentro/Axentro/issues/431)
+- Transaction validation id [\#430](https://github.com/Axentro/Axentro/issues/430)
+- lock\_asset [\#429](https://github.com/Axentro/Axentro/issues/429)
+- update\_asset  [\#428](https://github.com/Axentro/Axentro/issues/428)
+- create\_asset [\#427](https://github.com/Axentro/Axentro/issues/427)
+- Asset validation [\#426](https://github.com/Axentro/Axentro/issues/426)
+- Create assets for transaction [\#425](https://github.com/Axentro/Axentro/issues/425)
+- Add LRU cache for miner mortality [\#424](https://github.com/Axentro/Axentro/issues/424)
+- Add block height to node info [\#423](https://github.com/Axentro/Axentro/issues/423)
+- Introduce miner loyalty [\#422](https://github.com/Axentro/Axentro/issues/422)
+- Remove leading miner block time ensure  [\#421](https://github.com/Axentro/Axentro/issues/421)
+- Remove IntegrityCheck old code [\#418](https://github.com/Axentro/Axentro/issues/418)
+- Fix v3 sign transaction [\#417](https://github.com/Axentro/Axentro/issues/417)
+- Add checkpoints [\#416](https://github.com/Axentro/Axentro/issues/416)
+- Fix Integrity Check  [\#415](https://github.com/Axentro/Axentro/issues/415)
+- Ability change mining params or type [\#414](https://github.com/Axentro/Axentro/issues/414)
+- Remove in memory chain as not used [\#413](https://github.com/Axentro/Axentro/issues/413)
+- Consolidate fast and slow blocks [\#412](https://github.com/Axentro/Axentro/issues/412)
+- Restructure block validation to allow for consolidation of fast and slow blocks [\#411](https://github.com/Axentro/Axentro/issues/411)
+- Switch hashes to argon [\#410](https://github.com/Axentro/Axentro/issues/410)
+- MsgPack for all Transport [\#409](https://github.com/Axentro/Axentro/issues/409)
+- Fast validation [\#408](https://github.com/Axentro/Axentro/issues/408)
+- Add Merkle root to db [\#407](https://github.com/Axentro/Axentro/issues/407)
+- Add version to block [\#406](https://github.com/Axentro/Axentro/issues/406)
 - Add database migration capability [\#405](https://github.com/Axentro/Axentro/issues/405)
 - Track miner reject for old miner versions [\#404](https://github.com/Axentro/Axentro/issues/404)
 - Mining ban list might be causing elevated CPU [\#402](https://github.com/Axentro/Axentro/issues/402)
@@ -32,6 +57,7 @@
 
 **Merged pull requests:**
 
+- V3 assets [\#434](https://github.com/Axentro/Axentro/pull/434) ([kingsleyh](https://github.com/kingsleyh))
 - Build with crystal v0.36.1-1 [\#400](https://github.com/Axentro/Axentro/pull/400) ([fenicks](https://github.com/fenicks))
 
 ## [v2.0.3](https://github.com/Axentro/Axentro/tree/v2.0.3) (2021-02-16)

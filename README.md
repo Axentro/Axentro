@@ -5,13 +5,7 @@
 <p align="center"><i>To be the <b>go to</b> platform for building <b>dApps</b> quickly and cheaply for business and gaming</i></p>
 
 <p align="center">
-<a href="https://github.com/Axentro/Axentro/actions/workflows/linux-ci.yml"><img src="https://github.com/Axentro/Axentro/actions/workflows/linux-ci.yml/badge.svg?branch=master"/></a>
-
-<a href="https://github.com/Axentro/Axentro/actions/workflows/macos-ci.yml"><img src="https://github.com/Axentro/Axentro/actions/workflows/macos-ci.yml/badge.svg?branch=master"/></a>
-
-<a href="https://circleci.com/gh/Axentro/Axentro/tree/master"><img src="https://circleci.com/gh/Axentro/Axentro.svg?style=shield&circle-token=099c1a2ed8be9aebf10eb09f79d65dfa4b05cf8e"></a>
-
-<a href="https://t.me/axentrohq"><img src="https://img.shields.io/static/v1.svg?label=chat&message=telegram&color=informational"/></a>
+<a href="https://github.com/Axentro/Axentro/actions/workflows/linux-ci.yml"><img src="https://github.com/Axentro/Axentro/actions/workflows/linux-ci.yml/badge.svg?branch=master"/></a> <a href="https://t.me/axentrohq"><img src="https://img.shields.io/static/v1.svg?label=chat&message=telegram&color=informational"/></a>
 <a href="https://twitter.com/axentrohq"><img src="https://img.shields.io/twitter/follow/axentrohq.svg?label=Follow&style=social"/></a>
 </p>
 
