@@ -34,8 +34,8 @@ module ::Axentro::Core
     @common_validated : Bool = false
 
     def to_json(j : JSON::Builder)
-      sorted_senders = @senders.sort_by { |s| {s.address, s.public_key, s.amount, s.fee, s.signature} }
-      sorted_recipients = @recipients.sort_by { |r| {r.address, r.amount} }
+      sorted_senders = @senders.sort_by { |s| {s.address, s.public_key, s.amount, s.fee, s.signature, s.asset_id || "", s.asset_quantity || 0} }
+      sorted_recipients = @recipients.sort_by { |r| {r.address, r.amount, r.asset_id || "", r.asset_quantity || 0} }
       sorted_assets = @assets.sort_by { |a| {a.timestamp, a.asset_id} }
       j.object do
         j.field("id", @id)
