@@ -51,6 +51,10 @@ dependencies:
     github: darwinnn/crometheus
   mg:
     github: hkalexling/mg   
+  msgpack:
+    github: crystal-community/msgpack-crystal
+  lru-cache:
+    github: nicolab/crystal-lru-cache       
 
 development_dependencies:
   spinach:

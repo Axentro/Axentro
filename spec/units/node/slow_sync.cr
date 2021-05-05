@@ -14,7 +14,6 @@ require "./../../spec_helper"
 
 include Axentro::Core
 include Units::Utils
-include Axentro::Core::Block
 include Axentro::Core::NodeComponents
 include Axentro::Core::Keys
 
@@ -33,11 +32,8 @@ describe SlowSync do
         incoming_block = make_incoming_next_in_sequence(latest_slow, blockchain)
 
         has_block = database.get_block(incoming_block.index)
-        # latest_local_fast_index = block_factory.node.get_latest_fast_index
 
-        # puts "latest: #{latest_slow.index}, mining: #{mining_block.index}, incoming: #{incoming_block.index}"
-
-        slow_sync = SlowSync.new(incoming_block, mining_block, (has_block.nil? ? nil : has_block.not_nil!.as(SlowBlock)), latest_slow)
+        slow_sync = SlowSync.new(incoming_block, mining_block, (has_block.nil? ? nil : has_block.not_nil!.as(Block)), latest_slow)
         slow_sync.process.should eq(SlowSyncState::CREATE)
       end
     end
@@ -49,12 +45,11 @@ private def create_coinbase_transaction(blockchain, index, transactions) : Trans
   blockchain.calculate_coinbase_slow_transaction(coinbase_amount, index, transactions)
 end
 
-private def get_latest_slow(database : Database) : SlowBlock
-  blocks = database.get_highest_block_for_kind(BlockKind::SLOW)
-  blocks.size > 0 ? blocks.first.as(SlowBlock) : raise "no slow blocks"
+private def get_latest_slow(database : Database) : Block
+  database.get_highest_block_for_kind!(BlockKind::SLOW)
 end
 
-private def make_incoming_next_in_sequence(latest_slow : SlowBlock, blockchain) : SlowBlock
+private def make_incoming_next_in_sequence(latest_slow : Block, blockchain) : Block
   index = latest_slow.index + 2
   transactions = [create_coinbase_transaction(blockchain, index, [] of Transaction)]
   hash = latest_slow.to_hash
@@ -65,14 +60,18 @@ private def make_incoming_next_in_sequence(latest_slow : SlowBlock, blockchain) 
 end
 
 private def make_incoming_block(index, transactions, hash, timestamp, difficulty, address)
-  SlowBlock.new(
+  Block.new(
     index,
     transactions,
     "0",
     hash,
     timestamp,
     difficulty,
-    address
+    address,
+    BlockVersion::V2,
+    HashVersion::V2,
+    "",
+    MiningVersion::V1
   )
 end
 
@@ -86,7 +85,7 @@ end
 #   # valid block is tested separately
 #   valid_block = @blockchain.valid_block?(block, true)
 #   case valid_block
-#   when SlowBlock
+#   when Block
 #     @blockchain.push_slow_block(valid_block)
 #   else
 #     raise "error could not push slow block onto blockchain - block was not valid"

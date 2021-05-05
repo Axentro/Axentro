@@ -18,7 +18,6 @@ include Hashes
 include Units::Utils
 include Axentro::Core::DApps::BuildIn
 include Axentro::Core::Controllers
-include Axentro::Core::Block
 
 describe Blockchain do
   describe "setup" do
@@ -47,62 +46,34 @@ describe Blockchain do
     end
   end
 
-  describe "replace_mixed_chain" do
-    it "should return false if no subchains and do nothing" do
-      with_factory do |block_factory|
-        before = block_factory.chain
-        expected_result = ReplaceBlocksResult.new(0_i64, false)
-        block_factory.blockchain.replace_mixed_chain(nil).should eq(expected_result)
-        before.should eq(block_factory.chain)
-      end
-    end
+  # describe "replace_mixed_chain" do
+  #   it "should return false if no subchains and do nothing" do
+  #     with_factory do |block_factory|
+  #       before = block_factory.chain
+  #       expected_result = ReplaceBlocksResult.new(0_i64, false)
+  #       block_factory.blockchain.replace_mixed_chain(nil).should eq(expected_result)
+  #       before.should eq(block_factory.chain)
+  #     end
+  #   end
 
-    it "should return true and replace chain when fast and slow blocks in chain" do
-      with_factory do |block_factory|
-        chain = block_factory.add_slow_blocks(6).add_fast_blocks(10).chain
-        fast_sub_chain = chain.select(&.is_fast_block?)
-        slow_block_1 = chain[2].as(SlowBlock)
-        slow_sub_chain = chain.select(&.is_slow_block?)
+  #   it "should return true and replace chain when fast and slow blocks in chain" do
+  #     with_factory do |block_factory|
+  #       chain = block_factory.add_slow_blocks(6).add_fast_blocks(10).chain
+  #       fast_sub_chain = chain.select(&.is_fast_block?)
+  #       slow_block_1 = chain[2].as(Block)
+  #       slow_sub_chain = chain.select(&.is_slow_block?)
 
-        database = Axentro::Core::Database.in_memory
-        blockchain = Blockchain.new("testnet", block_factory.node_wallet, block_factory.node_wallet.address, "", database, nil, nil, 20, 100, false, 512, true)
-        blockchain.setup(block_factory.node)
-        blockchain.push_slow_block(slow_block_1)
-        expected = (blockchain.chain + slow_sub_chain[2..-1] + fast_sub_chain[0..-1]).map(&.index).sort
-        expected_result = ReplaceBlocksResult.new(19_i64, true)
-        blockchain.replace_mixed_chain(slow_sub_chain[2..-1] + fast_sub_chain[0..-1]).should eq(expected_result)
-        blockchain.chain.map(&.index).sort.should eq(expected)
-      end
-    end
-  end
-
-  describe "trim chain" do
-    # These tests use >= in the assertion because it has a timestamp cutoff which can vary when the test runs
-    it "should trim the chain correctly taking into account both slow and fast blocks when there are fewer fast blocks" do
-      with_factory do |block_factory|
-        # trim_chain_in_memory - should always keep both @slow_blocks_to_hold and @fast_blocks_to_hold in the memory chain
-        block_factory.add_fast_blocks(2).add_slow_blocks(block_factory.slow_blocks_to_hold + 10)
-        block_factory.chain.count(&.is_fast_block?).should eq(2)
-        block_factory.chain.count(&.is_slow_block?).should be >= 60
-      end
-    end
-    it "should trim the chain correctly taking into account both slow and fast blocks when there are more fast blocks" do
-      with_factory do |block_factory|
-        # trim_chain_in_memory - should always keep both @slow_blocks_to_hold and @fast_blocks_to_hold in the memory chain
-        block_factory.add_fast_blocks(block_factory.fast_blocks_to_hold + 10).add_slow_blocks(block_factory.slow_blocks_to_hold + 10)
-        block_factory.chain.count(&.is_fast_block?).should be >= 60
-        block_factory.chain.count(&.is_slow_block?).should be >= 60
-      end
-    end
-    it "should trim the chain correctly taking into account both slow and fast blocks when there are more fast blocks than slow" do
-      with_factory do |block_factory|
-        # trim_chain_in_memory - should always keep both @slow_blocks_to_hold and @fast_blocks_to_hold in the memory chain
-        block_factory.add_slow_blocks(1).add_fast_blocks(block_factory.fast_blocks_to_hold + 10)
-        block_factory.chain.count(&.is_fast_block?).should be >= 60
-        block_factory.chain.count(&.is_slow_block?).should eq(2)
-      end
-    end
-  end
+  #       database = Axentro::Core::Database.in_memory
+  #       blockchain = Blockchain.new("testnet", block_factory.node_wallet, block_factory.node_wallet.address, "", database, nil, nil, 20, 100, false, 512, true)
+  #       blockchain.setup(block_factory.node)
+  #       blockchain.push_slow_block(slow_block_1)
+  #       expected = (blockchain.chain + slow_sub_chain[2..-1] + fast_sub_chain[0..-1]).map(&.index).sort
+  #       expected_result = ReplaceBlocksResult.new(19_i64, true)
+  #       blockchain.replace_mixed_chain(slow_sub_chain[2..-1] + fast_sub_chain[0..-1]).should eq(expected_result)
+  #       blockchain.chain.map(&.index).sort.should eq(expected)
+  #     end
+  #   end
+  # end
 
   describe "add_transaction" do
     it "should add a transaction to the pool" do
@@ -169,15 +140,8 @@ describe Blockchain do
       victim_wallet = Wallet.from_json(Wallet.create(true).to_json)
       hacker_wallet = Wallet.from_json(Wallet.create(true).to_json)
 
-      sender = {address:    victim_wallet.address,
-                public_key: hacker_wallet.public_key,
-                amount:     10000000_i64,
-                fee:        10000000_i64,
-                signature:  "0",
-      }
-
-      recipient = {address: hacker_wallet.address,
-                   amount:  10000000_i64}
+      sender = Sender.new(victim_wallet.address, hacker_wallet.public_key, 10000000_i64, 10000000_i64, "0")
+      recipient = Recipient.new(hacker_wallet.address, 10000000_i64)
 
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
@@ -185,6 +149,7 @@ describe Blockchain do
         "send", # action
         [sender],
         [recipient],
+        [] of Transaction::Asset,
         "0",    # message
         "AXNT", # token
         "0",    # prev_hash
@@ -209,15 +174,8 @@ describe Blockchain do
       victim_wallet = Wallet.from_json(Wallet.create(true).to_json)
       hacker_wallet = Wallet.from_json(Wallet.create(true).to_json)
 
-      sender = {address:    victim_wallet.address,
-                public_key: victim_wallet.public_key,
-                amount:     10000000_i64,
-                fee:        10000000_i64,
-                signature:  "0",
-      }
-
-      recipient = {address: hacker_wallet.address,
-                   amount:  10000000_i64}
+      sender = Sender.new(victim_wallet.address, victim_wallet.public_key, 10000000_i64, 10000000_i64, "0")
+      recipient = Recipient.new(hacker_wallet.address, 10000000_i64)
 
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
@@ -225,6 +183,7 @@ describe Blockchain do
         "send", # action
         [sender],
         [recipient],
+        [] of Transaction::Asset,
         "0",    # message
         "AXNT", # token
         "0",    # prev_hash
@@ -259,93 +218,12 @@ describe Blockchain do
     end
   end
 
-  describe "latest_block" do
-    it "should return the latest block when slow" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3)
-        blockchain = block_factory.blockchain
-        blockchain.latest_block.index.should eq(6)
-      end
-    end
-
-    it "should return the latest block when fast" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3).add_fast_blocks(4)
-        blockchain = block_factory.blockchain
-        blockchain.latest_block.index.should eq(7)
-      end
-    end
-  end
-
-  describe "latest_slow_block" do
-    it "should return the latest slow block" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3).add_fast_blocks(2)
-        blockchain = block_factory.blockchain
-        blockchain.latest_block.index.should eq(6)
-      end
-    end
-  end
-
-  describe "latest_index" do
-    it "should return the latest index when slow" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3)
-        blockchain = block_factory.blockchain
-        blockchain.latest_index.should eq(6)
-      end
-    end
-
-    it "should return the latest index when fast" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3).add_fast_blocks(4)
-        blockchain = block_factory.blockchain
-        blockchain.latest_index.should eq(7)
-      end
-    end
-  end
-
-  describe "get_latest_index_for_slow" do
-    it "should return the latest index when slow" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3).add_fast_blocks(4)
-        blockchain = block_factory.blockchain
-        blockchain.get_latest_index_for_slow.should eq(8)
-      end
-    end
-  end
-
-  describe "restore from database" do
-    it "should load the whole chain from the database when the chain size is less than the memory allocation" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(10)
-        database = block_factory.database
-        blockchain = Blockchain.new("testnet", block_factory.node_wallet, block_factory.node_wallet.address, "", database, nil, nil, 20, 100, false, 512, true)
-        blockchain.setup(block_factory.node)
-        # including genesis block total chain size should be 11
-        blockchain.chain.size.should eq(11)
-      end
-    end
-    it "should load a subset of the whole chain from the database when the chain size is more than the memory allocation" do
-      with_factory do |block_factory|
-        slow_blocks_to_add = block_factory.slow_blocks_to_hold + 8
-        fast_blocks_to_add = slow_blocks_to_add
-        block_factory.add_slow_blocks(slow_blocks_to_add).add_fast_blocks(fast_blocks_to_add)
-        database = block_factory.database
-        blockchain = Blockchain.new("testnet", block_factory.node_wallet, block_factory.node_wallet.address, "", database, nil, nil, 20, 100, false, 512, true)
-        blockchain.setup(block_factory.node)
-        # including genesis block total chain size should be the number of blocks to hold
-        blockchain.chain.size.should eq(blockchain.slow_blocks_to_hold + blockchain.fast_blocks_to_hold)
-      end
-    end
-  end
-
   describe "available_actions" do
     it "should return available actions" do
       with_factory do |block_factory, transaction_factory|
         block_factory.add_slow_blocks(3).add_fast_blocks(4).add_slow_block([transaction_factory.make_send(200000000_i64)])
         blockchain = block_factory.blockchain
-        blockchain.available_actions.should eq(["send", "hra_buy", "hra_sell", "hra_cancel", "create_token", "update_token", "lock_token", "burn_token"])
+        blockchain.available_actions.should eq(["send", "hra_buy", "hra_sell", "hra_cancel", "create_token", "update_token", "lock_token", "burn_token", "create_asset", "update_asset", "send_asset"])
       end
     end
   end
@@ -389,7 +267,7 @@ describe Blockchain do
 
         # add a transaction to embedded that will be rejected (not enough funds) and coinbase amount should not add the rejected transactions fee
         aligned = blockchain.align_slow_transactions(coinbase_transaction, 1, 8, block_factory.blockchain.embedded_slow_transactions + [transaction_factory.make_send(90000000000000_i64)])
-        aligned.first.recipients.map(&.["amount"]).sum.should eq(1200007495)
+        aligned.first.recipients.sum(&.amount).should eq(1200007495)
       end
     end
   end
@@ -403,8 +281,8 @@ describe Blockchain do
         transaction = blockchain.create_coinbase_slow_transaction(amount, 0_i64, [block_factory.miner])
         transaction.action.should eq("head")
         recipient = transaction.recipients.first
-        recipient[:address].should eq(block_factory.node_wallet.address)
-        recipient[:amount].should eq(amount)
+        recipient.address.should eq(block_factory.node_wallet.address)
+        recipient.amount.should eq(amount)
       end
     end
 
@@ -417,8 +295,8 @@ describe Blockchain do
         transaction = blockchain.create_coinbase_slow_transaction(amount, fastnode_fees, [block_factory.miner])
         transaction.action.should eq("head")
         recipient = transaction.recipients.first
-        recipient[:address].should eq(block_factory.node_wallet.address)
-        recipient[:amount].should eq(amount + fastnode_fees)
+        recipient.address.should eq(block_factory.node_wallet.address)
+        recipient.amount.should eq(amount + fastnode_fees)
       end
     end
   end

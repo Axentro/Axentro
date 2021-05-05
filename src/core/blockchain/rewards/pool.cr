@@ -61,7 +61,7 @@ module ::Axentro::Core
     end
 
     def delete(miner_nonce : MinerNonce)
-      @pool.reject! { |mn| mn.id == miner_nonce.id }
+      @pool.reject!(&.id.==(miner_nonce.id))
     end
 
     def self.delete_embedded
@@ -117,7 +117,7 @@ module ::Axentro::Core
     end
 
     def find_by_mid(mid : String) : MinerNonces
-      @pool.select { |mn| mn.mid == mid }
+      @pool.select(&.mid.==(mid))
     end
 
     def self.find_by_mid(mid : String) : MinerNonces
@@ -125,7 +125,7 @@ module ::Axentro::Core
     end
 
     def find_by_address(address : String) : MinerNonces
-      @pool.select { |mn| mn.address == address }
+      @pool.select(&.address.==(address))
     end
 
     def self.find_by_address(address : String) : MinerNonces
@@ -137,7 +137,7 @@ module ::Axentro::Core
     end
 
     def find(miner_nonce : MinerNonce) : MinerNonce?
-      return nil unless @pool.find { |mn| mn == miner_nonce }
+      return nil unless @pool.find(&.==(miner_nonce))
     end
 
     include Logger

@@ -24,12 +24,14 @@ describe RPCController do
         with_factory do |block_factory, transaction_factory|
           senders = [a_decimal_sender(transaction_factory.sender_wallet, "1", "0.0001")]
           recipients = [a_decimal_recipient(transaction_factory.recipient_wallet, "10")]
+          assets = [] of Transaction::Asset
 
           payload = {
             call:       "create_unsigned_transaction",
             action:     "send",
             senders:    senders,
             recipients: recipients,
+            assets:     assets,
             message:    "",
             token:      TOKEN_DEFAULT,
             kind:       "SLOW",
@@ -46,8 +48,14 @@ describe RPCController do
             transaction.action.should eq("send")
             transaction.prev_hash.should eq("0")
             transaction.message.should eq("")
-            transaction.senders.should eq(expected_senders)
-            transaction.recipients.should eq(expected_recipients)
+            transaction.senders.each_with_index do |s, i|
+              s.address.should eq(expected_senders[i].address)
+              s.amount.should eq(expected_senders[i].amount)
+            end
+            transaction.recipients.each_with_index do |r, i|
+              r.address.should eq(expected_recipients[i].address)
+              r.amount.should eq(expected_recipients[i].amount)
+            end
             transaction.kind.should eq(TransactionKind::SLOW)
           end
         end

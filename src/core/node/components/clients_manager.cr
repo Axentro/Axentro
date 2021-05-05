@@ -98,13 +98,13 @@ module ::Axentro::Core::NodeComponents
 
     def clean_connection(socket)
       current_size = @clients.size
-      @clients.reject! { |client| client[:socket] == socket }
+      @clients.reject!(&.[:socket].==(socket))
 
       info "a client has been removed. (#{current_size} -> #{@clients.size})" if current_size > @clients.size
     end
 
     def find_by_address(address : String)
-      @clients.find { |c| c[:context][:address] == address }
+      @clients.find(&.[:context].[:address].==(address))
     end
 
     private def node

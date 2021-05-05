@@ -40,7 +40,7 @@ module ::Axentro::Core
 
     def self.transactions(config : DeveloperFundConfig)
       recipients = config.addresses.map do |item|
-        {address: item["address"], amount: item["amount"].to_s}
+        RecipientDecimal.new(item["address"], item["amount"].to_s)
       end
 
       transaction_id = Transaction.create_id
@@ -49,6 +49,7 @@ module ::Axentro::Core
         "head",
         [] of Transaction::SenderDecimal,
         recipients,
+        [] of Transaction::Asset,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash

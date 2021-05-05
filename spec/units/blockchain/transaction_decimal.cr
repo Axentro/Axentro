@@ -28,6 +28,7 @@ describe TransactionDecimal do
       "send", # action
       [a_decimal_sender(sender_wallet, "1000000")],
       [a_decimal_recipient(recipient_wallet, "1000000")],
+      [] of Transaction::Asset,
       "0",           # message
       TOKEN_DEFAULT, # token
       "0",           # prev_hash
@@ -40,14 +41,14 @@ describe TransactionDecimal do
     transaction.action.should eq("send")
     senders = transaction.senders
     senders.size.should eq(1)
-    senders.first[:address].should eq(sender_wallet.address)
-    senders.first[:public_key].should eq(sender_wallet.public_key)
-    senders.first[:amount].should eq("1000000")
+    senders.first.address.should eq(sender_wallet.address)
+    senders.first.public_key.should eq(sender_wallet.public_key)
+    senders.first.amount.should eq("1000000")
 
     recipients = transaction.recipients
     recipients.size.should eq(1)
-    recipients.first[:address].should eq(recipient_wallet.address)
-    recipients.first[:amount].should eq("1000000")
+    recipients.first.address.should eq(recipient_wallet.address)
+    recipients.first.amount.should eq("1000000")
 
     transaction.id.should eq(transaction_id)
     transaction.message.should eq("0")
@@ -65,6 +66,7 @@ describe TransactionDecimal do
         "send", # action
         [a_decimal_sender(sender_wallet, "1000000")],
         [a_decimal_recipient(recipient_wallet, "1000000")],
+        [] of Transaction::Asset,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -86,6 +88,7 @@ describe TransactionDecimal do
       "send", # action
       [a_decimal_sender(sender_wallet, "1000000")],
       [a_decimal_recipient(recipient_wallet, "1000000")],
+      [] of Transaction::Asset,
       "0",           # message
       TOKEN_DEFAULT, # token
       "0",           # prev_hash

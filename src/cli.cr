@@ -43,10 +43,10 @@ module ::Axentro::Interface
         exit exit_code
       end
       available_sub_actions =
-        sub_actions.map { |a| " - #{light_green("%-20s" % a[:name])} | #{"%-40s" % a[:desc]}" }.join("\n")
+        sub_actions.join("\n") { |a| " - #{light_green("%-20s" % a[:name])} | #{"%-40s" % a[:desc]}" }
       available_sub_actions = "nothing" if available_sub_actions == ""
 
-      message_size = message.split("\n").max_by { |m| m.size }.size
+      message_size = message.split("\n").max_by(&.size).size
       messages = message.split("\n").map { |m| white_bg(black(" %-#{message_size}s " % m)) }
 
       puts "\n" +
@@ -95,7 +95,7 @@ module ::Axentro::Interface
 
     def command_line
       return @axe_action[:name] if @parents.size == 0
-      @parents.map { |a| a[:name] }.join(" ") + " " + @axe_action[:name]
+      @parents.join(" ", &.[:name]) + " " + @axe_action[:name]
     end
 
     def next_parents : Array(AxeAction)
@@ -103,7 +103,7 @@ module ::Axentro::Interface
     end
 
     def sub_action_names : Array(String)
-      sub_actions.map { |a| a[:name] }
+      sub_actions.map(&.[:name])
     end
 
     def run
@@ -115,7 +115,7 @@ module ::Axentro::Interface
 
       if ARGV.size > 0 && ARGV[0].starts_with?('-')
         if parser = option_parser
-          parser.parse!
+          parser.parse
         end
       end
 
@@ -160,13 +160,14 @@ module ::Axentro::Interface
                         wallets : Array(Core::Wallet),
                         senders : SendersDecimal,
                         recipients : RecipientsDecimal,
+                        assets : Array(Asset),
                         message : String,
                         token : String,
                         kind : TransactionKind)
       raise "mismatch for wallet size and sender's size" if wallets.size != senders.size
 
       unsigned_transaction =
-        create_unsigned_transaction(node, action, senders, recipients, message, token, kind)
+        create_unsigned_transaction(node, action, senders, recipients, assets, message, token, kind)
 
       signed_transaction = sign(wallets, unsigned_transaction)
 
@@ -189,6 +190,7 @@ module ::Axentro::Interface
                                     action : String,
                                     senders : SendersDecimal,
                                     recipients : RecipientsDecimal,
+                                    assets : Array(Asset),
                                     message : String,
                                     token : String,
                                     kind : TransactionKind) : Core::Transaction
@@ -197,6 +199,7 @@ module ::Axentro::Interface
         action:     action,
         senders:    senders,
         recipients: recipients,
+        assets:     assets,
         message:    message,
         token:      token,
         kind:       kind,
@@ -224,6 +227,21 @@ module ::Axentro::Interface
 
       body = rpc(node, payload)
       JSON.parse(body)
+    end
+
+    private def determine_address(node, wallet_path, wallet_password, address, domain) : String
+      if _wallet_path = wallet_path
+        wallet = get_wallet(_wallet_path, wallet_password)
+        wallet.address
+      elsif _address = address
+        _address
+      elsif _domain = domain
+        resolved = resolve_internal(node, _domain)
+        raise "domain #{_domain} is not resolved" unless resolved["resolved"].as_bool
+        resolved["domain"]["address"].as_s
+      else
+        puts_help(HELP_WALLET_PATH_OR_ADDRESS_OR_DOMAIN)
+      end
     end
 
     abstract def sub_actions : Array(AxeAction)

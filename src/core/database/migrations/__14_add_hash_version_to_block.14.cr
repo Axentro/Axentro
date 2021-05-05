@@ -11,13 +11,10 @@
 # Removal or modification of this copyright notice is prohibited.
 
 @[MG::Tags("main")]
-class CreateIndexes < MG::Base
+class AddHashVersionToBlock < MG::Base
   def up : String
     <<-SQL
-      CREATE INDEX IF NOT EXISTS idx_recipients   on recipients (transaction_id);
-      CREATE INDEX IF NOT EXISTS idx_senders      on senders (transaction_id);
-      CREATE INDEX IF NOT EXISTS idx_blocks       on blocks (timestamp);
-      CREATE INDEX IF NOT EXISTS idx_transactions on transactions (block_id);
+      ALTER TABLE blocks ADD COLUMN hash_version TEXT NOT NULL DEFAULT "V2"
     SQL
   end
 

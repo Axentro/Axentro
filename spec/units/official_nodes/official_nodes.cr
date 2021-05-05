@@ -47,10 +47,10 @@ describe OfficialNodes do
     coinbase = transactions.select(&.is_coinbase?)
     coinbase.size.should eq(1)
 
-    official_node_slow = transactions.select { |t| t.action == "create_official_node_slow" }
+    official_node_slow = transactions.select(&.action.==("create_official_node_slow"))
     official_node_slow.size.should eq(1)
 
-    official_node_fast = transactions.select { |t| t.action == "create_official_node_slow" }
+    official_node_fast = transactions.select(&.action.==("create_official_node_slow"))
     official_node_fast.size.should eq(1)
 
     transactions[0].prev_hash.should eq("0")
@@ -68,10 +68,10 @@ describe OfficialNodes do
     coinbase = transactions.select(&.is_coinbase?)
     coinbase.size.should eq(0)
 
-    official_node_slow = transactions.select { |t| t.action == "create_official_node_slow" }
+    official_node_slow = transactions.select(&.action.==("create_official_node_slow"))
     official_node_slow.size.should eq(1)
 
-    official_node_fast = transactions.select { |t| t.action == "create_official_node_slow" }
+    official_node_fast = transactions.select(&.action.==("create_official_node_fast"))
     official_node_fast.size.should eq(1)
 
     transactions[0].prev_hash.should eq(fund_transactions[-1].to_hash)

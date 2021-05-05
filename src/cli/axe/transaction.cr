@@ -94,26 +94,17 @@ module ::Axentro::Interface::Axe
 
       senders = SendersDecimal.new
       senders.push(
-        {
-          address:    wallet.address,
-          public_key: wallet.public_key,
-          amount:     amount,
-          fee:        fee,
-          signature:  "0",
-        }
+        SenderDecimal.new(wallet.address, wallet.public_key, amount, fee, "0")
       )
 
       recipients = RecipientsDecimal.new
       recipients.push(
-        {
-          address: to_address.as_hex,
-          amount:  amount,
-        }
+        RecipientDecimal.new(to_address.as_hex, amount)
       )
 
       kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW
 
-      add_transaction(node, action, wallets, senders, recipients, G.op.__message, G.op.__token || TOKEN_DEFAULT, kind)
+      add_transaction(node, action, wallets, senders, recipients, [] of Transaction::Asset, G.op.__message, G.op.__token || TOKEN_DEFAULT, kind)
     end
 
     def transactions
@@ -159,17 +150,17 @@ module ::Axentro::Interface::Axe
     end
 
     private def recipients(recipients, action)
-      r = recipients.map { |x| x["address"].as_s.strip }
+      r = recipients.map(&.["address"].as_s.strip)
       r.empty? ? "" : "#{r.first} #{for_action(action, r.size)} "
     end
 
     private def to(senders)
-      r = senders.map { |x| x["address"].as_s.strip }
+      r = senders.map(&.["address"].as_s.strip)
       r.empty? ? "" : "#{r.first} #{if_lots(r.size)} "
     end
 
     private def amount(recipients)
-      scale_decimal(recipients.map { |r| r["amount"].as_i64 }.sum)
+      scale_decimal(recipients.sum(&.["amount"].as_i64))
     end
 
     private def if_lots(size)

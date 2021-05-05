@@ -70,7 +70,8 @@ module ::Axentro::Core
         Transaction.create_id,
         node_kind,
         [] of Transaction::SenderDecimal,
-        [{address: address, amount: "0"}],
+        [RecipientDecimal.new(address, "0")],
+        [] of Transaction::Asset,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -87,6 +88,7 @@ module ::Axentro::Core
         "head",
         [] of Transaction::SenderDecimal,
         [] of Transaction::RecipientDecimal,
+        [] of Transaction::Asset,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash

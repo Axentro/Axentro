@@ -26,23 +26,23 @@ module ::Axentro::Core::DApps::BuildIn
 
     def get_for_batch(address : String, token : String, historic_per_address : Hash(String, Array(TokenQuantity))) : Int64
       return 0_i64 if historic_per_address[address]?.nil?
-      historic_per_address[address].select { |tq| tq.token == token }.map(&.amount).sum
+      historic_per_address[address].select(&.token.==(token)).sum(&.amount)
     end
 
     def get_pending_batch(address : String, transactions : Array(Transaction), token : String, historic_per_address : Hash(String, Array(TokenQuantity))) : Int64
       historic = get_for_batch(address, token, historic_per_address)
 
       if token == "AXNT"
-        fees_sum = transactions.flat_map(&.senders).select { |s| s[:address] == address }.map(&.[:fee]).sum
-        senders_sum = transactions.select { |t| t.token == token }.flat_map(&.senders).select { |s| s[:address] == address }.map(&.[:amount]).sum
-        recipients_sum = transactions.select { |t| t.token == token }.flat_map(&.recipients).select { |r| r[:address] == address }.map(&.[:amount]).sum
+        fees_sum = transactions.flat_map(&.senders).select(&.address.==(address)).sum(&.fee)
+        senders_sum = transactions.select(&.token.==(token)).flat_map(&.senders).select(&.address.==(address)).sum(&.amount)
+        recipients_sum = transactions.select(&.token.==(token)).flat_map(&.recipients).select(&.address.==(address)).sum(&.amount)
         historic + (recipients_sum - (senders_sum + fees_sum))
       else
         # when tokens are created or updated the sender == recipient. This results in 0 pending amounts since the total is recipient - sender.
         # so for these cases we discard the sender amount in the calculation.
         exclusions = ["create_token", "update_token"]
-        senders_sum = transactions.reject { |t| exclusions.includes?(t.action) }.select { |t| t.token == token }.flat_map(&.senders).select { |s| s[:address] == address }.map(&.[:amount]).sum
-        recipients_sum = transactions.select { |t| t.token == token }.flat_map(&.recipients).select { |r| r[:address] == address }.map(&.[:amount]).sum
+        senders_sum = transactions.reject { |t| exclusions.includes?(t.action) }.select(&.token.==(token)).flat_map(&.senders).select(&.address.==(address)).sum(&.amount)
+        recipients_sum = transactions.select(&.token.==(token)).flat_map(&.recipients).select(&.address.==(address)).sum(&.amount)
         historic + (recipients_sum - (senders_sum))
       end
     end
@@ -52,13 +52,13 @@ module ::Axentro::Core::DApps::BuildIn
     end
 
     def transaction_related?(action : String) : Bool
-      Data::Transactions::INTERNAL_ACTIONS.includes?(action)
+      UTXO_ACTIONS.includes?(action)
     end
 
     # ameba:disable Metrics/CyclomaticComplexity
     def valid_transactions?(transactions : Array(Transaction)) : ValidatedTransactions
       # get amounts for all addresses into an in memory structure for all relevant tokens
-      addresses = transactions.flat_map { |t| t.senders.map { |s| s[:address] } }
+      addresses = transactions.flat_map { |t| t.senders.map(&.address) }
       historic_per_address = database.get_address_amounts(addresses)
       vt = ValidatedTransactions.empty
 
@@ -73,15 +73,15 @@ module ::Axentro::Core::DApps::BuildIn
 
         sender = transaction.senders[0]
 
-        amount_token = get_pending_batch(sender[:address], processed_transactions, transaction.token, historic_per_address)
-        amount_default = transaction.token == DEFAULT ? amount_token : get_pending_batch(sender[:address], processed_transactions, DEFAULT, historic_per_address)
+        amount_token = get_pending_batch(sender.address, processed_transactions, transaction.token, historic_per_address)
+        amount_default = transaction.token == DEFAULT ? amount_token : get_pending_batch(sender.address, processed_transactions, DEFAULT, historic_per_address)
 
-        as_recipients = transaction.recipients.select { |recipient| recipient[:address] == sender[:address] }
-        amount_token_as_recipients = as_recipients.reduce(0_i64) { |sum, recipient| sum + recipient[:amount] }
+        as_recipients = transaction.recipients.select(&.address.==(sender.address))
+        amount_token_as_recipients = as_recipients.reduce(0_i64) { |sum, recipient| sum + recipient.amount }
         amount_default_as_recipients = transaction.token == DEFAULT ? amount_token_as_recipients : 0_i64
 
-        pay_token = sender[:amount]
-        pay_default = (transaction.token == DEFAULT ? sender[:amount] : 0_i64) + sender[:fee]
+        pay_token = sender.amount
+        pay_default = (transaction.token == DEFAULT ? sender.amount : 0_i64) + sender.fee
 
         # send rules
         total_available = amount_token + amount_token_as_recipients
@@ -138,11 +138,11 @@ module ::Axentro::Core::DApps::BuildIn
       pairs = [] of NamedTuple(token: String, amount: String)
 
       if token != "all"
-        tokens = database.get_address_amount(address).select { |r| r.token == token }
+        tokens = database.get_address_amount(address).select(&.token.==(token))
         if tokens.empty?
           pairs
         else
-          balance = tokens.map(&.amount).sum
+          balance = tokens.sum(&.amount)
           pairs << {token: token, amount: scale_decimal(balance)}
         end
       else

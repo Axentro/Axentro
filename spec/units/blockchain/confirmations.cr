@@ -18,7 +18,6 @@ include Hashes
 include Units::Utils
 include Axentro::Core::DApps::BuildIn
 include Axentro::Core::Controllers
-include Axentro::Core::Block
 
 describe Blockchain do
   it "it should get the number of confirmations for a transaction with just slow blocks" do
@@ -35,7 +34,7 @@ describe Blockchain do
 
       block_factory.blockchain.wallet_info.wallet_info_impl(block_factory.node_wallet.address).recent_transactions.each do |rt|
         block_info = block_factory.blockchain.blockchain_info.block_transaction_impl(false, rt.transaction_id)
-        res = block_info.as(NamedTuple(block: Axentro::Core::FastBlock | Axentro::Core::SlowBlock, confirmations: Int32))
+        res = block_info.as(NamedTuple(block: Axentro::Core::Block, confirmations: Int32))
 
         case rt.confirmations.to_i
         when 0
@@ -86,7 +85,7 @@ describe Blockchain do
 
       block_factory.blockchain.wallet_info.wallet_info_impl(block_factory.node_wallet.address).recent_transactions.each do |rt|
         block_info = block_factory.blockchain.blockchain_info.block_transaction_impl(false, rt.transaction_id)
-        res = block_info.as(NamedTuple(block: Axentro::Core::FastBlock | Axentro::Core::SlowBlock, confirmations: Int32))
+        res = block_info.as(NamedTuple(block: Axentro::Core::Block, confirmations: Int32))
 
         case rt.confirmations.to_i
         when 0
@@ -144,7 +143,7 @@ describe Blockchain do
 
       block_factory.blockchain.wallet_info.wallet_info_impl(block_factory.node_wallet.address).recent_transactions.each do |rt|
         block_info = block_factory.blockchain.blockchain_info.block_transaction_impl(false, rt.transaction_id)
-        res = block_info.as(NamedTuple(block: Axentro::Core::FastBlock | Axentro::Core::SlowBlock, confirmations: Int32))
+        res = block_info.as(NamedTuple(block: Axentro::Core::Block, confirmations: Int32))
 
         case rt.confirmations.to_i
         when 0

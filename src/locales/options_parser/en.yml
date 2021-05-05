@@ -48,5 +48,10 @@ cli:
     whitelist: "specify a comma separated list of nodes to whitelist"
     whitelist_message: "specify a message for rejected nodes"
     fastnode: "indicate this node is a fastnode"
+    asset_id: "enter the asset id"
+    asset_name: "enter a name for the asset"
+    asset_description: "enter a description for the asset"
+    asset_media_location: "enter the url of where the asset is stored"
+    asset_locked: "specify if the asset should be locked"
   errors:
-    decimal: "please supply valid decimal number: %{value}"
+    decimal: "please supply valid decimal number: %{value}" 

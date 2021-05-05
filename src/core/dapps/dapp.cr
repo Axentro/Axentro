@@ -11,6 +11,10 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core::DApps
+  ASSET_ACTIONS    = ["create_asset", "update_asset", "send_asset"]
+  UTXO_ACTIONS     = ["head", "send", "hra_buy", "hra_sell", "hra_cancel", "create_token", "update_token", "lock_token", "burn_token"]
+  INTERNAL_ACTIONS = UTXO_ACTIONS + ASSET_ACTIONS
+
   abstract class DApp
     extend Common::Denomination
 
@@ -39,8 +43,8 @@ module ::Axentro::Core::DApps
     def valid?(transactions : Array(Transaction)) : ValidatedTransactions
       vt = ValidatedTransactions.empty
       # coinbase transactions should not be checked for fees
-      transactions.each do |transaction|
-        vt << rule_not_enough_fee(transaction) unless transaction.is_coinbase?
+      transactions.each do |transaction| # all asset transactions are free
+        vt << rule_not_enough_fee(transaction) unless transaction.is_coinbase? || ASSET_ACTIONS.includes?(transaction.action)
       end
       vt.concat(valid_transactions?(transactions))
     end

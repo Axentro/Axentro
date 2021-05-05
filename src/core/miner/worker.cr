@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core
-  alias MinerWork = NamedTuple(start_nonce: BlockNonce, difficulty: Int32, block: SlowBlock)
+  alias MinerWork = NamedTuple(start_nonce: BlockNonce, difficulty: Int32, block: Block)
 
   class MinerWorker < Tokoroten::Worker
     def task(message : String)
@@ -37,7 +37,7 @@ module ::Axentro::Core
         block = block.with_nonce(block_nonce).with_difficulty(work[:difficulty])
         block_hash = block.to_hash
 
-        if calculate_pow_difficulty(block_hash, block_nonce, work[:difficulty]) == work[:difficulty]
+        if calculate_pow_difficulty(block.mining_version, block_hash, block_nonce, work[:difficulty]) == work[:difficulty]
           miner_nonce = MinerNonce.from(block_nonce).with_difficulty(work[:difficulty]).with_timestamp(time_now)
           break
         end
@@ -61,7 +61,7 @@ module ::Axentro::Core
         end
       end
 
-      debug "nonce: #{calculate_pow_difficulty(block_hash, block_nonce, work[:difficulty])}, required: #{work[:difficulty]}, nonce: #{block_nonce}, hash: #{block_hash}"
+      debug "nonce: #{calculate_pow_difficulty(block.mining_version, block_hash, block_nonce, work[:difficulty])}, required: #{work[:difficulty]}, nonce: #{block_nonce}, hash: #{block_hash}"
       info "found new nonce(#{work[:difficulty]}): #{light_green(block_nonce)}"
       debug "Found block..."
 

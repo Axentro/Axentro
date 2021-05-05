@@ -27,10 +27,10 @@ module ::Axentro::Core
     def run
       @socket = HTTP::WebSocket.new(@host, "/peer?miner", @port, @use_ssl)
 
-      socket.on_message do |message|
-        message_json = JSON.parse(message)
-        message_type = message_json["type"].as_i
-        message_content = message_json["content"].to_s
+      socket.on_binary do |message|
+        transport = Transport.from_msgpack(message)
+        message_type = transport.type
+        message_content = transport.content
 
         case message_type
         when M_TYPE_MINER_HANDSHAKE_ACCEPTED
@@ -45,6 +45,8 @@ module ::Axentro::Core
           _block_update_invalid(message_content)
         when M_TYPE_MINER_EXCEED_RATE
           _miner_exceed_rate_warning(message_content)
+        when M_TYPE_MINER_INSUFFICIENT_DURATION
+          _miner_insufficient_duration_warning(message_content)
         end
       rescue e : Exception
         warning "receive invalid message, will be ignored: #{e}"
@@ -77,6 +79,12 @@ module ::Axentro::Core
 
     def _miner_exceed_rate_warning(_content)
       _m_content = MContentMinerExceedRate.from_json(_content)
+
+      info _m_content.reason
+    end
+
+    def _miner_insufficient_duration_warning(_content)
+      _m_content = MContentMinerInsufficientDuration.from_json(_content)
 
       info _m_content.reason
     end

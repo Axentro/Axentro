@@ -31,11 +31,14 @@ describe MinerRewardCalculator do
           nonce(30, "miner_4"), nonce(30, "miner_4"), nonce(29, "miner_4"), nonce(27, "miner_4"),
         ]
       calculator = MinerRewardCalculator.new(nonces, coinbase_amount, [] of Transaction::Recipient, false, block_factory.node_wallet.address, 0_i64)
-      expected = [{address: "miner_1", amount: 284042553},
-                  {address: "miner_2", amount: 229787234},
-                  {address: "miner_3", amount: 15957446},
-                  {address: "miner_4", amount: 370212765}]
-      calculator.miner_rewards_as_recipients.should eq(expected)
+      expected = [Recipient.new("miner_1", 284042553_i64),
+                  Recipient.new("miner_2", 229787234_i64),
+                  Recipient.new("miner_3", 15957446_i64),
+                  Recipient.new("miner_4", 370212765_i64)]
+      calculator.miner_rewards_as_recipients.each_with_index do |r, i|
+        r.address.should eq(expected[i].address)
+        r.amount.should eq(expected[i].amount)
+      end
     end
   end
 end

@@ -141,7 +141,7 @@ struct ConfigItem
   end
 
   def to_s
-    details = @config.map { |k, v| "#{k}:\t#{v}" }.join("\n")
+    details = @config.join("\n") { |k, v| "#{k}:\t#{v}" }
     "configuration is #{@status} \n--------------------\n#{details}"
   end
 end

@@ -10,15 +10,15 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 
-module ::Axentro::Core::Block
-  alias Chain = Array(SlowBlock | FastBlock)
+@[MG::Tags("main")]
+class AddHashVersionToArchive < MG::Base
+  def up : String
+    <<-SQL
+      ALTER TABLE archived_blocks ADD COLUMN hash_version TEXT NOT NULL DEFAULT "V2"
+    SQL
+  end
 
-  enum BlockKind
-    SLOW
-    FAST
-
-    def to_json(builder : JSON::Builder)
-      builder.string(to_s)
-    end
+  def down : String
+    ""
   end
 end

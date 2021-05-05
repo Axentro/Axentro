@@ -132,6 +132,7 @@ describe SlowTransactionPool do
           "send", # action
           [a_sender(transaction_factory.sender_wallet, 1000_i64)],
           [a_recipient(transaction_factory.recipient_wallet, 1000_i64)],
+          [] of Transaction::Asset,
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -157,6 +158,7 @@ describe SlowTransactionPool do
           "send", # action
           [a_sender(transaction_factory.sender_wallet, 1000_i64)],
           [a_recipient(transaction_factory.recipient_wallet, 1000_i64)],
+          [] of Transaction::Asset,
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash

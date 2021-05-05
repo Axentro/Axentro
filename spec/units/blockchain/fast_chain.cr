@@ -18,63 +18,8 @@ include Hashes
 include Units::Utils
 include Axentro::Core::DApps::BuildIn
 include Axentro::Core::Controllers
-include Axentro::Core::Block
 
 describe Blockchain do
-  describe "latest_fast_block" do
-    it "should return the latest fast block" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3).add_fast_blocks(2)
-        blockchain = block_factory.blockchain
-        blockchain.latest_fast_block.not_nil!.index.should eq(3)
-      end
-    end
-
-    it "should return nil if no fast blocks" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3)
-        blockchain = block_factory.blockchain
-        blockchain.latest_fast_block.should be(nil)
-      end
-    end
-  end
-
-  describe "latest_fast_block_index_or_zero" do
-    it "should return the latest fast block index" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3).add_fast_blocks(2)
-        blockchain = block_factory.blockchain
-        blockchain.latest_fast_block_index_or_zero.should eq(3)
-      end
-    end
-
-    it "should return 0 if no fast blocks" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3)
-        blockchain = block_factory.blockchain
-        blockchain.latest_fast_block_index_or_zero.should eq(0)
-      end
-    end
-  end
-
-  describe "get_latest_index_for_fast" do
-    it "should return the next fast block index when 0" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3)
-        blockchain = block_factory.blockchain
-        blockchain.get_latest_index_for_fast.should eq(1)
-      end
-    end
-
-    it "should return the next fast block index when odd" do
-      with_factory do |block_factory|
-        block_factory.add_slow_blocks(3).add_fast_blocks(2)
-        blockchain = block_factory.blockchain
-        blockchain.get_latest_index_for_fast.should eq(5)
-      end
-    end
-  end
-
   describe "valid_transactions_for_fast_block" do
     it "should the latest index and valid aligned transactions" do
       with_factory do |block_factory, transaction_factory|
@@ -142,8 +87,8 @@ describe Blockchain do
         transaction = blockchain.create_coinbase_fast_transaction(amount)
         transaction.action.should eq("head")
         recipient = transaction.recipients.first
-        recipient[:address].should eq(block_factory.node_wallet.address)
-        recipient[:amount].should eq(amount)
+        recipient.address.should eq(block_factory.node_wallet.address)
+        recipient.amount.should eq(amount)
       end
     end
   end

@@ -84,14 +84,6 @@ module ::Units::Utils::ChainGenerator
       enable_difficulty
     end
 
-    def slow_blocks_to_hold
-      @blockchain.slow_blocks_to_hold
-    end
-
-    def fast_blocks_to_hold
-      @blockchain.fast_blocks_to_hold
-    end
-
     def add_slow_block(with_refresh : Bool = true)
       add_valid_slow_block(with_refresh)
       self
@@ -129,7 +121,7 @@ module ::Units::Utils::ChainGenerator
     end
 
     def sub_chain
-      @blockchain.chain.reject! { |b| b.prev_hash == "genesis" }
+      @blockchain.chain.reject!(&.prev_hash.==("genesis"))
     end
 
     def remove_difficulty
@@ -162,7 +154,7 @@ module ::Units::Utils::ChainGenerator
       # valid block is tested separately
       valid_block = @blockchain.valid_block?(block, true)
       case valid_block
-      when SlowBlock
+      when Block
         @blockchain.push_slow_block(valid_block)
       else
         raise "error could not push slow block onto blockchain - block was not valid"
@@ -176,8 +168,8 @@ module ::Units::Utils::ChainGenerator
       # valid block is tested separately
       valid_block = @blockchain.valid_block?(block, true)
       case valid_block
-      when FastBlock
-        @blockchain.push_fast_block(valid_block)
+      when Block
+        @blockchain.push_slow_block(valid_block)
       else
         raise "error could not push fast block onto blockchain - block was not valid"
       end
@@ -201,6 +193,7 @@ module ::Units::Utils::ChainGenerator
         "head",
         [] of Transaction::SenderDecimal,
         [] of Transaction::RecipientDecimal,
+        [] of Transaction::Asset,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -218,6 +211,7 @@ module ::Units::Utils::ChainGenerator
         "send", # action
         [a_sender(sender_wallet, sender_amount)],
         [a_recipient(recipient_wallet, sender_amount)],
+        [] of Transaction::Asset,
         "0",   # message
         token, # token
         "0",   # prev_hash
@@ -236,6 +230,7 @@ module ::Units::Utils::ChainGenerator
         action, # action
         [a_sender(sender_wallet, sender_amount)],
         [a_recipient(recipient_wallet, sender_amount)],
+        [] of Transaction::Asset,
         "0",   # message
         token, # token
         "0",   # prev_hash
@@ -254,6 +249,7 @@ module ::Units::Utils::ChainGenerator
         "send", # action
         [a_sender(sender_wallet, sender_amount)],
         [a_recipient(recipient_wallet, sender_amount)],
+        [] of Transaction::Asset,
         "0",   # message
         token, # token
         "0",   # prev_hash
@@ -272,6 +268,7 @@ module ::Units::Utils::ChainGenerator
         "send", # action
         senders,
         recipients,
+        [] of Transaction::Asset,
         "0",   # message
         token, # token
         "0",   # prev_hash
@@ -296,6 +293,7 @@ module ::Units::Utils::ChainGenerator
         "send", # action
         [a_sender(sender_wallet, sender_amount)],
         [a_recipient(recipient_wallet, sender_amount)],
+        [] of Transaction::Asset,
         "0",           # message
         TOKEN_DEFAULT, # token
         prev_hash,     # prev_hash
@@ -314,6 +312,7 @@ module ::Units::Utils::ChainGenerator
         "hra_buy", # action
         [a_sender(sender_wallet, sender_amount, 20000000_i64)],
         [] of Transaction::Recipient,
+        [] of Transaction::Asset,
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -332,6 +331,7 @@ module ::Units::Utils::ChainGenerator
         "hra_buy", # action
         [a_sender(recipient_wallet, recipient_amount, 20000000_i64)],
         [a_recipient(@sender_wallet, 100_i64)],
+        [] of Transaction::Asset,
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -350,6 +350,7 @@ module ::Units::Utils::ChainGenerator
         "hra_buy", # action
         [a_sender(recipient_wallet, recipient_amount, 20000000_i64)],
         recipients,
+        [] of Transaction::Asset,
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -368,6 +369,7 @@ module ::Units::Utils::ChainGenerator
         "hra_sell", # action
         [a_sender(sender_wallet, sender_amount, 20000000_i64)],
         [a_recipient(sender_wallet, sender_amount)],
+        [] of Transaction::Asset,
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -386,6 +388,7 @@ module ::Units::Utils::ChainGenerator
         "hra_sell", # action
         [a_sender(sender_wallet, sender_amount, 20000000_i64)],
         recipients,
+        [] of Transaction::Asset,
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -404,6 +407,7 @@ module ::Units::Utils::ChainGenerator
         "hra_cancel", # action
         [a_sender(sender_wallet, sender_amount, 20000000_i64)],
         [a_recipient(sender_wallet, sender_amount)],
+        [] of Transaction::Asset,
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -422,6 +426,7 @@ module ::Units::Utils::ChainGenerator
         "hra_cancel", # action
         [a_sender(sender_wallet, sender_amount, 20000000_i64)],
         recipients,
+        [] of Transaction::Asset,
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -440,6 +445,7 @@ module ::Units::Utils::ChainGenerator
         "create_token", # action
         [a_sender(sender_wallet, sender_amount, 1000000000_i64)],
         [a_recipient(sender_wallet, sender_amount)],
+        [] of Transaction::Asset,
         "0",   # message
         token, # token
         "0",   # prev_hash
@@ -458,6 +464,7 @@ module ::Units::Utils::ChainGenerator
         "create_token", # action
         senders,
         recipients,
+        [] of Transaction::Asset,
         "0",   # message
         token, # token
         "0",   # prev_hash
@@ -476,6 +483,7 @@ module ::Units::Utils::ChainGenerator
         "update_token", # action
         [a_sender(sender_wallet, sender_amount, 1000000000_i64)],
         [a_recipient(sender_wallet, sender_amount)],
+        [] of Transaction::Asset,
         "0",   # message
         token, # token
         "0",   # prev_hash
@@ -494,6 +502,7 @@ module ::Units::Utils::ChainGenerator
         "lock_token", # action
         [a_sender(sender_wallet, sender_amount, 1000000000_i64)],
         [a_recipient(sender_wallet, sender_amount)],
+        [] of Transaction::Asset,
         "0",   # message
         token, # token
         "0",   # prev_hash
@@ -512,6 +521,7 @@ module ::Units::Utils::ChainGenerator
         "burn_token", # action
         [a_sender(sender_wallet, sender_amount, 1000000000_i64)],
         [a_recipient(sender_wallet, sender_amount)],
+        [] of Transaction::Asset,
         "0",   # message
         token, # token
         "0",   # prev_hash
@@ -523,6 +533,35 @@ module ::Units::Utils::ChainGenerator
       unsigned_transaction.as_signed([sender_wallet])
     end
 
+    def make_create_asset(asset : Asset, sender_wallet : Wallet = @sender_wallet)
+      make_asset(
+        "AXNT",
+        "create_assset",
+        [a_sender(sender_wallet, 0_i64, 0_i64)],
+        [a_recipient(sender_wallet, 0_i64)],
+        [asset]
+      )
+    end
+
+    def make_asset(token : String, action : String, senders : Array(Transaction::Sender), recipients : Array(Transaction::Recipient), assets : Array(Transaction::Asset), signing_wallet : Wallet = @sender_wallet, message : String = "0") : Transaction
+      transaction_id = Transaction.create_id
+      unsigned_transaction = Transaction.new(
+        transaction_id,
+        action, # action
+        senders,
+        recipients,
+        assets,
+        message, # message
+        token,   # token
+        "0",     # prev_hash
+        0_i64,   # timestamp
+        1,       # scaled
+        TransactionKind::SLOW,
+        TransactionVersion::V1
+      )
+      unsigned_transaction.as_signed([signing_wallet])
+    end
+
     def make_create_offical_slownode(token : String = TOKEN_DEFAULT, sender_wallet : Wallet = @sender_wallet, recipient_wallet : Wallet = @recipient_wallet) : Transaction
       transaction_id = Transaction.create_id
       unsigned_transaction = Transaction.new(
@@ -530,6 +569,7 @@ module ::Units::Utils::ChainGenerator
         "create_official_node_slow", # action
         [a_sender(sender_wallet, 0_i64)],
         [a_recipient(recipient_wallet, 0_i64)],
+        [] of Transaction::Asset,
         "0",   # message
         token, # token
         "0",   # prev_hash
@@ -548,6 +588,7 @@ module ::Units::Utils::ChainGenerator
         "create_official_node_fast", # action
         [a_sender(sender_wallet, 0_i64)],
         [a_recipient(recipient_wallet, 0_i64)],
+        [] of Transaction::Asset,
         "0",   # message
         token, # token
         "0",   # prev_hash

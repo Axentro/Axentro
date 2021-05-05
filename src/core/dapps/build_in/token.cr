@@ -40,7 +40,7 @@ module ::Axentro::Core::DApps::BuildIn
       processed_transactions = transactions.select(&.is_coinbase?)
 
       body_transactions = transactions.reject(&.is_coinbase?)
-      token_map = database.token_info(body_transactions.map(&.token).reject { |t| t == TOKEN_DEFAULT }.uniq)
+      token_map = database.token_info(body_transactions.map(&.token).reject(&.==(TOKEN_DEFAULT)).uniq!)
 
       body_transactions.each do |transaction|
         token = transaction.token
@@ -53,12 +53,12 @@ module ::Axentro::Core::DApps::BuildIn
         raise "number of specified recipients must be 1 for '#{action}'" if transaction.recipients.size != 1
 
         sender = transaction.senders[0]
-        sender_address = sender[:address]
-        sender_amount = sender[:amount]
+        sender_address = sender.address
+        sender_amount = sender.amount
 
         recipient = transaction.recipients[0]
-        recipient_address = recipient[:address]
-        recipient_amount = recipient[:amount]
+        recipient_address = recipient.address
+        recipient_amount = recipient.amount
 
         raise "address mismatch for '#{action}'. " +
               "sender: #{sender_address}, recipient: #{recipient_address}" if sender_address != recipient_address
@@ -115,7 +115,7 @@ module ::Axentro::Core::DApps::BuildIn
           raise "the token #{token} does not exist, you must create it before attempting to perform #{action_name}" unless (token_exists_in_db || token_exists_in_transactions)
 
           unless token_exists_in_transactions.nil?
-            token_creator = token_exists_in_transactions.not_nil!.recipients[0][:address]
+            token_creator = token_exists_in_transactions.not_nil!.recipients[0].address
             raise "only the token creator can perform #{action_name} on existing token: #{token}" unless token_creator == recipient_address
           end
 
@@ -126,7 +126,7 @@ module ::Axentro::Core::DApps::BuildIn
 
         # rules for just lock token
         if action == "lock_token"
-          raise "the sender amount must be 0 when locking the token: KINGS" unless recipient_amount == 0_i64
+          raise "the sender amount must be 0 when locking the token: #{token}" unless recipient_amount == 0_i64
 
           if (token_exists_in_db && token_map[token].is_locked) || !token_locked_in_transactions.nil?
             raise "the token: #{token} is already locked"

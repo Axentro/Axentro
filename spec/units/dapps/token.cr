@@ -486,12 +486,12 @@ describe Token do
         block_factory.add_slow_blocks(10).add_slow_block([transaction1])
 
         before = block_factory.database.get_address_amount(block_factory.node_wallet.address)
-        before.select { |tq| tq.token == "KINGS" }.map(&.amount).sum.should eq(10_i64)
+        before.select(&.token.==("KINGS")).sum(&.amount).should eq(10_i64)
 
         block_factory.add_slow_block([transaction2, transaction3])
 
         after = block_factory.database.get_address_amount(block_factory.node_wallet.address)
-        after.select { |tq| tq.token == "KINGS" }.map(&.amount).sum.should eq(15_i64)
+        after.select(&.token.==("KINGS")).sum(&.amount).should eq(15_i64)
       end
     end
 

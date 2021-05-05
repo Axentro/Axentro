@@ -11,14 +11,15 @@
 # Removal or modification of this copyright notice is prohibited.
 
 require "./logger"
+require "../protocol/*"
 
 module ::Axentro::Core
   abstract class HandleSocket
     def send(socket, t, content)
       json_content = content.to_json
-      m = {type: t, content: json_content}.to_json
-      debug "sending message of type #{t} and size #{m.size}" if (t != 257) && (t != 22) && (t != 23)
-      socket.send(m)
+
+      transport = Transport.new(t, json_content)
+      socket.send(transport.to_msgpack)
     rescue e : Exception
       handle_exception(socket, e)
     end
@@ -64,5 +65,6 @@ module ::Axentro::Core
     abstract def clean_connection(socket)
 
     include Logger
+    include Protocol
   end
 end

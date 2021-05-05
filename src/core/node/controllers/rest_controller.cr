@@ -11,48 +11,6 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core::Controllers
-  #
-  # REST controller version 1.
-  #
-  # --- blockchain
-  #
-  # [GET] api/v1/blockchain                               | full blockchain
-  # [GET] api/v1/blockchain/header                        | blockchain headers
-  # [GET] api/v1/blockchain/size                          | blockchain size
-  #
-  # --- block
-  #
-  # [GET] api/v1/block/{:index}                           | full block at index
-  # [GET] api/v1/block/{:index}/header                    | block header at index
-  # [GET] api/v1/block/{:index}/transactions              | transactions in block
-  #
-  # --- transaction
-  #
-  # [GET] api/v1/transaction/{:id}                        | transaction for supplied txn id
-  # [GET] api/v1/transaction/{:id}/block                  | full block containing txn id
-  # [GET] api/v1/transaction/{:id}/block/header           | block header containing txn id
-  # [GET] api/v1/transaction/fees                         | fees
-  # [POST] api/v1/transaction                             | create and broadcast a transaction
-  # [POST] api/v1/transaction/unsigned                    | create an unsigned transaction
-  #
-  # --- address
-  #
-  # [GET] api/v1/address/{:address}                       | amount for address for all tokens
-  # [GET] api/v1/address/{:address}/token/{:token}        | amount for address for the token
-  # [GET] api/v1/address/{:address}/transactions          | transactions for address
-  #
-  # --- domain
-  #
-  # [GET] api/v1/domain/{:domain}                       | amount for domain for all tokens
-  # [GET] api/v1/domain/{:domain}/token/{:token}        | amount for domain for the token
-  # [GET] api/v1/domain/{:domain}/transactions          | transactions for domain
-  #
-  # --- hra
-  #
-  # [GET] api/v1/hra/sales                              | get all hra's domains for sales
-  # [GET] api/v1/hra/{:domain}                          | get the status of the domain
-  # [GET] api/v1/hra/lookup/{:address}                  | get the domains for an address
-  #
   class RESTController
     def initialize(@blockchain : Blockchain)
     end
@@ -91,8 +49,6 @@ module ::Axentro::Core::Controllers
 
       post "/api/v1/transaction" { |context, params| __v1_transaction(context, params) }
       post "/api/v1/transaction/unsigned" { |context, params| __v1_transaction_unsigned(context, params) }
-
-      # post "/api/v1/transaction/send_token" { |context, params| __v1_transaction_send_token(context, params) }
       post "/api/v1/transaction/send_token/unsigned" { |context, params| __v1_transaction_send_token_unsigned(context, params) }
 
       get "/api/v1/wallet/:address" { |context, params| __v1_wallet(context, params) }
@@ -102,6 +58,13 @@ module ::Axentro::Core::Controllers
       get "/api/v1/nonces/pending/:address" { |context, params| __v1_pending_nonces(context, params) }
 
       get "/api/v1/mining/pending_block" { |context, params| __v1_pending_block(context, params) }
+
+      get "/api/v1/assets/:asset_id" { |context, params| __v1_assets_id(context, params) }
+      get "/api/v1/assets/address/:address" { |context, params| __v1_assets_address(context, params) }
+
+      post "/api/v1/asset/create/unsigned" { |context, params| __v1_asset_create_unsigned(context, params) }
+      post "/api/v1/asset/update/unsigned" { |context, params| __v1_asset_update_unsigned(context, params) }
+      post "/api/v1/asset/send/unsigned" { |context, params| __v1_asset_send_unsigned(context, params) }
 
       route_handler
     end
@@ -207,6 +170,7 @@ module ::Axentro::Core::Controllers
           json["action"].as_s,
           SendersDecimal.from_json(json["senders"].to_json),
           RecipientsDecimal.from_json(json["recipients"].to_json),
+          Assets.from_json(json["assets"].to_json),
           json["message"].as_s,
           json["token"].as_s,
           TransactionKind.parse(json["kind"].as_s),
@@ -230,6 +194,100 @@ module ::Axentro::Core::Controllers
           from_address,
           amount,
           fee,
+          kind,
+          public_key)
+      end
+    end
+
+    def __v1_asset_create_unsigned(context, params)
+      with_response(context) do
+        json = parse_body(context)
+        address = json["address"].as_s
+        public_key = json["public_key"].as_s
+
+        name = json["name"]?.try(&.as_s) || ""
+        description = json["description"]?.try(&.as_s) || ""
+        media_location = json["media_location"]?.try(&.as_s) || ""
+        media_hash = json["media_hash"]?.try(&.as_s) || ""
+        quantity = json["quantity"]?.try(&.as_i) || 1
+        terms = json["terms"]?.try(&.as_s) || ""
+        locked = AssetAccess::UNLOCKED
+        version = 1
+        timestamp = __timestamp
+        kind = TransactionKind.parse(json["kind"].as_s)
+
+        @blockchain.transaction_creator.create_unsigned_create_asset_impl(
+          address,
+          public_key,
+          name,
+          description,
+          media_location,
+          media_hash,
+          quantity,
+          terms,
+          locked,
+          version,
+          timestamp,
+          kind)
+      end
+    end
+
+    def __v1_asset_update_unsigned(context, params)
+      with_response(context) do
+        json = parse_body(context)
+        asset_id = json["asset_id"].as_s
+        address = json["address"].as_s
+        public_key = json["public_key"].as_s
+        kind = TransactionKind.parse(json["kind"].as_s)
+
+        # fetch existing asset
+        result = @blockchain.asset_component.asset_impl(asset_id)
+        if result["status"] == "ok"
+          asset = Transaction::Asset.from_json(result["asset"].to_json)
+
+          if asset.locked == AssetAccess::LOCKED
+            raise "asset #{asset_id} is already locked so no updates are possible"
+          end
+
+          asset.version = asset.version + 1
+
+          asset.name = json["name"]?.try(&.as_s) || asset.name
+          asset.description = json["description"]?.try(&.as_s) || asset.description
+          asset.media_location = json["media_location"]?.try(&.as_s) || asset.media_location
+          asset.media_hash = json["media_hash"]?.try(&.as_s) || asset.media_hash
+          asset.quantity = json["quantity"]?.try(&.as_i) || asset.quantity
+          asset.terms = json["terms"]?.try(&.as_s) || asset.terms
+
+          if json["locked"]?
+            asset.locked = AssetAccess::LOCKED
+          end
+
+          asset.timestamp = __timestamp
+          @blockchain.transaction_creator.create_unsigned_update_asset_impl(
+            address, public_key, asset, kind
+          )
+        else
+          raise "asset #{asset_id} not found"
+        end
+      end
+    end
+
+    def __v1_asset_send_unsigned(context, params)
+      with_response(context) do
+        json = parse_body(context)
+
+        to_address = json["to_address"].as_s
+        from_address = json["from_address"].as_s
+        asset_id = json["asset_id"].as_s
+        amount = json["amount"].as_i
+        kind = TransactionKind.parse(json["kind"].as_s)
+        public_key = json["public_key"].as_s
+
+        @blockchain.transaction_creator.create_unsigned_send_asset_impl(
+          to_address,
+          from_address,
+          asset_id,
+          amount,
           kind,
           public_key)
       end
@@ -401,6 +459,22 @@ module ::Axentro::Core::Controllers
       with_response(context) do
         term = params["term"].to_s
         search_by_term(term)
+      end
+    end
+
+    def __v1_assets_id(context, params)
+      with_response(context) do
+        asset_id = params["asset_id"].to_s
+        @blockchain.asset_component.asset_impl(asset_id)
+      end
+    end
+
+    def __v1_assets_address(context, params)
+      with_response(context) do |query_params|
+        page, per_page, direction, sort_field = paginated(query_params)
+        address = params["address"].to_s
+
+        @blockchain.asset_component.address_assets_impl(address, page, per_page, direction, sort_field)
       end
     end
 

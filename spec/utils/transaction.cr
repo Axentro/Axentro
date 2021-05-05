@@ -14,65 +14,55 @@ module ::Units::Utils::TransactionHelper
   include Axentro::Core
 
   def a_recipient(wallet : Wallet, amount : Int64) : Transaction::Recipient
-    {address: wallet.address,
-     amount:  amount}
+    Recipient.new(wallet.address, amount)
   end
 
   def a_recipient(recipient_address : String, amount : Int64) : Transaction::Recipient
-    {address: recipient_address,
-     amount:  amount}
+    Recipient.new(recipient_address, amount)
+  end
+
+  def an_asset_recipient(wallet : Wallet, asset_id : String?, asset_quantity : Int32? = 1, amount : Int64 = 0_i64)
+    Recipient.new(wallet.address, amount, asset_id, asset_quantity)
   end
 
   def a_sender(wallet : Wallet, amount : Int64, fee : Int64 = 10000_i64) : Transaction::Sender
-    {address:    wallet.address,
-     public_key: wallet.public_key,
-     amount:     amount,
-     fee:        fee,
-     signature:  "0",
-    }
+    Sender.new(wallet.address, wallet.public_key, amount, fee, "0")
   end
 
   def a_sender(sender_address : String, sender_public_key : String, amount : Int64, fee : Int64 = 10000_i64) : Transaction::Sender
-    {address:    sender_address,
-     public_key: sender_public_key,
-     amount:     amount,
-     fee:        fee,
-     signature:  "0",
-    }
+    Sender.new(sender_address, sender_public_key, amount, fee, "0")
   end
 
   def a_signed_sender(wallet : Wallet, amount : Int64, signature : String, fee : Int64 = 10000_i64) : Transaction::Sender
-    {address:    wallet.address,
-     public_key: wallet.public_key,
-     amount:     amount,
-     fee:        fee,
-     signature:  "0",
-    }
+    Sender.new(wallet.address, wallet.public_key, amount, fee, "0")
+  end
+
+  def an_asset_sender(wallet : Wallet, asset_id : String?, asset_quantity : Int32? = 1, amount : Int64 = 0_i64, fee : Int64 = 0_i64, signature : String = "0") : Transaction::Sender
+    Sender.new(wallet.address, wallet.public_key, amount, fee, signature, asset_id, asset_quantity)
   end
 
   def a_decimal_recipient(wallet : Wallet, amount : String) : Transaction::RecipientDecimal
-    {address: wallet.address,
-     amount:  amount}
+    RecipientDecimal.new(
+      wallet.address,
+      amount
+    )
   end
 
   def a_decimal_sender(wallet : Wallet, amount : String, fee : String = "0.0001") : Transaction::SenderDecimal
-    {address:    wallet.address,
-     public_key: wallet.public_key,
-     amount:     amount,
-     fee:        fee,
-     signature:  "0",
-    }
+    SenderDecimal.new(
+      wallet.address,
+      wallet.public_key,
+      amount,
+      fee,
+      "0"
+    )
   end
 
-  def sign(wallet : Wallet, transaction : Transaction)
-    secp256k1 = ECDSA::Secp256k1.new
-    wif = Keys::Wif.new(wallet.wif)
+  def an_asset(asset_id : String, name : String, description : String, media_location : String, media_hash : String, quantity : Int32, terms : String, locked : AssetAccess, version : Int32, timestamp : Int64)
+    Asset.new(asset_id, name, description, media_location, media_hash, quantity, terms, locked, version, timestamp)
+  end
 
-    sign = secp256k1.sign(
-      wif.private_key.as_big_i,
-      transaction.to_hash,
-    )
-
-    {r: sign[0].to_s(base: 16), s: sign[1].to_s(base: 16)}
+  def a_quick_asset(asset_id : String, timestamp : Int64 = __timestamp)
+    Asset.new(asset_id, "name", "desc", "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 1, timestamp)
   end
 end

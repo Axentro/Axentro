@@ -34,7 +34,7 @@ axe:
         desc:       "show remaining amount of Axe tokens for specified address"
         messages:
           amount: "\n  showing amount of each token for %{address}."
-          confirmation: "  confirmations: %{confirmation}"
+          confirmation: "confirmations: %{confirmation}"
     blockchain:
       title:        "blockchain"
       desc:         "get a whole blockchain or each block (bc for short)"
@@ -168,3 +168,31 @@ axe:
     client:
       title:        "client"
       desc:         "connect to node as peer clients"
+    assets:
+      title:        "assets"
+      desc:         "create, update, send an asset (as for short)"
+      create:
+        title:      "create"
+        desc:       "create an asset"
+        messages:
+          creation: "your asset has been created"
+      update:
+        title: "update"
+        desc:  "update an asset"
+        messages:
+          updated: "your asset has been updated"
+      send:
+        title: "send"
+        desc: "send an asset"
+        messages:
+          send: "your asset has been sent"
+      get:
+        title: "get"
+        desc: "get asset detail"
+      amount: 
+        title: "amount"
+        desc: "get asset balances"
+        messages: 
+          amount: "\n  showing amount of each asset for %{address}."
+          confirmation: " confirmations: %{confirmation}"  
+          no_assets: " you have no assets"          

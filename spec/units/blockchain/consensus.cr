@@ -14,6 +14,7 @@ require "./../../spec_helper"
 require "./../../../src/cli/modules/logger"
 
 include Axentro::Core
+include TransactionModels
 include Axentro::Core::Consensus
 include Axentro::Interface::Logger
 include Units::Utils
@@ -24,7 +25,7 @@ describe Consensus do
       ENV.delete("AX_SET_DIFFICULTY")
       hash = "e33598878258c85c60c5c29a41ad756cb69ecd315154695970c375a792eb8f4e"
       nonce = "17186779519462547558"
-      calculate_pow_difficulty(hash, nonce, 13).should eq(13)
+      calculate_pow_difficulty(MiningVersion::V1, hash, nonce, 13).should eq(13)
     end
   end
 
@@ -33,13 +34,13 @@ describe Consensus do
       ENV.delete("AX_SET_DIFFICULTY")
       hash = "e33598878258c85c60c5c29a41ad756cb69ecd315154695970c375a792eb8f4e"
       nonce = "17186779519462547558"
-      is_nonce_valid?(hash, nonce, 13).should eq(true)
+      is_nonce_valid?(MiningVersion::V1, hash, nonce, 13).should eq(true)
     end
     it "when invalid" do
       ENV.delete("AX_SET_DIFFICULTY")
       hash = "e33598878258c85c60c5c29a41ad756cb69ecd315154695970c375a792eb8f4e"
       nonce = "17186779519462547559"
-      is_nonce_valid?(hash, nonce, 13).should eq(false)
+      is_nonce_valid?(MiningVersion::V1, hash, nonce, 13).should eq(false)
     end
   end
 end

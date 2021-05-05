@@ -45,7 +45,7 @@ module ::Axentro::Interface::Axe
     ]
 
     def find_command(name : String)
-      unless command = COMMANDS.find { |command_| command_[:command].split(" ")[0] == name }
+      unless command = COMMANDS.find(&.[:command].split(" ").[0].==(name))
         raise "failed to find #{name} as a command"
       end
 
@@ -173,21 +173,11 @@ module ::Axentro::Interface::Axe
 
       senders = SendersDecimal.new
       senders.push(
-        {
-          address:    wallets[0].address,
-          public_key: wallets[0].public_key,
-          amount:     amount,
-          fee:        fee,
-          signature:  "0",
-        }
-      )
+        SenderDecimal.new(wallets[0].address, wallets[0].public_key, amount, fee, "0"))
 
       recipients = RecipientsDecimal.new
       recipients.push(
-        {
-          address: address,
-          amount:  amount,
-        }
+        RecipientDecimal.new(address, amount)
       )
 
       puts ""
@@ -196,7 +186,7 @@ module ::Axentro::Interface::Axe
 
       kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW
 
-      add_transaction(@node.not_nil!, "send", wallets, senders, recipients, message, token, kind)
+      add_transaction(@node.not_nil!, "send", wallets, senders, recipients, [] of Transaction::Asset, message, token, kind)
 
       puts ""
 

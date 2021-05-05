@@ -10,7 +10,7 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 require "../blockchain/*"
-require "../blockchain/block/*"
+require "../blockchain/domain_model/*"
 require "../database/*"
 require "../database/migrations/*"
 require "../modules/logger"
@@ -53,7 +53,18 @@ module ::Axentro::Core
       end
     end
 
-    def highest_index_of_kind(kind : Block::BlockKind) : Int64
+    def latest_index : Int64
+      idx : Int64? = nil
+      @db.query("select idx from blocks order by timestamp desc limit 1") do |rows|
+        rows.each do
+          idx = rows.read(Int64?)
+        end
+      end
+      debug "database.latest_index: #{idx || 0_i64} "
+      idx || 0_i64
+    end
+
+    def highest_index_of_kind(kind : BlockKind) : Int64
       idx : Int64? = nil
 
       @db.query "select max(idx) from blocks where kind = '#{kind}'" do |rows|
@@ -69,27 +80,24 @@ module ::Axentro::Core
       @db.query_one("select count(*) from blocks where timestamp > (select timestamp from blocks where idx = ?)", index, as: Int32)
     end
 
-    # this could return null if there are no fast blocks found after the slow block timestamp
-    # this could also return null if the slow block is not found
-    def lowest_fast_index_after_slow_block(index : Int64) : Int64?
-      @db.query_one("select min(idx) from blocks where kind = 'FAST' and timestamp >= (select timestamp from blocks where idx = ?)", index, as: Int64?)
+    def lowest_index_after_block(index : Int64) : Int64?
+      idx : Int64? = nil
+      @db.query("select idx from blocks where timestamp > (select timestamp from blocks where idx = ?) order by timestamp desc limit 1", index) do |rows|
+        rows.each do
+          idx = rows.read(Int64?)
+        end
+      end
+      idx || 0_i64
     end
 
-    # this could return null if the slow block is not found
-    # this could return null if the index given was 0
-    def lowest_slow_index_after_slow_block(index : Int64) : Int64?
-      @db.query_one("select max(idx) from blocks where kind = 'SLOW' and timestamp < (select timestamp from blocks where idx = ?)", index, as: Int64?)
-    end
-
-    # this could return null if there are no slow blocks found after the fast block timestamp
-    # this could also return null if the fast block is not found
-    def lowest_fast_index_after_fast_block(index : Int64) : Int64?
-      @db.query_one("select max(idx) from blocks where kind = 'FAST' and timestamp < (select timestamp from blocks where idx = ?)", index, as: Int64?)
-    end
-
-    # this could return null if fast block is not found
-    def lowest_slow_index_after_fast_block(index : Int64) : Int64?
-      @db.query_one("select min(idx) from blocks where kind = 'SLOW' and timestamp >= (select timestamp from blocks where idx = ?)", index, as: Int64?)
+    def lowest_slow_index_after_block(index : Int64) : Int64?
+      idx : Int64? = nil
+      @db.query("select idx from blocks where timestamp > (select timestamp from blocks where idx = ?) and kind = ? order by timestamp desc limit 1", index, BlockKind::SLOW.to_s) do |rows|
+        rows.each do
+          idx = rows.read(Int64?)
+        end
+      end
+      idx || 0_i64
     end
 
     def chain_network_kind : Core::Node::Network?
@@ -105,7 +113,7 @@ module ::Axentro::Core
       end
     end
 
-    def total(kind : Block::BlockKind)
+    def total(kind : BlockKind)
       idx : Int64? = nil
       @db.query("select count(*) from blocks where kind = ?", kind.to_s) do |rows|
         rows.each do
@@ -135,6 +143,7 @@ module ::Axentro::Core
     include Data::Nonces
     include Data::Blocks
     include Data::Rejects
+    include Data::Assets
     include Data::Senders
     include Data::Recipients
     include Data::Transactions

@@ -22,4 +22,8 @@ module ::Axentro::Core::Hashes
     hash.update(base)
     hash.final.hexstring
   end
+
+  def argon2(base : String) : String
+    Argon2::Engine.hash_argon2id_raw(base, "AXENTRO_BLOCKCHAIN", 1, 4)
+  end
 end

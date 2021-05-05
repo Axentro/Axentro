@@ -11,7 +11,7 @@
 # Removal or modification of this copyright notice is prohibited.
 
 module ::Axentro::Core
-  CORE_VERSION = "2.0.0"
+  CORE_VERSION = "3.0.0"
 end
 
 require "big"
@@ -38,6 +38,8 @@ require "crest"
 require "rate_limiter"
 require "crometheus"
 require "mg"
+require "msgpack"
+require "lru-cache"
 
 require "./common"
 require "./core/modules"

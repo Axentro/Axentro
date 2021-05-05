@@ -10,17 +10,15 @@
 #
 # Removal or modification of this copyright notice is prohibited.
 require "../blockchain/*"
-require "../blockchain/block/*"
+require "../blockchain/domain_model/*"
 require "../node/*"
 require "../dapps/dapp"
 require "../dapps/build_in/hra"
 
 module ::Axentro::Core::Data::Transactions
-  INTERNAL_ACTIONS = ["head", "send", "hra_buy", "hra_sell", "hra_cancel", "create_token", "update_token", "lock_token", "burn_token"]
-
   def internal_actions_list
     # exclude burn_token as this is used to calculate recipients sum
-    INTERNAL_ACTIONS.reject { |a| a == "burn_token" }.map { |action| "'#{action}'" }.uniq.join(",")
+    DApps::UTXO_ACTIONS.reject(&.==("burn_token")).map { |action| "'#{action}'" }.uniq!.join(",")
   end
 
   # ------- Definition -------
@@ -41,6 +39,15 @@ module ::Axentro::Core::Data::Transactions
       "where block_id = ? " \
       "order by idx asc",
       block_index)
+  end
+
+  def get_transactions_for_asset(asset_id : String) : Array(AssetVersion)
+    transactions = transactions_by_query("select * from transactions where id in (select transaction_id from assets where asset_id = ? order by version desc)", asset_id)
+    transactions.map do |t|
+      asset = t.assets.first
+      address = t.action == "send_asset" ? t.recipients.map(&.address).first : t.senders.map(&.address).first
+      AssetVersion.new(asset_id, t.id, asset.version, t.action, address)
+    end
   end
 
   # ------- API -------
@@ -70,7 +77,7 @@ module ::Axentro::Core::Data::Transactions
     limit = per_page
     offset = Math.max((limit * page) - limit, 0)
 
-    actions = actions.map { |a| "'#{a}'" }.join(",")
+    actions = actions.join(",") { |a| "'#{a}'" }
     transactions_by_query(
       "select * from transactions " \
       "where block_id = ? " +
@@ -84,7 +91,7 @@ module ::Axentro::Core::Data::Transactions
     limit = per_page
     offset = Math.max((limit * page) - limit, 0)
 
-    actions = actions.map { |a| "'#{a}'" }.join(",")
+    actions = actions.join(",") { |a| "'#{a}'" }
     transactions_by_query(
       "select * from transactions " +
       (actions.empty? ? "" : "where action in (#{actions}) ") +
@@ -96,7 +103,7 @@ module ::Axentro::Core::Data::Transactions
   def get_paginated_transactions_for_address(address : String, page : Int32, per_page : Int32, direction : String, sort_field : String, actions : Array(String))
     limit = per_page
     offset = Math.max((limit * page) - limit, 0)
-    actions = actions.map { |a| "'#{a}'" }.join(",")
+    actions = actions.join(",") { |a| "'#{a}'" }
 
     transactions_by_query(
       "select * from transactions where id in " \
@@ -139,6 +146,16 @@ module ::Axentro::Core::Data::Transactions
     @db.query("select block_id from transactions where id like ? || '%'", transaction_id) do |rows|
       rows.each do
         idx = rows.read(Int64 | Nil)
+      end
+    end
+    idx
+  end
+
+  def get_block_index_for_asset(asset_id : String) : Int64?
+    idx : Int64? = nil
+    @db.query("select block_id from assets where asset_id like ? || '%'", asset_id) do |rows|
+      rows.each do
+        idx = rows.read(Int64?)
       end
     end
     idx
@@ -195,7 +212,7 @@ module ::Axentro::Core::Data::Transactions
         domain_names << rows.read(String)
       end
     end
-    domain_names.map { |n| get_domain_map_for(n)[n]? }.compact
+    domain_names.compact_map { |n| get_domain_map_for(n)[n]? }
   end
 
   private def status(action) : Status
@@ -228,9 +245,9 @@ module ::Axentro::Core::Data::Transactions
       unique_tokens = (recipient_sum + sender_sum + burned_sum).map(&.token).push("AXNT").uniq
 
       unique_tokens.map do |token|
-        recipient = recipient_sum.select { |r| r.token == token }.map(&.amount).sum
-        sender = sender_sum.select { |s| s.token == token }.map(&.amount).sum
-        burned = burned_sum.select { |b| b.token == token }.map(&.amount).sum
+        recipient = recipient_sum.select(&.token.==(token)).sum(&.amount)
+        sender = sender_sum.select(&.token.==(token)).sum(&.amount)
+        burned = burned_sum.select(&.token.==(token)).sum(&.amount)
         fee = fee_sum_per_address[address]
 
         if token == "AXNT"
@@ -252,9 +269,9 @@ module ::Axentro::Core::Data::Transactions
     unique_tokens = (recipient_sum + sender_sum + burned_sum).map(&.token).push("AXNT").uniq
     fee = get_fee_sum(address)
     unique_tokens.map do |token|
-      recipient = recipient_sum.select { |r| r.token == token }.map(&.amount).sum
-      sender = sender_sum.select { |s| s.token == token }.map(&.amount).sum
-      burned = burned_sum.select { |b| b.token == token }.map(&.amount).sum
+      recipient = recipient_sum.select(&.token.==(token)).sum(&.amount)
+      sender = sender_sum.select(&.token.==(token)).sum(&.amount)
+      burned = burned_sum.select(&.token.==(token)).sum(&.amount)
 
       if token == "AXNT"
         sender = sender + fee
@@ -303,7 +320,7 @@ module ::Axentro::Core::Data::Transactions
   private def get_recipient_sum_per_address(addresses : Array(String)) : Hash(String, Array(TokenQuantity))
     amounts_per_address : Hash(String, Array(TokenQuantity)) = {} of String => Array(TokenQuantity)
     addresses.uniq.each { |a| amounts_per_address[a] = [] of TokenQuantity }
-    address_list = addresses.map { |a| "'#{a}'" }.uniq.join(",")
+    address_list = addresses.map { |a| "'#{a}'" }.uniq!.join(",")
     @db.query(
       "select r.address, t.token, sum(r.amount) as 'rec' from transactions t " \
       "join recipients r on r.transaction_id = t.id " \
@@ -343,7 +360,7 @@ module ::Axentro::Core::Data::Transactions
   private def get_sender_sum_per_address(addresses : Array(String)) : Hash(String, Array(TokenQuantity))
     amounts_per_address : Hash(String, Array(TokenQuantity)) = {} of String => Array(TokenQuantity)
     addresses.uniq.each { |a| amounts_per_address[a] = [] of TokenQuantity }
-    address_list = addresses.map { |a| "'#{a}'" }.uniq.join(",")
+    address_list = addresses.map { |a| "'#{a}'" }.uniq!.join(",")
     @db.query(
       "select s.address, t.token, sum(s.amount) as 'send' from transactions t " \
       "join senders s on s.transaction_id = t.id " \
@@ -378,7 +395,7 @@ module ::Axentro::Core::Data::Transactions
   private def get_fee_sum_per_address(addresses : Array(String)) : Hash(String, Int64)
     amounts_per_address : Hash(String, Int64) = {} of String => Int64
     addresses.uniq.each { |a| amounts_per_address[a] = 0_i64 }
-    address_list = addresses.map { |a| "'#{a}'" }.uniq.join(",")
+    address_list = addresses.map { |a| "'#{a}'" }.uniq!.join(",")
     @db.query(
       "select address, sum(fee) as 'fee' " \
       "from senders " \
@@ -416,7 +433,7 @@ module ::Axentro::Core::Data::Transactions
   private def get_burned_token_sum_per_address(addresses : Array(String)) : Hash(String, Array(TokenQuantity))
     amounts_per_address : Hash(String, Array(TokenQuantity)) = {} of String => Array(TokenQuantity)
     addresses.uniq.each { |a| amounts_per_address[a] = [] of TokenQuantity }
-    address_list = addresses.map { |a| "'#{a}'" }.uniq.join(",")
+    address_list = addresses.map { |a| "'#{a}'" }.uniq!.join(",")
     @db.query(
       "select r.address, t.token, sum(r.amount) as 'burn' " \
       "from transactions t " \
@@ -437,7 +454,7 @@ module ::Axentro::Core::Data::Transactions
 
   # ------- Indices -------
   def get_transactions_and_block_that_exist(transactions : Array(Transaction)) : Array(TransactionWithBlock)
-    transaction_list = transactions.map { |t| "'#{t.id}'" }.uniq.join(",")
+    transaction_list = transactions.map { |t| "'#{t.id}'" }.uniq!.join(",")
     transaction_ids = {} of String => Int64
     @db.query(
       "select id, block_id from transactions " \
@@ -480,7 +497,7 @@ module ::Axentro::Core::Data::Transactions
 
   # ------- Tokens -------
   def token_info(unique_tokens : Array(String)) : Hash(String, DApps::BuildIn::TokenInfo)
-    token_list = unique_tokens.map { |t| "'#{t}'" }.uniq.join(",")
+    token_list = unique_tokens.map { |t| "'#{t}'" }.uniq!.join(",")
     token_map = {} of String => DApps::BuildIn::TokenInfo
     @db.query(
       "select t.token, r.address, t.action " \
@@ -520,7 +537,7 @@ module ::Axentro::Core::Data::Transactions
         version_string = rows.read(String)
         version = TransactionVersion.parse(version_string)
 
-        t = Transaction.new(t_id, action, [] of Transaction::Sender, [] of Transaction::Recipient, message, token, prev_hash, timestamp, scaled, kind, version)
+        t = Transaction.new(t_id, action, [] of Transaction::Sender, [] of Transaction::Recipient, [] of Transaction::Asset, message, token, prev_hash, timestamp, scaled, kind, version)
         transactions << t
         verbose "reading transaction #{ti} from database with short ID of #{t.short_id}" if ti < 4
         ti += 1
@@ -529,6 +546,7 @@ module ::Axentro::Core::Data::Transactions
     transactions.each do |t|
       t.set_senders(get_senders(t))
       t.set_recipients(get_recipients(t))
+      t.set_assets(get_assets(t))
     end
     transactions
   end

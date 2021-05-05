@@ -71,9 +71,9 @@ module ::Axentro::Core::DApps::BuildIn
       sender = transaction.senders[0]
       recipients = transaction.recipients
       domain_name = transaction.message
-      price = sender[:amount]
+      price = sender.amount
 
-      existing_domains = database.get_domain_map_for_address(sender[:address]).keys.uniq
+      existing_domains = database.get_domain_map_for_address(sender.address).keys.uniq!
       raise "You may only have 1 human readable address per wallet address. You already own: #{existing_domains.join(",")}" if existing_domains.size >= 1
 
       valid_domain?(domain_name)
@@ -83,7 +83,7 @@ module ::Axentro::Core::DApps::BuildIn
                      raise "you have to the set a domain owner as a recipient" if recipients.size == 0
                      raise "you cannot set multiple recipients" if recipients.size > 1
 
-                     recipient_address = recipients[0][:address]
+                     recipient_address = recipients[0].address
 
                      raise "domain address mismatch: #{recipient_address} vs #{domain[:address]}" if recipient_address != domain[:address]
 
@@ -104,8 +104,8 @@ module ::Axentro::Core::DApps::BuildIn
 
       sender = transaction.senders[0]
       domain_name = transaction.message
-      address = sender[:address]
-      price = sender[:amount]
+      address = sender.address
+      price = sender.amount
 
       valid_domain?(domain_name)
 
@@ -114,8 +114,8 @@ module ::Axentro::Core::DApps::BuildIn
       raise "domain #{domain_name} not found" unless domain = resolve_pending(domain_name, transactions)
       raise "domain #{domain_name} is already for sale" if domain[:status] == Status::FOR_SALE
       raise "domain address mismatch: expected #{address} but got #{domain[:address]}" unless address == domain[:address]
-      raise "address mismatch for hra_sell: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
-      raise "price mismatch for hra_sell: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
+      raise "address mismatch for hra_sell: expected #{address} but got #{recipient.address}" if address != recipient.address
+      raise "price mismatch for hra_sell: expected #{price} but got #{recipient.amount}" if price != recipient.amount
       raise "the selling price must be 0 or higher" if price < 0
 
       true
@@ -127,8 +127,8 @@ module ::Axentro::Core::DApps::BuildIn
 
       sender = transaction.senders[0]
       domain_name = transaction.message
-      address = sender[:address]
-      price = sender[:amount]
+      address = sender.address
+      price = sender.amount
 
       valid_domain?(domain_name)
 
@@ -137,8 +137,8 @@ module ::Axentro::Core::DApps::BuildIn
       raise "domain #{domain_name} not found" unless domain = resolve_pending(domain_name, transactions)
       raise "domain #{domain_name} is not for sale" if domain[:status] != Status::FOR_SALE
       raise "domain address mismatch: expected #{address} but got #{domain[:address]}" unless address == domain[:address]
-      raise "address mismatch for hra_cancel: expected #{address} but got #{recipient[:address]}" if address != recipient[:address]
-      raise "price mismatch for hra_cancel: expected #{price} but got #{recipient[:amount]}" if price != recipient[:amount]
+      raise "address mismatch for hra_cancel: expected #{address} but got #{recipient.address}" if address != recipient.address
+      raise "price mismatch for hra_cancel: expected #{price} but got #{recipient.amount}" if price != recipient.amount
 
       true
     end
@@ -185,8 +185,8 @@ module ::Axentro::Core::DApps::BuildIn
                 transaction.action != "hra_cancel"
 
         domain_name = transaction.message
-        address = transaction.senders[0][:address]
-        price = transaction.senders[0][:amount]
+        address = transaction.senders[0].address
+        price = transaction.senders[0].amount
 
         case transaction.action
         when "hra_buy"

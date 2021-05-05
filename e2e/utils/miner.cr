@@ -13,8 +13,7 @@
 module ::E2E::Utils::Miner
   def axem(args) : String
     _args = args
-      .map { |arg| arg.to_s }
-      .join(" ")
+      .join(" ", &.to_s)
 
     bin = File.expand_path("../../../bin/axem", __FILE__)
 

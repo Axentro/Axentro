@@ -41,21 +41,21 @@ describe RESTController do
   describe "__v1_blockchain" do
     it "should return the full blockchain with pagination defaults (page:0,per_page:20,direction:desc)" do
       asset_blockchain("/api/v1/blockchain") do |result|
-        blocks = Array(SlowBlock).from_json(result["data"].to_json)
+        blocks = Array(Block).from_json(result["data"].to_json)
         blocks.size.should eq(20)
         blocks.first.index.should eq(100)
       end
     end
     it "should return the full blockchain with pagination specified direction (page:0,per_page:20,direction:asc)" do
       asset_blockchain("/api/v1/blockchain?direction=up") do |result|
-        blocks = Array(SlowBlock).from_json(result["data"].to_json)
+        blocks = Array(Block).from_json(result["data"].to_json)
         blocks.size.should eq(20)
         blocks.first.index.should eq(0)
       end
     end
     it "should return the full blockchain with pagination specified direction (page:2,per_page:1,direction:desc)" do
       asset_blockchain("/api/v1/blockchain?page=2&per_page=1&direction=down") do |result|
-        blocks = Array(SlowBlock).from_json(result["data"].to_json)
+        blocks = Array(Block).from_json(result["data"].to_json)
         blocks.size.should eq(1)
         blocks.first.index.should eq(98)
       end
@@ -65,21 +65,21 @@ describe RESTController do
   describe "__v1_blockchain_header" do
     it "should return the blockchain headers with pagination defaults (page:0,per_page:20,direction:desc)" do
       asset_blockchain_header("/api/v1/blockchain/header") do |result|
-        blocks = Array(Blockchain::SlowHeader).from_json(result["data"].to_json)
+        blocks = Array(Blockchain::Header).from_json(result["data"].to_json)
         blocks.size.should eq(20)
         blocks.first[:index].should eq(100)
       end
     end
     it "should return the blockchain headers with pagination specified direction (page:0,per_page:20,direction:asc)" do
       asset_blockchain_header("/api/v1/blockchain/header/?direction=up") do |result|
-        blocks = Array(Blockchain::SlowHeader).from_json(result["data"].to_json)
+        blocks = Array(Blockchain::Header).from_json(result["data"].to_json)
         blocks.size.should eq(20)
         blocks.first[:index].should eq(0)
       end
     end
     it "should return the blockchain headers with pagination specified direction (page:2,per_page:1,direction:desc)" do
       asset_blockchain_header("/api/v1/blockchain/header?page=2&per_page=1&direction=down") do |result|
-        blocks = Array(Blockchain::SlowHeader).from_json(result["data"].to_json)
+        blocks = Array(Blockchain::Header).from_json(result["data"].to_json)
         blocks.size.should eq(1)
         blocks.first[:index].should eq(98)
       end
@@ -100,17 +100,6 @@ describe RESTController do
         end
       end
     end
-    it "should return the full blockchain size when chain is bigger than memory" do
-      with_factory do |block_factory, _|
-        slow_blocks_to_add = block_factory.slow_blocks_to_hold + 8
-        fast_blocks_to_add = slow_blocks_to_add
-        block_factory.add_slow_blocks(slow_blocks_to_add).add_fast_blocks(fast_blocks_to_add)
-        exec_rest_api(block_factory.rest.__v1_blockchain_size(context("/api/v1/blockchain/size"), no_params)) do |result|
-          result["status"].to_s.should eq("success")
-          result["result"]["totals"]["total_size"].should eq(slow_blocks_to_add + fast_blocks_to_add + 1)
-        end
-      end
-    end
   end
 
   describe "__v1_block_index" do
@@ -119,7 +108,7 @@ describe RESTController do
         block_factory.add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_block_index(context("/api/v1/block"), {index: 0})) do |result|
           result["status"].to_s.should eq("success")
-          SlowBlock.from_json(result["result"]["block"].to_json)
+          Block.from_json(result["result"]["block"].to_json)
         end
       end
     end
@@ -140,7 +129,7 @@ describe RESTController do
         block_factory.add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_block_index_header(context("/api/v1/block/0/header"), {index: 0})) do |result|
           result["status"].to_s.should eq("success")
-          Blockchain::SlowHeader.from_json(result["result"].to_json)
+          Blockchain::Header.from_json(result["result"].to_json)
         end
       end
     end
@@ -199,7 +188,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_transaction_id_block(context("/api/v1/transaction/#{transaction.id}/block"), {id: transaction.id})) do |result|
           result["status"].to_s.should eq("success")
-          SlowBlock.from_json(result["result"]["block"].to_json)
+          Block.from_json(result["result"]["block"].to_json)
         end
       end
     end
@@ -221,7 +210,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_transaction_id_block_header(context("/api/v1/transaction/#{transaction.id}/block/header"), {id: transaction.id})) do |result|
           result["status"].to_s.should eq("success")
-          Blockchain::SlowHeader.from_json(result["result"].to_json)
+          Blockchain::Header.from_json(result["result"].to_json)
         end
       end
     end
@@ -307,7 +296,7 @@ describe RESTController do
         transaction = transaction_factory.make_send(100_i64)
         block_factory.add_slow_block([transaction]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/#{address}/transactions"), {address: address})) do |result|
-          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map(&.["transaction"]).to_json
           Array(Transaction).from_json(data)
         end
       end
@@ -319,9 +308,9 @@ describe RESTController do
         block_factory.add_slow_block([transaction]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/#{address}/transactions?actions=send"), {address: address, actions: "send"})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map(&.["transaction"]).to_json
           transactions = Array(Transaction).from_json(data)
-          transactions.map { |txn| txn.action }.uniq.should eq(["send"])
+          transactions.map(&.action).uniq!.should eq(["send"])
         end
       end
     end
@@ -352,7 +341,7 @@ describe RESTController do
         block_factory.add_slow_blocks(100)
         exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/#{address}/transactions"), {address: address})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map(&.["transaction"]).to_json
           transactions = Array(Transaction).from_json(data)
           transactions.size.should eq(20)
         end
@@ -364,7 +353,7 @@ describe RESTController do
         block_factory.add_slow_blocks(200)
         exec_rest_api(block_factory.rest.__v1_address_transactions(context("/api/v1/address/#{address}/transactions?per_page=50&page=2"), {address: address, page_size: 50, page: 2})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map(&.["transaction"]).to_json
           transactions = Array(Transaction).from_json(data)
           transactions.size.should eq(50)
         end
@@ -428,7 +417,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction, transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_domain_transactions(context("/api/v1/domain/#{domain}/transactions"), {domain: domain})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map(&.["transaction"]).to_json
           Array(Transaction).from_json(data)
         end
       end
@@ -440,9 +429,9 @@ describe RESTController do
         block_factory.add_slow_block([transaction, transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(2)
         exec_rest_api(block_factory.rest.__v1_domain_transactions(context("/api/v1/domain/#{domain}/transactions?actions=send"), {domain: domain, actions: "send"})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map(&.["transaction"]).to_json
           transactions = Array(Transaction).from_json(data)
-          transactions.map { |txn| txn.action }.uniq.should eq(["send"])
+          transactions.map(&.action).uniq!.should eq(["send"])
         end
       end
     end
@@ -463,7 +452,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(100)
         exec_rest_api(block_factory.rest.__v1_domain_transactions(context("/api/v1/domain/#{domain}/transactions"), {domain: domain})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map(&.["transaction"]).to_json
           transactions = Array(Transaction).from_json(data)
           transactions.size.should eq(20)
         end
@@ -475,7 +464,7 @@ describe RESTController do
         block_factory.add_slow_block([transaction_factory.make_buy_domain_from_platform(domain, 0_i64)]).add_slow_blocks(200)
         exec_rest_api(block_factory.rest.__v1_domain_transactions(context("/api/v1/domain/#{domain}/transactions?per_page=50&page=2"), {domain: domain, page_size: 50, page: 1})) do |result|
           result["status"].to_s.should eq("success")
-          data = result["result"]["transactions"].as_a.map { |t| t["transaction"] }.to_json
+          data = result["result"]["transactions"].as_a.map(&.["transaction"]).to_json
           transactions = Array(Transaction).from_json(data)
           transactions.size.should eq(50)
         end
@@ -714,6 +703,7 @@ describe RESTController do
           "send", # action
           [a_decimal_sender(transaction_factory.sender_wallet, "1")],
           [a_decimal_recipient(transaction_factory.recipient_wallet, "1")],
+          [] of Transaction::Asset,
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -730,6 +720,242 @@ describe RESTController do
       end
     end
   end
+
+  describe "__v1_assets_id" do
+    it "should return the asset details for supplied asset_id" do
+      with_factory do |block_factory, transaction_factory|
+        asset_id = Transaction::Asset.create_id
+        sender_wallet = transaction_factory.sender_wallet
+
+        transaction1 = transaction_factory.make_asset(
+          "AXNT",
+          "create_asset",
+          [a_sender(sender_wallet, 0_i64, 0_i64)],
+          [a_recipient(sender_wallet, 0_i64)],
+          [Transaction::Asset.new(asset_id, "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 1, __timestamp)]
+        )
+
+        block_factory.add_slow_block([transaction1]).add_slow_blocks(4)
+
+        exec_rest_api(block_factory.rest.__v1_assets_id(context("/api/v1/assets/#{asset_id}"), {asset_id: asset_id})) do |result|
+          result["status"].to_s.should eq("success")
+          asset = Transaction::Asset.from_json(result["result"]["asset"].to_json)
+          asset.asset_id.should eq(asset_id)
+        end
+      end
+    end
+    it "should return not found for supplied asset_id" do
+      with_factory do |block_factory, _|
+        asset_id = Transaction::Asset.create_id
+
+        exec_rest_api(block_factory.rest.__v1_assets_id(context("/api/v1/assets/#{asset_id}"), {asset_id: asset_id})) do |result|
+          result["status"].to_s.should eq("success")
+          result["result"]["status"].should eq("not found")
+          result["result"]["asset"].should eq(nil)
+        end
+      end
+    end
+  end
+
+  describe "__v1_assets_address" do
+    it "should return paginated asset details for supplied address" do
+      with_factory do |block_factory, transaction_factory|
+        sender_wallet = transaction_factory.sender_wallet
+
+        txns = (0..10).to_a.flat_map do
+          asset_id = Transaction::Asset.create_id
+          [create_asset(asset_id, transaction_factory, sender_wallet),
+           update_asset(asset_id, transaction_factory, sender_wallet)]
+        end
+        block_factory.add_slow_block(txns).add_slow_blocks(4)
+
+        exec_rest_api(block_factory.rest.__v1_assets_address(context("/api/v1/assets/address/#{sender_wallet.address}"), {address: sender_wallet.address})) do |result|
+          result["status"].to_s.should eq("success")
+          data = result["result"]["assets"].as_a.map(&.["asset"]).to_json
+          Array(Transaction::Asset).from_json(data).size.should eq(11)
+        end
+      end
+    end
+  end
+
+  describe "__v1_asset_create_unsigned" do
+    it "should create an unsigned asset payload" do
+      with_factory do |block_factory, transaction_factory|
+        sender_wallet = transaction_factory.sender_wallet
+
+        data = {
+          address:        sender_wallet.address,
+          public_key:     sender_wallet.public_key,
+          name:           "name",
+          description:    "desc",
+          media_location: "http://location/a",
+          quantity:       1,
+          kind:           "FAST",
+        }
+
+        body = IO::Memory.new(data.to_json)
+        exec_rest_api(block_factory.rest.__v1_asset_create_unsigned(context("/api/v1/assets/create/unsigned", "POST", body), no_params)) do |result|
+          result["status"].should eq("success")
+          transaction = Transaction.from_json(result["result"].to_json)
+          asset = transaction.assets.first
+          asset.name.should eq("name")
+          asset.description.should eq("desc")
+          asset.media_location.should eq("http://location/a")
+          asset.media_hash.should eq("")
+          asset.quantity.should eq(1)
+          asset.terms.should eq("")
+          asset.version.should eq(1)
+          asset.locked.to_s.should eq("UNLOCKED")
+        end
+      end
+    end
+  end
+
+  describe "__v1_asset_update_unsigned" do
+    it "should create an update unsigned asset payload" do
+      with_factory do |block_factory, transaction_factory|
+        asset_id = Transaction::Asset.create_id
+        sender_wallet = transaction_factory.sender_wallet
+
+        block_factory.add_slow_block([create_asset(asset_id, transaction_factory, sender_wallet)]).add_slow_blocks(4)
+
+        data = {
+          address:        sender_wallet.address,
+          public_key:     sender_wallet.public_key,
+          asset_id:       asset_id,
+          name:           "updated_name",
+          description:    "updated_desc",
+          media_location: "http://somewhere/else",
+          quantity:       2,
+          locked:         "LOCKED",
+          kind:           "FAST",
+        }
+
+        body = IO::Memory.new(data.to_json)
+        exec_rest_api(block_factory.rest.__v1_asset_update_unsigned(context("/api/v1/assets/update/unsigned", "POST", body), no_params)) do |result|
+          result["status"].should eq("success")
+          transaction = Transaction.from_json(result["result"].to_json)
+          asset = transaction.assets.first
+          asset.name.should eq("updated_name")
+          asset.description.should eq("updated_desc")
+          asset.media_location.should eq("http://somewhere/else")
+          asset.media_hash.should eq("media_hash_#{asset_id}")
+          asset.quantity.should eq(2)
+          asset.terms.should eq("terms")
+          asset.version.should eq(2)
+          asset.locked.to_s.should eq("LOCKED")
+        end
+      end
+    end
+    it "should return error for create an update unsigned asset payload when asset not found" do
+      with_factory do |block_factory, transaction_factory|
+        asset_id = Transaction::Asset.create_id
+        sender_wallet = transaction_factory.sender_wallet
+
+        data = {
+          address:        sender_wallet.address,
+          public_key:     sender_wallet.public_key,
+          asset_id:       asset_id,
+          name:           "updated_name",
+          description:    "updated_desc",
+          media_location: "http://somewhere/else",
+          quantity:       2,
+          locked:         "LOCKED",
+          kind:           "FAST",
+        }
+
+        body = IO::Memory.new(data.to_json)
+        exec_rest_api(block_factory.rest.__v1_asset_update_unsigned(context("/api/v1/assets/update/unsigned", "POST", body), no_params)) do |result|
+          result["status"].should eq("error")
+          result["reason"].should eq("asset #{asset_id} not found")
+        end
+      end
+    end
+    it "should create an update unsigned asset payload" do
+      with_factory do |block_factory, transaction_factory|
+        asset_id = Transaction::Asset.create_id
+        sender_wallet = transaction_factory.sender_wallet
+
+        lock_asset = transaction_factory.make_asset(
+          "AXNT",
+          "update_asset",
+          [a_sender(sender_wallet, 0_i64, 0_i64)],
+          [a_recipient(sender_wallet, 0_i64)],
+          [Transaction::Asset.new(asset_id, "name_#{asset_id}", "description_#{asset_id}", "media_location_#{asset_id}", "media_hash_#{asset_id}", 2, "terms", AssetAccess::LOCKED, 2, __timestamp)]
+        )
+
+        block_factory.add_slow_block([create_asset(asset_id, transaction_factory, sender_wallet), lock_asset]).add_slow_blocks(4)
+
+        data = {
+          address:        sender_wallet.address,
+          public_key:     sender_wallet.public_key,
+          asset_id:       asset_id,
+          name:           "updated_name",
+          description:    "updated_desc",
+          media_location: "http://somewhere/else",
+          quantity:       2,
+          locked:         "LOCKED",
+          kind:           "FAST",
+        }
+
+        body = IO::Memory.new(data.to_json)
+        exec_rest_api(block_factory.rest.__v1_asset_update_unsigned(context("/api/v1/assets/update/unsigned", "POST", body), no_params)) do |result|
+          result["status"].should eq("error")
+          result["reason"].should eq("asset #{asset_id} is already locked so no updates are possible")
+        end
+      end
+    end
+  end
+  describe "__v1_asset_send_unsigned" do
+    it "should create a send unsigned asset payload" do
+      with_factory do |block_factory, transaction_factory|
+        asset_id = Transaction::Asset.create_id
+        sender_wallet = transaction_factory.sender_wallet
+        recipient_wallet = transaction_factory.recipient_wallet
+        block_factory.add_slow_block([create_asset(asset_id, transaction_factory, sender_wallet)]).add_slow_blocks(4)
+
+        data = {
+          to_address:   recipient_wallet.address,
+          from_address: sender_wallet.address,
+          public_key:   sender_wallet.public_key,
+          asset_id:     asset_id,
+          amount:       1,
+          kind:         "FAST",
+        }
+
+        body = IO::Memory.new(data.to_json)
+        exec_rest_api(block_factory.rest.__v1_asset_send_unsigned(context("/api/v1/assets/send/unsigned", "POST", body), no_params)) do |result|
+          result["status"].should eq("success")
+          transaction = Transaction.from_json(result["result"].to_json)
+          transaction.action.should eq("send_asset")
+          transaction.senders.first.asset_id.should eq(asset_id)
+          transaction.senders.first.asset_quantity.should eq(1)
+          transaction.recipients.first.asset_id.should eq(asset_id)
+          transaction.recipients.first.asset_quantity.should eq(1)
+        end
+      end
+    end
+  end
+end
+
+private def create_asset(asset_id, transaction_factory, sender_wallet) : Transaction
+  transaction_factory.make_asset(
+    "AXNT",
+    "create_asset",
+    [a_sender(sender_wallet, 0_i64, 0_i64)],
+    [a_recipient(sender_wallet, 0_i64)],
+    [Transaction::Asset.new(asset_id, "name_#{asset_id}", "description_#{asset_id}", "media_location_#{asset_id}", "media_hash_#{asset_id}", 1, "terms", AssetAccess::UNLOCKED, 1, __timestamp)]
+  )
+end
+
+private def update_asset(asset_id, transaction_factory, sender_wallet) : Transaction
+  transaction_factory.make_asset(
+    "AXNT",
+    "update_asset",
+    [a_sender(sender_wallet, 0_i64, 0_i64)],
+    [a_recipient(sender_wallet, 0_i64)],
+    [Transaction::Asset.new(asset_id, "name_#{asset_id}", "description_#{asset_id}", "media_location_#{asset_id}", "media_hash_#{asset_id}", 2, "terms", AssetAccess::UNLOCKED, 2, __timestamp)]
+  )
 end
 
 struct DomainResult

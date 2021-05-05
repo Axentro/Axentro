@@ -36,8 +36,8 @@ describe Blockchain do
       with_miner_nonces(miner1, ["1", "2"], "Miner 1", block_factory)
       transaction = block_factory.blockchain.create_coinbase_slow_transaction(coinbase_amount, 0_i64, [miner1])
 
-      node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
-      miner1_reward = get_recipient_for(transaction.recipients, "Miner 1")[:amount]
+      node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address).amount
+      miner1_reward = get_recipient_for(transaction.recipients, "Miner 1").amount
 
       node_reward.should eq(300000000_i64)
       as_percentage(node_reward).should eq(25)
@@ -60,10 +60,10 @@ describe Blockchain do
       with_miner_nonces(miner3, ["1", "2"], "Miner 3", block_factory)
       transaction = block_factory.blockchain.create_coinbase_slow_transaction(coinbase_amount, 0_i64, [miner1, miner2, miner3])
 
-      node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
-      miner1_reward = get_recipient_for(transaction.recipients, "Miner 1")[:amount]
-      miner2_reward = get_recipient_for(transaction.recipients, "Miner 2")[:amount]
-      miner3_reward = get_recipient_for(transaction.recipients, "Miner 3")[:amount]
+      node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address).amount
+      miner1_reward = get_recipient_for(transaction.recipients, "Miner 1").amount
+      miner2_reward = get_recipient_for(transaction.recipients, "Miner 2").amount
+      miner3_reward = get_recipient_for(transaction.recipients, "Miner 3").amount
 
       node_reward.should eq(300000000_i64)
       as_percentage(node_reward).should eq(25)
@@ -106,14 +106,14 @@ describe Blockchain do
     with_factory do |block_factory, transaction_factory|
       miner1 = Miner.new(MockWebSocket.new, "miner1", block_factory.blockchain.mining_block.difficulty, "127.0.0.1", 0, "name", "address")
       transactions = [transaction_factory.make_send(2000_i64), transaction_factory.make_send(9000_i64)]
-      total_reward = transactions.flat_map(&.senders).map(&.["fee"]).reduce(0) { |total, fee| total + fee }
+      total_reward = transactions.flat_map(&.senders).map(&.fee).reduce(0) { |total, fee| total + fee }
       with_miner_nonces(miner1, ["1", "2"], "Miner 1", block_factory)
 
       coinbase_amount = block_factory.blockchain.coinbase_slow_amount(TOTAL_BLOCK_LIMIT + 1, transactions)
       transaction = block_factory.blockchain.create_coinbase_slow_transaction(coinbase_amount, 0_i64, [miner1])
 
-      node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
-      miner1_reward = get_recipient_for(transaction.recipients, "Miner 1")[:amount]
+      node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address).amount
+      miner1_reward = get_recipient_for(transaction.recipients, "Miner 1").amount
 
       node_reward.should eq(5000_i64)
       as_percentage(node_reward, total_reward).should eq(25)
@@ -144,9 +144,9 @@ def assert_reward_distribution(nonces1, nonces2, expected_percent_1, expected_pe
 
     transaction = block_factory.blockchain.create_coinbase_slow_transaction(coinbase_amount, 0_i64, [miner1, miner2])
 
-    node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address)[:amount]
-    miner1_reward = get_recipient_for(transaction.recipients, "Miner 1")[:amount]
-    miner2_reward = get_recipient_for(transaction.recipients, "Miner 2")[:amount]
+    node_reward = get_recipient_for(transaction.recipients, block_factory.node_wallet.address).amount
+    miner1_reward = get_recipient_for(transaction.recipients, "Miner 1").amount
+    miner2_reward = get_recipient_for(transaction.recipients, "Miner 2").amount
 
     as_percentage(node_reward).should eq(25)
     as_percentage(miner1_reward).should eq(expected_percent_1)
@@ -157,7 +157,7 @@ def assert_reward_distribution(nonces1, nonces2, expected_percent_1, expected_pe
 end
 
 def get_recipient_for(recipients, address)
-  recipients.find { |r| r[:address] == address }.not_nil!
+  recipients.find(&.address.==(address)).not_nil!
 end
 
 def as_percentage(percent_of, total = TOTAL_BLOCK_REWARD)

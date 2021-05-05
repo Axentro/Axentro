@@ -53,6 +53,10 @@ module ::Axentro::Interface::Axe
           name: I18n.translate("axe.cli.client.title"),
           desc: I18n.translate("axe.cli.client.desc"),
         },
+        {
+          name: I18n.translate("axe.cli.assets.title"),
+          desc: I18n.translate("axe.cli.assets.desc"),
+        },
       ]
     end
 
@@ -60,6 +64,7 @@ module ::Axentro::Interface::Axe
       G.op.create_option_parser([] of Options)
     end
 
+    # ameba:disable Metrics/CyclomaticComplexity
     def run_impl(action_name) : OptionParser?
       case action_name
       when I18n.translate("axe.cli.wallet.title"), "wt"
@@ -105,6 +110,11 @@ module ::Axentro::Interface::Axe
       when I18n.translate("axe.cli.client.title"), "cl"
         return Client.new(
           {name: I18n.translate("axe.cli.client.title"), desc: I18n.translate("axe.cli.client.desc")},
+          next_parents,
+        ).run
+      when I18n.translate("axe.cli.assets.title"), "as"
+        return AssetCli.new(
+          {name: I18n.translate("axe.cli.assets.title"), desc: I18n.translate("axe.cli.assets.desc")},
           next_parents,
         ).run
       end

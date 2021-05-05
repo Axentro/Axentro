@@ -32,6 +32,7 @@ describe Transaction do
       "send", # action
       [a_sender(sender_wallet, 1000_i64)],
       [a_recipient(recipient_wallet, 10_i64)],
+      [] of Transaction::Asset,
       "0",           # message
       TOKEN_DEFAULT, # token
       "0",           # prev_hash
@@ -44,14 +45,14 @@ describe Transaction do
     transaction.action.should eq("send")
     senders = transaction.senders
     senders.size.should eq(1)
-    senders.first[:address].should eq(sender_wallet.address)
-    senders.first[:public_key].should eq(sender_wallet.public_key)
-    senders.first[:amount].should eq(1000_i64)
+    senders.first.address.should eq(sender_wallet.address)
+    senders.first.public_key.should eq(sender_wallet.public_key)
+    senders.first.amount.should eq(1000_i64)
 
     recipients = transaction.recipients
     recipients.size.should eq(1)
-    recipients.first[:address].should eq(recipient_wallet.address)
-    recipients.first[:amount].should eq(10_i64)
+    recipients.first.address.should eq(recipient_wallet.address)
+    recipients.first.amount.should eq(10_i64)
 
     transaction.id.should eq(transaction_id)
     transaction.message.should eq("0")
@@ -67,6 +68,7 @@ describe Transaction do
         "send", # action
         [a_sender(sender_wallet, 10001_i64)],
         [] of Transaction::Recipient,
+        [] of Transaction::Asset,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -78,7 +80,7 @@ describe Transaction do
 
       signed_transaction = unsigned_transaction.as_signed([sender_wallet])
 
-      signed_transaction.senders.first["signature"].should_not eq("0")
+      signed_transaction.senders.first.signature.should_not eq("0")
     end
   end
 
@@ -91,6 +93,7 @@ describe Transaction do
         "send", # action
         [a_sender(sender_wallet, 10001_i64)],
         [] of Transaction::Recipient,
+        [] of Transaction::Asset,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -102,10 +105,10 @@ describe Transaction do
 
       signed_transaction = unsigned_transaction.as_signed([sender_wallet])
 
-      signed_transaction.senders.first["signature"].should_not eq("0")
+      signed_transaction.senders.first.signature.should_not eq("0")
 
       unsigned = signed_transaction.as_unsigned
-      unsigned.senders.first["signature"].should eq("0")
+      unsigned.senders.first.signature.should eq("0")
     end
   end
 
@@ -119,6 +122,7 @@ describe Transaction do
         "send", # action
         [a_sender(sender_wallet, 10_i64)],
         [a_recipient(recipient_wallet, 10_i64)],
+        [] of Transaction::Asset,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -142,6 +146,7 @@ describe Transaction do
         "send", # action
         [a_sender(sender_wallet, 10_i64)],
         [a_recipient(recipient_wallet, 10_i64)],
+        [] of Transaction::Asset,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -165,6 +170,7 @@ describe Transaction do
         "send", # action
         [a_sender(sender_wallet, 11_i64)],
         [a_recipient(recipient_wallet, 10_i64)],
+        [] of Transaction::Asset,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash

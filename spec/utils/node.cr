@@ -48,9 +48,9 @@ module ::Units::Utils::NodeHelper
       res.response.status_code.should eq(status_code)
       http_res = res.response.unsafe_as(MockResponse).content
       begin
-        yield JSON.parse(http_res.split("\n").find { |l| l.includes?("result") }.not_nil!.chomp)
+        yield JSON.parse(http_res.split("\n").find(&.includes?("result")).not_nil!.chomp)
       rescue e : Exception
-        yield JSON.parse(http_res.split("\n").find { |l| l.includes?("status") }.not_nil!.chomp)
+        yield JSON.parse(http_res.split("\n").find(&.includes?("status")).not_nil!.chomp)
       end
     else
       fail "expected an io response"

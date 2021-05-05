@@ -75,6 +75,12 @@ module ::Axentro::Interface
     @whitelist : Array(String) = [] of String
     @whitelist_message : String = ""
 
+    @asset_id : String?
+    @asset_name : String?
+    @asset_description : String?
+    @asset_media_location : String?
+    @asset_locked : Bool = false
+
     enum Options
       # common options
       CONNECT_NODE
@@ -126,6 +132,12 @@ module ::Axentro::Interface
       RECORD_NONCES
       WHITELIST
       WHITELIST_MESSAGE
+      # for assets
+      ASSET_ID
+      ASSET_NAME
+      ASSET_DESCRIPTION
+      ASSET_MEDIA_LOCATION
+      ASSET_LOCKED
     end
 
     def create_option_parser(actives : Array(Options)) : OptionParser
@@ -173,6 +185,11 @@ module ::Axentro::Interface
         parse_record_nonces(parser, actives)
         parse_whitelist(parser, actives)
         parse_whitelist_message(parser, actives)
+        parse_asset_id(parser, actives)
+        parse_asset_name(parser, actives)
+        parse_asset_description(parser, actives)
+        parse_asset_media_location(parser, actives)
+        parse_asset_locked(parser, actives)
       end
     end
 
@@ -455,6 +472,36 @@ module ::Axentro::Interface
       } if is_active?(actives, Options::MAX_PRIVATE_NODES)
     end
 
+    private def parse_asset_id(parser : OptionParser, actives : Array(Options))
+      parser.on("--asset-id=VALUE", I18n.translate("cli.options.asset_id")) { |v|
+        @asset_id = v
+      } if is_active?(actives, Options::ASSET_ID)
+    end
+
+    private def parse_asset_name(parser : OptionParser, actives : Array(Options))
+      parser.on("--asset-name=VALUE", I18n.translate("cli.options.asset_name")) { |v|
+        @asset_name = v
+      } if is_active?(actives, Options::ASSET_NAME)
+    end
+
+    private def parse_asset_description(parser : OptionParser, actives : Array(Options))
+      parser.on("--asset-description=VALUE", I18n.translate("cli.options.asset_description")) { |v|
+        @asset_description = v
+      } if is_active?(actives, Options::ASSET_DESCRIPTION)
+    end
+
+    private def parse_asset_media_location(parser : OptionParser, actives : Array(Options))
+      parser.on("--asset-media-location=VALUE", I18n.translate("cli.options.asset_media_location")) { |v|
+        @asset_media_location = v
+      } if is_active?(actives, Options::ASSET_MEDIA_LOCATION)
+    end
+
+    private def parse_asset_locked(parser : OptionParser, actives : Array(Options))
+      parser.on("--lock-asset", I18n.translate("cli.options.asset_locked")) { |_|
+        @asset_locked = true
+      } if is_active?(actives, Options::ASSET_LOCKED)
+    end
+
     def is_active?(actives : Array(Options), option : Options) : Bool
       actives.includes?(option)
     end
@@ -509,6 +556,26 @@ module ::Axentro::Interface
 
     def __address : String?
       with_string_config("address", @address)
+    end
+
+    def __asset_id : String?
+      @asset_id
+    end
+
+    def __asset_name : String?
+      @asset_name
+    end
+
+    def __asset_description : String?
+      @asset_description
+    end
+
+    def __asset_media_location : String?
+      @asset_media_location
+    end
+
+    def __asset_locked : Bool
+      @asset_locked
     end
 
     def __whitelist : Array(String)
