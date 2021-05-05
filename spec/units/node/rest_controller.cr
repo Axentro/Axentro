@@ -760,7 +760,6 @@ describe RESTController do
   describe "__v1_assets_address" do
     it "should return paginated asset details for supplied address" do
       with_factory do |block_factory, transaction_factory|
-        asset_id = Transaction::Asset.create_id
         sender_wallet = transaction_factory.sender_wallet
 
         txns = (0..10).to_a.flat_map do
@@ -774,6 +773,165 @@ describe RESTController do
           result["status"].to_s.should eq("success")
           data = result["result"]["assets"].as_a.map(&.["asset"]).to_json
           Array(Transaction::Asset).from_json(data).size.should eq(11)
+        end
+      end
+    end
+  end
+
+  describe "__v1_asset_create_unsigned" do
+    it "should create an unsigned asset payload" do
+      with_factory do |block_factory, transaction_factory|
+        sender_wallet = transaction_factory.sender_wallet
+
+        data = {
+          address:        sender_wallet.address,
+          public_key:     sender_wallet.public_key,
+          name:           "name",
+          description:    "desc",
+          media_location: "http://location/a",
+          quantity:       1,
+          kind:           "FAST",
+        }
+
+        body = IO::Memory.new(data.to_json)
+        exec_rest_api(block_factory.rest.__v1_asset_create_unsigned(context("/api/v1/assets/create/unsigned", "POST", body), no_params)) do |result|
+          result["status"].should eq("success")
+          transaction = Transaction.from_json(result["result"].to_json)
+          asset = transaction.assets.first
+          asset.name.should eq("name")
+          asset.description.should eq("desc")
+          asset.media_location.should eq("http://location/a")
+          asset.media_hash.should eq("")
+          asset.quantity.should eq(1)
+          asset.terms.should eq("")
+          asset.version.should eq(1)
+          asset.locked.to_s.should eq("UNLOCKED")
+        end
+      end
+    end
+  end
+
+  describe "__v1_asset_update_unsigned" do
+    it "should create an update unsigned asset payload" do
+      with_factory do |block_factory, transaction_factory|
+        asset_id = Transaction::Asset.create_id
+        sender_wallet = transaction_factory.sender_wallet
+
+        block_factory.add_slow_block([create_asset(asset_id, transaction_factory, sender_wallet)]).add_slow_blocks(4)
+
+        data = {
+          address:        sender_wallet.address,
+          public_key:     sender_wallet.public_key,
+          asset_id:       asset_id,
+          name:           "updated_name",
+          description:    "updated_desc",
+          media_location: "http://somewhere/else",
+          quantity:       2,
+          locked:         "LOCKED",
+          kind:           "FAST",
+        }
+
+        body = IO::Memory.new(data.to_json)
+        exec_rest_api(block_factory.rest.__v1_asset_update_unsigned(context("/api/v1/assets/update/unsigned", "POST", body), no_params)) do |result|
+          result["status"].should eq("success")
+          transaction = Transaction.from_json(result["result"].to_json)
+          asset = transaction.assets.first
+          asset.name.should eq("updated_name")
+          asset.description.should eq("updated_desc")
+          asset.media_location.should eq("http://somewhere/else")
+          asset.media_hash.should eq("media_hash_#{asset_id}")
+          asset.quantity.should eq(2)
+          asset.terms.should eq("terms")
+          asset.version.should eq(2)
+          asset.locked.to_s.should eq("LOCKED")
+        end
+      end
+    end
+    it "should return error for create an update unsigned asset payload when asset not found" do
+      with_factory do |block_factory, transaction_factory|
+        asset_id = Transaction::Asset.create_id
+        sender_wallet = transaction_factory.sender_wallet
+
+        data = {
+          address:        sender_wallet.address,
+          public_key:     sender_wallet.public_key,
+          asset_id:       asset_id,
+          name:           "updated_name",
+          description:    "updated_desc",
+          media_location: "http://somewhere/else",
+          quantity:       2,
+          locked:         "LOCKED",
+          kind:           "FAST",
+        }
+
+        body = IO::Memory.new(data.to_json)
+        exec_rest_api(block_factory.rest.__v1_asset_update_unsigned(context("/api/v1/assets/update/unsigned", "POST", body), no_params)) do |result|
+          result["status"].should eq("error")
+          result["reason"].should eq("asset #{asset_id} not found")
+        end
+      end
+    end
+    it "should create an update unsigned asset payload" do
+      with_factory do |block_factory, transaction_factory|
+        asset_id = Transaction::Asset.create_id
+        sender_wallet = transaction_factory.sender_wallet
+
+        lock_asset = transaction_factory.make_asset(
+          "AXNT",
+          "update_asset",
+          [a_sender(sender_wallet, 0_i64, 0_i64)],
+          [a_recipient(sender_wallet, 0_i64)],
+          [Transaction::Asset.new(asset_id, "name_#{asset_id}", "description_#{asset_id}", "media_location_#{asset_id}", "media_hash_#{asset_id}", 2, "terms", AssetAccess::LOCKED, 2, __timestamp)]
+        )
+
+        block_factory.add_slow_block([create_asset(asset_id, transaction_factory, sender_wallet), lock_asset]).add_slow_blocks(4)
+
+        data = {
+          address:        sender_wallet.address,
+          public_key:     sender_wallet.public_key,
+          asset_id:       asset_id,
+          name:           "updated_name",
+          description:    "updated_desc",
+          media_location: "http://somewhere/else",
+          quantity:       2,
+          locked:         "LOCKED",
+          kind:           "FAST",
+        }
+
+        body = IO::Memory.new(data.to_json)
+        exec_rest_api(block_factory.rest.__v1_asset_update_unsigned(context("/api/v1/assets/update/unsigned", "POST", body), no_params)) do |result|
+          result["status"].should eq("error")
+          result["reason"].should eq("asset #{asset_id} is already locked so no updates are possible")
+        end
+      end
+    end
+  end
+  describe "__v1_asset_send_unsigned" do
+    it "should create a send unsigned asset payload" do
+      with_factory do |block_factory, transaction_factory|
+        asset_id = Transaction::Asset.create_id
+        sender_wallet = transaction_factory.sender_wallet
+        recipient_wallet = transaction_factory.recipient_wallet
+        block_factory.add_slow_block([create_asset(asset_id, transaction_factory, sender_wallet)]).add_slow_blocks(4)
+
+        data = {
+          to_address:   recipient_wallet.address,
+          from_address: sender_wallet.address,
+          public_key:   sender_wallet.public_key,
+          asset_id:     asset_id,
+          amount:       1,
+          kind:         "FAST",
+        }
+
+        body = IO::Memory.new(data.to_json)
+        exec_rest_api(block_factory.rest.__v1_asset_send_unsigned(context("/api/v1/assets/send/unsigned", "POST", body), no_params)) do |result|
+          result["status"].should eq("success")
+          transaction = Transaction.from_json(result["result"].to_json)
+          transaction.action.should eq("send_asset")
+          transaction.senders.first.asset_id.should eq(asset_id)
+          transaction.senders.first.asset_quantity.should eq(1)
+          transaction.recipients.first.asset_id.should eq(asset_id)
+          transaction.recipients.first.asset_quantity.should eq(1)
         end
       end
     end
