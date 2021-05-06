@@ -161,6 +161,10 @@ module ::Axentro::Interface
                         senders : SendersDecimal,
                         recipients : RecipientsDecimal,
                         assets : Array(Asset),
+                        modules : Array(Module),
+                        inputs : Array(Input),
+                        outputs : Array(Output),
+                        linked : String,
                         message : String,
                         token : String,
                         kind : TransactionKind)
