@@ -106,10 +106,10 @@ module ::Axentro::Interface::Axe
       asset = Transaction::Asset.new(
         asset_id, asset_name, asset_description, asset_media_location, "", amount.to_i, "", locked, 1, __timestamp)
 
-      modules = [] of Transaction::Module   
-      inputs = [] of Transaction::Input   
+      modules = [] of Transaction::Module
+      inputs = [] of Transaction::Input
       outputs = [] of Transaction::Output
-  
+
       add_transaction(node, action, wallets, senders, recipients, [asset], modules, inputs, outputs, "", G.op.__message, TOKEN_DEFAULT, kind)
     end
 
@@ -157,8 +157,8 @@ module ::Axentro::Interface::Axe
           asset.locked = G.op.__asset_locked ? AssetAccess::LOCKED : asset.locked
         end
 
-        modules = [] of Transaction::Module   
-        inputs = [] of Transaction::Input   
+        modules = [] of Transaction::Module
+        inputs = [] of Transaction::Input
         outputs = [] of Transaction::Output
 
         add_transaction(node, action, wallets, senders, recipients, [asset], modules, inputs, outputs, "", G.op.__message, TOKEN_DEFAULT, kind)
