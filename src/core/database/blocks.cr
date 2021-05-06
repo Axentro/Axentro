@@ -179,7 +179,16 @@ module ::Axentro::Core::Data::Blocks
               end
             end
 
-            t = Transaction.new(t_id, t_action, senders, recipients, assets, t_message, t_token, t_prev_hash, t_timestamp, t_scaled, t_kind, t_version)
+            modules = [] of Transaction::Module
+            # conn.query("select * from modules where transaction_id = ? order by idx asc", t_id) do |module_rows|
+            #   module_rows.each do
+            #     module_id = module_rows.read(String)
+            #     timestamp = module_rows.read(Int64)
+            #     modules << Module.new(module_id, timestamp)
+            #   end
+            # end
+
+            t = Transaction.new(t_id, t_action, senders, recipients, assets, modules, t_message, t_token, t_prev_hash, t_timestamp, t_scaled, t_kind, t_version)
             transactions << t
           end
 

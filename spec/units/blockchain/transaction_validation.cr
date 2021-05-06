@@ -49,6 +49,7 @@ describe TransactionValidator do
           [a_sender(sender_wallet, 40000_i64)],
           [a_recipient(recipient_wallet, 10000_i64)],
           [] of Transaction::Asset,
+          [] of Transaction::Module,
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -94,6 +95,7 @@ describe TransactionValidator do
           [] of Transaction::Sender,
           [a_recipient(transaction_factory.recipient_wallet, 1199999373_i64)],
           [] of Transaction::Asset,
+          [] of Transaction::Module,
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -120,6 +122,7 @@ describe TransactionValidator do
           [] of Transaction::Sender,
           [a_recipient(transaction_factory.recipient_wallet, 1199999373_i64)],
           [] of Transaction::Asset,
+          [] of Transaction::Module,
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -147,6 +150,7 @@ describe TransactionValidator do
           [] of Transaction::Sender,
           [a_recipient(transaction_factory.recipient_wallet, 1199999373_i64)],
           [] of Transaction::Asset,
+          [] of Transaction::Module,
           "invalid",     # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -174,6 +178,7 @@ describe TransactionValidator do
           [] of Transaction::Sender,
           [a_recipient(transaction_factory.recipient_wallet, 1199999373_i64)],
           [] of Transaction::Asset,
+          [] of Transaction::Module,
           "0",       # message
           "INVALID", # token
           "0",       # prev_hash
@@ -201,6 +206,7 @@ describe TransactionValidator do
           [a_sender(transaction_factory.sender_wallet, 40000_i64)],
           [a_recipient(transaction_factory.recipient_wallet, 1199999373_i64)],
           [] of Transaction::Asset,
+          [] of Transaction::Module,
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -228,6 +234,7 @@ describe TransactionValidator do
           [] of Transaction::Sender,
           [a_recipient(transaction_factory.recipient_wallet, 1199999373_i64)],
           [] of Transaction::Asset,
+          [] of Transaction::Module,
           "0",           # message
           TOKEN_DEFAULT, # token
           "1",           # prev_hash
@@ -256,6 +263,7 @@ describe TransactionValidator do
             [] of Transaction::Sender,
             [a_recipient(transaction_factory.recipient_wallet, 1000_i64)],
             [] of Transaction::Asset,
+            [] of Transaction::Module,
             "0",           # message
             TOKEN_DEFAULT, # token
             "0",           # prev_hash
@@ -284,6 +292,7 @@ describe TransactionValidator do
             [] of Transaction::Sender,
             [a_recipient(transaction_factory.recipient_wallet, 100000000_i64)],
             [] of Transaction::Asset,
+            [] of Transaction::Module,
             "0",           # message
             TOKEN_DEFAULT, # token
             "0",           # prev_hash
@@ -331,6 +340,7 @@ describe TransactionValidator do
           [a_sender(sender_wallet, 40000_i64)],
           [a_recipient(recipient_wallet, 40000_i64)],
           [] of Transaction::Asset,
+          [] of Transaction::Module,
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -361,6 +371,7 @@ describe TransactionValidator do
             [a_sender(sender_wallet, 40000_i64)],
             [a_recipient(recipient_wallet, 40000_i64)],
             [a_quick_asset("asset_id")],
+            [] of Transaction::Module,
             "0",           # message
             TOKEN_DEFAULT, # token
             "0",           # prev_hash
@@ -492,6 +503,7 @@ describe TransactionValidator do
           [invalid_sender],
           [] of Transaction::Recipient,
           [] of Transaction::Asset,
+          [] of Transaction::Module,
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash
@@ -521,6 +533,7 @@ describe TransactionValidator do
           [a_sender(transaction_factory.sender_wallet, 1000_i64)],
           [invalid_recipient],
           [] of Transaction::Asset,
+          [] of Transaction::Module,
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash

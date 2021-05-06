@@ -103,6 +103,10 @@ module ::Axentro::Core::TransactionValidator
         next
       end
 
+      if transaction.modules.size > 0
+        vt << FailedTransaction.new(transaction, "modules must be empty as still in development")
+      end
+
       if failed_transaction = validate_senders(transaction, network_type)
         vt << failed_transaction
         next

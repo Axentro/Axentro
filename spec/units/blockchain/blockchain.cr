@@ -150,6 +150,7 @@ describe Blockchain do
         [sender],
         [recipient],
         [] of Transaction::Asset,
+        [] of Transaction::Module,
         "0",    # message
         "AXNT", # token
         "0",    # prev_hash
@@ -184,6 +185,7 @@ describe Blockchain do
         [sender],
         [recipient],
         [] of Transaction::Asset,
+        [] of Transaction::Module,
         "0",    # message
         "AXNT", # token
         "0",    # prev_hash

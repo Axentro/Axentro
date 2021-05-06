@@ -93,7 +93,7 @@ module ::Axentro::Interface::Axe
 
       kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW
 
-      add_transaction(node, "create_token", [wallet], senders, recipients, [] of Transaction::Asset, "", token, kind)
+      add_transaction(node, "create_token", [wallet], senders, recipients, [] of Transaction::Asset, [] of Transaction::Module, "", token, kind)
     end
 
     def update
@@ -117,7 +117,7 @@ module ::Axentro::Interface::Axe
 
       kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW
 
-      add_transaction(node, "update_token", [wallet], senders, recipients, [] of Transaction::Asset, "", token, kind)
+      add_transaction(node, "update_token", [wallet], senders, recipients, [] of Transaction::Asset, [] of Transaction::Module, "", token, kind)
     end
 
     def lock
@@ -140,7 +140,7 @@ module ::Axentro::Interface::Axe
 
       kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW
 
-      add_transaction(node, "lock_token", [wallet], senders, recipients, [] of Transaction::Asset, "", token, kind)
+      add_transaction(node, "lock_token", [wallet], senders, recipients, [] of Transaction::Asset, [] of Transaction::Module, "", token, kind)
     end
 
     def burn
@@ -164,7 +164,7 @@ module ::Axentro::Interface::Axe
 
       kind = G.op.__is_fast_transaction ? TransactionKind::FAST : TransactionKind::SLOW
 
-      add_transaction(node, "burn_token", [wallet], senders, recipients, [] of Transaction::Asset, "", token, kind)
+      add_transaction(node, "burn_token", [wallet], senders, recipients, [] of Transaction::Asset, [] of Transaction::Module, "", token, kind)
     end
 
     def list

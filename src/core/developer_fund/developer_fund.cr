@@ -50,6 +50,7 @@ module ::Axentro::Core
         [] of Transaction::SenderDecimal,
         recipients,
         [] of Transaction::Asset,
+        [] of Transaction::Module,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash

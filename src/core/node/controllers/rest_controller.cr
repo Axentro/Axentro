@@ -171,6 +171,7 @@ module ::Axentro::Core::Controllers
           SendersDecimal.from_json(json["senders"].to_json),
           RecipientsDecimal.from_json(json["recipients"].to_json),
           Assets.from_json(json["assets"].to_json),
+          Modules.from_json(json["modules"].to_json),
           json["message"].as_s,
           json["token"].as_s,
           TransactionKind.parse(json["kind"].as_s),

@@ -49,12 +49,13 @@ module ::Axentro::Core::DApps::BuildIn
       senders = SendersDecimal.from_json(json["senders"].to_json)
       recipients = RecipientsDecimal.from_json(json["recipients"].to_json)
       assets = Assets.from_json(json["assets"].to_json)
+      modules = Modules.from_json(json["modules"].to_json)
       message = json["message"].as_s
       token = json["token"].as_s
       kind = TransactionKind.parse(json["kind"].as_s)
       version = TransactionVersion.parse(json["version"].as_s)
 
-      transaction = create_unsigned_transaction_impl(action, senders, recipients, assets, message, token, kind, version)
+      transaction = create_unsigned_transaction_impl(action, senders, recipients, assets, modules, message, token, kind, version)
 
       context.response.print api_success(transaction)
       context
@@ -90,6 +91,7 @@ module ::Axentro::Core::DApps::BuildIn
         senders,
         recipients,
         [] of Transaction::Asset,
+        [] of Transaction::Module,
         "",
         "AXNT",
         kind,
@@ -114,6 +116,7 @@ module ::Axentro::Core::DApps::BuildIn
         senders,
         recipients,
         [] of Transaction::Asset,
+        [] of Transaction::Module,
         "",
         "AXNT",
         kind,
@@ -145,6 +148,7 @@ module ::Axentro::Core::DApps::BuildIn
         senders,
         recipients,
         [asset],
+        [] of Transaction::Module,
         "",
         "AXNT",
         kind,
@@ -167,6 +171,7 @@ module ::Axentro::Core::DApps::BuildIn
         senders,
         recipients,
         [asset],
+        [] of Transaction::Module,
         "",
         "AXNT",
         kind,
@@ -180,6 +185,7 @@ module ::Axentro::Core::DApps::BuildIn
       senders : SendersDecimal,
       recipients : RecipientsDecimal,
       assets : Assets,
+      modules : Modules,
       message : String,
       token : String,
       kind : TransactionKind,
@@ -192,6 +198,7 @@ module ::Axentro::Core::DApps::BuildIn
         senders,
         recipients,
         assets,
+        modules,
         message,
         token,
         "0",         # prev_hash

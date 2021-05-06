@@ -704,6 +704,7 @@ describe RESTController do
           [a_decimal_sender(transaction_factory.sender_wallet, "1")],
           [a_decimal_recipient(transaction_factory.recipient_wallet, "1")],
           [] of Transaction::Asset,
+          [] of Transaction::Module,
           "0",           # message
           TOKEN_DEFAULT, # token
           "0",           # prev_hash

@@ -23,56 +23,58 @@ describe "Json encoding" do
   it "should encode a transaction based on encoding rules" do
     expected_json = %Q{
       {
-         "id":"be8473ea093084461006581b776c2ef1b960ee946a5eaf42f175cd9aace8fd1a",
-         "action":"send",
-         "message":"0",
-         "token":"AXNT",
-         "prev_hash":"0",
-         "timestamp":1615927723068,
-         "scaled":1,
-         "kind":"FAST",
-         "version":"V1",
-         "senders":[
-            {
-               "address":"VDAyNThiOWFiN2Q5YWM3ZjUyYTNhYzQwZTY1NDBmYWJkMjczZmVmZThlOTgzMWM4",
-               "public_key":"8b3c61787fb6b07bb20e4a908deca52ef96335e4faaaaca18a227f9d674dcc57",
-               "amount":2000,
-               "fee":1000,
-               "signature":"0"
-            },
-            {
-               "address":"VDBiYjkyMjY1ZDJlOTNkZmNjN2NmYWFhZTVhMzVlYjZmYjY2YzllNWFjYWY3N2Nh",
-               "public_key":"cd79aa3b76078fb6dbe8199fccbc49a7e0deadbc9370791180e34dbabd65a47e",
-               "amount":5000,
-               "fee":1000,
-               "signature":"0"
-            }
-         ],
-         "recipients":[
-            {
-               "address":"VDA4M2YwYTkzZTQxZTQ0NzdjOGRjMDU4ZTkwZTI4OWY1NDNkMDZjYmU3ODQyM2Rk",
-               "amount":2000
-            },
-            {
-               "address":"VDAwZDRiYTg0MWVlZjE4M2U3OWY2N2E0YmZkZDJjN2JmMWE0ZTViMjE3ZDNmZTU1",
-               "amount":3000
-            }
-         ],
-         "assets":[
-            {
-               "asset_id":"dd0682e21dffaa39ecc23074c483c07d4524f0f2fce065687a78d7ec51fefdf5",
-               "name":"name",
-               "description":"description",
-               "media_location":"media_location",
-               "media_hash":"media_hash",
-               "quantity":1,
-               "terms":"terms",
-               "locked":"UNLOCKED",
-               "version":1,
-               "timestamp":1615971474028
-            }
-         ]
+   "id":"be8473ea093084461006581b776c2ef1b960ee946a5eaf42f175cd9aace8fd1a",
+   "action":"send",
+   "message":"0",
+   "token":"AXNT",
+   "prev_hash":"0",
+   "timestamp":1615927723068,
+   "scaled":1,
+   "kind":"FAST",
+   "version":"V1",
+   "senders":[
+      {
+         "address":"VDAyNThiOWFiN2Q5YWM3ZjUyYTNhYzQwZTY1NDBmYWJkMjczZmVmZThlOTgzMWM4",
+         "public_key":"8b3c61787fb6b07bb20e4a908deca52ef96335e4faaaaca18a227f9d674dcc57",
+         "amount":2000,
+         "fee":1000,
+         "signature":"0"
+      },
+      {
+         "address":"VDBiYjkyMjY1ZDJlOTNkZmNjN2NmYWFhZTVhMzVlYjZmYjY2YzllNWFjYWY3N2Nh",
+         "public_key":"cd79aa3b76078fb6dbe8199fccbc49a7e0deadbc9370791180e34dbabd65a47e",
+         "amount":5000,
+         "fee":1000,
+         "signature":"0"
       }
+   ],
+   "recipients":[
+      {
+         "address":"VDA4M2YwYTkzZTQxZTQ0NzdjOGRjMDU4ZTkwZTI4OWY1NDNkMDZjYmU3ODQyM2Rk",
+         "amount":2000
+      },
+      {
+         "address":"VDAwZDRiYTg0MWVlZjE4M2U3OWY2N2E0YmZkZDJjN2JmMWE0ZTViMjE3ZDNmZTU1",
+         "amount":3000
+      }
+   ],
+   "assets":[
+      {
+         "asset_id":"dd0682e21dffaa39ecc23074c483c07d4524f0f2fce065687a78d7ec51fefdf5",
+         "name":"name",
+         "description":"description",
+         "media_location":"media_location",
+         "media_hash":"media_hash",
+         "quantity":1,
+         "terms":"terms",
+         "locked":"UNLOCKED",
+         "version":1,
+         "timestamp":1615971474028
+      }
+   ],
+   "modules":[
+   ]
+}
     }.gsub(/\s+/, "")
     transaction_1.to_json.should eq(expected_json)
   end
@@ -136,6 +138,9 @@ describe "Json encoding" do
          "version":1,
          "timestamp":1615971474028
       }
+   ],
+   "modules":[
+
    ]
 }
    }.gsub(/\s+/, "")
@@ -153,185 +158,194 @@ describe "Json encoding" do
     hashable_block = BlockNoTimestamp.from_block(block)
     expected_json = %Q{
       {
-         "index":2,
-         "nonce":"nonce",
-         "prev_hash":"prev_hash",
-         "merkle_tree_root":"merkle_tree_root",
-         "difficulty":17,
-         "address":"address",
-         "public_key":"public_key",
-         "signature":"signature",
-         "hash":"hash",
-         "version":"V2",
-         "hash_version":"V2",
-         "checkpoint":"",
-         "mining_version":"V1",
-         "transactions":[
+   "index":2,
+   "nonce":"nonce",
+   "prev_hash":"prev_hash",
+   "merkle_tree_root":"merkle_tree_root",
+   "difficulty":17,
+   "address":"address",
+   "public_key":"public_key",
+   "signature":"signature",
+   "hash":"hash",
+   "version":"V2",
+   "hash_version":"V2",
+   "checkpoint":"",
+   "mining_version":"V1",
+   "transactions":[
+      {
+         "id":"be8473ea093084461006581b776c2ef1b960ee946a5eaf42f175cd9aace8fd1a",
+         "action":"send",
+         "message":"0",
+         "token":"AXNT",
+         "prev_hash":"0",
+         "timestamp":1615927723068,
+         "scaled":1,
+         "kind":"FAST",
+         "version":"V1",
+         "senders":[
             {
-               "id":"be8473ea093084461006581b776c2ef1b960ee946a5eaf42f175cd9aace8fd1a",
-               "action":"send",
-               "message":"0",
-               "token":"AXNT",
-               "prev_hash":"0",
-               "timestamp":1615927723068,
-               "scaled":1,
-               "kind":"FAST",
-               "version":"V1",
-               "senders":[
-                  {
-                     "address":"VDAyNThiOWFiN2Q5YWM3ZjUyYTNhYzQwZTY1NDBmYWJkMjczZmVmZThlOTgzMWM4",
-                     "public_key":"8b3c61787fb6b07bb20e4a908deca52ef96335e4faaaaca18a227f9d674dcc57",
-                     "amount":2000,
-                     "fee":1000,
-                     "signature":"0"
-                  },
-                  {
-                     "address":"VDBiYjkyMjY1ZDJlOTNkZmNjN2NmYWFhZTVhMzVlYjZmYjY2YzllNWFjYWY3N2Nh",
-                     "public_key":"cd79aa3b76078fb6dbe8199fccbc49a7e0deadbc9370791180e34dbabd65a47e",
-                     "amount":5000,
-                     "fee":1000,
-                     "signature":"0"
-                  }
-               ],
-               "recipients":[
-                  {
-                     "address":"VDA4M2YwYTkzZTQxZTQ0NzdjOGRjMDU4ZTkwZTI4OWY1NDNkMDZjYmU3ODQyM2Rk",
-                     "amount":2000
-                  },
-                  {
-                     "address":"VDAwZDRiYTg0MWVlZjE4M2U3OWY2N2E0YmZkZDJjN2JmMWE0ZTViMjE3ZDNmZTU1",
-                     "amount":3000
-                  }
-               ],
-               "assets":[
-                  {
-                     "asset_id":"dd0682e21dffaa39ecc23074c483c07d4524f0f2fce065687a78d7ec51fefdf5",
-                     "name":"name",
-                     "description":"description",
-                     "media_location":"media_location",
-                     "media_hash":"media_hash",
-                     "quantity":1,
-                     "terms":"terms",
-                     "locked":"UNLOCKED",
-                     "version":1,
-                     "timestamp":1615971474028
-                  }
-               ]
+               "address":"VDAyNThiOWFiN2Q5YWM3ZjUyYTNhYzQwZTY1NDBmYWJkMjczZmVmZThlOTgzMWM4",
+               "public_key":"8b3c61787fb6b07bb20e4a908deca52ef96335e4faaaaca18a227f9d674dcc57",
+               "amount":2000,
+               "fee":1000,
+               "signature":"0"
             },
             {
-               "id":"be8473ea093084461006581b776c2ef1b960ee946a5eaf42f175cd9aace8fd1a",
-               "action":"send",
-               "message":"0",
-               "token":"AXNT",
-               "prev_hash":"0",
-               "timestamp":1615927723068,
-               "scaled":1,
-               "kind":"FAST",
-               "version":"V1",
-               "senders":[
-                  {
-                     "address":"VDAyNThiOWFiN2Q5YWM3ZjUyYTNhYzQwZTY1NDBmYWJkMjczZmVmZThlOTgzMWM4",
-                     "public_key":"8b3c61787fb6b07bb20e4a908deca52ef96335e4faaaaca18a227f9d674dcc57",
-                     "amount":0,
-                     "fee":0,
-                     "signature":"0",
-                     "asset_id":"4851dcf992708ad7eeb1cc6064b5a811159efadf78fadc8b490a49b523814e8e",
-                     "asset_quantity":1
-                  },
-                  {
-                     "address":"VDBiYjkyMjY1ZDJlOTNkZmNjN2NmYWFhZTVhMzVlYjZmYjY2YzllNWFjYWY3N2Nh",
-                     "public_key":"cd79aa3b76078fb6dbe8199fccbc49a7e0deadbc9370791180e34dbabd65a47e",
-                     "amount":0,
-                     "fee":0,
-                     "signature":"0",
-                     "asset_id":"c02f754e4c0efa32559b265ec6e5d5afd18734963478d280dc06d0d5fc3a8808",
-                     "asset_quantity":2
-                  }
-               ],
-               "recipients":[
-                  {
-                     "address":"VDA4M2YwYTkzZTQxZTQ0NzdjOGRjMDU4ZTkwZTI4OWY1NDNkMDZjYmU3ODQyM2Rk",
-                     "amount":2,
-                     "asset_id":"c02f754e4c0efa32559b265ec6e5d5afd18734963478d280dc06d0d5fc3a8808",
-                     "asset_quantity":1
-                  },
-                  {
-                     "address":"VDAwZDRiYTg0MWVlZjE4M2U3OWY2N2E0YmZkZDJjN2JmMWE0ZTViMjE3ZDNmZTU1",
-                     "amount":0,
-                     "asset_id":"4851dcf992708ad7eeb1cc6064b5a811159efadf78fadc8b490a49b523814e8e",
-                     "asset_quantity":1
-                  }
-               ],
-               "assets":[
-                  {
-                     "asset_id":"dd0682e21dffaa39ecc23074c483c07d4524f0f2fce065687a78d7ec51fefdf5",
-                     "name":"name",
-                     "description":"description",
-                     "media_location":"media_location",
-                     "media_hash":"media_hash",
-                     "quantity":1,
-                     "terms":"terms",
-                     "locked":"UNLOCKED",
-                     "version":1,
-                     "timestamp":1615971474028
-                  }
-               ]
-            },
-            {
-               "id":"32b2dbcd7b7494cffb89cb7f8bd188bf4c496da965332e7b08328d4e63442856",
-               "action":"send",
-               "message":"0",
-               "token":"AXNT",
-               "prev_hash":"0",
-               "timestamp":1615971474028,
-               "scaled":1,
-               "kind":"FAST",
-               "version":"V1",
-               "senders":[
-                  {
-                     "address":"VDAyNThiOWFiN2Q5YWM3ZjUyYTNhYzQwZTY1NDBmYWJkMjczZmVmZThlOTgzMWM4",
-                     "public_key":"8b3c61787fb6b07bb20e4a908deca52ef96335e4faaaaca18a227f9d674dcc57",
-                     "amount":2000,
-                     "fee":3000,
-                     "signature":"0"
-                  },
-                  {
-                     "address":"VDBiYjkyMjY1ZDJlOTNkZmNjN2NmYWFhZTVhMzVlYjZmYjY2YzllNWFjYWY3N2Nh",
-                     "public_key":"cd79aa3b76078fb6dbe8199fccbc49a7e0deadbc9370791180e34dbabd65a47e",
-                     "amount":7000,
-                     "fee":1000,
-                     "signature":"0"
-                  }
-               ],
-               "recipients":[
-                  {
-                     "address":"VDA4M2YwYTkzZTQxZTQ0NzdjOGRjMDU4ZTkwZTI4OWY1NDNkMDZjYmU3ODQyM2Rk",
-                     "amount":2000
-                  },
-                  {
-                     "address":"VDAwZDRiYTg0MWVlZjE4M2U3OWY2N2E0YmZkZDJjN2JmMWE0ZTViMjE3ZDNmZTU1",
-                     "amount":3000
-                  }
-               ],
-               "assets":[
-                  {
-                     "asset_id":"dd0682e21dffaa39ecc23074c483c07d4524f0f2fce065687a78d7ec51fefdf5",
-                     "name":"name",
-                     "description":"description",
-                     "media_location":"media_location",
-                     "media_hash":"media_hash",
-                     "quantity":1,
-                     "terms":"terms",
-                     "locked":"UNLOCKED",
-                     "version":1,
-                     "timestamp":1615971474028
-                  }
-               ]
+               "address":"VDBiYjkyMjY1ZDJlOTNkZmNjN2NmYWFhZTVhMzVlYjZmYjY2YzllNWFjYWY3N2Nh",
+               "public_key":"cd79aa3b76078fb6dbe8199fccbc49a7e0deadbc9370791180e34dbabd65a47e",
+               "amount":5000,
+               "fee":1000,
+               "signature":"0"
             }
+         ],
+         "recipients":[
+            {
+               "address":"VDA4M2YwYTkzZTQxZTQ0NzdjOGRjMDU4ZTkwZTI4OWY1NDNkMDZjYmU3ODQyM2Rk",
+               "amount":2000
+            },
+            {
+               "address":"VDAwZDRiYTg0MWVlZjE4M2U3OWY2N2E0YmZkZDJjN2JmMWE0ZTViMjE3ZDNmZTU1",
+               "amount":3000
+            }
+         ],
+         "assets":[
+            {
+               "asset_id":"dd0682e21dffaa39ecc23074c483c07d4524f0f2fce065687a78d7ec51fefdf5",
+               "name":"name",
+               "description":"description",
+               "media_location":"media_location",
+               "media_hash":"media_hash",
+               "quantity":1,
+               "terms":"terms",
+               "locked":"UNLOCKED",
+               "version":1,
+               "timestamp":1615971474028
+            }
+         ],
+         "modules":[
+
+         ]
+      },
+      {
+         "id":"be8473ea093084461006581b776c2ef1b960ee946a5eaf42f175cd9aace8fd1a",
+         "action":"send",
+         "message":"0",
+         "token":"AXNT",
+         "prev_hash":"0",
+         "timestamp":1615927723068,
+         "scaled":1,
+         "kind":"FAST",
+         "version":"V1",
+         "senders":[
+            {
+               "address":"VDAyNThiOWFiN2Q5YWM3ZjUyYTNhYzQwZTY1NDBmYWJkMjczZmVmZThlOTgzMWM4",
+               "public_key":"8b3c61787fb6b07bb20e4a908deca52ef96335e4faaaaca18a227f9d674dcc57",
+               "amount":0,
+               "fee":0,
+               "signature":"0",
+               "asset_id":"4851dcf992708ad7eeb1cc6064b5a811159efadf78fadc8b490a49b523814e8e",
+               "asset_quantity":1
+            },
+            {
+               "address":"VDBiYjkyMjY1ZDJlOTNkZmNjN2NmYWFhZTVhMzVlYjZmYjY2YzllNWFjYWY3N2Nh",
+               "public_key":"cd79aa3b76078fb6dbe8199fccbc49a7e0deadbc9370791180e34dbabd65a47e",
+               "amount":0,
+               "fee":0,
+               "signature":"0",
+               "asset_id":"c02f754e4c0efa32559b265ec6e5d5afd18734963478d280dc06d0d5fc3a8808",
+               "asset_quantity":2
+            }
+         ],
+         "recipients":[
+            {
+               "address":"VDA4M2YwYTkzZTQxZTQ0NzdjOGRjMDU4ZTkwZTI4OWY1NDNkMDZjYmU3ODQyM2Rk",
+               "amount":2,
+               "asset_id":"c02f754e4c0efa32559b265ec6e5d5afd18734963478d280dc06d0d5fc3a8808",
+               "asset_quantity":1
+            },
+            {
+               "address":"VDAwZDRiYTg0MWVlZjE4M2U3OWY2N2E0YmZkZDJjN2JmMWE0ZTViMjE3ZDNmZTU1",
+               "amount":0,
+               "asset_id":"4851dcf992708ad7eeb1cc6064b5a811159efadf78fadc8b490a49b523814e8e",
+               "asset_quantity":1
+            }
+         ],
+         "assets":[
+            {
+               "asset_id":"dd0682e21dffaa39ecc23074c483c07d4524f0f2fce065687a78d7ec51fefdf5",
+               "name":"name",
+               "description":"description",
+               "media_location":"media_location",
+               "media_hash":"media_hash",
+               "quantity":1,
+               "terms":"terms",
+               "locked":"UNLOCKED",
+               "version":1,
+               "timestamp":1615971474028
+            }
+         ],
+         "modules":[
+
+         ]
+      },
+      {
+         "id":"32b2dbcd7b7494cffb89cb7f8bd188bf4c496da965332e7b08328d4e63442856",
+         "action":"send",
+         "message":"0",
+         "token":"AXNT",
+         "prev_hash":"0",
+         "timestamp":1615971474028,
+         "scaled":1,
+         "kind":"FAST",
+         "version":"V1",
+         "senders":[
+            {
+               "address":"VDAyNThiOWFiN2Q5YWM3ZjUyYTNhYzQwZTY1NDBmYWJkMjczZmVmZThlOTgzMWM4",
+               "public_key":"8b3c61787fb6b07bb20e4a908deca52ef96335e4faaaaca18a227f9d674dcc57",
+               "amount":2000,
+               "fee":3000,
+               "signature":"0"
+            },
+            {
+               "address":"VDBiYjkyMjY1ZDJlOTNkZmNjN2NmYWFhZTVhMzVlYjZmYjY2YzllNWFjYWY3N2Nh",
+               "public_key":"cd79aa3b76078fb6dbe8199fccbc49a7e0deadbc9370791180e34dbabd65a47e",
+               "amount":7000,
+               "fee":1000,
+               "signature":"0"
+            }
+         ],
+         "recipients":[
+            {
+               "address":"VDA4M2YwYTkzZTQxZTQ0NzdjOGRjMDU4ZTkwZTI4OWY1NDNkMDZjYmU3ODQyM2Rk",
+               "amount":2000
+            },
+            {
+               "address":"VDAwZDRiYTg0MWVlZjE4M2U3OWY2N2E0YmZkZDJjN2JmMWE0ZTViMjE3ZDNmZTU1",
+               "amount":3000
+            }
+         ],
+         "assets":[
+            {
+               "asset_id":"dd0682e21dffaa39ecc23074c483c07d4524f0f2fce065687a78d7ec51fefdf5",
+               "name":"name",
+               "description":"description",
+               "media_location":"media_location",
+               "media_hash":"media_hash",
+               "quantity":1,
+               "terms":"terms",
+               "locked":"UNLOCKED",
+               "version":1,
+               "timestamp":1615971474028
+            }
+         ],
+         "modules":[
+
          ]
       }
-        }.gsub(/\s+/, "")
+   ]
+}
 
+        }.gsub(/\s+/, "")
     hashable_block.to_json.should eq(expected_json)
   end
 end
@@ -365,7 +379,7 @@ def transaction_1
     Asset.new("dd0682e21dffaa39ecc23074c483c07d4524f0f2fce065687a78d7ec51fefdf5", "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 1, 1615971474028),
   ]
 
-  Transaction.new(id, "send", senders, recipients, assets, "0", "AXNT", "0", timestamp, 1, TransactionKind::FAST, TransactionVersion::V1)
+  Transaction.new(id, "send", senders, recipients, assets, [] of Transaction::Module, "0", "AXNT", "0", timestamp, 1, TransactionKind::FAST, TransactionVersion::V1)
 end
 
 def transaction_2
@@ -396,7 +410,7 @@ def transaction_2
   assets = [
     Asset.new("dd0682e21dffaa39ecc23074c483c07d4524f0f2fce065687a78d7ec51fefdf5", "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 1, 1615971474028),
   ]
-  Transaction.new(id, "send", senders, recipients, assets, "0", "AXNT", "0", timestamp, 1, TransactionKind::FAST, TransactionVersion::V1)
+  Transaction.new(id, "send", senders, recipients, assets, [] of Transaction::Module, "0", "AXNT", "0", timestamp, 1, TransactionKind::FAST, TransactionVersion::V1)
 end
 
 def transaction_3
@@ -432,5 +446,5 @@ def transaction_3
     Asset.new("dd0682e21dffaa39ecc23074c483c07d4524f0f2fce065687a78d7ec51fefdf5", "name", "description", "media_location", "media_hash", 1, "terms", AssetAccess::UNLOCKED, 1, 1615971474028),
   ]
 
-  Transaction.new(id, "send", senders, recipients, assets, "0", "AXNT", "0", timestamp, 1, TransactionKind::FAST, TransactionVersion::V1)
+  Transaction.new(id, "send", senders, recipients, assets, [] of Transaction::Module, "0", "AXNT", "0", timestamp, 1, TransactionKind::FAST, TransactionVersion::V1)
 end

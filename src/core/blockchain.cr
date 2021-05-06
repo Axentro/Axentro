@@ -424,6 +424,7 @@ module ::Axentro::Core
         senders,
         recipients,
         [] of Transaction::Asset,
+        [] of Transaction::Module,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash

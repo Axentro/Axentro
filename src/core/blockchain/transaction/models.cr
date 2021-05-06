@@ -216,4 +216,34 @@ module ::Axentro::Core::TransactionModels
   end
 
   alias Assets = Array(Asset)
+
+  class Module
+    include JSON::Serializable
+    property module_id : String
+    property timestamp : Int64
+
+    def initialize(@module_id, @timestamp); end
+
+    def self.create_id : String
+      tmp_id = Random::Secure.hex(32)
+      return create_id if tmp_id[0] == "0"
+      tmp_id
+    end
+
+    def to_json(j : JSON::Builder)
+      j.object do
+        j.field("module_id", @module_id)
+        j.field("timestamp", @timestamp)
+      end
+    end
+
+    def ==(other : Asset) : Bool
+      return false unless @module_id == other.module_id
+      return false unless @timestamp == other.timestamp
+
+      true
+    end
+  end
+
+  alias Modules = Array(Module)
 end

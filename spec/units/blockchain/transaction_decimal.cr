@@ -29,6 +29,7 @@ describe TransactionDecimal do
       [a_decimal_sender(sender_wallet, "1000000")],
       [a_decimal_recipient(recipient_wallet, "1000000")],
       [] of Transaction::Asset,
+      [] of Transaction::Module,
       "0",           # message
       TOKEN_DEFAULT, # token
       "0",           # prev_hash
@@ -67,6 +68,7 @@ describe TransactionDecimal do
         [a_decimal_sender(sender_wallet, "1000000")],
         [a_decimal_recipient(recipient_wallet, "1000000")],
         [] of Transaction::Asset,
+        [] of Transaction::Module,
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -89,6 +91,7 @@ describe TransactionDecimal do
       [a_decimal_sender(sender_wallet, "1000000")],
       [a_decimal_recipient(recipient_wallet, "1000000")],
       [] of Transaction::Asset,
+      [] of Transaction::Module,
       "0",           # message
       TOKEN_DEFAULT, # token
       "0",           # prev_hash
