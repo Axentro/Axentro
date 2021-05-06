@@ -171,7 +171,7 @@ module ::Axentro::Interface
       raise "mismatch for wallet size and sender's size" if wallets.size != senders.size
 
       unsigned_transaction =
-        create_unsigned_transaction(node, action, senders, recipients, assets, message, token, kind)
+        create_unsigned_transaction(node, action, senders, recipients, assets, modules, inputs, outputs, linked, message, token, kind)
 
       signed_transaction = sign(wallets, unsigned_transaction)
 
@@ -195,6 +195,10 @@ module ::Axentro::Interface
                                     senders : SendersDecimal,
                                     recipients : RecipientsDecimal,
                                     assets : Array(Asset),
+                                    modules : Array(Module),
+                                    inputs : Array(Input),
+                                    outputs : Array(Output),
+                                    linked : String,
                                     message : String,
                                     token : String,
                                     kind : TransactionKind) : Core::Transaction
@@ -204,6 +208,10 @@ module ::Axentro::Interface
         senders:    senders,
         recipients: recipients,
         assets:     assets,
+        modules:    modules,
+        inputs:     inputs,
+        outputs:    outputs,
+        linked:     linked,
         message:    message,
         token:      token,
         kind:       kind,
