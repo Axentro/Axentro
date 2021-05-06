@@ -73,6 +73,9 @@ module ::Axentro::Core
         [RecipientDecimal.new(address, "0")],
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",            # linked
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -91,6 +94,9 @@ module ::Axentro::Core
         [] of Transaction::RecipientDecimal,
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",            # linked
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash

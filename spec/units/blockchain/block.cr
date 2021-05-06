@@ -42,14 +42,14 @@ describe Block do
     it "should calculate merkle tree root when coinbase transaction" do
       coinbase_transaction = a_fixed_coinbase_transaction
       block = Block.new(2_i64, [coinbase_transaction], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
-      block.calculate_merkle_tree_root(block.transactions).should eq("0f5dae88379c3745ca0998a32bc64afd03e2f4f8")
+      block.calculate_merkle_tree_root(block.transactions).should eq("07d7374966f804ef9954bf104fb08306b18e4d57")
     end
 
     it "should calculate merkle tree root when 2 transactions (first is coinbase)" do
       coinbase_transaction = a_fixed_coinbase_transaction
       transaction1 = a_fixed_signed_transaction
       block = Block.new(2_i64, [coinbase_transaction, transaction1], "1", "prev_hash", 0_i64, 3_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
-      block.calculate_merkle_tree_root(block.transactions).should eq("8c1c7eac769c732ad1f44c6ecfa2254d85cf3a39")
+      block.calculate_merkle_tree_root(block.transactions).should eq("70f33958518d589d76bf644aba07351a52424228")
     end
   end
 
@@ -143,7 +143,7 @@ describe Block do
         timestamp = chain[1].timestamp
         block = Block.new(4_i64, [a_coinbase_transaction(1199998747_i64)], a_nonce, prev_hash, timestamp, 0_i32, NODE_ADDRESS, BlockVersion::V2, HashVersion::V2, "", MiningVersion::V1)
         block.merkle_tree_root = "invalid"
-        expect_raises(Exception, "Invalid Merkle Tree Root: (expected invalid but got 4fbc1571e15e5b793fb54b942189933c5776607e)") do
+        expect_raises(Exception, "Invalid Merkle Tree Root: (expected invalid but got 3a33cd8252ece5f4ad348022ee5c93b71f97a87e)") do
           block.valid?(block_factory.blockchain, false)
         end
       end
@@ -299,6 +299,9 @@ def a_fixed_coinbase_transaction
     [recipient1, recipient2, recipient3],
     [] of Transaction::Asset,
     [] of Transaction::Module,
+    [] of Transaction::Input,
+    [] of Transaction::Output,
+    "",            # linked
     "0",           # message
     TOKEN_DEFAULT, # token
     "0",           # prev_hash
@@ -319,6 +322,9 @@ def a_coinbase_transaction(amount : Int64)
     [recipient1],
     [] of Transaction::Asset,
     [] of Transaction::Module,
+    [] of Transaction::Input,
+    [] of Transaction::Output,
+    "",            # linked
     "0",           # message
     TOKEN_DEFAULT, # token
     "0",           # prev_hash
@@ -353,6 +359,9 @@ def a_fixed_signed_transaction
     [a_recipient(recipient_wallet, 10_i64)],
     [] of Transaction::Asset,
     [] of Transaction::Module,
+    [] of Transaction::Input,
+    [] of Transaction::Output,
+    "",            # linked
     "0",           # message
     TOKEN_DEFAULT, # token
     "0",           # prev_hash

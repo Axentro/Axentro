@@ -22,6 +22,9 @@ module ::Axentro::Core
       recipients: Recipients,
       assets: Array(Asset),
       modules: Array(Module),
+      inputs: Array(Input),
+      outputs: Array(Output),
+      linked: String,
       message: String,
       token: String,
       prev_hash: String,
@@ -39,6 +42,8 @@ module ::Axentro::Core
       sorted_recipients = @recipients.sort_by { |r| {r.address, r.amount, r.asset_id || "", r.asset_quantity || 0} }
       sorted_assets = @assets.sort_by { |a| {a.timestamp, a.asset_id} }
       sorted_modules = @modules.sort_by { |a| {a.timestamp, a.module_id} }
+      sorted_inputs = @inputs.sort_by { |a| {a.timestamp, a.input_id} }
+      sorted_outputs = @outputs.sort_by { |a| {a.timestamp, a.output_id} }
       j.object do
         j.field("id", @id)
         j.field("action", @action)
@@ -53,6 +58,9 @@ module ::Axentro::Core
         j.field("recipients", sorted_recipients)
         j.field("assets", sorted_assets)
         j.field("modules", sorted_modules)
+        j.field("inputs", sorted_inputs)
+        j.field("outputs", sorted_outputs)
+        j.field("linked", @linked)
       end
     end
 
@@ -63,6 +71,9 @@ module ::Axentro::Core
       @recipients : Recipients,
       @assets : Array(Asset),
       @modules : Array(Module),
+      @inputs : Array(Input),
+      @outputs : Array(Output),
+      @linked : String,
       @message : String,
       @token : String,
       @prev_hash : String,
@@ -124,6 +135,9 @@ module ::Axentro::Core
         self.recipients,
         self.assets,
         self.modules,
+        self.inputs,
+        self.outputs,
+        self.linked,
         self.message,
         self.token,
         "0",
@@ -148,6 +162,9 @@ module ::Axentro::Core
         self.recipients,
         self.assets,
         self.modules,
+        self.inputs,
+        self.outputs,
+        self.linked,
         self.message,
         self.token,
         "0",
@@ -196,7 +213,10 @@ module ::Axentro::Core
       return false unless @senders == other.senders
       return false unless @recipients == other.recipients
       return false unless @assets == other.assets
-      return false unless @assets == other.assets
+      return false unless @modules == other.modules
+      return false unless @inputs == other.inputs
+      return false unless @outputs == other.outputs
+      return false unless @linked == other.linked
       return false unless @token == other.token
       return false unless @timestamp == other.timestamp
       return false unless @scaled == other.scaled

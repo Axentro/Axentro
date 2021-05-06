@@ -50,12 +50,15 @@ module ::Axentro::Core::DApps::BuildIn
       recipients = RecipientsDecimal.from_json(json["recipients"].to_json)
       assets = Assets.from_json(json["assets"].to_json)
       modules = Modules.from_json(json["modules"].to_json)
+      inputs = Inputs.from_json(json["inputs"].to_json)
+      outputs = Outputs.from_json(json["outputs"].to_json)
+      linked = json["linked"].as_s
       message = json["message"].as_s
       token = json["token"].as_s
       kind = TransactionKind.parse(json["kind"].as_s)
       version = TransactionVersion.parse(json["version"].as_s)
 
-      transaction = create_unsigned_transaction_impl(action, senders, recipients, assets, modules, message, token, kind, version)
+      transaction = create_unsigned_transaction_impl(action, senders, recipients, assets, modules, inputs, outputs, linked, message, token, kind, version)
 
       context.response.print api_success(transaction)
       context
@@ -92,6 +95,9 @@ module ::Axentro::Core::DApps::BuildIn
         recipients,
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "", # linked
         "",
         "AXNT",
         kind,
@@ -117,6 +123,9 @@ module ::Axentro::Core::DApps::BuildIn
         recipients,
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "", # linked
         "",
         "AXNT",
         kind,
@@ -149,6 +158,9 @@ module ::Axentro::Core::DApps::BuildIn
         recipients,
         [asset],
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "", # linked
         "",
         "AXNT",
         kind,
@@ -172,6 +184,9 @@ module ::Axentro::Core::DApps::BuildIn
         recipients,
         [asset],
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "", # linked
         "",
         "AXNT",
         kind,
@@ -186,6 +201,9 @@ module ::Axentro::Core::DApps::BuildIn
       recipients : RecipientsDecimal,
       assets : Assets,
       modules : Modules,
+      inputs : Inputs,
+      outputs : Outputs,
+      linked : String,
       message : String,
       token : String,
       kind : TransactionKind,
@@ -199,6 +217,9 @@ module ::Axentro::Core::DApps::BuildIn
         recipients,
         assets,
         modules,
+        inputs,
+        outputs,
+        linked,
         message,
         token,
         "0",         # prev_hash

@@ -18,6 +18,10 @@ module ::Axentro::Core
     property senders : SendersDecimal
     property recipients : RecipientsDecimal
     property assets : Array(Asset)
+    property modules : Array(Module)
+    property inputs : Array(Input)
+    property outputs : Array(Output)
+    property linked : String
     property message : String
     property token : String
     property prev_hash : String
@@ -33,6 +37,9 @@ module ::Axentro::Core
       @recipients : RecipientsDecimal,
       @assets : Array(Asset),
       @modules : Array(Module),
+      @inputs : Array(Input),
+      @outputs : Array(Output),
+      @linked : String,
       @message : String,
       @token : String,
       @prev_hash : String,
@@ -52,6 +59,9 @@ module ::Axentro::Core
         scale_i64(@recipients),
         @assets,
         @modules,
+        @inputs,
+        @outputs,
+        @linked,
         @message,
         @token,
         @prev_hash,

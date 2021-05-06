@@ -75,6 +75,9 @@ describe TransactionCreator do
             recipients: recipients,
             assets:     [] of Transaction::Asset,
             modules:    [] of Transaction::Module,
+            inputs:     [] of Transaction::Input,
+            outputs:    [] of Transaction::Output,
+            linked:     "",
             message:    "",
             token:      TOKEN_DEFAULT,
             kind:       "SLOW",
@@ -101,6 +104,7 @@ describe TransactionCreator do
             end
             transaction.assets.size.should eq(0)
             transaction.modules.size.should eq(0)
+            transaction.linked.should eq("")
             transaction.kind.should eq(TransactionKind::SLOW)
           end
         end
@@ -119,6 +123,9 @@ describe TransactionCreator do
               recipients,
               [] of Transaction::Asset,
               [] of Transaction::Module,
+              [] of Transaction::Input,
+              [] of Transaction::Output,
+              "",            # linked
               "0",           # message
               TOKEN_DEFAULT, # token
               "0",           # prev_hash

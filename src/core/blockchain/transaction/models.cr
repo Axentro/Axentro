@@ -246,4 +246,64 @@ module ::Axentro::Core::TransactionModels
   end
 
   alias Modules = Array(Module)
+
+  class Input
+    include JSON::Serializable
+    property input_id : String
+    property timestamp : Int64
+
+    def initialize(@input_id, @timestamp); end
+
+    def self.create_id : String
+      tmp_id = Random::Secure.hex(32)
+      return create_id if tmp_id[0] == "0"
+      tmp_id
+    end
+
+    def to_json(j : JSON::Builder)
+      j.object do
+        j.field("input_id", @input_id)
+        j.field("timestamp", @timestamp)
+      end
+    end
+
+    def ==(other : Asset) : Bool
+      return false unless @input_id == other.input_id
+      return false unless @timestamp == other.timestamp
+
+      true
+    end
+  end
+
+  alias Inputs = Array(Input)
+
+  class Output
+    include JSON::Serializable
+    property output_id : String
+    property timestamp : Int64
+
+    def initialize(@output_id, @timestamp); end
+
+    def self.create_id : String
+      tmp_id = Random::Secure.hex(32)
+      return create_id if tmp_id[0] == "0"
+      tmp_id
+    end
+
+    def to_json(j : JSON::Builder)
+      j.object do
+        j.field("output_id", @output_id)
+        j.field("timestamp", @timestamp)
+      end
+    end
+
+    def ==(other : Asset) : Bool
+      return false unless @output_id == other.input_id
+      return false unless @timestamp == other.timestamp
+
+      true
+    end
+  end
+
+  alias Outputs = Array(Output)
 end

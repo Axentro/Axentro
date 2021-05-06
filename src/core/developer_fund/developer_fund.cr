@@ -51,6 +51,9 @@ module ::Axentro::Core
         recipients,
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",            # linked
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash

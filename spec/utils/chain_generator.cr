@@ -195,6 +195,9 @@ module ::Units::Utils::ChainGenerator
         [] of Transaction::RecipientDecimal,
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",            # linked
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -214,6 +217,9 @@ module ::Units::Utils::ChainGenerator
         [a_recipient(recipient_wallet, sender_amount)],
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",    # linked
         "0",   # message
         token, # token
         "0",   # prev_hash
@@ -234,6 +240,9 @@ module ::Units::Utils::ChainGenerator
         [a_recipient(recipient_wallet, sender_amount)],
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",    # linked
         "0",   # message
         token, # token
         "0",   # prev_hash
@@ -254,6 +263,9 @@ module ::Units::Utils::ChainGenerator
         [a_recipient(recipient_wallet, sender_amount)],
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",    # linked
         "0",   # message
         token, # token
         "0",   # prev_hash
@@ -274,6 +286,9 @@ module ::Units::Utils::ChainGenerator
         recipients,
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",    # linked
         "0",   # message
         token, # token
         "0",   # prev_hash
@@ -300,6 +315,9 @@ module ::Units::Utils::ChainGenerator
         [a_recipient(recipient_wallet, sender_amount)],
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",            # linked
         "0",           # message
         TOKEN_DEFAULT, # token
         prev_hash,     # prev_hash
@@ -320,6 +338,9 @@ module ::Units::Utils::ChainGenerator
         [] of Transaction::Recipient,
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",            # linked
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -340,6 +361,9 @@ module ::Units::Utils::ChainGenerator
         [a_recipient(@sender_wallet, 100_i64)],
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",            # linked
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -360,6 +384,9 @@ module ::Units::Utils::ChainGenerator
         recipients,
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",            # linked
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -380,6 +407,9 @@ module ::Units::Utils::ChainGenerator
         [a_recipient(sender_wallet, sender_amount)],
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",            # linked
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -400,6 +430,9 @@ module ::Units::Utils::ChainGenerator
         recipients,
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",            # linked
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -420,6 +453,9 @@ module ::Units::Utils::ChainGenerator
         [a_recipient(sender_wallet, sender_amount)],
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",            # linked
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -440,6 +476,9 @@ module ::Units::Utils::ChainGenerator
         recipients,
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",            # linked
         domain,        # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -460,6 +499,9 @@ module ::Units::Utils::ChainGenerator
         [a_recipient(sender_wallet, sender_amount)],
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",    # linked
         "0",   # message
         token, # token
         "0",   # prev_hash
@@ -480,6 +522,9 @@ module ::Units::Utils::ChainGenerator
         recipients,
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",    # linked
         "0",   # message
         token, # token
         "0",   # prev_hash
@@ -500,6 +545,9 @@ module ::Units::Utils::ChainGenerator
         [a_recipient(sender_wallet, sender_amount)],
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",    # linked
         "0",   # message
         token, # token
         "0",   # prev_hash
@@ -520,6 +568,9 @@ module ::Units::Utils::ChainGenerator
         [a_recipient(sender_wallet, sender_amount)],
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",    # linked
         "0",   # message
         token, # token
         "0",   # prev_hash
@@ -540,6 +591,9 @@ module ::Units::Utils::ChainGenerator
         [a_recipient(sender_wallet, sender_amount)],
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",    # linked
         "0",   # message
         token, # token
         "0",   # prev_hash
@@ -570,6 +624,9 @@ module ::Units::Utils::ChainGenerator
         recipients,
         assets,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",      # linked
         message, # message
         token,   # token
         "0",     # prev_hash
@@ -590,6 +647,9 @@ module ::Units::Utils::ChainGenerator
         [a_recipient(recipient_wallet, 0_i64)],
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",    # linked
         "0",   # message
         token, # token
         "0",   # prev_hash
@@ -610,6 +670,9 @@ module ::Units::Utils::ChainGenerator
         [a_recipient(recipient_wallet, 0_i64)],
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",    # linked
         "0",   # message
         token, # token
         "0",   # prev_hash

@@ -34,6 +34,9 @@ describe Transaction do
       [a_recipient(recipient_wallet, 10_i64)],
       [] of Transaction::Asset,
       [] of Transaction::Module,
+      [] of Transaction::Input,
+      [] of Transaction::Output,
+      "",            # linked
       "0",           # message
       TOKEN_DEFAULT, # token
       "0",           # prev_hash
@@ -71,6 +74,9 @@ describe Transaction do
         [] of Transaction::Recipient,
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",            # linked
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -97,6 +103,9 @@ describe Transaction do
         [] of Transaction::Recipient,
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",            # linked
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -127,6 +136,9 @@ describe Transaction do
         [a_recipient(recipient_wallet, 10_i64)],
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",            # linked
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -152,6 +164,9 @@ describe Transaction do
         [a_recipient(recipient_wallet, 10_i64)],
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",            # linked
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
@@ -177,6 +192,9 @@ describe Transaction do
         [a_recipient(recipient_wallet, 10_i64)],
         [] of Transaction::Asset,
         [] of Transaction::Module,
+        [] of Transaction::Input,
+        [] of Transaction::Output,
+        "",            # linked
         "0",           # message
         TOKEN_DEFAULT, # token
         "0",           # prev_hash
