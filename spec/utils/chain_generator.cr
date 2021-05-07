@@ -69,7 +69,8 @@ module ::Units::Utils::ChainGenerator
       # @database = Axentro::Core::Database.new("specs.sqlite3")
       whitelist = [] of String
       whitelist_message = ""
-      @node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, @node_wallet.address, "", @database, developer_fund, @official_nodes, false, 20, 100, false, 512, 512, whitelist, whitelist_message, false)
+      metrics_whitelist = [] of String
+      @node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, @node_wallet, @node_wallet.address, "", @database, developer_fund, @official_nodes, false, 20, 100, false, 512, 512, whitelist, whitelist_message, metrics_whitelist, false)
       @blockchain = @node.blockchain
       # the node setup is run in a spawn so we have to wait until it's finished before running any tests
       while @node.@phase != Axentro::Core::Node::SetupPhase::DONE

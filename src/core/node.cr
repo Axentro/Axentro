@@ -80,6 +80,7 @@ module ::Axentro::Core
       @max_private_nodes : Int32,
       @whitelist : Array(String),
       @whitelist_message : String,
+      @metrics_whitelist : Array(String),
       @use_ssl : Bool = false
     )
       welcome
@@ -124,6 +125,15 @@ module ::Axentro::Core
             METRICS_MINERS_COUNTER[kind: "banned"].inc
           end
           result
+        else
+          false
+        end
+      end
+
+      Defense.blocklist("block requests to metrics") do |request|
+        remote_connection = NetworkUtil.get_remote_connection(request)
+        if request.path.starts_with?("/metrics")
+          !@metrics_whitelist.includes?(remote_connection.ip)
         else
           false
         end

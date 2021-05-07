@@ -47,6 +47,7 @@ cli:
     unofficial: "terminate the node when not connected to an official network"
     whitelist: "specify a comma separated list of nodes to whitelist"
     whitelist_message: "specify a message for rejected nodes"
+    metrics_whitelist: "specify a comma separated list of ips for access to the metrics endpoint"
     fastnode: "indicate this node is a fastnode"
     asset_id: "enter the asset id"
     asset_name: "enter a name for the asset"

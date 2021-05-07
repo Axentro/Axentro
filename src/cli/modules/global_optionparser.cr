@@ -74,6 +74,7 @@ module ::Axentro::Interface
 
     @whitelist : Array(String) = [] of String
     @whitelist_message : String = ""
+    @metrics_whitelist : Array(String) = [] of String
 
     @asset_id : String?
     @asset_name : String?
@@ -138,6 +139,7 @@ module ::Axentro::Interface
       ASSET_DESCRIPTION
       ASSET_MEDIA_LOCATION
       ASSET_LOCKED
+      METRICS_WHITELIST
     end
 
     def create_option_parser(actives : Array(Options)) : OptionParser
@@ -190,6 +192,7 @@ module ::Axentro::Interface
         parse_asset_description(parser, actives)
         parse_asset_media_location(parser, actives)
         parse_asset_locked(parser, actives)
+        parse_metrics_whitelist(parser, actives)
       end
     end
 
@@ -466,6 +469,12 @@ module ::Axentro::Interface
       } if is_active?(actives, Options::WHITELIST_MESSAGE)
     end
 
+    private def parse_metrics_whitelist(parser : OptionParser, actives : Array(Options))
+      parser.on("--metrics-whitelist=VALUE", I18n.translate("cli.options.metrics_whitelist")) { |v|
+        @metrics_whitelist = v.split(",").uniq
+      } if is_active?(actives, Options::METRICS_WHITELIST)
+    end
+
     private def parse_max_private_nodes(parser : OptionParser, actives : Array(Options))
       parser.on("--max-private-nodes=VALUE", I18n.translate("cli.options.max_private_nodes")) { |v|
         @max_nodes = v.to_i
@@ -584,6 +593,10 @@ module ::Axentro::Interface
 
     def __whitelist_message : String
       @whitelist_message
+    end
+
+    def __metrics_whitelist : Array(String)
+      @metrics_whitelist
     end
 
     def __amount : String?

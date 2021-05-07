@@ -20,7 +20,8 @@ describe Blockchain do
     database = Axentro::Core::Database.in_memory
     whitelist = [] of String
     whitelist_message = ""
-    node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, node_wallet, node_wallet.address, "", database, nil, nil, false, 20, 100, false, 512, 512, whitelist, whitelist_message, false)
+    metrics_whitelist = [] of String
+    node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, node_wallet, node_wallet.address, "", database, nil, nil, false, 20, 100, false, 512, 512, whitelist, whitelist_message, metrics_whitelist, false)
     blockchain = node.blockchain
     blockchain.setup(node)
 
@@ -35,7 +36,8 @@ describe Blockchain do
     developer_fund = DeveloperFund.validate("#{__DIR__}/../../utils/data/developer_fund.yml")
     whitelist = [] of String
     whitelist_message = ""
-    node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, node_wallet, node_wallet.address, "", database, developer_fund, nil, false, 20, 100, false, 512, 512, whitelist, whitelist_message, false)
+    metrics_whitelist = [] of String
+    node = Axentro::Core::Node.new(true, true, "bind_host", 8008_i32, nil, nil, nil, nil, nil, node_wallet, node_wallet.address, "", database, developer_fund, nil, false, 20, 100, false, 512, 512, whitelist, whitelist_message, metrics_whitelist, false)
     blockchain = node.blockchain
     blockchain.setup(node)
 
