@@ -108,7 +108,7 @@ module ::Axentro::Core::NodeComponents
               if connected_duration >= 120_000
                 METRICS_MINERS_COUNTER[kind: "decrease_difficulty_ensure_block"].inc
                 current_difficulty = miner.difficulty
-                miner.difficulty = current_difficulty - 1
+                miner.difficulty = Math.max(MIN_DIFFICULTY, current_difficulty - 1)
                 send_adjust_block_difficulty(miner.socket, miner.difficulty, "reducing difficulty from #{current_difficulty} to #{miner.difficulty} to ensure block time")
                 @last_ensured = __timestamp
               end

@@ -26,7 +26,7 @@ shards:
 
   defense:
     git: https://github.com/defense-cr/defense.git
-    version: 0.3.0
+    version: 0.4.0
 
   ed25519-hd:
     git: https://github.com/axentro/ed25519-hd.git
@@ -66,7 +66,7 @@ shards:
 
   msgpack:
     git: https://github.com/crystal-community/msgpack-crystal.git
-    version: 0.17.2
+    version: 1.0.0
 
   myhtml:
     git: https://github.com/kostya/myhtml.git
@@ -86,15 +86,15 @@ shards:
 
   redis:
     git: https://github.com/stefanwille/crystal-redis.git
-    version: 2.6.0
+    version: 2.7.0
 
   router:
     git: https://github.com/tbrand/router.cr.git
-    version: 0.2.7
+    version: 0.2.8
 
   spinach:
     git: https://github.com/axentro/spinach.git
-    version: 0.1.8
+    version: 0.1.9
 
   sqlite3:
     git: https://github.com/crystal-lang/crystal-sqlite3.git

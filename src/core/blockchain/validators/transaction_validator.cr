@@ -107,6 +107,18 @@ module ::Axentro::Core::TransactionValidator
         vt << FailedTransaction.new(transaction, "modules must be empty as still in development")
       end
 
+      if transaction.inputs.size > 0
+        vt << FailedTransaction.new(transaction, "inputs must be empty as still in development")
+      end
+
+      if transaction.outputs.size > 0
+        vt << FailedTransaction.new(transaction, "outputs must be empty as still in development")
+      end
+
+      if transaction.linked != ""
+        vt << FailedTransaction.new(transaction, "linked must be empty as still in development")
+      end
+
       if failed_transaction = validate_senders(transaction, network_type)
         vt << failed_transaction
         next

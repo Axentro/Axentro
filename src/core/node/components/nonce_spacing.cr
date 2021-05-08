@@ -15,6 +15,7 @@ module ::Axentro::Core::NodeComponents
   MINER_BOUNDARY = 1_800_000  # 30 mins
   BLOCK_BOUNDARY =   120_000  # 2 mins
   MINER_WOBBLE   = 60_000 * 3 # 3 mins
+  MIN_DIFFICULTY = 3
 
   class NonceMeta
     property difficulty : Int32
@@ -96,7 +97,7 @@ module ::Axentro::Core::NodeComponents
 
     def decrease_difficulty_by_last(miner)
       last_difficulty = miner.difficulty
-      miner.difficulty = Math.max(1, last_difficulty - 1)
+      miner.difficulty = Math.max(MIN_DIFFICULTY, last_difficulty - 1)
       if last_difficulty != miner.difficulty
         METRICS_MINERS_COUNTER[kind: "decrease_difficulty"].inc
         info "(#{miner.mid}) (#{miner.ip}) (#{miner.address}) decrease difficulty from #{last_difficulty} to #{miner.difficulty}"
@@ -106,7 +107,7 @@ module ::Axentro::Core::NodeComponents
 
     def increase_difficulty_by_last(miner, difficulty_amount, last_deviance)
       last_difficulty = miner.difficulty
-      miner.difficulty = Math.max(1, last_difficulty + difficulty_amount)
+      miner.difficulty = Math.max(MIN_DIFFICULTY, last_difficulty + difficulty_amount)
       if last_difficulty != miner.difficulty
         METRICS_MINERS_COUNTER[kind: "increase_difficulty"].inc
         info "(#{miner.mid}) (#{miner.ip}) (#{miner.address}) increasing difficulty from #{last_difficulty} to #{miner.difficulty} for last deviance: #{last_deviance}"
