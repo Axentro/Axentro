@@ -115,11 +115,9 @@ module ::Axentro::Core::Data::Blocks
 
         transactions = [] of Transaction
 
-        conn.query("select * from transactions where block_id = ? order by idx asc", b_idx) do |txn_rows|
+        conn.query("select id, action, message, token, prev_hash, timestamp, scaled, kind, version from transactions where block_id = ? order by idx asc", b_idx) do |txn_rows|
           txn_rows.each do
             t_id = txn_rows.read(String)
-            txn_rows.read(Int32)
-            txn_rows.read(Int64)
             t_action = txn_rows.read(String)
             t_message = txn_rows.read(String)
             t_token = txn_rows.read(String)
@@ -130,13 +128,9 @@ module ::Axentro::Core::Data::Blocks
             t_kind = t_kind_string == "SLOW" ? TransactionKind::SLOW : TransactionKind::FAST
             t_version_string = txn_rows.read(String)
             t_version = TransactionVersion.parse(t_version_string)
-
             recipients = [] of Transaction::Recipient
-            conn.query("select * from recipients where transaction_id = ? order by idx asc", t_id) do |rec_rows|
+            conn.query("select address, amount, asset_id, asset_quantity from recipients where transaction_id = ? order by idx asc", t_id) do |rec_rows|
               rec_rows.each do
-                rec_rows.read(String)
-                rec_rows.read(Int64)
-                rec_rows.read(Int32)
                 address = rec_rows.read(String)
                 amount = rec_rows.read(Int64)
                 asset_id = rec_rows.read(String?)
@@ -146,11 +140,8 @@ module ::Axentro::Core::Data::Blocks
             end
 
             senders = [] of Transaction::Sender
-            conn.query("select * from senders where transaction_id = ? order by idx asc", t_id) do |snd_rows|
+            conn.query("select address, public_key, amount, fee, signature, asset_id, asset_quantity from senders where transaction_id = ? order by idx asc", t_id) do |snd_rows|
               snd_rows.each do
-                snd_rows.read(String?)
-                snd_rows.read(Int64)
-                snd_rows.read(Int32)
                 address = snd_rows.read(String)
                 public_key = snd_rows.read(String)
                 amount = snd_rows.read(Int64)
@@ -163,7 +154,7 @@ module ::Axentro::Core::Data::Blocks
             end
 
             assets = [] of Transaction::Asset
-            conn.query("select * from assets where transaction_id = ? order by idx asc", t_id) do |asset_rows|
+            conn.query("select asset_id, name, description, media_location, media_hash, quantity, terms, locked, version, timestamp from assets where transaction_id = ? order by idx asc", t_id) do |asset_rows|
               asset_rows.each do
                 asset_id = asset_rows.read(String)
                 name = asset_rows.read(String)
@@ -337,38 +328,6 @@ module ::Axentro::Core::Data::Blocks
     result > 0_i64
   end
 
-  # ------- Archive ------
-  def archive_block(index : Int64, block_hash : String, reason : String) # reason: restore or sync
-    now = __timestamp
-    @db.exec "BEGIN TRANSACTION"
-    @db.exec "insert or replace into archived_blocks select ?, ?, ?, * from blocks where idx = ?", args: [block_hash, now, reason, index]
-    @db.exec "insert or replace into archived_transactions select ?, ?, ?, * from transactions where block_id = ?", args: [block_hash, now, reason, index]
-    @db.exec "insert or replace into archived_recipients select ?, ?, ?, * from recipients where block_id = ?", args: [block_hash, now, reason, index]
-    @db.exec "insert or repalce into archived_senders select ?, ?, ?, * from senders where block_id = ?", args: [block_hash, now, reason, index]
-    @db.exec "END TRANSACTION"
-  rescue e : Exception
-    warning "Rolling back db due to error when archiving block with message: #{e.message || "unknown"}"
-    @db.exec("ROLLBACK")
-  end
-
-  def archive_blocks(from : Int64, reason : String) # reason: restore or sync
-    now = __timestamp
-    @db.exec "BEGIN TRANSACTION"
-    blocks = get_blocks_via_query("select * from blocks where idx >= ?", from)
-    blocks.each do |block|
-      block_hash = block.to_hash
-      index = block.index
-      @db.exec "insert or replace into archived_blocks select ?, ?, ?, * from blocks where idx = ?", args: [block_hash, now, reason, index]
-      @db.exec "insert or replace into archived_transactions select ?, ?, ?, * from transactions where block_id = ?", args: [block_hash, now, reason, index]
-      @db.exec "insert or replace into archived_recipients select ?, ?, ?, * from recipients where block_id = ?", args: [block_hash, now, reason, index]
-      @db.exec "insert or replace into archived_senders select ?, ?, ?, * from senders where block_id = ?", args: [block_hash, now, reason, index]
-    end
-    @db.exec "END TRANSACTION"
-  rescue e : Exception
-    warning "Rolling back db due to error when archiving blocks with message: #{e.message || "unknown"}"
-    @db.exec("ROLLBACK")
-  end
-
   def archive_blocks_of_kind(from : Int64, reason : String, kind : BlockKind) # reason: restore or sync
     now = __timestamp
     @db.exec "BEGIN TRANSACTION"
@@ -380,6 +339,7 @@ module ::Axentro::Core::Data::Blocks
       @db.exec "insert or replace into archived_transactions select ?, ?, ?, * from transactions where block_id = ?", args: [block_hash, now, reason, index]
       @db.exec "insert or replace into archived_recipients select ?, ?, ?, * from recipients where block_id = ?", args: [block_hash, now, reason, index]
       @db.exec "insert or replace into archived_senders select ?, ?, ?, * from senders where block_id = ?", args: [block_hash, now, reason, index]
+      @db.exec "insert or replace into archived_assets select ?, ?, ?, * from assets where block_id = ?", args: [block_hash, now, reason, index]
     end
     @db.exec "END TRANSACTION"
   rescue e : Exception
@@ -393,6 +353,7 @@ module ::Axentro::Core::Data::Blocks
     @db.exec "delete from transactions where block_id = ?", from
     @db.exec "delete from senders where block_id = ?", from
     @db.exec "delete from recipients where block_id = ?", from
+    @db.exec "delete from assets where block_id = ?", from
   end
 
   def delete_blocks(from : Int64)
@@ -400,6 +361,7 @@ module ::Axentro::Core::Data::Blocks
     @db.exec "delete from transactions where block_id >= ?", from
     @db.exec "delete from senders where block_id >= ?", from
     @db.exec "delete from recipients where block_id >= ?", from
+    @db.exec "delete from assets where block_id >= ?", from
   end
 
   def delete_blocks_of_kind(from : Int64, kind : BlockKind)
@@ -410,6 +372,7 @@ module ::Axentro::Core::Data::Blocks
       @db.exec "delete from transactions where block_id in (#{block_ids})"
       @db.exec "delete from senders where block_id in (#{block_ids})"
       @db.exec "delete from recipients where block_id in (#{block_ids})"
+      @db.exec "delete from assets where block_id in (#{block_ids})"
     end
   end
 

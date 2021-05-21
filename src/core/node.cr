@@ -781,8 +781,10 @@ module ::Axentro::Core
       info "requested stream slow chain from slow index: #{start_slow}"
 
       target_slow = database.highest_index_of_kind(BlockKind::SLOW)
+      p "request_stream: #{target_slow}"
       stream_size = 0
       database.stream_blocks_from(start_slow, BlockKind::SLOW) do |block, total_size|
+        puts "request_stream: block: #{block.index}"
         stream_size = total_size
         send(socket, M_TYPE_NODE_RECEIVE_STREAM_SLOW_BLOCK, {block: block, start_slow: start_slow, target_slow: target_slow, total_size: total_size})
       end
