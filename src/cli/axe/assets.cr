@@ -270,7 +270,7 @@ module ::Axentro::Interface::Axe
               add "quanity"
             end
             header
-            rows [assets.flat_map { |a| [a["asset_id"], a["quantity"]] }]
+            rows assets.map { |a| [a["asset_id"], a["quantity"]] }
           end
 
           puts table.render
