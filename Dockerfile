@@ -10,7 +10,7 @@ RUN apt-get install curl libsqlite3-dev -y
 
 COPY . .
 
-RUN shards build
+RUN shards build --ignore-crystal-version
 
 RUN ln -s /usr/local/Axentro/bin/axen /usr/local/bin/axen
 RUN ln -s /usr/local/Axentro/bin/axem /usr/local/bin/axem
