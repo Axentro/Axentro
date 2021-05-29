@@ -10,7 +10,7 @@ jobs:
           apt-get update
           apt-get install curl libsqlite3-dev -y
       - run: |
-          shards build --release --no-debug
+          shards build --ignore-crystal-version --release --no-debug
           crystal spec
           bin/ameba
       - store_artifacts:
@@ -25,7 +25,7 @@ jobs:
           apt-get update
           apt-get install curl libsqlite3-dev -y
       - run: |
-          shards build --release --no-debug
+          shards build --ignore-crystal-version --release --no-debug
           bin/e2e --mode=all_public --num_tps=10 --num_nodes=3 --num_miners=3 --time=900
 
   docker-build:
