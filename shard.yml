@@ -22,7 +22,7 @@ dependencies:
     github: tbrand/router.cr
     version: ~> 0.2.7
   tokoroten:
-    github: tbrand/tokoroten
+    github: axentro/tokoroten
   sqlite3:
     github: crystal-lang/crystal-sqlite3
   humanhash:
