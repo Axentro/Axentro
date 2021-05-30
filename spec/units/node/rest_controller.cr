@@ -482,7 +482,7 @@ describe RESTController do
           result["status"].to_s.should eq("success")
           result = Array(DomainResult).from_json(result["result"].to_json).first
           result.domain_name.should eq(domain)
-          result.status.should eq(1_i64)
+          result.status.should eq("for_sale")
           result.price.should eq("0.00000001")
         end
       end
@@ -966,7 +966,7 @@ struct DomainResult
   include JSON::Serializable
   property domain_name : String
   property address : String
-  property status : Int64
+  property status : String
   property price : String
 end
 

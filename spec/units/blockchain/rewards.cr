@@ -85,7 +85,7 @@ describe Blockchain do
     assert_reward_distribution(1, 2, 25, 50)
     assert_reward_distribution(1, 3, 19, 56)
     assert_reward_distribution(1, 4, 15, 60)
-    assert_reward_distribution(1, 5, 13, 63)
+    assert_reward_distribution(1, 5, 12, 62)
     assert_reward_distribution(1, 6, 11, 64)
     assert_reward_distribution(1, 7, 9, 66)
     assert_reward_distribution(1, 70, 1, 74)

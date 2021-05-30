@@ -445,7 +445,7 @@ describe Hra do
             json = JSON.parse(payload)
 
             with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-              result.should eq("{\"resolved\":true,\"confirmation\":10,\"domain\":{\"domain_name\":\"awesome.ax\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":0,\"price\":\"0\",\"block\":22}}")
+              result.should eq("{\"resolved\":true,\"confirmation\":10,\"domain\":{\"domain_name\":\"awesome.ax\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":\"acquired\",\"price\":\"0\",\"block\":22}}")
             end
           end
         end
@@ -459,7 +459,7 @@ describe Hra do
             json = JSON.parse(payload)
 
             with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-              result.should eq("{\"resolved\":false,\"confirmation\":0,\"domain\":{\"domain_name\":\"awesome.ax\",\"address\":\"\",\"status\":-1,\"price\":\"0.0\"}}")
+              result.should eq("{\"resolved\":false,\"confirmation\":0,\"domain\":{\"domain_name\":\"awesome.ax\",\"address\":\"\",\"status\":\"not_found\",\"price\":\"0.0\"}}")
             end
           end
         end
@@ -478,7 +478,7 @@ describe Hra do
             json = JSON.parse(payload)
 
             with_rpc_exec_internal_post(block_factory.rpc, json) do |result|
-              result.should eq("[{\"domain_name\":\"awesome.ax\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":1,\"price\":\"0.2\",\"block\":22}]")
+              result.should eq("[{\"domain_name\":\"awesome.ax\",\"address\":\"#{transaction_factory.sender_wallet.address}\",\"status\":\"for_sale\",\"price\":\"0.2\",\"block\":22}]")
             end
           end
         end
