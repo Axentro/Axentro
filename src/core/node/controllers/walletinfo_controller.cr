@@ -61,7 +61,8 @@ module ::Axentro::Core::Controllers
         address = get_address(address)
         _socket = @socket_address[address]?
         if _socket
-          _socket.send(@blockchain.wallet_info.wallet_info_impl(address).to_json)
+          data = @blockchain.wallet_info.wallet_info_impl(address).to_json
+          _socket.send(data)
         end
       rescue e : Exception
         debug "an error (#{e})"

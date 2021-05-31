@@ -63,7 +63,8 @@ module ::Axentro::Core::FastChain
     latest_index = get_latest_index_from_db_for_mint
     coinbase_amount = coinbase_fast_amount(latest_index, embedded_fast_transactions)
     coinbase_transaction = create_coinbase_fast_transaction(coinbase_amount)
-    {latest_index: latest_index, transactions: align_fast_transactions(coinbase_transaction, coinbase_amount, embedded_fast_transactions)}
+    aligned_transactions = align_fast_transactions(coinbase_transaction, coinbase_amount, embedded_fast_transactions)
+    {latest_index: latest_index, transactions: aligned_transactions}
   end
 
   def mint_fast_block(valid_transactions)
