@@ -808,7 +808,7 @@ module ::Axentro::Core
       end
 
       @sync_retry_count = 2
-    rescue  
+    rescue
       warning "error receiving slow block stream"
 
       if @sync_retry_count <= MAX_SYNC_RETRY
@@ -828,7 +828,6 @@ module ::Axentro::Core
         target_slow = database.highest_index_of_kind(BlockKind::SLOW)
         sync_chain_on_error(target_slow, target_slow, @sync_retry_count, node_socket)
       end
-
     end
 
     # on parent
