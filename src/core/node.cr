@@ -806,6 +806,29 @@ module ::Axentro::Core
         start_fast = database.highest_index_of_kind(BlockKind::FAST)
         send(socket, M_TYPE_NODE_REQUEST_STREAM_FAST_BLOCK, {start_fast: start_fast})
       end
+
+      @sync_retry_count = 2
+    rescue  
+      warning "error receiving slow block stream"
+
+      if @sync_retry_count <= MAX_SYNC_RETRY
+        next_connection = retry_sync
+        warning "retry sync from node: #{next_connection.host}:#{next_connection.port}"
+
+        node_socket = HTTP::WebSocket.new(next_connection.host, "/peer?node", next_connection.port, next_connection.ssl)
+
+        peer(node_socket)
+
+        spawn do
+          node_socket.run
+        rescue e : Exception
+          handle_exception(node_socket, e)
+        end
+
+        target_slow = database.highest_index_of_kind(BlockKind::SLOW)
+        sync_chain_on_error(target_slow, target_slow, @sync_retry_count, node_socket)
+      end
+
     end
 
     # on parent
@@ -848,6 +871,7 @@ module ::Axentro::Core
         result = database.validate_local_db_blocks
 
         if result.success
+          @sync_retry_count = 2
           info "all blocks successfully validated at block: #{result.index}"
           if @phase == SetupPhase::BLOCKCHAIN_SYNCING
             @phase = SetupPhase::TRANSACTION_SYNCING
