@@ -24,5 +24,3 @@ class AddRecipientsAddressIndex < MG::Base
     SQL
   end
 end
-
-
