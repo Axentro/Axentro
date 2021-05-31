@@ -3,7 +3,7 @@ jobs:
 
   tests:
     docker:
-      - image: crystallang/crystal:0.36.1
+      - image: crystallang/crystal:1.0.0
     steps:
       - checkout
       - run: |
@@ -18,7 +18,7 @@ jobs:
 
   e2e-tests-all-public:
     docker:
-      - image: crystallang/crystal:0.36.1 
+      - image: crystallang/crystal:1.0.0
     steps:
       - checkout
       - run: |

@@ -22,7 +22,7 @@ jobs:
       - name: Install Crystal
         uses: oprypin/install-crystal@v1
         with:
-          crystal: 0.36.1
+          crystal: 1.0.0
 
       - name: Checkout source code
         uses: actions/checkout@v2
@@ -40,7 +40,7 @@ jobs:
       - name: Install Crystal
         uses: oprypin/install-crystal@v1
         with:
-          crystal: 0.36.1
+          crystal: 1.0.0
 
       - name: Checkout source code
         uses: actions/checkout@v2
@@ -55,7 +55,7 @@ jobs:
       - name: Install Crystal
         uses: oprypin/install-crystal@v1
         with:
-          crystal: 0.36.1
+          crystal: 1.0.0
 
       - name: Checkout source code
         uses: actions/checkout@v2
@@ -74,7 +74,7 @@ jobs:
       - name: Install Crystal
         uses: oprypin/install-crystal@v1
         with:
-          crystal: 0.36.1
+          crystal: 1.0.0
 
       - name: Checkout source code
         uses: actions/checkout@v2
