@@ -287,36 +287,6 @@ module ::Axentro::Core
         warning "successor not found. skip synching transactions"
 
         if @phase == SetupPhase::TRANSACTION_SYNCING
-          @phase = SetupPhase::MINER_NONCE_SYNCING
-          proceed_setup
-        end
-      end
-    end
-
-    private def sync_miner_nonces(socket : HTTP::WebSocket? = nil)
-      info "start syncing miner nonces"
-
-      s = if _socket = socket
-            _socket
-          elsif predecessor = @chord.find_predecessor?
-            predecessor.socket
-          elsif successor = @chord.find_successor?
-            successor.socket
-          end
-
-      if _s = s
-        miner_nonces = @blockchain.pending_miner_nonces
-        send(
-          _s,
-          M_TYPE_NODE_REQUEST_MINER_NONCES,
-          {
-            nonces: miner_nonces,
-          }
-        )
-      else
-        warning "successor not found. skip syncing miner nonces"
-
-        if @phase == SetupPhase::MINER_NONCE_SYNCING
           @phase = SetupPhase::PRE_DONE
           proceed_setup
         end
@@ -402,12 +372,6 @@ module ::Axentro::Core
           _request_transactions(socket, message_content)
         when M_TYPE_NODE_RECEIVE_TRANSACTIONS
           _receive_transactions(socket, message_content)
-        when M_TYPE_NODE_BROADCAST_MINER_NONCE
-          _broadcast_miner_nonce(socket, message_content)
-        when M_TYPE_NODE_REQUEST_MINER_NONCES
-          _request_miner_nonces(socket, message_content)
-        when M_TYPE_NODE_RECEIVE_MINER_NONCES
-          _receive_miner_nonces(socket, message_content)
         when M_TYPE_NODE_SEND_CLIENT_CONTENT
           _receive_client_content(socket, message_content)
         end
@@ -494,31 +458,6 @@ module ::Axentro::Core
       send_transaction(transaction, from)
 
       @blockchain.add_transaction(transaction)
-    end
-
-    # ----- miner nonces -----
-    private def _broadcast_miner_nonce(socket, _content)
-      return unless @phase == SetupPhase::DONE
-
-      _m_content = MContentNodeBroadcastMinerNonce.from_json(_content)
-
-      miner_nonce = _m_content.nonce
-      from = _m_content.from
-
-      debug "NONCE NONCE new miner nonce coming: #{miner_nonce.value} from node: #{miner_nonce.node_id} for address: #{miner_nonce.address}"
-
-      send_miner_nonce(miner_nonce, from)
-      @blockchain.add_miner_nonce(miner_nonce)
-    end
-
-    def send_miner_nonce(miner_nonce : MinerNonce, from : Chord::NodeContext? = nil)
-      content = if from.nil? || (!from.nil? && from.is_private)
-                  {nonce: miner_nonce, from: @chord.context}
-                else
-                  {nonce: miner_nonce, from: from}
-                end
-
-      send_on_chord(M_TYPE_NODE_BROADCAST_MINER_NONCE, content, from)
     end
 
     # ----- chord finger table -----
@@ -940,36 +879,6 @@ module ::Axentro::Core
       @blockchain.replace_fast_transactions(transactions.select(&.is_fast_transaction?))
 
       if @phase == SetupPhase::TRANSACTION_SYNCING
-        @phase = SetupPhase::MINER_NONCE_SYNCING
-        proceed_setup
-      end
-    end
-
-    private def _request_miner_nonces(socket, _content)
-      MContentNodeRequestMinerNonces.from_json(_content)
-
-      info "requested miner nonces"
-
-      miner_nonces = @blockchain.pending_miner_nonces
-      send(
-        socket,
-        M_TYPE_NODE_RECEIVE_MINER_NONCES,
-        {
-          nonces: miner_nonces,
-        }
-      )
-    end
-
-    private def _receive_miner_nonces(socket, _content)
-      _m_content = MContentNodeReceiveMinerNonces.from_json(_content)
-
-      miner_nonces = _m_content.nonces
-
-      info "received #{miner_nonces.size} MINER NONCES"
-
-      @blockchain.replace_miner_nonces(miner_nonces)
-
-      if @phase == SetupPhase::MINER_NONCE_SYNCING
         @phase = SetupPhase::PRE_DONE
         proceed_setup
       end
@@ -1054,8 +963,6 @@ module ::Axentro::Core
         sync_chain
       when SetupPhase::TRANSACTION_SYNCING
         sync_transactions
-      when SetupPhase::MINER_NONCE_SYNCING
-        sync_miner_nonces
       when SetupPhase::PRE_DONE
         info "successfully setup the node"
 

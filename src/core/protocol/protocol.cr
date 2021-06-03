@@ -322,28 +322,6 @@ module ::Axentro::Core::Protocol
     property from : Core::NodeComponents::Chord::NodeContext
   end
 
-  M_TYPE_NODE_BROADCAST_MINER_NONCE = 0x0110
-
-  struct MContentNodeBroadcastMinerNonce
-    include JSON::Serializable
-    property nonce : MinerNonce
-    property from : Core::NodeComponents::Chord::NodeContext
-  end
-
-  M_TYPE_NODE_REQUEST_MINER_NONCES = 0x0111
-
-  struct MContentNodeRequestMinerNonces
-    include JSON::Serializable
-    property nonces : Array(MinerNonce)
-  end
-
-  M_TYPE_NODE_RECEIVE_MINER_NONCES = 0x0112
-
-  struct MContentNodeReceiveMinerNonces
-    include JSON::Serializable
-    property nonces : Array(MinerNonce)
-  end
-
   M_TYPE_NODE_BROADCAST_REJECT_BLOCK = 0x0119
 
   struct MContentNodeBroadcastRejectBlock
@@ -362,7 +340,6 @@ module ::Axentro::Core::Protocol
     CONNECTING_NODES
     BLOCKCHAIN_SYNCING
     TRANSACTION_SYNCING
-    MINER_NONCE_SYNCING
     PRE_DONE
     DONE
   end

@@ -250,7 +250,6 @@ module ::Axentro::Core::NodeComponents
             # add nonce to pool
             mined_nonce = mined_nonce.with_node_id(node.get_node_id).with_mid(miner.mid)
             @blockchain.add_miner_nonce(mined_nonce, false)
-            node.send_miner_nonce(mined_nonce)
 
             # found a nonce so track it in the history
             @nonce_spacing.track_miner_difficulty(miner.mid, miner.difficulty)
